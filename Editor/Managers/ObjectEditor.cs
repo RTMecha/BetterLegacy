@@ -1334,7 +1334,7 @@ namespace BetterLegacy.Editor.Managers
                     Debug.LogError($"\nException: {ex}");
                 }
 
-                var timeline = ObjEditor.inst.objTimelineContent.parent.parent;
+                timeline = ObjEditor.inst.objTimelineContent.parent.parent;
 
                 EditorThemeManager.AddScrollbar(timeline.Find("Scrollbar Horizontal").GetComponent<Scrollbar>(),
                     scrollbarGroup: ThemeGroup.Timeline_Scrollbar_Base, handleGroup: ThemeGroup.Timeline_Scrollbar, canSetScrollbarRounded: false);
@@ -1670,8 +1670,10 @@ namespace BetterLegacy.Editor.Managers
             }
 
             timelinePosScrollbar = ObjEditor.inst.objTimelineContent.parent.parent.GetComponent<ScrollRect>().horizontalScrollbar;
+            timelinePosScrollbar.onValueChanged.ClearAll();
             timelinePosScrollbar.onValueChanged.AddListener(_val =>
             {
+                timeline.GetComponent<ScrollRect>().horizontalNormalizedPosition = _val;
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                     EditorTimeline.inst.CurrentSelection.TimelinePosition = _val;
             });
@@ -1927,6 +1929,10 @@ namespace BetterLegacy.Editor.Managers
         public ObjectEditorDialog Dialog { get; set; }
 
         public Scrollbar timelinePosScrollbar;
+        public Transform timeline;
+        public bool movingTimeline;
+        public Vector2 cachedTimelinePos;
+
         public GameObject shapeButtonPrefab;
 
         public Prefab copy;
@@ -1950,13 +1956,40 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        #region Timeline
+
+        /// <summary>
+        /// Sets the Object Keyframe timeline position.
+        /// </summary>
+        /// <param name="position">The position to set the timeline scroll.</param>
+        public void SetTimelinePosition(float position) => SetTimeline(ObjEditor.inst.zoomFloat, position);
+
+        /// <summary>
+        /// Sets the Object Keyframe timeline zoom.
+        /// </summary>
+        /// <param name="zoom">The zoom to set to the timeline.</param>
+        public void SetTimelineZoom(float zoom)
+        {
+            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+            float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
+            if (AudioManager.inst.CurrentAudioSource.clip)
+            {
+                float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
+                float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
+
+                timelineCalc = time / objectLifeLength;
+            }
+
+            SetTimeline(zoom, timelineCalc);
+        }
+
         /// <summary>
         /// Sets the Object Keyframe timeline zoom and position.
         /// </summary>
         /// <param name="zoom">The amount to zoom in.</param>
         /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
         /// <param name="render">If the timeline should render.</param>
-        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
+        public void SetTimeline(float zoom, float position, bool render = true)
         {
             float prevZoom = ObjEditor.inst.zoomFloat;
             ObjEditor.inst.zoomFloat = Mathf.Clamp01(zoom);
@@ -1965,6 +1998,7 @@ namespace BetterLegacy.Editor.Managers
 
             var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
             EditorTimeline.inst.CurrentSelection.Zoom = ObjEditor.inst.zoomFloat;
+            EditorTimeline.inst.CurrentSelection.TimelinePosition = position;
 
             if (render)
             {
@@ -1973,7 +2007,10 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarkerPositions(beatmapObject);
             }
 
-            CoroutineHelper.StartCoroutine(SetTimelinePosition(beatmapObject, position));
+            timelinePosScrollbar.onValueChanged.ClearAll();
+            timelinePosScrollbar.value = position;
+            timelinePosScrollbar.onValueChanged.AddListener(SetTimelineScroll);
+            SetTimelineScroll(position);
 
             ObjEditor.inst.zoomSlider.onValueChanged.ClearAll();
             ObjEditor.inst.zoomSlider.value = ObjEditor.inst.zoomFloat;
@@ -1982,29 +2019,12 @@ namespace BetterLegacy.Editor.Managers
                 ObjEditor.inst.Zoom = _val;
                 EditorTimeline.inst.CurrentSelection.Zoom = Mathf.Clamp01(_val);
             });
-
-            if (log)
-                CoreHelper.Log($"SET OBJECT ZOOM\n" +
-                    $"ZoomFloat: {ObjEditor.inst.zoomFloat}\n" +
-                    $"ZoomVal: {ObjEditor.inst.zoomVal}\n" +
-                    $"ZoomBounds: {ObjEditor.inst.zoomBounds}\n" +
-                    $"Timeline Position: {timelinePosScrollbar.value}");
         }
 
-        IEnumerator SetTimelinePosition(BeatmapObject beatmapObject, float position = 0f)
+        void SetTimelineScroll(float scroll)
         {
-            yield return CoroutineHelper.FixedUpdate;
-            float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
-            if (AudioManager.inst.CurrentAudioSource.clip != null)
-            {
-                float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
-                float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
-
-                timelineCalc = time / objectLifeLength;
-            }
-
-            timelinePosScrollbar.value =
-                position >= 0f ? position : timelineCalc;
+            timeline.GetComponent<ScrollRect>().horizontalNormalizedPosition = scroll;
+            EditorTimeline.inst.CurrentSelection.TimelinePosition = scroll;
         }
 
         public static float TimeTimelineCalc(float _time) => _time * 14f * ObjEditor.inst.zoomVal + 5f;
@@ -2017,6 +2037,27 @@ namespace BetterLegacy.Editor.Managers
 
             return (mouseX - num) / ObjEditor.inst.Zoom / 14f * screenScale;
         }
+
+        void HandleTimelineDrag()
+        {
+            if (Input.GetMouseButtonUp((int)PointerEventData.InputButton.Middle))
+                movingTimeline = false;
+
+            if (!movingTimeline)
+                return;
+
+            var vector = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            float multiply = 12f / ObjEditor.inst.Zoom;
+            SetTimelinePosition(cachedTimelinePos.x + -(((vector.x - ObjEditor.inst.DragStartPos.x) / Screen.width) * multiply));
+        }
+
+        public void StartTimelineDrag()
+        {
+            cachedTimelinePos = new Vector2(timelinePosScrollbar.value, 0f);
+            movingTimeline = true;
+        }
+
+        #endregion
 
         #region Dragging
 
@@ -2041,6 +2082,7 @@ namespace BetterLegacy.Editor.Managers
 
             HandleObjectsDrag();
             HandleKeyframesDrag();
+            HandleTimelineDrag();
         }
 
         void HandleObjectsDrag()

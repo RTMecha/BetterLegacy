@@ -34,7 +34,13 @@ namespace BetterLegacy.Editor.Managers
 
         public static void Init() => EditorManager.inst.gameObject.AddComponent<EditorTimeline>();
 
-        void Awake() => inst = this;
+        void Awake()
+        {
+            inst = this;
+            timelineScrollRects.AddRange(EditorManager.inst.timelineScrollRect.GetComponents<ScrollRect>());
+            timelineScrollRects.Add(EditorManager.inst.markerTimeline.transform.parent.GetComponent<ScrollRect>());
+            timelineScrollRects.Add(EditorManager.inst.timelineSlider.transform.parent.GetComponent<ScrollRect>());
+        }
 
         void Update()
         {
@@ -71,6 +77,8 @@ namespace BetterLegacy.Editor.Managers
 
         public Vector2 cachedTimelinePos;
 
+        public List<ScrollRect> timelineScrollRects = new List<ScrollRect>();
+
         /// <summary>
         /// Renders the timeline.
         /// </summary>
@@ -99,7 +107,7 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the main timeline zoom.
         /// </summary>
         /// <param name="zoom">The zoom to set to the timeline.</param>
-        public void SetTimelineZoom(float zoom) => SetTimeline(zoom, AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? GetTimelineTime(false) : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length);
+        public void SetTimelineZoom(float zoom) => SetTimeline(zoom, !AudioManager.inst.CurrentAudioSource.clip ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? GetTimelineTime(false) : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length);
 
         /// <summary>
         /// Sets the main timeline zoom and position.
@@ -119,7 +127,10 @@ namespace BetterLegacy.Editor.Managers
                 if (render)
                     RenderTimeline();
 
-                CoroutineHelper.StartCoroutine(ISetTimelinePosition(position));
+                EditorManager.inst.timelineScrollRectBar.onValueChanged.ClearAll();
+                EditorManager.inst.timelineScrollRectBar.value = position;
+                EditorManager.inst.timelineScrollRectBar.onValueChanged.AddListener(SetTimelineScroll);
+                SetTimelineScroll(position);
 
                 EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
                 EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
@@ -131,12 +142,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        // i have no idea why the timeline scrollbar doesn't like to be set in the frame the zoom is also set in.
-        IEnumerator ISetTimelinePosition(float position)
-        {
-            yield return CoroutineHelper.FixedUpdate;
-            EditorManager.inst.timelineScrollRectBar.value = position;
-        }
+        void SetTimelineScroll(float scroll) => timelineScrollRects.ForLoop(x => x.horizontalNormalizedPosition = scroll);
 
         /// <summary>
         /// Calculates the timeline time the mouse cursor is at.
