@@ -145,6 +145,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> PasteBackgroundObjectsOverwrites { get; set; }
         public Setting<bool> ShowDefaultThemes { get; set; }
         public Setting<int> ImageSequenceFPS { get; set; }
+        public Setting<bool> OverwriteImportedImages { get; set; }
 
         #endregion
 
@@ -1451,6 +1452,7 @@ namespace BetterLegacy.Configs
             PasteBackgroundObjectsOverwrites = Bind(this, DATA, "Paste Background Objects Overwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
             ShowDefaultThemes = Bind(this, DATA, "Show Default Themes", true, "If the default beatmap themes should appear in the theme list.");
             ImageSequenceFPS = Bind(this, DATA, "Image Sequence FPS", 24, "FPS of a generated image sequence. Image sequences can be created by dragging in a collection of images or a folder that only contains images.");
+            OverwriteImportedImages = Bind(this, DATA, "Overwrite Imported Images", false, "If imported images to image objects should overwrite the file.");
 
             #endregion
 

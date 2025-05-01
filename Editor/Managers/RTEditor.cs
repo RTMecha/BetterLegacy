@@ -95,7 +95,7 @@ namespace BetterLegacy.Editor.Managers
             fileDragAndDrop.onFilesDropped = dropInfos =>
             {
                 CoreHelper.Log($"Dropping files.\nCount: {dropInfos.Count}");
-                if (dropInfos.All(x => RTFile.FileIsFormat(x.filePath, FileFormat.PNG, FileFormat.JPG)))
+                if (dropInfos.All(x => RTFile.FileIsFormat(x.filePath, FileFormat.PNG, FileFormat.JPG)) && dropInfos.Count > 1)
                 {
                     CoreHelper.Log($"Creating image sequence.");
                     ObjectEditor.inst.CreateImageSequence(dropInfos.Select(x => x.filePath).ToArray(), EditorConfig.Instance.ImageSequenceFPS.Value);
@@ -213,7 +213,7 @@ namespace BetterLegacy.Editor.Managers
 
                         var levelPath = dropInfo.filePath.Remove(editorPath + "/");
 
-                        if (!RTFile.FileExists(jpgFileLocation) && !dropInfo.filePath.Contains(editorPath))
+                        if ((EditorConfig.Instance.OverwriteImportedImages.Value || !RTFile.FileExists(jpgFileLocation)) && !dropInfo.filePath.Contains(editorPath))
                             RTFile.CopyFile(dropInfo.filePath, jpgFileLocation);
                         else
                             jpgFileLocation = editorPath + "/" + levelPath;

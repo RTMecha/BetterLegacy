@@ -6443,7 +6443,7 @@ namespace BetterLegacy.Editor.Managers
             
             string jpgFileLocation = RTFile.CombinePaths(editorPath, "images", Path.GetFileName(file));
 
-            if (copyFile && !RTFile.FileExists(jpgFileLocation) && !file.Contains(editorPath))
+            if (copyFile && (EditorConfig.Instance.OverwriteImportedImages.Value || !RTFile.FileExists(jpgFileLocation)) && !file.Contains(editorPath))
                 RTFile.CopyFile(file, jpgFileLocation);
 
             beatmapObject.text = jpgFileLocation.Remove(editorPath + "/");
