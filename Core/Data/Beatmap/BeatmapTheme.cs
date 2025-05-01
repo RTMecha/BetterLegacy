@@ -9,6 +9,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -39,6 +40,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<Color> objectColors = new List<Color>();
 
         public List<Color> backgroundColors = new List<Color>();
+
+        public ThemePanel themePanel;
 
         #endregion
 

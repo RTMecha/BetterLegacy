@@ -202,6 +202,7 @@ namespace BetterLegacy.Editor.Data
             BaseImage = storage.baseImage;
 
             Theme = beatmapTheme;
+            Theme.themePanel = this;
             isDefault = defaultTheme;
             isDuplicate = duplicate;
             OriginalID = beatmapTheme.id;
