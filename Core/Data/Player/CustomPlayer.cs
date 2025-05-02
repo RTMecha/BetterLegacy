@@ -141,6 +141,8 @@ namespace BetterLegacy.Core.Data.Player
             ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, Alive);
         }
 
+        public PlayerInventory inventory = new PlayerInventory();
+
         public void ResetHealth() => Health = PlayerModel?.basePart?.health ?? 3;
 
         public static int MaxHealth { get; set; } = 3;
