@@ -7,6 +7,7 @@
 ## Fixes
 - Fixed theme updating not updating the stored theme.
 - Fixed file drag and drop not checking for singular images.
+- Fixed Multi BG indexing not working in some cases.
 
 # snapshot-2025.5.4 - (pre-1.7.0) > [May 2, 2025]
 Hotfix snapshot
