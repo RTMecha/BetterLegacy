@@ -408,7 +408,20 @@ namespace BetterLegacy.Core.Helpers
                 if (index < 0)
                     continue;
 
-                GameData.Current.prefabObjects.Move(index, Mathf.Clamp(index + amount, 0, GameData.Current.beatmapObjects.Count - 1));
+                GameData.Current.prefabObjects.Move(index, Mathf.Clamp(index + amount, 0, GameData.Current.prefabObjects.Count - 1));
+            }
+            
+            selected = EditorTimeline.inst.SelectedBackgroundObjects.Order(x => x.Index, amount > 0);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                var index = GameData.Current.backgroundObjects.FindIndex(x => x.id == backgroundObject.id);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.backgroundObjects.Move(index, Mathf.Clamp(index + amount, 0, GameData.Current.backgroundObjects.Count - 1));
             }
 
             EditorTimeline.inst.UpdateTransformIndex();
@@ -440,6 +453,19 @@ namespace BetterLegacy.Core.Helpers
                     continue;
 
                 GameData.Current.prefabObjects.Move(index, Mathf.Clamp(amount, 0, GameData.Current.prefabObjects.Count - 1));
+            }
+            
+            selected = EditorTimeline.inst.SelectedBackgroundObjects.Order(x => x.Index, amount > 0);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                var index = GameData.Current.backgroundObjects.FindIndex(x => x.id == backgroundObject.id);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.backgroundObjects.Move(index, Mathf.Clamp(amount, 0, GameData.Current.backgroundObjects.Count - 1));
             }
 
             EditorTimeline.inst.UpdateTransformIndex();
