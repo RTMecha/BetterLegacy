@@ -37,6 +37,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             modifiers.ForLoop(modifier =>
             {
+                modifier.runCount = 0;
                 modifier.active = false;
                 modifier.running = false;
                 modifier.Inactive?.Invoke(modifier);
