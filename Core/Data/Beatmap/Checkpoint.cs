@@ -124,7 +124,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
 		{
-			name = jn["n"];
+			name = jn["n"] ?? string.Empty;
 			time = jn["t"].AsFloat;
 			pos = jn["p"].AsVector2();
 			heal = true; // checkpoints in VG heal the player so this is on by default.
@@ -132,7 +132,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
-			name = jn["name"];
+			name = jn["name"] ?? string.Empty;
 			time = jn["t"].AsFloat;
 			pos = jn["pos"].AsVector2();
         }
@@ -141,7 +141,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 		{
 			var jn = JSON.Parse("{}");
 
-			jn["n"] = name;
+			jn["n"] = name ?? string.Empty;
 			if (time != 0f)
 				jn["t"] = time;
 			if (pos.x != 0f && pos.y != 0f)
@@ -154,7 +154,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 		{
 			var jn = JSON.Parse("{}");
 
-			jn["name"] = name;
+			jn["name"] = name ?? string.Empty;
 			if (time != 0f)
 				jn["t"] = time;
 			jn["pos"] = pos.ToJSON(false);
