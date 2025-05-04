@@ -528,6 +528,25 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(constantText);
                 EditorThemeManager.ApplyToggle(constantToggle);
 
+                var count = NumberGenerator(layout, "Run Count", modifier.triggerCount.ToString(), _val =>
+                {
+                    if (int.TryParse(_val, out int num))
+                        modifier.triggerCount = Mathf.Clamp(num, 0, int.MaxValue);
+
+                    try
+                    {
+                        modifier.Inactive?.Invoke(modifier);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+                    modifier.active = false;
+                }, out InputField countField);
+
+                TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
+                TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
+
                 if (modifier.type == ModifierBase.Type.Trigger)
                 {
                     var not = booleanBar.Duplicate(layout, "Not");
@@ -2715,7 +2734,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyToggle(prefabInstanceToggle);
         }
 
-        GameObject NumberGenerator(Transform layout, string label, string text, Action<string> action, out InputField result)
+        public GameObject NumberGenerator(Transform layout, string label, string text, Action<string> action, out InputField result)
         {
             var single = numberInput.Duplicate(layout, label);
             single.transform.localScale = Vector3.one;

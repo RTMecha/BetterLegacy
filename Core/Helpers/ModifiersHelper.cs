@@ -57,7 +57,14 @@ namespace BetterLegacy.Core.Helpers
             bool result = true;
             triggers.ForLoop(trigger =>
             {
-                var innerResult = !trigger.active && (trigger.not ? !trigger.Trigger(trigger) : trigger.Trigger(trigger));
+                if (trigger.active)
+                {
+                    trigger.triggered = false;
+                    result = false;
+                    return;
+                }
+
+                var innerResult = trigger.not ? !trigger.Trigger(trigger) : trigger.Trigger(trigger);
 
                 if (trigger.elseIf && !result && innerResult)
                     result = true;
@@ -163,9 +170,10 @@ namespace BetterLegacy.Core.Helpers
                 {
                     actions.ForLoop(act =>
                     {
-                        if (act.active) // Continue if modifier is not constant and was already activated
+                        if (act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
                             return;
 
+                        act.runCount++;
                         if (!act.constant)
                             act.active = true;
 
@@ -174,8 +182,13 @@ namespace BetterLegacy.Core.Helpers
                     });
                     triggers.ForLoop(trig =>
                     {
+                        if (trig.triggerCount > 0 && trig.runCount >= trig.triggerCount)
+                            return;
+
+                        trig.runCount++;
                         if (!trig.constant)
                             trig.active = true;
+
                         trig.running = true;
                     });
                     return;
@@ -196,9 +209,10 @@ namespace BetterLegacy.Core.Helpers
 
             actions.ForLoop(act =>
             {
-                if (act.active)
+                if (act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
                     return;
 
+                act.runCount++;
                 if (!act.constant)
                     act.active = true;
 
@@ -232,17 +246,25 @@ namespace BetterLegacy.Core.Helpers
                         if (previousType == ModifierBase.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
                             result = true;
 
-                        var innerResult = !modifier.active && (modifier.not ? !modifier.Trigger(modifier) : modifier.Trigger(modifier));
-
-                        // Allow trigger to turn result to true again if "elseIf" is on
-                        if (modifier.elseIf && !result && innerResult)
-                            result = true;
-
-                        if (!modifier.elseIf && !innerResult)
+                        if (modifier.active)
+                        {
+                            modifier.triggered = false;
                             result = false;
+                        }
+                        else
+                        {
+                            var innerResult = modifier.not ? !modifier.Trigger(modifier) : modifier.Trigger(modifier);
 
-                        modifier.triggered = innerResult;
-                        previousType = modifier.type;
+                            // Allow trigger to turn result to true again if "elseIf" is on
+                            if (modifier.elseIf && !result && innerResult)
+                                result = true;
+
+                            if (!modifier.elseIf && !innerResult)
+                                result = false;
+
+                            modifier.triggered = innerResult;
+                            previousType = modifier.type;
+                        }
                     }
 
                     // Set modifier inactive state
@@ -257,11 +279,13 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                     // Continue if modifier was already active with constant on
-                    if (modifier.active || !result)
+                    if (modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                     {
                         previousType = modifier.type;
                         return;
                     }
+
+                    modifier.runCount++;
 
                     // Only occur once
                     if (!modifier.constant)
@@ -278,6 +302,7 @@ namespace BetterLegacy.Core.Helpers
             else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
                 findAll.ForLoop(modifier =>
                 {
+                    modifier.runCount = 0;
                     modifier.active = false;
                     modifier.running = false;
                     modifier.Inactive?.Invoke(modifier);
@@ -1563,7 +1588,7 @@ namespace BetterLegacy.Core.Helpers
 
                     audioClip.name = modifier.GetValue(0);
 
-                    if (levelObject.visualObject == null || !levelObject.visualObject.gameObject)
+                    if (!levelObject.visualObject || !levelObject.visualObject.gameObject)
                         return;
 
                     modifier.Result = levelObject.visualObject.gameObject.AddComponent<AudioModifier>();
@@ -2171,13 +2196,17 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue));
+                    if (player && player.Player)
+                        player.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue));
+                });
             },
             "playerHitIndex" => modifier =>
             {
@@ -2205,13 +2234,17 @@ namespace BetterLegacy.Core.Helpers
 
                 var heal = Mathf.Clamp(modifier.GetInt(0, 1), 0, int.MaxValue);
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.Heal(heal);
+                    if (player && player.Player)
+                        player.Player.Heal(heal);
+                });
             },
             "playerHealIndex" => modifier =>
             {
@@ -2247,13 +2280,17 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.Kill();
+                    if (player && player.Player)
+                        player.Player.Kill();
+                });
             },
             "playerKillIndex" => modifier =>
             {
@@ -2279,13 +2316,17 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || modifier.constant)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var playerIndex = PlayerManager.GetClosestPlayerIndex(pos);
+                    var playerIndex = PlayerManager.GetClosestPlayerIndex(pos);
 
-                if (playerIndex >= 0)
-                    PlayerManager.RespawnPlayer(playerIndex);
+                    if (playerIndex >= 0)
+                        PlayerManager.RespawnPlayer(playerIndex);
+                });
             },
             "playerRespawnIndex" => modifier =>
             {
@@ -2308,24 +2349,28 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                var vector = modifier.value.Split(new char[] { ',' });
+                    var vector = modifier.value.Split(new char[] { ',' });
 
-                bool relative = Parser.TryParse(modifier.commands[3], false);
-                if (!player)
-                    return;
+                    bool relative = Parser.TryParse(modifier.commands[3], false);
+                    if (!player)
+                        return;
 
-                var tf = player.Player.rb.transform;
-                if (modifier.constant)
-                    tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
-                else
-                    tf
-                        .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
-                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                    var tf = player.Player.rb.transform;
+                    if (modifier.constant)
+                        tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
+                    else
+                        tf
+                            .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
+                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                });
             },
             "playerMoveAll" => modifier =>
             {
@@ -2348,26 +2393,30 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
-                var player = PlayerManager.GetClosestPlayer(pos);
-
-                bool relative = Parser.TryParse(modifier.commands[3], false);
-                if (!player)
-                    return;
-
-                var tf = player.Player.rb.transform;
-                if (modifier.constant)
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var v = tf.localPosition;
-                    v.x += Parser.TryParse(modifier.value, 1f);
-                    tf.localPosition = v;
-                }
-                else
-                    tf
-                        .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
-                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                    var player = PlayerManager.GetClosestPlayer(pos);
+
+                    bool relative = Parser.TryParse(modifier.commands[3], false);
+                    if (!player)
+                        return;
+
+                    var tf = player.Player.rb.transform;
+                    if (modifier.constant)
+                    {
+                        var v = tf.localPosition;
+                        v.x += Parser.TryParse(modifier.value, 1f);
+                        tf.localPosition = v;
+                    }
+                    else
+                        tf
+                            .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
+                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                });
             },
             "playerMoveXAll" => modifier =>
             {
@@ -2392,26 +2441,30 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
-                var player = PlayerManager.GetClosestPlayer(pos);
-
-                bool relative = Parser.TryParse(modifier.commands[3], false);
-                if (!player)
-                    return;
-
-                var tf = player.Player.rb.transform;
-                if (modifier.constant)
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var v = tf.localPosition;
-                    v.y += Parser.TryParse(modifier.value, 1f);
-                    tf.localPosition = v;
-                }
-                else
-                    tf
-                        .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
-                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                    var player = PlayerManager.GetClosestPlayer(pos);
+
+                    bool relative = Parser.TryParse(modifier.commands[3], false);
+                    if (!player)
+                        return;
+
+                    var tf = player.Player.rb.transform;
+                    if (modifier.constant)
+                    {
+                        var v = tf.localPosition;
+                        v.y += Parser.TryParse(modifier.value, 1f);
+                        tf.localPosition = v;
+                    }
+                    else
+                        tf
+                            .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
+                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                });
             },
             "playerMoveYAll" => modifier =>
             {
@@ -2436,25 +2489,29 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
-                var player = PlayerManager.GetClosestPlayer(pos);
-
-                bool relative = Parser.TryParse(modifier.commands[3], false);
-                if (!player)
-                    return;
-
-                if (modifier.constant)
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var v = player.Player.rb.transform.localRotation.eulerAngles;
-                    v.z += Parser.TryParse(modifier.value, 1f);
-                    player.Player.rb.transform.localRotation = Quaternion.Euler(v);
-                }
-                else
-                    player.Player.rb.transform
-                        .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
-                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                    var player = PlayerManager.GetClosestPlayer(pos);
+
+                    bool relative = Parser.TryParse(modifier.commands[3], false);
+                    if (!player)
+                        return;
+
+                    if (modifier.constant)
+                    {
+                        var v = player.Player.rb.transform.localRotation.eulerAngles;
+                        v.z += Parser.TryParse(modifier.value, 1f);
+                        player.Player.rb.transform.localRotation = Quaternion.Euler(v);
+                    }
+                    else
+                        player.Player.rb.transform
+                            .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
+                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                });
             },
             "playerRotateAll" => modifier =>
             {
@@ -2480,128 +2537,160 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
-                    return;
+                    if (!player || !player.Player || !player.Player.rb)
+                        return;
 
-                player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+                    player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+                });
             },
             "playerMoveAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
-                    return;
+                    if (!player || !player.Player || !player.Player.rb)
+                        return;
 
-                var y = player.Player.rb.position.y;
-                player.Player.rb.position = new Vector2(pos.x, y);
+                    var y = player.Player.rb.position.y;
+                    player.Player.rb.position = new Vector2(pos.x, y);
+                });
             },
             "playerMoveXToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
-                    return;
+                    if (!player || !player.Player || !player.Player.rb)
+                        return;
 
-                var y = player.Player.rb.position.y;
-                player.Player.rb.position = new Vector2(pos.x, y);
+                    var y = player.Player.rb.position.y;
+                    player.Player.rb.position = new Vector2(pos.x, y);
+                });
             },
             "playerMoveXAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
-                foreach (var player in PlayerManager.Players)
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    if (!player.Player || !player.Player.rb)
-                        continue;
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                    var y = player.Player.rb.position.y;
-                    player.Player.rb.position = new Vector2(pos.x, y);
-                }
+                    foreach (var player in PlayerManager.Players)
+                    {
+                        if (!player.Player || !player.Player.rb)
+                            continue;
+
+                        var y = player.Player.rb.position.y;
+                        player.Player.rb.position = new Vector2(pos.x, y);
+                    }
+                });
             },
             "playerMoveYToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
-                    return;
+                    if (!player || !player.Player || !player.Player.rb)
+                        return;
 
-                var x = player.Player.rb.position.x;
-                player.Player.rb.position = new Vector2(x, pos.y);
+                    var x = player.Player.rb.position.x;
+                    player.Player.rb.position = new Vector2(x, pos.y);
+                });
             },
             "playerMoveYAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
-                foreach (var player in PlayerManager.Players)
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    if (!player.Player || !player.Player.rb)
-                        continue;
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                    var x = player.Player.rb.position.x;
-                    player.Player.rb.position = new Vector2(x, pos.y);
-                }
+                    foreach (var player in PlayerManager.Players)
+                    {
+                        if (!player.Player || !player.Player.rb)
+                            continue;
+
+                        var x = player.Player.rb.position.x;
+                        player.Player.rb.position = new Vector2(x, pos.y);
+                    }
+                });
             },
             "playerRotateToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
-                    return;
+                    if (!player || !player.Player || !player.Player.rb)
+                        return;
 
-                player.Player.rb.transform.SetLocalRotationEulerZ(levelObject.visualObject.gameObject.transform.localRotation.eulerAngles.z);
+                    player.Player.rb.transform.SetLocalRotationEulerZ(levelObject.visualObject.gameObject.transform.localRotation.eulerAngles.z);
+                });
             },
             "playerRotateAllToObject" => modifier =>
             {
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var rot = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.localEulerAngles.z : modifier.reference.InterpolateChainRotation();
-
-                foreach (var player in PlayerManager.Players)
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    if (!player.Player || !player.Player.rb)
-                        continue;
+                    var levelObject = modifier.reference.runtimeObject;
+                    var rot = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.localEulerAngles.z : modifier.reference.InterpolateChainRotation();
 
-                    player.Player.rb.transform.SetLocalRotationEulerZ(rot);
-                }
+                    foreach (var player in PlayerManager.Players)
+                    {
+                        if (!player.Player || !player.Player.rb)
+                            continue;
+
+                        player.Player.rb.transform.SetLocalRotationEulerZ(rot);
+                    }
+                });
             },
 
             // actions
@@ -2610,15 +2699,19 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.constant || !modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player)
-                    return;
+                    if (!player || !player.Player)
+                        return;
 
-                player.Player.Boost();
+                    player.Player.Boost();
+                });
             },
             "playerBoostIndex" => modifier =>
             {
@@ -2635,13 +2728,17 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.CanBoost = false;
+                    if (player && player.Player)
+                        player.Player.CanBoost = false;
+                });
             },
             "playerDisableBoostIndex" => modifier =>
             {
@@ -2658,13 +2755,17 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference)
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-                var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+                // queue post tick so the position of the object is accurate.
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var levelObject = modifier.reference.runtimeObject;
+                    var pos = levelObject && levelObject.visualObject && levelObject.visualObject.gameObject ? levelObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                var player = PlayerManager.GetClosestPlayer(pos);
+                    var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.CanBoost = true;
+                    if (player && player.Player)
+                        player.Player.CanBoost = true;
+                });
             },
             "playerEnableBoostIndex" => modifier =>
             {
@@ -3400,13 +3501,17 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || !modifier.reference.runtimeObject || !modifier.reference.runtimeObject.visualObject)
                     return;
 
-                var multiply = modifier.GetFloat(0, 1f);
-                var index = modifier.GetInt(1, 0);
-                var hue = modifier.GetFloat(2, 0f);
-                var sat = modifier.GetFloat(3, 0f);
-                var val = modifier.GetFloat(4, 0f);
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var multiply = modifier.GetFloat(0, 1f);
+                    var index = modifier.GetInt(1, 0);
+                    var hue = modifier.GetFloat(2, 0f);
+                    var sat = modifier.GetFloat(3, 0f);
+                    var val = modifier.GetFloat(4, 0f);
 
-                modifier.reference.runtimeObject.visualObject.SetColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                    modifier.reference.runtimeObject.visualObject.SetColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                });
             },
             "addColorOther" => modifier =>
             {
@@ -3415,30 +3520,38 @@ namespace BetterLegacy.Core.Helpers
                 if (list.IsEmpty())
                     return;
 
-                var multiply = modifier.GetFloat(0, 0f);
-                var index = modifier.GetInt(2, 0);
-                var hue = modifier.GetFloat(3, 0f);
-                var sat = modifier.GetFloat(4, 0f);
-                var val = modifier.GetFloat(5, 0f);
-
-                foreach (var bm in list)
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    if (bm.runtimeObject)
-                        bm.runtimeObject.visualObject.SetColor(bm.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
-                }
+                    var multiply = modifier.GetFloat(0, 0f);
+                    var index = modifier.GetInt(2, 0);
+                    var hue = modifier.GetFloat(3, 0f);
+                    var sat = modifier.GetFloat(4, 0f);
+                    var val = modifier.GetFloat(5, 0f);
+
+                    foreach (var bm in list)
+                    {
+                        if (bm.runtimeObject)
+                            bm.runtimeObject.visualObject.SetColor(bm.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                    }
+                });
             },
             "lerpColor" => modifier =>
             {
                 if (!modifier.reference || !modifier.reference.runtimeObject || !modifier.reference.runtimeObject.visualObject)
                     return;
 
-                var multiply = modifier.GetFloat(0, 0f);
-                var index = modifier.GetInt(1, 0);
-                var hue = modifier.GetFloat(2, 0f);
-                var sat = modifier.GetFloat(3, 0f);
-                var val = modifier.GetFloat(4, 0f);
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var multiply = modifier.GetFloat(0, 0f);
+                    var index = modifier.GetInt(1, 0);
+                    var hue = modifier.GetFloat(2, 0f);
+                    var sat = modifier.GetFloat(3, 0f);
+                    var val = modifier.GetFloat(4, 0f);
 
-                modifier.reference.runtimeObject.visualObject.SetColor(RTMath.Lerp(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
+                    modifier.reference.runtimeObject.visualObject.SetColor(RTMath.Lerp(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
+                });
             },
             "lerpColorOther" => modifier =>
             {
@@ -3447,19 +3560,23 @@ namespace BetterLegacy.Core.Helpers
                 if (list.IsEmpty())
                     return;
 
-                var multiply = modifier.GetFloat(0, 0f);
-                var index = modifier.GetInt(2, 0);
-                var hue = modifier.GetFloat(3, 0f);
-                var sat = modifier.GetFloat(4, 0f);
-                var val = modifier.GetFloat(5, 0f);
-
-                var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val);
-                for (int i = 0; i < list.Count; i++)
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var bm = list[i];
-                    if (bm.runtimeObject && bm.runtimeObject.visualObject)
-                        bm.runtimeObject.visualObject.SetColor(RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), color, multiply));
-                }
+                    var multiply = modifier.GetFloat(0, 0f);
+                    var index = modifier.GetInt(2, 0);
+                    var hue = modifier.GetFloat(3, 0f);
+                    var sat = modifier.GetFloat(4, 0f);
+                    var val = modifier.GetFloat(5, 0f);
+
+                    var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val);
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        var bm = list[i];
+                        if (bm.runtimeObject && bm.runtimeObject.visualObject)
+                            bm.runtimeObject.visualObject.SetColor(RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), color, multiply));
+                    }
+                });
             },
             "addColorPlayerDistance" => modifier =>
             {
@@ -3467,18 +3584,22 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || !levelObject || !levelObject.visualObject.gameObject)
                     return;
 
-                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
 
-                if (!player.Player || !player.Player.rb)
-                    return;
+                    if (!player.Player || !player.Player.rb)
+                        return;
 
-                var offset = modifier.GetFloat(0, 0f);
-                var index = modifier.GetInt(1, 0);
-                var multiply = modifier.GetFloat(2, 0);
+                    var offset = modifier.GetFloat(0, 0f);
+                    var index = modifier.GetInt(1, 0);
+                    var multiply = modifier.GetFloat(2, 0);
 
-                var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.gameObject.transform.position);
+                    var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.gameObject.transform.position);
 
-                levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(index) * -(distance * multiply - offset));
+                    levelObject.visualObject.SetColor(levelObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(index) * -(distance * multiply - offset));
+                });
             },
             "lerpColorPlayerDistance" => modifier =>
             {
@@ -3486,71 +3607,95 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || !levelObject || !levelObject.visualObject.gameObject)
                     return;
 
-                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.gameObject.transform.position);
 
-                if (!player.Player || !player.Player.rb)
-                    return;
+                    if (!player.Player || !player.Player.rb)
+                        return;
 
-                var offset = modifier.GetFloat(0, 0f);
-                var index = modifier.GetInt(1, 0);
-                var multiply = modifier.GetFloat(2, 0f);
-                var opacity = modifier.GetFloat(3, 0f);
-                var hue = modifier.GetFloat(4, 0f);
-                var sat = modifier.GetFloat(5, 0f);
-                var val = modifier.GetFloat(6, 0f);
+                    var offset = modifier.GetFloat(0, 0f);
+                    var index = modifier.GetInt(1, 0);
+                    var multiply = modifier.GetFloat(2, 0f);
+                    var opacity = modifier.GetFloat(3, 0f);
+                    var hue = modifier.GetFloat(4, 0f);
+                    var sat = modifier.GetFloat(5, 0f);
+                    var val = modifier.GetFloat(6, 0f);
 
-                var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.gameObject.transform.position);
+                    var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.gameObject.transform.position);
 
-                levelObject.visualObject.SetColor(Color.Lerp(levelObject.visualObject.GetPrimaryColor(),
-                                LSColors.fadeColor(CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
-                                -(distance * multiply - offset)));
+                    levelObject.visualObject.SetColor(Color.Lerp(levelObject.visualObject.GetPrimaryColor(),
+                                    LSColors.fadeColor(CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
+                                    -(distance * multiply - offset)));
+                });
             },
 
             // opacity
             "setAlpha" => modifier =>
             {
-                if (modifier.reference && modifier.reference.runtimeObject)
-                    modifier.reference.runtimeObject.visualObject.SetColor(LSColors.fadeColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    if (modifier.reference && modifier.reference.runtimeObject)
+                        modifier.reference.runtimeObject.visualObject.SetColor(LSColors.fadeColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
+                });
             },
             "setOpacity" => modifier =>
             {
-                if (modifier.reference && modifier.reference.runtimeObject)
-                    modifier.reference.runtimeObject.visualObject.SetColor(LSColors.fadeColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    if (modifier.reference && modifier.reference.runtimeObject)
+                        modifier.reference.runtimeObject.visualObject.SetColor(LSColors.fadeColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), modifier.GetFloat(0, 1f)));
+                });
             },
             "setAlphaOther" => modifier =>
             {
-                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-
-                if (list.IsEmpty())
-                    return;
-
-                var num = modifier.GetFloat(0, 1f);
-                foreach (var bm in list)
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    if (bm.runtimeObject && bm.runtimeObject.visualObject)
-                        bm.runtimeObject.visualObject.SetColor(LSColors.fadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), num));
-                }
+                    var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
+
+                    if (list.IsEmpty())
+                        return;
+
+                    var num = modifier.GetFloat(0, 1f);
+                    foreach (var bm in list)
+                    {
+                        if (bm.runtimeObject && bm.runtimeObject.visualObject)
+                            bm.runtimeObject.visualObject.SetColor(LSColors.fadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), num));
+                    }
+                });
             },
             "setOpacityOther" => modifier =>
             {
-                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-
-                if (list.IsEmpty())
-                    return;
-
-                var num = modifier.GetFloat(0, 1f);
-                foreach (var bm in list)
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    if (bm.runtimeObject && bm.runtimeObject.visualObject)
-                        bm.runtimeObject.visualObject.SetColor(LSColors.fadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), num));
-                }
+                    var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
+
+                    if (list.IsEmpty())
+                        return;
+
+                    var num = modifier.GetFloat(0, 1f);
+                    foreach (var bm in list)
+                    {
+                        if (bm.runtimeObject && bm.runtimeObject.visualObject)
+                            bm.runtimeObject.visualObject.SetColor(LSColors.fadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), num));
+                    }
+                });
             },
 
             // copy
             "copyColor" => modifier =>
             {
-                if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject) && modifier.reference.runtimeObject && beatmapObject.runtimeObject)
-                    CopyColor(modifier.reference.runtimeObject, beatmapObject.runtimeObject, modifier.GetBool(1, true), modifier.GetBool(2, true));
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject beatmapObject) && modifier.reference.runtimeObject && beatmapObject.runtimeObject)
+                        CopyColor(modifier.reference.runtimeObject, beatmapObject.runtimeObject, modifier.GetBool(1, true), modifier.GetBool(2, true));
+                });
             },
             "copyColorOther" => modifier =>
             {
@@ -3559,19 +3704,23 @@ namespace BetterLegacy.Core.Helpers
                 if (list.IsEmpty())
                     return;
 
-                var levelObject = modifier.reference.runtimeObject;
-
-                var applyColor1 = modifier.GetBool(1, true);
-                var applyColor2 = modifier.GetBool(2, true);
-
-                foreach (var bm in list)
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var otherLevelObject = bm.runtimeObject;
-                    if (!otherLevelObject)
-                        continue;
+                    var levelObject = modifier.reference.runtimeObject;
 
-                    CopyColor(otherLevelObject, levelObject, applyColor1, applyColor2);
-                }
+                    var applyColor1 = modifier.GetBool(1, true);
+                    var applyColor2 = modifier.GetBool(2, true);
+
+                    foreach (var bm in list)
+                    {
+                        var otherLevelObject = bm.runtimeObject;
+                        if (!otherLevelObject)
+                            continue;
+
+                        CopyColor(otherLevelObject, levelObject, applyColor1, applyColor2);
+                    }
+                });
             },
             "applyColorGroup" => modifier =>
             {
@@ -3582,112 +3731,116 @@ namespace BetterLegacy.Core.Helpers
                 if (list.IsEmpty() || !cachedSequences)
                     return;
 
-                var time = RTLevel.Current.CurrentTime - beatmapObject.StartTime;
-                Color color;
-                Color secondColor;
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.time < time);
-
-                    if (prevKFIndex < 0)
-                        return;
-
-                    var prevKF = beatmapObject.events[3][prevKFIndex];
-                    var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
-                    var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
-                    int prevcolor = (int)prevKF.values[0];
-                    int nextColor = (int)nextKF.values[0];
-                    var lerp = RTMath.Lerp(0f, 1f, easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 1f;
-
-                    color = Color.Lerp(
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
-                        lerp);
-
-                    lerp = RTMath.Lerp(prevKF.values[1], nextKF.values[1], easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 0f;
-
-                    color = LSColors.fadeColor(color, -(lerp - 1f));
-
-                    var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
-                    var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
-                    var lerpVal = RTMath.Lerp(prevKF.values[4], nextKF.values[4], easing);
-
-                    if (float.IsNaN(lerpHue))
-                        lerpHue = nextKF.values[2];
-                    if (float.IsNaN(lerpSat))
-                        lerpSat = nextKF.values[3];
-                    if (float.IsNaN(lerpVal))
-                        lerpVal = nextKF.values[4];
-
-                    color = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
-
-                    prevcolor = (int)prevKF.values[5];
-                    nextColor = (int)nextKF.values[5];
-                    lerp = RTMath.Lerp(0f, 1f, easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 1f;
-
-                    secondColor = Color.Lerp(
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
-                        lerp);
-
-                    lerp = RTMath.Lerp(prevKF.values[6], nextKF.values[6], easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 0f;
-
-                    secondColor = LSColors.fadeColor(secondColor, -(lerp - 1f));
-
-                    lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
-                    lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
-                    lerpVal = RTMath.Lerp(prevKF.values[9], nextKF.values[9], easing);
-
-                    if (float.IsNaN(lerpHue))
-                        lerpHue = nextKF.values[7];
-                    if (float.IsNaN(lerpSat))
-                        lerpSat = nextKF.values[8];
-                    if (float.IsNaN(lerpVal))
-                        lerpVal = nextKF.values[9];
-
-                    secondColor = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
-                } // assign
-
-                var type = modifier.GetInt(1, 0);
-                var axis = modifier.GetInt(2, 0);
-
-                var isEmpty = modifier.reference.objectType == BeatmapObject.ObjectType.Empty;
-
-                float t = !isEmpty ? type switch
-                {
-                    0 => axis == 0 ? cachedSequences.PositionSequence.Value.x : axis == 1 ? cachedSequences.PositionSequence.Value.y : cachedSequences.PositionSequence.Value.z,
-                    1 => axis == 0 ? cachedSequences.ScaleSequence.Value.x : cachedSequences.ScaleSequence.Value.y,
-                    2 => cachedSequences.RotationSequence.Value,
-                    _ => 0f
-                } : type switch
-                {
-                    0 => axis == 0 ? cachedSequences.PositionSequence.Interpolate(time).x : axis == 1 ? cachedSequences.PositionSequence.Interpolate(time).y : cachedSequences.PositionSequence.Interpolate(time).z,
-                    1 => axis == 0 ? cachedSequences.ScaleSequence.Interpolate(time).x : cachedSequences.ScaleSequence.Interpolate(time).y,
-                    2 => cachedSequences.RotationSequence.Interpolate(time),
-                    _ => 0f
-                };
-
-                foreach (var bm in list)
-                {
-                    var otherLevelObject = bm.runtimeObject;
-                    if (!otherLevelObject)
-                        continue;
-
-                    if (!otherLevelObject.visualObject.isGradient)
-                        otherLevelObject.visualObject.SetColor(Color.Lerp(otherLevelObject.visualObject.GetPrimaryColor(), color, t));
-                    else if (otherLevelObject.visualObject is SolidObject solidObject)
+                    var time = RTLevel.Current.CurrentTime - beatmapObject.StartTime;
+                    Color color;
+                    Color secondColor;
                     {
-                        var colors = solidObject.GetColors();
-                        solidObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
+                        var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.time < time);
+
+                        if (prevKFIndex < 0)
+                            return;
+
+                        var prevKF = beatmapObject.events[3][prevKFIndex];
+                        var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
+                        var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
+                        int prevcolor = (int)prevKF.values[0];
+                        int nextColor = (int)nextKF.values[0];
+                        var lerp = RTMath.Lerp(0f, 1f, easing);
+                        if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                            lerp = 1f;
+
+                        color = Color.Lerp(
+                            CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
+                            CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                            lerp);
+
+                        lerp = RTMath.Lerp(prevKF.values[1], nextKF.values[1], easing);
+                        if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                            lerp = 0f;
+
+                        color = LSColors.fadeColor(color, -(lerp - 1f));
+
+                        var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
+                        var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
+                        var lerpVal = RTMath.Lerp(prevKF.values[4], nextKF.values[4], easing);
+
+                        if (float.IsNaN(lerpHue))
+                            lerpHue = nextKF.values[2];
+                        if (float.IsNaN(lerpSat))
+                            lerpSat = nextKF.values[3];
+                        if (float.IsNaN(lerpVal))
+                            lerpVal = nextKF.values[4];
+
+                        color = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+
+                        prevcolor = (int)prevKF.values[5];
+                        nextColor = (int)nextKF.values[5];
+                        lerp = RTMath.Lerp(0f, 1f, easing);
+                        if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                            lerp = 1f;
+
+                        secondColor = Color.Lerp(
+                            CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
+                            CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                            lerp);
+
+                        lerp = RTMath.Lerp(prevKF.values[6], nextKF.values[6], easing);
+                        if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                            lerp = 0f;
+
+                        secondColor = LSColors.fadeColor(secondColor, -(lerp - 1f));
+
+                        lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
+                        lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
+                        lerpVal = RTMath.Lerp(prevKF.values[9], nextKF.values[9], easing);
+
+                        if (float.IsNaN(lerpHue))
+                            lerpHue = nextKF.values[7];
+                        if (float.IsNaN(lerpSat))
+                            lerpSat = nextKF.values[8];
+                        if (float.IsNaN(lerpVal))
+                            lerpVal = nextKF.values[9];
+
+                        secondColor = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+                    } // assign
+
+                    var type = modifier.GetInt(1, 0);
+                    var axis = modifier.GetInt(2, 0);
+
+                    var isEmpty = modifier.reference.objectType == BeatmapObject.ObjectType.Empty;
+
+                    float t = !isEmpty ? type switch
+                    {
+                        0 => axis == 0 ? cachedSequences.PositionSequence.Value.x : axis == 1 ? cachedSequences.PositionSequence.Value.y : cachedSequences.PositionSequence.Value.z,
+                        1 => axis == 0 ? cachedSequences.ScaleSequence.Value.x : cachedSequences.ScaleSequence.Value.y,
+                        2 => cachedSequences.RotationSequence.Value,
+                        _ => 0f
+                    } : type switch
+                    {
+                        0 => axis == 0 ? cachedSequences.PositionSequence.Interpolate(time).x : axis == 1 ? cachedSequences.PositionSequence.Interpolate(time).y : cachedSequences.PositionSequence.Interpolate(time).z,
+                        1 => axis == 0 ? cachedSequences.ScaleSequence.Interpolate(time).x : cachedSequences.ScaleSequence.Interpolate(time).y,
+                        2 => cachedSequences.RotationSequence.Interpolate(time),
+                        _ => 0f
+                    };
+
+                    foreach (var bm in list)
+                    {
+                        var otherLevelObject = bm.runtimeObject;
+                        if (!otherLevelObject)
+                            continue;
+
+                        if (!otherLevelObject.visualObject.isGradient)
+                            otherLevelObject.visualObject.SetColor(Color.Lerp(otherLevelObject.visualObject.GetPrimaryColor(), color, t));
+                        else if (otherLevelObject.visualObject is SolidObject solidObject)
+                        {
+                            var colors = solidObject.GetColors();
+                            solidObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
+                        }
                     }
-                }
+                });
             },
 
             // hex code
@@ -3697,32 +3850,9 @@ namespace BetterLegacy.Core.Helpers
                 if (!modifier.reference || !levelObject)
                     return;
 
-                if (!levelObject.visualObject.isGradient)
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
                 {
-                    var color = levelObject.visualObject.GetPrimaryColor();
-                    levelObject.visualObject.SetColor(string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), color.a));
-                }
-                else if (levelObject.visualObject is SolidObject solidObject)
-                {
-                    var colors = solidObject.GetColors();
-                    solidObject.SetColor(
-                        string.IsNullOrEmpty(modifier.GetValue(0)) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), colors.startColor.a),
-                        string.IsNullOrEmpty(modifier.GetValue(1)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(1)), colors.endColor.a));
-                }
-            },
-            "setColorHexOther" => modifier =>
-            {
-                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
-
-                if (list.IsEmpty())
-                    return;
-
-                foreach (var bm in list)
-                {
-                    var levelObject = bm.runtimeObject;
-                    if (!levelObject)
-                        continue;
-
                     if (!levelObject.visualObject.isGradient)
                     {
                         var color = levelObject.visualObject.GetPrimaryColor();
@@ -3733,9 +3863,40 @@ namespace BetterLegacy.Core.Helpers
                         var colors = solidObject.GetColors();
                         solidObject.SetColor(
                             string.IsNullOrEmpty(modifier.GetValue(0)) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), colors.startColor.a),
-                            string.IsNullOrEmpty(modifier.GetValue(2)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(2)), colors.endColor.a));
+                            string.IsNullOrEmpty(modifier.GetValue(1)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(1)), colors.endColor.a));
                     }
-                }
+                });
+            },
+            "setColorHexOther" => modifier =>
+            {
+                var list = !modifier.prefabInstanceOnly ? GameData.Current.FindObjectsWithTag(modifier.GetValue(1)) : GameData.Current.FindObjectsWithTag(modifier.reference, modifier.GetValue(1));
+
+                if (list.IsEmpty())
+                    return;
+
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    foreach (var bm in list)
+                    {
+                        var levelObject = bm.runtimeObject;
+                        if (!levelObject)
+                            continue;
+
+                        if (!levelObject.visualObject.isGradient)
+                        {
+                            var color = levelObject.visualObject.GetPrimaryColor();
+                            levelObject.visualObject.SetColor(string.IsNullOrEmpty(modifier.value) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), color.a));
+                        }
+                        else if (levelObject.visualObject is SolidObject solidObject)
+                        {
+                            var colors = solidObject.GetColors();
+                            solidObject.SetColor(
+                                string.IsNullOrEmpty(modifier.GetValue(0)) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(0)), colors.startColor.a),
+                                string.IsNullOrEmpty(modifier.GetValue(2)) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.GetValue(2)), colors.endColor.a));
+                        }
+                    }
+                });
             },
 
             #endregion

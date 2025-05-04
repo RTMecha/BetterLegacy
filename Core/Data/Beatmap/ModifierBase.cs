@@ -55,9 +55,20 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Trigger Settings
 
+        /// <summary>
+        /// If the trigger result is the opposite.
+        /// </summary>
         public bool not = false;
 
+        /// <summary>
+        /// If the trigger can check regardless of previous triggers.
+        /// </summary>
         public bool elseIf;
+
+        /// <summary>
+        /// Max amount of times the modifier can run.
+        /// </summary>
+        public int triggerCount;
 
         #endregion
 
@@ -77,6 +88,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool triggered = false;
         public bool active = false;
         public bool setTimer = false;
+        public int runCount;
 
         #endregion
 

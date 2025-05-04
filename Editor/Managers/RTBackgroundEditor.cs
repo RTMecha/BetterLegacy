@@ -1865,6 +1865,25 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(constantText);
                 EditorThemeManager.ApplyToggle(constantToggle);
 
+                var count = ObjectModifiersEditor.inst.NumberGenerator(layout, "Run Count", modifier.triggerCount.ToString(), _val =>
+                {
+                    if (int.TryParse(_val, out int num))
+                        modifier.triggerCount = Mathf.Clamp(num, 0, int.MaxValue);
+
+                    try
+                    {
+                        modifier.Inactive?.Invoke(modifier);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+                    modifier.active = false;
+                }, out InputField countField);
+
+                TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
+                TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
+
                 if (modifier.type == ModifierBase.Type.Trigger)
                 {
                     var not = booleanBar.Duplicate(layout, "Not");

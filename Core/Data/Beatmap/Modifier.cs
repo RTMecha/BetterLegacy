@@ -89,8 +89,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 modifier.elseIf = jn["else"].AsBool;
             }
 
+            modifier.triggerCount = jn["count"].AsInt;
             modifier.constant = jn["const"].AsBool;
             modifier.prefabInstanceOnly = jn["po"].AsBool;
+
+            modifier.collapse = jn["collapse"].AsBool;
 
             modifier.commands.Clear();
             if (jn["name"] != null)
@@ -104,15 +107,15 @@ namespace BetterLegacy.Core.Data.Beatmap
                         modifier.commands.Add(jn["values"][i]);
                 }
 
+                ModifiersHelper.AssignModifierActions(modifier);
+
                 return modifier;
             }
 
             for (int i = 0; i < jn["commands"].Count; i++)
                 modifier.commands.Add(((string)jn["commands"][i]).Replace("{{colon}}", ":"));
 
-            modifier.value = string.IsNullOrEmpty(jn["value"]) ? "" : jn["value"];
-
-            modifier.collapse = jn["collapse"].AsBool;
+            modifier.value = string.IsNullOrEmpty(jn["value"]) ? string.Empty : jn["value"];
 
             ModifiersHelper.AssignModifierActions(modifier);
 
@@ -130,6 +133,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (elseIf)
                 jn["else"] = elseIf;
+
+            if (triggerCount > 0)
+                jn["count"] = triggerCount;
 
             for (int i = 0; i < commands.Count; i++)
                 jn["commands"][i] = commands[i];
