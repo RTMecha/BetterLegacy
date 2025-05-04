@@ -34,6 +34,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool prefabInstanceOnly = false;
 
         /// <summary>
+        /// If the modifier group functions should only target alive objects.
+        /// </summary>
+        public bool groupAlive;
+
+        /// <summary>
         /// If the modifier should be collapsed in the editor.
         /// </summary>
         public bool collapse;
