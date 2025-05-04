@@ -82,7 +82,10 @@ namespace BetterLegacy.Core.Runtime.Objects
         public void Interpolate(float time)
         {
             if (backgroundObject.active && top && top.gameObject.activeSelf != backgroundObject.Enabled)
-                top.gameObject.SetActive(backgroundObject.Enabled && !hidden);
+                top.gameObject.SetActive(backgroundObject.Enabled);
+
+            if (hidden)
+                top.gameObject.SetActive(false);
 
             var gameObject = BaseObject;
 
