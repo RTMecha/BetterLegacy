@@ -45,6 +45,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         public Vector3 PrefabOffsetScale { get => prefabOffsetScale; set => prefabOffsetScale = value; }
         public Vector3 PrefabOffsetRotation { get => prefabOffsetRotation; set => prefabOffsetRotation = value; }
 
+        public bool hidden;
+
         public Transform top;
 
         public List<Renderer> renderers = new List<Renderer>();
@@ -71,18 +73,20 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
-            if (top)
-                top.gameObject.SetActive(active);
+            var gameObject = BaseObject;
+
+            if (gameObject)
+                gameObject.SetActive(active);
         }
 
         public void Interpolate(float time)
         {
+            if (backgroundObject.active && top && top.gameObject.activeSelf != backgroundObject.Enabled)
+                top.gameObject.SetActive(backgroundObject.Enabled && !hidden);
+
             var gameObject = BaseObject;
 
-            if (backgroundObject.active && top && top.gameObject.activeSelf != backgroundObject.Enabled)
-                top.gameObject.SetActive(backgroundObject.Enabled);
-
-            if (!backgroundObject.active || !backgroundObject.Enabled || !gameObject)
+            if (!backgroundObject.active || !backgroundObject.Enabled || hidden || !gameObject)
                 return;
 
             if (top)
