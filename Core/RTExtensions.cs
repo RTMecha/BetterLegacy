@@ -840,6 +840,13 @@ namespace BetterLegacy.Core
         public static bool IsEmpty<T>(this List<T> list) => list.Count < 1;
 
         /// <summary>
+        /// Checks if a queue contains no elements.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="Queue{T}"/>.</typeparam>
+        /// <returns>Returns true if the queue contains elements.</returns>
+        public static bool IsEmpty<T>(this Queue<T> queue) => queue.Count < 1;
+
+        /// <summary>
         /// Checks if an array contains no elements.
         /// </summary>
         /// <typeparam name="T">Type of the array.</typeparam>
