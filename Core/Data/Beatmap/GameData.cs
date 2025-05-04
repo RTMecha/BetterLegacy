@@ -1778,32 +1778,68 @@ namespace BetterLegacy.Core.Data.Beatmap
             return 0;
         }
 
+        /// <summary>
+        /// Tries to get an object with a modifier's tag group.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <param name="result">Object result.</param>
+        /// <returns>Returns true if an object was found, otherwise returns false.</returns>
         public bool TryFindObjectWithTag(Modifier<BeatmapObject> modifier, string tag, out BeatmapObject result)
         {
             result = FindObjectWithTag(modifier, tag);
             return result;
         }
 
-        public BeatmapObject FindObjectWithTag(string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
+        /// <summary>
+        /// Gets an object with a tag group.
+        /// </summary>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns the found object.</returns>
+        public BeatmapObject FindObjectWithTag(string tag) => FindObjectWithTag(beatmapObjects, tag);
 
+        /// <summary>
+        /// Gets an object with a modifier's tag group.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns the found object.</returns>
         public BeatmapObject FindObjectWithTag(Modifier<BeatmapObject> modifier, string tag) => modifier.prefabInstanceOnly && !string.IsNullOrEmpty(modifier.reference.prefabInstanceID) ?
-                beatmapObjects.Find(x => x.tags.Contains(tag) && x.prefabID == modifier.reference.prefabID && x.prefabInstanceID == modifier.reference.prefabInstanceID) :
-                beatmapObjects.Find(x => x.tags.Contains(tag));
+                beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == modifier.reference.prefabID && x.prefabInstanceID == modifier.reference.prefabInstanceID) :
+                beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
 
+        /// <summary>
+        /// Gets an object with a tag group.
+        /// </summary>
+        /// <param name="beatmapObjects">Objects list to search.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns the found object.</returns>
         public BeatmapObject FindObjectWithTag(List<BeatmapObject> beatmapObjects, string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
 
-        public BeatmapObject FindObjectWithTag(List<BeatmapObject> beatmapObjects, BeatmapObject beatmapObject, string tag)
-            => beatmapObjects.Find(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
+        /// <summary>
+        /// Gets a list of objects with a tag group.
+        /// </summary>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns a list of found objects.</returns>
+        public List<BeatmapObject> FindObjectsWithTag(string tag) => FindObjectsWithTag(beatmapObjects, tag);
 
-        public List<BeatmapObject> FindObjectsWithTag(string tag) => Current.beatmapObjects.FindAll(x => x.tags.Contains(tag));
+        /// <summary>
+        /// Returns a list of objects with a modifier's tag group.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns a list of found objects.</returns>
+        public List<BeatmapObject> FindObjectsWithTag(Modifier<BeatmapObject> modifier, string tag) => modifier.prefabInstanceOnly && !string.IsNullOrEmpty(modifier.reference.prefabInstanceID) ?
+                beatmapObjects.FindAll(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == modifier.reference.prefabID && x.prefabInstanceID == modifier.reference.prefabInstanceID) :
+                beatmapObjects.FindAll(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
 
-        public List<BeatmapObject> FindObjectsWithTag(BeatmapObject beatmapObject, string tag)
-            => beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
-
+        /// <summary>
+        /// Gets a list of objects with a tag group.
+        /// </summary>
+        /// <param name="beatmapObjects">Objects list to search.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns a list of found objects.</returns>
         public List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, string tag) => beatmapObjects.FindAll(x => x.tags.Contains(tag));
-
-        public List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, BeatmapObject beatmapObject, string tag)
-            => beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
 
         public static float InterpolateFloatKeyframes(List<EventKeyframe> eventKeyframes, float time, int valueIndex, bool isLerper = true)
         {
