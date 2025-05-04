@@ -1,4 +1,9 @@
-﻿# snapshot-2025.5.5 - (pre-1.7.0) > [May 4, 2025]
+﻿# ???
+
+## Fixes
+- Fixed game throwing an error if the checkpoint's name was null.
+
+# snapshot-2025.5.5 - (pre-1.7.0) > [May 4, 2025]
 
 ## Features
 ### Core
