@@ -1,5 +1,9 @@
 ﻿# ???
 
+## Features
+### Editor
+- Added Hide Selection keybinds. These allow you to hide Beatmap Objects, Prefab Objects and Background Objects in the editor.
+
 ## Fixes
 - Fixed game throwing an error if the checkpoint's name was null.
 
