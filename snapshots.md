@@ -1,13 +1,24 @@
-﻿# ???
+﻿# snapshot-2025.5.5 - (pre-1.7.0) > [May 4, 2025]
 
 ## Features
+### Core
+- Added "Run Count" to modifiers. This acts similarly to constant, except the modifier can only run a set amount of times before stopping.
+
 ### Editor
 - Added Config Manager > Editor > Data > Overwrite Imported Images setting. With it on, imported images overwrite existing image files.
+
+## Changes
+### Core
+- Modifiers now run before everything else per-tick, but in some situations they run after.
+- Trigger modifiers with constant on should now behave as expected. (Only triggers once)
 
 ## Fixes
 - Fixed theme updating not updating the stored theme.
 - Fixed file drag and drop not checking for singular images.
 - Fixed Multi BG indexing not working in some cases.
+- Fixed BG modifiers from previous versions not parsing correctly.
+- Fixed SetSongTimeAutokill not properly updating objects.
+- Fixed switching gradients not updating the color sequence.
 
 # snapshot-2025.5.4 - (pre-1.7.0) > [May 2, 2025]
 Hotfix snapshot
