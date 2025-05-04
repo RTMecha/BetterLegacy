@@ -68,7 +68,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             not = orig.not,
             elseIf = orig.elseIf,
             constant = orig.constant,
+            triggerCount = orig.triggerCount,
+
             prefabInstanceOnly = orig.prefabInstanceOnly,
+            groupAlive = orig.groupAlive,
+
             collapse = orig.collapse,
 
             Action = orig.Action,
@@ -92,6 +96,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             modifier.triggerCount = jn["count"].AsInt;
             modifier.constant = jn["const"].AsBool;
             modifier.prefabInstanceOnly = jn["po"].AsBool;
+            modifier.groupAlive = jn["ga"].AsBool;
 
             modifier.collapse = jn["collapse"].AsBool;
 
