@@ -126,6 +126,16 @@ namespace BetterLegacy.Core.Runtime
         public TickRunner threadedTickRunner;
 
         /// <summary>
+        /// Queue of actions to run before the tick starts.
+        /// </summary>
+        public Queue<Action> preTick = new Queue<Action>();
+
+        /// <summary>
+        /// Queue of actions to run after the tick ends.
+        /// </summary>
+        public Queue<Action> postTick = new Queue<Action>();
+
+        /// <summary>
         /// Initializes the runtime level.
         /// </summary>
         public static void Init()
@@ -243,11 +253,17 @@ namespace BetterLegacy.Core.Runtime
                 previousAudioTime = smoothedTime;
             }
 
+            while (preTick != null && !preTick.IsEmpty())
+                preTick.Dequeue()?.Invoke();
+
+            OnObjectModifiersTick(); // modifiers update third
+            OnBackgroundModifiersTick(); // bg modifiers update fifth
             OnEventsTick(); // events need to update first
             OnBeatmapObjectsTick(); // objects update second
-            OnObjectModifiersTick(); // modifiers update third
             OnBackgroundObjectsTick(); // bgs update fourth
-            OnBackgroundModifiersTick(); // bg modifiers update fifth
+
+            while (postTick != null && !postTick.IsEmpty())
+                postTick.Dequeue()?.Invoke();
         }
 
         /// <summary>
@@ -265,6 +281,9 @@ namespace BetterLegacy.Core.Runtime
 
             threadedTickRunner?.Dispose();
             threadedTickRunner = null;
+
+            preTick.Clear();
+            postTick.Clear();
         }
 
         /// <summary>
@@ -599,12 +618,16 @@ namespace BetterLegacy.Core.Runtime
             {
                 case ObjectContext.RENDERING: {
                         if (!runtimeObject)
+                        {
+                            RecacheSequences(beatmapObject);
                             break;
+                        }
 
                         if (runtimeObject.visualObject is SolidObject solidObject)
                             solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, false, beatmapObject.gradientScale, beatmapObject.gradientRotation);
                         else
                             runtimeObject.visualObject.SetRenderType((int)beatmapObject.renderLayerType);
+                        RecacheSequences(beatmapObject);
 
                         break;
                     } // Material
@@ -810,7 +833,7 @@ namespace BetterLegacy.Core.Runtime
                         }
 
                         runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
-                        RecacheSequences(beatmapObject, true, true);
+                        RecacheSequences(beatmapObject);
 
                         break;
                     } // Keyframes
