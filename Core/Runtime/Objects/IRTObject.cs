@@ -28,7 +28,7 @@
         /// <summary>
         /// Sets the active state of the object.
         /// </summary>
-        /// <param name="active"></param>
+        /// <param name="active">Active state.</param>
         public void SetActive(bool active);
 
         /// <summary>
