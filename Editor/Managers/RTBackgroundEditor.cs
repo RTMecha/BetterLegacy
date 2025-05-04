@@ -1881,6 +1881,7 @@ namespace BetterLegacy.Editor.Managers
                     modifier.active = false;
                 }, out InputField countField);
 
+                TooltipHelper.AssignTooltip(countField.gameObject, "Run Count Modifier");
                 TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
                 TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
 
