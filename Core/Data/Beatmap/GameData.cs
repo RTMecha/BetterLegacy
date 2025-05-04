@@ -89,7 +89,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.Speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != PrefabObject.AutoKillType.Regular);
+        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.Speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != PrefabAutoKillType.Regular);
 
         #endregion
 

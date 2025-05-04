@@ -1096,7 +1096,7 @@ namespace BetterLegacy.Editor.Managers
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
 
-                            prefabObject.autoKillType = PrefabObject.AutoKillType.SongTime;
+                            prefabObject.autoKillType = PrefabAutoKillType.SongTime;
                             prefabObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
                             prefabObject.editorData.collapse = true;
 

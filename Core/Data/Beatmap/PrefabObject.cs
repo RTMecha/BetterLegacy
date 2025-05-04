@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/>.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>
     {
         public PrefabObject() : base()
         {
@@ -79,11 +79,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public const float MAX_PREFAB_OBJECT_SPEED = 1000f;
 
         float startTime;
-        public float StartTime
-        {
-            get => startTime;
-            set => startTime = value;
-        }
+        public float StartTime { get => startTime; set => startTime = value; }
 
         int repeatCount;
         public int RepeatCount
@@ -106,16 +102,17 @@ namespace BetterLegacy.Core.Data.Beatmap
             set => speed = Mathf.Clamp(value, 0.01f, MAX_PREFAB_OBJECT_SPEED);
         }
 
-        public enum AutoKillType
-        {
-            Regular,
-            StartTimeOffset,
-            SongTime
-        }
+        public PrefabAutoKillType autoKillType = PrefabAutoKillType.Regular;
 
-        public AutoKillType autoKillType = AutoKillType.Regular;
+        public PrefabAutoKillType AutoKillType { get => autoKillType; set => autoKillType = value; }
 
         public float autoKillOffset = -1f;
+
+        public float AutoKillOffset { get => autoKillOffset; set => autoKillOffset = value; }
+
+        public bool Alive => false;
+
+        public float SpawnDuration => 0f;
 
         #endregion
 
@@ -255,7 +252,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 Speed = jn["sp"].AsFloat;
 
             if (jn["akt"] != null)
-                autoKillType = (AutoKillType)jn["akt"].AsInt;
+                autoKillType = (PrefabAutoKillType)jn["akt"].AsInt;
 
             if (jn["ako"] != null)
                 autoKillOffset = jn["ako"].AsFloat;
@@ -372,7 +369,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (!string.IsNullOrEmpty(parent))
                 jn["p"] = parent;
 
-            if (autoKillType != AutoKillType.Regular)
+            if (autoKillType != PrefabAutoKillType.Regular)
             {
                 jn["akt"] = (int)autoKillType;
 
@@ -454,13 +451,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 parentOffsets[index] = value;
         }
 
-        /// <summary>
-        /// Collapse is now taken into consideration for both the prefab and all objects inside.
-        /// </summary>
-        /// <param name="prefab">The Prefab reference</param>
-        /// <param name="collapse">If collapse should be taken into consideration.</param>
-        /// <returns></returns>
-        public float GetPrefabLifeLength(bool collapse = false)
+        public float GetObjectLifeLength(float offset = 0.0f, bool noAutokill = false, bool collapse = false)
         {
             if (collapse && editorData.collapse)
                 return 0.2f;

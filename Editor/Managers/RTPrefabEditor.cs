@@ -971,7 +971,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.AutokillDropdown.value = (int)prefabObject.autoKillType;
             PrefabObjectEditor.AutokillDropdown.onValueChanged.AddListener(_val =>
             {
-                prefabObject.autoKillType = (PrefabObject.AutoKillType)_val;
+                prefabObject.autoKillType = (PrefabAutoKillType)_val;
                 RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.AUTOKILL);
             });
 
@@ -982,7 +982,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                 {
                     prefabObject.autoKillOffset = num;
-                    if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular)
+                    if (prefabObject.autoKillType != PrefabAutoKillType.Regular)
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.AUTOKILL);
                 }
             });
@@ -992,10 +992,10 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabObjectEditor.AutokillSetButton.onClick.NewListener(() =>
             {
-                prefabObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset :
-                                                prefabObject.autoKillType == PrefabObject.AutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f;
+                prefabObject.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset :
+                                                prefabObject.autoKillType == PrefabAutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f;
 
-                if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular)
+                if (prefabObject.autoKillType != PrefabAutoKillType.Regular)
                     RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.AUTOKILL);
                 RenderPrefabObjectAutokill(prefabObject, prefab);
             });

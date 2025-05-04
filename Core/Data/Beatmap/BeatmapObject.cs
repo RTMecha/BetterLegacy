@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable
     {
         public BeatmapObject() : base() { }
 
@@ -125,28 +125,22 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Timing
 
         float startTime;
-        /// <summary>
-        /// Object spawn time.
-        /// </summary>
-        public float StartTime
-        {
-            get => startTime;
-            set => startTime = value;
-        }
+        public float StartTime { get => startTime; set => startTime = value; }
 
         /// <summary>
         /// Object despawn behavior.
         /// </summary>
         public AutoKillType autoKillType;
 
+        public AutoKillType AutoKillType { get => autoKillType; set => autoKillType = value; }
+
         /// <summary>
         /// Autokill time offset.
         /// </summary>
         public float autoKillOffset;
 
-        /// <summary>
-        /// Gets if the current audio time is within the lifespan of the object.
-        /// </summary>
+        public float AutoKillOffset { get => autoKillOffset; set => autoKillOffset = value; }
+
         public bool Alive
         {
             get
@@ -170,9 +164,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public float Length => events.Max(x => x.Max(x => x.time));
 
-        /// <summary>
-        /// Gets the total time the object is alive for.
-        /// </summary>
         public float SpawnDuration => GetObjectLifeLength(0.0f, true);
 
         #endregion
@@ -401,6 +392,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Rotates the objects' associated parent objects at this offset.
         /// </summary>
         public Vector3 rotationOffset = Vector3.zero;
+
+        public Vector3 PositionOffset { get => positionOffset; set => positionOffset = value; }
+        public Vector3 ScaleOffset { get => scaleOffset; set => scaleOffset = value; }
+        public Vector3 RotationOffset { get => rotationOffset; set => rotationOffset = value; }
 
         /// <summary>
         /// If the modifiers are currently active.
@@ -1322,16 +1317,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        /// <summary>
-        /// Gets the objects' lifetime based on its autokill type and offset.
-        /// </summary>
-        /// <param name="offset">Offset to apply to lifetime.</param>
-        /// <param name="oldStyle">If the autokill length should be considered.</param>
-        /// <param name="collapse">If the length should be collapsed.</param>
-        /// <returns>Returns the lifetime of the object.</returns>
-        public float GetObjectLifeLength(float offset = 0f, bool oldStyle = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
+        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
         {
-            AutoKillType.NoAutokill => oldStyle ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
+            AutoKillType.NoAutokill => noAutokill ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
             AutoKillType.LastKeyframe => Length + offset,
             AutoKillType.LastKeyframeOffset => Length + autoKillOffset + offset,
             AutoKillType.FixedTime => autoKillOffset,
@@ -1438,9 +1426,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Custom Interpolation
 
-        /// <summary>
-        /// Resets the transform offsets.
-        /// </summary>
         public void ResetOffsets()
         {
             reactivePositionOffset = Vector3.zero;
@@ -1451,16 +1436,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             rotationOffset = Vector3.zero;
         }
 
-        /// <summary>
-        /// Gets a transform offset from the object.
-        /// </summary>
-        /// <param name="type">
-        /// The type of transform value to get.<br></br>
-        /// 0 -> <see cref="positionOffset"/><br></br>
-        /// 1 -> <see cref="scaleOffset"/><br></br>
-        /// 2 -> <see cref="rotationOffset"/>
-        /// </param>
-        /// <returns>Returns a transform offset.</returns>
         public Vector3 GetTransformOffset(int type) => type switch
         {
             0 => positionOffset,
@@ -1468,16 +1443,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             _ => rotationOffset,
         };
 
-        /// <summary>
-        /// Sets a transform offset of the object.
-        /// </summary>
-        /// <param name="type">
-        /// The type of transform value to get.<br></br>
-        /// 0 -> <see cref="positionOffset"/><br></br>
-        /// 1 -> <see cref="scaleOffset"/><br></br>
-        /// 2 -> <see cref="rotationOffset"/>
-        /// </param>
-        /// <param name="value">Value to assign to the offset.</param>
         public void SetTransform(int type, Vector3 value)
         {
             switch (type)
@@ -1497,17 +1462,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        /// <summary>
-        /// Sets a transform offset of the object.
-        /// </summary>
-        /// <param name="type">
-        /// The type of transform value to get.<br></br>
-        /// 0 -> <see cref="positionOffset"/><br></br>
-        /// 1 -> <see cref="scaleOffset"/><br></br>
-        /// 2 -> <see cref="rotationOffset"/>
-        /// </param>
-        /// <param name="axis">The axis of the transform value to get.</param>
-        /// <param name="value">Value to assign to the offset's axis.</param>
         public void SetTransform(int type, int axis, float value)
         {
             switch (type)

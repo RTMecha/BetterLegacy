@@ -585,6 +585,13 @@ namespace BetterLegacy
         SongTime
     }
 
+    public enum PrefabAutoKillType
+    {
+        Regular,
+        StartTimeOffset,
+        SongTime
+    }
+
     #endregion
 
     #region Arcade / Game

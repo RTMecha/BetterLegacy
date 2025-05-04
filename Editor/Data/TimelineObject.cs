@@ -151,7 +151,7 @@ namespace BetterLegacy.Editor.Data
         public float Length => TimelineReference switch
         {
             TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().GetObjectLifeLength(collapse: true),
-            TimelineReferenceType.PrefabObject => GetData<PrefabObject>().GetPrefabLifeLength(true),
+            TimelineReferenceType.PrefabObject => GetData<PrefabObject>().GetObjectLifeLength(collapse: true),
             TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().GetObjectLifeLength(collapse: true),
             _ => 0f
         };
@@ -477,7 +477,7 @@ namespace BetterLegacy.Editor.Data
 
                 name = prefab.name;
                 startTime = prefabObject.StartTime + prefab.offset;
-                length = prefabObject.GetPrefabLifeLength(true);
+                length = prefabObject.GetObjectLifeLength(collapse: true);
 
                 image.type = Image.Type.Simple;
                 image.sprite = null;

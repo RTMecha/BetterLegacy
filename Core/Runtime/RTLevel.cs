@@ -1641,10 +1641,10 @@ namespace BetterLegacy.Core.Runtime
                         Debug.LogError($"{className}Failed to set event speed.\n{ex}");
                     }
 
-                    if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.offset + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
+                    if (prefabObject.autoKillType != PrefabAutoKillType.Regular && prefabObject.StartTime + prefab.offset + beatmapObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
                     {
                         beatmapObjectCopy.autoKillType = AutoKillType.SongTime;
-                        beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                        beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                     }
 
                     if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
@@ -1670,10 +1670,10 @@ namespace BetterLegacy.Core.Runtime
 
                     backgroundObjectCopy.StartTime = prefabObject.StartTime + prefab.offset + ((backgroundObjectCopy.StartTime + timeToAdd) / prefabObject.Speed);
 
-                    if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.offset + backgroundObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
+                    if (prefabObject.autoKillType != PrefabAutoKillType.Regular && prefabObject.StartTime + prefab.offset + backgroundObjectCopy.SpawnDuration > prefabObject.autoKillOffset)
                     {
                         backgroundObjectCopy.autoKillType = AutoKillType.SongTime;
-                        backgroundObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                        backgroundObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                     }
 
                     if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
