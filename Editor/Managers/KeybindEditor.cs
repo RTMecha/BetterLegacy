@@ -1110,7 +1110,7 @@ namespace BetterLegacy.Editor.Managers
                 }
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
-            RTLevel.Current?.RecalculateObjectStates();
+            RTLevel.Current?.Sort();
         }
 
         public static void OpenDialog(Keybind keybind)
