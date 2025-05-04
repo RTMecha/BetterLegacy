@@ -178,6 +178,8 @@ namespace BetterLegacy.Editor.Managers
             AddDefaultKeybind(ActionType.AddLayer, new Dictionary<string, string> { { "Layer", "-1" } }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageDown));
 
             AddDefaultKeybind(ActionType.SetSongTimeAutokill, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.K));
+            AddDefaultKeybind(ActionType.HideSelection, new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H));
+            AddDefaultKeybind(ActionType.UnhideHiddenObjects, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H));
 
             Save();
         }
@@ -932,6 +934,9 @@ namespace BetterLegacy.Editor.Managers
             AddTimelineBin, // 64
             RemoveTimelineBin, // 65
             SetTimelineBin, // 66
+            HideSelection, // 67
+            UnhideHiddenObjects, // 68
+            ToggleHideSelection, // 69
         }
 
         public static List<Action<Keybind>> KeybinderMethods { get; } = new List<Action<Keybind>>
@@ -1003,6 +1008,9 @@ namespace BetterLegacy.Editor.Managers
             AddTimelineBin, // 64
             RemoveTimelineBin, // 65
             SetTimelineBin, // 66
+            HideSelection, // 67
+            UnhideHiddenObjects, // 68
+            ToggleHideSelection, // 69
         };
 
         public static void CustomCode(Keybind keybind)
@@ -1849,6 +1857,151 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.SetBinCount(count);
         }
 
+        public static void HideSelection(Keybind keybind)
+        {
+            int hiddenCount = 0;
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty())
+                                break;
+
+                            beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(false);
+                            hiddenCount++;
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            foreach (var expanded in timelineObject.GetData<PrefabObject>().expandedObjects)
+                            {
+                                if (expanded is BeatmapObject beatmapObject && beatmapObject.runtimeObject && !beatmapObject.runtimeObject.parentObjects.IsEmpty())
+                                    beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(false);
+                                if (expanded is BackgroundObject backgroundObject && backgroundObject.runtimeObject)
+                                    backgroundObject.runtimeObject.hidden = true;
+                            }
+                            hiddenCount++;
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                            if (!backgroundObject.runtimeObject)
+                                break;
+
+                            backgroundObject.runtimeObject.hidden = true;
+                            hiddenCount++;
+
+                            break;
+                        }
+                }
+            }
+
+            EditorManager.inst.DisplayNotification($"Hidden [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
+        }
+
+        public static void UnhideHiddenObjects(Keybind keybind)
+        {
+            int hiddenCount = 0;
+            foreach (var timelineObject in EditorTimeline.inst.timelineObjects)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty() || beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf)
+                                break;
+
+                            beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(true);
+                            hiddenCount++;
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            bool unhide = false;
+                            foreach (var expanded in timelineObject.GetData<PrefabObject>().expandedObjects)
+                            {
+                                if (expanded is BeatmapObject beatmapObject && !beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf)
+                                {
+                                    beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(true);
+                                    unhide = true;
+                                }
+
+                                if (expanded is BackgroundObject backgroundObject && backgroundObject.runtimeObject && backgroundObject.runtimeObject.hidden)
+                                {
+                                    backgroundObject.runtimeObject.hidden = false;
+                                    unhide = true;
+                                }
+                            }
+
+                            if (unhide)
+                                hiddenCount++;
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                            if (!backgroundObject.runtimeObject || !backgroundObject.runtimeObject.hidden)
+                                break;
+
+                            backgroundObject.runtimeObject.hidden = false;
+                            hiddenCount++;
+
+                            break;
+                        }
+                }
+            }
+
+            EditorManager.inst.DisplayNotification($"Unhidden [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
+        }
+
+        public static void ToggleHideSelection(Keybind keybind)
+        {
+            int hiddenCount = 0;
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty())
+                                break;
+
+                            beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf);
+                            hiddenCount++;
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            foreach (var expanded in timelineObject.GetData<PrefabObject>().expandedObjects)
+                            {
+                                if (expanded is BeatmapObject beatmapObject && beatmapObject.runtimeObject && !beatmapObject.runtimeObject.parentObjects.IsEmpty())
+                                    beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf);
+                                if (expanded is BackgroundObject backgroundObject && backgroundObject.runtimeObject)
+                                    backgroundObject.runtimeObject.hidden = !backgroundObject.runtimeObject.hidden;
+                            }
+
+                            hiddenCount++;
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                            if (!backgroundObject.runtimeObject)
+                                break;
+
+                            backgroundObject.runtimeObject.hidden = !backgroundObject.runtimeObject.hidden;
+                            hiddenCount++;
+
+                            break;
+                        }
+                }
+            }
+
+            EditorManager.inst.DisplayNotification($"Toggled hidden state of [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
+        }
+
         #endregion
 
         #region Settings
@@ -1985,6 +2138,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 { "Count", "30" }
             }, // 66 (SetBinCount)
+            null, // 67
+            null, // 68
+            null, // 69
         };
 
         #endregion
