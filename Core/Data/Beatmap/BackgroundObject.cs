@@ -493,15 +493,20 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
                 var modifierJN = jn["modifiers"][i];
+
+                // this is for backwards compatibility due to modifiers having multiple lists previously.
                 if (modifierJN.IsArray)
                 {
                     orderModifiers = true;
+                    var list = new List<Modifier<BackgroundObject>>();
                     for (int j = 0; j < jn["modifiers"][i].Count; j++)
                     {
                         var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], this);
                         if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
-                            modifiers.Add(modifier);
+                            list.Add(modifier);
                     }
+                    list.Sort((a, b) => a.type.CompareTo(b.type));
+                    modifiers.AddRange(list);
                 }
                 else
                 {
