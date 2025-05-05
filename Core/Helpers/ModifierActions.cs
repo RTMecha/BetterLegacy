@@ -1,0 +1,5094 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using UnityEngine;
+
+using LSFunctions;
+
+using SimpleJSON;
+
+using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
+using BetterLegacy.Core.Runtime.Objects.Visual;
+using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Interfaces;
+
+// ignore naming styles since modifiers are named like this.
+#pragma warning disable IDE1006 // Naming Styles
+namespace BetterLegacy.Core.Helpers
+{
+    /// <summary>
+    /// Library of modifier actions.
+    /// </summary>
+    public static class ModifierActions
+    {
+        #region Audio
+
+        public static void setPitch<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.pitchOffset = modifier.GetFloat(0, 0f, variables);
+        }
+
+        public static void addPitch<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.pitchOffset += modifier.GetFloat(0, 0f, variables);
+        }
+
+        public static void setPitchMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IEvaluatable evaluatable)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            if (variables != null)
+            {
+                foreach (var variable in variables)
+                {
+                    if (float.TryParse(variable.Value, out float num))
+                        numberVariables[variable.Key] = num;
+                }
+            }
+
+            if (RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.pitchOffset = RTMath.Parse(modifier.GetValue(0, variables), numberVariables);
+        }
+
+        public static void addPitchMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IEvaluatable evaluatable)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            if (variables != null)
+            {
+                foreach (var variable in variables)
+                {
+                    if (float.TryParse(variable.Value, out float num))
+                        numberVariables[variable.Key] = num;
+                }
+            }
+
+            if (RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.pitchOffset += RTMath.Parse(modifier.GetValue(0, variables), numberVariables);
+        }
+
+        public static void setMusicTime<T>(Modifier<T> modifier, Dictionary<string, string> variables) => AudioManager.inst.SetMusicTime(modifier.GetFloat(0, 0f, variables));
+
+        public static void setMusicTimeMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IEvaluatable evaluatable)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            if (variables != null)
+            {
+                foreach (var variable in variables)
+                {
+                    if (float.TryParse(variable.Value, out float num))
+                        numberVariables[variable.Key] = num;
+                }
+            }
+
+            AudioManager.inst.SetMusicTime(RTMath.Parse(modifier.GetValue(0, variables), numberVariables));
+        }
+        
+        public static void setMusicTimeStartTime<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is ILifetime<AutoKillType> lifeTime)
+                AudioManager.inst.SetMusicTime(lifeTime.StartTime);
+        }
+        
+        public static void setMusicTimeAutokill<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is ILifetime<AutoKillType> lifeTime)
+                AudioManager.inst.SetMusicTime(lifeTime.StartTime + lifeTime.SpawnDuration);
+        }
+
+        public static void playSound<T>(Modifier<T> modifier, Dictionary<string, string> variables) where T : PAObject<T>, new()
+        {
+            if (modifier.reference is not PAObject<T> obj)
+                return;
+
+            var path = modifier.GetValue(0, variables);
+            var global = modifier.GetBool(1, false, variables);
+            var pitch = modifier.GetFloat(2, 1f, variables);
+            var vol = modifier.GetFloat(3, 1f, variables);
+            var loop = modifier.GetBool(4, false, variables);
+
+            if (GameData.Current && GameData.Current.assets.sounds.TryFind(x => x.name == path, out SoundAsset soundAsset) && soundAsset.audio)
+            {
+                ModifiersHelper.PlaySound(obj.id, soundAsset.audio, pitch, vol, loop);
+                return;
+            }
+
+            ModifiersHelper.GetSoundPath(obj.id, path, global, pitch, vol, loop);
+        }
+
+        public static void playSoundOnline<T>(Modifier<T> modifier, Dictionary<string, string> variables) where T : PAObject<T>, new()
+        {
+            if (modifier.reference is not PAObject<T> obj)
+                return;
+
+            var url = modifier.GetValue(0, variables);
+            var pitch = modifier.GetFloat(1, 1f, variables);
+            var vol = modifier.GetFloat(2, 1f, variables);
+            var loop = modifier.GetBool(3, false, variables);
+
+            if (!string.IsNullOrEmpty(url))
+                ModifiersHelper.DownloadSoundAndPlay(obj.id, url, pitch, vol, loop);
+        }
+
+        public static void playDefaultSound<T>(Modifier<T> modifier, Dictionary<string, string> variables) where T : PAObject<T>, new()
+        {
+            if (modifier.reference is not PAObject<T> obj)
+                return;
+
+            var pitch = modifier.GetFloat(1, 1f, variables);
+            var vol = modifier.GetFloat(2, 1f, variables);
+            var loop = modifier.GetBool(3, false, variables);
+
+            if (!AudioManager.inst.library.soundClips.TryGetValue(modifier.GetValue(0), out AudioClip[] audioClips))
+                return;
+
+            var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
+            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+            audioSource.clip = clip;
+            audioSource.playOnAwake = true;
+            audioSource.loop = loop;
+            audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+            audioSource.volume = vol * AudioManager.inst.sfxVol;
+            audioSource.Play();
+
+            float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+            if (x == 0f)
+                x = 1f;
+            if (x < 0f)
+                x = -x;
+
+            if (!loop)
+                CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
+            else if (!ModifiersManager.audioSources.ContainsKey(obj.id))
+                ModifiersManager.audioSources.Add(obj.id, audioSource);
+        }
+
+        public static void audioSource(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var levelObject = modifier.reference.runtimeObject;
+            if (modifier.HasResult() || !levelObject || !levelObject.visualObject ||
+                !levelObject.visualObject.gameObject)
+                return;
+
+            var path = modifier.GetValue(0, variables);
+
+            string fullPath =
+                !bool.TryParse(modifier.GetValue(1, variables), out bool global) || !global ?
+                RTFile.CombinePaths(RTFile.BasePath, path) :
+                RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
+
+            var audioDotFormats = RTFile.AudioDotFormats;
+            for (int i = 0; i < audioDotFormats.Length; i++)
+            {
+                var audioDotFormat = audioDotFormats[i];
+                if (!path.EndsWith(audioDotFormat) && RTFile.FileExists(fullPath + audioDotFormat))
+                    fullPath += audioDotFormat;
+            }
+
+            if (!RTFile.FileExists(fullPath))
+            {
+                CoreHelper.LogError($"File does not exist {fullPath}");
+                return;
+            }
+
+            if (fullPath.EndsWith(FileFormat.MP3.Dot()))
+            {
+                modifier.Result = levelObject.visualObject.gameObject.AddComponent<AudioModifier>();
+                ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(fullPath), modifier.reference, modifier);
+                return;
+            }
+
+            CoroutineHelper.StartCoroutine(ModifiersHelper.LoadMusicFileRaw(fullPath, audioClip =>
+            {
+                if (!audioClip)
+                {
+                    CoreHelper.LogError($"Failed to load audio {fullPath}");
+                    return;
+                }
+
+                audioClip.name = path;
+
+                if (!levelObject.visualObject || !levelObject.visualObject.gameObject)
+                    return;
+
+                modifier.Result = levelObject.visualObject.gameObject.AddComponent<AudioModifier>();
+                ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
+            }));
+        }
+
+        public static void setMusicPlaying<T>(Modifier<T> modifier, Dictionary<string, string> variables) => SoundManager.inst.SetPlaying(modifier.GetBool(0, false, variables));
+
+        #endregion
+
+        #region Level
+
+        public static void loadLevel<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var path = modifier.GetValue(0, variables);
+
+            if (CoreHelper.IsEditing)
+            {
+                if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+                    return;
+
+                RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                {
+                    string str = RTFile.BasePath;
+                    if (EditorConfig.Instance.ModifiersSavesBackup.Value)
+                    {
+                        GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
+                        {
+                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                        });
+                    }
+
+                    CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, path))));
+                }, RTEditor.inst.HideWarningPopup);
+
+                return;
+            }
+
+            if (CoreHelper.InEditor)
+                return;
+
+            var levelPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{path}");
+            if (RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(levelPath, Level.LEVEL_VGD)) || RTFile.FileExists(levelPath + FileFormat.ASSET.Dot()))
+                LevelManager.Load(levelPath);
+            else
+                SoundManager.inst.PlaySound(DefaultSounds.Block);
+        }
+
+        public static void loadLevelID<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            if (string.IsNullOrEmpty(id) || id == "0" || id == "-1")
+                return;
+
+            if (!CoreHelper.InEditor)
+            {
+                if (LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level))
+                    LevelManager.Play(level);
+                else
+                    SoundManager.inst.PlaySound(DefaultSounds.Block);
+
+                return;
+            }
+
+            if (!CoreHelper.IsEditing)
+                return;
+
+            if (RTEditor.inst.LevelPanels.TryFind(x => x.Level && x.Level.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel editorWrapper))
+            {
+                if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+                    return;
+
+                var path = System.IO.Path.GetFileName(editorWrapper.FolderPath);
+
+                RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                {
+                    string str = RTFile.BasePath;
+                    if (EditorConfig.Instance.ModifiersSavesBackup.Value)
+                    {
+                        GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
+                        {
+                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                        });
+                    }
+
+                    CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(editorWrapper.Level));
+                }, RTEditor.inst.HideWarningPopup);
+            }
+            else
+                SoundManager.inst.PlaySound(DefaultSounds.Block);
+        }
+
+        public static void loadLevelInternal<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var path = modifier.GetValue(0, variables);
+
+            if (!CoreHelper.InEditor)
+            {
+                var filePath = RTFile.CombinePaths(RTFile.BasePath, path);
+                if (!CoreHelper.InEditor && (RTFile.FileExists(RTFile.CombinePaths(filePath, Level.LEVEL_LSB)) || RTFile.FileIsFormat(RTFile.CombinePaths(filePath, Level.LEVEL_VGD)) || RTFile.FileExists(filePath + FileFormat.ASSET.Dot())))
+                    LevelManager.Load(filePath);
+                else
+                    SoundManager.inst.PlaySound(DefaultSounds.Block);
+
+                return;
+            }
+
+            if (CoreHelper.IsEditing && RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, EditorManager.inst.currentLoadedLevel, path, Level.LEVEL_LSB)))
+            {
+                if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+                    return;
+
+                RTEditor.inst.ShowWarningPopup($"You are about to enter the level {RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, path)}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                {
+                    string str = RTFile.BasePath;
+                    if (EditorConfig.Instance.ModifiersSavesBackup.Value)
+                    {
+                        GameData.Current.SaveData(RTFile.CombinePaths(str, "level-modifier-backup.lsb"), () =>
+                        {
+                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                        });
+                    }
+
+                    CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, path))));
+                }, RTEditor.inst.HideWarningPopup);
+            }
+        }
+
+        public static void loadLevelPrevious<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+                return;
+
+            LevelManager.Play(LevelManager.PreviousLevel);
+        }
+
+        public static void loadLevelHub<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+                return;
+
+            LevelManager.Play(LevelManager.Hub);
+        }
+
+        public static void loadLevelInCollection<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            if (!CoreHelper.InEditor && LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == id, out Level level))
+                LevelManager.Play(level);
+        }
+
+        public static void downloadLevel<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var levelInfo = new LevelInfo(modifier.GetValue(0, variables), modifier.GetValue(0, variables), modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetValue(4, variables));
+
+            LevelCollection.DownloadLevel(null, levelInfo, level =>
+            {
+                if (modifier.GetBool(5, true, variables))
+                    LevelManager.Play(level);
+            });
+        }
+
+        public static void endLevel<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+            {
+                EditorManager.inst.DisplayNotification("End level func", 1f, EditorManager.NotificationType.Success);
+                return;
+            }
+
+            var endLevelFunc = modifier.GetInt(0, 0, variables);
+
+            if (endLevelFunc > 0)
+            {
+                ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
+                ArcadeHelper.endLevelData = modifier.GetValue(1, variables);
+            }
+            ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
+
+            LevelManager.EndLevel();
+        }
+        
+        public static void setAudioTransition<T>(Modifier<T> modifier, Dictionary<string, string> variables) => LevelManager.songFadeTransition = modifier.GetFloat(0, 0.5f, variables);
+
+        public static void setIntroFade<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTGameManager.doIntroFade = modifier.GetBool(0, true, variables);
+
+        public static void setLevelEndFunc<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+                return;
+
+            var endLevelFunc = modifier.GetInt(0, 0, variables);
+
+            if (endLevelFunc > 0)
+            {
+                ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
+                ArcadeHelper.endLevelData = modifier.GetValue(1, variables);
+            }
+            ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
+        }
+
+        #endregion
+
+        #region Component
+
+        public static void blur(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            if (modifier.reference.objectType == BeatmapObject.ObjectType.Empty)
+                return;
+
+            var runtimeObject = modifier.reference.runtimeObject;
+
+            if (!runtimeObject || !runtimeObject.visualObject.renderer)
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, variables);
+            var renderer = runtimeObject.visualObject.renderer;
+
+            if (!modifier.HasResult())
+            {
+                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                onDestroy.Modifier = modifier;
+                modifier.Result = runtimeObject.visualObject.gameObject;
+                renderer.material = LegacyResources.blur;
+            }
+
+            if (modifier.commands.Count > 1 && modifier.GetBool(1, false, variables))
+                renderer.material.SetFloat("_blurSizeXY", -(modifier.reference.Interpolate(3, 1) - 1f) * amount);
+            else
+                renderer.material.SetFloat("_blurSizeXY", amount);
+        }
+        
+        public static void blurOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (list.IsEmpty())
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, variables);
+
+            foreach (var beatmapObject in list)
+            {
+                var runtimeObject = beatmapObject.runtimeObject;
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || !runtimeObject.visualObject.renderer)
+                    continue;
+
+                var renderer = runtimeObject.visualObject.renderer;
+
+                if (!modifier.HasResult())
+                {
+                    var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                    onDestroy.Modifier = modifier;
+                    modifier.Result = runtimeObject.visualObject.gameObject;
+                    renderer.material = LegacyResources.blur;
+                }
+
+                renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
+            }
+        }
+        
+        public static void blurVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            if (modifier.reference.objectType == BeatmapObject.ObjectType.Empty)
+                return;
+
+            var runtimeObject = modifier.reference.runtimeObject;
+
+            if (!runtimeObject || !runtimeObject.visualObject.renderer)
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, variables);
+            var renderer = runtimeObject.visualObject.renderer;
+
+            if (!modifier.HasResult())
+            {
+                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                onDestroy.Modifier = modifier;
+                modifier.Result = runtimeObject.visualObject.gameObject;
+                renderer.material = LegacyResources.blur;
+            }
+
+            renderer.material.SetFloat("_blurSizeXY", modifier.reference.integerVariable * amount);
+        }
+        
+        public static void blurVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+            if (list.IsEmpty())
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, variables);
+
+            foreach (var beatmapObject in list)
+            {
+                var runtimeObject = beatmapObject.runtimeObject;
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || !runtimeObject.visualObject.renderer)
+                    continue;
+
+                var renderer = runtimeObject.visualObject.renderer;
+
+                if (!modifier.HasResult())
+                {
+                    var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                    onDestroy.Modifier = modifier;
+                    modifier.Result = runtimeObject.visualObject.gameObject;
+                    renderer.material = LegacyResources.blur;
+                }
+
+                renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
+            }
+        }
+        
+        public static void blurColored(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            if (modifier.reference.objectType == BeatmapObject.ObjectType.Empty)
+                return;
+
+            var runtimeObject = modifier.reference.runtimeObject;
+
+            if (!runtimeObject || !runtimeObject.visualObject.renderer)
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, variables);
+            var renderer = runtimeObject.visualObject.renderer;
+
+            if (!modifier.HasResult())
+            {
+                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                onDestroy.Modifier = modifier;
+                modifier.Result = runtimeObject.visualObject.gameObject;
+                renderer.material.shader = LegacyResources.blurColored;
+            }
+
+            if (modifier.commands.Count > 1 && modifier.GetBool(1, false, variables))
+                renderer.material.SetFloat("_Size", -(modifier.reference.Interpolate(3, 1) - 1f) * amount);
+            else
+                renderer.material.SetFloat("_Size", amount);
+        }
+        
+        public static void blurColoredOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (list.IsEmpty())
+                return;
+
+            var amount = modifier.GetFloat(0, 0f, variables);
+
+            foreach (var beatmapObject in list)
+            {
+                var runtimeObject = beatmapObject.runtimeObject;
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || !runtimeObject.visualObject.renderer)
+                    continue;
+
+                var renderer = runtimeObject.visualObject.renderer;
+
+                if (!modifier.HasResult())
+                {
+                    var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
+                    onDestroy.Modifier = modifier;
+                    modifier.Result = runtimeObject.visualObject.gameObject;
+                    renderer.material.shader = LegacyResources.blurColored;
+                }
+
+                renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
+            }
+        }
+        
+        public static void doubleSided(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject is SolidObject solidObject && solidObject.gameObject)
+                solidObject.UpdateRendering((int)modifier.reference.gradientType, (int)modifier.reference.renderLayerType, true, modifier.reference.gradientScale, modifier.reference.gradientRotation);
+        }
+        
+        public static void particleSystem(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var gameObject = runtimeObject.visualObject.gameObject;
+
+            if (!modifier.HasResult() || modifier.Result is KeyValuePair<ParticleSystem, ParticleSystemRenderer> keyValuePair && (!keyValuePair.Key || !keyValuePair.Value))
+            {
+                var ps = gameObject.GetOrAddComponent<ParticleSystem>();
+                var psr = gameObject.GetComponent<ParticleSystemRenderer>();
+
+                var s = modifier.GetInt(1, 0, variables);
+                var so = modifier.GetInt(2, 0, variables);
+
+                s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+                so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+
+                psr.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
+
+                psr.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                psr.material.color = Color.white;
+                psr.trailMaterial = psr.material;
+                psr.renderMode = ParticleSystemRenderMode.Mesh;
+
+                var psMain = ps.main;
+
+                psMain.simulationSpace = ParticleSystemSimulationSpace.World;
+
+                var rotationOverLifetime = ps.rotationOverLifetime;
+                rotationOverLifetime.enabled = true;
+                rotationOverLifetime.separateAxes = true;
+                rotationOverLifetime.xMultiplier = 0f;
+                rotationOverLifetime.yMultiplier = 0f;
+
+                var forceOverLifetime = ps.forceOverLifetime;
+                forceOverLifetime.enabled = true;
+                forceOverLifetime.space = ParticleSystemSimulationSpace.World;
+
+                modifier.Result = new KeyValuePair<ParticleSystem, ParticleSystemRenderer>(ps, psr);
+                gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+            }
+
+            if (modifier.Result is KeyValuePair<ParticleSystem, ParticleSystemRenderer> particleSystems && particleSystems.Key && particleSystems.Value)
+            {
+                var ps = particleSystems.Key;
+
+                var psMain = ps.main;
+                var psEmission = ps.emission;
+
+                psMain.startSpeed = modifier.GetFloat(9, 5f, variables);
+
+                if (modifier.constant)
+                    ps.emissionRate = modifier.GetFloat(10, 1f, variables);
+                else
+                {
+                    ps.emissionRate = 0f;
+                    psMain.loop = false;
+                    psEmission.burstCount = modifier.GetInt(10, 1, variables);
+                    psMain.duration = modifier.GetFloat(11, 1f, variables);
+                }
+
+                var rotationOverLifetime = ps.rotationOverLifetime;
+                rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, variables);
+
+                var forceOverLifetime = ps.forceOverLifetime;
+                forceOverLifetime.xMultiplier = modifier.GetFloat(12, 0f, variables);
+                forceOverLifetime.yMultiplier = modifier.GetFloat(13, 0f, variables);
+
+                var particlesTrail = ps.trails;
+                particlesTrail.enabled = modifier.GetBool(14, true, variables);
+
+                var colorOverLifetime = ps.colorOverLifetime;
+                colorOverLifetime.enabled = true;
+                var psCol = colorOverLifetime.color;
+
+                float alphaStart = modifier.GetFloat(4, 1f, variables);
+                float alphaEnd = modifier.GetFloat(5, 0f, variables);
+
+                psCol.gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
+                psCol.gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
+                psCol.gradient.mode = GradientMode.Blend;
+
+                colorOverLifetime.color = psCol;
+
+                var sizeOverLifetime = ps.sizeOverLifetime;
+                sizeOverLifetime.enabled = true;
+
+                var ssss = sizeOverLifetime.size;
+
+                var sizeStart = modifier.GetFloat(6, 0f, variables);
+                var sizeEnd = modifier.GetFloat(7, 0f, variables);
+
+                var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
+
+                ssss.curve = curve;
+
+                sizeOverLifetime.size = ssss;
+
+                psMain.startLifetime = modifier.GetFloat(0, 1f, variables);
+                psEmission.enabled = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+
+                psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(modifier.GetInt(3, 0, variables));
+
+                if (!modifier.constant)
+                    ps.Play();
+
+                var shape = ps.shape;
+                shape.angle = modifier.GetFloat(15, 90f, variables);
+            }
+        }
+        
+        public static void trailRenderer(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var gameObject = runtimeObject.visualObject.gameObject;
+
+            if (!modifier.reference.trailRenderer && !gameObject.GetComponent<TrailRenderer>())
+            {
+                modifier.reference.trailRenderer = gameObject.AddComponent<TrailRenderer>();
+
+                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                modifier.reference.trailRenderer.material.color = Color.white;
+            }
+            else if (!modifier.reference.trailRenderer)
+            {
+                modifier.reference.trailRenderer = gameObject.GetComponent<TrailRenderer>();
+
+                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                modifier.reference.trailRenderer.material.color = Color.white;
+            }
+            else
+            {
+                var tr = modifier.reference.trailRenderer;
+
+                tr.time = modifier.GetFloat(0, 1f, variables);
+                tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+
+                var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
+                tr.startWidth = modifier.GetFloat(1, 1f, variables) * t;
+                tr.endWidth = modifier.GetFloat(2, 1f, variables) * t;
+
+                var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
+
+                tr.startColor = LSColors.fadeColor(beatmapTheme.GetObjColor(modifier.GetInt(3, 0, variables)), modifier.GetFloat(4, 1f, variables));
+                tr.endColor = LSColors.fadeColor(beatmapTheme.GetObjColor(modifier.GetInt(5, 0, variables)), modifier.GetFloat(6, 1f, variables));
+            }
+        }
+        
+        public static void rigidbody(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var gravity = modifier.GetFloat(1, 0f, variables);
+            var collisionMode = modifier.GetInt(2, 0, variables);
+            var drag = modifier.GetFloat(3, 0f, variables);
+            var velocityX = modifier.GetFloat(4, 0f, variables);
+            var velocityY = modifier.GetFloat(5, 0f, variables);
+            var bodyType = modifier.GetInt(6, 0, variables);
+
+            if (!modifier.reference.rigidbody)
+                modifier.reference.rigidbody = runtimeObject.visualObject.gameObject.GetOrAddComponent<Rigidbody2D>();
+
+            modifier.reference.rigidbody.gravityScale = gravity;
+            modifier.reference.rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+            modifier.reference.rigidbody.drag = drag;
+
+            modifier.reference.rigidbody.bodyType = (RigidbodyType2D)Mathf.Clamp(bodyType, 0, 2);
+
+            modifier.reference.rigidbody.velocity += new Vector2(velocityX, velocityY);
+        }
+        
+        public static void rigidbodyOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (list.IsEmpty())
+                return;
+
+            var gravity = modifier.GetFloat(1, 0f, variables);
+            var collisionMode = modifier.GetInt(2, 0, variables);
+            var drag = modifier.GetFloat(3, 0f, variables);
+            var velocityX = modifier.GetFloat(4, 0f, variables);
+            var velocityY = modifier.GetFloat(5, 0f, variables);
+            var bodyType = modifier.GetInt(6, 0, variables);
+
+            foreach (var beatmapObject in list)
+            {
+                var runtimeObject = beatmapObject.runtimeObject;
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || !runtimeObject.visualObject.renderer)
+                    continue;
+
+                if (!beatmapObject.rigidbody)
+                    beatmapObject.rigidbody = runtimeObject.visualObject.gameObject.GetOrAddComponent<Rigidbody2D>();
+
+                beatmapObject.rigidbody.gravityScale = gravity;
+                beatmapObject.rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+                beatmapObject.rigidbody.drag = drag;
+
+                beatmapObject.rigidbody.bodyType = (RigidbodyType2D)Mathf.Clamp(bodyType, 0, 2);
+
+                beatmapObject.rigidbody.velocity += new Vector2(velocityX, velocityY);
+            }
+        }
+
+        #endregion
+
+        #region Player
+
+        public static void playerHit(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue));
+            });
+        }
+        
+        public static void playerHitIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Invincible || modifier.constant)
+                return;
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+                customPlayer.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue));
+        }
+        
+        public static void playerHitAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Invincible || modifier.constant)
+                return;
+
+            var damage = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                player.Player.Hit(damage);
+        }
+        
+        public static void playerHeal(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
+                return;
+
+            var heal = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.Heal(heal);
+            });
+        }
+        
+        public static void playerHealIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Invincible || modifier.constant)
+                return;
+
+            var health = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+                customPlayer.Player.Heal(health);
+        }
+
+        public static void playerHealAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Invincible || modifier.constant)
+                return;
+
+            var heal = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
+            bool healed = false;
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.Player)
+                    if (player.Player.Heal(heal, false))
+                        healed = true;
+            }
+
+            if (healed)
+                SoundManager.inst.PlaySound(DefaultSounds.HealPlayer);
+        }
+        
+        public static void playerKill(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.Kill();
+            });
+        }
+        
+        public static void playerKillIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Invincible || modifier.constant)
+                return;
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+                customPlayer.Player.Kill();
+        }
+        
+        public static void playerKillAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Invincible || modifier.constant)
+                return;
+
+            foreach (var player in PlayerManager.Players)
+                if (player.Player)
+                    player.Player.Kill();
+        }
+        
+        public static void playerRespawn(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference || modifier.constant)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var playerIndex = PlayerManager.GetClosestPlayerIndex(pos);
+
+                if (playerIndex >= 0)
+                    PlayerManager.RespawnPlayer(playerIndex);
+            });
+        }
+        
+        public static void playerRespawnIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var playerIndex = modifier.GetInt(0, 0);
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+                PlayerManager.RespawnPlayer(playerIndex);
+        }
+        
+        public static void playerRespawnAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.constant)
+                PlayerManager.RespawnPlayers();
+        }
+        
+        public static void playerMove(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                var value = modifier.GetValue(0);
+
+                Vector2 vector;
+                if (value.Contains(','))
+                {
+                    var axis = value.Split(',');
+                    vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
+                }
+                else
+                    vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(4, 0f, variables));
+
+                bool relative = modifier.GetBool(3, false, variables);
+                if (!player)
+                    return;
+
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                    tf.localPosition = vector;
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                        {
+                            new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
+                            new Vector2Keyframe(modifier.GetFloat(1, 1f, variables), new Vector2(vector.x + (relative ? tf.position.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            });
+        }
+        
+        public static void playerMoveAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var value = modifier.GetValue(0);
+
+            Vector2 vector;
+            if (value.Contains(','))
+            {
+                var axis = value.Split(',');
+                vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
+            }
+            else
+                vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(4, 0f, variables));
+
+            bool relative = modifier.GetBool(3, false, variables);
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            {
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                    tf.localPosition = vector;
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                        {
+                            new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
+                            new Vector2Keyframe(modifier.GetFloat(1, 1f, variables), new Vector2(vector.x + (relative ? tf.position.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            }
+        }
+        
+        public static void playerMoveX(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                bool relative = modifier.GetBool(3, false, variables);
+                if (!player)
+                    return;
+
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                {
+                    var v = tf.localPosition;
+                    v.x += modifier.GetFloat(0, 1f, variables);
+                    tf.localPosition = v;
+                }
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, tf.localPosition.x, Ease.Linear),
+                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, tf.SetLocalPositionX, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            });
+        }
+        
+        public static void playerMoveXAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            bool relative = modifier.GetBool(3, false, variables);
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            {
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                {
+                    var v = tf.localPosition;
+                    v.x += modifier.GetFloat(0, 1f, variables);
+                    tf.localPosition = v;
+                }
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, tf.localPosition.x, Ease.Linear),
+                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, tf.SetLocalPositionX, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            }
+        }
+        
+        public static void playerMoveY(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                bool relative = modifier.GetBool(3, false, variables);
+                if (!player)
+                    return;
+
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                {
+                    var v = tf.localPosition;
+                    v.y += modifier.GetFloat(0, 1f, variables);
+                    tf.localPosition = v;
+                }
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, tf.localPosition.y, Ease.Linear),
+                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, tf.SetLocalPositionY, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            });
+        }
+        
+        public static void playerMoveYAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            bool relative = modifier.GetBool(3, false, variables);
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            {
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                {
+                    var v = tf.localPosition;
+                    v.y += modifier.GetFloat(0, 1f, variables);
+                    tf.localPosition = v;
+                }
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, tf.localPosition.y, Ease.Linear),
+                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, tf.SetLocalPositionY, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            }
+        }
+        
+        public static void playerRotate(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                bool relative = modifier.GetBool(3, false, variables);
+                if (!player)
+                    return;
+
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                {
+                    var v = tf.localRotation.eulerAngles;
+                    v.z += Parser.TryParse(modifier.value, 1f);
+                    tf.localRotation = Quaternion.Euler(v);
+                }
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, tf.localRotation.eulerAngles.z, Ease.Linear),
+                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            });
+        }
+        
+        public static void playerRotateAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            bool relative = modifier.GetBool(3, false, variables);
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            {
+                var tf = player.Player.rb.transform;
+                if (modifier.constant)
+                {
+                    var v = tf.localRotation.eulerAngles;
+                    v.z += Parser.TryParse(modifier.value, 1f);
+                    tf.localRotation = Quaternion.Euler(v);
+                }
+                else
+                {
+                    string easing = modifier.GetValue(2, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var animation = new RTAnimation("Player Move");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, tf.localRotation.eulerAngles.z, Ease.Linear),
+                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                }
+            }
+        }
+        
+        public static void playerMoveToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player || !player.Player.rb)
+                    return;
+
+                player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+            });
+        }
+        
+        public static void playerMoveAllToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player || !player.Player.rb)
+                    return;
+
+                var y = player.Player.rb.position.y;
+                player.Player.rb.position = new Vector2(pos.x, y);
+            });
+        }
+        
+        public static void playerMoveXToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player || !player.Player.rb)
+                    return;
+
+                var y = player.Player.rb.position.y;
+                player.Player.rb.position = new Vector2(pos.x, y);
+            });
+        }
+        
+        public static void playerMoveXAllToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                foreach (var player in PlayerManager.Players)
+                {
+                    if (!player.Player || !player.Player.rb)
+                        continue;
+
+                    var y = player.Player.rb.position.y;
+                    player.Player.rb.position = new Vector2(pos.x, y);
+                }
+            });
+        }
+
+        public static void playerMoveYToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player || !player.Player.rb)
+                    return;
+
+                var x = player.Player.rb.position.x;
+                player.Player.rb.position = new Vector2(x, pos.y);
+            });
+        }
+
+        public static void playerMoveYAllToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                foreach (var player in PlayerManager.Players)
+                {
+                    if (!player.Player || !player.Player.rb)
+                        continue;
+
+                    var x = player.Player.rb.position.x;
+                    player.Player.rb.position = new Vector2(x, pos.y);
+                }
+            });
+        }
+
+        public static void playerRotateToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player || !player.Player.rb)
+                    return;
+
+                player.Player.rb.transform.SetLocalRotationEulerZ(runtimeObject.visualObject.gameObject.transform.localRotation.eulerAngles.z);
+            });
+        }
+        
+        public static void playerRotateAllToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var rot = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.localEulerAngles.z : modifier.reference.InterpolateChainRotation();
+
+                foreach (var player in PlayerManager.Players)
+                {
+                    if (!player.Player || !player.Player.rb)
+                        continue;
+
+                    player.Player.rb.transform.SetLocalRotationEulerZ(rot);
+                }
+            });
+        }
+        
+        public static void playerBoost(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant || !modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player)
+                    return;
+
+                player.Player.Boost();
+            });
+        }
+        
+        public static void playerBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+                customPlayer.Player.Boost();
+        }
+        
+        public static void playerBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                player.Player.Boost();
+        }
+        
+        public static void playerDisableBoost(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.CanBoost = false;
+            });
+        }
+        
+        public static void playerDisableBoostIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+                customPlayer.Player.CanBoost = false;
+        }
+        
+        public static void playerDisableBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                player.Player.CanBoost = false;
+        }
+        
+        public static void playerEnableBoost(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.CanBoost = true;
+            });
+        }
+        
+        public static void playerEnableBoostIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+                customPlayer.Player.CanBoost = true;
+        }
+        
+        public static void playerEnableBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                player.Player.CanBoost = true;
+        }
+        
+        public static void playerSpeed<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f, variables);
+
+        public static void playerVelocityAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var x = modifier.GetFloat(1, 0f, variables);
+            var y = modifier.GetFloat(2, 0f, variables);
+
+            for (int i = 0; i < PlayerManager.Players.Count; i++)
+            {
+                var player = PlayerManager.Players[i];
+                if (player.Player && player.Player.rb)
+                    player.Player.rb.velocity = new Vector2(x, y);
+            }
+        }
+        
+        public static void playerVelocityXAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var x = modifier.GetFloat(0, 0f, variables);
+
+            for (int i = 0; i < PlayerManager.Players.Count; i++)
+            {
+                var player = PlayerManager.Players[i];
+                if (!player.Player || !player.Player.rb)
+                    continue;
+
+                var velocity = player.Player.rb.velocity;
+                velocity.x = x;
+                player.Player.rb.velocity = velocity;
+            }
+        }
+        
+        public static void playerVelocityYAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var y = modifier.GetFloat(0, 0f, variables);
+
+            for (int i = 0; i < PlayerManager.Players.Count; i++)
+            {
+                var player = PlayerManager.Players[i];
+                if (!player.Player || !player.Player.rb)
+                    continue;
+
+                var velocity = player.Player.rb.velocity;
+                velocity.y = y;
+                player.Player.rb.velocity = velocity;
+            }
+        }
+        
+        public static void setPlayerModel<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var index = modifier.GetInt(1, 0, variables);
+
+            if (!PlayersData.Current.playerModels.ContainsKey(modifier.GetValue(0, variables)))
+                return;
+
+            PlayersData.Current.SetPlayerModel(index, modifier.GetValue(0, variables));
+            PlayerManager.AssignPlayerModels();
+
+            if (PlayerManager.Players.TryGetAt(index, out CustomPlayer customPlayer) || !customPlayer.Player)
+                return;
+
+            customPlayer.Player.playerNeedsUpdating = true;
+            customPlayer.Player.UpdateModel();
+        }
+        
+        public static void gameMode<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
+
+        public static void blackHole(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
+
+            float num = modifier.GetFloat(0, 0.01f, variables);
+
+            if (modifier.GetBool(1, false, variables))
+                num = -(modifier.reference.Interpolate(3, 1) - 1f) * num;
+
+            if (num == 0f)
+                return;
+
+            float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
+            var players = PlayerManager.Players;
+
+            var levelObject = modifier.reference.runtimeObject;
+            if (!levelObject || !levelObject.visualObject.gameObject)
+            {
+                var position = modifier.reference.InterpolateChainPosition();
+
+                for (int i = 0; i < players.Count; i++)
+                {
+                    var player = players[i];
+                    if (!player.Player || !player.Player.rb)
+                        continue;
+
+                    var transform = player.Player.rb.transform;
+
+                    var vector = new Vector3(transform.position.x, transform.position.y, 0f);
+                    var target = new Vector3(position.x, position.y, 0f);
+
+                    transform.position += (target - vector) * moveDelay;
+                }
+
+                return;
+            }
+
+            var gm = levelObject.visualObject.gameObject;
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                var player = players[i];
+                if (!player.Player || !player.Player.rb)
+                    continue;
+
+                var transform = player.Player.rb.transform;
+
+                var vector = new Vector3(transform.position.x, transform.position.y, 0f);
+                var target = new Vector3(gm.transform.position.x, gm.transform.position.y, 0f);
+
+                transform.position += (target - vector) * moveDelay;
+            }
+        }
+
+        #endregion
+
+        #region Mouse Cursor
+
+        public static void showMouse<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CursorManager.inst.ShowCursor();
+
+        public static void hideMouse<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditorPreview)
+                CursorManager.inst.HideCursor();
+        }
+
+        public static void setMousePosition<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.IsEditing)
+                return;
+
+            var screenScale = Display.main.systemWidth / 1920f;
+            float windowCenterX = (Display.main.systemWidth) / 2;
+            float windowCenterY = (Display.main.systemHeight) / 2;
+
+            var x = modifier.GetFloat(1, 0f);
+            var y = modifier.GetFloat(2, 0f);
+
+            CursorManager.inst.SetCursorPosition(new Vector2((x * screenScale) + windowCenterX, (y * screenScale) + windowCenterY));
+        }
+        
+        public static void followMousePosition<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.value == "0")
+                modifier.value = "1";
+
+            if (modifier.reference is not ITransformable transformable)
+                return;
+
+            Vector2 mousePosition = Input.mousePosition;
+            mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+
+            float p = Time.deltaTime * 60f;
+            float po = 1f - Mathf.Pow(1f - Mathf.Clamp(modifier.GetFloat(0, 1f, variables), 0.001f, 1f), p);
+            float ro = 1f - Mathf.Pow(1f - Mathf.Clamp(modifier.GetFloat(1, 1f, variables), 0.001f, 1f), p);
+
+            if (modifier.Result == null)
+                modifier.Result = Vector2.zero;
+
+            var dragPos = (Vector2)modifier.Result;
+
+            var target = new Vector2(mousePosition.x, mousePosition.y);
+
+            transformable.RotationOffset = new Vector3(0f, 0f, (target.x - dragPos.x) * ro);
+
+            dragPos += (target - dragPos) * po;
+
+            modifier.Result = dragPos;
+
+            transformable.PositionOffset = dragPos;
+        }
+
+        #endregion
+
+        #region Variable
+
+        public static void getPitch<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0, variables)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
+        }
+
+        public static void getMusicTime<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0, variables)] = AudioManager.inst.CurrentAudioSource.time.ToString();
+        }
+
+        public static void getToggle<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0, variables)] = modifier.GetBool(1, false, variables).ToString();
+        }
+        
+        public static void getFloat<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0, variables)] = modifier.GetFloat(1, 0f, variables).ToString();
+        }
+        
+        public static void getInt<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0, variables)] = modifier.GetInt(1, 0, variables).ToString();
+        }
+
+        public static void getAxis(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            int fromType = modifier.GetInt(1, 0, variables);
+            int fromAxis = modifier.GetInt(2, 0, variables);
+
+            float delay = modifier.GetFloat(3, 0f, variables);
+            float multiply = modifier.GetFloat(4, 0f, variables);
+            float offset = modifier.GetFloat(5, 0f, variables);
+            float min = modifier.GetFloat(6, -9999f, variables);
+            float max = modifier.GetFloat(7, 9999f, variables);
+            bool visual = modifier.GetBool(8, false, variables);
+            float loop = modifier.GetFloat(9, 9999f, variables);
+
+            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(10, variables), out BeatmapObject bm))
+            {
+                fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+
+                if (fromType < 0 || fromType > 2)
+                    return;
+
+                variables[modifier.GetValue(0, variables)] = ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
+            }
+        }
+
+        public static void getMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            try
+            {
+                var numberVariables = modifier.reference.GetObjectVariables();
+                ModifiersHelper.SetVariables(variables, numberVariables);
+
+                variables[modifier.GetValue(0, variables)] = RTMath.Parse(modifier.GetValue(1, variables), numberVariables, modifier.reference.GetObjectFunctions()).ToString();
+            }
+            catch { }
+        }
+
+        public static void addVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.commands.Count == 2)
+            {
+                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                if (list.IsEmpty())
+                    return;
+
+                int num = modifier.GetInt(0, 0, variables);
+
+                foreach (var beatmapObject in list)
+                    beatmapObject.integerVariable += num;
+            }
+            else
+                modifier.reference.integerVariable += modifier.GetInt(0, 0, variables);
+        }
+        
+        public static void addVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (list.IsEmpty())
+                return;
+
+            int num = modifier.GetInt(0, 0, variables);
+
+            foreach (var beatmapObject in list)
+                beatmapObject.integerVariable += num;
+        }
+        
+        public static void subVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.commands.Count == 2)
+            {
+                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                if (list.IsEmpty())
+                    return;
+
+                int num = modifier.GetInt(0, 0, variables);
+
+                foreach (var beatmapObject in list)
+                    beatmapObject.integerVariable -= num;
+            }
+            else
+                modifier.reference.integerVariable -= modifier.GetInt(0, 0, variables);
+        }
+
+        public static void subVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (list.IsEmpty())
+                return;
+
+            int num = modifier.GetInt(0, 0, variables);
+
+            foreach (var beatmapObject in list)
+                beatmapObject.integerVariable -= num;
+        }
+
+        public static void setVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.commands.Count == 2)
+            {
+                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                if (list.IsEmpty())
+                    return;
+
+                int num = modifier.GetInt(0, 0, variables);
+
+                foreach (var beatmapObject in list)
+                    beatmapObject.integerVariable = num;
+            }
+            else
+                modifier.reference.integerVariable = modifier.GetInt(0, 0, variables);
+        }
+        
+        public static void setVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (list.IsEmpty())
+                return;
+
+            int num = modifier.GetInt(0, 0, variables);
+
+            foreach (var beatmapObject in list)
+                beatmapObject.integerVariable = num;
+        }
+        
+        public static void setVariableRandom(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.commands.Count == 3)
+            {
+                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+                if (list.IsEmpty())
+                    return;
+
+                int min = modifier.GetInt(1, 0, variables);
+                int max = modifier.GetInt(2, 0, variables);
+
+                foreach (var beatmapObject in list)
+                    beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+            }
+            else
+            {
+                var min = modifier.GetInt(0, 0, variables);
+                var max = modifier.GetInt(1, 0, variables);
+                modifier.reference.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+            }
+        }
+        
+        public static void setVariableRandomOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (list.IsEmpty())
+                return;
+
+            int min = modifier.GetInt(1, 0, variables);
+            int max = modifier.GetInt(2, 0, variables);
+
+            foreach (var beatmapObject in list)
+                beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+        }
+        
+        public static void animateVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var fromType = modifier.GetInt(1, 0, variables);
+            var fromAxis = modifier.GetInt(2, 0, variables);
+            var delay = modifier.GetFloat(3, 0, variables);
+            var multiply = modifier.GetFloat(4, 0, variables);
+            var offset = modifier.GetFloat(5, 0, variables);
+            var min = modifier.GetFloat(6, -9999f, variables);
+            var max = modifier.GetFloat(7, 9999f, variables);
+            var loop = modifier.GetFloat(8, 9999f, variables);
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (list.IsEmpty())
+                return;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+                var cachedSequences = beatmapObject.cachedSequences;
+                var time = AudioManager.inst.CurrentAudioSource.time;
+
+                fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
+                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
+
+                if (!cachedSequences)
+                    continue;
+
+                switch (fromType)
+                {
+                    // To Type Position
+                    // To Axis X
+                    // From Type Position
+                    case 0: {
+                            var sequence = cachedSequences.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay);
+
+                            beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                            break;
+                        }
+                    // To Type Position
+                    // To Axis X
+                    // From Type Scale
+                    case 1: {
+                            var sequence = cachedSequences.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay);
+
+                            beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                            break;
+                        }
+                    // To Type Position
+                    // To Axis X
+                    // From Type Rotation
+                    case 2: {
+                            var sequence = cachedSequences.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) * multiply;
+
+                            beatmapObject.integerVariable = (int)Mathf.Clamp((sequence % loop) - offset, min, max);
+                            break;
+                        }
+                }
+            }
+        }
+        
+        public static void clampVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            modifier.reference.integerVariable = Mathf.Clamp(modifier.reference.integerVariable, modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables));
+        }
+        
+        public static void clampVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            var min = modifier.GetInt(1, 0, variables);
+            var max = modifier.GetInt(2, 0, variables);
+
+            if (!list.IsEmpty())
+                foreach (var bm in list)
+                    bm.integerVariable = Mathf.Clamp(bm.integerVariable, min, max);
+        }
+
+        #endregion
+
+        #region Enable / Disable
+
+        public static void enableObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.top)
+                modifier.reference.runtimeObject.top.gameObject.SetActive(true);
+        }
+        
+        public static void enableObjectTree(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.GetValue(0) == "0")
+                modifier.SetValue(0, "False");
+
+            if (!modifier.HasResult())
+            {
+                var beatmapObject = modifier.GetBool(0, true, variables) ? modifier.reference : modifier.reference.GetParentChain().Last();
+
+                modifier.Result = beatmapObject.GetChildTree();
+            }
+
+            var list = modifier.GetResult<List<BeatmapObject>>();
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
+                    beatmapObject.runtimeObject.top.gameObject.SetActive(true);
+            }
+        }
+        
+        public static void enableObjectOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            if (!list.IsEmpty())
+                foreach (var beatmapObject in list)
+                    if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
+                        beatmapObject.runtimeObject.top.gameObject.SetActive(true);
+        }
+        
+        public static void enableObjectTreeOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.HasResult())
+            {
+                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                var useSelf = modifier.GetBool(0, true, variables);
+
+                var resultList = new List<BeatmapObject>();
+                foreach (var bm in beatmapObjects)
+                {
+                    var beatmapObject = useSelf ? bm : bm.GetParentChain().Last();
+                    resultList.AddRange(beatmapObject.GetChildTree());
+                }
+
+                modifier.Result = resultList;
+            }
+
+            var list = modifier.GetResult<List<BeatmapObject>>();
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
+                    beatmapObject.runtimeObject.top.gameObject.SetActive(true);
+            }
+        }
+
+        public static void disableObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.top)
+                modifier.reference.runtimeObject.top.gameObject.SetActive(false);
+        }
+
+        public static void disableObjectTree(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.GetValue(0) == "0")
+                modifier.SetValue(0, "False");
+
+            if (!modifier.HasResult())
+            {
+                var beatmapObject = modifier.GetBool(0, true, variables) ? modifier.reference : modifier.reference.GetParentChain().Last();
+
+                modifier.Result = beatmapObject.GetChildTree();
+            }
+
+            var list = modifier.GetResult<List<BeatmapObject>>();
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
+                    beatmapObject.runtimeObject.top.gameObject.SetActive(false);
+            }
+        }
+
+        public static void disableObjectOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            if (!list.IsEmpty())
+                foreach (var beatmapObject in list)
+                    if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
+                        beatmapObject.runtimeObject.top.gameObject.SetActive(false);
+        }
+
+        public static void disableObjectTreeOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.HasResult())
+            {
+                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                var useSelf = modifier.GetBool(0, true, variables);
+
+                var resultList = new List<BeatmapObject>();
+                foreach (var bm in beatmapObjects)
+                {
+                    var beatmapObject = useSelf ? bm : bm.GetParentChain().Last();
+                    resultList.AddRange(beatmapObject.GetChildTree());
+                }
+
+                modifier.Result = resultList;
+            }
+
+            var list = modifier.GetResult<List<BeatmapObject>>();
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
+                    beatmapObject.runtimeObject.top.gameObject.SetActive(false);
+            }
+        }
+
+        #endregion
+
+        #region JSON
+
+        public static void saveFloat<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditorPreview)
+                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetFloat(0, 0f, variables));
+        }
+        
+        public static void saveString<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditorPreview)
+                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetValue(0, variables));
+        }
+        
+        public static void saveText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditorPreview && modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject is TextObject textObject)
+                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), textObject.textMeshPro.text);
+        }
+        
+        public static void saveVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditorPreview && modifier.reference)
+                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.reference.integerVariable);
+        }
+        
+        public static void loadVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1, variables) + FileFormat.SES.Dot());
+            if (!RTFile.FileExists(path))
+                return;
+
+            string json = RTFile.ReadFromFile(path);
+
+            if (string.IsNullOrEmpty(json))
+                return;
+
+            var jn = JSON.Parse(json);
+
+            var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+            if (!string.IsNullOrEmpty(fjn) && float.TryParse(fjn, out float eq))
+                modifier.reference.integerVariable = (int)eq;
+        }
+        
+        public static void loadVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", modifier.GetValue(1, variables) + FileFormat.SES.Dot());
+            if (!RTFile.FileExists(path))
+                return;
+
+            string json = RTFile.ReadFromFile(path);
+
+            if (string.IsNullOrEmpty(json))
+                return;
+
+            var jn = JSON.Parse(json);
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+
+            if (list.Count > 0 && !string.IsNullOrEmpty(fjn) && float.TryParse(fjn, out float eq))
+                foreach (var bm in list)
+                    bm.integerVariable = (int)eq;
+        }
+
+        #endregion
+
+        #region Reactive
+
+        public static void reactivePos(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var val = modifier.GetFloat(0, 0f, variables);
+            var sampleX = modifier.GetInt(1, 0, variables);
+            var sampleY = modifier.GetInt(2, 0, variables);
+            var intensityX = modifier.GetFloat(3, 0f, variables);
+            var intensityY = modifier.GetFloat(4, 0f, variables);
+
+            modifier.reference?.runtimeObject?.visualObject?.SetOrigin(new Vector3(
+                modifier.reference.origin.x + RTLevel.Current.GetSample(sampleX, intensityX * val),
+                modifier.reference.origin.y + RTLevel.Current.GetSample(sampleY, intensityY * val),
+                modifier.reference.Depth * 0.1f));
+        }
+        
+        public static void reactiveSca(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var val = modifier.GetFloat(0, 0f, variables);
+            var sampleX = modifier.GetInt(1, 0, variables);
+            var sampleY = modifier.GetInt(2, 0, variables);
+            var intensityX = modifier.GetFloat(3, 0f, variables);
+            var intensityY = modifier.GetFloat(4, 0f, variables);
+
+            modifier.reference?.runtimeObject?.visualObject?.SetScaleOffset(new Vector2(
+                1f + RTLevel.Current.GetSample(sampleX, intensityX * val),
+                1f + RTLevel.Current.GetSample(sampleY, intensityY * val)));
+        }
+        
+        public static void reactiveRot(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            modifier.reference?.runtimeObject?.visualObject?.SetRotationOffset(RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables)));
+        }
+        
+        public static void reactiveCol(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.renderer)
+                runtimeObject.visualObject.SetColor(runtimeObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0, variables)) * RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables)));
+        }
+        
+        public static void reactiveColLerp(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.renderer)
+                runtimeObject.visualObject.SetColor(RTMath.Lerp(runtimeObject.visualObject.GetPrimaryColor(), ThemeManager.inst.Current.GetObjColor(modifier.GetInt(2, 0, variables)), RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables))));
+        }
+        
+        public static void reactivePosChain(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            var val = modifier.GetFloat(0, 0f, variables);
+            var sampleX = modifier.GetInt(1, 0, variables);
+            var sampleY = modifier.GetInt(2, 0, variables);
+            var intensityX = modifier.GetFloat(3, 0f, variables);
+            var intensityY = modifier.GetFloat(4, 0f, variables);
+
+            float reactivePositionX = RTLevel.Current.GetSample(sampleX, intensityX * val);
+            float reactivePositionY = RTLevel.Current.GetSample(sampleY, intensityY * val);
+
+            modifier.reference.reactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
+        }
+        
+        public static void reactiveScaChain(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            var val = modifier.GetFloat(0, 0f, variables);
+            var sampleX = modifier.GetInt(1, 0, variables);
+            var sampleY = modifier.GetInt(2, 0, variables);
+            var intensityX = modifier.GetFloat(3, 0f, variables);
+            var intensityY = modifier.GetFloat(4, 0f, variables);
+
+            float reactiveScaleX = RTLevel.Current.GetSample(sampleX, intensityX * val);
+            float reactiveScaleY = RTLevel.Current.GetSample(sampleY, intensityY * val);
+
+            modifier.reference.reactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
+        }
+        
+        public static void reactiveRotChain(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference)
+                modifier.reference.reactiveRotationOffset = RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables));
+        }
+
+        #endregion
+
+        #region Events
+
+        public static void eventOffset<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), modifier.GetFloat(0, 1f, variables));
+        }
+        
+        public static void eventOffsetVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.reference.integerVariable * modifier.GetFloat(0, 1f));
+        }
+        
+        public static void eventOffsetMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && modifier.reference is IEvaluatable evaluatable)
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), RTMath.Parse(modifier.GetValue(0, variables), evaluatable.GetObjectVariables()));
+        }
+        
+        public static void eventOffsetAnimate<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant || !RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null)
+                return;
+
+            string easing = modifier.GetValue(4, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            var list = RTLevel.Current.eventEngine.offsets;
+
+            var eventType = modifier.GetInt(1, 0, variables);
+            var indexValue = modifier.GetInt(2, 0, variables);
+
+            if (eventType < list.Count && indexValue < list[eventType].Count)
+            {
+                var value = modifier.GetBool(5, false, variables) ? list[eventType][indexValue] + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
+
+                var animation = new RTAnimation("Event Offset Animation");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, list[eventType][indexValue], Ease.Linear),
+                            new FloatKeyframe(modifier.GetFloat(3, 1f, variables), value, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, x => RTLevel.Current.eventEngine.SetOffset(eventType, indexValue, x), interpolateOnComplete: true)
+                    };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+            }
+        }
+        
+        public static void eventOffsetCopyAxis(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!RTLevel.Current.eventEngine || RTLevel.Current.eventEngine.offsets == null)
+                return;
+
+            var fromType = modifier.GetInt(1, 0, variables);
+            var fromAxis = modifier.GetInt(2, 0, variables);
+            var toType = modifier.GetInt(3, 0, variables);
+            var toAxis = modifier.GetInt(4, 0, variables);
+            var delay = modifier.GetFloat(5, 0f, variables);
+            var multiply = modifier.GetFloat(6, 0f, variables);
+            var offset = modifier.GetFloat(7, 0f, variables);
+            var min = modifier.GetFloat(8, 0f, variables);
+            var max = modifier.GetFloat(9, 0f, variables);
+            var loop = modifier.GetFloat(10, 0f, variables);
+            var useVisual = modifier.GetBool(11, false, variables);
+
+            var time = AudioManager.inst.CurrentAudioSource.time;
+
+            fromType = Mathf.Clamp(fromType, 0, modifier.reference.events.Count - 1);
+            fromAxis = Mathf.Clamp(fromAxis, 0, modifier.reference.events[fromType][0].values.Length - 1);
+            toType = Mathf.Clamp(toType, 0, RTLevel.Current.eventEngine.offsets.Count - 1);
+            toAxis = Mathf.Clamp(toAxis, 0, RTLevel.Current.eventEngine.offsets[toType].Count - 1);
+
+            if (!useVisual && modifier.reference.cachedSequences)
+                RTLevel.Current.eventEngine.SetOffset(toType, toAxis, fromType switch
+                {
+                    0 => Mathf.Clamp((modifier.reference.cachedSequences.PositionSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    1 => Mathf.Clamp((modifier.reference.cachedSequences.ScaleSequence.Interpolate(time - modifier.reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((modifier.reference.cachedSequences.RotationSequence.Interpolate(time - modifier.reference.StartTime - delay) - offset) * multiply % loop, min, max),
+                    _ => 0f,
+                });
+            else if (modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+                RTLevel.Current.eventEngine.SetOffset(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
+        }
+        
+        public static void vignetteTracksPlayer<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!RTLevel.Current.eventEngine)
+                return;
+
+            var players = PlayerManager.Players;
+            if (players.IsEmpty())
+                return;
+
+            var player = players[0].Player;
+
+            if (!player || !player.rb)
+                return;
+
+            var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
+            RTLevel.Current.eventEngine.SetOffset(7, 4, cameraToViewportPoint.x);
+            RTLevel.Current.eventEngine.SetOffset(7, 5, cameraToViewportPoint.y);
+        }
+        
+        public static void lensTracksPlayer<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!RTLevel.Current.eventEngine)
+                return;
+
+            var players = PlayerManager.Players;
+            if (players.IsEmpty())
+                return;
+
+            var player = players[0].Player;
+
+            if (!player || !player.rb)
+                return;
+
+            var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.rb.position);
+            RTLevel.Current.eventEngine.SetOffset(8, 1, cameraToViewportPoint.x - 0.5f);
+            RTLevel.Current.eventEngine.SetOffset(8, 2, cameraToViewportPoint.y - 0.5f);
+        }
+
+        #endregion
+
+        #region Color
+
+        public static void addColor(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference || !modifier.reference.runtimeObject || !modifier.reference.runtimeObject.visualObject)
+                return;
+
+            var multiply = modifier.GetFloat(0, 1f, variables);
+            var index = modifier.GetInt(1, 0, variables);
+            var hue = modifier.GetFloat(2, 0f, variables);
+            var sat = modifier.GetFloat(3, 0f, variables);
+            var val = modifier.GetFloat(4, 0f, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                modifier.reference.runtimeObject.visualObject.SetColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+            });
+        }
+        
+        public static void addColorOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+
+            if (list.IsEmpty())
+                return;
+
+            var multiply = modifier.GetFloat(0, 0f, variables);
+            var index = modifier.GetInt(2, 0, variables);
+            var hue = modifier.GetFloat(3, 0f, variables);
+            var sat = modifier.GetFloat(4, 0f, variables);
+            var val = modifier.GetFloat(5, 0f, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                foreach (var bm in list)
+                {
+                    if (bm.runtimeObject)
+                        bm.runtimeObject.visualObject.SetColor(bm.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                }
+            });
+        }
+        
+        public static void lerpColor(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference || !modifier.reference.runtimeObject || !modifier.reference.runtimeObject.visualObject)
+                return;
+
+            var multiply = modifier.GetFloat(0, 0f, variables);
+            var index = modifier.GetInt(1, 0, variables);
+            var hue = modifier.GetFloat(2, 0f, variables);
+            var sat = modifier.GetFloat(3, 0f, variables);
+            var val = modifier.GetFloat(4, 0f, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                modifier.reference.runtimeObject.visualObject.SetColor(RTMath.Lerp(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
+            });
+        }
+        
+        public static void lerpColorOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+
+            if (list.IsEmpty())
+                return;
+
+            var multiply = modifier.GetFloat(0, 0f, variables);
+            var index = modifier.GetInt(2, 0, variables);
+            var hue = modifier.GetFloat(3, 0f, variables);
+            var sat = modifier.GetFloat(4, 0f, variables);
+            var val = modifier.GetFloat(5, 0f, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val);
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var bm = list[i];
+                    if (bm.runtimeObject && bm.runtimeObject.visualObject)
+                        bm.runtimeObject.visualObject.SetColor(RTMath.Lerp(bm.runtimeObject.visualObject.GetPrimaryColor(), color, multiply));
+                }
+            });
+        }
+        
+        public static void addColorPlayerDistance(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!modifier.reference || !runtimeObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var offset = modifier.GetFloat(0, 0f, variables);
+            var index = modifier.GetInt(1, 0, variables);
+            var multiply = modifier.GetFloat(2, 0, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var player = PlayerManager.GetClosestPlayer(runtimeObject.visualObject.gameObject.transform.position);
+
+                if (!player.Player || !player.Player.rb)
+                    return;
+
+                var distance = Vector2.Distance(player.Player.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
+
+                runtimeObject.visualObject.SetColor(runtimeObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(index) * -(distance * multiply - offset));
+            });
+        }
+        
+        public static void lerpColorPlayerDistance(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!modifier.reference || !runtimeObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var offset = modifier.GetFloat(0, 0f, variables);
+            var index = modifier.GetInt(1, 0, variables);
+            var multiply = modifier.GetFloat(2, 0f, variables);
+            var opacity = modifier.GetFloat(3, 0f, variables);
+            var hue = modifier.GetFloat(4, 0f, variables);
+            var sat = modifier.GetFloat(5, 0f, variables);
+            var val = modifier.GetFloat(6, 0f, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var player = PlayerManager.GetClosestPlayer(runtimeObject.visualObject.gameObject.transform.position);
+
+                if (!player.Player || !player.Player.rb)
+                    return;
+
+                var distance = Vector2.Distance(player.Player.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
+
+                runtimeObject.visualObject.SetColor(Color.Lerp(runtimeObject.visualObject.GetPrimaryColor(),
+                                LSColors.fadeColor(CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
+                                -(distance * multiply - offset)));
+            });
+        }
+        
+        public static void setOpacity(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!modifier.reference || !runtimeObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var opacity = modifier.GetFloat(0, 1f, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                runtimeObject.visualObject.SetColor(LSColors.fadeColor(runtimeObject.visualObject.GetPrimaryColor(), opacity));
+            });
+        }
+        
+        public static void setOpacityOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var opacity = modifier.GetFloat(0, 1f, variables);
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                foreach (var bm in list)
+                {
+                    if (bm.runtimeObject && bm.runtimeObject.visualObject)
+                        bm.runtimeObject.visualObject.SetColor(LSColors.fadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), opacity));
+                }
+            });
+        }
+        
+        public static void copyColor(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var applyColor1 = modifier.GetBool(1, true, variables);
+            var applyColor2 = modifier.GetBool(2, true, variables);
+
+            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0, variables), out BeatmapObject beatmapObject) && modifier.reference.runtimeObject && beatmapObject.runtimeObject)
+            {
+                // queue post tick so the color overrides the sequence color
+                RTLevel.Current.postTick.Enqueue(() =>
+                {
+                    ModifiersHelper.CopyColor(modifier.reference.runtimeObject, beatmapObject.runtimeObject, applyColor1, applyColor2);
+                });
+            }
+        }
+        
+        public static void copyColorOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var applyColor1 = modifier.GetBool(1, true, variables);
+            var applyColor2 = modifier.GetBool(2, true, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+
+                foreach (var bm in list)
+                {
+                    var otherRuntimeObject = bm.runtimeObject;
+                    if (!otherRuntimeObject)
+                        continue;
+
+                    ModifiersHelper.CopyColor(otherRuntimeObject, runtimeObject, applyColor1, applyColor2);
+                }
+            });
+        }
+        
+        public static void applyColorGroup(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            var beatmapObject = modifier.reference;
+            var cachedSequences = beatmapObject.cachedSequences;
+            if (list.IsEmpty() || !cachedSequences)
+                return;
+
+            var type = modifier.GetInt(1, 0, variables);
+            var axis = modifier.GetInt(2, 0, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var time = RTLevel.Current.CurrentTime - beatmapObject.StartTime;
+                Color color;
+                Color secondColor;
+                {
+                    var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.time < time);
+
+                    if (prevKFIndex < 0)
+                        return;
+
+                    var prevKF = beatmapObject.events[3][prevKFIndex];
+                    var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
+                    var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
+                    int prevcolor = (int)prevKF.values[0];
+                    int nextColor = (int)nextKF.values[0];
+                    var lerp = RTMath.Lerp(0f, 1f, easing);
+                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                        lerp = 1f;
+
+                    color = Color.Lerp(
+                        CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
+                        CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                        lerp);
+
+                    lerp = RTMath.Lerp(prevKF.values[1], nextKF.values[1], easing);
+                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                        lerp = 0f;
+
+                    color = LSColors.fadeColor(color, -(lerp - 1f));
+
+                    var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
+                    var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
+                    var lerpVal = RTMath.Lerp(prevKF.values[4], nextKF.values[4], easing);
+
+                    if (float.IsNaN(lerpHue))
+                        lerpHue = nextKF.values[2];
+                    if (float.IsNaN(lerpSat))
+                        lerpSat = nextKF.values[3];
+                    if (float.IsNaN(lerpVal))
+                        lerpVal = nextKF.values[4];
+
+                    color = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+
+                    prevcolor = (int)prevKF.values[5];
+                    nextColor = (int)nextKF.values[5];
+                    lerp = RTMath.Lerp(0f, 1f, easing);
+                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                        lerp = 1f;
+
+                    secondColor = Color.Lerp(
+                        CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
+                        CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                        lerp);
+
+                    lerp = RTMath.Lerp(prevKF.values[6], nextKF.values[6], easing);
+                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                        lerp = 0f;
+
+                    secondColor = LSColors.fadeColor(secondColor, -(lerp - 1f));
+
+                    lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
+                    lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
+                    lerpVal = RTMath.Lerp(prevKF.values[9], nextKF.values[9], easing);
+
+                    if (float.IsNaN(lerpHue))
+                        lerpHue = nextKF.values[7];
+                    if (float.IsNaN(lerpSat))
+                        lerpSat = nextKF.values[8];
+                    if (float.IsNaN(lerpVal))
+                        lerpVal = nextKF.values[9];
+
+                    secondColor = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+                } // assign
+
+                var isEmpty = modifier.reference.objectType == BeatmapObject.ObjectType.Empty;
+
+                float t = !isEmpty ? type switch
+                {
+                    0 => axis == 0 ? cachedSequences.PositionSequence.Value.x : axis == 1 ? cachedSequences.PositionSequence.Value.y : cachedSequences.PositionSequence.Value.z,
+                    1 => axis == 0 ? cachedSequences.ScaleSequence.Value.x : cachedSequences.ScaleSequence.Value.y,
+                    2 => cachedSequences.RotationSequence.Value,
+                    _ => 0f
+                } : type switch
+                {
+                    0 => axis == 0 ? cachedSequences.PositionSequence.Interpolate(time).x : axis == 1 ? cachedSequences.PositionSequence.Interpolate(time).y : cachedSequences.PositionSequence.Interpolate(time).z,
+                    1 => axis == 0 ? cachedSequences.ScaleSequence.Interpolate(time).x : cachedSequences.ScaleSequence.Interpolate(time).y,
+                    2 => cachedSequences.RotationSequence.Interpolate(time),
+                    _ => 0f
+                };
+
+                foreach (var bm in list)
+                {
+                    var otherLevelObject = bm.runtimeObject;
+                    if (!otherLevelObject)
+                        continue;
+
+                    if (!otherLevelObject.visualObject.isGradient)
+                        otherLevelObject.visualObject.SetColor(Color.Lerp(otherLevelObject.visualObject.GetPrimaryColor(), color, t));
+                    else if (otherLevelObject.visualObject is SolidObject solidObject)
+                    {
+                        var colors = solidObject.GetColors();
+                        solidObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
+                    }
+                }
+            });
+        }
+        
+        public static void setColorHex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!modifier.reference || !runtimeObject)
+                return;
+
+            var color1 = modifier.GetValue(0, variables);
+            var color2 = modifier.GetValue(1, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                if (!runtimeObject.visualObject.isGradient)
+                {
+                    var color = runtimeObject.visualObject.GetPrimaryColor();
+                    runtimeObject.visualObject.SetColor(string.IsNullOrEmpty(color1) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), color.a));
+                }
+                else if (runtimeObject.visualObject is SolidObject solidObject)
+                {
+                    var colors = solidObject.GetColors();
+                    solidObject.SetColor(
+                        string.IsNullOrEmpty(color1) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), colors.startColor.a),
+                        string.IsNullOrEmpty(color2) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color2), colors.endColor.a));
+                }
+            });
+        }
+        
+        public static void setColorHexOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var color1 = modifier.GetValue(0, variables);
+            var color2 = modifier.GetValue(2, variables);
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                foreach (var bm in list)
+                {
+                    var runtimeObject = bm.runtimeObject;
+                    if (!runtimeObject)
+                        continue;
+
+                    if (!runtimeObject.visualObject.isGradient)
+                    {
+                        var color = runtimeObject.visualObject.GetPrimaryColor();
+                        runtimeObject.visualObject.SetColor(string.IsNullOrEmpty(color1) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), color.a));
+                    }
+                    else if (runtimeObject.visualObject is SolidObject solidObject)
+                    {
+                        var colors = solidObject.GetColors();
+                        solidObject.SetColor(
+                            string.IsNullOrEmpty(color1) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), colors.startColor.a),
+                            string.IsNullOrEmpty(color2) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color2), colors.endColor.a));
+                    }
+                }
+            });
+        }
+
+        #endregion
+
+        #region Shape
+
+        public static void actorFrameTexture(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.ShapeType != ShapeType.Image || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not ImageObject imageObject)
+                return;
+
+            var camera = modifier.GetInt(0, 0, variables) == 0 ? EventManager.inst.cam : EventManager.inst.camPer;
+
+            var frame = SpriteHelper.CaptureFrame(camera, modifier.GetInt(1, 512, variables), modifier.GetInt(2, 512, variables), modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
+
+            var renderer = (SpriteRenderer)imageObject.renderer;
+
+            if (modifier.HasResult())
+            {
+                if (renderer.sprite)
+                    CoreHelper.Destroy(renderer.sprite.texture);
+                CoreHelper.Destroy(renderer.sprite);
+            }
+            else
+            {
+                imageObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+                modifier.Result = true;
+            }
+
+            renderer.sprite = frame;
+        }
+
+        public static void setImage(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant || modifier.reference.ShapeType != ShapeType.Image || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not ImageObject imageObject)
+                return;
+
+            var path = RTFile.CombinePaths(RTFile.BasePath, modifier.GetValue(0, variables));
+
+            if (!RTFile.FileExists(path))
+            {
+                imageObject.SetDefaultSprite();
+                return;
+            }
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
+        }
+        
+        public static void setImageOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var value = modifier.GetValue(0, variables);
+
+            foreach (var bm in list)
+            {
+                if (bm.ShapeType != ShapeType.Image || !bm.runtimeObject || bm.runtimeObject.visualObject is not ImageObject imageObject)
+                    continue;
+
+                var path = RTFile.CombinePaths(RTFile.BasePath, value);
+
+                if (!RTFile.FileExists(path))
+                {
+                    imageObject.SetDefaultSprite();
+                    continue;
+                }
+
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
+            }
+        }
+
+        public static void setText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not TextObject textObject)
+                return;
+
+            if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                textObject.SetText(modifier.GetValue(0, variables));
+            else
+                textObject.text = modifier.GetValue(0, variables);
+        }
+
+        public static void setTextOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var text = modifier.GetValue(0, variables);
+
+            foreach (var bm in list)
+            {
+                if (bm.ShapeType != ShapeType.Text || !bm.runtimeObject || bm.runtimeObject.visualObject is not TextObject textObject)
+                    continue;
+
+                if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                    textObject.SetText(text);
+                else
+                    textObject.text = text;
+            }
+        }
+
+        public static void addText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not TextObject textObject)
+                return;
+
+            if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                textObject.SetText(textObject.textMeshPro.text + modifier.GetValue(0, variables));
+            else
+                textObject.text += modifier.GetValue(0, variables);
+        }
+
+        public static void addTextOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var text = modifier.GetValue(0, variables);
+
+            foreach (var bm in list)
+            {
+                if (bm.ShapeType != ShapeType.Text || !bm.runtimeObject || bm.runtimeObject.visualObject is not TextObject textObject)
+                    continue;
+
+                if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                    textObject.SetText(textObject.textMeshPro.text + text);
+                else
+                    textObject.text += text;
+            }
+        }
+
+        public static void removeText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not TextObject textObject)
+                return;
+
+            string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty :
+                textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, textObject.textMeshPro.text.Length - 1));
+
+            if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                textObject.SetText(text);
+            else
+                textObject.text = text;
+        }
+
+        public static void removeTextOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var remove = modifier.GetInt(0, 1, variables);
+
+            foreach (var bm in list)
+            {
+                var levelObject = bm.runtimeObject;
+                if (bm.ShapeType != ShapeType.Text || !levelObject || levelObject.visualObject is not TextObject textObject)
+                    continue;
+
+                string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" :
+                    textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(remove, 0, textObject.textMeshPro.text.Length - 1));
+
+                if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                    textObject.SetText(text);
+                else
+                    textObject.text = text;
+            }
+        }
+
+        public static void removeTextAt(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not TextObject textObject)
+                return;
+
+            var remove = modifier.GetInt(0, 1, variables);
+            string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
+                textObject.textMeshPro.text.Remove(remove, 1) : "";
+
+            if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                textObject.SetText(text);
+            else
+                textObject.text = text;
+        }
+
+        public static void removeTextOtherAt(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var remove = modifier.GetInt(0, 1, variables);
+
+            foreach (var bm in list)
+            {
+                if (bm.ShapeType != ShapeType.Text || !bm.runtimeObject || bm.runtimeObject.visualObject is not TextObject textObject)
+                    continue;
+
+                string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
+                    textObject.textMeshPro.text.Remove(remove, 1) : "";
+
+                if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                    textObject.SetText(text);
+                else
+                    textObject.text = text;
+            }
+        }
+
+        public static void formatText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!CoreConfig.Instance.AllowCustomTextFormatting.Value && modifier.reference.ShapeType == ShapeType.Text &&
+                modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject is TextObject textObject)
+                textObject.SetText(RTString.FormatText(modifier.reference, textObject.text));
+        }
+
+        public static void textSequence(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.ShapeType != ShapeType.Text || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not TextObject textObject)
+                return;
+
+            var value = modifier.GetValue(9, variables);
+            var text = !string.IsNullOrEmpty(value) ? value : modifier.reference.text;
+
+            if (!modifier.setTimer)
+            {
+                modifier.setTimer = true;
+                modifier.ResultTimer = AudioManager.inst.CurrentAudioSource.time;
+            }
+
+            var offsetTime = modifier.ResultTimer;
+            if (!modifier.GetBool(11, false, variables))
+                offsetTime = modifier.reference.StartTime;
+
+            var time = AudioManager.inst.CurrentAudioSource.time - offsetTime + modifier.GetFloat(10, 0f, variables);
+            var length = modifier.GetFloat(0, 1f, variables);
+            var glitch = modifier.GetBool(1, true, variables);
+
+            var p = time / length;
+
+            var textWithoutFormatting = text;
+            var tagLocations = new List<Vector2Int>();
+            RTString.RegexMatches(text, new Regex(@"<(.*?)>"), match =>
+            {
+                textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+                tagLocations.Add(new Vector2Int(match.Index, match.Length - 1));
+            });
+
+            var stringLength2 = (int)Mathf.Lerp(0, textWithoutFormatting.Length, p);
+            textObject.textMeshPro.maxVisibleCharacters = stringLength2;
+
+            if (glitch && (int)RTMath.Lerp(0, textWithoutFormatting.Length, p) <= textWithoutFormatting.Length)
+            {
+                int insert = Mathf.Clamp(stringLength2 - 1, 0, text.Length);
+                for (int i = 0; i < tagLocations.Count; i++)
+                {
+                    var tagLocation = tagLocations[i];
+                    if (insert >= tagLocation.x)
+                        insert += tagLocation.y + 1;
+                }
+
+                text = text.Insert(insert, LSText.randomString(1));
+            }
+
+            if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
+                textObject.SetText(text);
+            else
+                textObject.text = text;
+
+            if ((modifier.Result is not int result || result != stringLength2) && textWithoutFormatting[Mathf.Clamp(stringLength2 - 1, 0, textWithoutFormatting.Length - 1)] != ' ')
+            {
+                modifier.Result = stringLength2;
+                float pitch = modifier.GetFloat(6, 1f, variables);
+                float volume = modifier.GetFloat(7, 1f, variables);
+                float pitchVary = modifier.GetFloat(8, 0f, variables);
+
+                if (pitchVary != 0f)
+                    pitch += UnityEngine.Random.Range(-pitchVary, pitchVary);
+
+                // Don't play any sounds.
+                if (!modifier.GetBool(2, true, variables))
+                    return;
+
+                // Don't play custom sound.
+                if (!modifier.GetBool(3, false, variables))
+                {
+                    SoundManager.inst.PlaySound(DefaultSounds.Click, volume, volume);
+                    return;
+                }
+
+                var soundName = modifier.GetValue(4, variables);
+                if (GameData.Current.assets.sounds.TryFind(x => x.name == soundName, out SoundAsset soundAsset) && soundAsset.audio)
+                    SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch);
+                else if (SoundManager.inst.TryGetSound(soundName, out AudioClip audioClip))
+                    SoundManager.inst.PlaySound(audioClip, volume, pitch);
+                else
+                    ModifiersHelper.GetSoundPath(modifier.reference.id, soundName, modifier.GetBool(5, false, variables), pitch, volume, false);
+            }
+        }
+
+        // modify shape
+        public static void backgroundShape(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var levelObject = modifier.reference.runtimeObject;
+            if (modifier.HasResult() || modifier.reference.IsSpecialShape || !levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
+                return;
+
+            if (ShapeManager.inst.Shapes3D.TryGetAt(modifier.reference.shape, out ShapeGroup shapeGroup) && shapeGroup.TryGetShape(modifier.reference.shapeOption, out Shape shape))
+            {
+                levelObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = shape.mesh;
+                modifier.Result = "frick";
+                levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+            }
+        }
+
+        public static void sphereShape(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var levelObject = modifier.reference.runtimeObject;
+            if (modifier.HasResult() || modifier.reference.IsSpecialShape || !levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
+                return;
+
+            levelObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
+            modifier.Result = "frick";
+            levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+        }
+
+        public static void translateShape(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var levelObject = modifier.reference.runtimeObject;
+            if (!levelObject || !levelObject.visualObject.gameObject)
+                return;
+
+            if (!modifier.HasResult())
+            {
+                var meshFilter = levelObject.visualObject.gameObject.GetComponent<MeshFilter>();
+                var mesh = meshFilter.mesh;
+
+                modifier.Result = new KeyValuePair<MeshFilter, Vector3[]>(meshFilter, mesh.vertices);
+
+                levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+            }
+
+            var posX = modifier.GetFloat(1, 0f, variables);
+            var posY = modifier.GetFloat(2, 0f, variables);
+            var scaX = modifier.GetFloat(3, 0f, variables);
+            var scaY = modifier.GetFloat(4, 0f, variables);
+            var rot = modifier.GetFloat(5, 0f, variables);
+
+            if (modifier.TryGetResult(out KeyValuePair<MeshFilter, Vector3[]> keyValuePair))
+                keyValuePair.Key.mesh.vertices = keyValuePair.Value.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, new Vector2(scaX, scaY)), rot), new Vector2(posX, posY))).ToArray();
+        }
+
+        #endregion
+
+        #region Animation
+
+        public static void animateObject<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not ITransformable transformable)
+                return;
+
+            var time = modifier.GetFloat(0, 0f, variables);
+            var type = modifier.GetInt(1, 0, variables);
+            var x = modifier.GetFloat(2, 0f, variables);
+            var y = modifier.GetFloat(3, 0f, variables);
+            var z = modifier.GetFloat(4, 0f, variables);
+            var relative = modifier.GetBool(5, true, variables);
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            Vector3 vector = transformable.GetTransformOffset(type);
+
+            var setVector = new Vector3(x, y, z);
+            if (relative)
+            {
+                if (modifier.constant)
+                    setVector *= CoreHelper.TimeFrame;
+
+                setVector += vector;
+            }
+
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Object Offset");
+
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                    {
+                        new Vector3Keyframe(0f, vector, Ease.Linear),
+                        new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            transformable.SetTransform(type, setVector);
+        }
+        
+        public static void animateObjectOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7));
+
+            if (list.IsEmpty())
+                return;
+
+            var time = modifier.GetFloat(0, 0f, variables);
+            var type = modifier.GetInt(1, 0, variables);
+            var x = modifier.GetFloat(2, 0f, variables);
+            var y = modifier.GetFloat(3, 0f, variables);
+            var z = modifier.GetFloat(4, 0f, variables);
+            var relative = modifier.GetBool(5, true, variables);
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            foreach (var bm in list)
+            {
+                Vector3 vector = bm.GetTransformOffset(type);
+
+                var setVector = new Vector3(x, y, z);
+                if (relative)
+                {
+                    if (modifier.constant)
+                        setVector *= CoreHelper.TimeFrame;
+
+                    setVector += vector;
+                }
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Animate Other Object Offset");
+
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                        {
+                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, vector3 => bm.SetTransform(type, vector3), interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                bm.SetTransform(type, setVector);
+            }
+        }
+        
+        public static void animateSignal(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var time = modifier.GetFloat(0, 0f, variables);
+            var type = modifier.GetInt(1, 0, variables);
+            var x = modifier.GetFloat(2, 0f, variables);
+            var y = modifier.GetFloat(3, 0f, variables);
+            var z = modifier.GetFloat(4, 0f, variables);
+            var relative = modifier.GetBool(5, true, variables);
+            var signalGroup = modifier.GetValue(7, variables);
+            var delay = modifier.GetFloat(8, 0f, variables);
+
+            if (!modifier.GetBool(9, true, variables))
+            {
+                var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                foreach (var bm in list)
+                {
+                    if (!bm.modifiers.IsEmpty() && !bm.modifiers.FindAll(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).IsEmpty() &&
+                        bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                        m.Result = null;
+                }
+            }
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            Vector3 vector = modifier.reference.GetTransformOffset(type);
+
+            var setVector = new Vector3(x, y, z);
+            if (relative)
+            {
+                if (modifier.constant)
+                    setVector *= CoreHelper.TimeFrame;
+
+                setVector += vector;
+            }
+
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Object Offset");
+
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                    {
+                        new Vector3Keyframe(0f, vector, Ease.Linear),
+                        new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
+                    }, vector3 => modifier.reference.SetTransform(type, vector3), interpolateOnComplete: true),
+                };
+                animation.onComplete = () =>
+                {
+                    AnimationManager.inst.Remove(animation.id);
+
+                    var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                    foreach (var bm in list)
+                        CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
+                };
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            modifier.reference.SetTransform(type, setVector);
+        }
+
+        public static void animateSignalOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var time = modifier.GetFloat(0, 0f, variables);
+            var type = modifier.GetInt(1, 0, variables);
+            var x = modifier.GetFloat(2, 0f, variables);
+            var y = modifier.GetFloat(3, 0f, variables);
+            var z = modifier.GetFloat(4, 0f, variables);
+            var relative = modifier.GetBool(5, true, variables);
+            var signalGroup = modifier.GetValue(8, variables);
+            var delay = modifier.GetFloat(9, 0f, variables);
+
+            if (!modifier.GetBool(10, true, variables))
+            {
+                var list2 = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                foreach (var bm in list2)
+                {
+                    if (!bm.modifiers.IsEmpty() && !bm.modifiers.FindAll(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).IsEmpty() &&
+                        bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                    {
+                        m.Result = null;
+                    }
+                }
+            }
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            foreach (var bm in list)
+            {
+                Vector3 vector = bm.GetTransformOffset(type);
+
+                var setVector = new Vector3(x, y, z);
+                if (relative)
+                {
+                    if (modifier.constant)
+                        setVector *= CoreHelper.TimeFrame;
+
+                    setVector += vector;
+                }
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Animate Other Object Offset");
+
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                        {
+                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, vector3 => bm.SetTransform(type, vector3), interpolateOnComplete: true),
+                    };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+
+                        var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                        foreach (var bm in list)
+                            CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
+                    };
+                    AnimationManager.inst.Play(animation);
+                    break;
+                }
+
+                bm.SetTransform(type, setVector);
+            }
+        }
+        
+        public static void animateObjectMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not ITransformable transformable || modifier.reference is not IEvaluatable evaluatable)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+
+            var functions = evaluatable.GetObjectFunctions();
+
+            float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, variables);
+            float x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
+            float y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
+            float z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var relative = modifier.GetBool(5, true, variables);
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            Vector3 vector = transformable.GetTransformOffset(type);
+
+            var setVector = new Vector3(x, y, z);
+            if (relative)
+            {
+                if (modifier.constant)
+                    setVector *= CoreHelper.TimeFrame;
+
+                setVector += vector;
+            }
+
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Object Offset");
+
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                    {
+                        new Vector3Keyframe(0f, vector, Ease.Linear),
+                        new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            transformable.SetTransform(type, setVector);
+        }
+        
+        public static void animateObjectMathOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var numberVariables = modifier.reference.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+
+            var functions = modifier.reference.GetObjectFunctions();
+
+            // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
+            float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, variables);
+            float x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
+            float y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
+            float z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var relative = modifier.GetBool(5, true, variables);
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            foreach (var bm in list)
+            {
+                Vector3 vector = bm.GetTransformOffset(type);
+
+                var setVector = new Vector3(x, y, z);
+                if (relative)
+                {
+                    if (modifier.constant)
+                        setVector *= CoreHelper.TimeFrame;
+
+                    setVector += vector;
+                }
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Animate Other Object Offset");
+
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                        {
+                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, vector3 => bm.SetTransform(type, vector3), interpolateOnComplete: true),
+                    };
+                    animation.SetDefaultOnComplete(false);
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                bm.SetTransform(type, setVector);
+            }
+        }
+        
+        public static void animateSignalMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var numberVariables = modifier.reference.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+
+            var functions = modifier.reference.GetObjectFunctions();
+
+            float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, variables);
+            float x = (float)RTMath.Parse(modifier.commands[2], numberVariables, functions);
+            float y = (float)RTMath.Parse(modifier.commands[3], numberVariables, functions);
+            float z = (float)RTMath.Parse(modifier.commands[4], numberVariables, functions);
+            var relative = modifier.GetBool(5, true, variables);
+            var signalGroup = modifier.GetValue(7, variables);
+            float signalTime = (float)RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+
+            if (!modifier.GetBool(9, true, variables))
+            {
+                var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                foreach (var bm in list)
+                {
+                    if (!bm.modifiers.IsEmpty() && !bm.modifiers.FindAll(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).IsEmpty() &&
+                        bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                        m.Result = null;
+                }
+            }
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            Vector3 vector = modifier.reference.GetTransformOffset(type);
+
+            var setVector = new Vector3(x, y, z);
+            if (relative)
+            {
+                if (modifier.constant)
+                    setVector *= CoreHelper.TimeFrame;
+
+                setVector += vector;
+            }
+
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Object Offset");
+
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                        {
+                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, vector3 => modifier.reference.SetTransform(type, vector3), interpolateOnComplete: true),
+                    };
+                animation.onComplete = () =>
+                {
+                    AnimationManager.inst.Remove(animation.id);
+
+                    var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                    foreach (var bm in list)
+                        CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, signalTime));
+                };
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            modifier.reference.SetTransform(type, setVector);
+        }
+        
+        public static void animateSignalMathOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var numberVariables = modifier.reference.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+
+            var functions = modifier.reference.GetObjectFunctions();
+
+            var time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
+            var type = modifier.GetInt(1, 0, variables);
+            var x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
+            var y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
+            var z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var relative = modifier.GetBool(5, true, variables);
+            var signalGroup = modifier.GetValue(8, variables);
+            var signalTime = (float)RTMath.Parse(modifier.GetValue(9, variables), numberVariables);
+
+            if (!modifier.GetBool(10, true, variables))
+            {
+                var list2 = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                foreach (var bm in list2)
+                {
+                    if (!bm.modifiers.IsEmpty() && bm.modifiers.FindAll(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count > 0 &&
+                        bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                        m.Result = null;
+                }
+            }
+
+            string easing = modifier.GetValue(6, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            foreach (var bm in list)
+            {
+                Vector3 vector = bm.GetTransformOffset(type);
+
+                var setVector = new Vector3(x, y, z);
+                if (relative)
+                {
+                    if (modifier.constant)
+                        setVector *= CoreHelper.TimeFrame;
+
+                    setVector += vector;
+                }
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Animate Other Object Offset");
+
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                        {
+                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                        }, vector3 => modifier.reference.SetTransform(type, vector3), interpolateOnComplete: true),
+                    };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+
+                        var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+
+                        foreach (var bm in list)
+                            CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, signalTime));
+                    };
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                modifier.reference.SetTransform(type, setVector);
+            }
+        }
+        
+        public static void gravity(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var gravityX = modifier.GetFloat(1, 0f, variables);
+            var gravityY = modifier.GetFloat(2, 0f, variables);
+            var time = modifier.GetFloat(3, 1f, variables);
+            var curve = modifier.GetInt(4, 2, variables);
+
+            if (modifier.Result == null)
+            {
+                modifier.Result = Vector2.zero;
+                modifier.ResultTimer = Time.time;
+            }
+            else
+                modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
+
+            var vector = (Vector2)modifier.Result;
+
+            var rotation = modifier.reference.InterpolateChainRotation(includeSelf: false);
+
+            modifier.reference.positionOffset = RTMath.Rotate(vector, -rotation);
+        }
+        
+        public static void gravityOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            if (beatmapObjects.IsEmpty())
+                return;
+
+            var gravityX = modifier.GetFloat(1, 0f, variables);
+            var gravityY = modifier.GetFloat(2, 0f, variables);
+            var time = modifier.GetFloat(3, 1f, variables);
+            var curve = modifier.GetInt(4, 2, variables);
+
+            if (modifier.Result == null)
+            {
+                modifier.Result = Vector2.zero;
+                modifier.ResultTimer = Time.time;
+            }
+            else
+                modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
+
+            var vector = (Vector2)modifier.Result;
+
+            foreach (var beatmapObject in beatmapObjects)
+            {
+                var rotation = beatmapObject.InterpolateChainRotation(includeSelf: false);
+
+                beatmapObject.positionOffset = RTMath.Rotate(vector, -rotation);
+            }
+        }
+        
+        public static void copyAxis(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var fromType = modifier.GetInt(1, 0, variables);
+            var fromAxis = modifier.GetInt(2, 0, variables);
+            var toType = modifier.GetInt(3, 0, variables);
+            var toAxis = modifier.GetInt(4, 0, variables);
+            var delay = modifier.GetFloat(5, 0f, variables);
+            var multiply = modifier.GetFloat(6, 0f, variables);
+            var offset = modifier.GetFloat(7, 0f, variables);
+            var min = modifier.GetFloat(8, -9999f, variables);
+            var max = modifier.GetFloat(9, 9999f, variables);
+            var loop = modifier.GetFloat(10, 9999f, variables);
+            var useVisual = modifier.GetBool(11, false, variables);
+
+            if (!modifier.HasResult())
+            {
+                if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject result))
+                    modifier.Result = result;
+            }
+
+            if (!modifier.TryGetResult(out BeatmapObject bm))
+                return;
+
+            var time = RTLevel.Current.CurrentTime;
+
+            fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
+            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+
+            if (toType < 0 || toType > 3)
+                return;
+
+            if (!useVisual && bm.cachedSequences)
+            {
+                if (fromType == 3)
+                {
+                    if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
+                        modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null)
+                    {
+                        var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
+                        var visualObject = modifier.reference.runtimeObject.visualObject;
+                        visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
+                    }
+                    return;
+                }
+                modifier.reference.SetTransform(toType, toAxis, fromType switch
+                {
+                    0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
+                    _ => 0f,
+                });
+            }
+            else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
+            else if (useVisual)
+                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
+                {
+                    0 => bm.InterpolateChainPosition().At(fromAxis),
+                    1 => bm.InterpolateChainScale().At(fromAxis),
+                    2 => bm.InterpolateChainRotation(),
+                    _ => 0f,
+                }, min, max));
+        }
+        
+        public static void copyAxisMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            try
+            {
+                var fromType = modifier.GetInt(1, 0, variables);
+                var fromAxis = modifier.GetInt(2, 0, variables);
+                var toType = modifier.GetInt(3, 0, variables);
+                var toAxis = modifier.GetInt(4, 0, variables);
+                var delay = modifier.GetFloat(5, 0f, variables);
+                var min = modifier.GetFloat(6, -9999f, variables);
+                var max = modifier.GetFloat(7, 9999f, variables);
+                var evaluation = modifier.GetValue(8, variables);
+                var useVisual = modifier.GetBool(9, false, variables);
+
+                if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0, variables), out BeatmapObject bm))
+                    return;
+
+                var time = RTLevel.Current.CurrentTime;
+
+                fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+
+                if (toType < 0 || toType > 3)
+                    return;
+
+                if (!useVisual && bm.cachedSequences)
+                {
+                    if (fromType == 3)
+                    {
+                        if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
+                            modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null &&
+                            modifier.reference.runtimeObject.visualObject.renderer)
+                        {
+                            // queue post tick so the color overrides the sequence color
+                            RTLevel.Current.postTick.Enqueue(() =>
+                            {
+                                var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
+
+                                var renderer = modifier.reference.runtimeObject.visualObject.renderer;
+
+                                var numberVariables = modifier.reference.GetObjectVariables();
+                                ModifiersHelper.SetVariables(variables, numberVariables);
+
+                                numberVariables["colorR"] = sequence.r;
+                                numberVariables["colorG"] = sequence.g;
+                                numberVariables["colorB"] = sequence.b;
+                                numberVariables["colorA"] = sequence.a;
+                                bm.SetOtherObjectVariables(numberVariables);
+
+                                float value = RTMath.Parse(evaluation, numberVariables);
+
+                                renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, Mathf.Clamp(value, min, max));
+                            });
+                        }
+                    }
+                    else
+                    {
+                        var numberVariables = modifier.reference.GetObjectVariables();
+                        ModifiersHelper.SetVariables(variables, numberVariables);
+
+                        if (bm.cachedSequences)
+                            numberVariables["axis"] = fromType switch
+                            {
+                                0 => bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
+                                1 => bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
+                                2 => bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay),
+                                _ => 0f,
+                            };
+                        bm.SetOtherObjectVariables(numberVariables);
+
+                        float value = RTMath.Parse(evaluation, numberVariables);
+
+                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                    }
+                }
+                else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+                {
+                    var axis = levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
+
+                    var numberVariables = modifier.reference.GetObjectVariables();
+                    ModifiersHelper.SetVariables(variables, numberVariables);
+
+                    numberVariables["axis"] = axis;
+                    bm.SetOtherObjectVariables(numberVariables);
+
+                    float value = RTMath.Parse(evaluation, numberVariables);
+
+                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                }
+                else if (useVisual)
+                {
+                    var numberVariables = modifier.reference.GetObjectVariables();
+                    ModifiersHelper.SetVariables(variables, numberVariables);
+
+                    numberVariables["axis"] = fromType switch
+                    {
+                        0 => bm.InterpolateChainPosition().At(fromAxis),
+                        1 => bm.InterpolateChainScale().At(fromAxis),
+                        2 => bm.InterpolateChainRotation(),
+                        _ => 0f,
+                    };
+                    bm.SetOtherObjectVariables(numberVariables);
+
+                    float value = RTMath.Parse(evaluation, numberVariables);
+
+                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                }
+            }
+            catch
+            {
+
+            } // try catch for cases where the math is broken
+        }
+        
+        public static void copyAxisGroup(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var evaluation = modifier.GetValue(0, variables);
+
+            var toType = modifier.GetInt(1, 0, variables);
+            var toAxis = modifier.GetInt(2, 0, variables);
+
+            if (toType < 0 || toType > 4)
+                return;
+
+            try
+            {
+                var beatmapObjects = GameData.Current.beatmapObjects;
+                var prefabObjects = GameData.Current.prefabObjects;
+
+                var time = RTLevel.Current.CurrentTime;
+                var numberVariables = modifier.reference.GetObjectVariables();
+                ModifiersHelper.SetVariables(variables, numberVariables);
+
+                if (!modifier.HasResult())
+                {
+                    var result = new List<BeatmapObject>();
+
+                    for (int i = 3; i < modifier.commands.Count; i += 8)
+                    {
+                        var group = modifier.GetValue(i + 1);
+
+                        if (GameData.Current.TryFindObjectWithTag(modifier, group, out BeatmapObject beatmapObject))
+                            result.Add(beatmapObject);
+                    }
+
+                    modifier.Result = result;
+                }
+
+                if (!modifier.TryGetResult(out List<BeatmapObject> list))
+                    return;
+
+                int groupIndex = 0;
+                for (int i = 3; i < modifier.commands.Count; i += 8)
+                {
+                    var name = modifier.GetValue(i, variables);
+                    var group = modifier.GetValue(i + 1, variables);
+                    var fromType = modifier.GetInt(i + 2, 0, variables);
+                    var fromAxis = modifier.GetInt(i + 3, 0, variables);
+                    var delay = modifier.GetFloat(i + 4, 0f, variables);
+                    var min = modifier.GetFloat(i + 5, 0f, variables);
+                    var max = modifier.GetFloat(i + 6, 0f, variables);
+                    var useVisual = modifier.GetBool(i + 7, false, variables);
+
+                    var beatmapObject = list[groupIndex];
+
+                    if (!beatmapObject)
+                    {
+                        groupIndex++;
+                        continue;
+                    }
+
+                    if (!useVisual && beatmapObject.cachedSequences)
+                        numberVariables[name] = fromType switch
+                        {
+                            0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                            1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                            2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay), min, max),
+                            _ => 0f,
+                        };
+                    else if (useVisual && beatmapObject.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+                        numberVariables[name] = Mathf.Clamp(levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis), min, max);
+                    else if (useVisual)
+                        numberVariables[name] = fromType switch
+                        {
+                            0 => Mathf.Clamp(beatmapObject.InterpolateChainPosition().At(fromAxis), min, max),
+                            1 => Mathf.Clamp(beatmapObject.InterpolateChainScale().At(fromAxis), min, max),
+                            2 => Mathf.Clamp(beatmapObject.InterpolateChainRotation(), min, max),
+                            _ => 0f,
+                        };
+
+                    if (fromType == 4)
+                        numberVariables[name] = Mathf.Clamp(beatmapObject.integerVariable, min, max);
+
+                    groupIndex++;
+                }
+
+                modifier.reference.SetTransform(toType, toAxis, RTMath.Parse(evaluation, numberVariables));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+        
+        public static void copyPlayerAxis<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not ITransformable transformable)
+                return;
+
+            var fromType = modifier.GetInt(1, 0, variables);
+            var fromAxis = modifier.GetInt(2, 0, variables);
+
+            var toType = modifier.GetInt(3, 0, variables);
+            var toAxis = modifier.GetInt(4, 0, variables);
+
+            var delay = modifier.GetFloat(5, 0f, variables);
+            var multiply = modifier.GetFloat(6, 0f, variables);
+            var offset = modifier.GetFloat(7, 0f, variables);
+            var min = modifier.GetFloat(8, -9999f, variables);
+            var max = modifier.GetFloat(9, 9999f, variables);
+
+            var players = PlayerManager.Players;
+
+            if (players.TryFind(x => x.Player && x.Player.rb, out CustomPlayer customPlayer))
+                transformable.SetTransform(toType, toAxis, Mathf.Clamp((customPlayer.Player.rb.transform.GetLocalVector(fromType).At(fromAxis) - offset) * multiply, min, max));
+        }
+        
+        public static void legacyTail(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference || modifier.commands.IsEmpty() || !GameData.Current)
+                return;
+
+            var totalTime = modifier.GetFloat(0, 200f, variables);
+
+            var list = modifier.Result is List<LegacyTracker> ? (List<LegacyTracker>)modifier.Result : new List<LegacyTracker>();
+
+            if (!modifier.HasResult())
+            {
+                list.Add(new LegacyTracker(modifier.reference, Vector3.zero, Vector3.zero, Quaternion.identity, 0f, 0f));
+
+                for (int i = 1; i < modifier.commands.Count; i += 3)
+                {
+                    var group = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(i, variables));
+
+                    if (modifier.commands.Count <= i + 2 || group.Count < 1)
+                        break;
+
+                    var distance = modifier.GetFloat(i + 1, 2f, variables);
+                    var time = modifier.GetFloat(i + 2, 12f, variables);
+
+                    for (int j = 0; j < group.Count; j++)
+                    {
+                        var beatmapObject = group[j];
+                        list.Add(new LegacyTracker(beatmapObject, beatmapObject.positionOffset, beatmapObject.positionOffset, Quaternion.Euler(beatmapObject.rotationOffset), distance, time));
+                    }
+                }
+
+                modifier.Result = list;
+            }
+
+            var animationResult = modifier.reference.InterpolateChain();
+            list[0].pos = animationResult.position;
+            list[0].rot = Quaternion.Euler(0f, 0f, animationResult.rotation);
+
+            float num = Time.deltaTime * totalTime;
+
+            for (int i = 1; i < list.Count; i++)
+            {
+                var tracker = list[i];
+                var prevTracker = list[i - 1];
+                if (Vector3.Distance(tracker.pos, prevTracker.pos) > tracker.distance)
+                {
+                    var vector = Vector3.Lerp(tracker.pos, prevTracker.pos, Time.deltaTime * tracker.time);
+                    var quaternion = Quaternion.Lerp(tracker.rot, prevTracker.rot, Time.deltaTime * tracker.time);
+                    list[i].pos = vector;
+                    list[i].rot = quaternion;
+                }
+
+                num *= Vector3.Distance(prevTracker.lastPos, tracker.pos);
+                tracker.beatmapObject.positionOffset = Vector3.MoveTowards(prevTracker.lastPos, tracker.pos, num);
+                prevTracker.lastPos = tracker.pos;
+                tracker.beatmapObject.rotationOffset = tracker.rot.eulerAngles;
+            }
+        }
+        
+        public static void applyAnimation(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0, variables), out BeatmapObject from))
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(10, variables));
+
+            if (!modifier.HasResult())
+                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = modifier.GetFloat(4, 0f, variables);
+            var delaySca = modifier.GetFloat(5, 0f, variables);
+            var delayRot = modifier.GetFloat(6, 0f, variables);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = modifier.GetFloat(8, 1f, variables);
+            var speed = modifier.GetFloat(9, 1f, variables);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var bm = list[i];
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                        }, x => ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                    };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, RTLevel.Current.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
+        }
+        
+        public static void applyAnimationFrom(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0, variables), out BeatmapObject bm))
+                return;
+
+            if (!modifier.HasResult())
+                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = modifier.GetFloat(4, 0f, variables);
+            var delaySca = modifier.GetFloat(5, 0f, variables);
+            var delayRot = modifier.GetFloat(6, 0f, variables);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = modifier.GetFloat(8, 1f, variables);
+            var speed = modifier.GetFloat(9, 1f, variables);
+
+            if (!modifier.constant)
+            {
+                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+                var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                        }, x => ModifiersHelper.ApplyAnimationTo(modifier.reference, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                    };
+                animation.onComplete = () =>
+                {
+                    AnimationManager.inst.Remove(animation.id);
+                    animation = null;
+                    modifier.Result = null;
+                };
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            ModifiersHelper.ApplyAnimationTo(modifier.reference, bm, useVisual, time, RTLevel.Current.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+        }
+        
+        public static void applyAnimationTo(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            if (!modifier.HasResult())
+                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = modifier.GetFloat(4, 0f, variables);
+            var delaySca = modifier.GetFloat(5, 0f, variables);
+            var delayRot = modifier.GetFloat(6, 0f, variables);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = modifier.GetFloat(8, 1f, variables);
+            var speed = modifier.GetFloat(9, 1f, variables);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var bm = list[i];
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                            }, x => ModifiersHelper.ApplyAnimationTo(bm, modifier.reference, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, modifier.reference, useVisual, time, RTLevel.Current.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
+        }
+        
+        public static void applyAnimationMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0, variables), out BeatmapObject from))
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(10, variables));
+
+            if (!modifier.HasResult())
+                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var numberVariables = modifier.reference.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+            var functions = modifier.reference.GetObjectFunctions();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(11, variables), numberVariables, functions);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var bm = list[i];
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                            }, x => ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    return;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
+        }
+        
+        public static void applyAnimationFromMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                return;
+
+            if (!modifier.HasResult())
+                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var numberVariables = modifier.reference.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+            var functions = modifier.reference.GetObjectFunctions();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
+
+            if (!modifier.constant)
+            {
+                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+                var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                        }, x => ModifiersHelper.ApplyAnimationTo(modifier.reference, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                    };
+                animation.onComplete = () =>
+                {
+                    AnimationManager.inst.Remove(animation.id);
+                    animation = null;
+                    modifier.Result = null;
+                };
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            ModifiersHelper.ApplyAnimationTo(modifier.reference, bm, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+        }
+        
+        public static void applyAnimationToMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            if (!modifier.HasResult())
+                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var numberVariables = modifier.reference.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+            var functions = modifier.reference.GetObjectFunctions();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var bm = list[i];
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                            }, x => ModifiersHelper.ApplyAnimationTo(bm, modifier.reference, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, modifier.reference, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
+        }
+
+        #endregion
+
+        #region Prefab
+
+        public static void spawnPrefab<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant || modifier.HasResult())
+                return;
+
+            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+
+            if (!prefab)
+                return;
+
+            var posX = modifier.GetFloat(1, 0f, variables);
+            var posY = modifier.GetFloat(2, 0f, variables);
+            var scaX = modifier.GetFloat(3, 0f, variables);
+            var scaY = modifier.GetFloat(4, 0f, variables);
+            var rot = modifier.GetFloat(5, 0f, variables);
+            var repeatCount = modifier.GetInt(6, 0, variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
+            var speed = modifier.GetFloat(8, 0f, variables);
+
+            var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
+                modifier.GetBool(11, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, variables) : modifier.GetFloat(10, 0f, variables),
+                new Vector2(posX, posY),
+                new Vector2(scaX, scaY),
+                rot, repeatCount, repeatOffsetTime, speed);
+
+            modifier.Result = prefabObject;
+            GameData.Current.prefabObjects.Add(prefabObject);
+            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+        }
+
+        public static void spawnPrefabOffset(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant || modifier.HasResult())
+                return;
+
+            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+
+            if (!prefab)
+                return;
+
+            var animationResult = modifier.reference.InterpolateChain();
+
+            var posX = modifier.GetFloat(1, 0f, variables);
+            var posY = modifier.GetFloat(2, 0f, variables);
+            var scaX = modifier.GetFloat(3, 0f, variables);
+            var scaY = modifier.GetFloat(4, 0f, variables);
+            var rot = modifier.GetFloat(5, 0f, variables);
+            var repeatCount = modifier.GetInt(6, 0, variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
+            var speed = modifier.GetFloat(8, 0f, variables);
+
+            var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
+                modifier.GetBool(11, true) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, variables) : modifier.GetFloat(10, 0f, variables),
+                new Vector2(posX, posY) + (Vector2)animationResult.position,
+                new Vector2(scaX, scaY) * animationResult.scale,
+                rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+            modifier.Result = prefabObject;
+            GameData.Current.prefabObjects.Add(prefabObject);
+            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+        }
+        
+        public static void spawnPrefabOffsetOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant || modifier.HasResult())
+                return;
+
+            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(13, 0, variables), modifier.GetValue(0, variables));
+
+            if (!prefab)
+                return;
+
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(10, variables), out BeatmapObject beatmapObject))
+                return;
+
+            var animationResult = beatmapObject.InterpolateChain();
+
+            var posX = modifier.GetFloat(1, 0f, variables);
+            var posY = modifier.GetFloat(2, 0f, variables);
+            var scaX = modifier.GetFloat(3, 0f, variables);
+            var scaY = modifier.GetFloat(4, 0f, variables);
+            var rot = modifier.GetFloat(5, 0f, variables);
+            var repeatCount = modifier.GetInt(6, 0, variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
+            var speed = modifier.GetFloat(8, 0f, variables);
+
+            var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
+                modifier.GetBool(12, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(11, 0f, variables) : modifier.GetFloat(11, 0f, variables),
+                new Vector2(posX, posY) + (Vector2)animationResult.position,
+                new Vector2(scaX, scaY) * animationResult.scale,
+                rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+            modifier.Result = prefabObject;
+            GameData.Current.prefabObjects.Add(prefabObject);
+            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+        }
+        
+        public static void spawnMultiPrefab<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
+
+            if (!prefab)
+                return;
+
+            var posX = modifier.GetFloat(1, 0f, variables);
+            var posY = modifier.GetFloat(2, 0f, variables);
+            var scaX = modifier.GetFloat(3, 0f, variables);
+            var scaY = modifier.GetFloat(4, 0f, variables);
+            var rot = modifier.GetFloat(5, 0f, variables);
+            var repeatCount = modifier.GetInt(6, 0, variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
+            var speed = modifier.GetFloat(8, 0f, variables);
+
+            if (!modifier.HasResult())
+                modifier.Result = new List<PrefabObject>();
+
+            var list = modifier.GetResult<List<PrefabObject>>();
+            var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
+                modifier.GetBool(10, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f, variables) : modifier.GetFloat(9, 0f, variables),
+                new Vector2(posX, posY),
+                new Vector2(scaX, scaY),
+                rot, repeatCount, repeatOffsetTime, speed);
+
+            list.Add(prefabObject);
+            modifier.Result = list;
+
+            GameData.Current.prefabObjects.Add(prefabObject);
+            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+        }
+        
+        public static void spawnMultiPrefabOffset(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
+
+            if (!prefab)
+                return;
+
+            var animationResult = modifier.reference.InterpolateChain();
+
+            var posX = modifier.GetFloat(1, 0f, variables);
+            var posY = modifier.GetFloat(2, 0f, variables);
+            var scaX = modifier.GetFloat(3, 0f, variables);
+            var scaY = modifier.GetFloat(4, 0f, variables);
+            var rot = modifier.GetFloat(5, 0f, variables);
+            var repeatCount = modifier.GetInt(6, 0, variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
+            var speed = modifier.GetFloat(8, 0f, variables);
+
+            if (!modifier.HasResult())
+                modifier.Result = new List<PrefabObject>();
+
+            var list = modifier.GetResult<List<PrefabObject>>();
+            var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
+                modifier.GetBool(10, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(9, 0f, variables) : modifier.GetFloat(9, 0f, variables),
+                new Vector2(posX, posY) + (Vector2)animationResult.position,
+                new Vector2(scaX, scaY) * animationResult.scale,
+                rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+            list.Add(prefabObject);
+            modifier.Result = list;
+
+            GameData.Current.prefabObjects.Add(prefabObject);
+            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+        }
+        
+        public static void spawnMultiPrefabOffsetOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+
+            if (!prefab)
+                return;
+
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(9, variables), out BeatmapObject beatmapObject))
+                return;
+
+            var animationResult = beatmapObject.InterpolateChain();
+
+            var posX = modifier.GetFloat(1, 0f, variables);
+            var posY = modifier.GetFloat(2, 0f, variables);
+            var scaX = modifier.GetFloat(3, 0f, variables);
+            var scaY = modifier.GetFloat(4, 0f, variables);
+            var rot = modifier.GetFloat(5, 0f, variables);
+            var repeatCount = modifier.GetInt(6, 0, variables);
+            var repeatOffsetTime = modifier.GetFloat(7, 0f, variables);
+            var speed = modifier.GetFloat(8, 0f, variables);
+
+            if (!modifier.HasResult())
+                modifier.Result = new List<PrefabObject>();
+
+            var list = modifier.GetResult<List<PrefabObject>>();
+            var prefabObject = ModifiersHelper.AddPrefabObjectToLevel(prefab,
+                modifier.GetBool(11, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(10, 0f, variables) : modifier.GetFloat(10, 0f, variables),
+                new Vector2(posX, posY) + (Vector2)animationResult.position,
+                new Vector2(scaX, scaY) * animationResult.scale,
+                rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+            list.Add(prefabObject);
+            modifier.Result = list;
+
+            GameData.Current.prefabObjects.Add(prefabObject);
+            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+        }
+        
+        public static void clearSpawnedPrefabs<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+
+                for (int j = 0; j < beatmapObject.modifiers.Count; j++)
+                {
+                    var otherModifier = beatmapObject.modifiers[j];
+
+                    if (otherModifier.TryGetResult(out PrefabObject prefabObjectResult))
+                    {
+                        RTLevel.Current?.UpdatePrefab(prefabObjectResult, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObjectResult.id);
+
+                        otherModifier.Result = null;
+                        continue;
+                    }
+
+                    if (!otherModifier.TryGetResult(out List<PrefabObject> result))
+                        continue;
+
+                    for (int k = 0; k < result.Count; k++)
+                    {
+                        var prefabObject = result[k];
+
+                        RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+                    }
+
+                    result.Clear();
+                    otherModifier.Result = null;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Ranking
+
+        public static void saveLevelRank<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)
+                return;
+
+            LevelManager.UpdateCurrentLevelProgress();
+        }
+        
+        public static void clearHits<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!CoreHelper.InEditor) // hit and death counters are not supported in the editor yet.
+                GameManager.inst.hits.Clear();
+        }
+        
+        public static void addHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+                return;
+
+            var vector = Vector3.zero;
+            if (modifier.reference is BeatmapObject beatmapObject)
+            {
+                if (modifier.GetBool(0, true, variables))
+                    vector = beatmapObject.InterpolateChainPosition();
+                else
+                {
+                    var player = PlayerManager.GetClosestPlayer(beatmapObject.InterpolateChainPosition());
+                    if (player && player.Player)
+                        vector = player.Player.rb.position;
+                }
+            }
+
+            var timeValue = modifier.GetValue(1, variables);
+            float time = AudioManager.inst.CurrentAudioSource.time;
+            if (!string.IsNullOrEmpty(timeValue) && modifier.reference is IEvaluatable evaluatable)
+            {
+                var numberVariables = evaluatable.GetObjectVariables();
+                ModifiersHelper.SetVariables(variables, numberVariables);
+
+                time = RTMath.Parse(timeValue, numberVariables, evaluatable.GetObjectFunctions());
+            }
+
+            GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
+        }
+        
+        public static void subHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!CoreHelper.InEditor && !GameManager.inst.hits.IsEmpty())
+                GameManager.inst.hits.RemoveAt(GameManager.inst.hits.Count - 1);
+        }
+        
+        public static void clearDeaths<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!CoreHelper.InEditor)
+                GameManager.inst.deaths.Clear();
+        }
+        
+        public static void addDeath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+                return;
+
+            var vector = Vector3.zero;
+            if (modifier.reference is BeatmapObject beatmapObject)
+            {
+                if (modifier.GetBool(0, true, variables))
+                    vector = beatmapObject.InterpolateChainPosition();
+                else
+                {
+                    var player = PlayerManager.GetClosestPlayer(beatmapObject.InterpolateChainPosition());
+                    if (player && player.Player)
+                        vector = player.Player.rb.position;
+                }
+            }
+
+            var timeValue = modifier.GetValue(1, variables);
+            float time = AudioManager.inst.CurrentAudioSource.time;
+            if (!string.IsNullOrEmpty(timeValue) && modifier.reference is IEvaluatable evaluatable)
+            {
+                var numberVariables = evaluatable.GetObjectVariables();
+                ModifiersHelper.SetVariables(variables, numberVariables);
+
+                time = RTMath.Parse(timeValue, numberVariables, evaluatable.GetObjectFunctions());
+            }
+
+            GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
+        }
+        
+        public static void subDeath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!CoreHelper.InEditor && !GameManager.inst.deaths.IsEmpty())
+                GameManager.inst.deaths.RemoveAt(GameManager.inst.deaths.Count - 1);
+        }
+
+        #endregion
+
+        #region Updates
+
+        public static void updateObjects<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.constant)
+                CoroutineHelper.StartCoroutine(RTLevel.IReinit());
+        }
+        
+        public static void updateObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0));
+
+            if (modifier.constant || list.IsEmpty())
+                return;
+
+            foreach (var bm in list)
+                RTLevel.Current?.UpdateObject(bm, recalculate: false);
+            RTLevel.Current?.RecalculateObjectStates();
+        }
+        
+        public static void setParent(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var group = modifier.GetValue(0, variables);
+            if (group == string.Empty)
+                ModifiersHelper.SetParent(modifier.reference, string.Empty);
+            else if (GameData.Current.TryFindObjectWithTag(modifier, group, out BeatmapObject beatmapObject) && modifier.reference.CanParent(beatmapObject))
+                ModifiersHelper.SetParent(modifier.reference, beatmapObject.id);
+            else
+                CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {modifier.reference.name}\nID: {modifier.reference.id}");
+        }
+        
+        public static void setParentOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var reference = modifier.reference;
+            var group = modifier.GetValue(2, variables);
+
+            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, group, out BeatmapObject beatmapObject))
+                reference = beatmapObject;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            var isEmpty = modifier.GetBool(1, false, variables);
+
+            bool failed = false;
+            list.ForLoop(beatmapObject =>
+            {
+                if (isEmpty)
+                    ModifiersHelper.SetParent(beatmapObject, string.Empty);
+                else if (beatmapObject.CanParent(reference))
+                    ModifiersHelper.SetParent(beatmapObject, reference.id);
+                else
+                    failed = true;
+            });
+
+            if (failed)
+                CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {modifier.reference.name}\nID: {modifier.reference.id}");
+        }
+        
+        public static void detachParent(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.constant && modifier.reference)
+                modifier.reference.detatched = modifier.GetBool(0, true, variables);
+        }
+        
+        public static void detachParentOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+            var detach = modifier.GetBool(0, true);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+                beatmapObject.detatched = detach;
+            }
+        }
+
+        #endregion
+
+        #region Physics
+
+        public static void setCollision(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
+                runtimeObject.visualObject.colliderEnabled = modifier.GetBool(0, false, variables);
+        }
+
+        public static void setCollisionOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var colliderEnabled = modifier.GetBool(0, false, variables);
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+
+            foreach (var beatmapObject in list)
+            {
+                if (beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
+                    runtimeObject.visualObject.colliderEnabled = colliderEnabled;
+            }
+        }
+
+        #endregion
+
+        #region Interfaces
+
+        public static void loadInterface<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.IsEditing) // don't want interfaces to load in editor
+            {
+                EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var value = modifier.GetValue(0, variables);
+            var path = RTFile.CombinePaths(RTFile.BasePath, value + FileFormat.LSI.Dot());
+
+            if (!RTFile.FileExists(path))
+            {
+                CoreHelper.LogError($"Interface with file name: \"{value}\" does not exist.");
+                return;
+            }
+
+            var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
+
+            menu.filePath = path;
+
+            if (string.IsNullOrEmpty(menu.id) || menu.id == "0")
+            {
+                CoreHelper.LogError($"Menu ID cannot be empty nor 0.");
+                return;
+            }
+
+            InterfaceManager.inst.MainDirectory = RTFile.BasePath;
+
+            AudioManager.inst.CurrentAudioSource.Pause();
+            InputDataManager.inst.SetAllControllerRumble(0f);
+            GameManager.inst.gameState = GameManager.State.Paused;
+            ArcadeHelper.endedLevel = false;
+
+            if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
+            {
+                InterfaceManager.inst.SetCurrentInterface(otherMenu);
+                menu = null;
+                return;
+            }
+
+            InterfaceManager.inst.interfaces.Add(menu);
+            InterfaceManager.inst.SetCurrentInterface(menu);
+        }
+
+        public static void pauseLevel<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+            {
+                EditorManager.inst.DisplayNotification("Cannot pause in the editor. This modifier only works in the Arcade.", 3f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            PauseMenu.Pause();
+        }
+
+        public static void quitToMenu<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+            {
+                string str = RTFile.BasePath;
+                if (EditorConfig.Instance.ModifiersSavesBackup.Value)
+                {
+                    GameData.Current.SaveData(RTFile.CombinePaths(str, $"level-modifier-backup{FileFormat.LSB.Dot()}"), () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                    });
+                }
+
+                EditorManager.inst.QuitToMenu();
+            }
+
+            if (!CoreHelper.InEditor)
+                ArcadeHelper.QuitToMainMenu();
+        }
+
+        public static void quitToArcade<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+            {
+                string str = RTFile.BasePath;
+                if (EditorConfig.Instance.ModifiersSavesBackup.Value)
+                {
+                    GameData.Current.SaveData(RTFile.CombinePaths(str, $"level-modifier-backup{FileFormat.LSB.Dot()}"), () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                    });
+                }
+
+                GameManager.inst.QuitToArcade();
+
+                return;
+            }
+
+            if (!CoreHelper.InEditor)
+                ArcadeHelper.QuitToArcade();
+        }
+
+        #endregion
+
+        #region Misc
+
+        public static void setBGActive<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var active = modifier.GetBool(0, false, variables);
+            var tag = modifier.GetValue(1, variables);
+            var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(tag));
+            if (!list.IsEmpty())
+                for (int i = 0; i < list.Count; i++)
+                    list[i].Enabled = active;
+        }
+
+        public static void signalModifier<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
+
+            foreach (var bm in list)
+                CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
+        }
+        
+        public static void activateModifier<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+
+            var doMultiple = modifier.GetBool(1, true, variables);
+            var index = modifier.GetInt(2, -1, variables);
+
+            // 3 is modifier names
+            var modifierNames = new List<string>();
+            for (int i = 3; i < modifier.commands.Count; i++)
+                modifierNames.Add(modifier.GetValue(i, variables));
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (doMultiple)
+                {
+                    var modifiers = list[i].modifiers.FindAll(x => x.type == ModifierBase.Type.Action && modifierNames.Contains(x.Name));
+
+                    for (int j = 0; j < modifiers.Count; j++)
+                    {
+                        var otherModifier = modifiers[i];
+                        otherModifier.Action?.Invoke(otherModifier, variables);
+                    }
+                    continue;
+                }
+
+                if (index >= 0 && index < list[i].modifiers.Count)
+                {
+                    var otherModifier = list[i].modifiers[index];
+                    otherModifier.Action?.Invoke(otherModifier, variables);
+                }
+            }
+        }
+        
+        public static void editorNotify<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InEditor)
+                EditorManager.inst.DisplayNotification(
+                    /*text: */ modifier.GetValue(0, variables),
+                    /*time: */ modifier.GetFloat(1, 0.5f, variables),
+                    /*type: */ (EditorManager.NotificationType)modifier.GetInt(2, 0, variables));
+        }
+        
+        public static void setWindowTitle<T>(Modifier<T> modifier, Dictionary<string, string> variables) => WindowController.SetTitle(modifier.GetValue(0, variables));
+
+        public static void setDiscordStatus<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            string[] discordSubIcons = new string[]
+            {
+                "arcade",
+                "editor",
+                "play",
+                "menu",
+            };
+
+            string[] discordIcons = new string[]
+            {
+                "pa_logo_white",
+                "pa_logo_black",
+            };
+
+            if (int.TryParse(modifier.commands[2], out int discordSubIcon) && int.TryParse(modifier.commands[3], out int discordIcon))
+                CoreHelper.UpdateDiscordStatus(
+                    string.Format(modifier.value, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                    string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                    discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
+        }
+        
+        #endregion
+    }
+}
+
+#pragma warning restore IDE1006 // Naming Styles

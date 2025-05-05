@@ -33,11 +33,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public ModifierReferenceType referenceType;
 
-        public Action<Modifier<T>> Action { get; set; }
+        public Action<Modifier<T>, Dictionary<string, string>> Action { get; set; }
 
-        public Predicate<Modifier<T>> Trigger { get; set; }
+        public Func<Modifier<T>, Dictionary<string, string>, bool> Trigger { get; set; }
 
-        public Action<Modifier<T>> Inactive { get; set; }
+        public Action<Modifier<T>, Dictionary<string, string>> Inactive { get; set; }
 
         #region Methods
 

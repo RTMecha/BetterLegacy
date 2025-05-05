@@ -119,7 +119,15 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="index">Index of the value.</param>
         /// <returns>Returns a value.</returns>
-        public string GetValue(int index) => index == 0 ? value : commands[index];
+        public string GetValue(int index, Dictionary<string, string> variables = null)
+        {
+            var result = index == 0 ? value : commands[index];
+
+            if (variables != null && variables.TryGetValue(result, out string variable))
+                return variable;
+
+            return result;
+        }
 
         public T GetValue<T>(int index, T defaultValue)
         {
@@ -135,36 +143,36 @@ namespace BetterLegacy.Core.Data.Beatmap
             return default;
         }
 
-        public bool GetBool(int index, bool defaultValue)
+        public bool GetBool(int index, bool defaultValue, Dictionary<string, string> variables = null)
         {
             if (!commands.InRange(index))
                 return defaultValue;
 
-            return Parser.TryParse(GetValue(index), defaultValue);
+            return Parser.TryParse(GetValue(index, variables), defaultValue);
         }
         
-        public float GetFloat(int index, float defaultValue)
+        public float GetFloat(int index, float defaultValue, Dictionary<string, string> variables = null)
         {
             if (!commands.InRange(index))
                 return defaultValue;
 
-            return Parser.TryParse(GetValue(index), defaultValue);
+            return Parser.TryParse(GetValue(index, variables), defaultValue);
         }
         
-        public int GetInt(int index, int defaultValue)
+        public int GetInt(int index, int defaultValue, Dictionary<string, string> variables = null)
         {
             if (!commands.InRange(index))
                 return defaultValue;
 
-            return Parser.TryParse(GetValue(index), defaultValue);
+            return Parser.TryParse(GetValue(index, variables), defaultValue);
         }
 
-        public string GetString(int index, string defaultValue)
+        public string GetString(int index, string defaultValue, Dictionary<string, string> variables = null)
         {
             if (!commands.InRange(index))
                 return defaultValue;
 
-            return GetValue(index);
+            return GetValue(index, variables);
         }
 
         public void SetValue(int index, string value)

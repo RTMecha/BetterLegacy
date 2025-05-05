@@ -26,7 +26,10 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float StartTime { get; set; }
 
         public float KillTime { get; set; }
+
         public int Room { get; set; }
+
+        public Dictionary<string, string> variables = new Dictionary<string, string>();
 
         public void Clear() { }
 
@@ -40,16 +43,17 @@ namespace BetterLegacy.Core.Runtime.Objects
                 modifier.runCount = 0;
                 modifier.active = false;
                 modifier.running = false;
-                modifier.Inactive?.Invoke(modifier);
+                modifier.Inactive?.Invoke(modifier, variables);
             });
         }
 
         public void Interpolate(float time)
         {
+            variables.Clear();
             if (orderMatters)
-                ModifiersHelper.RunModifiersLoop(modifiers);
+                ModifiersHelper.RunModifiersLoop(modifiers, variables: variables);
             else
-                ModifiersHelper.RunModifiersAll(modifiers);
+                ModifiersHelper.RunModifiersAll(modifiers, variables);
         }
     }
 }

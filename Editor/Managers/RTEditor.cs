@@ -3177,7 +3177,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var modifier = beatmapObject.modifiers[j];
                         modifier.active = false;
-                        modifier.Inactive?.Invoke(modifier);
+                        modifier.Inactive?.Invoke(modifier, null);
                     }
                 }
 

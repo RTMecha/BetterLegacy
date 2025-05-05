@@ -1872,7 +1872,7 @@ namespace BetterLegacy.Editor.Managers
 
                     try
                     {
-                        modifier.Inactive?.Invoke(modifier);
+                        modifier.Inactive?.Invoke(modifier, null);
                     }
                     catch (Exception ex)
                     {
@@ -2047,7 +2047,7 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Update Modifier", () =>
                         {
                             modifier.active = false;
-                            modifier.Inactive?.Invoke(modifier);
+                            modifier.Inactive?.Invoke(modifier, null);
                         })
                     };
                     if (ModCompatibility.UnityExplorerInstalled)
