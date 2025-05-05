@@ -302,9 +302,14 @@ namespace BetterLegacy.Core.Runtime
         #region Samples
 
         /// <summary>
+        /// Max amount of samples in audio.
+        /// </summary>
+        public const int MAX_SAMPLES = 256;
+
+        /// <summary>
         /// Samples of the current audio.
         /// </summary>
-        public float[] samples = new float[256];
+        public float[] samples = new float[MAX_SAMPLES];
 
         /// <summary>
         /// Bass audio sample.
