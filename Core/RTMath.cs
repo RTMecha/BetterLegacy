@@ -151,6 +151,8 @@ namespace BetterLegacy.Core
                 context.RegisterVariable("forwardPitch", CoreHelper.ForwardPitch);
                 context.RegisterVariable("mousePosX", Input.mousePosition.x);
                 context.RegisterVariable("mousePosY", Input.mousePosition.y);
+                context.RegisterVariable("mouseScrollX", Input.mouseScrollDelta.x);
+                context.RegisterVariable("mouseScrollY", Input.mouseScrollDelta.y);
                 context.RegisterVariable("screenHeight", Screen.height);
                 context.RegisterVariable("screenWidth", Screen.width);
                 context.RegisterVariable("currentEpoch", SteamworksFacepunch.Epoch.Current);
