@@ -40,6 +40,9 @@ namespace BetterLegacy.Core.Animation
         };
 
         public static EaseFunction GetEaseFunction(string name) => EaseLookup[name];
+
+        public static EaseFunction GetEaseFunction(Easing easing) => GetEaseFunction(easing.ToString());
+
         public static bool HasEaseFunction(string name) => EaseLookup.ContainsKey(name);
 
         public static bool TryGetEaseFunction(string name, out EaseFunction easeFunction) => EaseLookup.TryGetValue(name, out easeFunction);
