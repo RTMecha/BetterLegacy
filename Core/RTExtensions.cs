@@ -10,6 +10,8 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
+using ILMath;
+
 using SimpleJSON;
 using SteamworksFacepunch.Ugc;
 
@@ -932,6 +934,16 @@ namespace BetterLegacy.Core
             return indexers;
         }
 
+        /// <summary>
+        /// Gets the value associated with the specified key. If no value was found, returns the default.
+        /// </summary>
+        /// <typeparam name="TKey">Key of the item.</typeparam>
+        /// <typeparam name="TValue">Value of the item.</typeparam>
+        /// <param name="key">Key to search the dictionary for.</param>
+        /// <param name="defaultValue">Default value to return if no entry was found.</param>
+        /// <returns>Returns the found entry if one was found, otherwise returns the default value.</returns>
+        public static TValue GetOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue) => dictionary.TryGetValue(key, out TValue value) ? value : defaultValue;
+
         #endregion
 
         #region JSON
@@ -1393,6 +1405,39 @@ namespace BetterLegacy.Core
         /// Gets the prefab object reference.
         /// </summary>
         public static PrefabObject GetPrefabObject(this IPrefabable instance) => GameData.Current.prefabObjects.Find(x => x.id == instance.PrefabInstanceID);
+
+        /// <summary>
+        /// Gets variables from the evaluatable object.
+        /// </summary>
+        /// <returns>Returns a dictionary containing variables from the evaluatable object.</returns>
+        public static Dictionary<string, float> GetObjectVariables(this IEvaluatable variableContainer)
+        {
+            var variables = new Dictionary<string, float>();
+            variableContainer.SetObjectVariables(variables);
+            return variables;
+        }
+
+        /// <summary>
+        /// Gets variables from the evaluatable object.
+        /// </summary>
+        /// <returns>Returns a dictionary containing variables from the evaluatable object.</returns>
+        public static Dictionary<string, float> GetOtherObjectVariables(this IEvaluatable variableContainer)
+        {
+            var variables = new Dictionary<string, float>();
+            variableContainer.SetOtherObjectVariables(variables);
+            return variables;
+        }
+
+        /// <summary>
+        /// Gets functions from the evaluatable object.
+        /// </summary>
+        /// <returns>Returns a dictionary containing functionss from the evaluatable object.</returns>
+        public static Dictionary<string, MathFunction> GetObjectFunctions(this IEvaluatable variableContainer)
+        {
+            var functions = new Dictionary<string, MathFunction>();
+            variableContainer.SetObjectFunctions(functions);
+            return functions;
+        }
 
         #endregion
 

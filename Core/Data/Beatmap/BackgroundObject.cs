@@ -5,6 +5,8 @@ using UnityEngine;
 
 using LSFunctions;
 
+using ILMath;
+
 using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
@@ -17,7 +19,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable
     {
         public BackgroundObject() : base() { }
 
@@ -748,6 +750,90 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public IRTObject GetRuntimeObject() => runtimeObject;
+
+        #region Evaluation
+
+        public void SetOtherObjectVariables(Dictionary<string, float> variables)
+        {
+            //variables["otherIntVariable"] = integerVariable;
+
+            variables["otherPositionOffsetX"] = positionOffset.x;
+            variables["otherPositionOffsetY"] = positionOffset.y;
+            variables["otherPositionOffsetZ"] = positionOffset.z;
+
+            variables["otherScaleOffsetX"] = scaleOffset.x;
+            variables["otherScaleOffsetY"] = scaleOffset.y;
+            variables["otherScaleOffsetZ"] = scaleOffset.z;
+
+            variables["otherRotationOffsetX"] = rotationOffset.x;
+            variables["otherRotationOffsetY"] = rotationOffset.y;
+            variables["otherRotationOffsetZ"] = rotationOffset.z;
+
+            if (!runtimeObject)
+                return;
+
+            var gameObject = runtimeObject.BaseObject;
+
+            if (!gameObject)
+                return;
+
+            var transform = gameObject.transform;
+
+            variables["otherVisualPosX"] = transform.position.x;
+            variables["otherVisualPosY"] = transform.position.y;
+            variables["otherVisualPosZ"] = transform.position.z;
+
+            variables["otherVisualScaX"] = transform.lossyScale.x;
+            variables["otherVisualScaY"] = transform.lossyScale.y;
+            variables["otherVisualScaZ"] = transform.lossyScale.z;
+
+            variables["otherVisualRotX"] = transform.rotation.eulerAngles.x;
+            variables["otherVisualRotY"] = transform.rotation.eulerAngles.y;
+            variables["otherVisualRotZ"] = transform.rotation.eulerAngles.z;
+        }
+
+        public void SetObjectVariables(Dictionary<string, float> variables)
+        {
+            //variables["intVariable"] = integerVariable;
+
+            variables["positionOffsetX"] = positionOffset.x;
+            variables["positionOffsetY"] = positionOffset.y;
+            variables["positionOffsetZ"] = positionOffset.z;
+
+            variables["scaleOffsetX"] = scaleOffset.x;
+            variables["scaleOffsetY"] = scaleOffset.y;
+            variables["scaleOffsetZ"] = scaleOffset.z;
+
+            variables["rotationOffsetX"] = rotationOffset.x;
+            variables["rotationOffsetY"] = rotationOffset.y;
+            variables["rotationOffsetZ"] = rotationOffset.z;
+
+            if (!runtimeObject)
+                return;
+
+            var gameObject = runtimeObject.BaseObject;
+
+            if (!gameObject)
+                return;
+
+            var transform = gameObject.transform;
+
+            variables["visualPosX"] = transform.position.x;
+            variables["visualPosY"] = transform.position.y;
+            variables["visualPosZ"] = transform.position.z;
+
+            variables["visualScaX"] = transform.lossyScale.x;
+            variables["visualScaY"] = transform.lossyScale.y;
+            variables["visualScaZ"] = transform.lossyScale.z;
+
+            variables["visualRotX"] = transform.rotation.eulerAngles.x;
+            variables["visualRotY"] = transform.rotation.eulerAngles.y;
+            variables["visualRotZ"] = transform.rotation.eulerAngles.z;
+        }
+
+        public void SetObjectFunctions(Dictionary<string, MathFunction> functions) { }
+
+        #endregion
 
         #endregion
 

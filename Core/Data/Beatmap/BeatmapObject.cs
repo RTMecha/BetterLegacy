@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable
     {
         public BeatmapObject() : base() { }
 
@@ -1761,27 +1761,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         #endregion
 
         #region Evaluation
-
-        public Dictionary<string, float> GetObjectVariables()
-        {
-            var variables = new Dictionary<string, float>();
-            SetObjectVariables(variables);
-            return variables;
-        }
-        
-        public Dictionary<string, float> GetOtherObjectVariables()
-        {
-            var variables = new Dictionary<string, float>();
-            SetOtherObjectVariables(variables);
-            return variables;
-        }
-
-        public Dictionary<string, MathFunction> GetObjectFunctions()
-        {
-            var functions = new Dictionary<string, MathFunction>();
-            SetObjectFunctions(functions);
-            return functions;
-        }
 
         public void SetOtherObjectVariables(Dictionary<string, float> variables)
         {
