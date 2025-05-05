@@ -181,6 +181,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 this.value = value;
             else if (index < commands.Count)
                 commands[index] = value;
+            else
+                commands.Add(value);
         }
 
         #endregion
