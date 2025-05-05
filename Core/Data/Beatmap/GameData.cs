@@ -1836,6 +1836,18 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Gets a list of objects with a tag group.
         /// </summary>
+        /// <param name="prefabInstanceOnly">If the objects should only be associated with the prefab of the object.</param>
+        /// <param name="groupAlive">If the objects should only be alive.</param>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns a list of found objects.</returns>
+        public List<BeatmapObject> FindObjectsWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) => prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+            beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
+            beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
+
+        /// <summary>
+        /// Gets a list of objects with a tag group.
+        /// </summary>
         /// <param name="beatmapObjects">Objects list to search.</param>
         /// <param name="tag">Tag group.</param>
         /// <returns>Returns a list of found objects.</returns>
