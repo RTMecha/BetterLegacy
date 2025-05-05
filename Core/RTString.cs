@@ -274,14 +274,18 @@ namespace BetterLegacy.Core
         /// <param name="beatmapObject"></param>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static string FormatText(BeatmapObject beatmapObject, string str)
+        public static string FormatText(BeatmapObject beatmapObject, string str, Dictionary<string, string> variables = null)
         {
             var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
             var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
 
+            if (variables != null)
+                foreach (var variable in variables)
+                    str = str.Replace($"<var={variable.Key}>", variable.Value);
+
             if (str.Contains("math"))
             {
-                RTString.RegexMatches(str, new Regex(@"<math=""(.*?)>"""), match =>
+                RegexMatches(str, new Regex(@"<math=""(.*?)>"""), match =>
                 {
                     try
                     {
@@ -292,7 +296,7 @@ namespace BetterLegacy.Core
                     }
                 });
 
-                RTString.RegexMatches(str, new Regex(@"<math=(.*?)>"), match =>
+                RegexMatches(str, new Regex(@"<math=(.*?)>"), match =>
                 {
                     try
                     {
@@ -309,25 +313,25 @@ namespace BetterLegacy.Core
             #region Time Span
 
             if (str.Contains("msAudioSpan"))
-                RTString.RegexMatches(str, new Regex(@"<msAudioSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<msAudioSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToMilliSeconds(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
 
             if (str.Contains("sAudioSpan"))
-                RTString.RegexMatches(str, new Regex(@"<sAudioSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<sAudioSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToSeconds(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
 
             if (str.Contains("mAudioSpan"))
-                RTString.RegexMatches(str, new Regex(@"<mAudioSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<mAudioSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToMinutes(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
 
             if (str.Contains("hAudioSpan"))
-                RTString.RegexMatches(str, new Regex(@"<hAudioSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<hAudioSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToHours(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
@@ -337,25 +341,25 @@ namespace BetterLegacy.Core
             #region No Time Span
 
             if (str.Contains("msAudio"))
-                RTString.RegexMatches(str, new Regex(@"<msAudio=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<msAudio=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioTime) * 1000)));
                 });
 
             if (str.Contains("sAudio"))
-                RTString.RegexMatches(str, new Regex(@"<sAudio=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<sAudio=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", currentAudioTime));
                 });
 
             if (str.Contains("mAudio"))
-                RTString.RegexMatches(str, new Regex(@"<mAudio=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<mAudio=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioTime) / 60)));
                 });
 
             if (str.Contains("hAudio"))
-                RTString.RegexMatches(str, new Regex(@"<hAudio=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<hAudio=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (currentAudioTime) / 600));
                 });
@@ -369,25 +373,25 @@ namespace BetterLegacy.Core
             #region Time Span
 
             if (str.Contains("msAudioLeftSpan"))
-                RTString.RegexMatches(str, new Regex(@"<msAudioLeftSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<msAudioLeftSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToMilliSeconds(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
 
             if (str.Contains("sAudioLeftSpan"))
-                RTString.RegexMatches(str, new Regex(@"<sAudioLeftSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<sAudioLeftSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToSeconds(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
 
             if (str.Contains("mAudioLeftSpan"))
-                RTString.RegexMatches(str, new Regex(@"<mAudioLeftSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<mAudioLeftSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToMinutes(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
 
             if (str.Contains("hAudioLeftSpan"))
-                RTString.RegexMatches(str, new Regex(@"<hAudioLeftSpan=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<hAudioLeftSpan=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), PreciseToHours(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
                 });
@@ -397,25 +401,25 @@ namespace BetterLegacy.Core
             #region No Time Span
 
             if (str.Contains("msAudioLeft"))
-                RTString.RegexMatches(str, new Regex(@"<msAudioLeft=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<msAudioLeft=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioLength - currentAudioTime) * 1000)));
                 });
 
             if (str.Contains("sAudioLeft"))
-                RTString.RegexMatches(str, new Regex(@"<sAudioLeft=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<sAudioLeft=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", currentAudioLength - currentAudioTime));
                 });
 
             if (str.Contains("mAudioLeft"))
-                RTString.RegexMatches(str, new Regex(@"<mAudioLeft=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<mAudioLeft=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioLength - currentAudioTime) / 60)));
                 });
 
             if (str.Contains("hAudioLeft"))
-                RTString.RegexMatches(str, new Regex(@"<hAudioLeft=([0-9.:]+)>"), match =>
+                RegexMatches(str, new Regex(@"<hAudioLeft=([0-9.:]+)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (currentAudioLength - currentAudioTime) / 600));
                 });
@@ -427,7 +431,7 @@ namespace BetterLegacy.Core
             #region Real Time
 
             if (str.Contains("realTime"))
-                RTString.RegexMatches(str, new Regex(@"<realTime=([a-z]+)>"), match =>
+                RegexMatches(str, new Regex(@"<realTime=([a-z]+)>"), match =>
                 {
                     try
                     {
@@ -443,7 +447,7 @@ namespace BetterLegacy.Core
             #region Players
 
             if (str.Contains("playerHealth"))
-                RTString.RegexMatches(str, new Regex(@"<playerHealth=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<playerHealth=([0-9]+)>"), match =>
                 {
                     if (int.TryParse(match.Groups[1].ToString(), out int index) && index < InputDataManager.inst.players.Count)
                         str = str.Replace(match.Groups[0].ToString(), InputDataManager.inst.players[index].health.ToString());
@@ -452,7 +456,7 @@ namespace BetterLegacy.Core
                 });
 
             if (str.Contains("playerHealthBar"))
-                RTString.RegexMatches(str, new Regex(@"<playerHealthBar=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<playerHealthBar=([0-9]+)>"), match =>
                 {
                     if (int.TryParse(match.Groups[1].ToString(), out int index) && index < InputDataManager.inst.players.Count)
                     {
@@ -491,7 +495,7 @@ namespace BetterLegacy.Core
             #region QuickElement
 
             if (str.Contains("quickElement"))
-                RTString.RegexMatches(str, new Regex(@"<quickElement=(.*?)>"), match =>
+                RegexMatches(str, new Regex(@"<quickElement=(.*?)>"), match =>
                 {
                     str = str.Replace(match.Groups[0].ToString(), QuickElementManager.ConvertQuickElement(beatmapObject, match.Groups[1].ToString()));
                 });
@@ -501,14 +505,14 @@ namespace BetterLegacy.Core
             #region Random
 
             if (str.Contains("randomText"))
-                RTString.RegexMatches(str, new Regex(@"<randomText=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<randomText=([0-9]+)>"), match =>
                 {
                     if (int.TryParse(match.Groups[1].ToString(), out int length))
                         str = str.Replace(match.Groups[0].ToString(), LSText.randomString(length));
                 });
 
             if (str.Contains("randomNumber"))
-                RTString.RegexMatches(str, new Regex(@"<randomNumber=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<randomNumber=([0-9]+)>"), match =>
                 {
                     if (int.TryParse(match.Groups[1].ToString(), out int length))
                         str = str.Replace(match.Groups[0].ToString(), LSText.randomNumString(length));
@@ -521,28 +525,28 @@ namespace BetterLegacy.Core
             var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
             if (str.Contains("themeObject"))
-                RTString.RegexMatches(str, new Regex(@"<themeObject=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<themeObject=([0-9]+)>"), match =>
                 {
                     if (match.Groups.Count > 1)
                         str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetObjColor(int.Parse(match.Groups[1].ToString())))}>");
                 });
 
             if (str.Contains("themeBGs"))
-                RTString.RegexMatches(str, new Regex(@"<themeBGs=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<themeBGs=([0-9]+)>"), match =>
                 {
                     if (match.Groups.Count > 1)
                         str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetBGColor(int.Parse(match.Groups[1].ToString())))}>");
                 });
 
             if (str.Contains("themeFX"))
-                RTString.RegexMatches(str, new Regex(@"<themeFX=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<themeFX=([0-9]+)>"), match =>
                 {
                     if (match.Groups.Count > 1)
                         str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetFXColor(int.Parse(match.Groups[1].ToString())))}>");
                 });
 
             if (str.Contains("themePlayers"))
-                RTString.RegexMatches(str, new Regex(@"<themePlayers=([0-9]+)>"), match =>
+                RegexMatches(str, new Regex(@"<themePlayers=([0-9]+)>"), match =>
                 {
                     if (match.Groups.Count > 1)
                         str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetPlayerColor(int.Parse(match.Groups[1].ToString())))}>");
@@ -568,7 +572,7 @@ namespace BetterLegacy.Core
                         LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
                         DataManager.inst.levelRanks[0];
 
-                str = str.Replace("<levelRank>", RTString.FormatLevelRank(levelRank));
+                str = str.Replace("<levelRank>", FormatLevelRank(levelRank));
             }
 
             if (str.Contains("<levelRankName>"))
@@ -595,7 +599,7 @@ namespace BetterLegacy.Core
             {
                 var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
 
-                str = str.Replace("<levelRankCurrent>", RTString.FormatLevelRank(levelRank));
+                str = str.Replace("<levelRankCurrent>", FormatLevelRank(levelRank));
             }
 
             if (str.Contains("<levelRankCurrentName>"))
@@ -623,7 +627,7 @@ namespace BetterLegacy.Core
                         else
                             levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
 
-                        str = str.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
+                        str = str.Replace(match.Groups[0].ToString(), FormatLevelRank(levelRank));
                     });
 
                 if (str.Contains("levelRankOtherName"))
@@ -660,14 +664,14 @@ namespace BetterLegacy.Core
 
             if (str.Contains("modifierVariable"))
             {
-                RTString.RegexMatches(str, new Regex(@"<modifierVariable=(.*?)>"), match =>
+                RegexMatches(str, new Regex(@"<modifierVariable=(.*?)>"), match =>
                 {
                     var beatmapObject = GameData.Current.FindObjectWithTag(match.Groups[1].ToString());
                     if (beatmapObject)
                         str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
                 });
 
-                RTString.RegexMatches(str, new Regex(@"<modifierVariableID=(.*?)>"), match =>
+                RegexMatches(str, new Regex(@"<modifierVariableID=(.*?)>"), match =>
                 {
                     var beatmapObject = GameData.Current.beatmapObjects.Find(x => x.id == match.Groups[1].ToString());
                     if (beatmapObject)
