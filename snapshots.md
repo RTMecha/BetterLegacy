@@ -1,11 +1,16 @@
-﻿# ???
+﻿# snapshot-2025.5.6 - (pre-1.7.0) > [May 5, 2025]
 
 ## Features
+### Core
+- Added "get variable" action modifiers. These modifiers gets a specific variable and store it for other modifiers to use.
+- Added a "group alive" value to modifiers. Haven't fully implemented it yet, but it's supposed to check only for alive objects in a group.
+
 ### Editor
 - Added Hide Selection keybinds. These allow you to hide Beatmap Objects, Prefab Objects and Background Objects in the editor.
+- Added context menus to edit the raw data of most modifier values.
 
 ## Fixes
-- Fixed game throwing an error if the checkpoint's name was null.
+- Fixed game throwing an error if the checkpoint's name was null. (Meaning you couldn't play the secret...)
 
 # snapshot-2025.5.5 - (pre-1.7.0) > [May 4, 2025]
 
