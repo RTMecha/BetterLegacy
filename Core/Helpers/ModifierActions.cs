@@ -1910,8 +1910,10 @@ namespace BetterLegacy.Core.Helpers
             PlayersData.Current.SetPlayerModel(index, modifier.GetValue(0, variables));
             PlayerManager.AssignPlayerModels();
 
-            if (PlayerManager.Players.TryGetAt(index, out CustomPlayer customPlayer) || !customPlayer.Player)
+            if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer customPlayer) || !customPlayer.Player)
                 return;
+
+            customPlayer.UpdatePlayerModel();
 
             customPlayer.Player.playerNeedsUpdating = true;
             customPlayer.Player.UpdateModel();
