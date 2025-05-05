@@ -1,4 +1,25 @@
-﻿# snapshot-2025.5.6 - (pre-1.7.0) > [May 5, 2025]
+﻿# ???
+
+## Features
+### Core
+- Added setColorRGBA modifiers. This opperates similarly to setColorHex, except it has individual color channels.
+- Added mouseScrollX and mouseScrollY to math evaluator.
+- A few more get variable modifiers have been added.
+- formatText modifier now passes variables to the text formatting. You can place <var=VARIABLE_NAME> into a text object that has this modifier, with VARIABLE_NAME being one of the variables you registered. formatText has to be at the end of other modifiers.
+- Added break trigger modifier. This modifier is always active, which creates a break in action trigger checking.
+- Added localVariableEquals trigger modifiers. These modifiers compare local modifier variables.
+
+### Editor
+- setPlayerModel modifier's Model ID value now has a context menu for selecting a player model.
+
+## Fixes
+- Fixes setPlayerModel modifier not actually updating the player model.
+
+## Changes
+### Core
+- A ton of modifiers have been tweaked to fit with the new get variable modifiers.
+
+# snapshot-2025.5.6 - (pre-1.7.0) > [May 5, 2025]
 
 ## Features
 ### Core
