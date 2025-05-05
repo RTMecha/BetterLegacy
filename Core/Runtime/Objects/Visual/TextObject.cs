@@ -44,6 +44,12 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 textMeshPro.text = text;
         }
 
+        /// <summary>
+        /// Gets the text objects' text.
+        /// </summary>
+        /// <returns>Returns the text of the text object.</returns>
+        public string GetText() => textMeshPro ? textMeshPro.text : string.Empty;
+
         public override void SetColor(Color color) => textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
 
         public override Color GetPrimaryColor() => textMeshPro.color;
