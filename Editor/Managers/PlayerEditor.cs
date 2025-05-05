@@ -2275,9 +2275,14 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public IEnumerator RefreshModels()
+        public IEnumerator RefreshModels(Action<PlayerModel> onSelect = null)
         {
             RTEditor.inst.PlayerModelsPopup.ClearContent();
+            RTEditor.inst.PlayerModelsPopup.SearchField.onValueChanged.NewListener(_val =>
+            {
+                modelSearchTerm = _val;
+                StartCoroutine(RefreshModels(onSelect));
+            });
 
             int num = 0;
             foreach (var playerModel in PlayersData.externalPlayerModels)
@@ -2292,9 +2297,14 @@ namespace BetterLegacy.Editor.Managers
 
                 var model = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.PlayerModelsPopup.Content, name);
                 var modelButton = model.GetComponent<Button>();
-                modelButton.onClick.ClearAll();
-                modelButton.onClick.AddListener(() =>
+                modelButton.onClick.NewListener(() =>
                 {
+                    if (onSelect != null)
+                    {
+                        onSelect.Invoke(playerModel.Value);
+                        return;
+                    }
+
                     PlayersData.Current.playerModels[playerModel.Key] = playerModel.Value;
                     PlayersData.Current.SetPlayerModel(playerModelIndex, playerModel.Key);
                     PlayerManager.RespawnPlayers();
@@ -2328,6 +2338,12 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Delete", () =>
                         {
+                            if (index < 5)
+                            {
+                                EditorManager.inst.DisplayNotification($"Cannot delete a default player model.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                             {
                                 PlayersData.Current.SetPlayerModel(playerModelIndex, PlayerModel.DEFAULT_ID);
@@ -2335,7 +2351,7 @@ namespace BetterLegacy.Editor.Managers
                                 PlayersData.Current.playerModels.Remove(playerModel.Key);
                                 PlayerManager.RespawnPlayers();
                                 StartCoroutine(RefreshEditor());
-                                StartCoroutine(RefreshModels());
+                                StartCoroutine(RefreshModels(onSelect));
 
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup);
@@ -2362,8 +2378,7 @@ namespace BetterLegacy.Editor.Managers
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(model.transform, "Delete");
                 UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                 var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(() =>
+                deleteStorage.button.onClick.NewListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
                     {
@@ -2372,7 +2387,7 @@ namespace BetterLegacy.Editor.Managers
                         PlayersData.Current.playerModels.Remove(playerModel.Key);
                         PlayerManager.RespawnPlayers();
                         StartCoroutine(RefreshEditor());
-                        StartCoroutine(RefreshModels());
+                        StartCoroutine(RefreshModels(onSelect));
 
 
                         RTEditor.inst.HideWarningPopup();
