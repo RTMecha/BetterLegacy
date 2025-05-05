@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using UnityEngine;
 
@@ -124,6 +122,8 @@ namespace BetterLegacy.Core.Helpers
                 AudioManager.inst.SetMusicTime(lifeTime.StartTime + lifeTime.SpawnDuration);
         }
 
+        public static void setMusicPlaying<T>(Modifier<T> modifier, Dictionary<string, string> variables) => SoundManager.inst.SetPlaying(modifier.GetBool(0, false, variables));
+
         public static void playSound<T>(Modifier<T> modifier, Dictionary<string, string> variables) where T : PAObject<T>, new()
         {
             if (modifier.reference is not PAObject<T> obj)
@@ -243,8 +243,6 @@ namespace BetterLegacy.Core.Helpers
                 ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
             }));
         }
-
-        public static void setMusicPlaying<T>(Modifier<T> modifier, Dictionary<string, string> variables) => SoundManager.inst.SetPlaying(modifier.GetBool(0, false, variables));
 
         #endregion
 
@@ -858,8 +856,9 @@ namespace BetterLegacy.Core.Helpers
             if (PlayerManager.Invincible || modifier.constant)
                 return;
 
+            var damage = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue));
+                customPlayer.Player.Hit(damage);
         }
         
         public static void playerHitAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -897,8 +896,8 @@ namespace BetterLegacy.Core.Helpers
             if (PlayerManager.Invincible || modifier.constant)
                 return;
 
-            var health = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+            var health = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
                 customPlayer.Player.Heal(health);
         }
 
@@ -980,9 +979,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant)
                 return;
 
-            var playerIndex = modifier.GetInt(0, 0);
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
-                PlayerManager.RespawnPlayer(playerIndex);
+            PlayerManager.RespawnPlayer(modifier.GetInt(0, 0));
         }
         
         public static void playerRespawnAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -1034,7 +1031,7 @@ namespace BetterLegacy.Core.Helpers
                         new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
                             new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
-                            new Vector2Keyframe(modifier.GetFloat(1, 1f, variables), new Vector2(vector.x + (relative ? tf.position.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new Vector2Keyframe(modifier.GetFloat(1, 1f, variables), new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.localPosition.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1043,6 +1040,39 @@ namespace BetterLegacy.Core.Helpers
             });
         }
         
+        public static void playerMoveIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var vector = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
+            var duration = modifier.GetFloat(3, 0f, variables);
+
+            string easing = modifier.GetValue(4, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            var relative = modifier.GetBool(5, false, variables);
+
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+                return;
+
+            var tf = customPlayer.Player.rb.transform;
+            if (modifier.constant)
+                tf.localPosition = vector;
+            else
+            {
+                var animation = new RTAnimation("Player Move");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
+                        new Vector2Keyframe(duration, new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+            }
+        }
+
         public static void playerMoveAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var value = modifier.GetValue(0);
@@ -1056,25 +1086,32 @@ namespace BetterLegacy.Core.Helpers
             else
                 vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(4, 0f, variables));
 
+            var duration = modifier.GetFloat(1, 1f, variables);
+
+            string easing = modifier.GetValue(2, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
             bool relative = modifier.GetBool(3, false, variables);
             foreach (var player in PlayerManager.Players.Where(x => x.Player))
             {
                 var tf = player.Player.rb.transform;
                 if (modifier.constant)
-                    tf.localPosition = vector;
+                {
+                    if (relative)
+                        tf.localPosition += (Vector3)vector;
+                    else
+                        tf.localPosition = vector;
+                }
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
-
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
                             new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
-                            new Vector2Keyframe(modifier.GetFloat(1, 1f, variables), new Vector2(vector.x + (relative ? tf.position.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new Vector2Keyframe(duration, new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1088,6 +1125,14 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.reference)
                 return;
 
+            var value = modifier.GetFloat(0, 0f, variables);
+            var duration = modifier.GetFloat(1, 1f, variables);
+            string easing = modifier.GetValue(2, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            bool relative = modifier.GetBool(3, false, variables);
+
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -1096,7 +1141,6 @@ namespace BetterLegacy.Core.Helpers
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                bool relative = modifier.GetBool(3, false, variables);
                 if (!player)
                     return;
 
@@ -1104,22 +1148,21 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
-                    v.x += modifier.GetFloat(0, 1f, variables);
+                    if (relative)
+                        v.x += value;
+                    else
+                        v.x = value;
                     tf.localPosition = v;
                 }
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
-
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, tf.localPosition.x, Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(duration, value + (relative ? tf.localPosition.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionX, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1127,9 +1170,55 @@ namespace BetterLegacy.Core.Helpers
                 }
             });
         }
-        
+
+        public static void playerMoveXIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var value = modifier.GetFloat(1, 0f, variables);
+            var duration = modifier.GetFloat(2, 0f, variables);
+
+            string easing = modifier.GetValue(3, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            var relative = modifier.GetBool(4, false, variables);
+
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+                return;
+
+            var tf = customPlayer.Player.rb.transform;
+            if (modifier.constant)
+            {
+                var v = tf.localPosition;
+                if (relative)
+                    v.x += value;
+                else
+                    v.x = value;
+                tf.localPosition = v;
+            }
+            else
+            {
+                var animation = new RTAnimation("Player Move");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, tf.localPosition.x, Ease.Linear),
+                        new FloatKeyframe(duration, value + (relative ? tf.localPosition.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, tf.SetLocalPositionX, interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+            }
+        }
+
         public static void playerMoveXAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            var value = modifier.GetFloat(0, 0f, variables);
+            var duration = modifier.GetFloat(1, 1f, variables);
+            string easing = modifier.GetValue(2, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
             bool relative = modifier.GetBool(3, false, variables);
             foreach (var player in PlayerManager.Players.Where(x => x.Player))
             {
@@ -1137,22 +1226,21 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
-                    v.x += modifier.GetFloat(0, 1f, variables);
+                    if (relative)
+                        v.x += value;
+                    else
+                        v.x = value;
                     tf.localPosition = v;
                 }
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
-
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, tf.localPosition.x, Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(duration, value + (relative ? tf.localPosition.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionX, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1166,6 +1254,14 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.reference)
                 return;
 
+            var value = modifier.GetFloat(0, 0f, variables);
+            var duration = modifier.GetFloat(1, 1f, variables);
+            string easing = modifier.GetValue(2, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            bool relative = modifier.GetBool(3, false, variables);
+
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -1174,7 +1270,6 @@ namespace BetterLegacy.Core.Helpers
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                bool relative = modifier.GetBool(3, false, variables);
                 if (!player)
                     return;
 
@@ -1182,22 +1277,21 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
-                    v.y += modifier.GetFloat(0, 1f, variables);
+                    if (relative)
+                        v.y += value;
+                    else
+                        v.y = value;
                     tf.localPosition = v;
                 }
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
-
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, tf.localPosition.y, Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(duration, value + (relative ? tf.localPosition.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionY, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1205,9 +1299,55 @@ namespace BetterLegacy.Core.Helpers
                 }
             });
         }
-        
+
+        public static void playerMoveYIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var value = modifier.GetFloat(1, 0f, variables);
+            var duration = modifier.GetFloat(2, 0f, variables);
+
+            string easing = modifier.GetValue(3, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            var relative = modifier.GetBool(4, false, variables);
+
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+                return;
+
+            var tf = customPlayer.Player.rb.transform;
+            if (modifier.constant)
+            {
+                var v = tf.localPosition;
+                if (relative)
+                    v.y += value;
+                else
+                    v.y = value;
+                tf.localPosition = v;
+            }
+            else
+            {
+                var animation = new RTAnimation("Player Move");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, tf.localPosition.y, Ease.Linear),
+                        new FloatKeyframe(duration, value + (relative ? tf.localPosition.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, tf.SetLocalPositionY, interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+            }
+        }
+
         public static void playerMoveYAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            var value = modifier.GetFloat(0, 0f, variables);
+            var duration = modifier.GetFloat(1, 1f, variables);
+            string easing = modifier.GetValue(2, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
             bool relative = modifier.GetBool(3, false, variables);
             foreach (var player in PlayerManager.Players.Where(x => x.Player))
             {
@@ -1215,22 +1355,21 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
-                    v.y += modifier.GetFloat(0, 1f, variables);
+                    if (relative)
+                        v.y += value;
+                    else
+                        v.y = value;
                     tf.localPosition = v;
                 }
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
-
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, tf.localPosition.y, Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.position.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(duration, value + (relative ? tf.localPosition.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionY, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1244,6 +1383,13 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.reference)
                 return;
 
+            var value = modifier.GetFloat(0, 0f, variables);
+            string easing = modifier.GetValue(2, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+            var duration = modifier.GetFloat(1, 1f, variables);
+            bool relative = modifier.GetBool(3, false, variables);
+
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -1252,7 +1398,6 @@ namespace BetterLegacy.Core.Helpers
 
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                bool relative = modifier.GetBool(3, false, variables);
                 if (!player)
                     return;
 
@@ -1260,22 +1405,21 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.constant)
                 {
                     var v = tf.localRotation.eulerAngles;
-                    v.z += Parser.TryParse(modifier.value, 1f);
+                    if (relative)
+                        v.z += value;
+                    else
+                        v.z = value;
                     tf.localRotation = Quaternion.Euler(v);
                 }
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
-
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, tf.localRotation.eulerAngles.z, Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(duration, value + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1283,9 +1427,55 @@ namespace BetterLegacy.Core.Helpers
                 }
             });
         }
-        
+
+        public static void playerRotateIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var value = modifier.GetFloat(1, 0f, variables);
+            var duration = modifier.GetFloat(2, 0f, variables);
+
+            string easing = modifier.GetValue(3, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            var relative = modifier.GetBool(4, false, variables);
+
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+                return;
+
+            var tf = customPlayer.Player.rb.transform;
+            if (modifier.constant)
+            {
+                var v = tf.localRotation.eulerAngles;
+                if (relative)
+                    v.z += value;
+                else
+                    v.z = value;
+                tf.localRotation = Quaternion.Euler(v);
+            }
+            else
+            {
+                var animation = new RTAnimation("Player Move");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, tf.localRotation.eulerAngles.z, Ease.Linear),
+                        new FloatKeyframe(duration, value + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+            }
+        }
+
         public static void playerRotateAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            var value = modifier.GetFloat(0, 0f, variables);
+            string easing = modifier.GetValue(2, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+            var duration = modifier.GetFloat(1, 1f, variables);
+
             bool relative = modifier.GetBool(3, false, variables);
             foreach (var player in PlayerManager.Players.Where(x => x.Player))
             {
@@ -1293,22 +1483,21 @@ namespace BetterLegacy.Core.Helpers
                 if (modifier.constant)
                 {
                     var v = tf.localRotation.eulerAngles;
-                    v.z += Parser.TryParse(modifier.value, 1f);
+                    if (relative)
+                        v.z += value;
+                    else
+                        v.z = value;
                     tf.localRotation = Quaternion.Euler(v);
                 }
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
-
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, tf.localRotation.eulerAngles.z, Ease.Linear),
-                            new FloatKeyframe(modifier.GetFloat(1, 1f, variables), modifier.GetFloat(0, 0f, variables) + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new FloatKeyframe(duration, value + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1336,7 +1525,26 @@ namespace BetterLegacy.Core.Helpers
                 player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
             });
         }
-        
+
+        public static void playerMoveIndexToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            var index = modifier.GetInt(0, 0, variables);
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                    return;
+
+                player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+            });
+        }
+
         public static void playerMoveAllToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             if (!modifier.reference)
@@ -1378,7 +1586,27 @@ namespace BetterLegacy.Core.Helpers
                 player.Player.rb.position = new Vector2(pos.x, y);
             });
         }
-        
+
+        public static void playerMoveXIndexToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            var index = modifier.GetInt(0, 0, variables);
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                    return;
+
+                var y = player.Player.rb.position.y;
+                player.Player.rb.position = new Vector2(pos.x, y);
+            });
+        }
+
         public static void playerMoveXAllToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             if (!modifier.reference)
@@ -1415,6 +1643,26 @@ namespace BetterLegacy.Core.Helpers
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player || !player.Player.rb)
+                    return;
+
+                var x = player.Player.rb.position.x;
+                player.Player.rb.position = new Vector2(x, pos.y);
+            });
+        }
+
+        public static void playerMoveYIndexToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            var index = modifier.GetInt(0, 0, variables);
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
                     return;
 
                 var x = player.Player.rb.position.x;
@@ -1463,7 +1711,26 @@ namespace BetterLegacy.Core.Helpers
                 player.Player.rb.transform.SetLocalRotationEulerZ(runtimeObject.visualObject.gameObject.transform.localRotation.eulerAngles.z);
             });
         }
-        
+
+        public static void playerRotateIndexToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            var index = modifier.GetInt(0, 0, variables);
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var runtimeObject = modifier.reference.runtimeObject;
+                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                    return;
+
+                player.Player.rb.transform.SetLocalRotationEulerZ(runtimeObject.visualObject.gameObject.transform.localRotation.eulerAngles.z);
+            });
+        }
+
         public static void playerRotateAllToObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             if (!modifier.reference)
@@ -1552,6 +1819,8 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.reference)
                 return;
 
+            var enabled = modifier.GetBool(0, true, variables);
+            
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -1561,20 +1830,24 @@ namespace BetterLegacy.Core.Helpers
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (player && player.Player)
-                    player.Player.CanBoost = true;
+                    player.Player.CanBoost = enabled;
             });
         }
         
         public static void playerEnableBoostIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
+            var enabled = modifier.GetBool(1, true, variables);
+
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.CanBoost = true;
+                customPlayer.Player.CanBoost = enabled;
         }
         
         public static void playerEnableBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            var enabled = modifier.GetBool(0, true, variables);
+
             foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                player.Player.CanBoost = true;
+                player.Player.CanBoost = enabled;
         }
         
         public static void playerSpeed<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f, variables);
@@ -1765,29 +2038,47 @@ namespace BetterLegacy.Core.Helpers
 
         #region Variable
 
-        public static void getPitch<T>(Modifier<T> modifier, Dictionary<string, string> variables)
-        {
-            variables[modifier.GetValue(0, variables)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
-        }
-
-        public static void getMusicTime<T>(Modifier<T> modifier, Dictionary<string, string> variables)
-        {
-            variables[modifier.GetValue(0, variables)] = AudioManager.inst.CurrentAudioSource.time.ToString();
-        }
-
+        // local variables
         public static void getToggle<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0, variables)] = modifier.GetBool(1, false, variables).ToString();
+            variables[modifier.GetValue(0)] = modifier.GetBool(1, false, variables).ToString();
         }
         
         public static void getFloat<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0, variables)] = modifier.GetFloat(1, 0f, variables).ToString();
+            variables[modifier.GetValue(0)] = modifier.GetFloat(1, 0f, variables).ToString();
         }
         
         public static void getInt<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0, variables)] = modifier.GetInt(1, 0, variables).ToString();
+            variables[modifier.GetValue(0)] = modifier.GetInt(1, 0, variables).ToString();
+        }
+
+        public static void getString<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = modifier.GetValue(1, variables);
+        }
+        
+        public static void getColor<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = modifier.GetInt(1, 0, variables).ToString();
+        }
+
+        public static void getEnum<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var index = (modifier.GetInt(1, 0, variables) * 2) + 4;
+            if (modifier.commands.Count > index)
+                variables[modifier.GetValue(0)] = modifier.GetValue(index, variables).ToString();
+        }
+
+        public static void getPitch<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
+        }
+
+        public static void getMusicTime<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = AudioManager.inst.CurrentAudioSource.time.ToString();
         }
 
         public static void getAxis(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -1811,7 +2102,7 @@ namespace BetterLegacy.Core.Helpers
                 if (fromType < 0 || fromType > 2)
                     return;
 
-                variables[modifier.GetValue(0, variables)] = ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
+                variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
             }
         }
 
@@ -1822,11 +2113,73 @@ namespace BetterLegacy.Core.Helpers
                 var numberVariables = modifier.reference.GetObjectVariables();
                 ModifiersHelper.SetVariables(variables, numberVariables);
 
-                variables[modifier.GetValue(0, variables)] = RTMath.Parse(modifier.GetValue(1, variables), numberVariables, modifier.reference.GetObjectFunctions()).ToString();
+                variables[modifier.GetValue(0)] = RTMath.Parse(modifier.GetValue(1, variables), numberVariables, modifier.reference.GetObjectFunctions()).ToString();
             }
             catch { }
         }
 
+        public static void getNearestPlayer(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+            variables[modifier.GetValue(0)] = PlayerManager.GetClosestPlayerIndex(pos).ToString();
+        }
+
+        public static void getEventValue<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!RTLevel.Current.eventEngine)
+                return;
+
+            float multiply = modifier.GetFloat(4, 0f, variables);
+            float offset = modifier.GetFloat(5, 0f, variables);
+            float min = modifier.GetFloat(6, -9999f, variables);
+            float max = modifier.GetFloat(7, 9999f, variables);
+            float loop = modifier.GetFloat(8, 9999f, variables);
+
+            var value = RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), RTLevel.Current.CurrentTime - modifier.GetFloat(3, 0f, variables));
+
+            value = Mathf.Clamp((value - offset) * multiply % loop, min, max);
+
+            variables[modifier.GetValue(0)] = value.ToString();
+        }
+
+        public static void getSample<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(2, 1f, variables)).ToString();
+        }
+
+        public static void getText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var useVisual = modifier.GetBool(1, false, variables);
+            if (useVisual && modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject is TextObject textObject)
+                variables[modifier.GetValue(0)] = textObject.GetText();
+            else
+                variables[modifier.GetValue(0)] = modifier.reference.text;
+        }
+
+        public static void getTextOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(2, variables), out BeatmapObject beatmapObject))
+                return;
+
+            var useVisual = modifier.GetBool(1, false, variables);
+            if (useVisual && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is TextObject textObject)
+                variables[modifier.GetValue(0)] = textObject.GetText();
+            else
+                variables[modifier.GetValue(0)] = beatmapObject.text;
+        }
+
+        public static void getCurrentKey(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = CoreHelper.GetKeyCodeDown().ToString();
+        }
+
+        // hex code related modifiers
+
+        public static void clearLocalVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables) => variables.Clear();
+
+        // object variable
         public static void addVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             if (modifier.commands.Count == 2)
@@ -2032,21 +2385,28 @@ namespace BetterLegacy.Core.Helpers
 
         public static void enableObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
+            var value = modifier.GetValue(0, variables);
+            if (value == "0")
+                value = "True";
+
             if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.top)
-                modifier.reference.runtimeObject.top.gameObject.SetActive(true);
+                modifier.reference.runtimeObject.top.gameObject.SetActive(Parser.TryParse(value, true));
         }
         
         public static void enableObjectTree(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            if (modifier.GetValue(0) == "0")
-                modifier.SetValue(0, "False");
+            var value = modifier.GetValue(0, variables);
+            if (value == "0")
+                value = "False";
 
             if (!modifier.HasResult())
             {
-                var beatmapObject = modifier.GetBool(0, true, variables) ? modifier.reference : modifier.reference.GetParentChain().Last();
+                var beatmapObject = Parser.TryParse(value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
                 modifier.Result = beatmapObject.GetChildTree();
             }
+
+            var enabled = modifier.GetBool(2, true, variables);
 
             var list = modifier.GetResult<List<BeatmapObject>>();
 
@@ -2054,18 +2414,20 @@ namespace BetterLegacy.Core.Helpers
             {
                 var beatmapObject = list[i];
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                    beatmapObject.runtimeObject.top.gameObject.SetActive(true);
+                    beatmapObject.runtimeObject.top.gameObject.SetActive(enabled);
             }
         }
         
         public static void enableObjectOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
+            var enabled = modifier.GetBool(2, true, variables);
+
             var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
 
             if (!list.IsEmpty())
                 foreach (var beatmapObject in list)
                     if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                        beatmapObject.runtimeObject.top.gameObject.SetActive(true);
+                        beatmapObject.runtimeObject.top.gameObject.SetActive(enabled);
         }
         
         public static void enableObjectTreeOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2085,13 +2447,15 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = resultList;
             }
 
+            var enabled = modifier.GetBool(3, true, variables);
+
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
             {
                 var beatmapObject = list[i];
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                    beatmapObject.runtimeObject.top.gameObject.SetActive(true);
+                    beatmapObject.runtimeObject.top.gameObject.SetActive(enabled);
             }
         }
 
@@ -2788,7 +3152,7 @@ namespace BetterLegacy.Core.Helpers
         public static void setColorHex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             var runtimeObject = modifier.reference.runtimeObject;
-            if (!modifier.reference || !runtimeObject)
+            if (!runtimeObject)
                 return;
 
             var color1 = modifier.GetValue(0, variables);
@@ -2843,6 +3207,52 @@ namespace BetterLegacy.Core.Helpers
                             string.IsNullOrEmpty(color1) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), colors.startColor.a),
                             string.IsNullOrEmpty(color2) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color2), colors.endColor.a));
                     }
+                }
+            });
+        }
+
+        public static void setColorRGBA(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!runtimeObject)
+                return;
+
+            var color1 = new Color(modifier.GetFloat(0, 1f, variables), modifier.GetFloat(1, 1f, variables), modifier.GetFloat(2, 1f, variables), modifier.GetFloat(3, 1f, variables));
+            var color2 = new Color(modifier.GetFloat(4, 1f, variables), modifier.GetFloat(5, 1f, variables), modifier.GetFloat(6, 1f, variables), modifier.GetFloat(7, 1f, variables));
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                if (!runtimeObject.visualObject.isGradient)
+                    runtimeObject.visualObject.SetColor(color1);
+                else if (runtimeObject.visualObject is SolidObject solidObject)
+                    solidObject.SetColor(color1, color2);
+            });
+        }
+
+        public static void setColorRGBAOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(8, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var color1 = new Color(modifier.GetFloat(0, 1f, variables), modifier.GetFloat(1, 1f, variables), modifier.GetFloat(2, 1f, variables), modifier.GetFloat(3, 1f, variables));
+            var color2 = new Color(modifier.GetFloat(4, 1f, variables), modifier.GetFloat(5, 1f, variables), modifier.GetFloat(6, 1f, variables), modifier.GetFloat(7, 1f, variables));
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                foreach (var bm in list)
+                {
+                    var runtimeObject = bm.runtimeObject;
+                    if (!runtimeObject)
+                        continue;
+
+                    if (!runtimeObject.visualObject.isGradient)
+                        runtimeObject.visualObject.SetColor(color1);
+                    else if (runtimeObject.visualObject is SolidObject solidObject)
+                        solidObject.SetColor(color1, color2);
                 }
             });
         }
@@ -2992,7 +3402,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty :
-                textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, textObject.textMeshPro.text.Length - 1));
+                textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, textObject.textMeshPro.text.Length));
 
             if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                 textObject.SetText(text);
@@ -3015,8 +3425,8 @@ namespace BetterLegacy.Core.Helpers
                 if (bm.ShapeType != ShapeType.Text || !levelObject || levelObject.visualObject is not TextObject textObject)
                     continue;
 
-                string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" :
-                    textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(remove, 0, textObject.textMeshPro.text.Length - 1));
+                string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty :
+                    textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(remove, 0, textObject.textMeshPro.text.Length));
 
                 if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                     textObject.SetText(text);
@@ -3031,8 +3441,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var remove = modifier.GetInt(0, 1, variables);
-            string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
-                textObject.textMeshPro.text.Remove(remove, 1) : "";
+            string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty : textObject.textMeshPro.text.Length > remove ?
+                textObject.textMeshPro.text.Remove(remove, 1) : string.Empty;
 
             if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                 textObject.SetText(text);
@@ -3054,8 +3464,8 @@ namespace BetterLegacy.Core.Helpers
                 if (bm.ShapeType != ShapeType.Text || !bm.runtimeObject || bm.runtimeObject.visualObject is not TextObject textObject)
                     continue;
 
-                string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
-                    textObject.textMeshPro.text.Remove(remove, 1) : "";
+                string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? string.Empty : textObject.textMeshPro.text.Length > remove ?
+                    textObject.textMeshPro.text.Remove(remove, 1) : string.Empty;
 
                 if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                     textObject.SetText(text);
@@ -3068,7 +3478,7 @@ namespace BetterLegacy.Core.Helpers
         {
             if (!CoreConfig.Instance.AllowCustomTextFormatting.Value && modifier.reference.ShapeType == ShapeType.Text &&
                 modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject is TextObject textObject)
-                textObject.SetText(RTString.FormatText(modifier.reference, textObject.text));
+                textObject.SetText(RTString.FormatText(modifier.reference, textObject.text, variables));
         }
 
         public static void textSequence(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)

@@ -401,6 +401,39 @@ namespace BetterLegacy.Core.Helpers
 
             #region Variable
 
+            "localVariableEquals" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && result == modifier.GetValue(1, variables);
+            },
+            "localVariableLesserEquals" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) <= modifier.GetFloat(1, 0f, variables);
+            },
+            "localVariableGreaterEquals" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) >= modifier.GetFloat(1, 0f, variables);
+            },
+            "localVariableLesser" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) < modifier.GetFloat(1, 0f, variables);
+            },
+            "localVariableGreater" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) > modifier.GetFloat(1, 0f, variables);
+            },
+            "localVariableContains" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && result.Contains(modifier.GetValue(1, variables));
+            },
+            "localVariableStartsWith" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && result.StartsWith(modifier.GetValue(1, variables));
+            },
+            "localVariableEndsWith" => (modifier, variables) =>
+            {
+                return variables.TryGetValue(modifier.GetValue(0), out string result) && result.EndsWith(modifier.GetValue(1, variables));
+            },
+
             // self
             "variableEquals" => (modifier, variables) =>
             {
@@ -1075,6 +1108,7 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
+            "break" => (Modifier, variables) => true,
             _ => (modifier, variables) => false,
         };
 
@@ -1088,18 +1122,18 @@ namespace BetterLegacy.Core.Helpers
             "setPitchMath" => ModifierActions.setPitchMath,
             "addPitchMath" => ModifierActions.addPitchMath,
 
-            // music time
+            // music playing states
             "setMusicTime" => ModifierActions.setMusicTime,
             "setMusicTimeMath" => ModifierActions.setMusicTimeMath,
             "setMusicTimeStartTime" => ModifierActions.setMusicTimeStartTime,
             "setMusicTimeAutokill" => ModifierActions.setMusicTimeAutokill,
+            "setMusicPlaying" => ModifierActions.setMusicPlaying,
 
             // play sound
             "playSound" => ModifierActions.playSound,
             "playSoundOnline" => ModifierActions.playSoundOnline,
             "playDefaultSound" => ModifierActions.playDefaultSound,
             "audioSource" => ModifierActions.audioSource,
-            "setMusicPlaying" => ModifierActions.setMusicPlaying,
 
             #endregion
 
@@ -1160,22 +1194,30 @@ namespace BetterLegacy.Core.Helpers
 
             // player move
             "playerMove" => ModifierActions.playerMove,
+            "playerMoveIndex" => ModifierActions.playerMoveIndex,
             "playerMoveAll" => ModifierActions.playerMoveAll,
             "playerMoveX" => ModifierActions.playerMoveX,
+            "playerMoveXIndex" => ModifierActions.playerMoveXIndex,
             "playerMoveXAll" => ModifierActions.playerMoveXAll,
             "playerMoveY" => ModifierActions.playerMoveY,
+            "playerMoveYIndex" => ModifierActions.playerMoveYIndex,
             "playerMoveYAll" => ModifierActions.playerMoveYAll,
             "playerRotate" => ModifierActions.playerRotate,
+            "playerRotateIndex" => ModifierActions.playerRotateIndex,
             "playerRotateAll" => ModifierActions.playerRotateAll,
 
             // move to object
             "playerMoveToObject" => ModifierActions.playerMoveToObject,
+            "playerMoveIndexToObject" => ModifierActions.playerMoveIndexToObject,
             "playerMoveAllToObject" => ModifierActions.playerMoveAllToObject,
             "playerMoveXToObject" => ModifierActions.playerMoveXToObject,
+            "playerMoveXIndexToObject" => ModifierActions.playerMoveXIndexToObject,
             "playerMoveXAllToObject" => ModifierActions.playerMoveXAllToObject,
             "playerMoveYToObject" => ModifierActions.playerMoveYToObject,
+            "playerMoveYIndexToObject" => ModifierActions.playerMoveYIndexToObject,
             "playerMoveYAllToObject" => ModifierActions.playerMoveYAllToObject,
             "playerRotateToObject" => ModifierActions.playerRotateToObject,
+            "playerRotateIndexToObject" => ModifierActions.playerRotateIndexToObject,
             "playerRotateAllToObject" => ModifierActions.playerRotateAllToObject,
 
             // actions
@@ -1213,13 +1255,23 @@ namespace BetterLegacy.Core.Helpers
 
             #region Variable
 
-            "getPitch" => ModifierActions.getPitch,
-            "getMusicTime" => ModifierActions.getMusicTime,
             "getToggle" => ModifierActions.getToggle,
             "getFloat" => ModifierActions.getFloat,
             "getInt" => ModifierActions.getInt,
+            "getString" => ModifierActions.getString,
+            "getColor" => ModifierActions.getColor,
+            "getEnum" => ModifierActions.getEnum,
+            "getPitch" => ModifierActions.getPitch,
+            "getMusicTime" => ModifierActions.getMusicTime,
             "getAxis" => ModifierActions.getAxis,
             "getMath" => ModifierActions.getMath,
+            "getNearestPlayer" => ModifierActions.getNearestPlayer,
+            "getEventValue" => ModifierActions.getEventValue,
+            "getSample" => ModifierActions.getSample,
+            "getText" => ModifierActions.getText,
+            "getTextOther" => ModifierActions.getTextOther,
+            "getCurrentKey" => ModifierActions.getCurrentKey,
+            "clearLocalVariables" => ModifierActions.clearLocalVariables,
 
             "addVariable" => ModifierActions.addVariable,
             "addVariableOther" => ModifierActions.addVariableOther,
@@ -1315,6 +1367,10 @@ namespace BetterLegacy.Core.Helpers
             // hex code
             "setColorHex" => ModifierActions.setColorHex,
             "setColorHexOther" => ModifierActions.setColorHexOther,
+
+            // rgba
+            "setColorRGBA" => ModifierActions.setColorRGBA,
+            "setColorRGBAOther" => ModifierActions.setColorRGBAOther,
 
             #endregion
 
