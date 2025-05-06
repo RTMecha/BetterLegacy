@@ -125,6 +125,31 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
+        /// Performs an action at the end of the current frame.
+        /// </summary>
+        /// <param name="action">Action to run at the end of the frame.</param>
+        public static void PerformAtEndOfFrame(Action action) => StartCoroutine(IPerformAtEndOfFrame(action));
+
+        /// <summary>
+        /// Performs an action at the end of the current frame.
+        /// </summary>
+        /// <param name="action">Action to run at the end of the frame.</param>
+        public static IEnumerator IPerformAtEndOfFrame(Action action)
+        {
+            yield return EndOfFrame;
+            action?.Invoke();
+        }
+
+        public static void PerformAtNextFrame(Action action) => StartCoroutine(IPerformAtNextFrame(action));
+
+        public static IEnumerator IPerformAtNextFrame(Action action)
+        {
+            yield return EndOfFrame;
+            yield return EndOfFrame;
+            action?.Invoke();
+        }
+
+        /// <summary>
         /// Does an action in a coroutine.
         /// </summary>
         /// <param name="action">Action to run.</param>
