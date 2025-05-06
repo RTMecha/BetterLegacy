@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifiers<BackgroundObject>
     {
         public BackgroundObject() : base() { }
 
@@ -156,17 +156,29 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<string> tags = new List<string>();
 
+        public List<string> Tags { get => tags; set => tags = value; }
+
         public List<Modifier<BackgroundObject>> modifiers = new List<Modifier<BackgroundObject>>();
+
+        public List<Modifier<BackgroundObject>> Modifiers { get => modifiers; set => modifiers = value; }
 
         /// <summary>
         /// If modifiers ignore the lifespan restriction.
         /// </summary>
         public bool ignoreLifespan = false;
 
+        public bool IgnoreLifespan { get => ignoreLifespan; set => ignoreLifespan = value; }
+
         /// <summary>
         /// If the order of triggers and actions matter.
         /// </summary>
         public bool orderModifiers = false;
+
+        public bool OrderModifiers { get => orderModifiers; set => orderModifiers = value; }
+
+        public int integerVariable;
+
+        public int IntVariable { get => integerVariable; set => integerVariable = value; }
 
         public Vector3 positionOffset;
         public Vector3 scaleOffset;
@@ -176,9 +188,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector3 ScaleOffset { get => scaleOffset; set => scaleOffset = value; }
         public Vector3 RotationOffset { get => rotationOffset; set => rotationOffset = value; }
 
-        /// <summary>
-        /// If the modifiers are currently active.
-        /// </summary>
         public bool ModifiersActive
         {
             get

@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifiers<BeatmapObject>
     {
         public BeatmapObject() : base() { }
 
@@ -344,25 +344,35 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public List<string> tags = new List<string>();
 
+        public List<string> Tags { get => tags; set => tags = value; }
+
         /// <summary>
         /// Modifiers the object contains.
         /// </summary>
         public List<Modifier<BeatmapObject>> modifiers = new List<Modifier<BeatmapObject>>();
+
+        public List<Modifier<BeatmapObject>> Modifiers { get => modifiers; set => modifiers = value; }
 
         /// <summary>
         /// If modifiers ignore the lifespan restriction.
         /// </summary>
         public bool ignoreLifespan = false;
 
+        public bool IgnoreLifespan { get => ignoreLifespan; set => ignoreLifespan = value; }
+
         /// <summary>
         /// If the order of triggers and actions matter.
         /// </summary>
         public bool orderModifiers = false;
 
+        public bool OrderModifiers { get => orderModifiers; set => orderModifiers = value; }
+
         /// <summary>
         /// Variable set and used by modifiers.
         /// </summary>
         public int integerVariable;
+
+        public int IntVariable { get => integerVariable; set => integerVariable = value; }
 
         /// <summary>
         /// Variable set and used by modifiers.
@@ -397,9 +407,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Vector3 ScaleOffset { get => scaleOffset; set => scaleOffset = value; }
         public Vector3 RotationOffset { get => rotationOffset; set => rotationOffset = value; }
 
-        /// <summary>
-        /// If the modifiers are currently active.
-        /// </summary>
         public bool ModifiersActive
         {
             get
