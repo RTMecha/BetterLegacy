@@ -2098,6 +2098,7 @@ namespace BetterLegacy.Core.Helpers
             "getSplitString" => ModifierActions.getSplitString,
             "getStringLength" => ModifierActions.getStringLength,
             "getRegex" => ModifierActions.getRegex,
+            "getComparison" => ModifierActions.getComparison,
             "getSignaledVariables" => ModifierActions.getSignaledVariables,
             "signalLocalVariables" => ModifierActions.signalLocalVariables,
             "clearLocalVariables" => ModifierActions.clearLocalVariables,
