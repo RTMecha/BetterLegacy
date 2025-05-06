@@ -42,7 +42,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-            AddAttribute("HAPPINESS", 0, -1000.0, 1000.0);
+            AddAttribute("HAPPINESS", 0.0, -1000.0, 1000.0);
 
             RegisterActions();
             RegisterChecks();
@@ -485,15 +485,12 @@ namespace BetterLegacy.Companion.Entity
                         CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.02f * ((interactedTimer.time + (float)GetAttribute("HAPPINESS").Value) / 100f));
                                                                                                     // increases desire to dance the longer you leave him alone and the happier he is
                 }, // does Example want to dance?
-                () =>
-                {
-                    return !CompanionManager.MusicPlaying || !ExampleConfig.Instance.CanDance.Value;
-                }, // should Example stop dancing?
+                () => !CompanionManager.MusicPlaying || !ExampleConfig.Instance.CanDance.Value, // should Example stop dancing?
                 true, // can Example be interrupted from dancing?
                 () =>
                 {
                     reference?.model?.startDancing?.Invoke();
-                    SetAttribute("HAPPINESS", 1.0, MathOperation.Addition);
+                    SetAttribute("HAPPINESS", 4.0, MathOperation.Addition);
                 }, // start dancing
                 () =>
                 {
@@ -505,15 +502,14 @@ namespace BetterLegacy.Companion.Entity
                 () =>
                 {
                     var happinessAttribute = GetAttribute("HAPPINESS");
-                    if (happinessAttribute.Value > 1.0)
+                    if (happinessAttribute.Value > 0.0)
                     {
                         happinessAttribute.Value -= 1.0;
                         SaveMemory();
                     }
                 })
             {
-                canDo = () => !reference.Dragging && !reference.brain.talking &&
-                        !CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.1f),
+                canDo = () => !reference.Dragging && !reference.brain.talking && !CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.01f),
                 interruptCheck = () => false,
                 interruptible = false,
                 setAsCurrent = false,
