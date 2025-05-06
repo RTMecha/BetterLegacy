@@ -518,6 +518,11 @@ namespace BetterLegacy.Companion.Entity
                 interruptible = false,
                 setAsCurrent = false,
             });
+            actions.Add(new ExampleAction(Actions.BORED_OUT,
+                () => !reference.Dragging && !reference.brain.talking && !CurrentAction && GetAttribute("HAPPINESS").Value <= 1.0f && RandomHelper.PercentChanceSingle(0.001f),
+                () => false,
+                false,
+                () => reference.Exit()));
         }
 
         /// <summary>
@@ -556,6 +561,11 @@ namespace BetterLegacy.Companion.Entity
             /// Example is dancing!
             /// </summary>
             public const string DANCING = "Dancing";
+
+            /// <summary>
+            /// Example is fully bored and has decided to take his leave.
+            /// </summary>
+            public const string BORED_OUT = "Bored Out";
 
             /// <summary>
             /// Example is slowly getting bored.
