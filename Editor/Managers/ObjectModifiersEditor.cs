@@ -583,6 +583,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Update Modifier", () =>
                     {
                         modifier.active = false;
+                        modifier.runCount = 0;
                         modifier.Inactive?.Invoke(modifier, null);
                     }),
                     new ButtonFunction(true),
@@ -651,6 +652,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (int.TryParse(_val, out int num))
                     modifier.triggerCount = Mathf.Clamp(num, 0, int.MaxValue);
+
+                modifier.runCount = 0;
 
                 try
                 {
