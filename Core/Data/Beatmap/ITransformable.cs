@@ -28,6 +28,24 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void ResetOffsets();
 
         /// <summary>
+        /// Gets the full position of the object.
+        /// </summary>
+        /// <returns>Returns the objects' full position.</returns>
+        public Vector3 GetFullPosition();
+
+        /// <summary>
+        /// Gets the full scale of the object.
+        /// </summary>
+        /// <returns>Returns the objects' full scale.</returns>
+        public Vector3 GetFullScale();
+
+        /// <summary>
+        /// Gets the full rotation of the object.
+        /// </summary>
+        /// <returns>Returns the objects' full rotation.</returns>
+        public Vector3 GetFullRotation();
+
+        /// <summary>
         /// Gets a transform offset from the object.
         /// </summary>
         /// <param name="type">

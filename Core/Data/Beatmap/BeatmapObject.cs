@@ -1481,6 +1481,24 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        public Vector3 GetFullPosition() => runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : InterpolateChainPosition();
+
+        public Vector3 GetFullScale()
+        {
+            Vector3 scale;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+                scale = runtimeObject.visualObject.gameObject.transform.lossyScale;
+            else
+            {
+                var sca = InterpolateChainScale();
+                scale = new Vector3(sca.x, sca.y, 1f);
+            }
+
+            return scale;
+        }
+
+        public Vector3 GetFullRotation() => runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.localEulerAngles : new Vector3(0f, 0f, InterpolateChainRotation());
+
         /// <summary>
         /// Interpolates an animation from the object.
         /// </summary>
