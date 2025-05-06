@@ -1,4 +1,10 @@
-﻿# snapshot-2025.5.7 - (pre-1.7.0) [May 6, 2025]
+﻿# ???
+
+## Features
+### Core
+- Added getSignaledVariables and signalLocalVariables modifiers. These send / recieve the current local variables.
+
+# snapshot-2025.5.7 - (pre-1.7.0) [May 6, 2025]
 
 ## Features
 ### Core
