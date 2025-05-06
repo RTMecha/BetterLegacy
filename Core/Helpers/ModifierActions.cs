@@ -2227,7 +2227,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getComparison<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0)] = (variables[modifier.GetValue(1)] == modifier.GetValue(2)).ToString();
+            if (variables.TryGetValue(modifier.GetValue(1), out string variable))
+                variables[modifier.GetValue(0)] = (variable == modifier.GetValue(2)).ToString();
         }
 
         public static void getSignaledVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables)
