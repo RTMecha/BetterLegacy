@@ -1758,7 +1758,7 @@ namespace BetterLegacy.Core.Helpers
             });
         }
         
-        public static void playerDisableBoostIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void playerDisableBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
                 customPlayer.Player.CanBoost = false;
@@ -1788,7 +1788,7 @@ namespace BetterLegacy.Core.Helpers
             });
         }
         
-        public static void playerEnableBoostIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void playerEnableBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var enabled = modifier.GetBool(1, true, variables);
 
@@ -2037,33 +2037,39 @@ namespace BetterLegacy.Core.Helpers
             bool visual = modifier.GetBool(8, false, variables);
             float loop = modifier.GetFloat(9, 9999f, variables);
 
-            if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(10, variables), out BeatmapObject bm))
-            {
-                fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(10, variables), out BeatmapObject bm))
+                return;
 
-                if (fromType < 0 || fromType > 2)
-                    return;
+            fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
+            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
-                variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
-            }
+            if (fromType < 0 || fromType > 2)
+                return;
+
+            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
         }
 
-        public static void getMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void getMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IEvaluatable evaluatable)
+                return;
+
             try
             {
-                var numberVariables = modifier.reference.GetObjectVariables();
+                var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(variables, numberVariables);
 
-                variables[modifier.GetValue(0)] = RTMath.Parse(modifier.GetValue(1, variables), numberVariables, modifier.reference.GetObjectFunctions()).ToString();
+                variables[modifier.GetValue(0)] = RTMath.Parse(modifier.GetValue(1, variables), numberVariables, evaluatable.GetObjectFunctions()).ToString();
             }
             catch { }
         }
 
-        public static void getNearestPlayer(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void getNearestPlayer<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var pos = modifier.reference.GetFullPosition();
+            if (modifier.reference is not ITransformable transformable)
+                return;
+
+            var pos = transformable.GetFullPosition();
             variables[modifier.GetValue(0)] = PlayerManager.GetClosestPlayerIndex(pos).ToString();
         }
 
@@ -2111,7 +2117,7 @@ namespace BetterLegacy.Core.Helpers
                 variables[modifier.GetValue(0)] = beatmapObject.text;
         }
 
-        public static void getCurrentKey(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void getCurrentKey<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             variables[modifier.GetValue(0)] = CoreHelper.GetKeyCodeDown().ToString();
         }
@@ -2222,11 +2228,14 @@ namespace BetterLegacy.Core.Helpers
         public static void clearLocalVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables) => variables.Clear();
 
         // object variable
-        public static void addVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void addVariable<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IModifiers<T> modifiers || modifier.reference is not IPrefabable prefabable)
+                return;
+
             if (modifier.commands.Count == 2)
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -2236,12 +2245,15 @@ namespace BetterLegacy.Core.Helpers
                     beatmapObject.integerVariable += num;
             }
             else
-                modifier.reference.integerVariable += modifier.GetInt(0, 0, variables);
+                modifiers.IntVariable += modifier.GetInt(0, 0, variables);
         }
         
-        public static void addVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void addVariableOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2251,11 +2263,14 @@ namespace BetterLegacy.Core.Helpers
                 beatmapObject.integerVariable += num;
         }
         
-        public static void subVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void subVariable<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not IModifiers<T> modifiers)
+                return;
+
             if (modifier.commands.Count == 2)
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -2265,12 +2280,15 @@ namespace BetterLegacy.Core.Helpers
                     beatmapObject.integerVariable -= num;
             }
             else
-                modifier.reference.integerVariable -= modifier.GetInt(0, 0, variables);
+                modifiers.IntVariable -= modifier.GetInt(0, 0, variables);
         }
 
-        public static void subVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void subVariableOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2280,11 +2298,14 @@ namespace BetterLegacy.Core.Helpers
                 beatmapObject.integerVariable -= num;
         }
 
-        public static void setVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void setVariable<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not IModifiers<T> modifiers)
+                return;
+
             if (modifier.commands.Count == 2)
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -2294,12 +2315,15 @@ namespace BetterLegacy.Core.Helpers
                     beatmapObject.integerVariable = num;
             }
             else
-                modifier.reference.integerVariable = modifier.GetInt(0, 0, variables);
+                modifiers.IntVariable = modifier.GetInt(0, 0, variables);
         }
         
-        public static void setVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void setVariableOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2309,11 +2333,14 @@ namespace BetterLegacy.Core.Helpers
                 beatmapObject.integerVariable = num;
         }
         
-        public static void setVariableRandom(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void setVariableRandom<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not IModifiers<T> modifiers)
+                return;
+
             if (modifier.commands.Count == 3)
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -2327,13 +2354,16 @@ namespace BetterLegacy.Core.Helpers
             {
                 var min = modifier.GetInt(0, 0, variables);
                 var max = modifier.GetInt(1, 0, variables);
-                modifier.reference.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                modifiers.IntVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
             }
         }
         
-        public static void setVariableRandomOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void setVariableRandomOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2344,8 +2374,11 @@ namespace BetterLegacy.Core.Helpers
                 beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
         }
         
-        public static void animateVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void animateVariableOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
             var fromType = modifier.GetInt(1, 0, variables);
             var fromAxis = modifier.GetInt(2, 0, variables);
             var delay = modifier.GetFloat(3, 0, variables);
@@ -2355,7 +2388,7 @@ namespace BetterLegacy.Core.Helpers
             var max = modifier.GetFloat(7, 9999f, variables);
             var loop = modifier.GetFloat(8, 9999f, variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2404,14 +2437,18 @@ namespace BetterLegacy.Core.Helpers
             }
         }
         
-        public static void clampVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void clampVariable<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            modifier.reference.integerVariable = Mathf.Clamp(modifier.reference.integerVariable, modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables));
+            if (modifier.reference is IModifiers<T> modifiers)
+                modifiers.IntVariable = Mathf.Clamp(modifiers.IntVariable, modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables));
         }
         
-        public static void clampVariableOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void clampVariableOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
 
             var min = modifier.GetInt(1, 0, variables);
             var max = modifier.GetInt(2, 0, variables);
@@ -2564,6 +2601,21 @@ namespace BetterLegacy.Core.Helpers
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
                     beatmapObject.runtimeObject.top.gameObject.SetActive(false);
             }
+        }
+
+        public static void setActive(Modifier<BackgroundObject> modifier, Dictionary<string, string> variables)
+        {
+            modifier.reference.Enabled = modifier.GetBool(0, false, variables);
+        }
+        
+        public static void setActiveOther(Modifier<BackgroundObject> modifier, Dictionary<string, string> variables)
+        {
+            var active = modifier.GetBool(0, false, variables);
+            var tag = modifier.GetValue(1, variables);
+            var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(tag));
+            if (!list.IsEmpty())
+                for (int i = 0; i < list.Count; i++)
+                    list[i].Enabled = active;
         }
 
         #endregion
@@ -3708,9 +3760,12 @@ namespace BetterLegacy.Core.Helpers
             transformable.SetTransform(type, setVector);
         }
         
-        public static void animateObjectOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void animateObjectOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7));
 
             if (list.IsEmpty())
                 return;
@@ -3760,8 +3815,11 @@ namespace BetterLegacy.Core.Helpers
             }
         }
         
-        public static void animateSignal(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void animateSignal<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not ITransformable transformable)
+                return;
+
             var time = modifier.GetFloat(0, 0f, variables);
             var type = modifier.GetInt(1, 0, variables);
             var x = modifier.GetFloat(2, 0f, variables);
@@ -3773,7 +3831,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(9, true, variables))
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                 foreach (var bm in list)
                 {
@@ -3787,7 +3845,7 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
-            Vector3 vector = modifier.reference.GetTransformOffset(type);
+            Vector3 vector = transformable.GetTransformOffset(type);
 
             var setVector = new Vector3(x, y, z);
             if (relative)
@@ -3808,13 +3866,13 @@ namespace BetterLegacy.Core.Helpers
                     {
                         new Vector3Keyframe(0f, vector, Ease.Linear),
                         new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                    }, vector3 => modifier.reference.SetTransform(type, vector3), interpolateOnComplete: true),
+                    }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
                 };
                 animation.onComplete = () =>
                 {
                     AnimationManager.inst.Remove(animation.id);
 
-                    var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                    var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                     foreach (var bm in list)
                         CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
@@ -3823,12 +3881,15 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            modifier.reference.SetTransform(type, setVector);
+            transformable.SetTransform(type, setVector);
         }
 
-        public static void animateSignalOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void animateSignalOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7, variables));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7, variables));
 
             if (list.IsEmpty())
                 return;
@@ -3844,7 +3905,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(10, true, variables))
             {
-                var list2 = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                var list2 = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                 foreach (var bm in list2)
                 {
@@ -3889,7 +3950,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         AnimationManager.inst.Remove(animation.id);
 
-                        var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                        var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                         foreach (var bm in list)
                             CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
@@ -3954,17 +4015,20 @@ namespace BetterLegacy.Core.Helpers
             transformable.SetTransform(type, setVector);
         }
         
-        public static void animateObjectMathOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void animateObjectMathOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7, variables));
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not IEvaluatable evaluatable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7, variables));
 
             if (list.IsEmpty())
                 return;
 
-            var numberVariables = modifier.reference.GetObjectVariables();
+            var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
 
-            var functions = modifier.reference.GetObjectFunctions();
+            var functions = evaluatable.GetObjectFunctions();
 
             // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
             float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
@@ -4012,12 +4076,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
         
-        public static void animateSignalMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void animateSignalMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var numberVariables = modifier.reference.GetObjectVariables();
+            if (modifier.reference is not IEvaluatable evaluatable || modifier.reference is not IPrefabable prefabable || modifier.reference is not ITransformable transformable)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
 
-            var functions = modifier.reference.GetObjectFunctions();
+            var functions = evaluatable.GetObjectFunctions();
 
             float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
             var type = modifier.GetInt(1, 0, variables);
@@ -4030,7 +4097,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(9, true, variables))
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                 foreach (var bm in list)
                 {
@@ -4044,7 +4111,7 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
-            Vector3 vector = modifier.reference.GetTransformOffset(type);
+            Vector3 vector = transformable.GetTransformOffset(type);
 
             var setVector = new Vector3(x, y, z);
             if (relative)
@@ -4060,18 +4127,18 @@ namespace BetterLegacy.Core.Helpers
                 var animation = new RTAnimation("Animate Object Offset");
 
                 animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                     {
-                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
-                        {
-                            new Vector3Keyframe(0f, vector, Ease.Linear),
-                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
-                        }, vector3 => modifier.reference.SetTransform(type, vector3), interpolateOnComplete: true),
-                    };
+                        new Vector3Keyframe(0f, vector, Ease.Linear),
+                        new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
+                };
                 animation.onComplete = () =>
                 {
                     AnimationManager.inst.Remove(animation.id);
 
-                    var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                    var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                     foreach (var bm in list)
                         CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, signalTime));
@@ -4080,20 +4147,23 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            modifier.reference.SetTransform(type, setVector);
+            transformable.SetTransform(type, setVector);
         }
         
-        public static void animateSignalMathOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void animateSignalMathOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(7, variables));
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not IEvaluatable evaluatable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7, variables));
 
             if (list.IsEmpty())
                 return;
 
-            var numberVariables = modifier.reference.GetObjectVariables();
+            var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
 
-            var functions = modifier.reference.GetObjectFunctions();
+            var functions = evaluatable.GetObjectFunctions();
 
             var time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
             var type = modifier.GetInt(1, 0, variables);
@@ -4106,7 +4176,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(10, true, variables))
             {
-                var list2 = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                var list2 = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                 foreach (var bm in list2)
                 {
@@ -4143,13 +4213,13 @@ namespace BetterLegacy.Core.Helpers
                         {
                             new Vector3Keyframe(0f, vector, Ease.Linear),
                             new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
-                        }, vector3 => modifier.reference.SetTransform(type, vector3), interpolateOnComplete: true),
+                        }, vector3 => bm.SetTransform(type, vector3), interpolateOnComplete: true),
                     };
                     animation.onComplete = () =>
                     {
                         AnimationManager.inst.Remove(animation.id);
 
-                        var list = GameData.Current.FindObjectsWithTag(modifier, signalGroup);
+                        var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
 
                         foreach (var bm in list)
                             CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, signalTime));
@@ -4158,12 +4228,15 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                modifier.reference.SetTransform(type, setVector);
+                bm.SetTransform(type, setVector);
             }
         }
         
-        public static void gravity(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void gravity<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not ITransformable transformable)
+                return;
+
             var gravityX = modifier.GetFloat(1, 0f, variables);
             var gravityY = modifier.GetFloat(2, 0f, variables);
             var time = modifier.GetFloat(3, 1f, variables);
@@ -4179,14 +4252,17 @@ namespace BetterLegacy.Core.Helpers
 
             var vector = (Vector2)modifier.Result;
 
-            var rotation = modifier.reference.InterpolateChainRotation(includeSelf: false);
+            var rotation = modifier.reference is BeatmapObject beatmapObject ? beatmapObject.InterpolateChainRotation(includeSelf: false) : 0f;
 
-            modifier.reference.positionOffset = RTMath.Rotate(vector, -rotation);
+            transformable.PositionOffset = RTMath.Rotate(vector, -rotation);
         }
         
-        public static void gravityOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void gravityOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
 
             if (beatmapObjects.IsEmpty())
                 return;
@@ -4214,8 +4290,11 @@ namespace BetterLegacy.Core.Helpers
             }
         }
         
-        public static void copyAxis(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void copyAxis<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not ITransformable transformable)
+                return;
+
             var fromType = modifier.GetInt(1, 0, variables);
             var fromAxis = modifier.GetInt(2, 0, variables);
             var toType = modifier.GetInt(3, 0, variables);
@@ -4230,7 +4309,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.HasResult())
             {
-                if (GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0), out BeatmapObject result))
+                if (modifier.reference is IPrefabable prefabable && GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0), out BeatmapObject result))
                     modifier.Result = result;
             }
 
@@ -4250,15 +4329,15 @@ namespace BetterLegacy.Core.Helpers
                 if (fromType == 3)
                 {
                     if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
-                        modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null)
+                        modifier.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
                     {
                         var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
-                        var visualObject = modifier.reference.runtimeObject.visualObject;
+                        var visualObject = beatmapObject.runtimeObject.visualObject;
                         visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
                     }
                     return;
                 }
-                modifier.reference.SetTransform(toType, toAxis, fromType switch
+                transformable.SetTransform(toType, toAxis, fromType switch
                 {
                     0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
                     1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
@@ -4267,9 +4346,9 @@ namespace BetterLegacy.Core.Helpers
                 });
             }
             else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
-                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
+                transformable.SetTransform(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
             else if (useVisual)
-                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
+                transformable.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
                 {
                     0 => bm.InterpolateChainPosition().At(fromAxis),
                     1 => bm.InterpolateChainScale().At(fromAxis),
@@ -4278,8 +4357,11 @@ namespace BetterLegacy.Core.Helpers
                 }, min, max));
         }
         
-        public static void copyAxisMath(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void copyAxisMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not IEvaluatable evaluatable || modifier.reference is not ITransformable transformable)
+                return;
+
             try
             {
                 var fromType = modifier.GetInt(1, 0, variables);
@@ -4292,7 +4374,7 @@ namespace BetterLegacy.Core.Helpers
                 var evaluation = modifier.GetValue(8, variables);
                 var useVisual = modifier.GetBool(9, false, variables);
 
-                if (!GameData.Current.TryFindObjectWithTag(modifier, modifier.GetValue(0, variables), out BeatmapObject bm))
+                if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                     return;
 
                 var time = RTLevel.Current.CurrentTime;
@@ -4308,17 +4390,17 @@ namespace BetterLegacy.Core.Helpers
                     if (fromType == 3)
                     {
                         if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
-                            modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null &&
-                            modifier.reference.runtimeObject.visualObject.renderer)
+                            modifier.reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
+                            beatmapObject.runtimeObject.visualObject.renderer)
                         {
                             // queue post tick so the color overrides the sequence color
                             RTLevel.Current.postTick.Enqueue(() =>
                             {
                                 var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
 
-                                var renderer = modifier.reference.runtimeObject.visualObject.renderer;
+                                var renderer = beatmapObject.runtimeObject.visualObject.renderer;
 
-                                var numberVariables = modifier.reference.GetObjectVariables();
+                                var numberVariables = beatmapObject.GetObjectVariables();
                                 ModifiersHelper.SetVariables(variables, numberVariables);
 
                                 numberVariables["colorR"] = sequence.r;
@@ -4335,7 +4417,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                     else
                     {
-                        var numberVariables = modifier.reference.GetObjectVariables();
+                        var numberVariables = evaluatable.GetObjectVariables();
                         ModifiersHelper.SetVariables(variables, numberVariables);
 
                         if (bm.cachedSequences)
@@ -4350,14 +4432,14 @@ namespace BetterLegacy.Core.Helpers
 
                         float value = RTMath.Parse(evaluation, numberVariables);
 
-                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                        transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                     }
                 }
                 else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
                 {
                     var axis = levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
 
-                    var numberVariables = modifier.reference.GetObjectVariables();
+                    var numberVariables = evaluatable.GetObjectVariables();
                     ModifiersHelper.SetVariables(variables, numberVariables);
 
                     numberVariables["axis"] = axis;
@@ -4365,11 +4447,11 @@ namespace BetterLegacy.Core.Helpers
 
                     float value = RTMath.Parse(evaluation, numberVariables);
 
-                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                    transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                 }
                 else if (useVisual)
                 {
-                    var numberVariables = modifier.reference.GetObjectVariables();
+                    var numberVariables = evaluatable.GetObjectVariables();
                     ModifiersHelper.SetVariables(variables, numberVariables);
 
                     numberVariables["axis"] = fromType switch
@@ -4383,7 +4465,7 @@ namespace BetterLegacy.Core.Helpers
 
                     float value = RTMath.Parse(evaluation, numberVariables);
 
-                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                    transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                 }
             }
             catch
@@ -4392,8 +4474,11 @@ namespace BetterLegacy.Core.Helpers
             } // try catch for cases where the math is broken
         }
         
-        public static void copyAxisGroup(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void copyAxisGroup<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            if (modifier.reference is not IPrefabable prefabable || modifier.reference is not ITransformable transformable || modifier.reference is not IEvaluatable evaluatable)
+                return;
+
             var evaluation = modifier.GetValue(0, variables);
 
             var toType = modifier.GetInt(1, 0, variables);
@@ -4408,7 +4493,7 @@ namespace BetterLegacy.Core.Helpers
                 var prefabObjects = GameData.Current.prefabObjects;
 
                 var time = RTLevel.Current.CurrentTime;
-                var numberVariables = modifier.reference.GetObjectVariables();
+                var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(variables, numberVariables);
 
                 if (!modifier.HasResult())
@@ -4419,7 +4504,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var group = modifier.GetValue(i + 1);
 
-                        if (GameData.Current.TryFindObjectWithTag(modifier, group, out BeatmapObject beatmapObject))
+                        if (GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, group, out BeatmapObject beatmapObject))
                             result.Add(beatmapObject);
                     }
 
@@ -4474,7 +4559,7 @@ namespace BetterLegacy.Core.Helpers
                     groupIndex++;
                 }
 
-                modifier.reference.SetTransform(toType, toAxis, RTMath.Parse(evaluation, numberVariables));
+                transformable.SetTransform(toType, toAxis, RTMath.Parse(evaluation, numberVariables));
             }
             catch (Exception ex)
             {
