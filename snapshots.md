@@ -4,6 +4,9 @@
 ### Core
 - Added getSignaledVariables and signalLocalVariables modifiers. These send / recieve the current local variables.
 
+## Fixes
+- Clicking on a dropdown now requires left click. This is to fix context menus on dropdowns still interacting with the dropdown.
+
 # snapshot-2025.5.7 - (pre-1.7.0) [May 6, 2025]
 
 ## Features
