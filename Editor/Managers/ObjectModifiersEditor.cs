@@ -1707,15 +1707,6 @@ namespace BetterLegacy.Editor.Managers
                         collapseEnumToggle.onValueChanged.AddListener(_val =>
                         {
                             modifier.SetValue(2, _val.ToString());
-                            try
-                            {
-                                modifier.Inactive?.Invoke(modifier, null);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreHelper.LogException(ex);
-                            }
-                            modifier.active = false;
                             var value = scrollbar ? scrollbar.value : 0f;
                             RenderModifier(modifier, modifierCard.index);
                             CoroutineHelper.PerformAtNextFrame(() =>
