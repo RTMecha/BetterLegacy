@@ -1615,6 +1615,7 @@ namespace BetterLegacy.Editor.Managers
 
         public Transform content;
         public Transform scrollView;
+        public Scrollbar scrollbar;
 
         public bool showModifiers;
 
@@ -1666,6 +1667,14 @@ namespace BetterLegacy.Editor.Managers
             content = scrollView.Find("Viewport/Content");
 
             scrollView.gameObject.SetActive(this.showModifiers);
+            try
+            {
+                scrollbar = scrollView.Find("Scrollbar Vertical").GetComponent<Scrollbar>();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             modifierCardPrefab = Creator.NewUIObject("Modifier Prefab", transform);
             modifierCardPrefab.transform.AsRT().sizeDelta = new Vector2(336f, 128f);
@@ -1754,8 +1763,6 @@ namespace BetterLegacy.Editor.Managers
         public static Modifier<BackgroundObject> copiedModifier;
         public IEnumerator RenderModifiers(BackgroundObject backgroundObject)
         {
-            LSHelpers.DeleteChildren(content);
-
             modifiersIgnoreToggle.onValueChanged.ClearAll();
             modifiersIgnoreToggle.isOn = backgroundObject.ignoreLifespan;
             modifiersIgnoreToggle.onValueChanged.AddListener(_val =>
@@ -1775,347 +1782,18 @@ namespace BetterLegacy.Editor.Managers
             if (!showModifiers)
                 yield break;
 
+            var value = scrollbar ? scrollbar.value : 0f;
+
+            LSHelpers.DeleteChildren(content);
+            modifierCards.Clear();
+
             content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 500f);
 
             int num = 0;
             foreach (var modifier in backgroundObject.modifiers)
             {
                 int index = num;
-                var gameObject = modifierCardPrefab.Duplicate(content, modifier.Name);
-                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
-                gameObject.transform.localScale = Vector3.one;
-                var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
-                modifierTitle.text = modifier.Name;
-                EditorThemeManager.ApplyLightText(modifierTitle);
-
-                var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
-                collapse.onValueChanged.ClearAll();
-                collapse.isOn = modifier.collapse;
-                collapse.onValueChanged.AddListener(_val =>
-                {
-                    modifier.collapse = _val;
-                    StartCoroutine(RenderModifiers(backgroundObject));
-                });
-
-                TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
-                EditorThemeManager.ApplyToggle(collapse, ThemeGroup.List_Button_1_Normal);
-
-                for (int i = 0; i < collapse.transform.Find("dots").childCount; i++)
-                    EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
-
-                var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
-                delete.button.onClick.NewListener(() =>
-                {
-                    backgroundObject.modifiers.RemoveAt(index);
-                    backgroundObject.positionOffset = Vector3.zero;
-                    backgroundObject.scaleOffset = Vector3.zero;
-                    backgroundObject.rotationOffset = Vector3.zero;
-
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                    StartCoroutine(RenderModifiers(backgroundObject));
-                });
-
-                TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
-                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-                var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
-                copy.button.onClick.NewListener(() =>
-                {
-                    copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
-                    StartCoroutine(RenderModifiers(backgroundObject));
-                    EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                });
-
-                TooltipHelper.AssignTooltip(copy.gameObject, "Copy Modifier");
-                EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
-                EditorThemeManager.ApplyGraphic(copy.image, ThemeGroup.Copy_Text);
-
-                var notifier = gameObject.AddComponent<ModifierActiveNotifier>();
-                notifier.modifierBase = modifier;
-                notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject.GetComponent<Image>();
-                TooltipHelper.AssignTooltip(notifier.notifier.gameObject, "Notifier Modifier");
-                EditorThemeManager.ApplyGraphic(notifier.notifier, ThemeGroup.Warning_Confirm, true);
-
-                if (modifier.collapse)
-                {
-                    num++;
-                    continue;
-                }
-
-                var layout = gameObject.transform.Find("Layout");
-
-                var constant = booleanBar.Duplicate(layout, "Constant");
-                constant.transform.localScale = Vector3.one;
-
-                var constantText = constant.transform.Find("Text").GetComponent<Text>();
-                constantText.text = "Constant";
-
-                var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
-                constantToggle.onValueChanged.ClearAll();
-                constantToggle.isOn = modifier.constant;
-                constantToggle.onValueChanged.AddListener(_val =>
-                {
-                    modifier.constant = _val;
-                    modifier.active = false;
-                });
-
-                TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
-                EditorThemeManager.ApplyLightText(constantText);
-                EditorThemeManager.ApplyToggle(constantToggle);
-
-                var count = ObjectModifiersEditor.inst.NumberGenerator(layout, "Run Count", modifier.triggerCount.ToString(), _val =>
-                {
-                    if (int.TryParse(_val, out int num))
-                        modifier.triggerCount = Mathf.Clamp(num, 0, int.MaxValue);
-
-                    try
-                    {
-                        modifier.Inactive?.Invoke(modifier, null);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreHelper.LogException(ex);
-                    }
-                    modifier.active = false;
-                }, out InputField countField);
-
-                TooltipHelper.AssignTooltip(countField.gameObject, "Run Count Modifier");
-                TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
-                TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
-
-                if (modifier.type == ModifierBase.Type.Trigger)
-                {
-                    var not = booleanBar.Duplicate(layout, "Not");
-                    not.transform.localScale = Vector3.one;
-                    var notText = not.transform.Find("Text").GetComponent<Text>();
-                    notText.text = "Not";
-
-                    var notToggle = not.transform.Find("Toggle").GetComponent<Toggle>();
-                    notToggle.onValueChanged.ClearAll();
-                    notToggle.isOn = modifier.not;
-                    notToggle.onValueChanged.AddListener(_val =>
-                    {
-                        modifier.not = _val;
-                        modifier.active = false;
-                    });
-
-                    TooltipHelper.AssignTooltip(notToggle.gameObject, "Trigger Not Modifier");
-                    EditorThemeManager.ApplyLightText(notText);
-                    EditorThemeManager.ApplyToggle(notToggle);
-
-                    var elseIf = booleanBar.Duplicate(layout, "Not");
-                    elseIf.transform.localScale = Vector3.one;
-                    var elseIfText = elseIf.transform.Find("Text").GetComponent<Text>();
-                    elseIfText.text = "Else If";
-
-                    var elseIfToggle = elseIf.transform.Find("Toggle").GetComponent<Toggle>();
-                    elseIfToggle.onValueChanged.ClearAll();
-                    elseIfToggle.isOn = modifier.elseIf;
-                    elseIfToggle.onValueChanged.AddListener(_val =>
-                    {
-                        modifier.elseIf = _val;
-                        modifier.active = false;
-                    });
-
-                    TooltipHelper.AssignTooltip(elseIfToggle.gameObject, "Trigger Else If Modifier");
-                    EditorThemeManager.ApplyLightText(elseIfText);
-                    EditorThemeManager.ApplyToggle(elseIfToggle);
-                }
-
-                if (!modifier.verified)
-                {
-                    modifier.verified = true;
-                    modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
-                }
-
-                if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
-                {
-                    EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
-                    continue;
-                }
-
-                gameObject.AddComponent<Button>();
-                var modifierContextMenu = gameObject.AddComponent<ContextClickable>();
-                modifierContextMenu.onClick = eventData =>
-                {
-                    if (eventData.button != PointerEventData.InputButton.Right)
-                        return;
-
-                    var buttonFunctions = new List<ButtonFunction>()
-                    {
-                        new ButtonFunction("Add", () =>
-                        {
-                            DefaultModifiersPopup.Open();
-                            RefreshDefaultModifiersList(backgroundObject);
-                        }),
-                        new ButtonFunction("Add Above", () =>
-                        {
-                            DefaultModifiersPopup.Open();
-                            RefreshDefaultModifiersList(backgroundObject, index);
-                        }),
-                        new ButtonFunction("Add Below", () =>
-                        {
-                            DefaultModifiersPopup.Open();
-                            RefreshDefaultModifiersList(backgroundObject, index + 1);
-                        }),
-                        new ButtonFunction("Delete", () =>
-                        {
-                            backgroundObject.modifiers.RemoveAt(index);
-                            backgroundObject.positionOffset = Vector3.zero;
-                            backgroundObject.scaleOffset = Vector3.zero;
-                            backgroundObject.rotationOffset = Vector3.zero;
-
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Copy", () =>
-                        {
-                            copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                            EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                        }),
-                        new ButtonFunction("Paste", () =>
-                        {
-                            if (copiedModifier == null)
-                                return;
-
-                            backgroundObject.modifiers.Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                        }),
-                        new ButtonFunction("Paste Above", () =>
-                        {
-                            if (copiedModifier == null)
-                                return;
-
-                            backgroundObject.modifiers.Insert(index, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                        }),
-                        new ButtonFunction("Paste Below", () =>
-                        {
-                            if (copiedModifier == null)
-                                return;
-
-                            backgroundObject.modifiers.Insert(index + 1, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Sort Modifiers", () =>
-                        {
-                            backgroundObject.modifiers = backgroundObject.modifiers.OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                        }),
-                        new ButtonFunction("Move Up", () =>
-                        {
-                            if (index <= 0)
-                            {
-                                EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            backgroundObject.modifiers.Move(index, index - 1);
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                        }),
-                        new ButtonFunction("Move Down", () =>
-                        {
-                            if (index >= backgroundObject.modifiers.Count - 1)
-                            {
-                                EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-
-                            backgroundObject.modifiers.Move(index, index + 1);
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                        }),
-                        new ButtonFunction("Move to Start", () =>
-                        {
-                            backgroundObject.modifiers.Move(index, 0);
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                        }),
-                        new ButtonFunction("Move to End", () =>
-                        {
-                            backgroundObject.modifiers.Move(index, backgroundObject.modifiers.Count - 1);
-                            StartCoroutine(RenderModifiers(backgroundObject));
-                        }),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Update Modifier", () =>
-                        {
-                            modifier.active = false;
-                            modifier.Inactive?.Invoke(modifier, null);
-                        })
-                    };
-                    if (ModCompatibility.UnityExplorerInstalled)
-                        buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
-
-                    EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
-                };
-
-                var cmd = modifier.Name;
-                switch (cmd)
-                {
-                    case "setActive":
-                        {
-                            ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Active", 0, false);
-
-                            break;
-                        }
-                    case "setActiveOther":
-                        {
-                            ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Active", 0, false);
-                            ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "BG Group", 1);
-
-                            break;
-                        }
-                    case "timeLesserEquals":
-                    case "timeGreaterEquals":
-                    case "timeLesser":
-                    case "timeGreater":
-                        {
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Time", 0, 0f);
-
-                            break;
-                        }
-                    case "animateObject":
-                    case "animateObjectOther":
-                        {
-                            if (cmd.Contains("Other"))
-                                ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "BG Group", 7);
-
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Time", 0, 1f);
-                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "X", 2, 0f);
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Y", 3, 0f);
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Z", 4, 0f);
-                            ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Relative", 5, true);
-                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
-
-                            break;
-                        }
-                    case "copyAxis":
-                        {
-                            ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "Object Group", 0);
-                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
-                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
-
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Delay", 5, 0f);
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Multiply", 6, 1f);
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Offset", 7, 0f);
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Min", 8, -99999f);
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Max", 9, 99999f);
-                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Loop", 10, 99999f);
-
-                            break;
-                        }
-                }
-
+                RenderModifier(modifier, index);
                 num++;
             }
 
@@ -2125,8 +1803,7 @@ namespace BetterLegacy.Editor.Managers
                 TooltipHelper.AssignTooltip(gameObject, "Add Modifier");
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     DefaultModifiersPopup.Open();
                     RefreshDefaultModifiersList(backgroundObject);
@@ -2139,6 +1816,12 @@ namespace BetterLegacy.Editor.Managers
             // Paste Modifier
             PasteGenerator(backgroundObject);
             LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
+
+            CoroutineHelper.PerformAtNextFrame(() =>
+            {
+                if (scrollbar)
+                    scrollbar.value = value;
+            });
 
             yield break;
         }
@@ -2165,6 +1848,377 @@ namespace BetterLegacy.Editor.Managers
                     hoverUI.size = 1.1f;
                 }
                 num++;
+            }
+        }
+
+        public List<GameObject> modifierCards = new List<GameObject>();
+
+        public void RenderModifier(Modifier<BackgroundObject> modifier, int index)
+        {
+            var backgroundObject = modifier.reference;
+
+            var gameObject = modifierCardPrefab.Duplicate(content, modifier.Name);
+            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
+            gameObject.transform.localScale = Vector3.one;
+            var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
+            modifierTitle.text = modifier.Name;
+            EditorThemeManager.ApplyLightText(modifierTitle);
+
+            var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
+            collapse.onValueChanged.ClearAll();
+            collapse.isOn = modifier.collapse;
+            collapse.onValueChanged.AddListener(_val =>
+            {
+                modifier.collapse = _val;
+                RenderModifier(modifier, index);
+                CoroutineHelper.PerformAtEndOfFrame(() =>
+                {
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
+                });
+            });
+
+            TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
+            EditorThemeManager.ApplyToggle(collapse, ThemeGroup.List_Button_1_Normal);
+
+            for (int i = 0; i < collapse.transform.Find("dots").childCount; i++)
+                EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+
+            var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
+            delete.button.onClick.NewListener(() =>
+            {
+                backgroundObject.modifiers.RemoveAt(index);
+                backgroundObject.positionOffset = Vector3.zero;
+                backgroundObject.scaleOffset = Vector3.zero;
+                backgroundObject.rotationOffset = Vector3.zero;
+
+                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+
+                StartCoroutine(RenderModifiers(backgroundObject));
+            });
+
+            TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+            var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
+            copy.button.onClick.NewListener(() =>
+            {
+                copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
+                StartCoroutine(RenderModifiers(backgroundObject));
+                EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
+            });
+
+            TooltipHelper.AssignTooltip(copy.gameObject, "Copy Modifier");
+            EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
+            EditorThemeManager.ApplyGraphic(copy.image, ThemeGroup.Copy_Text);
+
+            var notifier = gameObject.AddComponent<ModifierActiveNotifier>();
+            notifier.modifierBase = modifier;
+            notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject.GetComponent<Image>();
+            TooltipHelper.AssignTooltip(notifier.notifier.gameObject, "Notifier Modifier");
+            EditorThemeManager.ApplyGraphic(notifier.notifier, ThemeGroup.Warning_Confirm, true);
+
+            if (modifier.collapse)
+                return;
+
+            var layout = gameObject.transform.Find("Layout");
+
+            var constant = booleanBar.Duplicate(layout, "Constant");
+            constant.transform.localScale = Vector3.one;
+
+            var constantText = constant.transform.Find("Text").GetComponent<Text>();
+            constantText.text = "Constant";
+
+            var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
+            constantToggle.onValueChanged.ClearAll();
+            constantToggle.isOn = modifier.constant;
+            constantToggle.onValueChanged.AddListener(_val =>
+            {
+                modifier.constant = _val;
+                modifier.active = false;
+            });
+
+            TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
+            EditorThemeManager.ApplyLightText(constantText);
+            EditorThemeManager.ApplyToggle(constantToggle);
+
+            var count = ObjectModifiersEditor.inst.NumberGenerator(layout, "Run Count", modifier.triggerCount.ToString(), _val =>
+            {
+                if (int.TryParse(_val, out int num))
+                    modifier.triggerCount = Mathf.Clamp(num, 0, int.MaxValue);
+
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+                modifier.active = false;
+            }, out InputField countField);
+
+            TooltipHelper.AssignTooltip(countField.gameObject, "Run Count Modifier");
+            TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
+            TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
+
+            if (modifier.type == ModifierBase.Type.Trigger)
+            {
+                var not = booleanBar.Duplicate(layout, "Not");
+                not.transform.localScale = Vector3.one;
+                var notText = not.transform.Find("Text").GetComponent<Text>();
+                notText.text = "Not";
+
+                var notToggle = not.transform.Find("Toggle").GetComponent<Toggle>();
+                notToggle.onValueChanged.ClearAll();
+                notToggle.isOn = modifier.not;
+                notToggle.onValueChanged.AddListener(_val =>
+                {
+                    modifier.not = _val;
+                    modifier.active = false;
+                });
+
+                TooltipHelper.AssignTooltip(notToggle.gameObject, "Trigger Not Modifier");
+                EditorThemeManager.ApplyLightText(notText);
+                EditorThemeManager.ApplyToggle(notToggle);
+
+                var elseIf = booleanBar.Duplicate(layout, "Not");
+                elseIf.transform.localScale = Vector3.one;
+                var elseIfText = elseIf.transform.Find("Text").GetComponent<Text>();
+                elseIfText.text = "Else If";
+
+                var elseIfToggle = elseIf.transform.Find("Toggle").GetComponent<Toggle>();
+                elseIfToggle.onValueChanged.ClearAll();
+                elseIfToggle.isOn = modifier.elseIf;
+                elseIfToggle.onValueChanged.AddListener(_val =>
+                {
+                    modifier.elseIf = _val;
+                    modifier.active = false;
+                });
+
+                TooltipHelper.AssignTooltip(elseIfToggle.gameObject, "Trigger Else If Modifier");
+                EditorThemeManager.ApplyLightText(elseIfText);
+                EditorThemeManager.ApplyToggle(elseIfToggle);
+            }
+
+            if (!modifier.verified)
+            {
+                modifier.verified = true;
+                modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
+            }
+
+            if (string.IsNullOrEmpty(name))
+            {
+                EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            gameObject.AddComponent<Button>();
+            var modifierContextMenu = gameObject.AddComponent<ContextClickable>();
+            modifierContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                var buttonFunctions = new List<ButtonFunction>()
+                {
+                    new ButtonFunction("Add", () =>
+                    {
+                        DefaultModifiersPopup.Open();
+                        RefreshDefaultModifiersList(backgroundObject);
+                    }),
+                    new ButtonFunction("Add Above", () =>
+                    {
+                        DefaultModifiersPopup.Open();
+                        RefreshDefaultModifiersList(backgroundObject, index);
+                    }),
+                    new ButtonFunction("Add Below", () =>
+                    {
+                        DefaultModifiersPopup.Open();
+                        RefreshDefaultModifiersList(backgroundObject, index + 1);
+                    }),
+                    new ButtonFunction("Delete", () =>
+                    {
+                        backgroundObject.modifiers.RemoveAt(index);
+
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Copy", () =>
+                    {
+                        copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier, backgroundObject);
+                        PasteGenerator(backgroundObject);
+                        EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Paste", () =>
+                    {
+                        if (copiedModifier == null)
+                            return;
+
+                        backgroundObject.modifiers.Add(Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                        EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Paste Above", () =>
+                    {
+                        if (copiedModifier == null)
+                            return;
+
+                        backgroundObject.modifiers.Insert(index, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                        EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Paste Below", () =>
+                    {
+                        if (copiedModifier == null)
+                            return;
+
+                        backgroundObject.modifiers.Insert(index + 1, Modifier<BackgroundObject>.DeepCopy(copiedModifier, backgroundObject));
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                        EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Sort Modifiers", () =>
+                    {
+                        if (backgroundObject.orderModifiers)
+                        {
+                            EditorManager.inst.DisplayNotification($"Sorting modifiers is only recommended for objects with order matters off.", 3f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        backgroundObject.modifiers = backgroundObject.modifiers.OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    }),
+                    new ButtonFunction("Move Up", () =>
+                    {
+                        if (index <= 0)
+                        {
+                            EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
+                        backgroundObject.modifiers.Move(index, index - 1);
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    }),
+                    new ButtonFunction("Move Down", () =>
+                    {
+                        if (index >= backgroundObject.modifiers.Count - 1)
+                        {
+                            EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
+                        backgroundObject.modifiers.Move(index, index + 1);
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    }),
+                    new ButtonFunction("Move to Start", () =>
+                    {
+                        backgroundObject.modifiers.Move(index, 0);
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    }),
+                    new ButtonFunction("Move to End", () =>
+                    {
+                        backgroundObject.modifiers.Move(index, backgroundObject.modifiers.Count - 1);
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Update Modifier", () =>
+                    {
+                        modifier.active = false;
+                        modifier.Inactive?.Invoke(modifier, null);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Collapse", () =>
+                    {
+                        modifier.collapse = true;
+                        RenderModifier(modifier, index);
+                        CoroutineHelper.PerformAtEndOfFrame(() =>
+                        {
+                            LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
+                        });
+                    }),
+                    new ButtonFunction("Unollapse", () =>
+                    {
+                        modifier.collapse = false;
+                        RenderModifier(modifier, index);
+                        CoroutineHelper.PerformAtEndOfFrame(() =>
+                        {
+                            LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
+                        });
+                    }),
+                    new ButtonFunction("Collapse All", () =>
+                    {
+                        foreach (var mod in backgroundObject.modifiers)
+                            mod.collapse = true;
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    }),
+                    new ButtonFunction("Uncollapse All", () =>
+                    {
+                        foreach (var mod in backgroundObject.modifiers)
+                            mod.collapse = false;
+                        StartCoroutine(RenderModifiers(backgroundObject));
+                    })
+                };
+                if (ModCompatibility.UnityExplorerInstalled)
+                    buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
+
+                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+            };
+
+            var cmd = modifier.Name;
+            switch (cmd)
+            {
+                case "setActive": {
+                        ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Active", 0, false);
+
+                        break;
+                    }
+                case "setActiveOther": {
+                        ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Active", 0, false);
+                        ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "BG Group", 1);
+
+                        break;
+                    }
+                case "timeLesserEquals":
+                case "timeGreaterEquals":
+                case "timeLesser":
+                case "timeGreater": {
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Time", 0, 0f);
+
+                        break;
+                    }
+                case "animateObject":
+                case "animateObjectOther": {
+                        if (cmd.Contains("Other"))
+                            ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "BG Group", 7);
+
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Time", 0, 1f);
+                        ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "X", 2, 0f);
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Y", 3, 0f);
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Z", 4, 0f);
+                        ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Relative", 5, true);
+                        ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+
+                        break;
+                    }
+                case "copyAxis": {
+                        ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "Object Group", 0);
+                        ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
+
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Delay", 5, 0f);
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Multiply", 6, 1f);
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Offset", 7, 0f);
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Min", 8, -99999f);
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Max", 9, 99999f);
+                        ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Loop", 10, 99999f);
+
+                        break;
+                    }
             }
         }
 
