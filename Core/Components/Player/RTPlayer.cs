@@ -1944,7 +1944,7 @@ namespace BetterLegacy.Core.Components.Player
             if (head.gameObject)
             {
                 if (head.renderer)
-                    head.renderer.material.color = CoreHelper.GetPlayerColor(index, Model.headPart.color, Model.headPart.opacity, Model.headPart.customColor);
+                    head.renderer.material.color = RTColors.GetPlayerColor(index, Model.headPart.color, Model.headPart.opacity, Model.headPart.customColor);
 
                 try
                 {
@@ -1955,9 +1955,9 @@ namespace BetterLegacy.Core.Components.Player
                     var main1 = burst.main;
                     var main2 = death.main;
                     var main3 = spawn.main;
-                    main1.startColor = new ParticleSystem.MinMaxGradient(CoreHelper.GetPlayerColor(index, colStart, alphaStart, colStartHex));
-                    main2.startColor = new ParticleSystem.MinMaxGradient(CoreHelper.GetPlayerColor(index, colStart, alphaStart, colStartHex));
-                    main3.startColor = new ParticleSystem.MinMaxGradient(CoreHelper.GetPlayerColor(index, colStart, alphaStart, colStartHex));
+                    main1.startColor = new ParticleSystem.MinMaxGradient(RTColors.GetPlayerColor(index, colStart, alphaStart, colStartHex));
+                    main2.startColor = new ParticleSystem.MinMaxGradient(RTColors.GetPlayerColor(index, colStart, alphaStart, colStartHex));
+                    main3.startColor = new ParticleSystem.MinMaxGradient(RTColors.GetPlayerColor(index, colStart, alphaStart, colStartHex));
                 }
                 catch
                 {
@@ -1966,10 +1966,10 @@ namespace BetterLegacy.Core.Components.Player
             }
 
             if (boost.renderer)
-                boost.renderer.material.color = CoreHelper.GetPlayerColor(index, Model.boostPart.color, Model.boostPart.opacity, Model.boostPart.customColor);
+                boost.renderer.material.color = RTColors.GetPlayerColor(index, Model.boostPart.color, Model.boostPart.opacity, Model.boostPart.customColor);
 
             if (boostTail.renderer)
-                boostTail.renderer.material.color = CoreHelper.GetPlayerColor(index, Model.boostTailPart.color, Model.boostTailPart.opacity, Model.boostTailPart.customColor);
+                boostTail.renderer.material.color = RTColors.GetPlayerColor(index, Model.boostTailPart.color, Model.boostTailPart.opacity, Model.boostTailPart.customColor);
 
             //GUI Bar
             {
@@ -1982,10 +1982,10 @@ namespace BetterLegacy.Core.Components.Player
 
                 for (int i = 0; i < healthObjects.Count; i++)
                     if (healthObjects[i].image)
-                        healthObjects[i].image.color = CoreHelper.GetPlayerColor(index, topCol, topAlpha, topColHex);
+                        healthObjects[i].image.color = RTColors.GetPlayerColor(index, topCol, topAlpha, topColHex);
 
-                barBaseIm.color = CoreHelper.GetPlayerColor(index, baseCol, baseAlpha, baseColHex);
-                barIm.color = CoreHelper.GetPlayerColor(index, topCol, topAlpha, topColHex);
+                barBaseIm.color = RTColors.GetPlayerColor(index, baseCol, baseAlpha, baseColHex);
+                barIm.color = RTColors.GetPlayerColor(index, topCol, topAlpha, topColHex);
             }
 
             for (int i = 0; i < tailParts.Count; i++)
@@ -1996,18 +1996,18 @@ namespace BetterLegacy.Core.Components.Player
 
                 var main = tailPart.particleSystem.main;
 
-                main.startColor = CoreHelper.GetPlayerColor(index, modelPart.Particles.color, 1f, modelPart.Particles.customColor);
+                main.startColor = RTColors.GetPlayerColor(index, modelPart.Particles.color, 1f, modelPart.Particles.customColor);
 
-                tailPart.renderer.material.color = CoreHelper.GetPlayerColor(index, modelPart.color, modelPart.opacity, modelPart.customColor);
+                tailPart.renderer.material.color = RTColors.GetPlayerColor(index, modelPart.color, modelPart.opacity, modelPart.customColor);
 
-                tailPart.trailRenderer.startColor = CoreHelper.GetPlayerColor(index, modelPart.Trail.startColor, modelPart.Trail.startOpacity, modelPart.Trail.startCustomColor);
-                tailPart.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, modelPart.Trail.endColor, modelPart.Trail.endOpacity, modelPart.Trail.endCustomColor);
+                tailPart.trailRenderer.startColor = RTColors.GetPlayerColor(index, modelPart.Trail.startColor, modelPart.Trail.startOpacity, modelPart.Trail.startCustomColor);
+                tailPart.trailRenderer.endColor = RTColors.GetPlayerColor(index, modelPart.Trail.endColor, modelPart.Trail.endOpacity, modelPart.Trail.endCustomColor);
             }
 
             if (Model.headPart.Trail.emitting && head.trailRenderer)
             {
-                head.trailRenderer.startColor = CoreHelper.GetPlayerColor(index, Model.headPart.Trail.startColor, Model.headPart.Trail.startOpacity, Model.headPart.Trail.startCustomColor);
-                head.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, Model.headPart.Trail.endColor, Model.headPart.Trail.endOpacity, Model.headPart.Trail.endCustomColor);
+                head.trailRenderer.startColor = RTColors.GetPlayerColor(index, Model.headPart.Trail.startColor, Model.headPart.Trail.startOpacity, Model.headPart.Trail.startCustomColor);
+                head.trailRenderer.endColor = RTColors.GetPlayerColor(index, Model.headPart.Trail.endColor, Model.headPart.Trail.endOpacity, Model.headPart.Trail.endCustomColor);
             }
 
             if (Model.headPart.Particles.emitting && head.particleSystem)
@@ -2016,19 +2016,19 @@ namespace BetterLegacy.Core.Components.Player
                 var colStartHex = Model.headPart.Particles.customColor;
 
                 var main = head.particleSystem.main;
-                main.startColor = CoreHelper.GetPlayerColor(index, colStart, 1f, colStartHex);
+                main.startColor = RTColors.GetPlayerColor(index, colStart, 1f, colStartHex);
             }
 
             if (Model.boostPart.Trail.emitting && boost.trailRenderer)
             {
-                boost.trailRenderer.startColor = CoreHelper.GetPlayerColor(index, Model.boostPart.Trail.startColor, Model.boostPart.Trail.startOpacity, Model.boostPart.Trail.startCustomColor);
-                boost.trailRenderer.endColor = CoreHelper.GetPlayerColor(index, Model.boostPart.Trail.endColor, Model.boostPart.Trail.endOpacity, Model.boostPart.Trail.endCustomColor);
+                boost.trailRenderer.startColor = RTColors.GetPlayerColor(index, Model.boostPart.Trail.startColor, Model.boostPart.Trail.startOpacity, Model.boostPart.Trail.startCustomColor);
+                boost.trailRenderer.endColor = RTColors.GetPlayerColor(index, Model.boostPart.Trail.endColor, Model.boostPart.Trail.endOpacity, Model.boostPart.Trail.endCustomColor);
             }
 
             if (Model.boostPart.Particles.emitting && boost.particleSystem)
             {
                 var main = boost.particleSystem.main;
-                main.startColor = CoreHelper.GetPlayerColor(index, Model.boostPart.Particles.color, 1f, Model.boostPart.Particles.customColor);
+                main.startColor = RTColors.GetPlayerColor(index, Model.boostPart.Particles.color, 1f, Model.boostPart.Particles.customColor);
             }
         }
 
@@ -2064,9 +2064,9 @@ namespace BetterLegacy.Core.Components.Player
 
                 var reference = customObject.reference;
                 if (customObject.text)
-                    customObject.text.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
+                    customObject.text.color = RTColors.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
                 else if (customObject.renderer)
-                    customObject.renderer.material.color = CoreHelper.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
+                    customObject.renderer.material.color = RTColors.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
 
                 if (!customObject.idle || reference.animations.IsEmpty())
                 {
@@ -2138,8 +2138,8 @@ namespace BetterLegacy.Core.Components.Player
                 float alpha = boost.opacity;
                 float colorTween = boost.colorTween;
 
-                Color startColor = CoreHelper.GetPlayerColor(index, startCol, alpha, startHex);
-                Color endColor = CoreHelper.GetPlayerColor(index, endCol, alpha, endHex);
+                Color startColor = RTColors.GetPlayerColor(index, startCol, alpha, startHex);
+                Color endColor = RTColors.GetPlayerColor(index, endCol, alpha, endHex);
 
                 if (boost.renderer)
                     boost.renderer.material.color = Color.Lerp(startColor, endColor, colorTween);

@@ -102,14 +102,14 @@ namespace BetterLegacy.Core.Runtime.Objects
             var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
             Color mainColor =
-                CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.color), backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
+                RTColors.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.color), backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
 
             var reactive = backgroundObject.IsReactive;
 
             if (reactive)
                 mainColor =
                     RTMath.Lerp(mainColor,
-                        CoreHelper.ChangeColorHSV(
+                        RTColors.ChangeColorHSV(
                             beatmapTheme.GetBGColor(backgroundObject.reactiveCol),
                             backgroundObject.hue,
                             backgroundObject.saturation,
@@ -119,9 +119,9 @@ namespace BetterLegacy.Core.Runtime.Objects
             mainColor.a = 1f;
 
             var fadeColor =
-                CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.fadeColor), backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
+                RTColors.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.fadeColor), backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
 
-            if (CoreHelper.ColorMatch(fadeColor, beatmapTheme.backgroundColor, 0.05f))
+            if (RTColors.ColorMatch(fadeColor, beatmapTheme.backgroundColor, 0.05f))
                 fadeColor = ThemeManager.inst.bgColorToLerp;
             fadeColor.a = 1f;
 

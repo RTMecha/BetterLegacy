@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Managers
 
         public static int BeatmapObjectAliveCount() => !GameData.Current ? 0 : GameData.Current.beatmapObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty && x.Alive).Count;
 
-        public static void LogColor(Color color) => Debug.Log($"[<color=#{CoreHelper.ColorToHex(color)}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
+        public static void LogColor(Color color) => Debug.Log($"[<color=#{RTColors.ColorToHex(color)}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
         public static void LogColor(string color) => Debug.Log($"[<color={color}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
 
         public static void LogClassNames()

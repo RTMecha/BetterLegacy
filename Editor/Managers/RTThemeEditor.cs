@@ -1005,12 +1005,12 @@ namespace BetterLegacy.Editor.Managers
                 bgPreview.color = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                 PreviewTheme.backgroundColor = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
 
-                bgDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.backgroundColor));
+                bgDropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(PreviewTheme.backgroundColor));
                 bgPreviewET.triggers.Clear();
                 bgPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(bgPreview, bgDropper, bgHex, PreviewTheme.backgroundColor));
             });
 
-            bgDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.backgroundColor));
+            bgDropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(PreviewTheme.backgroundColor));
             bgPreviewET.triggers.Clear();
             bgPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(bgPreview, bgDropper, bgHex, PreviewTheme.backgroundColor));
 
@@ -1023,19 +1023,19 @@ namespace BetterLegacy.Editor.Managers
             guiHex.characterLimit = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? 8 : 6;
             guiHex.characterValidation = InputField.CharacterValidation.None;
             guiHex.contentType = InputField.ContentType.Standard;
-            guiHex.text = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? CoreHelper.ColorToHex(PreviewTheme.guiColor) : LSColors.ColorToHex(PreviewTheme.guiColor);
+            guiHex.text = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? RTColors.ColorToHex(PreviewTheme.guiColor) : LSColors.ColorToHex(PreviewTheme.guiColor);
             guiPreview.color = PreviewTheme.guiColor;
             guiHex.onValueChanged.AddListener(_val =>
             {
                 guiPreview.color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                 PreviewTheme.guiColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
 
-                guiDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.guiColor));
+                guiDropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(PreviewTheme.guiColor));
                 guiPreviewET.triggers.Clear();
                 guiPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(guiPreview, guiDropper, guiHex, PreviewTheme.guiColor));
             });
 
-            guiDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.guiColor));
+            guiDropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(PreviewTheme.guiColor));
             guiPreviewET.triggers.Clear();
             guiPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(guiPreview, guiDropper, guiHex, PreviewTheme.guiColor));
 
@@ -1048,19 +1048,19 @@ namespace BetterLegacy.Editor.Managers
             guiaccentHex.characterLimit = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? 8 : 6;
             guiaccentHex.characterValidation = InputField.CharacterValidation.None;
             guiaccentHex.contentType = InputField.ContentType.Standard;
-            guiaccentHex.text = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? CoreHelper.ColorToHex(PreviewTheme.guiAccentColor) : LSColors.ColorToHex(PreviewTheme.guiAccentColor);
+            guiaccentHex.text = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? RTColors.ColorToHex(PreviewTheme.guiAccentColor) : LSColors.ColorToHex(PreviewTheme.guiAccentColor);
             guiaccentPreview.color = PreviewTheme.guiAccentColor;
             guiaccentHex.onValueChanged.AddListener(_val =>
             {
                 guiaccentPreview.color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                 PreviewTheme.guiAccentColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
 
-                guiaccentDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.guiAccentColor));
+                guiaccentDropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(PreviewTheme.guiAccentColor));
                 guiaccentPreviewET.triggers.Clear();
                 guiaccentPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(guiaccentPreview, guiaccentDropper, guiaccentHex, PreviewTheme.guiAccentColor));
             });
 
-            guiaccentDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.guiAccentColor));
+            guiaccentDropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(PreviewTheme.guiAccentColor));
             guiaccentPreviewET.triggers.Clear();
             guiaccentPreviewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(guiaccentPreview, guiaccentDropper, guiaccentHex, PreviewTheme.guiAccentColor));
 
@@ -1103,7 +1103,7 @@ namespace BetterLegacy.Editor.Managers
                 hex.characterLimit = allowAlpha ? 8 : 6;
                 hex.characterValidation = InputField.CharacterValidation.None;
                 hex.contentType = InputField.ContentType.Standard;
-                hex.text = allowAlpha ? CoreHelper.ColorToHex(colors[indexTmp]) : LSColors.ColorToHex(colors[indexTmp]);
+                hex.text = allowAlpha ? RTColors.ColorToHex(colors[indexTmp]) : LSColors.ColorToHex(colors[indexTmp]);
                 preview.color = colors[indexTmp];
                 hex.onValueChanged.AddListener(_val =>
                 {
@@ -1120,7 +1120,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SetDropper(Image dropper, Image preview, InputField hex, EventTrigger previewET, Color color)
         {
-            dropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(color));
+            dropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(color));
             previewET.triggers.Clear();
             previewET.triggers.Add(TriggerHelper.CreatePreviewClickTrigger(preview, dropper, hex, color));
         }

@@ -173,7 +173,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = Parser.NewJSONObject();
             jn["name"] = name;
-            jn["color"] = CoreHelper.ColorToHex(color);
+            jn["color"] = RTColors.ColorToHex(color);
             jn["id"] = id;
 
             try

@@ -6003,7 +6003,7 @@ namespace BetterLegacy.Editor.Managers
                                 float satNum = beatmapObject.Interpolate(type, 3, eventTime);
                                 float valNum = beatmapObject.Interpolate(type, 4, eventTime);
 
-                                toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
+                                toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
                             }
                             else
                                 toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
@@ -6096,7 +6096,7 @@ namespace BetterLegacy.Editor.Managers
                                 float satNum = beatmapObject.Interpolate(type, 8, eventTime);
                                 float valNum = beatmapObject.Interpolate(type, 9, eventTime);
 
-                                toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
+                                toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
                             }
                             else
                                 toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
@@ -6582,7 +6582,7 @@ namespace BetterLegacy.Editor.Managers
 
                     string ptr = "";
                     if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                        ptr = "<br><#" + CoreHelper.ColorToHex(beatmapObject.GetPrefab().GetPrefabType().color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
+                        ptr = "<br><#" + RTColors.ColorToHex(beatmapObject.GetPrefab().GetPrefabType().color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
                     else
                         ptr = "<br>Not from prefab";
 
@@ -6597,7 +6597,7 @@ namespace BetterLegacy.Editor.Managers
                         "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + "}" +
                         "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
                         "<br>ROT: " + transform.eulerAngles.z +
-                        "<br>COL: " + "<#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, false)) + ">" + "█ <b>#" + CoreHelper.ColorToHex(RTEditor.GetObjectColor(beatmapObject, true)) + "</b></color>" +
+                        "<br>COL: " + "<#" + RTColors.ColorToHex(RTEditor.GetObjectColor(beatmapObject, false)) + ">" + "█ <b>#" + RTColors.ColorToHex(RTEditor.GetObjectColor(beatmapObject, true)) + "</b></color>" +
                         ptr;
 
                     TooltipHelper.AddHoverTooltip(buttonPrefab, desc, hint);

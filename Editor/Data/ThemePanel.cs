@@ -489,33 +489,33 @@ namespace BetterLegacy.Editor.Data
             {
                 var sb = new StringBuilder();
                 sb.AppendLine("Background Color:");
-                sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.backgroundColor)}>{TOOLTIP_COLOR_BAR}</color>");
+                sb.AppendLine($"<#{RTColors.ColorToHexOptional(Theme.backgroundColor)}>{TOOLTIP_COLOR_BAR}</color>");
 
                 sb.AppendLine("GUI Color | GUI Accent Color");
-                sb.AppendLine($"<#{CoreHelper.ColorToHexOptional(Theme.guiColor)}>{TOOLTIP_COLOR_BAR}</color> " + $"<#{CoreHelper.ColorToHexOptional(Theme.guiAccentColor)}>{TOOLTIP_COLOR_BAR}</color>");
+                sb.AppendLine($"<#{RTColors.ColorToHexOptional(Theme.guiColor)}>{TOOLTIP_COLOR_BAR}</color> " + $"<#{RTColors.ColorToHexOptional(Theme.guiAccentColor)}>{TOOLTIP_COLOR_BAR}</color>");
 
                 sb.AppendLine("Player Colors");
                 var playerColors = string.Empty;
                 for (int i = 0; i < Mathf.Clamp(Theme.playerColors.Count, 0, 4); i++)
-                    playerColors += $"<#{CoreHelper.ColorToHexOptional(Theme.GetPlayerColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                    playerColors += $"<#{RTColors.ColorToHexOptional(Theme.GetPlayerColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(playerColors);
 
                 sb.AppendLine("Beatmap Object Colors:");
                 var objectColors = string.Empty;
                 for (int i = 0; i < Mathf.Clamp(Theme.objectColors.Count, 0, 18); i++)
-                    objectColors += $"<#{CoreHelper.ColorToHexOptional(Theme.GetObjColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                    objectColors += $"<#{RTColors.ColorToHexOptional(Theme.GetObjColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(objectColors);
 
                 sb.AppendLine("BG Object Colors:");
                 var bgColors = string.Empty;
                 for (int i = 0; i < Mathf.Clamp(Theme.backgroundColors.Count, 0, 9); i++)
-                    bgColors += $"<#{CoreHelper.ColorToHexOptional(Theme.GetBGColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                    bgColors += $"<#{RTColors.ColorToHexOptional(Theme.GetBGColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(bgColors);
 
                 sb.AppendLine("Effect Colors:");
                 var fxColors = string.Empty;
                 for (int i = 0; i < Mathf.Clamp(Theme.effectColors.Count, 0, 18); i++)
-                    fxColors += $"<#{CoreHelper.ColorToHexOptional(Theme.GetFXColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                    fxColors += $"<#{RTColors.ColorToHexOptional(Theme.GetFXColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(fxColors);
 
                 TooltipHelper.AddHoverTooltip(GameObject, Theme.name, sb.ToString(), clear: true);

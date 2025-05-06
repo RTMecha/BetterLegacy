@@ -444,7 +444,7 @@ namespace BetterLegacy.Editor.Components
                 "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + ", Z: " + transform.position.z + "}" +
                 "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
                 "<br>ROT: " + transform.eulerAngles.z +
-                "<br>COL: " + CoreHelper.ColorToHex(col) +
+                "<br>COL: " + RTColors.ColorToHex(col) +
                 ptr;
             if (tooltipLanguages[0].hint != result)
                 tooltipLanguages[0].hint = result;

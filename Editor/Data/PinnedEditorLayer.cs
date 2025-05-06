@@ -4,8 +4,8 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Editor.Data
 {
@@ -74,7 +74,7 @@ namespace BetterLegacy.Editor.Data
             jn["name"] = name;
             jn["desc"] = desc;
             if (overrideColor)
-                jn["col"] = CoreHelper.ColorToHexOptional(color);
+                jn["col"] = RTColors.ColorToHexOptional(color);
             return jn;
         }
     }

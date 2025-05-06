@@ -66,7 +66,7 @@ namespace BetterLegacy.Core.Runtime.Events
                 2 => CoreHelper.CurrentBeatmapTheme.GetPlayerColor(colorSlot),
                 _ => CoreHelper.CurrentBeatmapTheme.GetBGColor(colorSlot),
             };
-            color = CoreHelper.ChangeColorHSV(color, hue, saturation, value);
+            color = RTColors.ChangeColorHSV(color, hue, saturation, value);
             color = LSColors.fadeColor(color, opacity);
             return color;
         }

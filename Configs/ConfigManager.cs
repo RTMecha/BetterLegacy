@@ -719,7 +719,7 @@ namespace BetterLegacy.Configs
                         stringInputField.onValueChanged.ClearAll();
                         stringInputField.textComponent.alignment = TextAnchor.MiddleLeft;
                         ((Text)stringInputField.placeholder).alignment = TextAnchor.MiddleLeft;
-                        stringInputField.text = CoreHelper.ColorToHexOptional(colorSetting.Value);
+                        stringInputField.text = RTColors.ColorToHexOptional(colorSetting.Value);
                         stringInputField.onValueChanged.AddListener(_val =>
                         {
                             colorSetting.Value = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : LSColors.HexToColor(_val);

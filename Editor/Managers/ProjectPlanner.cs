@@ -1705,7 +1705,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 note.TopBar?.SetColor(note.TopColor);
                 if (note.TitleUI)
-                    note.TitleUI.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(note.TopColor));
+                    note.TitleUI.color = RTColors.InvertColorHue(RTColors.InvertColorValue(note.TopColor));
 
                 if (!PlannerActive || CurrentTab != 5)
                     note.GameObject?.SetActive(note.Active);

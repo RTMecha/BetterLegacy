@@ -1239,26 +1239,26 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     var isSelected = button.selectionPosition == selected;
                     button.image.color = isSelected ?
                         LSColors.fadeColor(
-                            CoreHelper.ChangeColorHSV(
+                            RTColors.ChangeColorHSV(
                                 button.useOverrideSelectedColor ? button.overrideSelectedColor : Theme.GetObjColor(button.selectedColor),
                                 button.selectedHue,
                                 button.selectedSat,
                                 button.selectedVal),
                             button.selectedOpacity) :
                         LSColors.fadeColor(
-                            CoreHelper.ChangeColorHSV(
+                            RTColors.ChangeColorHSV(
                                 button.useOverrideColor ? button.overrideColor : Theme.GetObjColor(button.color),
                                 button.hue,
                                 button.sat,
                                 button.val),
                             button.opacity); ;
                     button.textUI.color = isSelected ?
-                        CoreHelper.ChangeColorHSV(
+                        RTColors.ChangeColorHSV(
                             button.useOverrideSelectedTextColor ? button.overrideSelectedTextColor : Theme.GetObjColor(button.selectedTextColor),
                             button.selectedTextHue,
                             button.selectedTextSat,
                             button.selectedTextVal) :
-                        CoreHelper.ChangeColorHSV(
+                        RTColors.ChangeColorHSV(
                             button.useOverrideTextColor ? button.overrideTextColor : Theme.GetObjColor(button.textColor),
                             button.textHue,
                             button.textSat,
@@ -1269,7 +1269,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element is MenuText text)
                 {
                     text.textUI.color =
-                        CoreHelper.ChangeColorHSV(
+                        RTColors.ChangeColorHSV(
                             text.useOverrideTextColor ? text.overrideTextColor : Theme.GetObjColor(text.textColor),
                             text.textHue,
                             text.textSat,
@@ -1280,13 +1280,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element is MenuInputField inputField)
                 {
                     inputField.inputField.textComponent.color =
-                        CoreHelper.ChangeColorHSV(
+                        RTColors.ChangeColorHSV(
                             inputField.useOverrideTextColor ? inputField.overrideTextColor : Theme.GetObjColor(inputField.textColor),
                             inputField.textHue,
                             inputField.textSat,
                             inputField.textVal);
                     inputField.inputField.GetPlaceholderText().color =
-                        LSColors.fadeColor(CoreHelper.ChangeColorHSV(
+                        LSColors.fadeColor(RTColors.ChangeColorHSV(
                             inputField.useOverridePlaceholderColor ? inputField.overridePlaceholderColor : Theme.GetObjColor(inputField.placeholderColor),
                             inputField.placeholderHue,
                             inputField.placeholderSat,
@@ -1295,7 +1295,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                 element.image.color =
                     LSColors.fadeColor(
-                        CoreHelper.ChangeColorHSV(
+                        RTColors.ChangeColorHSV(
                             element.useOverrideColor ? element.overrideColor : Theme.GetObjColor(element.color),
                             element.hue,
                             element.sat,

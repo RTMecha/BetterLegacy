@@ -72,9 +72,9 @@ namespace BetterLegacy.Patchers
                 guiAccentColor = beatmapTheme.guiColor,
                 guiColor = beatmapTheme.guiColor,
                 playerColors = beatmapTheme.playerColors,
-                objectColors = CoreHelper.NewColorList(18),
+                objectColors = RTColors.NewColorList(18),
                 backgroundColors = beatmapTheme.backgroundColors,
-                effectColors = CoreHelper.NewColorList(18),
+                effectColors = RTColors.NewColorList(18),
             };
 
             PlayerManager.SetupImages(Instance);

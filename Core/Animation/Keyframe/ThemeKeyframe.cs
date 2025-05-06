@@ -55,7 +55,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
             color =
                 LSColors.fadeColor(
-                    CoreHelper.ChangeColorHSV(color,
+                    RTColors.ChangeColorHSV(color,
                         RTMath.Lerp(hue, second.hue, ease),
                         RTMath.Lerp(saturation, second.saturation, ease),
                         RTMath.Lerp(brightness, second.brightness, ease)),

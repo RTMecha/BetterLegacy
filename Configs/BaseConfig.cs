@@ -100,7 +100,7 @@ namespace BetterLegacy.Configs
         public void WriteToJSON(string section, string key, object value)
         {
             if (value is Color color)
-                JSON[section][key]["value"] = CoreHelper.ColorToHex(color);
+                JSON[section][key]["value"] = RTColors.ColorToHex(color);
             else if (value is Vector2 vector2)
                 JSON[section][key]["value"] = vector2.ToJSON();
             else if (value is Vector3 vector3)

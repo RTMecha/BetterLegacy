@@ -932,7 +932,7 @@ namespace BetterLegacy.Core.Helpers
                 if (!_dropper)
                     return;
 
-                _dropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(colorPicker.currentColor));
+                _dropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(colorPicker.currentColor));
             });
         });
 

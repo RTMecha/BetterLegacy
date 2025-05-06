@@ -317,22 +317,22 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["id"] = id;
             jn["name"] = name;
-            jn["gui_ex"] = GameData.SaveOpacityToThemes ? CoreHelper.ColorToHex(guiAccentColor) : LSColors.ColorToHex(guiAccentColor);
-            jn["gui"] = GameData.SaveOpacityToThemes ? CoreHelper.ColorToHex(guiColor) : LSColors.ColorToHex(guiColor);
+            jn["gui_ex"] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(guiAccentColor) : LSColors.ColorToHex(guiAccentColor);
+            jn["gui"] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(guiColor) : LSColors.ColorToHex(guiColor);
             jn["bg"] = LSColors.ColorToHex(backgroundColor);
 
             for (int i = 0; i < playerColors.Count; i++)
-                jn["players"][i] = GameData.SaveOpacityToThemes ? CoreHelper.ColorToHex(playerColors[i]) : LSColors.ColorToHex(playerColors[i]);
+                jn["players"][i] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(playerColors[i]) : LSColors.ColorToHex(playerColors[i]);
 
             for (int i = 0; i < objectColors.Count; i++)
-                jn["objs"][i] = GameData.SaveOpacityToThemes ? CoreHelper.ColorToHex(objectColors[i]) : LSColors.ColorToHex(objectColors[i]);
+                jn["objs"][i] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(objectColors[i]) : LSColors.ColorToHex(objectColors[i]);
 
             for (int i = 0; i < backgroundColors.Count; i++)
                 jn["bgs"][i] = LSColors.ColorToHex(backgroundColors[i]);
 
             if (effectColors != null)
                 for (int i = 0; i < effectColors.Count; i++)
-                    jn["fx"][i] = GameData.SaveOpacityToThemes ? CoreHelper.ColorToHex(effectColors[i]) : LSColors.ColorToHex(effectColors[i]);
+                    jn["fx"][i] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(effectColors[i]) : LSColors.ColorToHex(effectColors[i]);
 
             return jn;
         }

@@ -2037,7 +2037,7 @@ namespace BetterLegacy.Editor.Managers
                 color.onEndEdit.ClearAll();
                 color.characterValidation = InputField.CharacterValidation.None;
                 color.characterLimit = 0;
-                color.text = CoreHelper.ColorToHex(prefabType.color);
+                color.text = RTColors.ColorToHex(prefabType.color);
                 color.interactable = !prefabType.isDefault;
                 if (!prefabType.isDefault)
                 {

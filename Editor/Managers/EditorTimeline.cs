@@ -1121,7 +1121,7 @@ namespace BetterLegacy.Editor.Managers
                     int x = textureWidth * i / waveform.Length;
                     int y = (int)evenSamples[i * freq + pos] - pos;
 
-                    texture2D.SetPixel(x, y, texture2D.GetPixel(x, y) == top ? CoreHelper.MixColors(top, bottom) : bottom);
+                    texture2D.SetPixel(x, y, texture2D.GetPixel(x, y) == top ? RTColors.MixColors(top, bottom) : bottom);
                 }
             }
 
@@ -1297,7 +1297,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int y = 0; y <= waveform[x] * ((float)height * .75f); y++)
                 {
                     tex.SetPixel(x, height - y, colTop);
-                    tex.SetPixel(x, y, tex.GetPixel(x, y) == colTop ? CoreHelper.MixColors(colTop, colBot) : colBot);
+                    tex.SetPixel(x, y, tex.GetPixel(x, y) == colTop ? RTColors.MixColors(colTop, colBot) : colBot);
                 }
             }
 

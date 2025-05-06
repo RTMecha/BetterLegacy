@@ -1856,7 +1856,7 @@ namespace BetterLegacy.Editor.Managers
                                     var colorIndex = j;
                                     var color = colors.GetChild(j);
                                     color.GetChild(0).gameObject.SetActive(customObject.color == j);
-                                    color.GetComponent<Image>().color = CoreHelper.GetPlayerColor(playerModelIndex, j, 1f, customObject.customColor);
+                                    color.GetComponent<Image>().color = RTColors.GetPlayerColor(playerModelIndex, j, 1f, customObject.customColor);
 
                                     var button = color.GetComponent<Button>();
                                     button.onClick.ClearAll();
@@ -2236,7 +2236,7 @@ namespace BetterLegacy.Editor.Managers
                                     var colorIndex = j;
                                     var color = colors.GetChild(j);
                                     color.GetChild(0).gameObject.SetActive((int)value == j);
-                                    color.GetComponent<Image>().color = CoreHelper.GetPlayerColor(playerModelIndex, j, 1f, "FFFFFF");
+                                    color.GetComponent<Image>().color = RTColors.GetPlayerColor(playerModelIndex, j, 1f, "FFFFFF");
 
                                     var button = color.GetComponent<Button>();
                                     button.onClick.ClearAll();
