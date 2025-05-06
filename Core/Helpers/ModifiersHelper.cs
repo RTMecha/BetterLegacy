@@ -102,7 +102,16 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case ModifierReferenceType.BackgroundObject: {
-                        AssignModifierAction(modifier as Modifier<BackgroundObject>, BGAction, BGTrigger, BGInactive);
+                        var bgModifier = modifier as Modifier<BackgroundObject>;
+
+                        var name = modifier.Name;
+                        if (bgModifier.type == ModifierBase.Type.Action)
+                            bgModifier.Action = GetBGAction(name);
+                        if (bgModifier.type == ModifierBase.Type.Trigger)
+                            bgModifier.Trigger = GetBGTrigger(name);
+
+                        bgModifier.Inactive = BGInactive;
+
                         break;
                     }
                 case ModifierReferenceType.CustomPlayer: {
@@ -1108,7 +1117,7 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
-            "break" => (Modifier, variables) => true,
+            "break" => (modifier, variables) => true,
             _ => (modifier, variables) => false,
         };
 
@@ -1914,237 +1923,222 @@ namespace BetterLegacy.Core.Helpers
 
         #region BackgroundObject
 
-        /// <summary>
-        /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="BackgroundObject"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run.</param>
-        /// <returns>Returns true if the modifier was triggered, otherwise returns false.</returns>
-        public static bool BGTrigger(Modifier<BackgroundObject> modifier, Dictionary<string, string> variables = null)
+        public static Func<Modifier<BackgroundObject>, Dictionary<string, string>, bool> GetBGTrigger(string key) => key switch
         {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
-            }
+            "timeLesserEquals" => (modifier, variables) => AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, variables),
+            "timeGreaterEquals" => (modifier, variables) => AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, variables),
+            "timeLesser" => (modifier, variables)  => AudioManager.inst.CurrentAudioSource.time < modifier.GetFloat(0, 0f, variables),
+            "timeGreater" => (modifier, variables)  => AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, variables),
+            _ => (modifier, variables) => false,
+        };
 
-            if (modifier.commands.IsEmpty())
-                return false;
-
-            switch (modifier.Name)
-            {
-                case "timeLesserEquals": {
-                        return AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, variables);
-                    }
-                case "timeGreaterEquals": {
-                        return AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, variables);
-                    }
-                case "timeLesser": {
-                        return AudioManager.inst.CurrentAudioSource.time < modifier.GetFloat(0, 0f, variables);
-                    }
-                case "timeGreater": {
-                        return AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, variables);
-                    }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// The function to run when a <see cref="ModifierBase.Type.Action"/> modifier is running and has a reference of <see cref="BackgroundObject"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run.</param>
-        public static void BGAction(Modifier<BackgroundObject> modifier, Dictionary<string, string> variables = null)
+        public static Action<Modifier<BackgroundObject>, Dictionary<string, string>> GetBGAction(string key) => key switch
         {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
-            }
+            "setActive" => ModifierActions.setActive,
+            "setActiveOther" => ModifierActions.setActiveOther,
 
-            if (modifier.commands.IsEmpty())
-                return;
+            #region Audio
 
-            modifier.hasChanged = false;
-            switch (modifier.Name)
-            {
-                case "setActive": {
-                        modifier.reference.Enabled = modifier.GetBool(0, false, variables);
+            // pitch
+            "setPitch" => ModifierActions.setPitch,
+            "addPitch" => ModifierActions.addPitch,
+            "setPitchMath" => ModifierActions.setPitchMath,
+            "addPitchMath" => ModifierActions.addPitchMath,
 
-                        break;
-                    }
-                case "setActiveOther": {
-                        var active = modifier.GetBool(0, false, variables);
-                        var tag = modifier.GetValue(1, variables);
-                        var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(tag));
-                        if (!list.IsEmpty())
-                            for (int i = 0; i < list.Count; i++)
-                                list[i].Enabled = active;
+            // music playing states
+            "setMusicTime" => ModifierActions.setMusicTime,
+            "setMusicTimeMath" => ModifierActions.setMusicTimeMath,
+            "setMusicTimeStartTime" => ModifierActions.setMusicTimeStartTime,
+            "setMusicTimeAutokill" => ModifierActions.setMusicTimeAutokill,
+            "setMusicPlaying" => ModifierActions.setMusicPlaying,
 
-                        break;
-                    }
-                case "animateObject": {
-                        if (int.TryParse(modifier.commands[1], out int type)
-                            && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
-                            && bool.TryParse(modifier.commands[5], out bool relative) && float.TryParse(modifier.value, out float time))
-                        {
-                            string easing = modifier.commands[6];
-                            if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                                easing = DataManager.inst.AnimationList[e].Name;
+            // play sound
+            "playSound" => ModifierActions.playSound,
+            "playSoundOnline" => ModifierActions.playSoundOnline,
+            "playDefaultSound" => ModifierActions.playDefaultSound,
+            //"audioSource" => ModifierActions.audioSource,
 
-                            Vector3 vector = type switch
-                            {
-                                0 => modifier.reference.positionOffset,
-                                1 => modifier.reference.scaleOffset,
-                                _ => modifier.reference.rotationOffset,
-                            };
+            #endregion
 
-                            var setVector = new Vector3(x, y, z);
-                            if (relative)
-                            {
-                                if (modifier.constant)
-                                    setVector *= CoreHelper.TimeFrame;
+            #region Level
 
-                                setVector += vector;
-                            }
+            "loadLevel" => ModifierActions.loadLevel,
+            "loadLevelID" => ModifierActions.loadLevelID,
+            "loadLevelInternal" => ModifierActions.loadLevelInternal,
+            "loadLevelPrevious" => ModifierActions.loadLevelPrevious,
+            "loadLevelHub" => ModifierActions.loadLevelHub,
+            "loadLevelInCollection" => ModifierActions.loadLevelInCollection,
+            "downloadLevel" => ModifierActions.downloadLevel,
+            "endLevel" => ModifierActions.endLevel,
+            "setAudioTransition" => ModifierActions.setAudioTransition,
+            "setIntroFade" => ModifierActions.setIntroFade,
+            "setLevelEndFunc" => ModifierActions.setLevelEndFunc,
 
-                            if (!modifier.constant)
-                            {
-                                var animation = new RTAnimation("Animate BG Object Offset");
+            #endregion
 
-                                animation.animationHandlers = new List<AnimationHandlerBase>
-                                {
-                                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
-                                    {
-                                        new Vector3Keyframe(0f, vector, Ease.Linear),
-                                        new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                                    }, vector3 => modifier.reference.SetTransform(type, vector3)),
-                                };
-                                animation.onComplete = () =>
-                                {
-                                    AnimationManager.inst.Remove(animation.id);
-                                    modifier.reference.SetTransform(type, setVector);
-                                };
-                                AnimationManager.inst.Play(animation);
-                            }
-                            else
-                                modifier.reference.SetTransform(type, setVector);
-                        }
+            // Component
 
-                        break;
-                    }
-                case "animateObjectOther": {
-                        if (int.TryParse(modifier.commands[1], out int type)
-                            && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
-                            && bool.TryParse(modifier.commands[5], out bool relative) && float.TryParse(modifier.value, out float time))
-                        {
-                            string easing = modifier.commands[6];
-                            if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                                easing = DataManager.inst.AnimationList[e].Name;
+            #region Player
 
-                            var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(modifier.commands[7]));
+            // hit
+            //"playerHit" => ModifierActions.playerHit,
+            "playerHitIndex" => ModifierActions.playerHitIndex,
+            "playerHitAll" => ModifierActions.playerHitAll,
 
-                            if (list.Count <= 0)
-                                break;
+            // heal
+            //"playerHeal" => ModifierActions.playerHeal,
+            "playerHealIndex" => ModifierActions.playerHealIndex,
+            "playerHealAll" => ModifierActions.playerHealAll,
 
-                            for (int i = 0; i < list.Count; i++)
-                            {
-                                var bg = list[i];
+            // kill
+            //"playerKill" => ModifierActions.playerKill,
+            "playerKillIndex" => ModifierActions.playerKillIndex,
+            "playerKillAll" => ModifierActions.playerKillAll,
 
-                                Vector3 vector = type switch
-                                {
-                                    0 => bg.positionOffset,
-                                    1 => bg.scaleOffset,
-                                    _ => bg.rotationOffset,
-                                };
+            // respawn
+            //"playerRespawn" => ModifierActions.playerRespawn,
+            "playerRespawnIndex" => ModifierActions.playerRespawnIndex,
+            "playerRespawnAll" => ModifierActions.playerRespawnAll,
 
-                                var setVector = new Vector3(x, y, z);
-                                if (relative)
-                                {
-                                    if (modifier.constant)
-                                        setVector *= CoreHelper.TimeFrame;
+            // player move
+            //"playerMove" => ModifierActions.playerMove,
+            "playerMoveIndex" => ModifierActions.playerMoveIndex,
+            "playerMoveAll" => ModifierActions.playerMoveAll,
+            //"playerMoveX" => ModifierActions.playerMoveX,
+            "playerMoveXIndex" => ModifierActions.playerMoveXIndex,
+            "playerMoveXAll" => ModifierActions.playerMoveXAll,
+            //"playerMoveY" => ModifierActions.playerMoveY,
+            "playerMoveYIndex" => ModifierActions.playerMoveYIndex,
+            "playerMoveYAll" => ModifierActions.playerMoveYAll,
+            //"playerRotate" => ModifierActions.playerRotate,
+            "playerRotateIndex" => ModifierActions.playerRotateIndex,
+            "playerRotateAll" => ModifierActions.playerRotateAll,
 
-                                    setVector += vector;
-                                }
+            // move to object
+            //"playerMoveToObject" => ModifierActions.playerMoveToObject,
+            //"playerMoveIndexToObject" => ModifierActions.playerMoveIndexToObject,
+            //"playerMoveAllToObject" => ModifierActions.playerMoveAllToObject,
+            //"playerMoveXToObject" => ModifierActions.playerMoveXToObject,
+            //"playerMoveXIndexToObject" => ModifierActions.playerMoveXIndexToObject,
+            //"playerMoveXAllToObject" => ModifierActions.playerMoveXAllToObject,
+            //"playerMoveYToObject" => ModifierActions.playerMoveYToObject,
+            //"playerMoveYIndexToObject" => ModifierActions.playerMoveYIndexToObject,
+            //"playerMoveYAllToObject" => ModifierActions.playerMoveYAllToObject,
+            //"playerRotateToObject" => ModifierActions.playerRotateToObject,
+            //"playerRotateIndexToObject" => ModifierActions.playerRotateIndexToObject,
+            //"playerRotateAllToObject" => ModifierActions.playerRotateAllToObject,
 
-                                if (!modifier.constant)
-                                {
-                                    var animation = new RTAnimation("Animate BG Object Offset");
+            // actions
+            //"playerBoost" => ModifierActions.playerBoost,
+            "playerBoostIndex" => ModifierActions.playerBoostIndex,
+            "playerBoostAll" => ModifierActions.playerBoostAll,
+            //"playerDisableBoost" => ModifierActions.playerDisableBoost,
+            "playerDisableBoostIndex" => ModifierActions.playerDisableBoostIndex,
+            "playerDisableBoostAll" => ModifierActions.playerDisableBoostAll,
+            //"playerEnableBoost" => ModifierActions.playerEnableBoost,
+            "playerEnableBoostIndex" => ModifierActions.playerEnableBoostIndex,
+            "playerEnableBoostAll" => ModifierActions.playerEnableBoostAll,
 
-                                    animation.animationHandlers = new List<AnimationHandlerBase>
-                                    {
-                                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
-                                        {
-                                            new Vector3Keyframe(0f, vector, Ease.Linear),
-                                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                                        }, vector3 => bg.SetTransform(type, vector3)),
-                                    };
-                                    animation.onComplete = () =>
-                                    {
-                                        AnimationManager.inst.Remove(animation.id);
-                                        bg.SetTransform(type, setVector);
-                                    };
-                                    AnimationManager.inst.Play(animation);
-                                }
-                                else
-                                    bg.SetTransform(type, setVector);
-                            }
-                        }
+            // speed
+            "playerSpeed" => ModifierActions.playerSpeed,
+            "playerVelocityAll" => ModifierActions.playerVelocityAll,
+            "playerVelocityXAll" => ModifierActions.playerVelocityXAll,
+            "playerVelocityYAll" => ModifierActions.playerVelocityYAll,
 
-                        break;
-                    }
-                case "copyAxis": {
-                        /*
-                        From Type: (Pos / Sca / Rot)
-                        From Axis: (X / Y / Z)
-                        Object Group
-                        To Type: (Pos / Sca / Rot)
-                        To Axis: (X / Y / Z)
-                        */
+            "setPlayerModel" => ModifierActions.setPlayerModel,
+            "gameMode" => ModifierActions.gameMode,
 
-                        if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                            && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
-                            && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
-                            && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
-                            && float.TryParse(modifier.commands[10], out float loop)
-                            && GameData.Current.beatmapObjects.TryFind(x => x.tags.Contains(modifier.value), out BeatmapObject bm))
-                        {
-                            var time = RTLevel.Current.CurrentTime;
+            //"blackHole" => ModifierActions.blackHole,
 
-                            fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            #endregion
 
-                            if (bm.cachedSequences)
-                            {
-                                switch (fromType)
-                                {
-                                    case 0: {
-                                            var sequence = bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay);
-                                            float value = (sequence.At(fromAxis) - offset) * multiply % loop;
+            #region Mouse Cursor
 
-                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                                            break;
-                                        }
-                                    case 1: {
-                                            var sequence = bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay);
-                                            float value = (sequence.At(fromAxis) - offset) * multiply % loop;
+            "showMouse" => ModifierActions.showMouse,
+            "hideMouse" => ModifierActions.hideMouse,
+            "setMousePosition" => ModifierActions.setMousePosition,
+            "followMousePosition" => ModifierActions.followMousePosition,
 
-                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                                            break;
-                                        }
-                                    case 2: {
-                                            var sequence = (bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
+            #endregion
 
-                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
-                                            break;
-                                        }
-                                }
-                            }
-                        }
+            #region Variable
 
-                        break;
-                    }
-            }
-        }
+            "getToggle" => ModifierActions.getToggle,
+            "getFloat" => ModifierActions.getFloat,
+            "getInt" => ModifierActions.getInt,
+            "getString" => ModifierActions.getString,
+            "getStringLower" => ModifierActions.getStringLower,
+            "getStringUpper" => ModifierActions.getStringUpper,
+            "getColor" => ModifierActions.getColor,
+            "getEnum" => ModifierActions.getEnum,
+            "getPitch" => ModifierActions.getPitch,
+            "getMusicTime" => ModifierActions.getMusicTime,
+            //"getAxis" => ModifierActions.getAxis,
+            "getMath" => ModifierActions.getMath,
+            "getNearestPlayer" => ModifierActions.getNearestPlayer,
+            "getEventValue" => ModifierActions.getEventValue,
+            "getSample" => ModifierActions.getSample,
+            //"getText" => ModifierActions.getText,
+            //"getTextOther" => ModifierActions.getTextOther,
+            "getCurrentKey" => ModifierActions.getCurrentKey,
+            "getColorSlotHexCode" => ModifierActions.getColorSlotHexCode,
+            "getFloatFromHexCode" => ModifierActions.getFloatFromHexCode,
+            "getHexCodeFromFloat" => ModifierActions.getHexCodeFromFloat,
+            "getJSONString" => ModifierActions.getJSONString,
+            "getJSONFloat" => ModifierActions.getJSONFloat,
+            "getJSON" => ModifierActions.getJSON,
+            "getSubString" => ModifierActions.getSubString,
+            "getSplitString" => ModifierActions.getSplitString,
+            "getStringLength" => ModifierActions.getStringLength,
+            "getRegex" => ModifierActions.getRegex,
+            "clearLocalVariables" => ModifierActions.clearLocalVariables,
+
+            "addVariable" => ModifierActions.addVariable,
+            "addVariableOther" => ModifierActions.addVariableOther,
+            "subVariable" => ModifierActions.subVariable,
+            "subVariableOther" => ModifierActions.subVariableOther,
+            "setVariable" => ModifierActions.setVariable,
+            "setVariableOther" => ModifierActions.setVariableOther,
+            "setVariableRandom" => ModifierActions.setVariableRandom,
+            "setVariableRandomOther" => ModifierActions.setVariableRandomOther,
+            "animateVariableOther" => ModifierActions.animateVariableOther,
+            "clampVariable" => ModifierActions.clampVariable,
+            "clampVariableOther" => ModifierActions.clampVariableOther,
+
+            #endregion
+
+            #region Animation
+
+            "animateObject" => ModifierActions.animateObject,
+            "animateObjectOther" => ModifierActions.animateObjectOther,
+            "animateSignal" => ModifierActions.animateSignal,
+            "animateSignalOther" => ModifierActions.animateSignalOther,
+
+            "animateObjectMath" => ModifierActions.animateObjectMath,
+            "animateObjectMathOther" => ModifierActions.animateObjectMathOther,
+            "animateSignalMath" => ModifierActions.animateSignalMath,
+            "animateSignalMathOther" => ModifierActions.animateSignalMathOther,
+
+            "gravity" => ModifierActions.gravity,
+            "gravityOther" => ModifierActions.gravityOther,
+
+            "copyAxis" => ModifierActions.copyAxis,
+            "copyAxisMath" => ModifierActions.copyAxisMath,
+            "copyAxisGroup" => ModifierActions.copyAxisGroup,
+            "copyPlayerAxis" => ModifierActions.copyPlayerAxis,
+            //"legacyTail" => ModifierActions.legacyTail,
+
+            //"applyAnimation" => ModifierActions.applyAnimation,
+            //"applyAnimationFrom" => ModifierActions.applyAnimationFrom,
+            //"applyAnimationTo" => ModifierActions.applyAnimationTo,
+            //"applyAnimationMath" => ModifierActions.applyAnimationMath,
+            //"applyAnimationFromMath" => ModifierActions.applyAnimationFromMath,
+            //"applyAnimationToMath" => ModifierActions.applyAnimationToMath,
+
+            #endregion
+
+            _ => (modifier, variables) => { },
+        };
 
         /// <summary>
         /// The function to run when a modifier is inactive and has a reference of <see cref="BackgroundObject"/>.
