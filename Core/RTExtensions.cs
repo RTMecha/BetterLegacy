@@ -390,6 +390,13 @@ namespace BetterLegacy.Core
         /// <returns>Returns an axis.</returns>
         public static float At(this Vector3Int vector3, int index) => vector3[Mathf.Clamp(index, 0, 2)];
 
+        /// <summary>
+        /// Gets a color channel at an index.
+        /// </summary>
+        /// <param name="index">Index of the color channel.</param>
+        /// <returns>Returns a color channel.</returns>
+        public static float At(this Color color, int index) => color[Mathf.Clamp(index, 0, 3)];
+
         #endregion
 
         #region Collection
