@@ -1169,7 +1169,6 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
-            // todo: implement index modifiers
             #region Player
 
             // hit
@@ -1259,6 +1258,8 @@ namespace BetterLegacy.Core.Helpers
             "getFloat" => ModifierActions.getFloat,
             "getInt" => ModifierActions.getInt,
             "getString" => ModifierActions.getString,
+            "getStringLower" => ModifierActions.getStringLower,
+            "getStringUpper" => ModifierActions.getStringUpper,
             "getColor" => ModifierActions.getColor,
             "getEnum" => ModifierActions.getEnum,
             "getPitch" => ModifierActions.getPitch,
@@ -1271,6 +1272,16 @@ namespace BetterLegacy.Core.Helpers
             "getText" => ModifierActions.getText,
             "getTextOther" => ModifierActions.getTextOther,
             "getCurrentKey" => ModifierActions.getCurrentKey,
+            "getColorSlotHexCode" => ModifierActions.getColorSlotHexCode,
+            "getFloatFromHexCode" => ModifierActions.getFloatFromHexCode,
+            "getHexCodeFromFloat" => ModifierActions.getHexCodeFromFloat,
+            "getJSONString" => ModifierActions.getJSONString,
+            "getJSONFloat" => ModifierActions.getJSONFloat,
+            "getJSON" => ModifierActions.getJSON,
+            "getSubString" => ModifierActions.getSubString,
+            "getSplitString" => ModifierActions.getSplitString,
+            "getStringLength" => ModifierActions.getStringLength,
+            "getRegex" => ModifierActions.getRegex,
             "clearLocalVariables" => ModifierActions.clearLocalVariables,
 
             "addVariable" => ModifierActions.addVariable,

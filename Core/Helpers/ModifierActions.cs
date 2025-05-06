@@ -841,9 +841,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (player && player.Player)
@@ -881,9 +879,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (player && player.Player)
@@ -927,9 +923,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (player && player.Player)
@@ -964,9 +958,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var playerIndex = PlayerManager.GetClosestPlayerIndex(pos);
 
                 if (playerIndex >= 0)
@@ -996,9 +988,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 var value = modifier.GetValue(0);
@@ -1136,9 +1126,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player)
@@ -1265,9 +1253,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player)
@@ -1393,9 +1379,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player)
@@ -1514,9 +1498,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player || !player.Player.rb)
@@ -1535,9 +1517,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
                     return;
 
@@ -1553,9 +1533,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player || !player.Player.rb)
@@ -1574,9 +1552,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player || !player.Player.rb)
@@ -1596,9 +1572,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
                     return;
 
@@ -1615,9 +1589,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 foreach (var player in PlayerManager.Players)
                 {
                     if (!player.Player || !player.Player.rb)
@@ -1637,9 +1609,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player || !player.Player.rb)
@@ -1659,9 +1629,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
                     return;
 
@@ -1678,9 +1646,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 foreach (var player in PlayerManager.Players)
                 {
                     if (!player.Player || !player.Player.rb)
@@ -1700,15 +1666,13 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player || !player.Player.rb)
                     return;
 
-                player.Player.rb.transform.SetLocalRotationEulerZ(runtimeObject.visualObject.gameObject.transform.localRotation.eulerAngles.z);
+                player.Player.rb.transform.SetLocalRotationEulerZ(modifier.reference.GetFullRotation().z);
             });
         }
 
@@ -1721,13 +1685,10 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
                 if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
                     return;
 
-                player.Player.rb.transform.SetLocalRotationEulerZ(runtimeObject.visualObject.gameObject.transform.localRotation.eulerAngles.z);
+                player.Player.rb.transform.SetLocalRotationEulerZ(modifier.reference.GetFullRotation().z);
             });
         }
 
@@ -1739,8 +1700,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var rot = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.localEulerAngles.z : modifier.reference.InterpolateChainRotation();
+                var rot = modifier.reference.GetFullRotation().z;
 
                 foreach (var player in PlayerManager.Players)
                 {
@@ -1760,9 +1720,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (!player || !player.Player)
@@ -1792,9 +1750,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (player && player.Player)
@@ -1824,9 +1780,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var runtimeObject = modifier.reference.runtimeObject;
-                var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+                var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
                 if (player && player.Player)
@@ -1939,43 +1893,20 @@ namespace BetterLegacy.Core.Helpers
             float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
             var players = PlayerManager.Players;
 
-            var levelObject = modifier.reference.runtimeObject;
-            if (!levelObject || !levelObject.visualObject.gameObject)
+            var pos = modifier.reference.GetFullPosition();
+
+            players.ForLoop(player =>
             {
-                var position = modifier.reference.InterpolateChainPosition();
-
-                for (int i = 0; i < players.Count; i++)
-                {
-                    var player = players[i];
-                    if (!player.Player || !player.Player.rb)
-                        continue;
-
-                    var transform = player.Player.rb.transform;
-
-                    var vector = new Vector3(transform.position.x, transform.position.y, 0f);
-                    var target = new Vector3(position.x, position.y, 0f);
-
-                    transform.position += (target - vector) * moveDelay;
-                }
-
-                return;
-            }
-
-            var gm = levelObject.visualObject.gameObject;
-
-            for (int i = 0; i < players.Count; i++)
-            {
-                var player = players[i];
                 if (!player.Player || !player.Player.rb)
-                    continue;
+                    return;
 
                 var transform = player.Player.rb.transform;
 
                 var vector = new Vector3(transform.position.x, transform.position.y, 0f);
-                var target = new Vector3(gm.transform.position.x, gm.transform.position.y, 0f);
+                var target = new Vector3(pos.x, pos.y, 0f);
 
                 transform.position += (target - vector) * moveDelay;
-            }
+            });
         }
 
         #endregion
@@ -2061,6 +1992,16 @@ namespace BetterLegacy.Core.Helpers
             variables[modifier.GetValue(0)] = modifier.GetValue(1, variables);
         }
         
+        public static void getStringLower<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = modifier.GetValue(1, variables).ToLower();
+        }
+        
+        public static void getStringUpper<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = modifier.GetValue(1, variables).ToUpper();
+        }
+
         public static void getColor<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             variables[modifier.GetValue(0)] = modifier.GetInt(1, 0, variables).ToString();
@@ -2122,9 +2063,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getNearestPlayer(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            var runtimeObject = modifier.reference.runtimeObject;
-            var pos = runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : modifier.reference.InterpolateChainPosition();
-
+            var pos = modifier.reference.GetFullPosition();
             variables[modifier.GetValue(0)] = PlayerManager.GetClosestPlayerIndex(pos).ToString();
         }
 
@@ -2177,7 +2116,108 @@ namespace BetterLegacy.Core.Helpers
             variables[modifier.GetValue(0)] = CoreHelper.GetKeyCodeDown().ToString();
         }
 
-        // hex code related modifiers
+        public static void getColorSlotHexCode<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var color = ThemeManager.inst.Current.GetObjColor(modifier.GetInt(1, 0, variables));
+            variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(color);
+        }
+
+        public static void getFloatFromHexCode<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = RTColors.HexToFloat(modifier.GetValue(1, variables)).ToString();
+        }
+
+        public static void getHexCodeFromFloat<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = RTColors.FloatToHex(modifier.GetFloat(1, 1f, variables));
+        }
+
+        public static void getJSONString<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
+                return;
+
+            var jn = JSON.Parse(json);
+
+            var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["string"];
+
+            variables[modifier.GetValue(0)] = fjn;
+        }
+        
+        public static void getJSONFloat<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
+                return;
+
+            var jn = JSON.Parse(json);
+
+            var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
+
+            variables[modifier.GetValue(0)] = fjn;
+        }
+
+        public static void getJSON<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            try
+            {
+                var jn = JSON.Parse(modifier.GetValue(1, variables));
+                var json1 = modifier.GetValue(2, variables);
+                if (!string.IsNullOrEmpty(json1))
+                    jn = jn[json1];
+
+                variables[modifier.GetValue(0)] = jn;
+            }
+            catch { }
+        }
+
+        public static void getSubString<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            try
+            {
+                var str = modifier.GetValue(1, variables);
+                var subString = str.Substring(Mathf.Clamp(modifier.GetInt(2, 0, variables), 0, str.Length), Mathf.Clamp(modifier.GetInt(3, 0, variables), 0, str.Length));
+                variables[modifier.GetValue(0)] = subString;
+            }
+            catch { }
+        }
+
+        public static void getSplitString<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var str = modifier.GetValue(0, variables);
+            var ch = modifier.GetValue(1, variables);
+
+            if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(ch))
+                return;
+
+            var split = str.Split(modifier.GetValue(1, variables)[0]);
+            for (int i = 0; i < split.Length; i++)
+            {
+                var index = i + 2;
+                if (modifier.commands.InRange(index))
+                    variables[modifier.commands[index]] = split[i];
+            }
+        }
+
+        public static void getStringLength<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = modifier.GetValue(1, variables).Length.ToString();
+        }
+
+        public static void getRegex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var regex = new Regex(modifier.GetValue(0, variables));
+            var match = regex.Match(modifier.GetValue(1, variables));
+
+            if (!match.Success)
+                return;
+
+            for (int i = 0; i < match.Groups.Count; i++)
+            {
+                var index = i + 2;
+                if (modifier.commands.InRange(index))
+                    variables[modifier.commands[index]] = match.Groups[i].ToString();
+            }
+        }
 
         public static void clearLocalVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables) => variables.Clear();
 
@@ -2532,25 +2572,23 @@ namespace BetterLegacy.Core.Helpers
 
         public static void saveFloat<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (CoreHelper.InEditorPreview)
-                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetFloat(0, 0f, variables));
+            ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetFloat(0, 0f, variables));
         }
         
         public static void saveString<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (CoreHelper.InEditorPreview)
-                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetValue(0, variables));
+            ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetValue(0, variables));
         }
         
         public static void saveText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            if (CoreHelper.InEditorPreview && modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject is TextObject textObject)
+            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject is TextObject textObject)
                 ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), textObject.textMeshPro.text);
         }
         
         public static void saveVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            if (CoreHelper.InEditorPreview && modifier.reference)
+            if (modifier.reference)
                 ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.reference.integerVariable);
         }
         
@@ -2828,7 +2866,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                modifier.reference.runtimeObject.visualObject.SetColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                modifier.reference.runtimeObject.visualObject.SetColor(modifier.reference.runtimeObject.visualObject.GetPrimaryColor() + RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
             });
         }
         
@@ -2851,7 +2889,7 @@ namespace BetterLegacy.Core.Helpers
                 foreach (var bm in list)
                 {
                     if (bm.runtimeObject)
-                        bm.runtimeObject.visualObject.SetColor(bm.runtimeObject.visualObject.GetPrimaryColor() + CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                        bm.runtimeObject.visualObject.SetColor(bm.runtimeObject.visualObject.GetPrimaryColor() + RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
                 }
             });
         }
@@ -2870,7 +2908,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                modifier.reference.runtimeObject.visualObject.SetColor(RTMath.Lerp(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
+                modifier.reference.runtimeObject.visualObject.SetColor(RTMath.Lerp(modifier.reference.runtimeObject.visualObject.GetPrimaryColor(), RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), multiply));
             });
         }
         
@@ -2890,7 +2928,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var color = CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val);
+                var color = RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val);
                 for (int i = 0; i < list.Count; i++)
                 {
                     var bm = list[i];
@@ -2949,7 +2987,7 @@ namespace BetterLegacy.Core.Helpers
                 var distance = Vector2.Distance(player.Player.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
 
                 runtimeObject.visualObject.SetColor(Color.Lerp(runtimeObject.visualObject.GetPrimaryColor(),
-                                LSColors.fadeColor(CoreHelper.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
+                                LSColors.fadeColor(RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
                                 -(distance * multiply - offset)));
             });
         }
@@ -3085,7 +3123,7 @@ namespace BetterLegacy.Core.Helpers
                     if (float.IsNaN(lerpVal))
                         lerpVal = nextKF.values[4];
 
-                    color = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+                    color = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
 
                     prevcolor = (int)prevKF.values[5];
                     nextColor = (int)nextKF.values[5];
@@ -3115,7 +3153,7 @@ namespace BetterLegacy.Core.Helpers
                     if (float.IsNaN(lerpVal))
                         lerpVal = nextKF.values[9];
 
-                    secondColor = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+                    secondColor = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
                 } // assign
 
                 var isEmpty = modifier.reference.objectType == BeatmapObject.ObjectType.Empty;
@@ -5121,10 +5159,10 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.reference is BeatmapObject beatmapObject)
             {
                 if (modifier.GetBool(0, true, variables))
-                    vector = beatmapObject.InterpolateChainPosition();
+                    vector = beatmapObject.GetFullPosition();
                 else
                 {
-                    var player = PlayerManager.GetClosestPlayer(beatmapObject.InterpolateChainPosition());
+                    var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
                     if (player && player.Player)
                         vector = player.Player.rb.position;
                 }
@@ -5164,10 +5202,10 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.reference is BeatmapObject beatmapObject)
             {
                 if (modifier.GetBool(0, true, variables))
-                    vector = beatmapObject.InterpolateChainPosition();
+                    vector = beatmapObject.GetFullPosition();
                 else
                 {
-                    var player = PlayerManager.GetClosestPlayer(beatmapObject.InterpolateChainPosition());
+                    var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
                     if (player && player.Player)
                         vector = player.Player.rb.position;
                 }
