@@ -57,7 +57,7 @@ namespace BetterLegacy.Core.Helpers
             bool result = true;
             triggers.ForLoop(trigger =>
             {
-                if (trigger.active)
+                if (trigger.active || trigger.triggerCount > 0 && trigger.runCount >= trigger.triggerCount)
                 {
                     trigger.triggered = false;
                     result = false;
@@ -182,7 +182,8 @@ namespace BetterLegacy.Core.Helpers
                         if (act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
                             return;
 
-                        act.runCount++;
+                        if (!act.running)
+                            act.runCount++;
                         if (!act.constant)
                             act.active = true;
 
@@ -194,7 +195,8 @@ namespace BetterLegacy.Core.Helpers
                         if (trig.triggerCount > 0 && trig.runCount >= trig.triggerCount)
                             return;
 
-                        trig.runCount++;
+                        if (!trig.running)
+                            trig.runCount++;
                         if (!trig.constant)
                             trig.active = true;
 
@@ -206,7 +208,7 @@ namespace BetterLegacy.Core.Helpers
                 // Deactivate both action and trigger modifiers
                 modifiers.ForLoop(modifier =>
                 {
-                    if (!modifier.active && (modifier.type == ModifierBase.Type.Trigger || !modifier.running))
+                    if (!modifier.active && !modifier.running)
                         return;
 
                     modifier.active = false;
@@ -221,7 +223,8 @@ namespace BetterLegacy.Core.Helpers
                 if (act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
                     return;
 
-                act.runCount++;
+                if (!act.running)
+                    act.runCount++;
                 if (!act.constant)
                     act.active = true;
 
@@ -255,7 +258,7 @@ namespace BetterLegacy.Core.Helpers
                         if (previousType == ModifierBase.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
                             result = true;
 
-                        if (modifier.active)
+                        if (modifier.active || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                         {
                             modifier.triggered = false;
                             result = false;
@@ -294,7 +297,8 @@ namespace BetterLegacy.Core.Helpers
                         return;
                     }
 
-                    modifier.runCount++;
+                    if (!modifier.running)
+                        modifier.runCount++;
 
                     // Only occur once
                     if (!modifier.constant)
