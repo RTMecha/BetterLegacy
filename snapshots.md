@@ -2,6 +2,7 @@
 
 ## Features
 ### Core
+- Added getComparison modifier. This compares two text values and returns a True or False based on that.
 - Added getSignaledVariables and signalLocalVariables modifiers. These send / recieve the current local variables.
 
 ## Changes
