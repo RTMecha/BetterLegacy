@@ -43,6 +43,15 @@ namespace BetterLegacy.Patchers
                 }
             }
         }
+
+        [HarmonyPatch(nameof(Dropdown.OnPointerClick))]
+        [HarmonyPrefix]
+        static bool OnPointerClickPrefix(Dropdown __instance, PointerEventData __0)
+        {
+            if (__0.button == PointerEventData.InputButton.Left) // require left click so it doesn't get in the way of context menus
+                __instance.Show();
+            return false;
+        }
     }
 
     [HarmonyPatch(typeof(HideDropdownOptions))]
