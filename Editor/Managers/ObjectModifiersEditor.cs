@@ -379,7 +379,7 @@ namespace BetterLegacy.Editor.Managers
         }
 
         // temporary solution
-        public List<GameObject> modifierCards = new List<GameObject>();
+        public List<ModifierCard<BeatmapObject>> modifierCards = new List<ModifierCard<BeatmapObject>>();
 
         public void RenderModifier(Modifier<BeatmapObject> modifier, int index)
         {
@@ -388,15 +388,16 @@ namespace BetterLegacy.Editor.Managers
             var name = modifier.Name;
 
             var gameObject = modifierCardPrefab.Duplicate(content, name);
+            var modifierCard = modifierCards.InRange(index) ? modifierCards[index] : new ModifierCard<BeatmapObject>(gameObject, modifier, index);
             if (!modifierCards.InRange(index))
-                modifierCards.Add(gameObject);
-            else if (!modifierCards[index])
-                modifierCards[index] = gameObject;
+                modifierCards.Add(modifierCard);
+            else if (!modifierCard.GameObject)
+                modifierCard.GameObject = gameObject;
             else
             {
-                CoreHelper.Delete(modifierCards[index]);
-                gameObject.transform.SetSiblingIndex(index);
-                modifierCards[index] = gameObject;
+                CoreHelper.Delete(modifierCard.GameObject);
+                gameObject.transform.SetSiblingIndex(modifierCard.index);
+                modifierCard.GameObject = gameObject;
             }
 
             TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {(name + " (" + modifier.type.ToString() + ")")}");
@@ -413,7 +414,7 @@ namespace BetterLegacy.Editor.Managers
             collapse.onValueChanged.AddListener(_val =>
             {
                 modifier.collapse = _val;
-                RenderModifier(modifier, index);
+                RenderModifier(modifier, modifierCard.index);
                 CoroutineHelper.PerformAtEndOfFrame(() =>
                 {
                     LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
@@ -429,12 +430,16 @@ namespace BetterLegacy.Editor.Managers
             var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.NewListener(() =>
             {
-                beatmapObject.modifiers.RemoveAt(index);
+                beatmapObject.modifiers.RemoveAt(modifierCard.index);
+                CoreHelper.Delete(gameObject);
+                modifierCards.RemoveAt(modifierCard.index);
+                for (int i = 0; i < modifierCards.Count; i++)
+                    modifierCards[i].index = i;
+
                 beatmapObject.reactivePositionOffset = Vector3.zero;
                 beatmapObject.reactiveScaleOffset = Vector3.zero;
                 beatmapObject.reactiveRotationOffset = 0f;
                 RTLevel.Current?.UpdateObject(beatmapObject);
-                StartCoroutine(RenderModifiers(beatmapObject));
             });
 
             TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
@@ -485,12 +490,16 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Delete", () =>
                     {
-                        beatmapObject.modifiers.RemoveAt(index);
+                        beatmapObject.modifiers.RemoveAt(modifierCard.index);
+                        CoreHelper.Delete(gameObject);
+                        modifierCards.RemoveAt(modifierCard.index);
+                        for (int i = 0; i < modifierCards.Count; i++)
+                            modifierCards[i].index = i;
+
                         beatmapObject.reactivePositionOffset = Vector3.zero;
                         beatmapObject.reactiveScaleOffset = Vector3.zero;
                         beatmapObject.reactiveRotationOffset = 0f;
                         RTLevel.Current?.UpdateObject(beatmapObject);
-                        StartCoroutine(RenderModifiers(beatmapObject));
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", () =>
@@ -580,7 +589,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Collapse", () =>
                     {
                         modifier.collapse = true;
-                        RenderModifier(modifier, index);
+                        RenderModifier(modifier, modifierCard.index);
                         CoroutineHelper.PerformAtEndOfFrame(() =>
                         {
                             LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
@@ -589,7 +598,7 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Unollapse", () =>
                     {
                         modifier.collapse = false;
-                        RenderModifier(modifier, index);
+                        RenderModifier(modifier, modifierCard.index);
                         CoroutineHelper.PerformAtEndOfFrame(() =>
                         {
                             LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
@@ -1708,7 +1717,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                             modifier.active = false;
                             var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier(modifier, index);
+                            RenderModifier(modifier, modifierCard.index);
                             CoroutineHelper.PerformAtNextFrame(() =>
                             {
                                 if (scrollbar)
@@ -1743,7 +1752,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTLevel.Current?.UpdateObject(beatmapObject);
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier(modifier, index);
+                                RenderModifier(modifier, modifierCard.index);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -1757,7 +1766,7 @@ namespace BetterLegacy.Editor.Managers
                             var groupName = StringGenerator(modifier, layout, "Name", i, _val =>
                             {
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier(modifier, index);
+                                RenderModifier(modifier, modifierCard.index);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -1778,7 +1787,7 @@ namespace BetterLegacy.Editor.Managers
 
                             RTLevel.Current?.UpdateObject(beatmapObject);
                             var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier(modifier, index);
+                            RenderModifier(modifier, modifierCard.index);
                             CoroutineHelper.PerformAtNextFrame(() =>
                             {
                                 if (scrollbar)
@@ -1954,7 +1963,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTLevel.Current?.UpdateObject(beatmapObject);
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier(modifier, index);
+                                RenderModifier(modifier, modifierCard.index);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -1977,7 +1986,7 @@ namespace BetterLegacy.Editor.Managers
 
                             RTLevel.Current?.UpdateObject(beatmapObject);
                             var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier(modifier, index);
+                            RenderModifier(modifier, modifierCard.index);
                             CoroutineHelper.PerformAtNextFrame(() =>
                             {
                                 if (scrollbar)
@@ -2011,7 +2020,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTLevel.Current?.UpdateObject(beatmapObject);
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier(modifier, index);
+                                RenderModifier(modifier, modifierCard.index);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -2034,13 +2043,25 @@ namespace BetterLegacy.Editor.Managers
 
                             RTLevel.Current?.UpdateObject(beatmapObject);
                             var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier(modifier, index);
+                            RenderModifier(modifier, modifierCard.index);
                             CoroutineHelper.PerformAtNextFrame(() =>
                             {
                                 if (scrollbar)
                                     scrollbar.value = value;
                             });
                         });
+
+                        break;
+                    }
+                case "getSignaledVariables": {
+                        BoolGenerator(modifier, layout, "Clear", 0, true);
+
+                        break;
+                    }
+                case "signalLocalVariables": {
+                        PrefabGroupOnly(modifier, layout);
+                        var str = StringGenerator(modifier, layout, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
@@ -2905,7 +2926,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTLevel.Current?.UpdateObject(beatmapObject);
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier(modifier, index);
+                                RenderModifier(modifier, modifierCard.index);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -2945,7 +2966,7 @@ namespace BetterLegacy.Editor.Managers
 
                             RTLevel.Current?.UpdateObject(beatmapObject);
                             var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier(modifier, index);
+                            RenderModifier(modifier, modifierCard.index);
                             CoroutineHelper.PerformAtNextFrame(() =>
                             {
                                 if (scrollbar)
@@ -3000,7 +3021,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTLevel.Current?.UpdateObject(beatmapObject);
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier(modifier, index);
+                                RenderModifier(modifier, modifierCard.index);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -3034,7 +3055,7 @@ namespace BetterLegacy.Editor.Managers
 
                             RTLevel.Current?.UpdateObject(beatmapObject);
                             var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier(modifier, index);
+                            RenderModifier(modifier, modifierCard.index);
                             CoroutineHelper.PerformAtNextFrame(() =>
                             {
                                 if (scrollbar)

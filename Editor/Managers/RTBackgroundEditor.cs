@@ -1851,13 +1851,27 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public List<GameObject> modifierCards = new List<GameObject>();
+        public List<ModifierCard<BackgroundObject>> modifierCards = new List<ModifierCard<BackgroundObject>>();
 
         public void RenderModifier(Modifier<BackgroundObject> modifier, int index)
         {
             var backgroundObject = modifier.reference;
 
-            var gameObject = modifierCardPrefab.Duplicate(content, modifier.Name);
+            var name = modifier.Name;
+
+            var gameObject = modifierCardPrefab.Duplicate(content, name);
+            var modifierCard = modifierCards.InRange(index) ? modifierCards[index] : new ModifierCard<BackgroundObject>(gameObject, modifier, index);
+            if (!modifierCards.InRange(index))
+                modifierCards.Add(modifierCard);
+            else if (!modifierCard.GameObject)
+                modifierCard.GameObject = gameObject;
+            else
+            {
+                CoreHelper.Delete(modifierCard.GameObject);
+                gameObject.transform.SetSiblingIndex(modifierCard.index);
+                modifierCard.GameObject = gameObject;
+            }
+
             EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
             gameObject.transform.localScale = Vector3.one;
             var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
@@ -1886,7 +1900,12 @@ namespace BetterLegacy.Editor.Managers
             var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.NewListener(() =>
             {
-                backgroundObject.modifiers.RemoveAt(index);
+                backgroundObject.modifiers.RemoveAt(modifierCard.index);
+                CoreHelper.Delete(gameObject);
+                modifierCards.RemoveAt(modifierCard.index);
+                for (int i = 0; i < modifierCards.Count; i++)
+                    modifierCards[i].index = i;
+
                 backgroundObject.positionOffset = Vector3.zero;
                 backgroundObject.scaleOffset = Vector3.zero;
                 backgroundObject.rotationOffset = Vector3.zero;
@@ -2039,10 +2058,13 @@ namespace BetterLegacy.Editor.Managers
                     }),
                     new ButtonFunction("Delete", () =>
                     {
-                        backgroundObject.modifiers.RemoveAt(index);
+                        backgroundObject.modifiers.RemoveAt(modifierCard.index);
+                        CoreHelper.Delete(gameObject);
+                        modifierCards.RemoveAt(modifierCard.index);
+                        for (int i = 0; i < modifierCards.Count; i++)
+                            modifierCards[i].index = i;
 
                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-                        StartCoroutine(RenderModifiers(backgroundObject));
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", () =>
