@@ -8,6 +8,10 @@ using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Core.Data
 {
+    /// <summary>
+    /// Indicates an object can run modifiers.
+    /// </summary>
+    /// <typeparam name="T">Type of the object that can run modifiers.</typeparam>
     public interface IModifiers<T>
     {
         /// <summary>
