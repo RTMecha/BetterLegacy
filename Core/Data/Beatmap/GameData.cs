@@ -1792,6 +1792,21 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Tries to get an object with a modifier's tag group.
+        /// </summary>
+        /// <param name="prefabInstanceOnly">If the object should only be associated with the prefab of the object.</param>
+        /// <param name="groupAlive">If the object should only be alive.</param>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <param name="result">Object result.</param>
+        /// <returns>Returns true if an object was found, otherwise returns false.</returns>
+        public bool TryFindObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag, out BeatmapObject result)
+        {
+            result = FindObjectWithTag(prefabInstanceOnly, groupAlive, prefabable, tag);
+            return result;
+        }
+
+        /// <summary>
         /// Gets an object with a tag group.
         /// </summary>
         /// <param name="tag">Tag group.</param>
@@ -1807,6 +1822,18 @@ namespace BetterLegacy.Core.Data.Beatmap
         public BeatmapObject FindObjectWithTag(Modifier<BeatmapObject> modifier, string tag) => modifier.prefabInstanceOnly && !string.IsNullOrEmpty(modifier.reference.prefabInstanceID) ?
                 beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == modifier.reference.prefabID && x.prefabInstanceID == modifier.reference.prefabInstanceID) :
                 beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
+
+        /// <summary>
+        /// Gets an object with a modifier's tag group.
+        /// </summary>
+        /// <param name="prefabInstanceOnly">If the object should only be associated with the prefab of the object.</param>
+        /// <param name="groupAlive">If the object should only be alive.</param>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <param name="tag">Tag group.</param>
+        /// <returns>Returns the found object.</returns>
+        public BeatmapObject FindObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) => prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                beatmapObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
+                beatmapObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
 
         /// <summary>
         /// Gets an object with a tag group.
