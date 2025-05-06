@@ -2225,6 +2225,42 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void getSignaledVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.Result is Dictionary<string, string> otherVariables)
+            {
+                foreach (var variable in otherVariables)
+                    variables[variable.Key] = variable.Value;
+
+                if (!modifier.GetBool(0, true, variables)) // don't clear
+                    return;
+
+                otherVariables.Clear();
+                modifier.Result = null;
+            }
+        }
+
+        public static void signalLocalVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IPrefabable prefabable)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+
+            if (list.IsEmpty())
+                return;
+
+            var sendVariables = new Dictionary<string, string>(variables);
+
+            foreach (var beatmapObject in list)
+            {
+                beatmapObject.modifiers.FindAll(x => x.Name == nameof(getSignaledVariables)).ForLoop(modifier =>
+                {
+                    modifier.Result = sendVariables;
+                });
+            }
+        }
+
         public static void clearLocalVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables) => variables.Clear();
 
         // object variable

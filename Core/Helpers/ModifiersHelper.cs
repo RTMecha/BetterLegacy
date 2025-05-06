@@ -1291,6 +1291,8 @@ namespace BetterLegacy.Core.Helpers
             "getSplitString" => ModifierActions.getSplitString,
             "getStringLength" => ModifierActions.getStringLength,
             "getRegex" => ModifierActions.getRegex,
+            "getSignaledVariables" => ModifierActions.getSignaledVariables,
+            "signalLocalVariables" => ModifierActions.signalLocalVariables,
             "clearLocalVariables" => ModifierActions.clearLocalVariables,
 
             "addVariable" => ModifierActions.addVariable,
@@ -2091,6 +2093,8 @@ namespace BetterLegacy.Core.Helpers
             "getSplitString" => ModifierActions.getSplitString,
             "getStringLength" => ModifierActions.getStringLength,
             "getRegex" => ModifierActions.getRegex,
+            "getSignaledVariables" => ModifierActions.getSignaledVariables,
+            "signalLocalVariables" => ModifierActions.signalLocalVariables,
             "clearLocalVariables" => ModifierActions.clearLocalVariables,
 
             "addVariable" => ModifierActions.addVariable,
