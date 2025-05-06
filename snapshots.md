@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.5.7 - (pre-1.7.0) [May 6, 2025]
 
 ## Features
 ### Core
@@ -12,12 +12,16 @@
 ### Editor
 - setPlayerModel modifier's Model ID value now has a context menu for selecting a player model.
 
-## Fixes
-- Fixes setPlayerModel modifier not actually updating the player model.
+### Example Companion
+- Example now has a low chance to leave by himself if he's bored.
 
 ## Changes
 ### Core
 - A ton of modifiers have been tweaked to fit with the new get variable modifiers.
+
+## Fixes
+- Fixes setPlayerModel modifier not actually updating the player model.
+- Fixed modifier scroll view resetting when refreshing modifier list.
 
 # snapshot-2025.5.6 - (pre-1.7.0) > [May 5, 2025]
 
