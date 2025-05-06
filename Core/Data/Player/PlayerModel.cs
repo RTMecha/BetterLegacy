@@ -14,7 +14,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerModel : Exists
+    public class PlayerModel : Exists, IModifiers<CustomPlayer>
     {
         public PlayerModel(bool setValues = true)
         {
@@ -1843,7 +1843,19 @@ namespace BetterLegacy.Core.Data.Player
 
         public List<CustomObject> customObjects = new List<CustomObject>();
 
+        public List<string> Tags { get; set; }
+
         public List<Modifier<CustomPlayer>> modifiers = new List<Modifier<CustomPlayer>>();
+
+        public List<Modifier<CustomPlayer>> Modifiers { get => modifiers; set => modifiers = value; }
+
+        public bool IgnoreLifespan { get; set; }
+
+        public bool OrderModifiers { get; set; }
+
+        public int IntVariable { get; set; }
+
+        public bool ModifiersActive => false;
 
         public class Base : Exists
         {
