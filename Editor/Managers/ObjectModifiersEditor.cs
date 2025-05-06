@@ -2047,6 +2047,13 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
+                case "getComparison": {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        StringGenerator(modifier, layout, "Compare From", 1);
+                        StringGenerator(modifier, layout, "Compare To", 2);
+
+                        break;
+                    }
                 case "getSignaledVariables": {
                         BoolGenerator(modifier, layout, "Clear", 0, true);
 
