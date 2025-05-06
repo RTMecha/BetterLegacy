@@ -4,8 +4,13 @@
 ### Core
 - Added getSignaledVariables and signalLocalVariables modifiers. These send / recieve the current local variables.
 
+## Changes
+### Example Companion
+- Tweaked Example's boredom to decrease how often he leaves.
+
 ## Fixes
 - Clicking on a dropdown now requires left click. This is to fix context menus on dropdowns still interacting with the dropdown.
+- Modifier run count should now act as intentioned by increasing the run count number by one only when the modifier activates, not when it continues running.
 
 # snapshot-2025.5.7 - (pre-1.7.0) [May 6, 2025]
 
