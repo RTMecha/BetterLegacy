@@ -1380,7 +1380,7 @@ namespace BetterLegacy.Configs
             CreateObjectsatCameraCenter = Bind(this, GENERAL, "Create Objects at Camera Center", true, "When an object is created, its position will be set to that of the camera's.");
             SpawnPrefabsAtCameraCenter = Bind(this, GENERAL, "Spawn Prefabs at Camera Center", true, "When a Prefab object is placed into a level, its position will be set to that of the camera's.");
             CreateObjectsScaleParentDefault = Bind(this, GENERAL, "Create Objects Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
-            CreateObjectModifierOrderDefault = Bind(this, GENERAL, "Create Object Modifier Order Default", false, "The default value for new objects' Order Matters toggle.");
+            CreateObjectModifierOrderDefault = Bind(this, GENERAL, "Create Objects Modifier Order Default", true, "The default value for new objects' Order Matters toggle.");
             AllowEditorKeybindsWithEditorCam = Bind(this, GENERAL, "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
             RotationEventKeyframeResets = Bind(this, GENERAL, "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");
             RememberLastKeyframeType = Bind(this, GENERAL, "Remember Last Keyframe Type", false, "When an object is selected for the first time, it selects the previous objects' keyframe selection type. For example, say you had a color keyframe selected, this newly selected object will select the first color keyframe.");
