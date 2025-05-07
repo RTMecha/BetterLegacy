@@ -1607,9 +1607,15 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
+                case "setGameMode": {
+                        DropdownGenerator(modifier, layout, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
 
+                        break;
+                    }
+                    
                 case "gameMode": {
                         DropdownGenerator(modifier, layout, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
+                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
 
                         break;
                     }
@@ -1625,9 +1631,13 @@ namespace BetterLegacy.Editor.Managers
 
                 #region Mouse Cursor
 
-                //case "showMouse": {
-                //        break;
-                //    }
+                case "showMouse": {
+                        if (modifier.GetValue(0) == "0")
+                            modifier.SetValue(0, "True");
+
+                        BoolGenerator(modifier, layout, "Enabled", 0, true);
+                        break;
+                    }
                 //case "hideMouse": {
                 //        break;
                 //    }
@@ -1962,6 +1972,12 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
+                case nameof(ModifierActions.getParsedString): {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        StringGenerator(modifier, layout, "Value", 1);
+
+                        break;
+                    }
                 case nameof(ModifierActions.getSplitString): {
                         StringGenerator(modifier, layout, "Text", 0);
                         StringGenerator(modifier, layout, "Character", 1);
@@ -2016,6 +2032,20 @@ namespace BetterLegacy.Editor.Managers
                                     scrollbar.value = value;
                             });
                         });
+
+                        break;
+                    }
+                case nameof(ModifierActions.getSplitStringAt): {
+                        StringGenerator(modifier, layout, "Text", 0);
+                        StringGenerator(modifier, layout, "Character", 1);
+                        StringGenerator(modifier, layout, "Variable Name", 2);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getSplitStringCount): {
+                        StringGenerator(modifier, layout, "Text", 0);
+                        StringGenerator(modifier, layout, "Character", 1);
+                        StringGenerator(modifier, layout, "Variable Name", 2);
 
                         break;
                     }
@@ -2394,6 +2424,8 @@ namespace BetterLegacy.Editor.Managers
                             modifier.SetValue(0, "True");
 
                         BoolGenerator(modifier, layout, "Reset", 1, true);
+
+                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case "disableObjectTree": {
@@ -2403,6 +2435,7 @@ namespace BetterLegacy.Editor.Managers
                         BoolGenerator(modifier, layout, "Use Self", 0, true);
                         BoolGenerator(modifier, layout, "Reset", 1, true);
 
+                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case "disableObjectOther": {
@@ -2411,6 +2444,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, layout, "Reset", 1, true);
 
+                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case "disableObjectTreeOther": {
@@ -2420,6 +2454,7 @@ namespace BetterLegacy.Editor.Managers
                         BoolGenerator(modifier, layout, "Use Self", 0, true);
                         BoolGenerator(modifier, layout, "Reset", 2, true);
 
+                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
 
@@ -4144,6 +4179,18 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.ApplyLightText(prefabInstanceText);
             EditorThemeManager.ApplyToggle(prefabInstanceToggle);
+        }
+
+        public GameObject MessageGenerator(Transform layout, string label)
+        {
+            var gameObject = stringInput.Duplicate(layout, "group label");
+            gameObject.transform.localScale = Vector3.one;
+            var groupLabel = gameObject.transform.Find("Text").GetComponent<Text>();
+            groupLabel.text = label;
+            groupLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
+            gameObject.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
+            Destroy(gameObject.transform.Find("Input").gameObject);
+            return gameObject;
         }
 
         public GameObject NumberGenerator(Transform layout, string label, string text, Action<string> action, out InputField result)

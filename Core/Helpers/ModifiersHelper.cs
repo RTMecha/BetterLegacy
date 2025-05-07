@@ -44,6 +44,8 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static bool development = false;
 
+        public const string DEPRECATED_MESSAGE = "Deprecated.";
+
         #region Running
 
         /// <summary>
@@ -1320,6 +1322,7 @@ namespace BetterLegacy.Core.Helpers
             "playerVelocityYAll" => ModifierActions.playerVelocityYAll,
 
             "setPlayerModel" => ModifierActions.setPlayerModel,
+            "setGameMode" => ModifierActions.setGameMode,
             "gameMode" => ModifierActions.gameMode,
 
             "blackHole" => ModifierActions.blackHole,
@@ -1367,8 +1370,11 @@ namespace BetterLegacy.Core.Helpers
             "getJSONFloat" => ModifierActions.getJSONFloat,
             "getJSON" => ModifierActions.getJSON,
             "getSubString" => ModifierActions.getSubString,
-            "getSplitString" => ModifierActions.getSplitString,
+            nameof(ModifierActions.getSplitString) => ModifierActions.getSplitString,
+            nameof(ModifierActions.getSplitStringAt) => ModifierActions.getSplitStringAt,
+            nameof(ModifierActions.getSplitStringCount) => ModifierActions.getSplitStringCount,
             "getStringLength" => ModifierActions.getStringLength,
+            "getParsedString" => ModifierActions.getParsedString,
             "getRegex" => ModifierActions.getRegex,
             "getFormatVariable" => ModifierActions.getFormatVariable,
             "getComparison" => ModifierActions.getComparison,
@@ -2178,7 +2184,10 @@ namespace BetterLegacy.Core.Helpers
             "getJSONFloat" => ModifierActions.getJSONFloat,
             "getJSON" => ModifierActions.getJSON,
             "getSubString" => ModifierActions.getSubString,
-            "getSplitString" => ModifierActions.getSplitString,
+            nameof(ModifierActions.getSplitString) => ModifierActions.getSplitString,
+            nameof(ModifierActions.getSplitStringAt) => ModifierActions.getSplitStringAt,
+            nameof(ModifierActions.getSplitStringCount) => ModifierActions.getSplitStringCount,
+            "getParsedString" => ModifierActions.getParsedString,
             "getStringLength" => ModifierActions.getStringLength,
             "getRegex" => ModifierActions.getRegex,
             "getFormatVariable" => ModifierActions.getFormatVariable,
