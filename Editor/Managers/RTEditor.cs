@@ -6895,6 +6895,58 @@ namespace BetterLegacy.Editor.Managers
 
         #region Misc Functions
 
+        /// <summary>
+        /// Starts the editor preview.
+        /// </summary>
+        public void StartPreview()
+        {
+            GameManager.inst.playerGUI.SetActive(false);
+            CursorManager.inst.ShowCursor();
+            EditorManager.inst.GUI.SetActive(true);
+            EditorManager.inst.ShowGUI();
+            EditorManager.inst.SetPlayersInvinsible(true);
+            EditorManager.inst.SetEditRenderArea();
+            GameManager.inst.UpdateTimeline();
+
+            if (!EditorConfig.Instance.ResetHealthInEditor.Value || InputDataManager.inst.players.IsEmpty())
+                return;
+
+            try
+            {
+                if (InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x is CustomPlayer))
+                    foreach (var player in PlayerManager.Players)
+                    {
+                        if (player.PlayerModel && player.PlayerModel.basePart)
+                            player.Health = player.PlayerModel.basePart.health;
+                    }
+
+                if (RTGameManager.inst.ActiveCheckpoint)
+                    PlayerManager.SpawnPlayers(RTGameManager.inst.ActiveCheckpoint);
+                else
+                    PlayerManager.SpawnPlayers(EventManager.inst.cam.transform.position);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Resetting player health error.\n{ex}");
+            }
+        }
+
+        /// <summary>
+        /// Ends the editor preview.
+        /// </summary>
+        public void EndPreview()
+        {
+            GameManager.inst.playerGUI.SetActive(true);
+            CursorManager.inst.HideCursor();
+            EditorManager.inst.GUI.SetActive(false);
+            AudioManager.inst.CurrentAudioSource.Play();
+            EditorManager.inst.SetNormalRenderArea();
+            GameManager.inst.UpdateTimeline();
+            RTGameManager.inst.ResetCheckpoint(true);
+
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+
         public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));
 
         public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, ThemePath));

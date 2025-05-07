@@ -372,44 +372,9 @@ namespace BetterLegacy.Patchers
                         Instance.handleViewShortcuts();
 
                     if (Instance.OpenedEditor)
-                    {
-                        GameManager.inst.playerGUI.SetActive(false);
-                        CursorManager.inst.ShowCursor();
-                        Instance.GUI.SetActive(true);
-                        Instance.ShowGUI();
-                        Instance.SetPlayersInvinsible(true);
-                        Instance.SetEditRenderArea();
-                        GameManager.inst.UpdateTimeline();
-
-                        if (EditorConfig.Instance.ResetHealthInEditor.Value && InputDataManager.inst.players.Count > 0)
-                        {
-                            try
-                            {
-                                if (InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x is CustomPlayer))
-                                    foreach (var player in PlayerManager.Players)
-                                    {
-                                        if (player.PlayerModel != null && player.PlayerModel.basePart != null)
-                                            player.Health = player.PlayerModel.basePart.health;
-                                    }
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreHelper.LogError($"Resetting player health error.\n{ex}");
-                            }
-                        }
-                    }
+                        RTEditor.inst.StartPreview();
                     else if (Instance.ClosedEditor)
-                    {
-                        GameManager.inst.playerGUI.SetActive(true);
-                        CursorManager.inst.HideCursor();
-                        Instance.GUI.SetActive(false);
-                        AudioManager.inst.CurrentAudioSource.Play();
-                        Instance.SetNormalRenderArea();
-                        GameManager.inst.UpdateTimeline();
-                        RTGameManager.inst.ResetCheckpoint(true);
-
-                        EventSystem.current.SetSelectedGameObject(null);
-                    }
+                        RTEditor.inst.EndPreview();
 
                     Instance.updatePointer();
                     Instance.UpdateTooltip();
