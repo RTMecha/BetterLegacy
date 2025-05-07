@@ -1,4 +1,13 @@
-﻿# snapshot-2025.5.9 - (pre-1.7.0) [May 7, 2025]
+﻿# ???
+
+## Features
+### Core
+- Started working on player boost damage mechanic.
+
+## Fixes
+- Fixed object type collision not updating correctly.
+
+# snapshot-2025.5.9 - (pre-1.7.0) [May 7, 2025]
 
 ## Features
 ### Core
