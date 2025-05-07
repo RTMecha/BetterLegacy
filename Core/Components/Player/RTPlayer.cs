@@ -403,10 +403,16 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public static bool AllowPlayersToHitOthers { get; set; }
 
+        /// <summary>
+        /// If players boosting changes their collision trigger state.
+        /// </summary>
+        public static bool ChangeIsTriggerOnBoost { get; set; }
+
         #endregion
 
         public bool colliding;
         public bool triggerColliding;
+        public bool isColliderTrigger;
         public bool updated;
         public bool playerNeedsUpdating;
 
@@ -1235,6 +1241,9 @@ namespace BetterLegacy.Core.Components.Player
             time += Time.time - timeOffset;
 
             timeOffset = Time.time;
+
+            if (!isColliderTrigger)
+                SetTriggerCollision(false);
 
             if (UpdateMode == TailUpdateMode.Update)
                 UpdateTailDistance();
@@ -2614,15 +2623,21 @@ namespace BetterLegacy.Core.Components.Player
             });
         }
 
-        // todo: figure out how to implement this...
         /// <summary>
         /// Changes how the players collision works.
         /// </summary>
         /// <param name="enabled">True if the player can phase through walls.</param>
         public void SetTriggerCollision(bool enabled)
         {
-            //circleCollider2D.isTrigger = enabled;
-            //polygonCollider2D.isTrigger = enabled;
+            if (!ChangeIsTriggerOnBoost)
+            {
+                circleCollider2D.isTrigger = false;
+                polygonCollider2D.isTrigger = false;
+                return;
+            }
+
+            circleCollider2D.isTrigger = enabled;
+            polygonCollider2D.isTrigger = enabled;
         }
 
         #region Particles
@@ -2649,11 +2664,9 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Internal
 
-        /// <summary>
-        /// this is public but should be treated as internal.
-        /// </summary>
-        public void HandleCollision(Component other, bool stay = true)
+        internal void HandleCollision(Component other, bool stay = true)
         {
+            isColliderTrigger = other.tag == Tags.PLAYER || other is Collider2D collider2D && collider2D.isTrigger || other is Collider collider && collider.isTrigger;
             triggerColliding = true;
             if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
                 Hit();
