@@ -1873,6 +1873,8 @@ namespace BetterLegacy.Core.Helpers
             customPlayer.Player.UpdateModel();
         }
         
+        public static void setGameMode<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
+        
         public static void gameMode<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
 
         public static void blackHole(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -1913,7 +1915,18 @@ namespace BetterLegacy.Core.Helpers
 
         #region Mouse Cursor
 
-        public static void showMouse<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CursorManager.inst.ShowCursor();
+        public static void showMouse<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var value = modifier.GetValue(0, variables);
+            if (value == "0")
+                value = "True";
+            var enabled = Parser.TryParse(value, true);
+
+            if (enabled)
+                CursorManager.inst.ShowCursor();
+            else if (CoreHelper.InEditorPreview)
+                CursorManager.inst.HideCursor();
+        }
 
         public static void hideMouse<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
@@ -2235,7 +2248,7 @@ namespace BetterLegacy.Core.Helpers
             if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(ch))
                 return;
 
-            var split = str.Split(modifier.GetValue(1, variables)[0]);
+            var split = str.Split(ch[0]);
             for (int i = 0; i < split.Length; i++)
             {
                 var index = i + 2;
@@ -2243,10 +2256,39 @@ namespace BetterLegacy.Core.Helpers
                     variables[modifier.GetValue(index)] = split[i];
             }
         }
+        
+        public static void getSplitStringAt<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var str = modifier.GetValue(0, variables);
+            var ch = modifier.GetValue(1, variables);
+
+            if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(ch))
+                return;
+
+            var split = str.Split(ch[0]);
+            variables[modifier.GetValue(2)] = split.GetAt(modifier.GetInt(3, 0, variables));
+        }
+        
+        public static void getSplitStringCount<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var str = modifier.GetValue(0, variables);
+            var ch = modifier.GetValue(1, variables);
+
+            if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(ch))
+                return;
+
+            var split = str.Split(ch[0]);
+            variables[modifier.GetValue(2)] = split.Length.ToString();
+        }
 
         public static void getStringLength<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             variables[modifier.GetValue(0)] = modifier.GetValue(1, variables).Length.ToString();
+        }
+
+        public static void getParsedString<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = RTString.ParseText(modifier.GetValue(1, variables));
         }
 
         public static void getRegex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
