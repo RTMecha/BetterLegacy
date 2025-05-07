@@ -759,6 +759,7 @@ namespace BetterLegacy.Patchers
                     RTFile.CreateDirectory(Path.GetDirectoryName(file));
 
                     string saveTo = file.Replace("\\", "/").Replace(RTEditor.inst.CurrentLevel.path, str);
+                    RTFile.CreateDirectory(Path.GetDirectoryName(saveTo));
                     RTFile.CopyFile(file, saveTo);
                 }
 
