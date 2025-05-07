@@ -4,10 +4,19 @@
 ### Core
 - Started working on player boost damage mechanic.
 - Added forLoop and continue modifiers. These allow you to run the next set of modifiers up until a return modifier a certain amount of times.
+- Added getParsedString modifier. This returns a string with specific values replaced.
+- Added getSplitStringAt and getSplitStringCount modifiers. These return a value in a separated string.
+- Added playerCount to math evaluation variables.
 
 ## Changes
+### Core
+- showMouse modifier now has an Enabled toggle.
+- Removed some outdated modifiers. They still work, but will not appear in the modifiers list.
+- Renamed gameMode modifier to setGameMode.
+
+### Editor
 - Renamed Image Objects' Set Data to Store Data.
-- Reworked tooltip system to allow for tooltip categories.
+- Reworked default modifiers and tooltips to allow for modifier / tooltip categories.
 
 ## Fixes
 - Fixed object type collision not updating correctly.
