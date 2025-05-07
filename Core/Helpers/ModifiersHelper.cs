@@ -458,6 +458,10 @@ namespace BetterLegacy.Core.Helpers
             {
                 return variables.TryGetValue(modifier.GetValue(0), out string result) && result.EndsWith(modifier.GetValue(1, variables));
             },
+            "localVariableExists" => (modifier, variables) =>
+            {
+                return variables.ContainsKey(modifier.GetValue(0));
+            },
 
             // self
             "variableEquals" => (modifier, variables) =>
@@ -1291,7 +1295,8 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.getMusicTime) => ModifierActions.getMusicTime,
             "getAxis" => ModifierActions.getAxis,
             "getMath" => ModifierActions.getMath,
-            "getNearestPlayer" => ModifierActions.getNearestPlayer,
+            nameof(ModifierActions.getNearestPlayer) => ModifierActions.getNearestPlayer,
+            nameof(ModifierActions.getCollidingPlayers) => ModifierActions.getCollidingPlayers,
             "getPlayerHealth" => ModifierActions.getPlayerHealth,
             "getPlayerPosX" => ModifierActions.getPlayerPosX,
             "getPlayerPosY" => ModifierActions.getPlayerPosY,

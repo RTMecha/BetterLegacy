@@ -1834,6 +1834,11 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
+                case nameof(ModifierActions.getCollidingPlayers): {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+
+                        break;
+                    }
                 case nameof(ModifierActions.getPlayerHealth): {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         IntegerGenerator(modifier, layout, "Player Index", 1, 0, max: int.MaxValue);
@@ -3652,6 +3657,11 @@ namespace BetterLegacy.Editor.Managers
                 case "localVariableGreater": {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         SingleGenerator(modifier, layout, "Compare To", 1, 0);
+
+                        break;
+                    }
+                case "localVariableExists": {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
 
                         break;
                     }
