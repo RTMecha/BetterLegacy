@@ -114,7 +114,6 @@ namespace BetterLegacy.Core
                     context.RegisterVariable("boostCount", LevelManager.BoostCount);
                     if (RTLevel.Current)
                         context.RegisterVariable("smoothedTime", RTLevel.Current.CurrentTime);
-                    context.RegisterVariable("playerHealthTotal", InputDataManager.inst.players.IsEmpty() ? 0 : PlayerManager.Players.Sum(x => x.Health));
                     context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
                     context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
                     context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
@@ -122,6 +121,8 @@ namespace BetterLegacy.Core
                     context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
 
                     var players = PlayerManager.Players;
+                    context.RegisterVariable("playerHealthTotal", players.IsEmpty() ? 0 : players.Sum(x => x.Health));
+                    context.RegisterVariable("playerCount", players.Count);
                     for (int i = 0; i < players.Count; i++)
                     {
                         var player = players[i];
