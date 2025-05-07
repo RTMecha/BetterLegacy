@@ -4,8 +4,13 @@
 ### Core
 - Started working on player boost damage mechanic.
 
+## Changes
+- Renamed Image Objects' Set Data to Store Data.
+- Reworked tooltip system to allow for tooltip categories.
+
 ## Fixes
 - Fixed object type collision not updating correctly.
+- Fixed Save As not copying sub-directories in the level folder.
 
 # snapshot-2025.5.9 - (pre-1.7.0) [May 7, 2025]
 
