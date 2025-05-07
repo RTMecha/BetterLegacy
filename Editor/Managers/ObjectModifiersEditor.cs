@@ -1284,17 +1284,17 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var axis = modifier.value.Split(',');
                             modifier.SetValue(0, axis[0]);
-                            modifier.SetValue(4, axis[1]);
+                            modifier.commands.Insert(1, axis[0]);
                         }
 
                         SingleGenerator(modifier, layout, "X", 0, 0f);
-                        SingleGenerator(modifier, layout, "Y", 4, 0f);
+                        SingleGenerator(modifier, layout, "Y", 1, 0f);
 
-                        SingleGenerator(modifier, layout, "Duration", 1, 1f);
+                        SingleGenerator(modifier, layout, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, layout, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, layout, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, layout, "Relative", 3, false);
+                        BoolGenerator(modifier, layout, "Relative", 4, false);
 
                         break;
                     }
@@ -1319,17 +1319,17 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var axis = modifier.value.Split(',');
                             modifier.SetValue(0, axis[0]);
-                            modifier.SetValue(4, axis[1]);
+                            modifier.commands.Insert(1, axis[0]);
                         }
 
                         SingleGenerator(modifier, layout, "X", 0, 0f);
-                        SingleGenerator(modifier, layout, "Y", 4, 0f);
+                        SingleGenerator(modifier, layout, "Y", 1, 0f);
 
-                        SingleGenerator(modifier, layout, "Duration", 1, 1f);
+                        SingleGenerator(modifier, layout, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, layout, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, layout, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, layout, "Relative", 3, false);
+                        BoolGenerator(modifier, layout, "Relative", 4, false);
 
                         break;
                     }
@@ -1484,17 +1484,25 @@ namespace BetterLegacy.Editor.Managers
                 //        break;
                 //    }
 
-                //case "playerBoost": {
-                //        break;
-                //    }
-                case "playerBoostIndex": {
-                        IntegerGenerator(modifier, layout, "Player Index", 0, 0);
+                case "playerBoost": {
+                        SingleGenerator(modifier, layout, "X", 0);
+                        SingleGenerator(modifier, layout, "Y", 1);
 
                         break;
                     }
-                //case "playerBoostAll": {
-                //        break;
-                //    }
+                case "playerBoostIndex": {
+                        IntegerGenerator(modifier, layout, "Player Index", 0, 0);
+                        SingleGenerator(modifier, layout, "X", 1);
+                        SingleGenerator(modifier, layout, "Y", 2);
+
+                        break;
+                    }
+                case "playerBoostAll": {
+                        SingleGenerator(modifier, layout, "X", 0);
+                        SingleGenerator(modifier, layout, "Y", 1);
+
+                        break;
+                    }
 
                 //case "playerDisableBoost": {
                 //        break;
@@ -4221,7 +4229,7 @@ namespace BetterLegacy.Editor.Managers
             return single;
         }
 
-        public GameObject SingleGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, float defaultValue, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
+        public GameObject SingleGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, float defaultValue = 0f, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
         {
             var single = NumberGenerator(layout, label, modifier.GetValue(type), _val =>
             {
@@ -4266,7 +4274,7 @@ namespace BetterLegacy.Editor.Managers
             return single;
         }
 
-        public GameObject IntegerGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, int defaultValue, int amount = 1, int min = 0, int max = 0)
+        public GameObject IntegerGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, int defaultValue = 0, int amount = 1, int min = 0, int max = 0)
         {
             var single = NumberGenerator(layout, label, modifier.GetValue(type), _val =>
             {
@@ -4311,7 +4319,7 @@ namespace BetterLegacy.Editor.Managers
             return single;
         }
 
-        public GameObject BoolGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, bool defaultValue)
+        public GameObject BoolGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, bool defaultValue = false)
         {
             var global = booleanBar.Duplicate(layout, label);
             global.transform.localScale = Vector3.one;

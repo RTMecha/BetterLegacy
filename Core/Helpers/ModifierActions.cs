@@ -1074,19 +1074,19 @@ namespace BetterLegacy.Core.Helpers
                 vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
             }
             else
-                vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(4, 0f, variables));
+                vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(1, 0f, variables));
 
-            var duration = modifier.GetFloat(1, 1f, variables);
+            var duration = modifier.GetFloat(2, 1f, variables);
 
-            string easing = modifier.GetValue(2, variables);
+            string easing = modifier.GetValue(3, variables);
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
-            bool relative = modifier.GetBool(3, false, variables);
+            bool relative = modifier.GetBool(4, false, variables);
             foreach (var player in PlayerManager.Players.Where(x => x.Player))
             {
                 var tf = player.Player.rb.transform;
-                if (modifier.constant)
+                if (duration == 0f || modifier.constant)
                 {
                     if (relative)
                         tf.localPosition += (Vector3)vector;
@@ -1717,6 +1717,25 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || !modifier.reference)
                 return;
 
+            var xStr = modifier.GetValue(0, variables);
+            var yStr = modifier.GetValue(1, variables);
+            var shouldBoostX = false;
+            var shouldBoostY = false;
+            var x = 0f;
+            var y = 0f;
+
+            if (!string.IsNullOrEmpty(xStr))
+            {
+                shouldBoostX = true;
+                x = Parser.TryParse(xStr, 0f);
+            }
+
+            if (!string.IsNullOrEmpty(yStr))
+            {
+                shouldBoostY = true;
+                y = Parser.TryParse(yStr, 0f);
+            }
+
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -1726,20 +1745,74 @@ namespace BetterLegacy.Core.Helpers
                 if (!player || !player.Player)
                     return;
 
+                if (shouldBoostX)
+                    player.Player.lastMoveHorizontal = x;
+                if (shouldBoostY)
+                    player.Player.lastMoveVertical = y;
                 player.Player.Boost();
             });
         }
         
         public static void playerBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.Boost();
+            var xStr = modifier.GetValue(0, variables);
+            var yStr = modifier.GetValue(1, variables);
+            var shouldBoostX = false;
+            var shouldBoostY = false;
+            var x = 0f;
+            var y = 0f;
+
+            if (!string.IsNullOrEmpty(xStr))
+            {
+                shouldBoostX = true;
+                x = Parser.TryParse(xStr, 0f);
+            }
+
+            if (!string.IsNullOrEmpty(yStr))
+            {
+                shouldBoostY = true;
+                y = Parser.TryParse(yStr, 0f);
+            }
+
+            if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player)
+            {
+                if (shouldBoostX)
+                    player.Player.lastMoveHorizontal = x;
+                if (shouldBoostY)
+                    player.Player.lastMoveVertical = y;
+                player.Player.Boost();
+            }
         }
         
         public static void playerBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            var xStr = modifier.GetValue(0, variables);
+            var yStr = modifier.GetValue(1, variables);
+            var shouldBoostX = false;
+            var shouldBoostY = false;
+            var x = 0f;
+            var y = 0f;
+
+            if (!string.IsNullOrEmpty(xStr))
+            {
+                shouldBoostX = true;
+                x = Parser.TryParse(xStr, 0f);
+            }
+            
+            if (!string.IsNullOrEmpty(yStr))
+            {
+                shouldBoostY = true;
+                y = Parser.TryParse(yStr, 0f);
+            }
+
             foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            {
+                if (shouldBoostX)
+                    player.Player.lastMoveHorizontal = x;
+                if (shouldBoostY)
+                    player.Player.lastMoveVertical = y;
                 player.Player.Boost();
+            }
         }
         
         public static void playerDisableBoost(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
