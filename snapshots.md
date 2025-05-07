@@ -3,6 +3,7 @@
 ## Features
 ### Core
 - Started working on player boost damage mechanic.
+- Added forLoop and continue modifiers. These allow you to run the next set of modifiers up until a return modifier a certain amount of times.
 
 ## Changes
 - Renamed Image Objects' Set Data to Store Data.
