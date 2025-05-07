@@ -1,11 +1,20 @@
-﻿# ???
+﻿# snapshot-2025.5.8 - (pre-1.7.0) [May 7, 2025]
 
 ## Features
 ### Core
-- Added getComparison modifier. This compares two text values and returns a True or False based on that.
+- Added getPlayerHealth, getPlayerPosX, getPlayerPosY and getPlayerRot modifiers. These return the associated value of a player at an index.
+- Added getFormatVariable modifier. This formats multiple text values into a singular string variable.
+- Added getComparison and getComparisonMath modifiers. This compares two text / evaluated math values and returns a True or False based on that.
 - Added getSignaledVariables and signalLocalVariables modifiers. These send / recieve the current local variables.
+- Added getMixedColors modifier. This mixes the colors of multiple hex codes and returns it as a variable.
+- Added enableObjectGroup modifier. This allows you to select the active state of multiple groups.
+- Added return modifier. This prevents the rest of the modifier loop from running if it runs.
+- Added musicLength to math evaluation variables.
 
 ## Changes
+### Editor
+- Order Matters Modifiers toggle is now on by default for new objects.
+
 ### Example Companion
 - Tweaked Example's boredom to decrease how often he leaves.
 
