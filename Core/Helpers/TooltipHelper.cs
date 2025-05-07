@@ -17,21 +17,19 @@ namespace BetterLegacy.Core.Helpers
             Tooltips.Clear();
             var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_tooltips.json"));
             for (int i = 0; i < jn["tooltip_groups"].Count; i++)
-            {
-                if (!jn["tooltip_groups"][i].IsArray)
-                {
-                    LoadTooltips(jn["tooltip_groups"][i]);
-                    continue;
-                }
-
-                // allow for collapsed groups of tooltips
-                for (int j = 0; j < jn["tooltip_groups"][i].Count; j++)
-                    LoadTooltips(jn["tooltip_groups"][i][j]);
-            }
+                LoadTooltips(jn["tooltip_groups"][i]);
         }
 
         static void LoadTooltips(JSONNode jn)
         {
+            // allow for collapsed groups of tooltips
+            if (jn.IsArray)
+            {
+                for (int i = 0; i < jn.Count; i++)
+                    LoadTooltips(jn[i]);
+                return;
+            }
+
             if (jn["name"] == null)
                 return;
 
