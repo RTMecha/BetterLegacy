@@ -879,6 +879,16 @@ namespace BetterLegacy.Core
         public static bool InRange<T>(this T[] array, int index) => index >= 0 && index < array.Length;
 
         /// <summary>
+        /// Creates a copy of the list from an indexed range.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="list"></param>
+        /// <param name="startIndex">Start index to get.</param>
+        /// <param name="endIndex">End index to get.</param>
+        /// <returns>Returns a copy of the list from the index range.</returns>
+        public static List<T> GetIndexRange<T>(this List<T> list, int startIndex, int endIndex) => list.GetRange(startIndex, endIndex - startIndex);
+
+        /// <summary>
         /// Runs a for loop where iterations may run parallel.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
