@@ -18,33 +18,45 @@ namespace BetterLegacy.Core.Helpers
             var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_tooltips.json"));
             for (int i = 0; i < jn["tooltip_groups"].Count; i++)
             {
-                if (jn["tooltip_groups"][i]["name"] == null)
-                    continue;
-
-                var list = new List<HoverTooltip.Tooltip>();
-                for (int j = 0; j < jn["tooltip_groups"][i]["tooltips"].Count; j++)
+                if (!jn["tooltip_groups"][i].IsArray)
                 {
-                    var tooltipJN = jn["tooltip_groups"][i]["tooltips"][j];
-
-                    List<string> keys = null;
-                    if (tooltipJN["keys"] != null)
-                    {
-                        keys = new List<string>();
-                        for (int k = 0; k < tooltipJN["keys"].Count; k++)
-                            keys.Add(tooltipJN["keys"][k]);
-                    }
-
-                    int lang = 0;
-                    if (tooltipJN["lang"] != null)
-                        lang = tooltipJN["lang"].AsInt;
-
-                    list.Add(NewTooltip(tooltipJN["desc"], tooltipJN["hint"], keys, (Language)lang));
+                    LoadTooltips(jn["tooltip_groups"][i]);
+                    continue;
                 }
 
-                var name = (string)jn["tooltip_groups"][i]["name"];
-                if (!Tooltips.ContainsKey(name))
-                    Tooltips.Add(name, list);
+                // allow for collapsed groups of tooltips
+                for (int j = 0; j < jn["tooltip_groups"][i].Count; j++)
+                    LoadTooltips(jn["tooltip_groups"][i][j]);
             }
+        }
+
+        static void LoadTooltips(JSONNode jn)
+        {
+            if (jn["name"] == null)
+                return;
+
+            var list = new List<HoverTooltip.Tooltip>();
+            for (int j = 0; j < jn["tooltips"].Count; j++)
+            {
+                var tooltipJN = jn["tooltips"][j];
+
+                List<string> keys = null;
+                if (tooltipJN["keys"] != null)
+                {
+                    keys = new List<string>();
+                    for (int k = 0; k < tooltipJN["keys"].Count; k++)
+                        keys.Add(tooltipJN["keys"][k]);
+                }
+
+                int lang = 0;
+                if (tooltipJN["lang"] != null)
+                    lang = tooltipJN["lang"].AsInt;
+
+                list.Add(NewTooltip(tooltipJN["desc"], tooltipJN["hint"], keys, (Language)lang));
+            }
+
+            var name = (string)jn["name"];
+            Tooltips[name] = list;
         }
 
         public static void AssignTooltip(GameObject gameObject, string group, float time = 4f)
