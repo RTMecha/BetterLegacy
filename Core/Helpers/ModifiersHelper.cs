@@ -177,9 +177,10 @@ namespace BetterLegacy.Core.Helpers
                 // If all triggers are active
                 if (CheckTriggers(triggers, variables))
                 {
+                    bool returned = false;
                     actions.ForLoop(act =>
                     {
-                        if (act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
+                        if (returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
                             return;
 
                         if (!act.running)
@@ -189,6 +190,8 @@ namespace BetterLegacy.Core.Helpers
 
                         act.running = true;
                         act.Action?.Invoke(act, variables);
+                        if (act.Name == "return")
+                            returned = true;
                     });
                     triggers.ForLoop(trig =>
                     {
@@ -243,6 +246,7 @@ namespace BetterLegacy.Core.Helpers
         {
             if (active)
             {
+                bool returned = false;
                 bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
                 ModifierBase.Type previousType = ModifierBase.Type.Action;
                 modifiers.ForLoop(modifier =>
@@ -252,6 +256,9 @@ namespace BetterLegacy.Core.Helpers
 
                     if (isAction && modifier.Action == null || isTrigger && modifier.Trigger == null || modifier.Inactive == null)
                         AssignModifierActions(modifier);
+
+                    if (returned)
+                        return;
 
                     if (isTrigger)
                     {
@@ -307,7 +314,12 @@ namespace BetterLegacy.Core.Helpers
                     modifier.running = true;
 
                     if (isAction && result) // Only run modifier if result is true
+                    {
                         modifier.Action?.Invoke(modifier, variables);
+
+                        if (modifier.Name == "return")
+                            returned = true;
+                    }
 
                     previousType = modifier.type;
                 });
@@ -1267,19 +1279,23 @@ namespace BetterLegacy.Core.Helpers
 
             #region Variable
 
-            "getToggle" => ModifierActions.getToggle,
-            "getFloat" => ModifierActions.getFloat,
-            "getInt" => ModifierActions.getInt,
-            "getString" => ModifierActions.getString,
-            "getStringLower" => ModifierActions.getStringLower,
-            "getStringUpper" => ModifierActions.getStringUpper,
-            "getColor" => ModifierActions.getColor,
-            "getEnum" => ModifierActions.getEnum,
-            "getPitch" => ModifierActions.getPitch,
-            "getMusicTime" => ModifierActions.getMusicTime,
+            nameof(ModifierActions.getToggle) => ModifierActions.getToggle,
+            nameof(ModifierActions.getFloat) => ModifierActions.getFloat,
+            nameof(ModifierActions.getInt) => ModifierActions.getInt,
+            nameof(ModifierActions.getString) => ModifierActions.getString,
+            nameof(ModifierActions.getStringLower) => ModifierActions.getStringLower,
+            nameof(ModifierActions.getStringUpper) => ModifierActions.getStringUpper,
+            nameof(ModifierActions.getColor) => ModifierActions.getColor,
+            nameof(ModifierActions.getEnum) => ModifierActions.getEnum,
+            nameof(ModifierActions.getPitch) => ModifierActions.getPitch,
+            nameof(ModifierActions.getMusicTime) => ModifierActions.getMusicTime,
             "getAxis" => ModifierActions.getAxis,
             "getMath" => ModifierActions.getMath,
             "getNearestPlayer" => ModifierActions.getNearestPlayer,
+            "getPlayerHealth" => ModifierActions.getPlayerHealth,
+            "getPlayerPosX" => ModifierActions.getPlayerPosX,
+            "getPlayerPosY" => ModifierActions.getPlayerPosY,
+            "getPlayerRot" => ModifierActions.getPlayerRot,
             "getEventValue" => ModifierActions.getEventValue,
             "getSample" => ModifierActions.getSample,
             "getText" => ModifierActions.getText,
@@ -1295,7 +1311,10 @@ namespace BetterLegacy.Core.Helpers
             "getSplitString" => ModifierActions.getSplitString,
             "getStringLength" => ModifierActions.getStringLength,
             "getRegex" => ModifierActions.getRegex,
+            "getFormatVariable" => ModifierActions.getFormatVariable,
             "getComparison" => ModifierActions.getComparison,
+            "getComparisonMath" => ModifierActions.getComparisonMath,
+            "getMixedColors" => ModifierActions.getMixedColors,
             "getSignaledVariables" => ModifierActions.getSignaledVariables,
             "signalLocalVariables" => ModifierActions.signalLocalVariables,
             "clearLocalVariables" => ModifierActions.clearLocalVariables,
@@ -1321,6 +1340,7 @@ namespace BetterLegacy.Core.Helpers
             "enableObjectTree" => ModifierActions.enableObjectTree,
             "enableObjectOther" => ModifierActions.enableObjectOther,
             "enableObjectTreeOther" => ModifierActions.enableObjectTreeOther,
+            "enableObjectGroup" => ModifierActions.enableObjectGroup,
 
             // disable
             "disableObject" => ModifierActions.disableObject,
@@ -2083,6 +2103,10 @@ namespace BetterLegacy.Core.Helpers
             //"getAxis" => ModifierActions.getAxis,
             "getMath" => ModifierActions.getMath,
             "getNearestPlayer" => ModifierActions.getNearestPlayer,
+            "getPlayerHealth" => ModifierActions.getPlayerHealth,
+            "getPlayerPosX" => ModifierActions.getPlayerPosX,
+            "getPlayerPosY" => ModifierActions.getPlayerPosY,
+            "getPlayerRot" => ModifierActions.getPlayerRot,
             "getEventValue" => ModifierActions.getEventValue,
             "getSample" => ModifierActions.getSample,
             //"getText" => ModifierActions.getText,
@@ -2098,7 +2122,10 @@ namespace BetterLegacy.Core.Helpers
             "getSplitString" => ModifierActions.getSplitString,
             "getStringLength" => ModifierActions.getStringLength,
             "getRegex" => ModifierActions.getRegex,
+            "getFormatVariable" => ModifierActions.getFormatVariable,
             "getComparison" => ModifierActions.getComparison,
+            "getComparisonMath" => ModifierActions.getComparisonMath,
+            "getMixedColors" => ModifierActions.getMixedColors,
             "getSignaledVariables" => ModifierActions.getSignaledVariables,
             "signalLocalVariables" => ModifierActions.signalLocalVariables,
             "clearLocalVariables" => ModifierActions.clearLocalVariables,

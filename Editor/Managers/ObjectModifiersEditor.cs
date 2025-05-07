@@ -1829,8 +1829,32 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case "getNearestPlayer": {
+                case nameof(ModifierActions.getNearestPlayer): {
                         StringGenerator(modifier, layout, "Variable Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getPlayerHealth): {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        IntegerGenerator(modifier, layout, "Player Index", 1, 0, max: int.MaxValue);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getPlayerPosX): {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        IntegerGenerator(modifier, layout, "Player Index", 1, 0, max: int.MaxValue);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getPlayerPosY): {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        IntegerGenerator(modifier, layout, "Player Index", 1, 0, max: int.MaxValue);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getPlayerRot): {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        IntegerGenerator(modifier, layout, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
@@ -1897,7 +1921,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case "getJSONString": {
+                case nameof(ModifierActions.getJSONString): {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         StringGenerator(modifier, layout, "Path", 1);
                         StringGenerator(modifier, layout, "JSON 1", 2);
@@ -1905,7 +1929,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case "getJSONFloat": {
+                case nameof(ModifierActions.getJSONFloat): {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         StringGenerator(modifier, layout, "Path", 1);
                         StringGenerator(modifier, layout, "JSON 1", 2);
@@ -1913,27 +1937,27 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case "getJSON": {
+                case nameof(ModifierActions.getJSON): {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         StringGenerator(modifier, layout, "JSON", 1);
                         StringGenerator(modifier, layout, "JSON Value", 2);
 
                         break;
                     }
-                case "getSubString": {
+                case nameof(ModifierActions.getSubString): {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         IntegerGenerator(modifier, layout, "Start Index", 1, 0);
                         IntegerGenerator(modifier, layout, "Length", 2, 0);
 
                         break;
                     }
-                case "getStringLength": {
+                case nameof(ModifierActions.getStringLength): {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         StringGenerator(modifier, layout, "Text", 1);
 
                         break;
                     }
-                case "getSplitString": {
+                case nameof(ModifierActions.getSplitString): {
                         StringGenerator(modifier, layout, "Text", 0);
                         StringGenerator(modifier, layout, "Character", 1);
 
@@ -1990,7 +2014,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case "getRegex": {
+                case nameof(ModifierActions.getRegex): {
                         StringGenerator(modifier, layout, "Regex", 0);
                         StringGenerator(modifier, layout, "Text", 1);
 
@@ -2047,10 +2071,130 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
+                case nameof(ModifierActions.getFormatVariable): { // whaaaaaaat
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        StringGenerator(modifier, layout, "Format Text", 1);
+
+                        int a = 0;
+                        for (int i = 2; i < modifier.commands.Count; i++)
+                        {
+                            int groupIndex = i;
+                            var label = stringInput.Duplicate(layout, "group label");
+                            label.transform.localScale = Vector3.one;
+                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
+                            groupLabel.text = $"Text {a + 1}";
+                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
+                            Destroy(label.transform.Find("Input").gameObject);
+
+                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
+                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
+                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+                            deleteGroupButton.button.onClick.NewListener(() =>
+                            {
+                                modifier.commands.RemoveAt(groupIndex);
+
+                                RTLevel.Current?.UpdateObject(beatmapObject);
+                                var value = scrollbar ? scrollbar.value : 0f;
+                                RenderModifier(modifier, modifierCard.index);
+                                CoroutineHelper.PerformAtNextFrame(() =>
+                                {
+                                    if (scrollbar)
+                                        scrollbar.value = value;
+                                });
+                            });
+
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
+
+                            var groupName = StringGenerator(modifier, layout, "Variable Name", i);
+                            EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
+
+                            a++;
+                        }
+
+                        AddGenerator(modifier, layout, "Add Text Value", () =>
+                        {
+                            modifier.commands.Add($"Text");
+
+                            RTLevel.Current?.UpdateObject(beatmapObject);
+                            var value = scrollbar ? scrollbar.value : 0f;
+                            RenderModifier(modifier, modifierCard.index);
+                            CoroutineHelper.PerformAtNextFrame(() =>
+                            {
+                                if (scrollbar)
+                                    scrollbar.value = value;
+                            });
+                        });
+
+                        break;
+                    }
                 case "getComparison": {
                         StringGenerator(modifier, layout, "Variable Name", 0);
                         StringGenerator(modifier, layout, "Compare From", 1);
                         StringGenerator(modifier, layout, "Compare To", 2);
+
+                        break;
+                    }
+                case "getComparisonMath": {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        StringGenerator(modifier, layout, "Compare From", 1);
+                        StringGenerator(modifier, layout, "Compare To", 2);
+
+                        break;
+                    }
+                case "getMixedColors": {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+
+                        int a = 0;
+                        for (int i = 1; i < modifier.commands.Count; i++)
+                        {
+                            int groupIndex = i;
+                            var label = stringInput.Duplicate(layout, "group label");
+                            label.transform.localScale = Vector3.one;
+                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
+                            groupLabel.text = $"Color {a + 1}";
+                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
+                            Destroy(label.transform.Find("Input").gameObject);
+
+                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
+                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
+                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+                            deleteGroupButton.button.onClick.NewListener(() =>
+                            {
+                                modifier.commands.RemoveAt(groupIndex);
+
+                                RTLevel.Current?.UpdateObject(beatmapObject);
+                                var value = scrollbar ? scrollbar.value : 0f;
+                                RenderModifier(modifier, modifierCard.index);
+                                CoroutineHelper.PerformAtNextFrame(() =>
+                                {
+                                    if (scrollbar)
+                                        scrollbar.value = value;
+                                });
+                            });
+
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
+
+                            var groupName = StringGenerator(modifier, layout, "Color Hex Code", i);
+                            EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
+
+                            a++;
+                        }
+
+                        AddGenerator(modifier, layout, "Add Color Value", () =>
+                        {
+                            modifier.commands.Add(RTColors.ColorToHexOptional(LSColors.pink500));
+
+                            RTLevel.Current?.UpdateObject(beatmapObject);
+                            var value = scrollbar ? scrollbar.value : 0f;
+                            RenderModifier(modifier, modifierCard.index);
+                            CoroutineHelper.PerformAtNextFrame(() =>
+                            {
+                                if (scrollbar)
+                                    scrollbar.value = value;
+                            });
+                        });
 
                         break;
                     }
@@ -2166,7 +2310,80 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                    
+                case "enableObjectGroup": {
+                        PrefabGroupOnly(modifier, layout);
+                        BoolGenerator(modifier, layout, "Enabled", 0, true);
+
+                        var options = new List<string>() { "All" };
+                        for (int i = 2; i < modifier.commands.Count; i++)
+                            options.Add(modifier.commands[i]);
+
+                        DropdownGenerator(modifier, layout, "Value", 1, options);
+
+                        int a = 0;
+                        for (int i = 2; i < modifier.commands.Count; i++)
+                        {
+                            int groupIndex = i;
+                            var label = stringInput.Duplicate(layout, "group label");
+                            label.transform.localScale = Vector3.one;
+                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
+                            groupLabel.text = $"Group {a + 1}";
+                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
+                            Destroy(label.transform.Find("Input").gameObject);
+
+                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
+                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
+                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+                            deleteGroupButton.button.onClick.NewListener(() =>
+                            {
+                                modifier.commands.RemoveAt(groupIndex);
+
+                                RTLevel.Current?.UpdateObject(beatmapObject);
+                                var value = scrollbar ? scrollbar.value : 0f;
+                                RenderModifier(modifier, modifierCard.index);
+                                CoroutineHelper.PerformAtNextFrame(() =>
+                                {
+                                    if (scrollbar)
+                                        scrollbar.value = value;
+                                });
+                            });
+
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
+
+                            var groupName = StringGenerator(modifier, layout, "Object Group", i, _val =>
+                            {
+                                var value = scrollbar ? scrollbar.value : 0f;
+                                RenderModifier(modifier, modifierCard.index);
+                                CoroutineHelper.PerformAtNextFrame(() =>
+                                {
+                                    if (scrollbar)
+                                        scrollbar.value = value;
+                                });
+                            });
+                            EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
+
+                            a++;
+                        }
+
+                        AddGenerator(modifier, layout, "Add Enum Value", () =>
+                        {
+                            modifier.commands.Add($"Object Group");
+
+                            RTLevel.Current?.UpdateObject(beatmapObject);
+                            var value = scrollbar ? scrollbar.value : 0f;
+                            RenderModifier(modifier, modifierCard.index);
+                            CoroutineHelper.PerformAtNextFrame(() =>
+                            {
+                                if (scrollbar)
+                                    scrollbar.value = value;
+                            });
+                        });
+
+                        break;
+                    }
+
+
                 case "disableObject": {
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "True");

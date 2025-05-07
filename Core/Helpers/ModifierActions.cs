@@ -2073,6 +2073,30 @@ namespace BetterLegacy.Core.Helpers
             variables[modifier.GetValue(0)] = PlayerManager.GetClosestPlayerIndex(pos).ToString();
         }
 
+        public static void getPlayerHealth<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer))
+                variables[modifier.GetValue(0)] = customPlayer.Health.ToString();
+        }
+        
+        public static void getPlayerPosX<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.rb)
+                variables[modifier.GetValue(0)] = customPlayer.Player.rb.transform.position.x.ToString();
+        }
+        
+        public static void getPlayerPosY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.rb)
+                variables[modifier.GetValue(0)] = customPlayer.Player.rb.transform.position.y.ToString();
+        }
+
+        public static void getPlayerRot<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.rb)
+                variables[modifier.GetValue(0)] = customPlayer.Player.rb.transform.eulerAngles.z.ToString();
+        }
+
         public static void getEventValue<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             if (!RTLevel.Current.eventEngine)
@@ -2225,10 +2249,46 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void getFormatVariable<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            try
+            {
+                object[] args = new object[modifier.commands.Count - 2];
+                for (int i = 2; i < modifier.commands.Count; i++)
+                    args[i - 2] = modifier.GetValue(i, variables);
+
+                variables[modifier.GetValue(0)] = string.Format(modifier.GetValue(1, variables), args);
+            }
+            catch { }
+        }
+
         public static void getComparison<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (variables.TryGetValue(modifier.GetValue(1), out string variable))
-                variables[modifier.GetValue(0)] = (variable == modifier.GetValue(2)).ToString();
+            variables[modifier.GetValue(0)] = (modifier.GetValue(1, variables) == modifier.GetValue(2, variables)).ToString();
+        }
+
+        public static void getComparisonMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not IEvaluatable evaluatable)
+                return;
+
+            try
+            {
+                var numberVariables = evaluatable.GetObjectVariables();
+                var functions = evaluatable.GetObjectFunctions();
+
+                variables[modifier.GetValue(0)] = (RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions) == RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions)).ToString();
+            }
+            catch { }
+        }
+
+        public static void getMixedColors<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var colors = new List<Color>();
+            for (int i = 1; i < modifier.commands.Count; i++)
+                colors.Add(RTColors.HexToColor(modifier.GetValue(1, variables)));
+
+            variables[modifier.GetValue(0)] = RTColors.MixColors(colors).ToString();
         }
 
         public static void getSignaledVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -2577,6 +2637,34 @@ namespace BetterLegacy.Core.Helpers
                 var beatmapObject = list[i];
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
                     beatmapObject.runtimeObject.top.gameObject.SetActive(enabled);
+            }
+        }
+
+        // if this ever needs to be updated, add a "version" int number to modifiers that increment each time a major change was done to the modifier.
+        public static void enableObjectGroup(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var enabled = modifier.GetBool(0, true, variables);
+            var state = modifier.GetInt(1, 0, variables);
+
+            for (int i = 2; i < modifier.commands.Count; i++)
+            {
+                var innerEnabled = state == 0 || state == i - 1; // if state is 0, then all should be active / inactive. otherwise if state equals the modifier group, set only that object group active / inactive.
+                if (!enabled)
+                    innerEnabled = !innerEnabled;
+
+                var tag = modifier.commands[i];
+                if (string.IsNullOrEmpty(tag))
+                    continue;
+
+                var list = GameData.Current.FindObjectsWithTag(modifier, tag);
+                if (list.IsEmpty())
+                    continue;
+
+                foreach (var beatmapObject in list)
+                {
+                    if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
+                        beatmapObject.runtimeObject.top.gameObject.SetActive(innerEnabled);
+                }
             }
         }
 
