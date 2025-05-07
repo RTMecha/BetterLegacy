@@ -46,10 +46,22 @@ namespace BetterLegacy.Core.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
-                defaultBeatmapObjectModifiers.Add(Modifier<BeatmapObject>.Parse(jn["modifiers"][i]));
+                LoadModifiers(defaultBeatmapObjectModifiers, jn["modifiers"][i]);
 
             if (ModifiersHelper.development)
                 AddDevelopmentModifiers();
+        }
+
+        void LoadModifiers<T>(List<Modifier<T>> modifiers, JSONNode jn)
+        {
+            if (jn.IsArray)
+            {
+                for (int i = 0; i < jn.Count; i++)
+                    LoadModifiers(modifiers, jn[i]);
+                return;
+            }
+
+            defaultBeatmapObjectModifiers.Add(Modifier<BeatmapObject>.Parse(jn));
         }
 
         void AddDevelopmentModifiers()
