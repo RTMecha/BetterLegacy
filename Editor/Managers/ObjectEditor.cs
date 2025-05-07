@@ -1057,7 +1057,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var setData = EditorPrefabHolder.Instance.Function1Button.Duplicate(objectView.Find("shapesettings/7"), "set", 5);
                     var setDataText = setData.transform.GetChild(0).GetComponent<Text>();
-                    setDataText.text = "Set Data";
+                    setDataText.text = "Store Data";
                     ((RectTransform)setData.transform).sizeDelta = new Vector2(70f, 32f);
 
                     setData.GetComponent<LayoutElement>().minWidth = 130f;
@@ -4520,7 +4520,7 @@ namespace BetterLegacy.Editor.Managers
 
                         // Sets Image Data for transfering of Image Objects between levels.
                         var dataText = shapeSettings.Find("7/set/Text").GetComponent<Text>();
-                        dataText.text = !GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text) ? "Set Data" : "Clear Data";
+                        dataText.text = !GameData.Current.assets.sprites.Has(x => x.name == beatmapObject.text) ? "Store Data" : "Clear Data";
                         var set = shapeSettings.Find("7/set").GetComponent<Button>();
                         set.onClick.NewListener(() =>
                         {
