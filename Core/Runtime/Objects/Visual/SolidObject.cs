@@ -59,8 +59,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 return;
 
             collider.enabled = true;
-            if (deco)
-                collider.tag = Tags.HELPER;
+            collider.tag = deco ? Tags.HELPER : Tags.OBJECTS;
 
             collider.isTrigger = !solid;
         }
