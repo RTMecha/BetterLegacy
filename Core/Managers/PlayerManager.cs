@@ -587,11 +587,17 @@ namespace BetterLegacy.Core.Managers
         public static Vector2[] GetSpawnPositions(Checkpoint checkpoint)
         {
             var players = Players;
-            int randomIndex = UnityEngine.Random.Range(-1, checkpoint.positions.Count);
+            int randomIndex = !checkpoint ? -1 : UnityEngine.Random.Range(-1, checkpoint.positions.Count);
             var positions = new Vector2[players.Count];
 
             for (int i = 0; i < players.Count; i++)
             {
+                if (!checkpoint)
+                {
+                    positions[i] = Vector2.zero;
+                    continue;
+                }
+
                 if (checkpoint.positions.IsEmpty())
                 {
                     positions[i] = checkpoint.pos;
@@ -607,8 +613,9 @@ namespace BetterLegacy.Core.Managers
                 };
             }
 
-            if (checkpoint.spawnType == Checkpoint.SpawnPositionType.RandomFillAll)
+            if (checkpoint && checkpoint.spawnType == Checkpoint.SpawnPositionType.RandomFillAll)
                 positions = positions.ToList().Shuffle().ToArray();
+
             return positions;
         }
 
