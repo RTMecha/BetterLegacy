@@ -6985,5 +6985,4 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
     }
-
 }
