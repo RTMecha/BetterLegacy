@@ -7,12 +7,15 @@
 - Added getParsedString modifier. This returns a string with specific values replaced.
 - Added getSplitStringAt and getSplitStringCount modifiers. These return a value in a separated string.
 - Added playerCount to math evaluation variables.
+- Added X and Y values to playerBoost modifiers. This forces the player to boost in a specific direction. The values can be left empty to not force that value onto the boost.
 
 ## Changes
 ### Core
 - showMouse modifier now has an Enabled toggle.
 - Removed some outdated modifiers. They still work, but will not appear in the modifiers list.
 - Renamed gameMode modifier to setGameMode.
+- Changed playerMove Y value from the 5th value to the 2nd value.
+- Reworked level modifier system internally to be more consistent with other modifiers. Due to this change, only the first Trigger and the first Action of a Trigger & Action set of modifiers will be converted to VG. (Level modifiers haven't been implemented yet)
 
 ### Editor
 - Renamed Image Objects' Set Data to Store Data.
