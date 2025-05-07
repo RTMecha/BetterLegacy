@@ -3606,6 +3606,21 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
 
+                case "forLoop": {
+                        StringGenerator(modifier, layout, "Variable Name", 0);
+                        IntegerGenerator(modifier, layout, "Start Index", 1, 0);
+                        IntegerGenerator(modifier, layout, "End Count", 2, 10);
+                        IntegerGenerator(modifier, layout, "Increment", 3, 1);
+
+                        break;
+                    }
+                //case "continue": {
+                //        break;
+                //    }
+                //case "return": {
+                //        break;
+                //    }
+
                 #endregion
 
                 #endregion

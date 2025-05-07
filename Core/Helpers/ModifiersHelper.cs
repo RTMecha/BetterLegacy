@@ -242,15 +242,19 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, bool active = true, Dictionary<string, string> variables = null)
+        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, bool active = true, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
         {
             if (active)
             {
                 bool returned = false;
                 bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
                 ModifierBase.Type previousType = ModifierBase.Type.Action;
-                modifiers.ForLoop(modifier =>
+                int index = 0;
+                while (index < modifiers.Count)
                 {
+                    var modifier = modifiers[index];
+                    var name = modifier.Name;
+
                     var isAction = modifier.type == ModifierBase.Type.Action;
                     var isTrigger = modifier.type == ModifierBase.Type.Trigger;
 
@@ -258,7 +262,54 @@ namespace BetterLegacy.Core.Helpers
                         AssignModifierActions(modifier);
 
                     if (returned)
-                        return;
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    if (name == "forLoop") // this modifier requires a specific function, so it's placed here.
+                    {
+                        if (!modifier.running)
+                            modifier.runCount++;
+
+                        modifier.running = true;
+
+                        var variable = modifier.GetValue(0);
+                        var startIndex = modifier.GetInt(1, 0, variables);
+                        var endCount = modifier.GetInt(2, 0, variables);
+                        var increment = modifier.GetInt(3, 1, variables);
+
+                        var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
+                        endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
+
+                        try
+                        {
+                            // if result is false, then skip the for loop sequence.
+                            if (!(modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
+                            {
+                                var selectModifiers = modifiers.GetIndexRange(index + 1, endIndex);
+
+                                for (int i = startIndex; i < endCount; i += increment)
+                                {
+                                    variables[variable] = i.ToString();
+                                    RunModifiersLoop(selectModifiers, true, variables, i, endCount);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
+                                $"Index: {index}\n" +
+                                $"End Index: {endIndex}\nException: {ex}");
+                        }
+
+                        // Only occur once
+                        if (!modifier.constant && sequence + 1 >= end)
+                            modifier.active = true;
+
+                        index = endIndex; // exit for loop.
+                        continue;
+                    }
 
                     if (isTrigger)
                     {
@@ -294,21 +345,23 @@ namespace BetterLegacy.Core.Helpers
                         modifier.Inactive?.Invoke(modifier, variables);
 
                         previousType = modifier.type;
-                        return;
+                        index++;
+                        continue;
                     }
 
                     // Continue if modifier was already active with constant on
                     if (modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                     {
                         previousType = modifier.type;
-                        return;
+                        index++;
+                        continue;
                     }
 
                     if (!modifier.running)
                         modifier.runCount++;
 
                     // Only occur once
-                    if (!modifier.constant)
+                    if (!modifier.constant && sequence + 1 >= end)
                         modifier.active = true;
 
                     modifier.running = true;
@@ -317,12 +370,13 @@ namespace BetterLegacy.Core.Helpers
                     {
                         modifier.Action?.Invoke(modifier, variables);
 
-                        if (modifier.Name == "return")
+                        if (name == "return" || name == "continue") // return stops the loop, continue moves it to the next loop
                             returned = true;
                     }
 
                     previousType = modifier.type;
-                });
+                    index++;
+                }
             }
             else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
                 findAll.ForLoop(modifier =>
