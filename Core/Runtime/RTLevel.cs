@@ -1572,15 +1572,13 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="recalculate">If the engine should be recalculated.</param>
         public void AddPrefabToLevel(PrefabObject prefabObject, bool update = true, bool recalculate = true)
         {
-            // Checks if prefab exists.
-            bool prefabExists = GameData.Current.prefabs.FindIndex(x => x.id == prefabObject.prefabID) != -1;
-            if (string.IsNullOrEmpty(prefabObject.prefabID) || !prefabExists)
+            var prefab = prefabObject.GetPrefab();
+            if (!prefab)
             {
                 GameData.Current.prefabObjects.RemoveAll(x => x.prefabID == prefabObject.prefabID);
                 return;
             }
 
-            var prefab = prefabObject.GetPrefab();
             if (prefab.beatmapObjects.IsEmpty() && prefab.backgroundObjects.IsEmpty())
                 return;
 
@@ -1654,7 +1652,6 @@ namespace BetterLegacy.Core.Runtime
 
                     if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
                         GameData.Current.assets.sprites.Add(spriteAsset.Copy());
-
 
                     beatmapObjectCopy.originalID = beatmapObject.id;
                     GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
