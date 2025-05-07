@@ -57,8 +57,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public bool IsValid(List<Modifier<T>> modifiers) => commands.Count > 0 && modifiers.Has(x => x.Name == Name);
-
         public static Modifier<T> DeepCopy(Modifier<T> orig, T reference = default) => new Modifier<T>
         {
             type = orig.type,
