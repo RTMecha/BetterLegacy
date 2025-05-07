@@ -1,4 +1,14 @@
-﻿# snapshot-2025.5.8 - (pre-1.7.0) [May 7, 2025]
+﻿# snapshot-2025.5.9 - (pre-1.7.0) [May 7, 2025]
+
+## Features
+### Core
+- Added getCollidingPlayers action modifier. This registers a variable for all players, with each variable value being if the player is colliding with the object or not.
+- Added localVariableExists trigger modifier. This checks if a modifier exists in the current variables.
+
+## Fixes
+- Fixed signalLocalVariables overriding existing variables. This now allows multiple objects to send their variables to one object.
+
+# snapshot-2025.5.8 - (pre-1.7.0) [May 7, 2025]
 
 ## Features
 ### Core
