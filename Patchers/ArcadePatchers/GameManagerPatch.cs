@@ -100,9 +100,6 @@ namespace BetterLegacy.Patchers
 
             if (CoreHelper.Playing)
             {
-                for (int i = 0; i < GameData.Current.levelModifiers.Count; i++)
-                    GameData.Current.levelModifiers[i].Activate();
-
                 if (!CoreHelper.IsUsingInputField && !CoreHelper.InEditor)
                 {
                     bool shouldPause = false;

@@ -103,6 +103,173 @@ namespace BetterLegacy.Core.Managers
             return modifier;
         }
 
+        public static List<Modifier<GameData>> defaultLevelModifiers = new List<Modifier<GameData>>()
+        {
+            new Modifier<GameData>("playerBubble")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerBubble",
+					"0", // Time
+                },
+                value = "Text", // Text
+            }, // playerBubble (todo)
+			new Modifier<GameData>("playerMoveAll")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerLocation",
+					"0", // Y
+					"0", // Time
+                },
+                value = "0", // X
+            }, // playerLocation
+			new Modifier<GameData>("playerEnableBoostAll")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerBoostLock",
+					"", // Show Bubble
+					"", // Bubble Time
+                },
+                value = "False", // Lock Enabled
+            }, // playerEnableBoostAll
+			new Modifier<GameData>("playerXLock")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerXLock",
+					"", // Show Bubble
+					"", // Bubble Time
+                },
+                value = "False", // Lock Enabled
+            }, // playerXLock
+			new Modifier<GameData>("playerYLock")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerYLock",
+                    "", // Show Bubble
+					"", // Bubble Time
+                },
+                value = "False", // Lock Enabled
+            }, // playerYLock
+			new Modifier<GameData>("playerBoost")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerBoost",
+                    "0", // Y
+                },
+                value = "0", // X
+            }, // playerBoost
+			new Modifier<GameData>("setMusicTime")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "setMusicTime"
+                },
+                value = "0", // time
+            }, // setMusicTime
+			new Modifier<GameData>("setPitch")
+            {
+                type = ModifierBase.Type.Action,
+                constant = false,
+                commands = new List<string>
+                {
+                    "setPitch"
+                },
+                value = "0", // time
+            }, // setPitch
+
+            new Modifier<GameData>("time")
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string>
+                {
+                    "time",
+                    "0", // Activation Time Range Min
+					"0", // Activation Time Range Max
+				},
+                value = "",
+            }, // time
+			new Modifier<GameData>("playerHit")
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerHit",
+                    "0", // Activation Time Range Min
+					"0", // Activation Time Range Max
+				},
+                value = "",
+            }, // playerHit
+			new Modifier<GameData>("playerDeath")
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = false,
+                commands = new List<string>
+                {
+                    "playerDeath",
+                    "0", // Activation Time Range Min
+					"0", // Activation Time Range Max
+				},
+                value = "",
+            }, // playerDeath
+			new Modifier<GameData>("levelStart")
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = false,
+                commands = new List<string>
+                {
+                    "levelStart",
+                    "0", // Activation Time Range Min
+					"0", // Activation Time Range Max
+				},
+                value = "",
+            }, // levelStart
+			new Modifier<GameData>("levelRestart")
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = false,
+                commands = new List<string>
+                {
+                    "levelRestart",
+                    "0", // Activation Time Range Min
+					"0", // Activation Time Range Max
+				},
+                value = "",
+            }, // levelRestart
+			new Modifier<GameData>("levelRewind")
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = false,
+                commands = new List<string>
+                {
+                    "levelRewind",
+                    "0", // Activation Time Range Min
+					"0", // Activation Time Range Max
+				},
+                value = "",
+            }, // levelRewind
+        };
+
         public static List<Modifier<BeatmapObject>> defaultBeatmapObjectModifiers = new List<Modifier<BeatmapObject>>();
 
         public static List<Modifier<BackgroundObject>> defaultBackgroundObjectModifiers = new List<Modifier<BackgroundObject>>

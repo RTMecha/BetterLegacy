@@ -120,6 +120,19 @@ namespace BetterLegacy.Core.Helpers
                         AssignModifierAction(modifier as Modifier<CustomPlayer>, PlayerAction, PlayerTrigger, PlayerInactive);
                         break;
                     }
+                case ModifierReferenceType.GameData: {
+                        var levelModifier = modifier as Modifier<GameData>;
+
+                        var name = modifier.Name;
+
+                        // Only assign methods depending on modifier type.
+                        if (levelModifier.type == ModifierBase.Type.Action)
+                            levelModifier.Action = GetLevelAction(name);
+                        if (levelModifier.type == ModifierBase.Type.Trigger)
+                            levelModifier.Trigger = GetLevelTrigger(name);
+
+                        break;
+                    }
             }
         }
 
@@ -408,6 +421,110 @@ namespace BetterLegacy.Core.Helpers
 
             return !modifier.commands.IsEmpty();
         }
+
+        #region GameData
+
+        public static int GetLevelTriggerType(string key) => key switch
+        {
+            "time" => 0,
+            "timeInRange" => 0,
+            "playerHit" => 1,
+            "playerDeath" => 2,
+            "levelStart" => 3,
+            "levelRestart" => 4,
+            "levelRewind" => 5,
+            _ => -1,
+        };
+        
+        public static int GetLevelActionType(string key) => key switch
+        {
+            "vnInk" => 0,
+            "vnTimeline" => 1,
+            "playerBubble" => 2,
+            "playerMoveAll" => 3,
+            "playerBoostLock" => 4,
+            "playerXLock" => 5,
+            "playerYLock" => 6,
+            "bgSpin" => 7,
+            "bgMove" => 8,
+            "playerBoost" => 9,
+            "setMusicTime" => 10,
+            "setPitch" => 11,
+            _ => -1,
+        };
+
+        public static string GetLevelTriggerName(int type) => type switch
+        {
+            0 => "timeInRange",
+            1 => "playerHit",
+            2 => "playerDeath",
+            3 => "levelStart",
+            4 => "levelRestart",
+            5 => "levelRewind",
+            _ => string.Empty,
+        };
+
+        public static string GetLevelActionName(int type) => type switch
+        {
+            0 => "vnInk",
+            1 => "vnTimeline",
+            2 => "playerBubble",
+            3 => "playerMoveAll",
+            4 => "playerBoostLock",
+            5 => "playerXLock",
+            6 => "playerYLock",
+            7 => "bgSpin",
+            8 => "bgMove",
+            9 => "playerBoost",
+            10 => "setMusicTime",
+            11 => "setPitch",
+            _ => string.Empty,
+        };
+
+        public static Func<Modifier<GameData>, Dictionary<string, string>, bool> GetLevelTrigger(string key) => key switch
+        {
+            "time" => (modifier, variables) =>
+            {
+                var time = RTLevel.Current.FixedTime;
+                return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
+            },
+            "timeInRange" => (modifier, variables) =>
+            {
+                var time = RTLevel.Current.FixedTime;
+                return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
+            },
+            "playerHit" => (modifier, variables) => PlayerManager.Players.Any(x => x.Player && x.Player.isTakingHit),
+            "playerDeath" => (modifier, variables) => PlayerManager.Players.Any(x => x.Player && x.Player.isDead),
+
+            "levelStart" => (modifier, variables) => AudioManager.inst.CurrentAudioSource.time < 0.1f,
+            "levelRestart" => (modifier, variables) => false, // why is this here...?
+            "levelRewind" => (modifier, variables) => CoreHelper.Reversing,
+            _ => (modifier, variables) => false,
+        };
+
+        public static Action<Modifier<GameData>, Dictionary<string, string>> GetLevelAction(string key) => key switch
+        {
+            "playerMoveAll" => ModifierActions.playerMoveAll,
+            "playerBoostLock" => (modifier, variables) =>
+            {
+                if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
+                    RTPlayer.LockBoost = lockBoost;
+            },
+            "playerXLock" => (modifier, variables) =>
+            {
+
+            },
+            "playerYLock" => (modifier, variables) =>
+            {
+
+            },
+            "playerBoost" => ModifierActions.playerBoostAll,
+            "setMusicTime" => ModifierActions.setMusicTime,
+            "setPitch" => ModifierActions.setPitch,
+            _ => (modifier, variables) => { },
+        };
+
+        #endregion
 
         #region BeatmapObject
 

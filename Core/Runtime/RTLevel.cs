@@ -256,11 +256,23 @@ namespace BetterLegacy.Core.Runtime
             while (preTick != null && !preTick.IsEmpty())
                 preTick.Dequeue()?.Invoke();
 
-            OnObjectModifiersTick(); // modifiers update third
-            OnBackgroundModifiersTick(); // bg modifiers update fifth
-            OnEventsTick(); // events need to update first
-            OnBeatmapObjectsTick(); // objects update second
-            OnBackgroundObjectsTick(); // bgs update fourth
+            try
+            {
+                // gamedata modifiers update first
+                if (GameData.Current && !GameData.Current.modifiers.IsEmpty())
+                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, true, new Dictionary<string, string>());
+
+                OnObjectModifiersTick(); // modifiers update second
+                OnBackgroundModifiersTick(); // bg modifiers update third
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Had an exception with modifier tick. Exception: {ex}");
+            }
+
+            OnEventsTick(); // events update fourth
+            OnBeatmapObjectsTick(); // objects update fifth
+            OnBackgroundObjectsTick(); // bgs update sixth
 
             while (postTick != null && !postTick.IsEmpty())
                 postTick.Dequeue()?.Invoke();

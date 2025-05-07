@@ -714,30 +714,23 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             for (int i = 0; i < jn["triggers"].Count; i++)
             {
-                var levelModifier = new LevelModifier();
+                var jnTrigger = jn["triggers"][i];
 
-                levelModifier.retriggerAmount = jn["triggers"][i]["event_retrigger"];
+                var eventType = jnTrigger["event_type"].AsInt;
+                var eventTrigger = jnTrigger["event_trigger"].AsInt;
 
-                levelModifier.AssignModifier(jn["triggers"][i]["event_type"].AsInt, jn["triggers"][i]["event_trigger"].AsInt);
+                var triggerModifier = new Modifier<GameData>(ModifiersHelper.GetLevelTriggerName(eventTrigger));
+                triggerModifier.triggerCount = jnTrigger["event_retrigger"].AsInt;
+                triggerModifier.SetValue(1, jnTrigger["event_trigger_time"]["x"].AsFloat.ToString());
+                triggerModifier.SetValue(2, jnTrigger["event_trigger_time"]["y"].AsFloat.ToString());
 
-                for (int j = 0; j < jn["triggers"][i]["event_data"].Count; j++)
-                {
-                    var data = jn["triggers"][i]["event_data"][j];
+                var actionModifier = new Modifier<GameData>(ModifiersHelper.GetLevelActionName(eventType));
 
-                    if (levelModifier.ActionModifier.commands.Count - 2 < data.Count)
-                    {
-                        levelModifier.ActionModifier.commands.Add(data);
-                    }
-                    else
-                    {
-                        levelModifier.ActionModifier.commands[j + 1] = data;
-                    }
-                }
+                for (int j = 0; j < jnTrigger["event_data"].Count; j++)
+                    actionModifier.SetValue(j, jnTrigger["event_data"][j]);
 
-                levelModifier.TriggerModifier.commands[1] = jn["triggers"][i]["event_trigger_time"]["x"].AsFloat.ToString();
-                levelModifier.TriggerModifier.commands[2] = jn["triggers"][i]["event_trigger_time"]["y"].AsFloat.ToString();
-
-                gameData.levelModifiers.Add(levelModifier);
+                gameData.modifiers.Add(triggerModifier);
+                gameData.modifiers.Add(actionModifier);
             }
 
             CoreHelper.Log($"Parsing BeatmapData");
@@ -1140,15 +1133,22 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["modifiers"] != null)
                 for (int i = 0; i < jn["modifiers"].Count; i++)
                 {
-                    var modifier = jn["modifiers"][i];
+                    var jnModifier = jn["modifiers"][i];
 
-                    var levelModifier = new LevelModifier();
+                    if (jnModifier["action"] != null)
+                    {
+                        var triggerModifier = Modifier<GameData>.Parse(jnModifier["trigger"], gameData);
+                        triggerModifier.triggerCount = jnModifier["retrigger"].AsInt;
+                        var actionModifier = Modifier<GameData>.Parse(jnModifier["action"], gameData);
 
-                    levelModifier.ActionModifier = Modifier<GameData>.Parse(modifier["action"], gameData);
-                    levelModifier.TriggerModifier = Modifier<GameData>.Parse(modifier["trigger"], gameData);
-                    levelModifier.retriggerAmount = modifier["retrigger"].AsInt;
+                        gameData.modifiers.Add(triggerModifier);
+                        gameData.modifiers.Add(actionModifier);
+                        continue;
+                    }
 
-                    gameData.levelModifiers.Add(levelModifier);
+                    var modifier = Modifier<GameData>.Parse(jnModifier, gameData);
+                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultLevelModifiers))
+                        gameData.modifiers.Add(modifier);
                 }
 
             gameData.data = LevelBeatmapData.Parse(jn);
@@ -1291,25 +1291,47 @@ namespace BetterLegacy.Core.Data.Beatmap
                 numLayer++;
             }
 
-            for (int i = 0; i < levelModifiers.Count; i++)
+            Modifier<GameData> firstTrigger = null;
+            int numModifier = 0;
+            for (int i = 0; i < modifiers.Count; i++)
             {
-                var levelModifier = levelModifiers[i];
+                var modifier = modifiers[i];
 
-                var triggerIndex = LevelModifier.DefaultTriggers.ToList().FindIndex(x => x.commands[0] == levelModifier.TriggerModifier.commands[0]);
-                var actionIndex = LevelModifier.DefaultActions.ToList().FindIndex(x => x.commands[0] == levelModifier.ActionModifier.commands[0]);
+                if (modifier.type == ModifierBase.Type.Trigger && firstTrigger == null)
+                {
+                    firstTrigger = modifier;
+                    continue;
+                }
+
+                if (i == modifiers.Count - 1) // no following actions were found
+                    continue;
+
+                if (firstTrigger == null) // no previous triggers to associate with the action
+                    continue;
+
+                if (modifier.type != ModifierBase.Type.Action) // modifier needs to be an action in order to save
+                    continue;
+
+                var jnTrigger = Parser.NewJSONObject();
+
+                var triggerIndex = ModifiersHelper.GetLevelTriggerType(firstTrigger.Name);
+                var actionIndex = ModifiersHelper.GetLevelActionType(modifier.Name);
 
                 if (triggerIndex < 0 || actionIndex < 0)
                     continue;
 
-                jn["triggers"][i]["event_trigger"] = triggerIndex;
-                jn["triggers"][i]["event_trigger_time"]["x"] = Parser.TryParse(levelModifier.TriggerModifier.commands[1], 0f);
-                jn["triggers"][i]["event_trigger_time"]["y"] = Parser.TryParse(levelModifier.TriggerModifier.commands[2], 0f);
-                jn["triggers"][i]["event_retrigger"] = levelModifier.retriggerAmount;
+                jnTrigger["event_trigger"] = triggerIndex;
+                jnTrigger["event_trigger_time"]["x"] = firstTrigger.GetFloat(0, 0f);
+                jnTrigger["event_trigger_time"]["y"] = firstTrigger.GetFloat(0, 0f);
+                jnTrigger["event_retrigger"] = firstTrigger.triggerCount;
 
-                jn["triggers"][i]["event_type"] = actionIndex;
+                jnTrigger["event_type"] = actionIndex;
 
-                for (int j = 1; j < levelModifier.ActionModifier.commands.Count; j++)
-                    jn["triggers"][i]["event_data"][j - 1] = levelModifier.ActionModifier.commands[j];
+                for (int j = 0; j < modifier.commands.Count; i++)
+                    jnTrigger["event_data"][j] = modifier.GetValue(j);
+
+                jn["triggers"][numModifier] = jnTrigger;
+                numModifier++;
             }
 
             for (int i = 0; i < data.checkpoints.Count; i++)
@@ -1522,14 +1544,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < data.markers.Count; i++)
                 jn["ed"]["markers"][i] = data.markers[i].ToJSON();
 
-            for (int i = 0; i < levelModifiers.Count; i++)
-            {
-                var levelModifier = levelModifiers[i];
-
-                jn["modifiers"][i]["action"] = levelModifier.ActionModifier.ToJSON();
-                jn["modifiers"][i]["trigger"] = levelModifier.TriggerModifier.ToJSON();
-                jn["modifiers"][i]["retrigger"] = levelModifier.retriggerAmount;
-            }
+            for (int i = 0; i < modifiers.Count; i++)
+                jn["modifiers"][i] = modifiers[i].ToJSON();
 
             if (assets && !assets.IsEmpty())
                 jn["assets"] = assets.ToJSON();
@@ -2074,7 +2090,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
 
-        public List<LevelModifier> levelModifiers = new List<LevelModifier>();
+        public List<Modifier<GameData>> modifiers = new List<Modifier<GameData>>();
 
         public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 
@@ -2084,292 +2100,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameData operator +(GameData a, GameData b) => Combiner.Combine(a, b);
-
-        // todo: rework this to be more consistent with other modifier sets.
-        // theory:
-        // when converting to VG, a singular action and trigger are saved per modifier block.
-        // the first trigger in a range is saved.
-        // the first action in a range is saved.
-        // example:
-        // modifier (trigger) 0 = saved because it's the first trigger
-        // modifier (trigger) 1 = not saved
-        // modifier (trigger) 2 = not saved
-        // modifier (action) 3 = saved because it's the first action
-        // modifier (action) 4 = not saved
-        // modifier (trigger) 5 = saved because it's the first trigger
-        // modifier (action) 6 = saved because it's the first action
-        // modifier (trigger) 7 = not saved because there are no accompanying actions
-        /// <summary>
-        /// Class for alpha EventTrigger support.
-        /// </summary>
-        public class LevelModifier
-        {
-            public Modifier<GameData> TriggerModifier { get; set; }
-            public Modifier<GameData> ActionModifier { get; set; }
-
-            public int retriggerAmount = -1;
-            public int current;
-
-            public void AssignModifier(ModifierBase.Type type, int i)
-            {
-                if (type == ModifierBase.Type.Trigger)
-                    AssignTrigger(i);
-                if (type == ModifierBase.Type.Action)
-                    AssignAction(i);
-            }
-
-            public void AssignModifier(int action, int trigger)
-            {
-                AssignTrigger(trigger);
-                AssignAction(action);
-            }
-
-            public void AssignTrigger(int i)
-            {
-                TriggerModifier = DefaultTriggers[Mathf.Clamp(i, 0, DefaultTriggers.Length - 1)];
-            }
-
-            public void AssignAction(int i)
-            {
-                ActionModifier = DefaultActions[Mathf.Clamp(i, 0, DefaultActions.Length - 1)];
-            }
-
-            public void Activate()
-            {
-                var trigger = Trigger();
-                if ((trigger && !TriggerModifier.not || !trigger && TriggerModifier.not) && !TriggerModifier.active)
-                {
-                    Action();
-
-                    if (!TriggerModifier.constant)
-                        TriggerModifier.active = true;
-                }
-                else if (!(trigger && !TriggerModifier.not || !trigger && TriggerModifier.not))
-                    TriggerModifier.active = false;
-            }
-
-            public bool Trigger()
-            {
-                var modiifer = TriggerModifier;
-
-                if (modiifer == null || retriggerAmount != -1 && current > retriggerAmount)
-                    return false;
-
-                current++;
-
-                var time = RTLevel.Current?.CurrentTime;
-
-                switch (modiifer.Name.ToLower())
-                {
-                    case "none": {
-                            return true;
-                        }
-                    case "time": {
-                            return modiifer.commands.Count > 2 && float.TryParse(modiifer.commands[1], out float min) && float.TryParse(modiifer.commands[2], out float max)
-                                && time >= min - 0.01f && time <= max + 0.1f;
-                        }
-                    case "playerhit":  {
-                            return PlayerManager.Players.Any(x => x.Player != null && x.Player.isTakingHit);
-                        }
-                    case "playerdeath": {
-                            return PlayerManager.Players.Any(x => x.Player != null && x.Player.isDead);
-                        }
-                    case "levelstart": {
-                            return AudioManager.inst.CurrentAudioSource.time < 0.1f;
-                        }
-                }
-
-                return false;
-            }
-
-            public void Action()
-            {
-                var modifier = ActionModifier;
-
-                if (modifier == null)
-                    return;
-
-                switch (modifier.Name.ToLower().Replace(" ", "").Replace("_", ""))
-                {
-                    case "playerlocation": {
-                            float x = 0f;
-                            float y = 0f;
-                            float t = 0f;
-
-                            if (modifier.commands.Count > 1 && float.TryParse(modifier.commands[1], out float xResult))
-                                x = xResult;
-
-                            if (modifier.commands.Count > 2 && float.TryParse(modifier.commands[2], out float yResult))
-                                y = yResult;
-
-                            if (modifier.commands.Count > 2 && float.TryParse(modifier.commands[2], out float tResult))
-                                t = tResult;
-
-                            foreach (var player in PlayerManager.Players)
-                            {
-                                if (!player.Player || !player.Player.rb)
-                                    continue;
-
-                                var tf = player.Player.rb.transform;
-
-                                if (t == 0f)
-                                {
-                                    tf.localPosition = new Vector3(x, y, 0f);
-                                    continue;
-                                }
-
-                                var animation = new RTAnimation("Player Move");
-
-                                animation.animationHandlers = new List<AnimationHandlerBase>
-                                {
-                                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                                    {
-                                        new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
-                                        new Vector2Keyframe(t, new Vector2(x, y), Ease.Linear),
-                                    }, x =>
-                                    {
-                                        if (!tf)
-                                            return;
-
-                                        tf.localPosition = x;
-                                    }),
-                                };
-
-                                animation.onComplete = () =>
-                                {
-                                    AnimationManager.inst.Remove(animation.id);
-                                    if (tf)
-                                        tf.localPosition = new Vector2(x, y);
-                                };
-
-                                AnimationManager.inst.Play(animation);
-                            }
-
-                            break;
-                        }
-                    case "playerboostlock": {
-                            if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.commands[1], out bool lockBoost))
-                                RTPlayer.LockBoost = lockBoost;
-
-                            break;
-                        }
-
-                }
-            }
-
-            public static Modifier<GameData>[] DefaultTriggers => new Modifier<GameData>[]
-            {
-                new Modifier<GameData>("time")
-                {
-                    type = ModifierBase.Type.Trigger,
-                    constant = true,
-                    commands = new List<string>
-                    {
-                        "time",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // time
-				new Modifier<GameData>("playerHit")
-                {
-                    type = ModifierBase.Type.Trigger,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerHit",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // playerHit
-				new Modifier<GameData>("playerDeath")
-                {
-                    type = ModifierBase.Type.Trigger,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerDeath",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // playerDeath
-				new Modifier<GameData>("levelStart")
-                {
-                    type = ModifierBase.Type.Trigger,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "levelStart",
-                        "0", // Activation Time Range Min
-						"0", // Activation Time Range Max
-					},
-                    value = "",
-                }, // levelStart
-			};
-            public static Modifier<GameData>[] DefaultActions => new Modifier<GameData>[]
-            {
-                new Modifier<GameData>("vnInk")
-                {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "vnInk"
-                    },
-                    value = "",
-                }, // vnInk
-				new Modifier<GameData>("vnTimeline")
-                {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "vnTimeline"
-                    },
-                    value = "",
-                }, // vnTimeline
-				new Modifier<GameData>("playerBubble")
-                {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerBubble",
-                        "Text", // Text
-						"0", // Time
-                    },
-                    value = "",
-                }, // playerBubble (Probably won't have support for this yet)
-				new Modifier<GameData>("playerLocation")
-                {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerLocation",
-                        "0", // X
-						"0", // Y
-						"0", // Time
-                    },
-                    value = "",
-                }, // playerLocation
-				new Modifier<GameData>("playerBoostLock")
-                {
-                    type = ModifierBase.Type.Action,
-                    constant = false,
-                    commands = new List<string>
-                    {
-                        "playerBoostLock",
-                        "False", // Lock Enabled
-						"", // Show Bubble
-						"", // Bubble Time
-                    },
-                    value = "",
-                }, // playerBoostLock
-			};
-        }
 
         public static class Combiner
         {
