@@ -146,6 +146,8 @@ namespace BetterLegacy.Core
                 context.RegisterVariable("time", Time.time);
                 context.RegisterVariable("deltaTime", Time.deltaTime);
                 context.RegisterVariable("audioTime", AudioManager.inst.CurrentAudioSource.time);
+                if (AudioManager.inst.CurrentAudioSource.clip)
+                    context.RegisterVariable("musicLength", AudioManager.inst.CurrentAudioSource.clip.length);
                 context.RegisterVariable("volume", AudioManager.inst.musicVol);
                 context.RegisterVariable("pitch", AudioManager.inst.pitch);
                 context.RegisterVariable("forwardPitch", CoreHelper.ForwardPitch);
