@@ -617,57 +617,7 @@ namespace BetterLegacy.Menus
             return input.Replace("{{AudioTime}}", AudioManager.inst.CurrentAudioSource.time.ToString());
         }
 
-        public string ParseText(string input)
-        {
-            RTString.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out SaveData playerData) ? LevelManager.GetLevelRank(playerData) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), LSText.randomNumString(Parser.TryParse(match.Groups[1].ToString(), 0)));
-            });
-
-            RTString.RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
-            });
-
-            input = RTFile.ParsePaths(input);
-
-            return input
-                .Replace("{{GameVersion}}", ProjectArrhythmia.GameVersion.ToString())
-                .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
-                .Replace("{{DisplayName}}", CoreConfig.Instance.DisplayName.Value)
-                .Replace("{{SplashText}}", LegacyPlugin.SplashText)
-                .Replace("{{CurrentPlayingChapterNumber}}", RTString.ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex))
-                .Replace("{{CurrentPlayingLevelNumber}}", RTString.ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex))
-                .Replace("{{SaveSlotNumber}}", RTString.ToStoryNumber(StoryManager.inst.SaveSlot))
-                ;
-        }
+        public string ParseText(string input) => RTString.ParseText(input);
 
         /// <summary>
         /// Parses an entire func JSON. Supports both JSON Object and JSON Array.

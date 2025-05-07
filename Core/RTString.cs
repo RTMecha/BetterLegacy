@@ -8,10 +8,13 @@ using UnityEngine;
 using LSFunctions;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus;
+using BetterLegacy.Story;
 
 namespace BetterLegacy.Core
 {
@@ -688,6 +691,64 @@ namespace BetterLegacy.Core
             #endregion
 
             return str;
+        }
+
+        public static string ParseText(string input)
+        {
+            RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
+            });
+
+            RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out SaveData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
+            });
+
+            RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), LSText.randomNumString(Parser.TryParse(match.Groups[1].ToString(), 0)));
+            });
+
+            RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
+            });
+
+            input = RTFile.ParsePaths(input);
+
+            if (InterfaceManager.inst.CurrentInterface || CoreHelper.InStory)
+            {
+                RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
+                {
+                    input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
+                });
+
+                input = input
+                .Replace("{{CurrentPlayingChapterNumber}}", ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex))
+                .Replace("{{CurrentPlayingLevelNumber}}", ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex))
+                .Replace("{{SaveSlotNumber}}", ToStoryNumber(StoryManager.inst.SaveSlot))
+                ;
+            }
+
+            return input
+                .Replace("{{GameVersion}}", ProjectArrhythmia.GameVersion.ToString())
+                .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
+                .Replace("{{DisplayName}}", CoreConfig.Instance.DisplayName.Value)
+                .Replace("{{SplashText}}", LegacyPlugin.SplashText)
+                ;
         }
 
         public static string ToStoryNumber(int num) => (num + 1).ToString("00");
