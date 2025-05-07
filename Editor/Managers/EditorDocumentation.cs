@@ -854,6 +854,7 @@ namespace BetterLegacy.Editor.Managers
                                      "<b>deltaTime</b> - Unity's deltaTime property.\n" +
                                      "<b>audioTime</b> - The main audio time.\n" +
                                      "<b>smoothedTime</b> - Catalyst animation time.\n" +
+                                     "<b>musicLength</b> - The main audio length.\n" +
                                      "<b>volume</b> - Current music volume.\n" +
                                      "<b>pitch</b> - Current music pitch (or game speed).\n" +
                                      "<b>forwardPitch</b> - Current music pitch (or game speed) but always above 0.001.\n" +
@@ -869,7 +870,8 @@ namespace BetterLegacy.Editor.Managers
                                      "<b>mousePosX</b> - Position X of the mouse cursor.\n" +
                                      "<b>mousePosY</b> - Position Y of the mouse cursor.\n" +
                                      "<b>screenWidth</b> - Width of the Application Window.\n" +
-                                     "<b>screenHeight</b> - Height of the Application Window.", EditorDocument.Element.Type.Text),
+                                     "<b>screenHeight</b> - Height of the Application Window.\n" +
+                                     "<b>currentEpoch</b> - The current epoch value.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("If you have a few functions listed, follow this example:\n" +
                                     "clamp(random(), 0, 1) + clamp(random(034) * 0.1, 0, 1) * pitch"
                                     , EditorDocument.Element.Type.Text),
