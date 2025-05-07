@@ -2073,6 +2073,22 @@ namespace BetterLegacy.Core.Helpers
             variables[modifier.GetValue(0)] = PlayerManager.GetClosestPlayerIndex(pos).ToString();
         }
 
+        public static void getCollidingPlayers(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
+            {
+                var collider = runtimeObject.visualObject.collider;
+
+                var players = PlayerManager.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    var player = players[i];
+                    variables[modifier.GetValue(0) + "_" + i] = (player.Player && player.Player.CurrentCollider && player.Player.CurrentCollider.IsTouching(collider)).ToString();
+                }
+            }
+        }
+
         public static void getPlayerHealth<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer))
@@ -2224,7 +2240,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var index = i + 2;
                 if (modifier.commands.InRange(index))
-                    variables[modifier.commands[index]] = split[i];
+                    variables[modifier.GetValue(index)] = split[i];
             }
         }
 
@@ -2322,6 +2338,13 @@ namespace BetterLegacy.Core.Helpers
             {
                 beatmapObject.modifiers.FindAll(x => x.Name == nameof(getSignaledVariables)).ForLoop(modifier =>
                 {
+                    if (modifier.TryGetResult(out Dictionary<string, string> otherVariables))
+                    {
+                        foreach (var variable in sendVariables)
+                            otherVariables[variable.Key] = variable.Value;
+                        return;
+                    }
+
                     modifier.Result = sendVariables;
                 });
             }
