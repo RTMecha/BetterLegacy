@@ -51,8 +51,8 @@ namespace BetterLegacy.Core.Runtime
             // Removing and reinserting prefabs.
             gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
             gameData.backgroundObjects.RemoveAll(x => x.fromPrefab);
-            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
-                AddPrefabToLevel(GameData.Current.prefabObjects[i], false);
+            for (int i = 0; i < gameData.prefabObjects.Count; i++)
+                AddPrefabToLevel(gameData.prefabObjects[i], false);
 
             // Convert GameData to LevelObjects
             converter = new ObjectConverter(gameData);
