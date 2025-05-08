@@ -509,13 +509,15 @@ namespace BetterLegacy.Companion.Entity
                     }
                 })
             {
-                canDo = () => !reference.Dragging && !reference.brain.talking && !CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.01f),
+                canDo = () => !reference.Dragging && !reference.brain.talking &&
+                    interactedTimer.time > 600f && !CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.01f) && RandomHelper.PercentChanceSingle(0.01f),
                 interruptCheck = () => false,
                 interruptible = false,
                 setAsCurrent = false,
             });
             actions.Add(new ExampleAction(Actions.BORED_OUT,
-                () => !reference.Dragging && !reference.brain.talking && !CurrentAction && GetAttribute("HAPPINESS").Value <= 1.0f && RandomHelper.PercentChanceSingle(0.001f),
+                () => !reference.Dragging && !reference.brain.talking && ExampleConfig.Instance.CanLeave.Value &&
+                    interactedTimer.time > 600f && !CurrentAction && GetAttribute("HAPPINESS").Value <= 1.0f && RandomHelper.PercentChanceSingle(0.001f) && RandomHelper.PercentChanceSingle(0.01f),
                 () => false,
                 false,
                 () => reference.Exit()));
