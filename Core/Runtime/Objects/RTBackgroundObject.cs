@@ -63,6 +63,26 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
         }
 
+        public void SetColor(Color mainColor, Color fadeColor)
+        {
+            int layer = backgroundObject.iterations - backgroundObject.depth;
+            renderers.ForLoop((renderer, i) =>
+            {
+                if (i == 0)
+                {
+                    renderer.material.color = mainColor;
+                    return;
+                }
+
+                if (!renderer.gameObject.activeSelf)
+                    renderer.gameObject.SetActive(true);
+
+                float t = 1f / layer * i;
+
+                renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
+            });
+        }
+
         public void Clear()
         {
             if (top)
@@ -125,7 +145,6 @@ namespace BetterLegacy.Core.Runtime.Objects
                 fadeColor = ThemeManager.inst.bgColorToLerp;
             fadeColor.a = 1f;
 
-            int layer = backgroundObject.iterations - backgroundObject.depth;
             if (CoreConfig.Instance.LDM.Value && renderers.Count > 0)
             {
                 renderers[0].material.color = mainColor;
@@ -136,21 +155,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 }
             }
             else
-                renderers.ForLoop((renderer, i) =>
-                {
-                    if (i == 0)
-                    {
-                        renderer.material.color = mainColor;
-                        return;
-                    }
-
-                    if (!renderer.gameObject.activeSelf)
-                        renderer.gameObject.SetActive(true);
-
-                    float t = 1f / layer * i;
-
-                    renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
-                });
+                SetColor(mainColor, fadeColor);
 
             if (!reactive)
             {
