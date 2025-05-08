@@ -1,4 +1,22 @@
-﻿# snapshot-2025.5.10 - (pre-1.7.0) [May 8, 2025]
+﻿# ???
+
+## Features
+### Core
+- Added opacity and hsv values to the getColorSlotHexCode modifier.
+- Added animateColorKF and animateColorKFHex modifiers. These allow you to animate both Beatmap Object and Background Object colors.
+- Ported most compatible modifiers to BG objects.
+
+### Editor
+- Selecting specific objects in the editor preview window can now be disabled, via either the Multi Object Editor or the Timeline Object context menu.
+
+## Changes
+### Editor
+- Hidden objects now save to objects' editor data.
+
+## Fixes
+- Fixed BG objects in Prefabs not working in the Arcade.
+
+# snapshot-2025.5.10 - (pre-1.7.0) [May 8, 2025]
 
 ## Features
 ### Core
