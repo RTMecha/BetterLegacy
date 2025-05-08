@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
@@ -157,7 +159,7 @@ namespace BetterLegacy.Editor.Data
         };
 
         /// <summary>
-        /// Gets and sets the layer of the object. Does not apply to keyframes.
+        /// Gets and sets the layer of the object.
         /// </summary>
         public int Layer
         {
@@ -205,7 +207,7 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
-        /// Gets and sets the collapsed state of the object. Does not apply to keyframes.
+        /// Gets and sets the collapsed state of the object.
         /// </summary>
         public bool Collapse
         {
@@ -224,6 +226,52 @@ namespace BetterLegacy.Editor.Data
                     GetData<PrefabObject>().editorData.collapse = value;
                 if (isBackgroundObject)
                     GetData<BackgroundObject>().editorData.collapse = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets and sets the hidden state of the object.
+        /// </summary>
+        public bool Hidden
+        {
+            get => TimelineReference switch
+            {
+                TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.hidden,
+                TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.hidden,
+                TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().editorData.hidden,
+                _ => false,
+            };
+            set
+            {
+                if (isBeatmapObject)
+                    GetData<BeatmapObject>().editorData.hidden = value;
+                if (isPrefabObject)
+                    GetData<PrefabObject>().editorData.hidden = value;
+                if (isBackgroundObject)
+                    GetData<BackgroundObject>().editorData.hidden = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets and sets the selectable in preview state of the object.
+        /// </summary>
+        public bool SelectableInPreview
+        {
+            get => TimelineReference switch
+            {
+                TimelineReferenceType.BeatmapObject => GetData<BeatmapObject>().editorData.selectable,
+                TimelineReferenceType.PrefabObject => GetData<PrefabObject>().editorData.selectable,
+                TimelineReferenceType.BackgroundObject => GetData<BackgroundObject>().editorData.selectable,
+                _ => false,
+            };
+            set
+            {
+                if (isBeatmapObject)
+                    GetData<BeatmapObject>().editorData.selectable = value;
+                if (isPrefabObject)
+                    GetData<PrefabObject>().editorData.selectable = value;
+                if (isBackgroundObject)
+                    GetData<BackgroundObject>().editorData.selectable = value;
             }
         }
 
@@ -642,6 +690,338 @@ namespace BetterLegacy.Editor.Data
             typeIcon.SetActive(renderTypeIcon);
             if (renderTypeIcon)
                 typeIcon.transform.Find("type").GetComponent<Image>().sprite = prefabType.icon;
+        }
+
+        public void ShowContextMenu()
+        {
+            EditorContextMenu.inst.ShowContextMenu(
+                new ButtonFunction("Select", () => EditorTimeline.inst.SetCurrentObject(this)),
+                new ButtonFunction("Add to Selection", () => EditorTimeline.inst.AddSelectedObject(this)),
+                new ButtonFunction("Create New", () => ObjectEditor.inst.CreateNewNormalObject()),
+                new ButtonFunction("Update Object", () =>
+                {
+                    if (isBeatmapObject)
+                        RTLevel.Current?.UpdateObject(GetData<BeatmapObject>());
+                    if (isPrefabObject)
+                        RTLevel.Current?.UpdatePrefab(GetData<PrefabObject>());
+                    if (isBackgroundObject)
+                        RTLevel.Current?.UpdateBackgroundObject(GetData<BackgroundObject>());
+                }),
+                new ButtonFunction(true),
+                new ButtonFunction("Cut", () =>
+                {
+                    ObjectEditor.inst.CopyObjects();
+                    EditorTimeline.inst.DeleteObjects();
+                }),
+                new ButtonFunction("Copy", ObjectEditor.inst.CopyObjects),
+                new ButtonFunction("Paste", ObjectEditor.inst.PasteObject),
+                new ButtonFunction("Duplicate", () =>
+                {
+                    var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+
+                    ObjectEditor.inst.CopyObjects();
+                    ObjectEditor.inst.PasteObject(offsetTime);
+                }),
+                new ButtonFunction("Paste (Keep Prefab)", () => ObjectEditor.inst.PasteObject(0f, false)),
+                new ButtonFunction("Duplicate (Keep Prefab)", () =>
+                {
+                    var offsetTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+
+                    ObjectEditor.inst.CopyObjects();
+                    ObjectEditor.inst.PasteObject(offsetTime, false);
+                }),
+                new ButtonFunction("Delete", EditorTimeline.inst.DeleteObjects),
+                new ButtonFunction(true),
+                new ButtonFunction("Hide", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        timelineObject.Hidden = true;
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineReferenceType.BeatmapObject: {
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+
+                                    break;
+                                }
+                            case TimelineReferenceType.PrefabObject: {
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+
+                                    break;
+                                }
+                            case TimelineReferenceType.BackgroundObject: {
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+
+                                    break;
+                                }
+                        }
+                    }
+                }),
+                new ButtonFunction("Unhide", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        timelineObject.Hidden = false;
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineReferenceType.BeatmapObject: {
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+
+                                    break;
+                                }
+                            case TimelineReferenceType.PrefabObject: {
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+
+                                    break;
+                                }
+                            case TimelineReferenceType.BackgroundObject: {
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+
+                                    break;
+                                }
+                        }
+                    }
+                }),
+                new ButtonFunction("Preview Selectable", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        if (timelineObject.isBackgroundObject)
+                            continue;
+
+                        timelineObject.SelectableInPreview = true;
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineReferenceType.BeatmapObject: {
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+
+                                    break;
+                                }
+                            case TimelineReferenceType.PrefabObject: {
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+
+                                    break;
+                                }
+                        }
+                    }
+                }),
+                new ButtonFunction("Preview Unselectable", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        if (timelineObject.isBackgroundObject)
+                            continue;
+
+                        timelineObject.SelectableInPreview = false;
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineReferenceType.BeatmapObject: {
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+
+                                    break;
+                                }
+                            case TimelineReferenceType.PrefabObject: {
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+
+                                    break;
+                                }
+                        }
+                    }
+                }),
+                new ButtonFunction(true),
+                new ButtonFunction("Move Backwards", () =>
+                {
+                    switch (TimelineReference)
+                    {
+                        case TimelineReferenceType.BeatmapObject: {
+                                var beatmapObject = GetData<BeatmapObject>();
+                                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                if (index <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.beatmapObjects.Move(index, index - 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                if (ObjectEditor.inst.Dialog.IsCurrent)
+                                    ObjectEditor.inst.RenderIndex(beatmapObject);
+
+                                break;
+                            }
+                        case TimelineReferenceType.PrefabObject: {
+                                var prefabObject = GetData<PrefabObject>();
+                                var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                if (index <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.prefabObjects.Move(index, index - 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                        case TimelineReferenceType.BackgroundObject: {
+                                var backgroundObject = GetData<BackgroundObject>();
+                                var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                if (index <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.backgroundObjects.Move(index, index - 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                    }
+                }),
+                new ButtonFunction("Move Forwards", () =>
+                {
+                    switch (TimelineReference)
+                    {
+                        case TimelineReferenceType.BeatmapObject: {
+                                var beatmapObject = GetData<BeatmapObject>();
+                                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                if (index >= GameData.Current.beatmapObjects.Count - 1)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.beatmapObjects.Move(index, index + 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                if (ObjectEditor.inst.Dialog.IsCurrent)
+                                    ObjectEditor.inst.RenderIndex(beatmapObject);
+
+                                break;
+                            }
+                        case TimelineReferenceType.PrefabObject: {
+                                var prefabObject = GetData<PrefabObject>();
+                                var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                if (index >= GameData.Current.prefabObjects.Count - 1)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.prefabObjects.Move(index, index + 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                        case TimelineReferenceType.BackgroundObject: {
+                                var backgroundObject = GetData<BackgroundObject>();
+                                var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                if (index >= GameData.Current.backgroundObjects.Count - 1)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.backgroundObjects.Move(index, index + 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                    }
+                }),
+                new ButtonFunction("Move to Back", () =>
+                {
+                    switch (TimelineReference)
+                    {
+                        case TimelineReferenceType.BeatmapObject: {
+                                var beatmapObject = GetData<BeatmapObject>();
+                                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                if (index <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.beatmapObjects.Move(index, 0);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                if (ObjectEditor.inst.Dialog.IsCurrent)
+                                    ObjectEditor.inst.RenderIndex(beatmapObject);
+
+                                break;
+                            }
+                        case TimelineReferenceType.PrefabObject: {
+                                var prefabObject = GetData<PrefabObject>();
+                                var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                if (index <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.prefabObjects.Move(index, 0);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                        case TimelineReferenceType.BackgroundObject: {
+                                var backgroundObject = GetData<BackgroundObject>();
+                                var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                if (index <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.backgroundObjects.Move(index, 0);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                    }
+                }),
+                new ButtonFunction("Move to Front", () =>
+                {
+                    switch (TimelineReference)
+                    {
+                        case TimelineReferenceType.BeatmapObject: {
+                                var beatmapObject = GetData<BeatmapObject>();
+                                var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                if (index >= GameData.Current.beatmapObjects.Count - 1)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.beatmapObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                if (ObjectEditor.inst.Dialog.IsCurrent)
+                                    ObjectEditor.inst.RenderIndex(beatmapObject);
+
+                                break;
+                            }
+                        case TimelineReferenceType.PrefabObject: {
+                                var prefabObject = GetData<PrefabObject>();
+                                var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                if (index >= GameData.Current.prefabObjects.Count - 1)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.prefabObjects.Move(index, GameData.Current.prefabObjects.Count - 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                        case TimelineReferenceType.BackgroundObject: {
+                                var backgroundObject = GetData<BackgroundObject>();
+                                var index = GameData.Current.backgroundObjects.FindIndex(x => x == backgroundObject);
+                                if (index >= GameData.Current.backgroundObjects.Count - 1)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move object forwards since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                GameData.Current.backgroundObjects.Move(index, GameData.Current.backgroundObjects.Count - 1);
+                                EditorTimeline.inst.UpdateTransformIndex();
+                                break;
+                            }
+                    }
+                })
+                );
         }
 
         #endregion
