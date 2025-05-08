@@ -6,8 +6,13 @@
 - Added forLoop and continue modifiers. These allow you to run the next set of modifiers up until a return modifier a certain amount of times.
 - Added getParsedString modifier. This returns a string with specific values replaced.
 - Added getSplitStringAt and getSplitStringCount modifiers. These return a value in a separated string.
+- Added createCheckpoint and resetCheckpoint modifiers. These modify the active checkpoint.
 - Added playerCount to math evaluation variables.
+- Added activeCheckpointTime to math evaluation variables.
 - Added X and Y values to playerBoost modifiers. This forces the player to boost in a specific direction. The values can be left empty to not force that value onto the boost.
+
+### Example Companion
+- Added Config Manager > Companion > Behavior > Can Leave setting. This controls if Example should randomly leave if he's bored or not.
 
 ## Changes
 ### Core
