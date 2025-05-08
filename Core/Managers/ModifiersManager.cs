@@ -37,19 +37,24 @@ namespace BetterLegacy.Core.Managers
         {
             inst = this;
             defaultBeatmapObjectModifiers.Clear();
+            defaultBackgroundObjectModifiers.Clear();
 
-            var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.lsb");
+            LoadFile(defaultBeatmapObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.lsb"));
+            LoadFile(defaultBackgroundObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_bg_modifiers.lsb"));
 
+            if (ModifiersHelper.development)
+                AddDevelopmentModifiers();
+        }
+
+        void LoadFile<T>(List<Modifier<T>> modifiers, string path)
+        {
             if (!RTFile.FileExists(path))
                 return;
 
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
-                LoadModifiers(defaultBeatmapObjectModifiers, jn["modifiers"][i]);
-
-            if (ModifiersHelper.development)
-                AddDevelopmentModifiers();
+                LoadModifiers(modifiers, jn["modifiers"][i]);
         }
 
         void LoadModifiers<T>(List<Modifier<T>> modifiers, JSONNode jn)
@@ -61,7 +66,7 @@ namespace BetterLegacy.Core.Managers
                 return;
             }
 
-            defaultBeatmapObjectModifiers.Add(Modifier<BeatmapObject>.Parse(jn));
+            modifiers.Add(Modifier<T>.Parse(jn));
         }
 
         void AddDevelopmentModifiers()
@@ -272,18 +277,7 @@ namespace BetterLegacy.Core.Managers
 
         public static List<Modifier<BeatmapObject>> defaultBeatmapObjectModifiers = new List<Modifier<BeatmapObject>>();
 
-        public static List<Modifier<BackgroundObject>> defaultBackgroundObjectModifiers = new List<Modifier<BackgroundObject>>
-        {
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "setActive", true, "False"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "setActiveOther", true, "False", "BG Group"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "animateObject", true, "1", "0", "0", "0", "0", "True", "0"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "animateObjectOther", true, "1", "0", "0", "0", "0", "True", "0", "BG Group"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Action, "copyAxis", true, "Object Group", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeLesserEquals", true, "0"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeGreaterEquals", true, "0"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeLesser", true, "0"),
-            RegisterModifier<BackgroundObject>(ModifierBase.Type.Trigger, "timeGreater", true, "0"),
-        };
+        public static List<Modifier<BackgroundObject>> defaultBackgroundObjectModifiers = new List<Modifier<BackgroundObject>>();
 
         public static List<Modifier<CustomPlayer>> defaultPlayerModifiers = new List<Modifier<CustomPlayer>>
         {
