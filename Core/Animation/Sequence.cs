@@ -32,45 +32,45 @@ namespace BetterLegacy.Core.Animation
                 throw new NoKeyframeException("Cannot interpolate in an empty sequence!");
 
             Time = time;
-            //for (int i = 0; i < keyframes.Length; i++)
-            //    if (time < keyframes[i].Time)
-            //        keyframes[i].Active = false;
 
-            if (keyframes.Length == 1 || time < keyframes[0].Time)
+            var first = keyframes[0];
+            if (keyframes.Length == 1 || time < first.Time)
             {
-                if (!keyframes[0].Active)
+                if (!first.Active)
                 {
-                    keyframes[0].Active = true;
-                    keyframes[0].Start();
+                    first.Active = true;
+                    first.Start();
                 }
 
-                Value = ResultFromSingleKeyframe(keyframes[0], 1f);
+                Value = ResultFromSingleKeyframe(first, 1f);
                 return Value;
             }
 
-            if (time >= keyframes[keyframes.Length - 1].Time)
+            var last = keyframes[keyframes.Length - 1];
+            if (time >= last.Time)
             {
-                if (!keyframes[keyframes.Length - 1].Active)
+                if (!last.Active)
                 {
-                    keyframes[keyframes.Length - 1].Active = true;
-                    keyframes[keyframes.Length - 1].Start();
+                    last.Active = true;
+                    last.Start();
                 }
+
                 Value = ResultFromSingleKeyframe(keyframes[keyframes.Length - 1], 0.0f);
                 return Value;
             }
 
             int index = Search(time);
-            IKeyframe<T> first = keyframes[index];
-            IKeyframe<T> second = keyframes[index + 1];
+            IKeyframe<T> current = keyframes[index];
+            IKeyframe<T> next = keyframes[index + 1];
 
-            if (!first.Active)
+            if (!current.Active)
             {
-                first.Active = true;
-                first.Start();
+                current.Active = true;
+                current.Start();
             }
 
-            float t = Mathf.InverseLerp(first.Time, second.Time, time);
-            Value = first.Interpolate(second, t);
+            float t = Mathf.InverseLerp(current.Time, next.Time, time);
+            Value = current.Interpolate(next, t);
             return Value;
         }
 
