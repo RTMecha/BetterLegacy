@@ -1862,41 +1862,26 @@ namespace BetterLegacy.Editor.Managers
             int hiddenCount = 0;
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
+                timelineObject.Hidden = true;
                 switch (timelineObject.TimelineReference)
                 {
                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty())
-                                break;
-
-                            beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(false);
-                            hiddenCount++;
+                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
 
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
-                            foreach (var expanded in timelineObject.GetData<PrefabObject>().expandedObjects)
-                            {
-                                if (expanded is BeatmapObject beatmapObject && beatmapObject.runtimeObject && !beatmapObject.runtimeObject.parentObjects.IsEmpty())
-                                    beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(false);
-                                if (expanded is BackgroundObject backgroundObject && backgroundObject.runtimeObject)
-                                    backgroundObject.runtimeObject.hidden = true;
-                            }
-                            hiddenCount++;
+                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
 
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                            if (!backgroundObject.runtimeObject)
-                                break;
-
-                            backgroundObject.runtimeObject.hidden = true;
-                            hiddenCount++;
+                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
 
                             break;
                         }
                 }
+                hiddenCount++;
             }
 
             EditorManager.inst.DisplayNotification($"Hidden [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
@@ -1907,51 +1892,29 @@ namespace BetterLegacy.Editor.Managers
             int hiddenCount = 0;
             foreach (var timelineObject in EditorTimeline.inst.timelineObjects)
             {
+                if (!timelineObject.Hidden)
+                    continue;
+
+                timelineObject.Hidden = false;
                 switch (timelineObject.TimelineReference)
                 {
                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty() || beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf)
-                                break;
-
-                            beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(true);
-                            hiddenCount++;
+                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
 
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
-                            bool unhide = false;
-                            foreach (var expanded in timelineObject.GetData<PrefabObject>().expandedObjects)
-                            {
-                                if (expanded is BeatmapObject beatmapObject && !beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf)
-                                {
-                                    beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(true);
-                                    unhide = true;
-                                }
-
-                                if (expanded is BackgroundObject backgroundObject && backgroundObject.runtimeObject && backgroundObject.runtimeObject.hidden)
-                                {
-                                    backgroundObject.runtimeObject.hidden = false;
-                                    unhide = true;
-                                }
-                            }
-
-                            if (unhide)
-                                hiddenCount++;
+                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
 
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                            if (!backgroundObject.runtimeObject || !backgroundObject.runtimeObject.hidden)
-                                break;
-
-                            backgroundObject.runtimeObject.hidden = false;
-                            hiddenCount++;
+                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
 
                             break;
                         }
                 }
+                hiddenCount++;
             }
 
             EditorManager.inst.DisplayNotification($"Unhidden [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
@@ -1962,41 +1925,26 @@ namespace BetterLegacy.Editor.Managers
             int hiddenCount = 0;
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
+                timelineObject.Hidden = !timelineObject.Hidden;
                 switch (timelineObject.TimelineReference)
                 {
                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty())
-                                break;
-
-                            beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf);
-                            hiddenCount++;
+                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
 
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
-                            foreach (var expanded in timelineObject.GetData<PrefabObject>().expandedObjects)
-                            {
-                                if (expanded is BeatmapObject beatmapObject && beatmapObject.runtimeObject && !beatmapObject.runtimeObject.parentObjects.IsEmpty())
-                                    beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.runtimeObject.parentObjects[0].gameObject.activeSelf);
-                                if (expanded is BackgroundObject backgroundObject && backgroundObject.runtimeObject)
-                                    backgroundObject.runtimeObject.hidden = !backgroundObject.runtimeObject.hidden;
-                            }
+                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
 
-                            hiddenCount++;
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                            if (!backgroundObject.runtimeObject)
-                                break;
-
-                            backgroundObject.runtimeObject.hidden = !backgroundObject.runtimeObject.hidden;
-                            hiddenCount++;
+                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
 
                             break;
                         }
                 }
+                hiddenCount++;
             }
 
             EditorManager.inst.DisplayNotification($"Toggled hidden state of [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
