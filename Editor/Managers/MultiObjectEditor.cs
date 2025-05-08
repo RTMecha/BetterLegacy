@@ -1565,6 +1565,164 @@ namespace BetterLegacy.Editor.Managers
                 }));
             }
 
+            // Hidden
+            {
+                GenerateLabels(parent, 32f, "Modify hidden state");
+
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            timelineObject.Hidden = true;
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+
+                                        break;
+                                    }
+                            }
+                        }
+                    }),
+                    new ButtonFunction("Off", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            timelineObject.Hidden = false;
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+
+                                        break;
+                                    }
+                            }
+                        }
+                    }));
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        timelineObject.Hidden = !timelineObject.Hidden;
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+
+                                    break;
+                                }
+                        }
+                    }
+                }));
+            }
+            
+            // Selectable
+            {
+                GenerateLabels(parent, 32f, "Modify selectable in preview state");
+
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            if (timelineObject.isBackgroundObject)
+                                continue;
+
+                            timelineObject.SelectableInPreview = true;
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+
+                                        break;
+                                    }
+                            }
+                        }
+                    }),
+                    new ButtonFunction("Off", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            if (timelineObject.isBackgroundObject)
+                                continue;
+
+                            timelineObject.SelectableInPreview = false;
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+
+                                        break;
+                                    }
+                            }
+                        }
+                    }));
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        if (timelineObject.isBackgroundObject)
+                            continue;
+
+                        timelineObject.SelectableInPreview = !timelineObject.SelectableInPreview;
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+
+                                    break;
+                                }
+                        }
+                    }
+                }));
+            }
+
             // LDM
             {
                 var labels = GenerateLabels(parent, 32f, "Modify Low Detail Mode");
@@ -1609,14 +1767,14 @@ namespace BetterLegacy.Editor.Managers
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Paste", () =>
                     {
-                        if (ObjectModifiersEditor.copiedModifier == null)
+                        if (ModifiersEditor.copiedModifier == null)
                         {
                             EditorManager.inst.DisplayNotification("Copy a modifier first!", 1.5f, EditorManager.NotificationType.Warning);
                             return;
                         }
 
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
-                            beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(ObjectModifiersEditor.copiedModifier, beatmapObject));
+                            beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(ModifiersEditor.copiedModifier, beatmapObject));
 
                         EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                     }));
