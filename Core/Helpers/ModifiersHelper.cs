@@ -1709,6 +1709,13 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
+            #region Checkpoints
+
+            nameof(ModifierActions.createCheckpoint) => ModifierActions.createCheckpoint,
+            nameof(ModifierActions.resetCheckpoint) => ModifierActions.resetCheckpoint,
+
+            #endregion
+
             #region Interfaces
 
             "loadInterface" => ModifierActions.loadInterface,
@@ -2356,6 +2363,13 @@ namespace BetterLegacy.Core.Helpers
             //"applyAnimationMath" => ModifierActions.applyAnimationMath,
             //"applyAnimationFromMath" => ModifierActions.applyAnimationFromMath,
             //"applyAnimationToMath" => ModifierActions.applyAnimationToMath,
+
+            #endregion
+
+            #region Checkpoints
+
+            nameof(ModifierActions.createCheckpoint) => ModifierActions.createCheckpoint,
+            nameof(ModifierActions.resetCheckpoint) => ModifierActions.resetCheckpoint,
 
             #endregion
 
