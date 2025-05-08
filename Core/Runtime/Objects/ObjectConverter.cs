@@ -179,9 +179,14 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (CoreHelper.InEditor)
             {
-                var obj = visualObject.AddComponent<SelectObject>();
-                obj.SetObject(beatmapObject);
-                beatmapObject.selector = obj;
+                parentObjects[0].gameObject.SetActive(!beatmapObject.editorData.hidden);
+
+                if (beatmapObject.editorData.selectable)
+                {
+                    var obj = visualObject.AddComponent<SelectObject>();
+                    obj.SetObject(beatmapObject);
+                    beatmapObject.selector = obj;
+                }
 
                 Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
             }
@@ -473,6 +478,9 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             runtimeObject.SetActive(false);
             runtimeObject.UpdateShape(backgroundObject.shape, backgroundObject.shapeOption);
+
+            if (CoreHelper.InEditor)
+                runtimeObject.hidden = backgroundObject.editorData.hidden;
 
             backgroundObject.runtimeObject = runtimeObject;
 

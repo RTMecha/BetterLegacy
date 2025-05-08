@@ -878,6 +878,30 @@ namespace BetterLegacy.Core.Runtime
 
                         break;
                     }
+                case ObjectContext.SELECTABLE: {
+                        if (!beatmapObject.runtimeObject || beatmapObject.editorData.selectable == beatmapObject.selector)
+                            break;
+
+                        if (beatmapObject.selector)
+                        {
+                            CoreHelper.Destroy(beatmapObject.selector);
+                            break;
+                        }
+
+                        var obj = beatmapObject.runtimeObject.visualObject.gameObject.AddComponent<SelectObject>();
+                        obj.SetObject(beatmapObject);
+                        beatmapObject.selector = obj;
+
+                        break;
+                    }
+                case ObjectContext.HIDE: {
+                        if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty() || !beatmapObject.runtimeObject.parentObjects[0].gameObject)
+                            break;
+
+                        beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.editorData.hidden);
+
+                        break;
+                    }
             }
         }
 
@@ -962,7 +986,7 @@ namespace BetterLegacy.Core.Runtime
             }
         }
 
-        void UpdateParentChain(BeatmapObject beatmapObject, RTBeatmapObject levelObject = null)
+        void UpdateParentChain(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject = null)
         {
             string id = beatmapObject.id;
             var beatmapObjects = GameData.Current.beatmapObjects;
@@ -973,14 +997,14 @@ namespace BetterLegacy.Core.Runtime
                     UpdateParentChain(bm, bm.runtimeObject);
             }
 
-            if (!levelObject)
+            if (!runtimeObject)
                 return;
 
-            var baseObject = levelObject.visualObject.gameObject.transform.parent;
-            baseObject.SetParent(levelObject.top);
+            var baseObject = runtimeObject.visualObject.gameObject.transform.parent;
+            baseObject.SetParent(runtimeObject.top);
 
-            for (int i = 1; i < levelObject.parentObjects.Count; i++)
-                CoreHelper.Destroy(levelObject.parentObjects[i].gameObject);
+            for (int i = 1; i < runtimeObject.parentObjects.Count; i++)
+                CoreHelper.Destroy(runtimeObject.parentObjects[i].gameObject);
 
             var parentObjects = new List<ParentObject>();
 
@@ -999,42 +1023,42 @@ namespace BetterLegacy.Core.Runtime
             var top = !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
                 parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
 
-            top.SetParent(levelObject.top);
+            top.SetParent(runtimeObject.top);
             top.localScale = Vector3.one;
 
             if (lastParent)
                 baseObject.SetParent(lastParent);
 
-            levelObject.parentObjects = parentObjects;
+            runtimeObject.parentObjects = parentObjects;
 
             var pc = beatmapObject.GetParentChain();
 
-            if (pc != null && !pc.IsEmpty())
-            {
-                var beatmapParent = pc[pc.Count - 1];
-
-                levelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
-
-                levelObject.positionParent = beatmapParent.GetParentType(0);
-                levelObject.scaleParent = beatmapParent.GetParentType(1);
-                levelObject.rotationParent = beatmapParent.GetParentType(2);
-
-                levelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-                levelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-                levelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
-            }
-        }
-
-        void UpdateVisualObject(BeatmapObject beatmapObject, RTBeatmapObject levelObject)
-        {
-            if (!levelObject)
+            if (pc == null || pc.IsEmpty())
                 return;
 
-            var parent = levelObject.parentObjects[0].transform?.parent;
+            var beatmapParent = pc[pc.Count - 1];
 
-            CoreHelper.Destroy(levelObject.parentObjects[0].transform.gameObject);
-            levelObject.visualObject?.Clear();
-            levelObject.visualObject = null;
+            runtimeObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+
+            runtimeObject.positionParent = beatmapParent.GetParentType(0);
+            runtimeObject.scaleParent = beatmapParent.GetParentType(1);
+            runtimeObject.rotationParent = beatmapParent.GetParentType(2);
+
+            runtimeObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+            runtimeObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+            runtimeObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
+        }
+
+        void UpdateVisualObject(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject)
+        {
+            if (!runtimeObject)
+                return;
+
+            var parent = runtimeObject.parentObjects[0].transform?.parent;
+
+            CoreHelper.Destroy(runtimeObject.parentObjects[0].transform.gameObject);
+            runtimeObject.visualObject?.Clear();
+            runtimeObject.visualObject = null;
 
             var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
@@ -1049,7 +1073,7 @@ namespace BetterLegacy.Core.Runtime
                 visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
             visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
-            levelObject.parentObjects[0] = converter.InitLevelParentObject(beatmapObject, baseObject);
+            runtimeObject.parentObjects[0] = converter.InitLevelParentObject(beatmapObject, baseObject);
 
             baseObject.name = beatmapObject.name;
 
@@ -1073,9 +1097,14 @@ namespace BetterLegacy.Core.Runtime
 
             if (CoreHelper.InEditor)
             {
-                var obj = visualObject.AddComponent<SelectObject>();
-                obj.SetObject(beatmapObject);
-                beatmapObject.selector = obj;
+                runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.editorData.hidden);
+
+                if (beatmapObject.editorData.selectable)
+                {
+                    var obj = visualObject.AddComponent<SelectObject>();
+                    obj.SetObject(beatmapObject);
+                    beatmapObject.selector = obj;
+                }
 
                 UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
             }
@@ -1083,7 +1112,7 @@ namespace BetterLegacy.Core.Runtime
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
 
-            levelObject.visualObject = visual;
+            runtimeObject.visualObject = visual;
         }
 
         /// <summary>
@@ -1105,6 +1134,8 @@ namespace BetterLegacy.Core.Runtime
             public const string IMAGE = "image";
             public const string KEYFRAMES = "keyframes";
             public const string MODIFIERS = "modifiers";
+            public const string SELECTABLE = "selectable";
+            public const string HIDE = "hide";
         }
 
         #region Modifiers
@@ -1276,6 +1307,12 @@ namespace BetterLegacy.Core.Runtime
 
                         break;
                     }
+                case BackgroundObjectContext.HIDE: {
+                        if (backgroundObject.runtimeObject)
+                            backgroundObject.runtimeObject.hidden = backgroundObject.editorData.hidden;
+
+                        break;
+                    }
             }
         }
 
@@ -1342,6 +1379,7 @@ namespace BetterLegacy.Core.Runtime
             public const string START_TIME = "starttime";
             public const string AUTOKILL = "autokill";
             public const string MODIFIERS = "modifiers";
+            public const string HIDE = "hide";
         }
 
         #region Modifiers
@@ -1573,6 +1611,34 @@ namespace BetterLegacy.Core.Runtime
                         UpdatePrefab(prefabObject);
                         break;
                     }
+                case PrefabContext.HIDE: {
+                        foreach (var expanded in prefabObject.expandedObjects)
+                        {
+                            if (expanded is BeatmapObject beatmapObject)
+                            {
+                                beatmapObject.editorData.hidden = prefabObject.editorData.hidden;
+                                UpdateObject(beatmapObject, ObjectContext.HIDE);
+                            }
+                            if (expanded is BackgroundObject backgroundObject)
+                            {
+                                backgroundObject.editorData.hidden = prefabObject.editorData.hidden;
+                                UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.HIDE);
+                            }
+                        }
+
+                        break;
+                    }
+                case PrefabContext.SELECTABLE: {
+                        foreach (var expanded in prefabObject.expandedObjects)
+                        {
+                            if (expanded is BeatmapObject beatmapObject)
+                            {
+                                beatmapObject.editorData.selectable = prefabObject.editorData.selectable;
+                                UpdateObject(beatmapObject, ObjectContext.SELECTABLE);
+                            }
+                        }
+                        break;
+                    }
             }
         }
 
@@ -1665,6 +1731,9 @@ namespace BetterLegacy.Core.Runtime
                     if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
                         GameData.Current.assets.sprites.Add(spriteAsset.Copy());
 
+                    beatmapObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
+                    beatmapObjectCopy.editorData.selectable = prefabObject.editorData.selectable;
+
                     beatmapObjectCopy.originalID = beatmapObject.id;
                     GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
                     prefabObject.expandedObjects.Add(beatmapObjectCopy);
@@ -1693,8 +1762,10 @@ namespace BetterLegacy.Core.Runtime
                     if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
                         GameData.Current.assets.sprites.Add(spriteAsset.Copy());
 
+                    backgroundObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
+                    backgroundObjectCopy.editorData.selectable = prefabObject.editorData.selectable;
+
                     backgroundObjectCopy.originalID = backgroundObject.id;
-                    backgroundObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                     GameData.Current.backgroundObjects.Add(backgroundObjectCopy);
                     prefabObject.expandedObjects.Add(backgroundObjectCopy);
                 }
@@ -1725,6 +1796,8 @@ namespace BetterLegacy.Core.Runtime
             public const string AUTOKILL = "autokill";
             public const string PARENT = "parent";
             public const string REPEAT = "repeat";
+            public const string HIDE = "hide";
+            public const string SELECTABLE = "selectable";
         }
 
         #endregion
