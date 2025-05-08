@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.5.10 - (pre-1.7.0) [May 8, 2025]
 
 ## Features
 ### Core
@@ -30,6 +30,8 @@
 - Fixed object type collision not updating correctly.
 - Fixed Save As not copying sub-directories in the level folder.
 
+------------------------------------------------------------------------------------------
+
 # snapshot-2025.5.9 - (pre-1.7.0) [May 7, 2025]
 
 ## Features
@@ -39,6 +41,8 @@
 
 ## Fixes
 - Fixed signalLocalVariables overriding existing variables. This now allows multiple objects to send their variables to one object.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.5.8 - (pre-1.7.0) [May 7, 2025]
 
@@ -63,6 +67,8 @@
 ## Fixes
 - Clicking on a dropdown now requires left click. This is to fix context menus on dropdowns still interacting with the dropdown.
 - Modifier run count should now act as intentioned by increasing the run count number by one only when the modifier activates, not when it continues running.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.5.7 - (pre-1.7.0) [May 6, 2025]
 
@@ -89,6 +95,8 @@
 - Fixes setPlayerModel modifier not actually updating the player model.
 - Fixed modifier scroll view resetting when refreshing modifier list.
 
+------------------------------------------------------------------------------------------
+
 # snapshot-2025.5.6 - (pre-1.7.0) > [May 5, 2025]
 
 ## Features
@@ -102,6 +110,8 @@
 
 ## Fixes
 - Fixed game throwing an error if the checkpoint's name was null. (Meaning you couldn't play the secret...)
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.5.5 - (pre-1.7.0) > [May 4, 2025]
 
@@ -125,6 +135,8 @@
 - Fixed SetSongTimeAutokill not properly updating objects.
 - Fixed switching gradients not updating the color sequence.
 
+------------------------------------------------------------------------------------------
+
 # snapshot-2025.5.4 - (pre-1.7.0) > [May 2, 2025]
 Hotfix snapshot
 
@@ -134,6 +146,8 @@ Hotfix snapshot
 
 ## Fixes
 - Fixed objects not being removed from the level data when being deleted.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.5.3 - (pre-1.7.0) > [May 2, 2025]
 
@@ -152,6 +166,8 @@ Hotfix snapshot
 ### Fixes
 - Fixed pasting prefabs with only BG objects not pasting.
 
+------------------------------------------------------------------------------------------
+
 # snapshot-2025.5.2 - (pre-1.7.0) > [May 1, 2025]
 
 ## Changes
@@ -160,6 +176,8 @@ Hotfix snapshot
 
 ### Fixes
 - Fixed Background Object prefabbing start time offset not working in some cases.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.5.1 - (pre-1.7.0) > [May 1, 2025]
 Snapshots are still a thing.
@@ -186,6 +204,8 @@ Snapshots are still a thing.
 - Finally fixed BG color delay.
 - Fixed some issues relating to the runtime modifier changes last prerelease.
 - Fixed object duplicating moving it to where the audio time is if the objects' start time is 0.
+
+------------------------------------------------------------------------------------------
 
 # 1.7.0-pre.2 > [Apr 29, 2025]
 
