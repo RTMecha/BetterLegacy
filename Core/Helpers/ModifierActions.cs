@@ -90,6 +90,45 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Current.eventEngine.pitchOffset += RTMath.Parse(modifier.GetValue(0, variables), numberVariables);
         }
 
+        public static void animatePitch<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var time = modifier.GetFloat(0, 0f, variables);
+            var pitch = modifier.GetFloat(1, 0f, variables);
+            var relative = modifier.GetBool(2, true, variables);
+
+            string easing = modifier.GetValue(3, variables);
+            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                easing = DataManager.inst.AnimationList[e].Name;
+
+            var setPitch = pitch;
+            if (relative)
+            {
+                if (modifier.constant)
+                    setPitch *= CoreHelper.TimeFrame;
+
+                setPitch += AudioManager.inst.CurrentAudioSource.pitch;
+            }
+
+            if (!modifier.constant)
+            {
+                var animation = new RTAnimation("Animate Object Offset");
+
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
+                        new FloatKeyframe(Mathf.Clamp(time, 0f, 9999f), setPitch, Ease.GetEaseFunction(easing, Ease.Linear)),
+                    }, x => RTLevel.Current.eventEngine.pitchOffset = x, interpolateOnComplete: true),
+                };
+                animation.SetDefaultOnComplete(false);
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            RTLevel.Current.eventEngine.pitchOffset = setPitch;
+        }
+
         public static void setMusicTime<T>(Modifier<T> modifier, Dictionary<string, string> variables) => AudioManager.inst.SetMusicTime(modifier.GetFloat(0, 0f, variables));
 
         public static void setMusicTimeMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -1885,6 +1924,16 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerSpeed<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f, variables);
 
+        public static void playerVelocity(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+
+        }
+        
+        public static void playerVelocityIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+
+        }
+        
         public static void playerVelocityAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var x = modifier.GetFloat(1, 0f, variables);
@@ -1897,7 +1946,17 @@ namespace BetterLegacy.Core.Helpers
                     player.Player.rb.velocity = new Vector2(x, y);
             }
         }
-        
+
+        public static void playerVelocityX(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+
+        }
+
+        public static void playerVelocityXIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+
+        }
+
         public static void playerVelocityXAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var x = modifier.GetFloat(0, 0f, variables);
@@ -1913,7 +1972,17 @@ namespace BetterLegacy.Core.Helpers
                 player.Player.rb.velocity = velocity;
             }
         }
-        
+
+        public static void playerVelocityY(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+
+        }
+
+        public static void playerVelocityYIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+
+        }
+
         public static void playerVelocityYAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var y = modifier.GetFloat(0, 0f, variables);
@@ -2257,6 +2326,9 @@ namespace BetterLegacy.Core.Helpers
         public static void getColorSlotHexCode<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var color = ThemeManager.inst.Current.GetObjColor(modifier.GetInt(1, 0, variables));
+            color = LSColors.fadeColor(color, modifier.GetFloat(2, 1f, variables));
+            color = RTColors.ChangeColorHSV(color, modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables), modifier.GetFloat(5, 0f, variables));
+
             variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(color);
         }
 
@@ -3056,10 +3128,10 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), modifier.GetFloat(0, 1f, variables));
         }
         
-        public static void eventOffsetVariable(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void eventOffsetVariable<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null)
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.reference.integerVariable * modifier.GetFloat(0, 1f));
+            if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && modifier.reference is IModifiers<T> modifiers)
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifiers.IntVariable * modifier.GetFloat(0, 1f));
         }
         
         public static void eventOffsetMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -3623,6 +3695,183 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
+        public static void animateColorKF<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not ILifetime<AutoKillType> lifetime)
+                return;
+
+            Sequence<Color> sequence1;
+            Sequence<Color> sequence2;
+
+            var audioTime = modifier.GetFloat(0, 0f, variables);
+            var colorSource = modifier.GetInt(1, 0, variables);
+
+            if (modifier.TryGetResult(out KeyValuePair<Sequence<Color>, Sequence<Color>> sequences))
+            {
+                sequence1 = sequences.Key;
+                sequence2 = sequences.Value;
+            }
+            else
+            {
+                // custom start colors
+                var colorSlot1Start = modifier.GetInt(2, 0, variables);
+                var opacity1Start = modifier.GetFloat(3, 1f, variables);
+                var hue1Start = modifier.GetFloat(4, 0f, variables);
+                var saturation1Start = modifier.GetFloat(5, 0f, variables);
+                var value1Start = modifier.GetFloat(6, 0f, variables);
+                var colorSlot2Start = modifier.GetInt(7, 0, variables);
+                var opacity2Start = modifier.GetFloat(8, 1f, variables);
+                var hue2Start = modifier.GetFloat(9, 0f, variables);
+                var saturation2Start = modifier.GetFloat(10, 0f, variables);
+                var value2Start = modifier.GetFloat(11, 0f, variables);
+
+                var currentTime = 0f;
+
+                var keyframes1 = new List<IKeyframe<Color>>();
+                keyframes1.Add(new CustomThemeKeyframe(currentTime, colorSource, colorSlot1Start, opacity1Start, hue1Start, saturation1Start, value1Start, Ease.Linear, false));
+                var keyframes2 = new List<IKeyframe<Color>>();
+                keyframes2.Add(new CustomThemeKeyframe(currentTime, colorSource, colorSlot2Start, opacity2Start, hue2Start, saturation2Start, value2Start, Ease.Linear, false));
+                for (int i = 12; i < modifier.commands.Count; i += 14)
+                {
+                    var time = modifier.GetFloat(i + 1, 0f, variables);
+                    if (time < currentTime)
+                        continue;
+
+                    var colorSlot1 = modifier.GetInt(i + 2, 0, variables);
+                    var opacity1 = modifier.GetFloat(i + 3, 1f, variables);
+                    var hue1 = modifier.GetFloat(i + 4, 0f, variables);
+                    var saturation1 = modifier.GetFloat(i + 5, 0f, variables);
+                    var value1 = modifier.GetFloat(i + 6, 0f, variables);
+                    var colorSlot2 = modifier.GetInt(i + 7, 0, variables);
+                    var opacity2 = modifier.GetFloat(i + 8, 1f, variables);
+                    var hue2 = modifier.GetFloat(i + 9, 0f, variables);
+                    var saturation2 = modifier.GetFloat(i + 10, 0f, variables);
+                    var value2 = modifier.GetFloat(i + 11, 0f, variables);
+                    var relative = modifier.GetBool(i + 12, true, variables);
+
+                    var easing = modifier.GetValue(i + 13, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var ease = Ease.GetEaseFunction(easing, Ease.Linear);
+                    keyframes1.Add(new CustomThemeKeyframe(currentTime + time, colorSource, colorSlot1, opacity1, hue1, saturation1, value1, ease, false));
+                    keyframes2.Add(new CustomThemeKeyframe(currentTime + time, colorSource, colorSlot2, opacity2, hue2, saturation2, value2, ease, false));
+
+                    currentTime = time;
+                }
+
+                sequence1 = new Sequence<Color>(keyframes1);
+                sequence2 = new Sequence<Color>(keyframes2);
+
+                modifier.Result = new KeyValuePair<Sequence<Color>, Sequence<Color>>(sequence1, sequence2);
+            }
+
+            var beatmapObject = modifier.reference as BeatmapObject;
+            var backgroundObject = modifier.reference as BackgroundObject;
+
+            var startTime = lifetime.StartTime;
+
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var primaryColor = Color.white;
+                var secondaryColor = Color.white;
+
+                primaryColor = sequence1.Interpolate(audioTime - startTime);
+                secondaryColor = sequence2.Interpolate(audioTime - startTime);
+
+                if (beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
+                {
+                    if (solidObject.isGradient)
+                        solidObject.SetColor(primaryColor, secondaryColor);
+                    else
+                        solidObject.SetColor(primaryColor);
+                }
+
+                if (backgroundObject && backgroundObject.runtimeObject)
+                    backgroundObject.runtimeObject.SetColor(primaryColor, secondaryColor);
+            });
+        }
+
+        public static void animateColorKFHex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not ILifetime<AutoKillType> lifetime)
+                return;
+
+            Sequence<Color> sequence1;
+            Sequence<Color> sequence2;
+
+            var audioTime = modifier.GetFloat(0, 0f, variables);
+
+            if (modifier.TryGetResult(out KeyValuePair<Sequence<Color>, Sequence<Color>> sequences))
+            {
+                sequence1 = sequences.Key;
+                sequence2 = sequences.Value;
+            }
+            else
+            {
+                // custom start colors
+                var color1Start = modifier.GetValue(1, variables);
+                var color2Start = modifier.GetValue(2, variables);
+
+                var currentTime = 0f;
+
+                var keyframes1 = new List<IKeyframe<Color>>();
+                keyframes1.Add(new ColorKeyframe(currentTime, RTColors.HexToColor(color1Start), Ease.Linear));
+                var keyframes2 = new List<IKeyframe<Color>>();
+                keyframes2.Add(new ColorKeyframe(currentTime, RTColors.HexToColor(color2Start), Ease.Linear));
+                for (int i = 3; i < modifier.commands.Count; i += 6)
+                {
+                    var time = modifier.GetFloat(i + 1, 0f, variables);
+                    if (time < currentTime)
+                        continue;
+
+                    var color1 = modifier.GetValue(i + 2, variables);
+                    var color2 = modifier.GetValue(i + 3, variables);
+                    var relative = modifier.GetBool(i + 4, true, variables);
+
+                    var easing = modifier.GetValue(i + 5, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var ease = Ease.GetEaseFunction(easing, Ease.Linear);
+                    keyframes1.Add(new ColorKeyframe(currentTime + time, RTColors.HexToColor(color1), ease));
+                    keyframes2.Add(new ColorKeyframe(currentTime + time, RTColors.HexToColor(color2), ease));
+
+                    currentTime = time;
+                }
+
+                sequence1 = new Sequence<Color>(keyframes1);
+                sequence2 = new Sequence<Color>(keyframes2);
+
+                modifier.Result = new KeyValuePair<Sequence<Color>, Sequence<Color>>(sequence1, sequence2);
+            }
+
+            var beatmapObject = modifier.reference as BeatmapObject;
+            var backgroundObject = modifier.reference as BackgroundObject;
+
+            var startTime = lifetime.StartTime;
+
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var primaryColor = Color.white;
+                var secondaryColor = Color.white;
+
+                primaryColor = sequence1.Interpolate(audioTime - startTime);
+                primaryColor = sequence2.Interpolate(audioTime - startTime);
+
+                if (beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
+                {
+                    if (solidObject.isGradient)
+                        solidObject.SetColor(primaryColor, secondaryColor);
+                    else
+                        solidObject.SetColor(primaryColor);
+                }
+
+                if (backgroundObject && backgroundObject.runtimeObject)
+                    backgroundObject.runtimeObject.SetColor(primaryColor, secondaryColor);
+            });
+        }
+
         #endregion
 
         #region Shape
@@ -4088,7 +4337,73 @@ namespace BetterLegacy.Core.Helpers
                 bm.SetTransform(type, setVector);
             }
         }
-        
+
+        // tests modifier keyframing
+        // todo: see if i can get homing to work via adding a keyframe depending on audio time
+        public static void animateObjectKF<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference is not ITransformable transformable || modifier.reference is not ILifetime<AutoKillType> lifetime)
+                return;
+
+            var audioTime = modifier.GetFloat(0, 0f, variables);
+            var type = modifier.GetInt(1, 0, variables);
+
+            Sequence<Vector3> sequence;
+
+            if (modifier.HasResult())
+                sequence = modifier.GetResult<Sequence<Vector3>>();
+            else
+            {
+                // get starting position.
+                var vector = transformable.GetTransformOffset(type);
+
+                // a custom start position can be registered if you want.
+                var xStart = modifier.GetValue(2, variables);
+                var yStart = modifier.GetValue(3, variables);
+                var zStart = modifier.GetValue(4, variables);
+                if (float.TryParse(xStart, out float xS))
+                    vector.x = xS;
+                if (float.TryParse(yStart, out float yS))
+                    vector.y = yS;
+                if (float.TryParse(zStart, out float zS))
+                    vector.z = zS;
+
+                var currentTime = 0f;
+
+                var keyframes = new List<IKeyframe<Vector3>>();
+                keyframes.Add(new Vector3Keyframe(currentTime, vector, Ease.Linear));
+                for (int i = 5; i < modifier.commands.Count; i += 6)
+                {
+                    var time = modifier.GetFloat(i, 0f, variables);
+                    if (time < currentTime)
+                        continue;
+
+                    var x = modifier.GetFloat(i + 1, 0f, variables);
+                    var y = modifier.GetFloat(i + 2, 0f, variables);
+                    var z = modifier.GetFloat(i + 3, 0f, variables);
+                    var relative = modifier.GetBool(i + 4, true, variables);
+
+                    var easing = modifier.GetValue(i + 5, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var setVector = new Vector3(x, y, z);
+                    if (relative)
+                        setVector += vector;
+
+                    keyframes.Add(new Vector3Keyframe(currentTime + time, setVector, Ease.GetEaseFunction(easing, Ease.Linear)));
+
+                    vector = setVector;
+                    currentTime = time;
+                }
+
+                sequence = new Sequence<Vector3>(keyframes);
+            }
+
+            if (sequence != null)
+                transformable.SetTransform(type, sequence.Interpolate(audioTime - lifetime.StartTime));
+        }
+
         public static void animateSignal<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             if (modifier.reference is not IPrefabable prefabable || modifier.reference is not ITransformable transformable)
