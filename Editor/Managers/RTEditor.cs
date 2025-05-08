@@ -650,7 +650,7 @@ namespace BetterLegacy.Editor.Managers
             TextEditor.Init();
             KeybindEditor.Init();
             PlayerEditor.Init();
-            ObjectModifiersEditor.Init();
+            ModifiersEditor.Init();
             LevelCombiner.Init();
             ProjectPlanner.Init();
             UploadedLevelsManager.Init();

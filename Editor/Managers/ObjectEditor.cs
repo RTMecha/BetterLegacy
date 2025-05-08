@@ -3355,8 +3355,8 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"Error {ex}");
             }
 
-            if (ObjectModifiersEditor.inst)
-                StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
+            if (ModifiersEditor.inst)
+                StartCoroutine(ModifiersEditor.inst.RenderModifiers(beatmapObject));
         }
 
         /// <summary>
@@ -4437,7 +4437,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == formatText, out Modifier<BeatmapObject> formatTextModifier))
                                     {
                                         beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(formatTextModifier, beatmapObject));
-                                        StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
+                                        StartCoroutine(ModifiersEditor.inst.RenderModifiers(beatmapObject));
                                     }
                                 }),
                                 new ButtonFunction(true),

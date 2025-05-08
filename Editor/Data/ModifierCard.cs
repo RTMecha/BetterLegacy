@@ -11,9 +11,9 @@ using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Editor.Data
 {
-    public class ModifierCard<T> : Exists
+    public class ModifierCard : Exists
     {
-        public ModifierCard(GameObject gameObject, Modifier<T> modifier, int index)
+        public ModifierCard(GameObject gameObject, ModifierBase modifier, int index)
         {
             GameObject = gameObject;
             Modifier = modifier;
@@ -22,7 +22,7 @@ namespace BetterLegacy.Editor.Data
 
         public GameObject GameObject { get; set; }
 
-        public Modifier<T> Modifier { get; set; }
+        public ModifierBase Modifier { get; set; }
 
         public int index;
     }
