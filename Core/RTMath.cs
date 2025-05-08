@@ -120,6 +120,9 @@ namespace BetterLegacy.Core
                     context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
                     context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
 
+                    if (Arcade.Managers.RTGameManager.inst && Arcade.Managers.RTGameManager.inst.ActiveCheckpoint)
+                        context.RegisterVariable("activeCheckpointTime", Arcade.Managers.RTGameManager.inst.ActiveCheckpoint.time);
+
                     var players = PlayerManager.Players;
                     context.RegisterVariable("playerHealthTotal", players.IsEmpty() ? 0 : players.Sum(x => x.Health));
                     context.RegisterVariable("playerCount", players.Count);
