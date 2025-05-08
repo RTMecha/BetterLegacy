@@ -1284,7 +1284,8 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var axis = modifier.value.Split(',');
                             modifier.SetValue(0, axis[0]);
-                            modifier.commands.Insert(1, axis[0]);
+                            modifier.commands.RemoveAt(modifier.commands.Count - 1);
+                            modifier.commands.Insert(1, axis[1]);
                         }
 
                         SingleGenerator(modifier, layout, "X", 0, 0f);
@@ -1319,7 +1320,8 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var axis = modifier.value.Split(',');
                             modifier.SetValue(0, axis[0]);
-                            modifier.commands.Insert(1, axis[0]);
+                            modifier.commands.RemoveAt(modifier.commands.Count - 1);
+                            modifier.commands.Insert(1, axis[1]);
                         }
 
                         SingleGenerator(modifier, layout, "X", 0, 0f);
@@ -3433,7 +3435,7 @@ namespace BetterLegacy.Editor.Managers
                         if (!isMulti)
                             BoolGenerator(modifier, layout, "Permanent", 9, false);
 
-                        SingleGenerator(modifier, layout, "Time Offset", valueIndex, 0f);
+                        SingleGenerator(modifier, layout, "Time", valueIndex, 0f);
                         BoolGenerator(modifier, layout, "Time Relative", valueIndex + 1, true);
 
                         break;
@@ -3540,6 +3542,83 @@ namespace BetterLegacy.Editor.Managers
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         BoolGenerator(modifier, layout, "On", 0, false);
+                        break;
+                    }
+
+                #endregion
+
+                #region Checkpoints
+                    
+                case nameof(ModifierActions.createCheckpoint): {
+                        SingleGenerator(modifier, layout, "Time", 0);
+                        BoolGenerator(modifier, layout, "Time Relative", 1);
+
+                        SingleGenerator(modifier, layout, "Pos X", 2);
+                        SingleGenerator(modifier, layout, "Pos Y", 3);
+
+                        BoolGenerator(modifier, layout, "Heal", 4);
+                        BoolGenerator(modifier, layout, "Respawn", 5, true);
+                        BoolGenerator(modifier, layout, "Reverse On Death", 6, true);
+                        BoolGenerator(modifier, layout, "Set Time On Death", 7, true);
+                        DropdownGenerator(modifier, layout, "Spawn Position Type", 8, CoreHelper.ToOptionData<Checkpoint.SpawnPositionType>());
+
+                        int a = 0;
+                        for (int i = 9; i < modifier.commands.Count; i += 2)
+                        {
+                            int groupIndex = i;
+                            var label = stringInput.Duplicate(layout, "group label");
+                            label.transform.localScale = Vector3.one;
+                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
+                            groupLabel.text = $"Position {a + 1}";
+                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
+                            Destroy(label.transform.Find("Input").gameObject);
+
+                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
+                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
+                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+                            deleteGroupButton.button.onClick.NewListener(() =>
+                            {
+                                modifier.commands.RemoveAt(groupIndex);
+                                modifier.commands.RemoveAt(groupIndex);
+
+                                RTLevel.Current?.UpdateObject(beatmapObject);
+                                var value = scrollbar ? scrollbar.value : 0f;
+                                RenderModifier(modifier, modifierCard.index);
+                                CoroutineHelper.PerformAtNextFrame(() =>
+                                {
+                                    if (scrollbar)
+                                        scrollbar.value = value;
+                                });
+                            });
+
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
+
+                            SingleGenerator(modifier, layout, "Pos X", i);
+                            SingleGenerator(modifier, layout, "Pos Y", i + 1);
+
+                            a++;
+                        }
+
+                        AddGenerator(modifier, layout, "Add Position Value", () =>
+                        {
+                            modifier.commands.Add("0");
+                            modifier.commands.Add("0");
+
+                            RTLevel.Current?.UpdateObject(beatmapObject);
+                            var value = scrollbar ? scrollbar.value : 0f;
+                            RenderModifier(modifier, modifierCard.index);
+                            CoroutineHelper.PerformAtNextFrame(() =>
+                            {
+                                if (scrollbar)
+                                    scrollbar.value = value;
+                            });
+                        });
+
+                        break;
+                    }
+                case nameof(ModifierActions.resetCheckpoint): {
+                        BoolGenerator(modifier, layout, "Reset to Previous", 0);
                         break;
                     }
 

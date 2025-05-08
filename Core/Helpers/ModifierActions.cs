@@ -996,13 +996,16 @@ namespace BetterLegacy.Core.Helpers
                 Vector2 vector;
                 if (value.Contains(','))
                 {
-                    var axis = value.Split(',');
+                    var axis = modifier.value.Split(',');
+                    modifier.SetValue(0, axis[0]);
+                    modifier.commands.RemoveAt(modifier.commands.Count - 1);
+                    modifier.commands.Insert(1, axis[1]);
                     vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
                 }
                 else
-                    vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(4, 0f, variables));
+                    vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(1, 0f, variables));
 
-                bool relative = modifier.GetBool(3, false, variables);
+                bool relative = modifier.GetBool(4, false, variables);
                 if (!player)
                     return;
 
@@ -1011,7 +1014,7 @@ namespace BetterLegacy.Core.Helpers
                     tf.localPosition = vector;
                 else
                 {
-                    string easing = modifier.GetValue(2, variables);
+                    string easing = modifier.GetValue(3, variables);
                     if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                         easing = DataManager.inst.AnimationList[e].Name;
 
@@ -1021,7 +1024,7 @@ namespace BetterLegacy.Core.Helpers
                         new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
                             new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
-                            new Vector2Keyframe(modifier.GetFloat(1, 1f, variables), new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.localPosition.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
+                            new Vector2Keyframe(modifier.GetFloat(2, 1f, variables), new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.localPosition.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
                     };
                     animation.SetDefaultOnComplete(false);
@@ -1070,7 +1073,10 @@ namespace BetterLegacy.Core.Helpers
             Vector2 vector;
             if (value.Contains(','))
             {
-                var axis = value.Split(',');
+                var axis = modifier.value.Split(',');
+                modifier.SetValue(0, axis[0]);
+                modifier.commands.RemoveAt(modifier.commands.Count - 1);
+                modifier.commands.Insert(1, axis[1]);
                 vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
             }
             else
@@ -5694,6 +5700,36 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
+        #region Checkpoints
+
+        public static void createCheckpoint<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            // if active checpoints matches the stored checkpoint, do not create a new checkpoint.
+            if (modifier.TryGetResult(out Checkpoint prevCheckpoint) && prevCheckpoint.id == RTGameManager.inst.ActiveCheckpoint.id)
+                return;
+
+            var checkpoint = new Checkpoint();
+            checkpoint.time = modifier.GetBool(1, true, variables) ? RTLevel.Current.FixedTime + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
+            checkpoint.pos = new Vector2(modifier.GetFloat(2, 0f, variables), modifier.GetFloat(3, 0f, variables));
+            checkpoint.heal = modifier.GetBool(4, false, variables);
+            checkpoint.respawn = modifier.GetBool(5, true, variables);
+            checkpoint.reverse = modifier.GetBool(6, true, variables);
+            checkpoint.setTime = modifier.GetBool(7, true, variables);
+            checkpoint.spawnType = (Checkpoint.SpawnPositionType)modifier.GetInt(8, 0, variables);
+            for (int i = 9; i < modifier.commands.Count; i += 2)
+                checkpoint.positions.Add(new Vector2(modifier.GetFloat(i, 0f, variables), modifier.GetFloat(i + 1, 0f, variables)));
+
+            RTGameManager.inst.SetCheckpoint(checkpoint);
+            modifier.Result = checkpoint;
+        }
+
+        public static void resetCheckpoint<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            RTGameManager.inst.ResetCheckpoint(modifier.GetBool(0, false, variables));
+        }
+
+        #endregion
+
         #region Interfaces
 
         public static void loadInterface<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -5813,10 +5849,11 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var delay = modifier.GetFloat(0, 0f, variables);
 
             foreach (var bm in list)
-                CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
+                CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
         }
         
         public static void activateModifier<T>(Modifier<T> modifier, Dictionary<string, string> variables)
