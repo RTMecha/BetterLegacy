@@ -10,14 +10,9 @@ namespace BetterLegacy.Core.Data
     /// Base object used for PA Objects.
     /// </summary>
     /// <typeparam name="T">Type of the PA Object.</typeparam>
-    public abstract class PAObject<T> : Exists where T : PAObject<T>, new()
+    public abstract class PAObject<T> : PAObjectID where T : PAObject<T>, new()
     {
-        public PAObject() => id = LSText.randomString(16);
-
-        /// <summary>
-        /// Identification of the object.
-        /// </summary>
-        public string id;
+        public PAObject() : base() { }
 
         /// <summary>
         /// Copies data from another <typeparamref name="T"/>.
@@ -84,23 +79,5 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         /// <returns>Returns a JSONNode.</returns>
         public virtual JSONNode ToJSON() => Parser.NewJSONObject();
-
-        /// <summary>
-        /// Creates a 16 length string ID.
-        /// </summary>
-        /// <returns>Returns a string ID of 16 length.</returns>
-        public static string GetStringID() => LSText.randomString(16);
-
-        /// <summary>
-        /// Creates a 16 length number ID.
-        /// </summary>
-        /// <returns>Returns a number ID of 16 length.</returns>
-        public static string GetNumberID() => LSText.randomNumString(16);
-
-        /// <summary>
-        /// Creates a 8 length number ID.
-        /// </summary>
-        /// <returns>Returns a number ID of 8 length.</returns>
-        public static string GetShortNumberID() => LSText.randomNumString(8);
     }
 }
