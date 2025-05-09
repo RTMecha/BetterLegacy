@@ -117,7 +117,16 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case ModifierReferenceType.CustomPlayer: {
-                        AssignModifierAction(modifier as Modifier<CustomPlayer>, PlayerAction, PlayerTrigger, PlayerInactive);
+                        var playerModifier = modifier as Modifier<CustomPlayer>;
+
+                        var name = modifier.Name;
+                        if (playerModifier.type == ModifierBase.Type.Action)
+                            playerModifier.Action = GetPlayerAction(name);
+                        if (playerModifier.type == ModifierBase.Type.Trigger)
+                            playerModifier.Trigger = GetPlayerTrigger(name);
+
+                        playerModifier.Inactive = PlayerInactive;
+
                         break;
                     }
                 case ModifierReferenceType.GameData: {
@@ -2502,258 +2511,50 @@ namespace BetterLegacy.Core.Helpers
 
         #region Player
 
-        /// <summary>
-        /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="CustomPlayer"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run.</param>
-        /// <returns>Returns true if the modifier was triggered, otherwise returns false.</returns>
-        public static bool PlayerTrigger(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables = null)
+        public static Func<Modifier<CustomPlayer>, Dictionary<string, string>, bool> GetPlayerTrigger(string key) => key switch
         {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(null);
-            }
-            
-            if (modifier.commands.IsEmpty() || !modifier.reference)
-                return false;
+            "keyPressDown" => ModifierTriggers.PlayerTriggers.keyPressDown,
+            "keyPress" => ModifierTriggers.PlayerTriggers.keyPress,
+            "keyPressUp" => ModifierTriggers.PlayerTriggers.keyPressUp,
+            "mouseButtonDown" => ModifierTriggers.PlayerTriggers.mouseButtonDown,
+            "mouseButton" => ModifierTriggers.PlayerTriggers.mouseButton,
+            "mouseButtonUp" => ModifierTriggers.PlayerTriggers.mouseButtonUp,
+            "controlPressDown" => ModifierTriggers.PlayerTriggers.controlPressDown,
+            "controlPress" => ModifierTriggers.PlayerTriggers.controlPress,
+            "controlPressUp" => ModifierTriggers.PlayerTriggers.controlPressUp,
+            "healthEquals" => ModifierTriggers.PlayerTriggers.healthEquals,
+            "healthGreaterEquals" => ModifierTriggers.PlayerTriggers.healthGreaterEquals,
+            "healthLesserEquals" => ModifierTriggers.PlayerTriggers.healthLesserEquals,
+            "healthGreater" => ModifierTriggers.PlayerTriggers.healthGreater,
+            "healthLesser" => ModifierTriggers.PlayerTriggers.healthLesser,
+            "healthPerEquals" => ModifierTriggers.PlayerTriggers.healthPerEquals,
+            "healthPerGreaterEquals" => ModifierTriggers.PlayerTriggers.healthPerGreaterEquals,
+            "healthPerLesserEquals" => ModifierTriggers.PlayerTriggers.healthPerLesserEquals,
+            "healthPerGreater" => ModifierTriggers.PlayerTriggers.healthPerGreater,
+            "healthPerLesser" => ModifierTriggers.PlayerTriggers.healthPerLesser,
+            "isDead" => ModifierTriggers.PlayerTriggers.isDead,
+            "isBoosting" => ModifierTriggers.PlayerTriggers.isBoosting,
+            "isColliding" => ModifierTriggers.PlayerTriggers.isColliding,
+            "isSolidColliding" => ModifierTriggers.PlayerTriggers.isSolidColliding,
+            _ => (modifier, variables) => false,
+        };
 
-            modifier.hasChanged = false;
-
-            switch (modifier.Name)
-            {
-                case "keyPressDown": {
-                        return int.TryParse(modifier.value, out int num) && Input.GetKeyDown((KeyCode)num);
-                    }
-                case "keyPress": {
-                        return int.TryParse(modifier.value, out int num) && Input.GetKey((KeyCode)num);
-                    }
-                case "keyPressUp": {
-                        return int.TryParse(modifier.value, out int num) && Input.GetKeyUp((KeyCode)num);
-                    }
-                case "mouseButtonDown": {
-                        return int.TryParse(modifier.value, out int num) && Input.GetMouseButtonDown(num);
-                    }
-                case "mouseButton": {
-                        return int.TryParse(modifier.value, out int num) && Input.GetMouseButton(num);
-                    }
-                case "mouseButtonUp": {
-                        return int.TryParse(modifier.value, out int num) && Input.GetMouseButtonUp(num);
-                    }
-                case "controlPressDown": {
-                        var type = modifier.GetInt(0, 0);
-                        var device = modifier.reference.device;
-
-                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
-                    }
-                case "controlPress": {
-                        var type = modifier.GetInt(0, 0);
-                        var device = modifier.reference.device;
-
-                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
-                    }
-                case "controlPressUp": {
-                        var type = modifier.GetInt(0, 0);
-                        var device = modifier.reference.device;
-
-                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
-                    }
-                case "healthEquals": {
-                        return modifier.reference.Health == modifier.GetInt(0, 3);
-                    }
-                case "healthGreaterEquals": {
-                        return modifier.reference.Health >= modifier.GetInt(0, 3);
-                    }
-                case "healthLesserEquals": {
-                        return modifier.reference.Health <= modifier.GetInt(0, 3);
-                    }
-                case "healthGreater": {
-                        return modifier.reference.Health > modifier.GetInt(0, 3);
-                    }
-                case "healthLesser": {
-                        return modifier.reference.Health < modifier.GetInt(0, 3);
-                    }
-                case "healthPerEquals": {
-                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
-
-                        return health == Parser.TryParse(modifier.value, 50f);
-                    }
-                case "healthPerGreaterEquals": {
-                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
-
-                        return health >= Parser.TryParse(modifier.value, 50f);
-                    }
-                case "healthPerLesserEquals": {
-                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
-
-                        return health <= Parser.TryParse(modifier.value, 50f);
-                    }
-                case "healthPerGreater": {
-                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
-
-                        return health > Parser.TryParse(modifier.value, 50f);
-                    }
-                case "healthPerLesser": {
-                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
-
-                        return health < Parser.TryParse(modifier.value, 50f);
-                    }
-                case "isDead": {
-                        return modifier.reference.Player && modifier.reference.Player.isDead;
-                    }
-                case "isBoosting": {
-                        return modifier.reference.Player && modifier.reference.Player.isBoosting;
-                    }
-                case "isColliding": {
-                        return modifier.reference.Player && modifier.reference.Player.triggerColliding;
-                    }
-                case "isSolidColliding": {
-                        return modifier.reference.Player && modifier.reference.Player.colliding;
-                    }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// The function to run when a <see cref="ModifierBase.Type.Action"/> modifier is running and has a reference of <see cref="CustomPlayer"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run.</param>
-        public static void PlayerAction(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables = null)
+        public static Action<Modifier<CustomPlayer>, Dictionary<string, string>> GetPlayerAction(string key) => key switch
         {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
-            }
-
-            if (modifier.commands.IsEmpty() || !modifier.reference)
-                return;
-
-            modifier.hasChanged = false;
-
-            switch (modifier.Name)
-            {
-                case "setCustomActive": {
-                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.CustomObject customObject))
-                            customObject.active = Parser.TryParse(modifier.value, false);
-
-                        break;
-                    }
-                case "kill": {
-                        modifier.reference.Health = 0;
-                        break;
-                    }
-                case "hit": {
-                        if (modifier.reference.Player)
-                            modifier.reference.Player.Hit();
-                        break;
-                    }
-                case "boost": {
-                        if (modifier.reference.Player)
-                            modifier.reference.Player.Boost();
-                        break;
-                    }
-                case "shoot": {
-                        if (modifier.reference.Player)
-                            modifier.reference.Player.Shoot();
-                        break;
-                    }
-                case "pulse": {
-                        if (modifier.reference.Player)
-                            modifier.reference.Player.Pulse();
-                        break;
-                    }
-                case "jump": {
-                        if (modifier.reference.Player)
-                            modifier.reference.Player.Jump();
-                        break;
-                    }
-                case "signalModifier": {
-                        var list = GameData.Current.FindObjectsWithTag(modifier.GetValue(1));
-
-                        foreach (var bm in list)
-                            CoroutineHelper.StartCoroutine(ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
-
-                        break;
-                    }
-                case "playAnimation": {
-                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(0), out RTPlayer.CustomObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == modifier.GetValue(1), out PAAnimation animation))
-                        {
-                            var runtimeAnimation = new RTAnimation("Custom Animation");
-                            modifier.reference.Player.ApplyAnimation(runtimeAnimation, animation, customObject);
-                            modifier.reference.Player.animationController.Play(runtimeAnimation);
-                        }
-
-                        break;
-                    }
-                case "setIdleAnimation": {
-                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(0), out RTPlayer.CustomObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == modifier.GetValue(1), out PAAnimation animation))
-                            customObject.currentIdleAnimation = animation.ReferenceID;
-
-                        break;
-                    }
-                case "playDefaultSound": {
-                        if (!float.TryParse(modifier.commands[1], out float pitch) || !float.TryParse(modifier.commands[2], out float vol) || !bool.TryParse(modifier.commands[3], out bool loop) || !AudioManager.inst.library.soundClips.TryGetValue(modifier.value, out AudioClip[] audioClips))
-                            break;
-
-                        var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
-                        var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-                        audioSource.clip = clip;
-                        audioSource.playOnAwake = true;
-                        audioSource.loop = loop;
-                        audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
-                        audioSource.volume = vol * AudioManager.inst.sfxVol;
-                        audioSource.Play();
-
-                        float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
-                        if (x == 0f)
-                            x = 1f;
-                        if (x < 0f)
-                            x = -x;
-
-                        CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
-
-                        break;
-                    }
-                case "animateObject": {
-                        if (int.TryParse(modifier.GetValue(1), out int type)
-                            && float.TryParse(modifier.GetValue(2), out float x) && float.TryParse(modifier.GetValue(3), out float y) && float.TryParse(modifier.GetValue(4), out float z)
-                            && bool.TryParse(modifier.GetValue(5), out bool relative) && float.TryParse(modifier.GetValue(0), out float time)
-                            && modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(7), out RTPlayer.CustomObject customObject))
-                        {
-                            string easing = modifier.GetValue(6);
-                            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                                easing = DataManager.inst.AnimationList[e].Name;
-
-                            Vector3 vector = customObject.GetTransformOffset(type);
-
-                            var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
-
-                            if (!modifier.constant)
-                            {
-                                var animation = new RTAnimation("Animate Object Offset");
-
-                                animation.animationHandlers = new List<AnimationHandlerBase>
-                                    {
-                                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
-                                        {
-                                            new Vector3Keyframe(0f, vector, Ease.Linear),
-                                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                                        }, vector3 => customObject.SetTransform(type, vector3), interpolateOnComplete: true),
-                                    };
-                                animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
-                                AnimationManager.inst.Play(animation);
-                                break;
-                            }
-
-                            customObject.SetTransform(type, setVector);
-                        }
-
-                        break;
-                    }
-            }
-        }
+            "setCustomActive" => ModifierActions.PlayerActions.setCustomActive,
+            "kill" => ModifierActions.PlayerActions.kill,
+            "hit" => ModifierActions.PlayerActions.hit,
+            "boost" => ModifierActions.PlayerActions.boost,
+            "shoot" => ModifierActions.PlayerActions.shoot,
+            "pulse" => ModifierActions.PlayerActions.pulse,
+            "jump" => ModifierActions.PlayerActions.jump,
+            "signalModifier" => ModifierActions.PlayerActions.signalModifier,
+            "playAnimation" => ModifierActions.PlayerActions.playAnimation,
+            "setIdleAnimation" => ModifierActions.PlayerActions.setIdleAnimation,
+            "playDefaultSound" => ModifierActions.playDefaultSound,
+            "animateObject" => ModifierActions.animateObject,
+            _ => (modifier, variables) => { },
+        };
 
         /// <summary>
         /// The function to run when a modifier is inactive and has a reference of <see cref="CustomPlayer"/>.

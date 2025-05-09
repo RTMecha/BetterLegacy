@@ -597,27 +597,27 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool variableEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifiers<T> modifyable && modifyable.IntVariable == modifier.GetInt(0, 0, variables);
+            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable == modifier.GetInt(0, 0, variables);
         }
 
         public static bool variableLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifiers<T> modifyable && modifyable.IntVariable <= modifier.GetInt(0, 0, variables);
+            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable <= modifier.GetInt(0, 0, variables);
         }
         
         public static bool variableGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifiers<T> modifyable && modifyable.IntVariable >= modifier.GetInt(0, 0, variables);
+            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable >= modifier.GetInt(0, 0, variables);
         }
         
         public static bool variableLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifiers<T> modifyable && modifyable.IntVariable < modifier.GetInt(0, 0, variables);
+            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable < modifier.GetInt(0, 0, variables);
         }
         
         public static bool variableGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifiers<T> modifyable && modifyable.IntVariable > modifier.GetInt(0, 0, variables);
+            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable > modifier.GetInt(0, 0, variables);
         }
         
         public static bool variableOtherEquals(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -1291,6 +1291,32 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
+        public static bool await<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.constant)
+            {
+                if (CoreHelper.InEditor)
+                    EditorManager.inst.DisplayNotification($"Constant has to be on in order for await modifiers to work!", 4f, EditorManager.NotificationType.Error);
+                return false;
+            }
+
+            var realTime = modifier.GetBool(1, true, variables);
+            float time;
+            if (realTime)
+            {
+                var hasResult = modifier.HasResult();
+                var timer = hasResult ? modifier.GetResult<RTTimer>() : new RTTimer();
+                if (!hasResult)
+                    timer.Reset();
+                timer.Update();
+                time = timer.time;
+            }
+            else
+                time = RTLevel.Current.FixedTime;
+
+            return time > modifier.GetFloat(0, 0f, variables);
+        }
+
         public static bool inEditor<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             return CoreHelper.InEditor;
@@ -1343,6 +1369,143 @@ namespace BetterLegacy.Core.Helpers
         #region Dev Only
 
         #endregion
+
+        public static class PlayerTriggers
+        {
+            public static bool keyPressDown(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, variables));
+            }
+
+            public static bool keyPress(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return Input.GetKey((KeyCode)modifier.GetInt(0, 0, variables));
+            }
+
+            public static bool keyPressUp(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, variables));
+            }
+
+            public static bool mouseButtonDown(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return Input.GetMouseButtonDown(modifier.GetInt(0, 0, variables));
+            }
+
+            public static bool mouseButton(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return Input.GetMouseButton(modifier.GetInt(0, 0, variables));
+            }
+
+            public static bool mouseButtonUp(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return Input.GetMouseButtonUp(modifier.GetInt(0, 0, variables));
+            }
+
+            public static bool controlPressDown(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var type = modifier.GetInt(0, 0, variables);
+                var device = modifier.reference.device;
+
+                return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
+            }
+
+            public static bool controlPress(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var type = modifier.GetInt(0, 0, variables);
+                var device = modifier.reference.device;
+
+                return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
+            }
+
+            public static bool controlPressUp(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var type = modifier.GetInt(0, 0, variables);
+                var device = modifier.reference.device;
+
+                return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
+            }
+
+            public static bool healthEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Health == modifier.GetInt(0, 3, variables);
+            }
+
+            public static bool healthGreaterEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Health >= modifier.GetInt(0, 3, variables);
+            }
+
+            public static bool healthLesserEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Health <= modifier.GetInt(0, 3, variables);
+            }
+
+            public static bool healthGreater(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Health > modifier.GetInt(0, 3, variables);
+            }
+
+            public static bool healthLesser(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Health < modifier.GetInt(0, 3, variables);
+            }
+
+            public static bool healthPerEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                return health == modifier.GetFloat(0, 50f, variables);
+            }
+
+            public static bool healthPerGreaterEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                return health >= modifier.GetFloat(0, 50f, variables);
+            }
+
+            public static bool healthPerLesserEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                return health <= modifier.GetFloat(0, 50f, variables);
+            }
+
+            public static bool healthPerGreater(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                return health > modifier.GetFloat(0, 50f, variables);
+            }
+
+            public static bool healthPerLesser(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                return health < modifier.GetFloat(0, 50f, variables);
+            }
+
+            public static bool isDead(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Player && modifier.reference.Player.isDead;
+            }
+
+            public static bool isBoosting(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Player && modifier.reference.Player.isBoosting;
+            }
+
+            public static bool isColliding(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Player && modifier.reference.Player.triggerColliding;
+            }
+
+            public static bool isSolidColliding(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            {
+                return modifier.reference.Player && modifier.reference.Player.colliding;
+            }
+        }
     }
 }
 
