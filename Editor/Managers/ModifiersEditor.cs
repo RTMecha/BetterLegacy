@@ -480,7 +480,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var copiedModifiers = GetCopiedModifiers(modifier.referenceType);
                 copiedModifiers.Clear();
-                copiedModifiers.Add(modifier.Copy());
+                copiedModifiers.Add(modifier.Copy(default));
 
                 PasteGenerator(modifyable);
                 EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
