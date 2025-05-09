@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifiers<BackgroundObject>
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifyable<BackgroundObject>
     {
         public BackgroundObject() : base() { }
 
@@ -306,7 +306,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             orderModifiers = orig.orderModifiers;
             modifiers.Clear();
             for (int i = 0; i < orig.modifiers.Count; i++)
-                modifiers.Add(Modifier<BackgroundObject>.DeepCopy(orig.modifiers[i], this));
+                modifiers.Add(orig.modifiers[i].Copy(this));
 
             editorData = ObjectEditorData.DeepCopy(orig.editorData);
         }

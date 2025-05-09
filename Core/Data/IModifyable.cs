@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Data
     /// Indicates an object can run modifiers.
     /// </summary>
     /// <typeparam name="T">Type of the object that can run modifiers.</typeparam>
-    public interface IModifiers<T>
+    public interface IModifyable<T>
     {
         /// <summary>
         /// The tags used to identify a group of objects or object properties.

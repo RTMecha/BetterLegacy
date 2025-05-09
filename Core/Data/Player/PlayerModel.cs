@@ -14,7 +14,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerModel : Exists, IModifiers<CustomPlayer>
+    public class PlayerModel : Exists, IModifyable<CustomPlayer>
     {
         public PlayerModel(bool setValues = true)
         {
@@ -260,7 +260,7 @@ namespace BetterLegacy.Core.Data.Player
                 playerModel.customObjects.Add(CustomObject.DeepCopy(playerModel, orig.customObjects[i], false));
 
             for (int i = 0; i < orig.modifiers.Count; i++)
-                playerModel.modifiers.Add(Modifier<CustomPlayer>.DeepCopy(orig.modifiers[i]));
+                playerModel.modifiers.Add(orig.modifiers[i].Copy(null));
 
             return playerModel;
         }

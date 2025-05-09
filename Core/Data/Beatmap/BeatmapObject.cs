@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifiers<BeatmapObject>
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifyable<BeatmapObject>
     {
         public BeatmapObject() : base() { }
 
@@ -562,7 +562,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < events.Count; i++)
                 events[i].AddRange(orig.events[i].Select(x => x.Copy()));
 
-            modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, this)).ToList() : new List<Modifier<BeatmapObject>>();
+            modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => x.Copy(this)).ToList() : new List<Modifier<BeatmapObject>>();
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
