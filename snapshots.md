@@ -8,6 +8,7 @@
 
 ### Editor
 - Selecting specific objects in the editor preview window can now be disabled, via either the Multi Object Editor or the Timeline Object context menu.
+- You can now copy & paste multiple modifiers.
 
 ## Changes
 ### Editor
