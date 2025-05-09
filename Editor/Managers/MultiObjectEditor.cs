@@ -1763,20 +1763,56 @@ namespace BetterLegacy.Editor.Managers
 
             // Paste Modifier
             {
-                var labels = GenerateLabels(parent, 32f, "Paste Modifier to Selected");
+                var labels = GenerateLabels(parent, 32f, "Paste Modifiers to Selected");
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Paste", () =>
                     {
-                        if (ModifiersEditor.copiedModifier == null)
+                        bool pasted = false;
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                         {
-                            EditorManager.inst.DisplayNotification("Copy a modifier first!", 1.5f, EditorManager.NotificationType.Warning);
-                            return;
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.BeatmapObject);
+                                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                                        {
+                                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                                        beatmapObject.modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<BeatmapObject>).Copy(beatmapObject)));
+
+                                        StartCoroutine(ModifiersEditor.inst.RenderModifiers(beatmapObject));
+                                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
+
+                                        pasted = true;
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.BackgroundObject);
+                                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                                        {
+                                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+
+                                        backgroundObject.modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<BackgroundObject>).Copy(backgroundObject)));
+
+                                        StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
+
+                                        pasted = true;
+                                        break;
+                                    }
+                            }
                         }
 
-                        foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
-                            beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(ModifiersEditor.copiedModifier, beatmapObject));
-
-                        EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        if (pasted)
+                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                     }));
 
                 EditorHelper.SetComplexity(labels, Complexity.Advanced);
@@ -1953,7 +1989,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
 
-                        bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, bm)));
+                        bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => x.Copy(true, bm)));
                     }, false, true);
                 })); // Modifiers
                 GenerateButton(syncLayout.transform, new ButtonFunction("IGN", eventData =>

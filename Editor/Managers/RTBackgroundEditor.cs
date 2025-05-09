@@ -1760,7 +1760,6 @@ namespace BetterLegacy.Editor.Managers
             dropdownBar = Dropdown();
         }
 
-        public static Modifier<BackgroundObject> copiedModifier;
         public IEnumerator RenderModifiers(BackgroundObject backgroundObject)
         {
             modifiersIgnoreToggle.onValueChanged.ClearAll();
@@ -1861,7 +1860,7 @@ namespace BetterLegacy.Editor.Managers
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.NewListener(() =>
                 {
-                    var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifier, backgroundObject);
+                    var modifier = defaultModifier.Copy(true, backgroundObject);
                     if (addIndex == -1)
                         backgroundObject.modifiers.Add(modifier);
                     else
