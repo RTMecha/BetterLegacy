@@ -3613,7 +3613,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Represents a custom object from the model.
         /// </summary>
-        public class CustomObject : PlayerObject
+        public class CustomObject : PlayerObject, ITransformable
         {
             public CustomObject() => isCustom = true;
 
@@ -3626,6 +3626,19 @@ namespace BetterLegacy.Core.Components.Player
             public Vector3 scaleOffset;
             public Vector3 rotationOffset;
 
+            public Vector3 PositionOffset { get => positionOffset; set => positionOffset = value; }
+            
+            public Vector3 ScaleOffset { get => scaleOffset; set => scaleOffset = value; }
+
+            public Vector3 RotationOffset { get => rotationOffset; set => rotationOffset = value; }
+
+            public void ResetOffsets()
+            {
+                positionOffset = Vector3.zero;
+                scaleOffset = Vector3.zero;
+                rotationOffset = Vector3.zero;
+            }
+
             public Vector3 GetTransformOffset(int type) => type switch
             {
                 0 => positionOffset,
@@ -3637,18 +3650,15 @@ namespace BetterLegacy.Core.Components.Player
             {
                 switch (toType)
                 {
-                    case 0:
-                        {
+                    case 0: {
                             positionOffset = value;
                             break;
                         }
-                    case 1:
-                        {
+                    case 1: {
                             scaleOffset = value;
                             break;
                         }
-                    case 2:
-                        {
+                    case 2: {
                             rotationOffset = value;
                             break;
                         }
@@ -3659,23 +3669,25 @@ namespace BetterLegacy.Core.Components.Player
             {
                 switch (toType)
                 {
-                    case 0:
-                        {
+                    case 0: {
                             positionOffset[toAxis] = value;
                             break;
                         }
-                    case 1:
-                        {
+                    case 1: {
                             scaleOffset[toAxis] = value;
                             break;
                         }
-                    case 2:
-                        {
+                    case 2: {
                             rotationOffset[toAxis] = value;
                             break;
                         }
                 }
             }
+            public Vector3 GetFullPosition() => gameObject.transform.position;
+
+            public Vector3 GetFullScale() => gameObject.transform.lossyScale;
+
+            public Vector3 GetFullRotation() => gameObject.transform.eulerAngles;
         }
 
         /// <summary>
