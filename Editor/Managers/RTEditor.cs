@@ -173,7 +173,7 @@ namespace BetterLegacy.Editor.Managers
                                     var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
                                     beatmapObject.objectType = BeatmapObject.ObjectType.Empty;
-                                    modifier = Modifier<BeatmapObject>.DeepCopy(modifier, beatmapObject);
+                                    modifier = modifier.Copy(true, beatmapObject);
                                     modifier.SetValue(0, jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1)));
                                     beatmapObject.modifiers.Add(modifier);
                                 });

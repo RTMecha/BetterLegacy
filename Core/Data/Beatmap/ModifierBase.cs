@@ -2,9 +2,9 @@
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class ModifierBase
+    public class ModifierBase : PAObject<ModifierBase>
     {
-        public ModifierBase() { }
+        public ModifierBase() => id = GetNumberID();
 
         /// <summary>
         /// Name of the modifier.
@@ -98,6 +98,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #endregion
 
         #region Methods
+
+        public override void CopyData(ModifierBase orig, bool newID = true)
+        {
+
+        }
 
         public T GetResult<T>() => (T)Result;
 

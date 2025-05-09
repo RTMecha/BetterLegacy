@@ -13,6 +13,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -253,7 +254,23 @@ namespace BetterLegacy.Editor.Managers
             #endregion
         }
 
-        public static Modifier<BeatmapObject> copiedModifier;
+        public List<ModifierBase> GetCopiedModifiers(ModifierReferenceType referenceType) => referenceType switch
+        {
+            ModifierReferenceType.BeatmapObject => copiedBeatmapObjectModifiers,
+            ModifierReferenceType.BackgroundObject => copiedBackgroundObjectModifiers,
+            ModifierReferenceType.CustomPlayer => copiedPlayerModifiers,
+            ModifierReferenceType.GameData => copiedLevelModifiers,
+            _ => null,
+        };
+
+        public List<ModifierBase> copiedBeatmapObjectModifiers = new List<ModifierBase>();
+
+        public List<ModifierBase> copiedBackgroundObjectModifiers = new List<ModifierBase>();
+
+        public List<ModifierBase> copiedPlayerModifiers = new List<ModifierBase>();
+
+        public List<ModifierBase> copiedLevelModifiers = new List<ModifierBase>();
+
         public IEnumerator RenderModifiers(BeatmapObject beatmapObject)
         {
             modifiersLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
@@ -386,7 +403,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderModifier<T>(Modifier<T> modifier, int index)
         {
-            if (modifier.reference is not IModifiers<T> modifyable)
+            if (modifier.reference is not IModifyable<T> modifyable)
                 return;
 
             var name = modifier.Name;
@@ -461,10 +478,9 @@ namespace BetterLegacy.Editor.Managers
             var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
             copy.button.onClick.NewListener(() =>
             {
-                if (modifier.reference is BeatmapObject beatmapObject)
-                    copiedModifier = Modifier<BeatmapObject>.DeepCopy(modifier as Modifier<BeatmapObject>, beatmapObject);
-                if (modifier.reference is BackgroundObject backgroundObject)
-                    RTBackgroundEditor.copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier as Modifier<BackgroundObject>, backgroundObject);
+                var copiedModifiers = GetCopiedModifiers(modifier.referenceType);
+                copiedModifiers.Clear();
+                copiedModifiers.Add(modifier.Copy());
 
                 PasteGenerator(modifyable);
                 EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
@@ -549,90 +565,111 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", () =>
                     {
-                        if (modifier.reference is BeatmapObject beatmapObject)
-                            copiedModifier = Modifier<BeatmapObject>.DeepCopy(modifier as Modifier<BeatmapObject>, beatmapObject);
-                        if (modifier.reference is BackgroundObject backgroundObject)
-                            RTBackgroundEditor.copiedModifier = Modifier<BackgroundObject>.DeepCopy(modifier as Modifier<BackgroundObject>, backgroundObject);
+                        var copiedModifiers = GetCopiedModifiers(modifier.referenceType);
+                        copiedModifiers.Clear();
+                        copiedModifiers.Add(modifier.Copy(default));
 
                         PasteGenerator(modifyable);
                         EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
                     }),
+                    new ButtonFunction("Copy All", () =>
+                    {
+                        var copiedModifiers = GetCopiedModifiers(modifier.referenceType);
+                        copiedModifiers.Clear();
+                        copiedModifiers.AddRange(modifyable.Modifiers.Select(x => x.Copy(default)));
+
+                        PasteGenerator(modifyable);
+                        EditorManager.inst.DisplayNotification("Copied Modifiers!", 1.5f, EditorManager.NotificationType.Success);
+                    }),
                     new ButtonFunction("Paste", () =>
                     {
-                        if (modifier.reference is BeatmapObject beatmapObject)
+                        var copiedModifiers = GetCopiedModifiers(modifier.referenceType);
+                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
                         {
-                            if (copiedModifier == null)
-                                return;
+                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                            return;
+                        }
 
-                            beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
+                        modifyable.Modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+
+                        if (modifyable is BeatmapObject beatmapObject)
+                        {
                             StartCoroutine(RenderModifiers(beatmapObject));
+                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
                         }
-                        if (modifier.reference is BackgroundObject backgroundObject)
+                        if (modifyable is BackgroundObject backgroundObject)
                         {
-                            if (RTBackgroundEditor.copiedModifier == null)
-                                return;
-
-                            backgroundObject.modifiers.Add(Modifier<BackgroundObject>.DeepCopy(RTBackgroundEditor.copiedModifier, backgroundObject));
                             StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.ObjectContext.MODIFIERS);
                         }
+
                         EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction("Paste Above", () =>
                     {
-                        if (modifier.reference is BeatmapObject beatmapObject)
+                        var copiedModifiers = GetCopiedModifiers(modifier.referenceType);
+                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
                         {
-                            if (copiedModifier == null)
-                                return;
+                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
+                            return;
+                        }
 
-                            beatmapObject.modifiers.Insert(index, Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
+                        modifyable.Modifiers.InsertRange(modifierCard.index, copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+
+                        if (modifyable is BeatmapObject beatmapObject)
+                        {
                             StartCoroutine(RenderModifiers(beatmapObject));
+                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
                         }
-                        if (modifier.reference is BackgroundObject backgroundObject)
+                        if (modifyable is BackgroundObject backgroundObject)
                         {
-                            if (RTBackgroundEditor.copiedModifier == null)
-                                return;
-
-                            backgroundObject.modifiers.Insert(index, Modifier<BackgroundObject>.DeepCopy(RTBackgroundEditor.copiedModifier, backgroundObject));
                             StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.ObjectContext.MODIFIERS);
                         }
+
                         EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction("Paste Below", () =>
                     {
-                        if (copiedModifier == null)
+                        var copiedModifiers = GetCopiedModifiers(modifier.referenceType);
+                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                        {
+                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
                             return;
+                        }
 
-                        if (modifier.reference is BeatmapObject beatmapObject)
+                        modifyable.Modifiers.InsertRange(modifierCard.index + 1, copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+
+                        if (modifyable is BeatmapObject beatmapObject)
                         {
-                            beatmapObject.modifiers.Insert(index + 1, Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
                             StartCoroutine(RenderModifiers(beatmapObject));
+                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
                         }
-                        if (modifier.reference is BackgroundObject backgroundObject)
+                        if (modifyable is BackgroundObject backgroundObject)
                         {
-                            if (RTBackgroundEditor.copiedModifier == null)
-                                return;
-
-                            backgroundObject.modifiers.Insert(index + 1, Modifier<BackgroundObject>.DeepCopy(RTBackgroundEditor.copiedModifier, backgroundObject));
                             StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.ObjectContext.MODIFIERS);
                         }
+
                         EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
-                    new ButtonFunction("Sort Modifiers", () =>
-                    {
-                        if (modifyable.OrderModifiers)
-                        {
-                            EditorManager.inst.DisplayNotification($"Sorting modifiers is only recommended for objects with order matters off.", 3f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
+                };
 
+                if (!modifyable.OrderModifiers)
+                {
+                    buttonFunctions.Add(new ButtonFunction("Sort Modifiers", () =>
+                    {
                         modifyable.Modifiers = modifyable.Modifiers.OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
 
                         if (modifier.reference is BeatmapObject beatmapObject)
                             StartCoroutine(RenderModifiers(beatmapObject));
                         if (modifier.reference is BackgroundObject backgroundObject)
                             StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
-                    }),
+                    }));
+                }
+                buttonFunctions.AddRange(new List<ButtonFunction>()
+                {
                     new ButtonFunction("Move Up", () =>
                     {
                         if (index <= 0)
@@ -727,7 +764,7 @@ namespace BetterLegacy.Editor.Managers
                         if (modifier.reference is BackgroundObject backgroundObject)
                             StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
                     })
-                };
+                });
                 if (ModCompatibility.UnityExplorerInstalled)
                     buttonFunctions.Add(new ButtonFunction("Inspect", () => ModCompatibility.Inspect(modifier)));
 
@@ -4704,6 +4741,23 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.ApplyLightText(prefabInstanceText);
             EditorThemeManager.ApplyToggle(prefabInstanceToggle);
+
+            var groupAlive = booleanBar.Duplicate(layout, "Prefab");
+            groupAlive.transform.localScale = Vector3.one;
+            var groupAliveText = groupAlive.transform.Find("Text").GetComponent<Text>();
+            groupAliveText.text = "Require Group Alive";
+
+            var groupAliveToggle = groupAlive.transform.Find("Toggle").GetComponent<Toggle>();
+            groupAliveToggle.onValueChanged.ClearAll();
+            groupAliveToggle.isOn = modifier.groupAlive;
+            groupAliveToggle.onValueChanged.AddListener(_val =>
+            {
+                modifier.groupAlive = _val;
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(groupAliveText);
+            EditorThemeManager.ApplyToggle(groupAliveToggle);
         }
 
         public GameObject MessageGenerator(Transform layout, string label)
@@ -5098,32 +5152,35 @@ namespace BetterLegacy.Editor.Managers
         }
 
         GameObject pasteModifier;
-        public void PasteGenerator<T>(IModifiers<T> modifyable)
+        public void PasteGenerator<T>(IModifyable<T> modifyable)
         {
             var isBeatmapObject = modifyable is BeatmapObject;
-            if (isBeatmapObject ? copiedModifier == null : RTBackgroundEditor.copiedModifier == null)
-                return;
+
+            var copiedModifiers = GetCopiedModifiers(isBeatmapObject ? ModifierReferenceType.BeatmapObject : ModifierReferenceType.BackgroundObject);
+
+            if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                return; 
 
             var pasteModifier = isBeatmapObject ? this.pasteModifier : RTBackgroundEditor.inst.pasteModifier;
 
             if (pasteModifier)
                 CoreHelper.Destroy(pasteModifier);
 
-            pasteModifier = EditorPrefabHolder.Instance.Function1Button.Duplicate(content, "paste modifier");
+            pasteModifier = EditorPrefabHolder.Instance.Function1Button.Duplicate(isBeatmapObject ? content : RTBackgroundEditor.inst.content, "paste modifier");
             pasteModifier.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
             var buttonStorage = pasteModifier.GetComponent<FunctionButtonStorage>();
             buttonStorage.label.text = "Paste";
             buttonStorage.button.onClick.NewListener(() =>
             {
+                modifyable.Modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+
                 if (modifyable is BeatmapObject beatmapObject)
                 {
-                    beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
                     StartCoroutine(RenderModifiers(beatmapObject));
                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
                 }
                 if (modifyable is BackgroundObject backgroundObject)
                 {
-                    backgroundObject.modifiers.Add(Modifier<BackgroundObject>.DeepCopy(RTBackgroundEditor.copiedModifier, backgroundObject));
                     StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
                     RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.ObjectContext.MODIFIERS);
                 }
@@ -5187,7 +5244,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    var modifier = Modifier<BeatmapObject>.DeepCopy(defaultModifier, beatmapObject);
+                    var modifier = defaultModifier.Copy(true, beatmapObject);
                     if (addIndex == -1)
                         beatmapObject.modifiers.Add(modifier);
                     else

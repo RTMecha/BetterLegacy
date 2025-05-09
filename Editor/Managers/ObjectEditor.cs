@@ -2635,7 +2635,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.shape = 4;
                 bm.shapeOption = 0;
                 if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
-                    bm.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(modifier, bm));
+                    bm.modifiers.Add(modifier.Copy(true, bm));
             }),
         };
 
@@ -4436,7 +4436,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == formatText, out Modifier<BeatmapObject> formatTextModifier))
                                     {
-                                        beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(formatTextModifier, beatmapObject));
+                                        beatmapObject.modifiers.Add(formatTextModifier.Copy(true, beatmapObject));
                                         StartCoroutine(ModifiersEditor.inst.RenderModifiers(beatmapObject));
                                     }
                                 }),

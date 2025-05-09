@@ -10,7 +10,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Modifier<T> : ModifierBase
     {
-        public Modifier()
+        public Modifier() : base()
         {
             var type = typeof(T);
             if (type == typeof(BeatmapObject))
@@ -57,26 +57,60 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public static Modifier<T> DeepCopy(Modifier<T> orig, T reference = default) => new Modifier<T>
+        public override void CopyData(ModifierBase orig, bool newID = true)
         {
-            type = orig.type,
-            commands = orig.commands.Clone(),
-            value = orig.value,
-            reference = reference ?? orig.reference,
-            not = orig.not,
-            elseIf = orig.elseIf,
-            constant = orig.constant,
-            triggerCount = orig.triggerCount,
+            CopyData(orig, newID, reference);
+        }
 
-            prefabInstanceOnly = orig.prefabInstanceOnly,
-            groupAlive = orig.groupAlive,
+        public void CopyData(ModifierBase orig, bool newID = true, T reference = default)
+        {
+            id = newID ? GetNumberID() : orig.id;
+            type = orig.type;
+            commands = orig.commands.Clone();
+            value = orig.value;
+            not = orig.not;
+            elseIf = orig.elseIf;
+            constant = orig.constant;
+            triggerCount = orig.triggerCount;
 
-            collapse = orig.collapse,
+            prefabInstanceOnly = orig.prefabInstanceOnly;
+            groupAlive = orig.groupAlive;
 
-            Action = orig.Action,
-            Trigger = orig.Trigger,
-            Inactive = orig.Inactive,
-        };
+            collapse = orig.collapse;
+
+            var modifier = orig as Modifier<T>;
+            if (!modifier)
+                return;
+
+            this.reference = reference ?? modifier.reference;
+            Action = modifier.Action;
+            Trigger = modifier.Trigger;
+            Inactive = modifier.Inactive;
+        }
+
+        /// <summary>
+        /// Creates a copy of the modifier.
+        /// </summary>
+        /// <param name="reference">Reference that should be copied.</param>
+        /// <returns>Returns a copy of the modifier.</returns>
+        public Modifier<T> Copy(T reference)
+        {
+            var obj = new Modifier<T>();
+            obj.CopyData(this, false, reference);
+            return obj;
+        }
+
+        /// <summary>
+        /// Creates a copy of the modifier.
+        /// </summary>
+        /// <param name="newID">If the ID of the modifier should be copied.</param>
+        /// <returns>Returns a copy of the modifier.</returns>
+        public Modifier<T> Copy(bool newID, T reference = default)
+        {
+            var obj = new Modifier<T>();
+            obj.CopyData(this, newID, reference);
+            return obj;
+        }
 
         public static Modifier<T> Parse(JSONNode jn, T reference = default)
         {
@@ -125,7 +159,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return modifier;
         }
 
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
 
