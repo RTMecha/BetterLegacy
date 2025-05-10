@@ -13,6 +13,7 @@
 ## Changes
 ### Editor
 - Hidden objects now save to objects' editor data.
+- All modifier editors now act the exact same, including having a "Int Variable" displayer.
 
 ## Fixes
 - Fixed BG objects in Prefabs not working in the Arcade.
