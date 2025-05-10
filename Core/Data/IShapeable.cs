@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BetterLegacy.Core.Data.Beatmap;
 
-namespace BetterLegacy.Core
+namespace BetterLegacy.Core.Data
 {
     /// <summary>
     /// Indicates an object can apply shape groups.
@@ -34,7 +30,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Settings for the custom polygon shape.
         /// </summary>
-        public Data.Beatmap.PolygonShape Polygon { get; set; }
+        public PolygonShape Polygon { get; set; }
 
         /// <summary>
         /// Type of the shape.
