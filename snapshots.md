@@ -19,6 +19,7 @@
 
 ## Fixes
 - Fixed BG objects in Prefabs not working in the Arcade.
+- FINALLY fixed the editor re-entry crash. This was due to the code trying to remove a rigidbody from an image object that is trying to load. (For some reason the image object in the editor had a rigidbody, and no this was not me)
 
 # snapshot-2025.5.10 - (pre-1.7.0) [May 8, 2025]
 
