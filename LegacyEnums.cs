@@ -549,13 +549,52 @@ namespace BetterLegacy
         Circle = 1,
         Triangle = 2,
         Arrow = 3,
+        /// <summary>
+        /// Shape that displays text.
+        /// </summary>
         Text = 4,
         Hexagon = 5,
+        /// <summary>
+        /// Shape that displays an image.
+        /// </summary>
         Image = 6,
         Pentagon = 7,
+        /// <summary>
+        /// Contains misc shapes.
+        /// </summary>
         Misc = 8,
+        /// <summary>
+        /// Shape with custom polygon settings.
+        /// </summary>
         Polygon = 9,
         Particles = 10,
+    }
+
+    /// <summary>
+    /// Gradient rendering type.
+    /// </summary>
+    public enum GradientType
+    {
+        /// <summary>
+        /// The regular render method.
+        /// </summary>
+        Normal = 0,
+        /// <summary>
+        /// Renders a linear gradient going from right to left.
+        /// </summary>
+        RightLinear = 1,
+        /// <summary>
+        /// Renders a linear gradient going from left to right.
+        /// </summary>
+        LeftLinear = 2,
+        /// <summary>
+        /// Renders a radial gradient going from out to in.
+        /// </summary>
+        OutInRadial = 3,
+        /// <summary>
+        /// Renders a radial gradient going from in to out.
+        /// </summary>
+        InOutRadial = 4,
     }
 
     /// <summary>
