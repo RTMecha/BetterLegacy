@@ -180,13 +180,18 @@ namespace BetterLegacy.Core.Runtime
             }
 
             // Delete all the "GameObjects" children.
-            LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
+            var gameObjects = GameObject.Find("GameObjects");
+            if (gameObjects)
+                LSHelpers.DeleteChildren(gameObjects.transform);
 
             // End and restart.
             if (restart)
                 Init();
             else
+            {
                 Current?.Clear();
+                Current = null;
+            }
         }
 
         /// <summary>
@@ -226,13 +231,18 @@ namespace BetterLegacy.Core.Runtime
             }
 
             // Delete all the "GameObjects" children.
-            LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
+            var gameObjects = GameObject.Find("GameObjects");
+            if (gameObjects)
+                LSHelpers.DeleteChildren(gameObjects.transform);
 
             // End and restart.
             if (restart)
                 Init();
             else
+            {
                 Current?.Clear();
+                Current = null;
+            }
 
             yield break;
         }
