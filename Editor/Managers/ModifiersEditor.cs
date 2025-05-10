@@ -226,10 +226,12 @@ namespace BetterLegacy.Editor.Managers
 
             int shape = referenceType switch
             {
-                ModifierReferenceType.BeatmapObject => (modifyable as BeatmapObject).shape,
-                ModifierReferenceType.BackgroundObject => (modifyable as BackgroundObject).shape,
+                ModifierReferenceType.BeatmapObject => (modifyable as BeatmapObject).Shape,
+                ModifierReferenceType.BackgroundObject => (modifyable as BackgroundObject).Shape,
                 _ => 0,
             };
+
+            DefaultModifiersPopup.ClearContent();
 
             var modifiersEditorDialog = GetModifiersDialog(referenceType);
 
