@@ -818,16 +818,18 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.SetActiveChildren(shapeSettings, false);
 
-            if (backgroundObject.shape >= shapeSettings.childCount)
+            if (backgroundObject.Shape >= shapeSettings.childCount)
             {
                 Debug.Log($"{BackgroundEditor.inst.className}Somehow, the object ended up being at a higher shape than normal.");
-                backgroundObject.SetShape(shapeSettings.childCount - 1 - 1, 0);
+                backgroundObject.Shape = shapeSettings.childCount - 1;
+                backgroundObject.ShapeOption = 0;
+                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
 
                 RenderDialog(backgroundObject);
                 return;
             }
 
-            if (backgroundObject.shape == 4)
+            if (backgroundObject.Shape == 4)
             {
                 // Make the text larger for better readability.
                 shapeSettings.transform.AsRT().sizeDelta = new Vector2(351f, 74f);
@@ -843,7 +845,7 @@ namespace BetterLegacy.Editor.Managers
                 shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 32f);
             }
 
-            shapeSettings.GetChild(backgroundObject.shape).gameObject.SetActive(true);
+            shapeSettings.GetChild(backgroundObject.Shape).gameObject.SetActive(true);
             for (int i = 1; i <= ShapeManager.inst.Shapes3D.Count; i++)
             {
                 int buttonTmp = i - 1;
@@ -852,13 +854,15 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var shoggle = shape.Find(i.ToString()).GetComponent<Toggle>();
                     shoggle.onValueChanged.ClearAll();
-                    shoggle.isOn = backgroundObject.shape == buttonTmp;
+                    shoggle.isOn = backgroundObject.Shape == buttonTmp;
                     shoggle.onValueChanged.AddListener(_val =>
                     {
                         if (!_val)
                             return;
 
-                        backgroundObject.SetShape(buttonTmp, 0);
+                        backgroundObject.Shape = buttonTmp;
+                        backgroundObject.ShapeOption = 0;
+                        backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
 
                         RenderDialog(backgroundObject);
                     });
@@ -873,26 +877,29 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (backgroundObject.shape == 4 || backgroundObject.shape == 6 || backgroundObject.shape == 9)
+            if (backgroundObject.IsSpecialShape)
             {
-                EditorManager.inst.DisplayNotification($"{(backgroundObject.shape == 4 ? "Text" : "Image")} background not supported.", 2f, EditorManager.NotificationType.Error);
-                backgroundObject.SetShape(0, 0);
+                EditorManager.inst.DisplayNotification($"Shape not supported on background objects yet.", 2f, EditorManager.NotificationType.Error);
+                backgroundObject.Shape = 0;
+                backgroundObject.ShapeOption = 0;
+                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
                 return;
             }
 
-            for (int i = 0; i < shapeSettings.GetChild(backgroundObject.shape).childCount - 1; i++)
+            for (int i = 0; i < shapeSettings.GetChild(backgroundObject.Shape).childCount - 1; i++)
             {
                 int buttonTmp = i;
-                var shoggle = shapeSettings.GetChild(backgroundObject.shape).GetChild(i).GetComponent<Toggle>();
+                var shoggle = shapeSettings.GetChild(backgroundObject.Shape).GetChild(i).GetComponent<Toggle>();
 
                 shoggle.onValueChanged.ClearAll();
-                shoggle.isOn = backgroundObject.shapeOption == i;
+                shoggle.isOn = backgroundObject.ShapeOption == i;
                 shoggle.onValueChanged.AddListener(_val =>
                 {
                     if (!_val)
                         return;
 
-                    backgroundObject.SetShape(backgroundObject.shape, buttonTmp);
+                    backgroundObject.ShapeOption = buttonTmp;
+                    backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
 
                     RenderDialog(backgroundObject);
                 });

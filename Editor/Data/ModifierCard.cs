@@ -768,6 +768,7 @@ namespace BetterLegacy.Editor.Data
                             false, // square
                             false, // circle
                             false, // triangle
+                            false, // arrow
                             true, // text
                             false, // hexagon
                             true, // image
@@ -780,6 +781,7 @@ namespace BetterLegacy.Editor.Data
                             if (shapeType == ShapeType.Text || shapeType == ShapeType.Image || shapeType == ShapeType.Polygon)
                                 modifier.SetValue(1, "0");
 
+                            modifier.SetValue(2, "0");
                             RenderModifier<T>();
                             Update(modifier);
                         });
@@ -2413,6 +2415,37 @@ namespace BetterLegacy.Editor.Data
 
                 #region Shape
 
+                case nameof(ModifierActions.setShape): {
+                        var isBG = modifier.referenceType == ModifierReferenceType.BackgroundObject;
+
+                        DropdownGenerator(modifier, "Shape", 0, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
+                        {
+                            false, // square
+                            false, // circle
+                            false, // triangle
+                            false, // arrow
+                            !isBG, // text
+                            false, // hexagon
+                            !isBG, // image
+                            false, // pentagon
+                            false, // misc
+                            true, // polygon
+                        }, _val =>
+                        {
+                            var shapeType = (ShapeType)_val;
+                            if (isBG && (shapeType == ShapeType.Text || shapeType == ShapeType.Image) || shapeType == ShapeType.Polygon)
+                                modifier.SetValue(0, "0");
+
+                            modifier.SetValue(1, "0");
+                            RenderModifier<T>();
+                            Update(modifier);
+                        });
+
+                        var shape = modifier.GetInt(0, 0);
+                        DropdownGenerator(modifier, "Shape Option", 1, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
+
+                        break;
+                    }
                 case nameof(ModifierActions.actorFrameTexture): {
                         DropdownGenerator(modifier, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
                         IntegerGenerator(modifier, "Width", 1, 512);

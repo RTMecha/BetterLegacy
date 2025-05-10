@@ -72,7 +72,7 @@ namespace BetterLegacy.Core.Managers
 
                 try
                 {
-                    if (beatmapObject.shape == 4 && beatmapObject.Alive && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                    if (beatmapObject.ShapeType == ShapeType.Text && beatmapObject.Alive && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is TextObject textObject)
                         textObject.SetText(RTString.FormatText(beatmapObject, textObject.text));
                 }

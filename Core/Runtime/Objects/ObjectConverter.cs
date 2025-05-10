@@ -115,8 +115,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (!string.IsNullOrEmpty(beatmapObject.Parent) && gameData.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
                 parent = InitParentChain(beatmapObjectParent, parentObjects);
 
-            var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-            var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
+            var shape = Mathf.Clamp(beatmapObject.Shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+            var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
             GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : ObjectManager.inst.objectParent.transform);
@@ -477,7 +477,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
 
             runtimeObject.SetActive(false);
-            runtimeObject.UpdateShape(backgroundObject.shape, backgroundObject.shapeOption);
+            runtimeObject.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
 
             if (CoreHelper.InEditor)
                 runtimeObject.hidden = backgroundObject.editorData.hidden;

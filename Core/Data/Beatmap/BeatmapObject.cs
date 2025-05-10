@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifyable<BeatmapObject>
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable<BeatmapObject>
     {
         public BeatmapObject() : base() { }
 
@@ -254,62 +254,70 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Shape
 
+        public int customShape = -1;
+
         /// <summary>
         /// Shape group.
         /// </summary>
         public int shape;
+        public int Shape
+        {
+            get => customShape >= 0 ? customShape : shape;
+            set
+            {
+                customShape = -1;
+                shape = value;
+            }
+        }
+
+        public int customShapeOption = -1;
 
         /// <summary>
         /// Shape option.
         /// </summary>
         public int shapeOption;
+        public int ShapeOption
+        {
+            get => customShapeOption >= 0 ? customShapeOption : shapeOption;
+            set
+            {
+                customShapeOption = -1;
+                shapeOption = value;
+            }
+        }
 
         /// <summary>
         /// Text data for <see cref="ShapeType.Text"/>.
         /// </summary>
         public string text = string.Empty;
+        public string Text { get => text; set => text = value; }
 
         /// <summary>
         /// If the <see cref="ShapeType.Text"/> object should align the text to the origin.
         /// </summary>
         public bool autoTextAlign;
+        public bool AutoTextAlign { get => autoTextAlign; set => autoTextAlign = value; }
 
         /// <summary>
         /// Settings for the custom polygon shape.
         /// </summary>
         public PolygonShape polygonShapeSettings = new PolygonShape();
+        public PolygonShape Polygon { get => polygonShapeSettings; set => polygonShapeSettings = value; }
+
+        public ShapeType ShapeType { get => (ShapeType)Shape; set => Shape = (int)value; }
+
+        public bool IsSpecialShape => ShapeType == ShapeType.Text || ShapeType == ShapeType.Image;
+
+        public void SetCustomShape(int shape, int shapeOption)
+        {
+            customShape = shape;
+            customShapeOption = shapeOption;
+        }
 
         /// <summary>
         /// Type of gradient the object should render as. Does not support text, image and player objects.
         /// </summary>
         public GradientType gradientType;
-
-        /// <summary>
-        /// Gradient rendering type.
-        /// </summary>
-        public enum GradientType
-        {
-            /// <summary>
-            /// The regular render method.
-            /// </summary>
-            Normal,
-            /// <summary>
-            /// Renders a linear gradient going from right to left.
-            /// </summary>
-            RightLinear,
-            /// <summary>
-            /// Renders a linear gradient going from left to right.
-            /// </summary>
-            LeftLinear,
-            /// <summary>
-            /// Renders a radial gradient going from out to in.
-            /// </summary>
-            OutInRadial,
-            /// <summary>
-            /// Renders a radial gradient going from in to out.
-            /// </summary>
-            InOutRadial
-        }
 
         /// <summary>
         /// Scale of the gradient.
@@ -320,20 +328,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Rotation of the gradient.
         /// </summary>
         public float gradientRotation;
-
-        /// <summary>
-        /// Type of the shape.
-        /// </summary>
-        public ShapeType ShapeType
-        {
-            get => (ShapeType)shape;
-            set => shape = (int)value;
-        }
-
-        /// <summary>
-        /// If the shape has special properties: Text or Image.
-        /// </summary>
-        public bool IsSpecialShape => ShapeType == ShapeType.Text || ShapeType == ShapeType.Image;
 
         #endregion
 

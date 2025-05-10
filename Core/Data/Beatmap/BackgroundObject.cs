@@ -19,16 +19,9 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, ITransformable, IEvaluatable, IModifyable<BackgroundObject>
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable<BackgroundObject>
     {
         public BackgroundObject() : base() { }
-
-        public void SetShape(int shape, int shapeOption)
-        {
-            this.shape = shape;
-            this.shapeOption = shapeOption;
-            runtimeObject?.UpdateShape(shape, shapeOption);
-        }
 
         #region Values
 
@@ -97,10 +90,50 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Shape
 
+        public int customShape = -1;
+
         public int shape;
+        public int Shape
+        {
+            get => customShape >= 0 ? customShape : shape;
+            set
+            {
+                customShape = -1;
+                shape = value;
+            }
+        }
+
+        public int customShapeOption = -1;
+
         public int shapeOption;
+        public int ShapeOption
+        {
+            get => customShapeOption >= 0 ? customShapeOption : shapeOption;
+            set
+            {
+                customShapeOption = -1;
+                shapeOption = value;
+            }
+        }
+
         public string text = string.Empty;
+        public string Text { get => text; set => text = value; }
+
+        public bool AutoTextAlign { get; set; }
+
+        public PolygonShape Polygon { get; set; }
+
         public bool flat;
+
+        public ShapeType ShapeType { get => (ShapeType)Shape; set => Shape = (int)value; }
+
+        public bool IsSpecialShape => ShapeType == ShapeType.Text || ShapeType == ShapeType.Image || ShapeType == ShapeType.Polygon;
+
+        public void SetCustomShape(int shape, int shapeOption)
+        {
+            customShape = shape;
+            customShapeOption = shapeOption;
+        }
 
         #endregion
 

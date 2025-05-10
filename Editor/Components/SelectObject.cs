@@ -415,11 +415,11 @@ namespace BetterLegacy.Editor.Components
                  "<br>P: " + beatmapObject.Parent + " (" + beatmapObject.parentType + ")" :
                  "<br>P: No Parent" + " (" + beatmapObject.parentType + ")";
 
-            string text = beatmapObject.shape switch
+            string text = beatmapObject.Shape switch
             {
                 4 => "<br>S: Text",
                 6 => "<br>S: Image",
-                _ => "<br>S: " + CoreHelper.GetShape(beatmapObject.shape, beatmapObject.shapeOption).Replace("eight_circle", "eighth_circle").Replace("eigth_circle_outline", "eighth_circle_outline"),
+                _ => "<br>S: " + CoreHelper.GetShape(beatmapObject.Shape, beatmapObject.shapeOption).Replace("eight_circle", "eighth_circle").Replace("eigth_circle_outline", "eighth_circle_outline"),
             };
             if (!string.IsNullOrEmpty(beatmapObject.text))
                 text += "<br>T: " + beatmapObject.text;

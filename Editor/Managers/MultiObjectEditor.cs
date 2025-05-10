@@ -1056,7 +1056,7 @@ namespace BetterLegacy.Editor.Managers
                             if (gradientType < 0)
                                 gradientType = 4;
 
-                            bm.gradientType = (BeatmapObject.GradientType)gradientType;
+                            bm.gradientType = (GradientType)gradientType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
@@ -1073,7 +1073,7 @@ namespace BetterLegacy.Editor.Managers
                             if (gradientType > 4)
                                 gradientType = 0;
 
-                            bm.gradientType = (BeatmapObject.GradientType)gradientType;
+                            bm.gradientType = (GradientType)gradientType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
@@ -1081,12 +1081,12 @@ namespace BetterLegacy.Editor.Managers
                     }));
 
                 var buttons2 = GenerateButtons(parent, 48f, 8f,
-                    new ButtonFunction(nameof(BeatmapObject.GradientType.Normal), () =>
+                    new ButtonFunction("None", () =>
                     {
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.gradientType = BeatmapObject.GradientType.Normal;
+                            bm.gradientType = GradientType.Normal;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
@@ -1097,7 +1097,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.gradientType = BeatmapObject.GradientType.RightLinear;
+                            bm.gradientType = GradientType.RightLinear;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
@@ -1108,7 +1108,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.gradientType = BeatmapObject.GradientType.LeftLinear;
+                            bm.gradientType = GradientType.LeftLinear;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
@@ -1119,7 +1119,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.gradientType = BeatmapObject.GradientType.OutInRadial;
+                            bm.gradientType = GradientType.OutInRadial;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
@@ -1130,7 +1130,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.gradientType = BeatmapObject.GradientType.InOutRadial;
+                            bm.gradientType = GradientType.InOutRadial;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                             RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
@@ -1950,8 +1950,8 @@ namespace BetterLegacy.Editor.Managers
                 {
                     SyncObjectData("Shape", eventData, (timelineObject, beatmapObject) =>
                     {
-                        timelineObject.GetData<BeatmapObject>().shape = beatmapObject.shape;
-                        timelineObject.GetData<BeatmapObject>().shapeOption = beatmapObject.shapeOption;
+                        timelineObject.GetData<BeatmapObject>().Shape = beatmapObject.Shape;
+                        timelineObject.GetData<BeatmapObject>().ShapeOption = beatmapObject.ShapeOption;
                     }, false, true, "Shape");
                 })); // Shape
                 GenerateButton(syncLayout.transform, new ButtonFunction("T", eventData =>
@@ -2992,19 +2992,19 @@ namespace BetterLegacy.Editor.Managers
                             if (timelineObject.isBeatmapObject)
                             {
                                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                beatmapObject.shape = multiShapeSelection.x;
-                                beatmapObject.shapeOption = multiShapeSelection.y;
+                                beatmapObject.Shape = multiShapeSelection.x;
+                                beatmapObject.ShapeOption = multiShapeSelection.y;
 
-                                if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
-                                    beatmapObject.shape = 0;
+                                if (beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                                    beatmapObject.Shape = 0;
 
                                 RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
                             }
                             if (timelineObject.isBackgroundObject)
                             {
                                 var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                backgroundObject.shape = multiShapeSelection.x;
-                                backgroundObject.shapeOption = multiShapeSelection.y;
+                                backgroundObject.Shape = multiShapeSelection.x;
+                                backgroundObject.ShapeOption = multiShapeSelection.y;
 
                                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                             }
@@ -3225,19 +3225,19 @@ namespace BetterLegacy.Editor.Managers
                                         if (timelineObject.isBeatmapObject)
                                         {
                                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                            beatmapObject.shape = multiShapeSelection.x;
-                                            beatmapObject.shapeOption = multiShapeSelection.y;
+                                            beatmapObject.Shape = multiShapeSelection.x;
+                                            beatmapObject.ShapeOption = multiShapeSelection.y;
 
-                                            if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
-                                                beatmapObject.shape = 0;
+                                            if (beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                                                beatmapObject.Shape = 0;
 
                                             RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
                                         }
                                         if (timelineObject.isBackgroundObject)
                                         {
                                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                                            backgroundObject.shape = multiShapeSelection.x;
-                                            backgroundObject.shapeOption = multiShapeSelection.y;
+                                            backgroundObject.Shape = multiShapeSelection.x;
+                                            backgroundObject.ShapeOption = multiShapeSelection.y;
 
                                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                                         }

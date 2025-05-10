@@ -1060,8 +1060,8 @@ namespace BetterLegacy.Core.Runtime
             runtimeObject.visualObject?.Clear();
             runtimeObject.visualObject = null;
 
-            var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-            var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
+            var shape = Mathf.Clamp(beatmapObject.Shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+            var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
             GameObject baseObject = UnityObject.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : ObjectManager.inst.objectParent.transform);
@@ -1832,14 +1832,17 @@ namespace BetterLegacy.Core.Runtime
             {
                 beatmapObject.ResetOffsets();
 
+                beatmapObject.customShape = 0;
+                beatmapObject.customShapeOption = 0;
                 beatmapObject.customParent = null;
             }
 
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
             {
-                backgroundObject.positionOffset = Vector3.zero;
-                backgroundObject.scaleOffset = Vector3.zero;
-                backgroundObject.rotationOffset = Vector3.zero;
+                backgroundObject.ResetOffsets();
+
+                backgroundObject.customShape = 0;
+                backgroundObject.customShapeOption = 0;
             }
         }
 

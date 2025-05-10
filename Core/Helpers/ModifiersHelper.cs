@@ -1127,9 +1127,10 @@ namespace BetterLegacy.Core.Helpers
             // todo: add polygon modifier stuff
             #region Shape
 
-            nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
+            nameof(ModifierActions.setShape) => ModifierActions.setShape,
 
             // image
+            nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
             nameof(ModifierActions.setImage) => ModifierActions.setImage,
             nameof(ModifierActions.setImageOther) => ModifierActions.setImageOther,
 
@@ -1623,7 +1624,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setText": {
-                            if (modifier.constant && modifier.reference.shape == 4 && modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null &&
+                            if (modifier.constant && modifier.reference.ShapeType == ShapeType.Text && modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null &&
                                 modifier.reference.runtimeObject.visualObject is TextObject textObject)
                                 textObject.text = modifier.reference.text;
                             break;
@@ -1633,7 +1634,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.constant && !list.IsEmpty())
                                 foreach (var bm in list)
-                                    if (bm.shape == 4 && bm.runtimeObject && bm.runtimeObject.visualObject != null &&
+                                    if (bm.ShapeType == ShapeType.Text && bm.runtimeObject && bm.runtimeObject.visualObject != null &&
                                         bm.runtimeObject.visualObject is TextObject textObject)
                                         textObject.text = bm.text;
                             break;
@@ -2266,6 +2267,8 @@ namespace BetterLegacy.Core.Helpers
             // todo: figure out how to get actorFrameTexture to work
             // todo: add polygon modifier stuff
             #region Shape
+
+            nameof(ModifierActions.setShape) => ModifierActions.setShape,
 
             //nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
 

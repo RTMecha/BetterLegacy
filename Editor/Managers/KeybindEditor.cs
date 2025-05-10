@@ -1035,7 +1035,10 @@ namespace BetterLegacy.Editor.Managers
                 switch (timelineObject.TimelineReference)
                 {
                     case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                            timelineObject.GetData<BeatmapObject>().customParent = null;
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            beatmapObject.customParent = null;
+                            beatmapObject.customShape = 0;
+                            beatmapObject.customShapeOption = 0;
                             RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
                             break;
                         }
@@ -1044,7 +1047,10 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), recalculate: false);
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                            backgroundObject.customShape = 0;
+                            backgroundObject.customShapeOption = 0;
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                             break;
                         }
                 }

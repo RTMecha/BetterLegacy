@@ -3840,7 +3840,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorManager.inst.DisplayNotification("Removed custom parent!", 1.5f, EditorManager.NotificationType.Success);
                 }
                 else
-                    beatmapObject.Parent = "";
+                    beatmapObject.Parent = string.Empty;
 
                 // Since parent has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
@@ -4217,8 +4217,8 @@ namespace BetterLegacy.Editor.Managers
         public void RenderGradient(BeatmapObject beatmapObject)
         {
             var active = (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty) && RTEditor.NotSimple;
-            var gradientScaleActive = beatmapObject.gradientType != BeatmapObject.GradientType.Normal;
-            var gradientRotationActive = beatmapObject.gradientType == BeatmapObject.GradientType.LeftLinear || beatmapObject.gradientType == BeatmapObject.GradientType.RightLinear;
+            var gradientScaleActive = beatmapObject.gradientType != GradientType.Normal;
+            var gradientRotationActive = beatmapObject.gradientType == GradientType.LeftLinear || beatmapObject.gradientType == GradientType.RightLinear;
 
             Dialog.GradientShapesLabel.transform.parent.gameObject.SetActive(active);
             Dialog.GradientParent.gameObject.SetActive(active);
@@ -4238,13 +4238,13 @@ namespace BetterLegacy.Editor.Managers
                 toggle.isOn = index == (int)beatmapObject.gradientType;
                 toggle.onValueChanged.AddListener(_val =>
                 {
-                    beatmapObject.gradientType = (BeatmapObject.GradientType)index;
-                    var incompatibleGradient = beatmapObject.gradientType != BeatmapObject.GradientType.Normal && beatmapObject.IsSpecialShape;
+                    beatmapObject.gradientType = (GradientType)index;
+                    var incompatibleGradient = beatmapObject.gradientType != GradientType.Normal && beatmapObject.IsSpecialShape;
 
                     if (incompatibleGradient)
                     {
-                        beatmapObject.shape = 0;
-                        beatmapObject.shapeOption = 0;
+                        beatmapObject.Shape = 0;
+                        beatmapObject.ShapeOption = 0;
                         RenderShape(beatmapObject);
                     }
 
@@ -4342,10 +4342,10 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.SetActiveChildren(shapeSettings, false);
 
-            if (beatmapObject.shape >= shapeSettings.childCount)
+            if (beatmapObject.Shape >= shapeSettings.childCount)
             {
                 Debug.Log($"{ObjEditor.inst.className}Somehow, the object ended up being at a higher shape than normal.");
-                beatmapObject.shape = shapeSettings.childCount - 1;
+                beatmapObject.Shape = shapeSettings.childCount - 1;
                 // Since shape has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
@@ -4354,27 +4354,27 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            shapeSettings.AsRT().sizeDelta = new Vector2(351f, beatmapObject.shape == 4 ? 74f : 32f);
-            shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, beatmapObject.shape == 4 ? 74f : 32f);
+            shapeSettings.AsRT().sizeDelta = new Vector2(351f, beatmapObject.ShapeType == ShapeType.Text ? 74f : 32f);
+            shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, beatmapObject.ShapeType == ShapeType.Text ? 74f : 32f);
             // 351 164 = polygon
-            shapeSettings.GetChild(beatmapObject.shape).gameObject.SetActive(true);
+            shapeSettings.GetChild(beatmapObject.Shape).gameObject.SetActive(true);
 
             int num = 0;
             foreach (var toggle in shapeToggles)
             {
                 int index = num;
                 toggle.onValueChanged.ClearAll();
-                toggle.isOn = beatmapObject.shape == index;
+                toggle.isOn = beatmapObject.Shape == index;
                 toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length);
 
                 if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes.Length)
                     toggle.onValueChanged.AddListener(_val =>
                     {
-                        beatmapObject.shape = index;
-                        beatmapObject.shapeOption = 0;
+                        beatmapObject.Shape = index;
+                        beatmapObject.ShapeOption = 0;
 
-                        if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6))
-                            beatmapObject.shape = 0;
+                        if (beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6))
+                            beatmapObject.Shape = 0;
 
                         // Since shape has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects)
@@ -4622,17 +4622,17 @@ namespace BetterLegacy.Editor.Managers
                         shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 32f);
 
                         num = 0;
-                        foreach (var toggle in shapeOptionToggles[beatmapObject.shape])
+                        foreach (var toggle in shapeOptionToggles[beatmapObject.Shape])
                         {
                             int index = num;
                             toggle.onValueChanged.ClearAll();
                             toggle.isOn = beatmapObject.shapeOption == index;
-                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[beatmapObject.shape]);
+                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[beatmapObject.Shape]);
 
-                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[beatmapObject.shape])
+                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[beatmapObject.Shape])
                                 toggle.onValueChanged.AddListener(_val =>
                                 {
-                                    beatmapObject.shapeOption = index;
+                                    beatmapObject.ShapeOption = index;
 
                                     // Since shape has no affect on the timeline object, we will only need to update the physical object.
                                     if (UpdateObjects)
@@ -6028,7 +6028,7 @@ namespace BetterLegacy.Editor.Managers
                         kfdialog.Find("huesatval_label").gameObject.SetActive(RTEditor.ShowModdedUI);
                         kfdialog.Find("huesatval").gameObject.SetActive(RTEditor.ShowModdedUI);
 
-                        var showGradient = RTEditor.NotSimple && beatmapObject.gradientType != BeatmapObject.GradientType.Normal;
+                        var showGradient = RTEditor.NotSimple && beatmapObject.gradientType != GradientType.Normal;
 
                         kfdialog.Find("color_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Color" : "Color";
                         kfdialog.Find("opacity_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Opacity" : "Opacity";

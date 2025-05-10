@@ -3871,6 +3871,16 @@ namespace BetterLegacy.Core.Helpers
 
         #region Shape
 
+        public static void setShape<T>(Modifier<T> modifier, Dictionary<string, string> variables) where T : IShapeable
+        {
+            var shapeable = modifier.reference as IShapeable;
+            shapeable.SetCustomShape(modifier.GetInt(0, 0, variables), modifier.GetInt(1, 0, variables));
+            if (shapeable is BeatmapObject beatmapObject)
+                RTLevel.Current.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
+            else if (shapeable is BackgroundObject backgroundObject)
+                backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
+        }
+
         public static void actorFrameTexture(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             if (modifier.reference.ShapeType != ShapeType.Image || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not ImageObject imageObject)
@@ -4182,7 +4192,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.HasResult() || modifier.reference.IsSpecialShape || !levelObject || !levelObject.visualObject || !levelObject.visualObject.gameObject)
                 return;
 
-            if (ShapeManager.inst.Shapes3D.TryGetAt(modifier.reference.shape, out ShapeGroup shapeGroup) && shapeGroup.TryGetShape(modifier.reference.shapeOption, out Shape shape))
+            if (ShapeManager.inst.Shapes3D.TryGetAt(modifier.reference.Shape, out ShapeGroup shapeGroup) && shapeGroup.TryGetShape(modifier.reference.ShapeOption, out Shape shape))
             {
                 levelObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = shape.mesh;
                 modifier.Result = "frick";
