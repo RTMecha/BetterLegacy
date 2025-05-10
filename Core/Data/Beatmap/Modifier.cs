@@ -30,12 +30,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public void VerifyModifier(List<Modifier<T>> modifiers)
+        public void VerifyModifier(List<ModifierBase> modifiers)
         {
             if (commands.IsEmpty())
                 return;
 
-            if (modifiers.TryFind(x => x.Name == Name && x.type == type, out Modifier<T> defaultModifier))
+            if (modifiers.TryFind(x => x.Name == Name && x.type == type, out ModifierBase defaultModifier))
             {
                 int num = commands.Count;
                 while (commands.Count < defaultModifier.commands.Count)

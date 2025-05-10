@@ -416,7 +416,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region Functions
 
-        public static bool VerifyModifier<T>(Modifier<T> modifier, List<Modifier<T>> modifiers)
+        public static bool VerifyModifier<T>(Modifier<T> modifier, List<ModifierBase> modifiers)
         {
             modifier.hasChanged = false;
 

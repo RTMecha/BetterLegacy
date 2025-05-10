@@ -155,7 +155,7 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new ButtonFunction("Create audio object", () =>
                             {
-                                if (!ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "playSound", out Modifier<BeatmapObject> modifier))
+                                if (!ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "playSound", out ModifierBase defaultModifier) || defaultModifier is not Modifier<BeatmapObject> modifier)
                                     return;
 
                                 var editorPath = RTFile.RemoveEndSlash(CurrentLevel.path);

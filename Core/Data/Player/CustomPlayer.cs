@@ -5,6 +5,7 @@ using InControl;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -70,7 +71,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public void Test()
         {
-            PlayerModel.modifiers.Add(ModifiersManager.defaultPlayerModifiers.Find(x => x.Name == "kill"));
+            PlayerModel.modifiers.Add(ModifiersManager.defaultPlayerModifiers.Find(x => x.Name == "kill") as Modifier<CustomPlayer>);
         }
 
         public PlayerModel PlayerModel { get; set; } = PlayerModel.DefaultPlayer;

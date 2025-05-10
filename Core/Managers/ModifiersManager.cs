@@ -39,14 +39,14 @@ namespace BetterLegacy.Core.Managers
             defaultBeatmapObjectModifiers.Clear();
             defaultBackgroundObjectModifiers.Clear();
 
-            LoadFile(defaultBeatmapObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.lsb"));
-            LoadFile(defaultBackgroundObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_bg_modifiers.lsb"));
+            LoadFile<BeatmapObject>(defaultBeatmapObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.lsb"));
+            LoadFile<BackgroundObject>(defaultBackgroundObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_bg_modifiers.lsb"));
 
             if (ModifiersHelper.development)
                 AddDevelopmentModifiers();
         }
 
-        void LoadFile<T>(List<Modifier<T>> modifiers, string path)
+        void LoadFile<T>(List<ModifierBase> modifiers, string path)
         {
             if (!RTFile.FileExists(path))
                 return;
@@ -54,15 +54,15 @@ namespace BetterLegacy.Core.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
-                LoadModifiers(modifiers, jn["modifiers"][i]);
+                LoadModifiers<T>(modifiers, jn["modifiers"][i]);
         }
 
-        void LoadModifiers<T>(List<Modifier<T>> modifiers, JSONNode jn)
+        void LoadModifiers<T>(List<ModifierBase> modifiers, JSONNode jn)
         {
             if (jn.IsArray)
             {
                 for (int i = 0; i < jn.Count; i++)
-                    LoadModifiers(modifiers, jn[i]);
+                    LoadModifiers<T>(modifiers, jn[i]);
                 return;
             }
 
@@ -108,7 +108,7 @@ namespace BetterLegacy.Core.Managers
             return modifier;
         }
 
-        public static List<Modifier<GameData>> defaultLevelModifiers = new List<Modifier<GameData>>()
+        public static List<ModifierBase> defaultLevelModifiers = new List<ModifierBase>()
         {
             new Modifier<GameData>("playerBubble")
             {
@@ -275,11 +275,11 @@ namespace BetterLegacy.Core.Managers
             }, // levelRewind
         };
 
-        public static List<Modifier<BeatmapObject>> defaultBeatmapObjectModifiers = new List<Modifier<BeatmapObject>>();
+        public static List<ModifierBase> defaultBeatmapObjectModifiers = new List<ModifierBase>();
 
-        public static List<Modifier<BackgroundObject>> defaultBackgroundObjectModifiers = new List<Modifier<BackgroundObject>>();
+        public static List<ModifierBase> defaultBackgroundObjectModifiers = new List<ModifierBase>();
 
-        public static List<Modifier<CustomPlayer>> defaultPlayerModifiers = new List<Modifier<CustomPlayer>>
+        public static List<ModifierBase> defaultPlayerModifiers = new List<ModifierBase>
         {
             RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "setCustomActive", true, "False", "0", "True"),
             RegisterModifier<CustomPlayer>(ModifierBase.Type.Action, "kill", false, ""),

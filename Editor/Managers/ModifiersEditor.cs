@@ -204,8 +204,10 @@ namespace BetterLegacy.Editor.Managers
 
             var defaultModifiers = referenceType switch
             {
-                ModifierReferenceType.BeatmapObject => ModifiersManager.defaultBeatmapObjectModifiers.Select(x => x as ModifierBase),
-                ModifierReferenceType.BackgroundObject => ModifiersManager.defaultBackgroundObjectModifiers.Select(x => x as ModifierBase),
+                ModifierReferenceType.BeatmapObject => ModifiersManager.defaultBeatmapObjectModifiers,
+                ModifierReferenceType.BackgroundObject => ModifiersManager.defaultBackgroundObjectModifiers,
+                ModifierReferenceType.CustomPlayer => ModifiersManager.defaultPlayerModifiers,
+                ModifierReferenceType.GameData => ModifiersManager.defaultLevelModifiers,
                 _ => null,
             };
 
@@ -221,7 +223,7 @@ namespace BetterLegacy.Editor.Managers
 
             var modifiersEditorDialog = GetModifiersDialog(referenceType);
 
-            foreach (Modifier<T> defaultModifier in defaultModifiers)
+            foreach (var defaultModifier in defaultModifiers)
             {
                 if (!SearchModifier(searchTerm, defaultModifier))
                     continue;
@@ -252,7 +254,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    var modifier = defaultModifier.Copy(true, (T)modifyable);
+                    var modifier = (defaultModifier as Modifier<T>).Copy(true, (T)modifyable);
                     if (addIndex == -1)
                         modifyable.Modifiers.Add(modifier);
                     else

@@ -2636,7 +2636,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
                 bm.shape = 4;
                 bm.shapeOption = 0;
-                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
+                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out ModifierBase defaultModifier) && defaultModifier is Modifier<BeatmapObject> modifier)
                     bm.modifiers.Add(modifier.Copy(true, bm));
             }),
         };
@@ -4435,9 +4435,9 @@ namespace BetterLegacy.Editor.Managers
                                     if (beatmapObject.modifiers.Has(x => x.Name == formatText))
                                         return;
 
-                                    if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == formatText, out Modifier<BeatmapObject> formatTextModifier))
+                                    if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == formatText, out ModifierBase defaultModifier) && defaultModifier is Modifier<BeatmapObject> modifier)
                                     {
-                                        beatmapObject.modifiers.Add(formatTextModifier.Copy(true, beatmapObject));
+                                        beatmapObject.modifiers.Add(modifier.Copy(true, beatmapObject));
                                         CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
                                     }
                                 }),
