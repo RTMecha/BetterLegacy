@@ -1784,7 +1784,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         beatmapObject.modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<BeatmapObject>).Copy(beatmapObject)));
 
-                                        StartCoroutine(ModifiersEditor.inst.RenderModifiers(beatmapObject));
+                                        CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
                                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
 
                                         pasted = true;
@@ -1802,7 +1802,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         backgroundObject.modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<BackgroundObject>).Copy(backgroundObject)));
 
-                                        StartCoroutine(RTBackgroundEditor.inst.RenderModifiers(backgroundObject));
+                                        CoroutineHelper.StartCoroutine(RTBackgroundEditor.inst.Dialog.ModifiersDialog.RenderModifiers(backgroundObject));
                                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
 
                                         pasted = true;

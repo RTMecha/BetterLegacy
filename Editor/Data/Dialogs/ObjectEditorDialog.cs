@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 
@@ -130,6 +132,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public FunctionButtonStorage InspectTimelineObjectButton { get; set; }
 
         #endregion
+
+        public ModifiersEditorDialog ModifiersDialog { get; set; }
 
         #endregion
 
@@ -321,6 +325,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             #endregion
+
+            try
+            {
+                ModifiersDialog = new ModifiersEditorDialog();
+                ModifiersDialog.Init(ObjEditor.inst.ObjectView.transform);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error with setting up modifies UI: {ex}");
+            }
 
             for (int i = 0; i < ObjEditor.inst.KeyframeDialogs.Count; i++)
             {

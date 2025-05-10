@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using BetterLegacy.Core.Data.Player;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     public class ModifierBase : PAObject<ModifierBase>
@@ -98,6 +100,20 @@ namespace BetterLegacy.Core.Data.Beatmap
         #endregion
 
         #region Methods
+
+        public static ModifierReferenceType GetReferenceType<T>()
+        {
+            var type = typeof(T);
+            if (type == typeof(BeatmapObject))
+                return ModifierReferenceType.BeatmapObject;
+            else if (type == typeof(BackgroundObject))
+                return ModifierReferenceType.BackgroundObject;
+            else if (type == typeof(CustomPlayer))
+                return ModifierReferenceType.CustomPlayer;
+            else if (type == typeof(GameData))
+                return ModifierReferenceType.GameData;
+            return ModifierReferenceType.Null;
+        }
 
         public override void CopyData(ModifierBase orig, bool newID = true)
         {

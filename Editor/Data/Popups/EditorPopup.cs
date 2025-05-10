@@ -89,7 +89,6 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string KEYBIND_LIST_POPUP = "Keybind List Popup";
         public const string PLAYER_MODELS_POPUP = "Player Models Popup";
         public const string DEFAULT_MODIFIERS_POPUP = "Default Modifiers Popup";
-        public const string DEFAULT_BACKGROUND_MODIFIERS_POPUP = "Default Background Modifiers Popup";
         public const string DOCUMENTATION_POPUP = "Documentation Popup";
         public const string FOLDER_CREATOR_POPUP = "Folder Creator Popup";
         public const string PREFAB_TYPES_POPUP = "Prefab Types Popup";

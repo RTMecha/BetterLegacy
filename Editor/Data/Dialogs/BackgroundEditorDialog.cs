@@ -134,6 +134,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        public ModifiersEditorDialog ModifiersDialog { get; set; }
+
         #endregion
 
         #region Right
@@ -716,16 +718,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Modifiers
             {
-                var iLabel = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "label");
-                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Modifiers";
-
-                RTBackgroundEditor.inst.CreateModifiersOnAwake();
-                RTBackgroundEditor.inst.DefaultModifiersPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_BACKGROUND_MODIFIERS_POPUP, "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
+                try
                 {
-                    RTBackgroundEditor.inst.searchTerm = _val;
-                    if (RTBackgroundEditor.inst.CurrentSelectedBG)
-                        RTBackgroundEditor.inst.RefreshDefaultModifiersList(RTBackgroundEditor.inst.CurrentSelectedBG, RTBackgroundEditor.inst.addIndex);
-                }, placeholderText: "Search for default Modifier...");
+                    ModifiersDialog = new ModifiersEditorDialog();
+                    ModifiersDialog.Init(LeftContent);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Had an error with setting up modifies UI: {ex}");
+                }
             }
 
             // Start Time

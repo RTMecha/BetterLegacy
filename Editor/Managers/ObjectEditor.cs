@@ -2063,6 +2063,8 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
+            Dialog?.ModifiersDialog?.Tick();
+
             if (!ObjEditor.inst.changingTime && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
             {
                 // Sets new audio time using the Object Keyframe timeline cursor.
@@ -3355,8 +3357,7 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"Error {ex}");
             }
 
-            if (ModifiersEditor.inst)
-                StartCoroutine(ModifiersEditor.inst.RenderModifiers(beatmapObject));
+            CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
         }
 
         /// <summary>
@@ -4437,7 +4438,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == formatText, out Modifier<BeatmapObject> formatTextModifier))
                                     {
                                         beatmapObject.modifiers.Add(formatTextModifier.Copy(true, beatmapObject));
-                                        StartCoroutine(ModifiersEditor.inst.RenderModifiers(beatmapObject));
+                                        CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
                                     }
                                 }),
                                 new ButtonFunction(true),

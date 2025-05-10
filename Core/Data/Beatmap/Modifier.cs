@@ -10,18 +10,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Modifier<T> : ModifierBase
     {
-        public Modifier() : base()
-        {
-            var type = typeof(T);
-            if (type == typeof(BeatmapObject))
-                referenceType = ModifierReferenceType.BeatmapObject;
-            else if (type == typeof(BackgroundObject))
-                referenceType = ModifierReferenceType.BackgroundObject;
-            else if (type == typeof(CustomPlayer))
-                referenceType = ModifierReferenceType.CustomPlayer;
-            else if (type == typeof(GameData))
-                referenceType = ModifierReferenceType.GameData;
-        }
+        public Modifier() : base() => referenceType = GetReferenceType<T>();
 
         public Modifier(string name) : this()
         {
@@ -197,6 +186,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
     public enum ModifierReferenceType
     {
+        Null,
         BeatmapObject,
         BackgroundObject,
         CustomPlayer,
