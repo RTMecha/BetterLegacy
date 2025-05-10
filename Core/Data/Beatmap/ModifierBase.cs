@@ -115,9 +115,37 @@ namespace BetterLegacy.Core.Data.Beatmap
             return ModifierReferenceType.Null;
         }
 
+        public void VerifyModifier(List<ModifierBase> modifiers)
+        {
+            if (commands.IsEmpty())
+                return;
+
+            if (modifiers.TryFind(x => x.Name == Name && x.type == type, out ModifierBase defaultModifier))
+            {
+                int num = commands.Count;
+                while (commands.Count < defaultModifier.commands.Count)
+                {
+                    commands.Add(defaultModifier.commands[num]);
+                    num++;
+                }
+            }
+        }
+
         public override void CopyData(ModifierBase orig, bool newID = true)
         {
+            id = newID ? GetNumberID() : orig.id;
+            type = orig.type;
+            commands = orig.commands.Clone();
+            value = orig.value;
+            not = orig.not;
+            elseIf = orig.elseIf;
+            constant = orig.constant;
+            triggerCount = orig.triggerCount;
 
+            prefabInstanceOnly = orig.prefabInstanceOnly;
+            groupAlive = orig.groupAlive;
+
+            collapse = orig.collapse;
         }
 
         public T GetResult<T>() => (T)Result;
