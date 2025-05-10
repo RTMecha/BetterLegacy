@@ -190,9 +190,26 @@ namespace BetterLegacy.Editor.Managers
 
         public List<ModifierBase> copiedLevelModifiers = new List<ModifierBase>();
 
+
+
         #region Default Modifiers
 
         public ContentPopup DefaultModifiersPopup { get; set; }
+
+        public List<ModifierBase> GetDefaultModifiers(ModifierReferenceType referenceType) => referenceType switch
+        {
+            ModifierReferenceType.BeatmapObject => ModifiersManager.defaultBeatmapObjectModifiers,
+            ModifierReferenceType.BackgroundObject => ModifiersManager.defaultBackgroundObjectModifiers,
+            ModifierReferenceType.CustomPlayer => ModifiersManager.defaultPlayerModifiers,
+            ModifierReferenceType.GameData => ModifiersManager.defaultLevelModifiers,
+            _ => null,
+        };
+
+        public void OpenDefaultModifiersList<T>(ModifierReferenceType referenceType, IModifyable<T> modifyable, int addIndex = -1)
+        {
+            DefaultModifiersPopup.Open();
+            RefreshDefaultModifiersList(referenceType, modifyable, addIndex);
+        }
 
         public void RefreshDefaultModifiersList<T>(ModifierReferenceType referenceType, IModifyable<T> modifyable, int addIndex = -1)
         {
@@ -202,14 +219,7 @@ namespace BetterLegacy.Editor.Managers
                 RefreshDefaultModifiersList(referenceType, modifyable, addIndex);
             });
 
-            var defaultModifiers = referenceType switch
-            {
-                ModifierReferenceType.BeatmapObject => ModifiersManager.defaultBeatmapObjectModifiers,
-                ModifierReferenceType.BackgroundObject => ModifiersManager.defaultBackgroundObjectModifiers,
-                ModifierReferenceType.CustomPlayer => ModifiersManager.defaultPlayerModifiers,
-                ModifierReferenceType.GameData => ModifiersManager.defaultLevelModifiers,
-                _ => null,
-            };
+            var defaultModifiers = GetDefaultModifiers(referenceType);
 
             if (defaultModifiers == null)
                 return;
