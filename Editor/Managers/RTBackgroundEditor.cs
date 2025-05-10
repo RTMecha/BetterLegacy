@@ -1571,6 +1571,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateBackgroundList()
         {
+            if (!GameData.Current)
+                return;
+
             Dialog.ClearContent();
             int num = 0;
             foreach (var backgroundObject in GameData.Current.backgroundObjects)

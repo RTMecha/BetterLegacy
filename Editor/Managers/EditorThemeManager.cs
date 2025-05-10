@@ -11,6 +11,7 @@ using LSFunctions;
 using TMPro;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Components;
 
@@ -27,7 +28,16 @@ namespace BetterLegacy.Editor.Managers
                 Clear();
         }
 
-        public static void Clear() => EditorGUIElements.Clear();
+        public static void Clear()
+        {
+            var elements = EditorGUIElements;
+
+            if (!elements.IsEmpty())
+                for (int i = 0; i < elements.Count; i++)
+                    elements[i]?.Clear();
+
+            elements.Clear();
+        }
 
         public static IEnumerator RenderElements()
         {
@@ -462,269 +472,241 @@ namespace BetterLegacy.Editor.Managers
             }
 
             public string name;
+
             public Dictionary<ThemeGroup, Color> ColorGroups { get; set; }
 
-            public static ThemeGroup GetGroup(string group)
+            public static ThemeGroup GetGroup(string group) => group switch
             {
-                switch (group)
-                {
-                    case "Background": return ThemeGroup.Background_1;
-                    case "Background 2": return ThemeGroup.Background_2;
-                    case "Background 3": return ThemeGroup.Background_3;
-                    case "Preview Cover": return ThemeGroup.Preview_Cover;
-
-                    case "Scrollbar Handle": return ThemeGroup.Scrollbar_1_Handle;
-                    case "Scrollbar Handle Normal": return ThemeGroup.Scrollbar_1_Handle_Normal;
-                    case "Scrollbar Handle Highlight": return ThemeGroup.Scrollbar_1_Handle_Highlighted;
-                    case "Scrollbar Handle Selected": return ThemeGroup.Scrollbar_1_Handle_Selected;
-                    case "Scrollbar Handle Pressed": return ThemeGroup.Scrollbar_1_Handle_Pressed;
-                    case "Scrollbar Handle Disabled": return ThemeGroup.Scrollbar_1_Handle_Disabled;
-
-                    case "Scrollbar 2": return ThemeGroup.Scrollbar_2;
-                    case "Scrollbar Handle 2": return ThemeGroup.Scrollbar_2_Handle;
-                    case "Scrollbar Handle 2 Normal": return ThemeGroup.Scrollbar_2_Handle_Normal;
-                    case "Scrollbar Handle 2 Highlight": return ThemeGroup.Scrollbar_2_Handle_Highlighted;
-                    case "Scrollbar Handle 2 Selected": return ThemeGroup.Scrollbar_2_Handle_Selected;
-                    case "Scrollbar Handle 2 Pressed": return ThemeGroup.Scrollbar_2_Handle_Pressed;
-                    case "Scrollbar Handle 2 Disabled": return ThemeGroup.Scrollbar_2_Handle_Disabled;
-
-                    case "Close": return ThemeGroup.Close;
-                    case "Close Normal": return ThemeGroup.Close_Normal;
-                    case "Close Highlight": return ThemeGroup.Close_Highlighted;
-                    case "Close Selected": return ThemeGroup.Close_Selected;
-                    case "Close Pressed": return ThemeGroup.Close_Pressed;
-                    case "Close Disabled": return ThemeGroup.Close_Disabled;
-                    case "Close X": return ThemeGroup.Close_X;
-
-                    case "Picker": return ThemeGroup.Picker;
-                    case "Picker Normal": return ThemeGroup.Picker_Normal;
-                    case "Picker Highlight": return ThemeGroup.Picker_Highlighted;
-                    case "Picker Selected": return ThemeGroup.Picker_Selected;
-                    case "Picker Pressed": return ThemeGroup.Picker_Pressed;
-                    case "Picker Disabled": return ThemeGroup.Picker_Disabled;
-                    case "Picker Icon": return ThemeGroup.Picker_Icon;
-
-                    case "Light Text": return ThemeGroup.Light_Text;
-                    case "Dark Text": return ThemeGroup.Dark_Text;
-
-                    case "Function 1": return ThemeGroup.Function_1; // 0F7BF8FF
-                    case "Function 1 Text": return ThemeGroup.Function_1_Text;
-                    case "Function 2": return ThemeGroup.Function_2;
-                    case "Function 2 Normal": return ThemeGroup.Function_2_Normal;
-                    case "Function 2 Highlight": return ThemeGroup.Function_2_Highlighted;
-                    case "Function 2 Selected": return ThemeGroup.Function_2_Selected;
-                    case "Function 2 Pressed": return ThemeGroup.Function_2_Pressed;
-                    case "Function 2 Disabled": return ThemeGroup.Function_2_Disabled;
-                    case "Function 2 Text": return ThemeGroup.Function_2_Text;
-                    case "Function 3": return ThemeGroup.Function_3;
-                    case "Function 3 Text": return ThemeGroup.Function_3_Text;
-
-                    case "List Button 1": return ThemeGroup.List_Button_1;
-                    case "List Button 1 Normal": return ThemeGroup.List_Button_1_Normal;
-                    case "List Button 1 Highlight": return ThemeGroup.List_Button_1_Highlighted;
-                    case "List Button 1 Selected": return ThemeGroup.List_Button_1_Selected;
-                    case "List Button 1 Pressed": return ThemeGroup.List_Button_1_Pressed;
-                    case "List Button 1 Disabled": return ThemeGroup.List_Button_1_Disabled;
-
-                    case "List Button 2": return ThemeGroup.List_Button_2;
-                    case "List Button 2 Normal": return ThemeGroup.List_Button_2_Normal;
-                    case "List Button 2 Highlight": return ThemeGroup.List_Button_2_Highlighted;
-                    case "List Button 2 Selected": return ThemeGroup.List_Button_2_Selected;
-                    case "List Button 2 Pressed": return ThemeGroup.List_Button_2_Pressed;
-                    case "List Button 2 Disabled": return ThemeGroup.List_Button_2_Disabled;
-                    case "List Button 2 Text": return ThemeGroup.List_Button_2_Text;
-
-                    case "Back Button": return ThemeGroup.Back_Button;
-                    case "Back Button Text": return ThemeGroup.Back_Button_Text;
-                    case "Folder Button": return ThemeGroup.Folder_Button;
-                    case "Folder Button Text": return ThemeGroup.Folder_Button_Text;
-
-                    case "Search Field 1": return ThemeGroup.Search_Field_1;
-                    case "Search Field 1 Text": return ThemeGroup.Search_Field_1_Text;
-                    case "Search Field 2": return ThemeGroup.Search_Field_2;
-                    case "Search Field 2 Text": return ThemeGroup.Search_Field_2_Text;
-
-                    case "Add": return ThemeGroup.Add;
-                    case "Add Text": return ThemeGroup.Add_Text;
-                    case "Delete": return ThemeGroup.Delete;
-                    case "Delete Text": return ThemeGroup.Delete_Text;
-                    case "Delete Keyframe BG": return ThemeGroup.Delete_Keyframe_BG;
-                    case "Delete Keyframe Button": return ThemeGroup.Delete_Keyframe_Button;
-                    case "Delete Keyframe Button Normal": return ThemeGroup.Delete_Keyframe_Button_Normal;
-                    case "Delete Keyframe Button Highlight": return ThemeGroup.Delete_Keyframe_Button_Highlighted;
-                    case "Delete Keyframe Button Selected": return ThemeGroup.Delete_Keyframe_Button_Selected;
-                    case "Delete Keyframe Button Pressed": return ThemeGroup.Delete_Keyframe_Button_Pressed;
-                    case "Delete Keyframe Button Disabled": return ThemeGroup.Delete_Keyframe_Button_Disabled;
-
-                    case "Prefab": return ThemeGroup.Prefab;
-                    case "Prefab Text": return ThemeGroup.Prefab_Text;
-                    case "Object": return ThemeGroup.Object;
-                    case "Object Text": return ThemeGroup.Object_Text;
-                    case "Marker": return ThemeGroup.Marker;
-                    case "Marker Text": return ThemeGroup.Marker_Text;
-                    case "Checkpoint": return ThemeGroup.Checkpoint;
-                    case "Checkpoint Text": return ThemeGroup.Checkpoint_Text;
-                    case "Background Object": return ThemeGroup.Background_Object;
-                    case "Background Object Text": return ThemeGroup.Background_Object_Text;
-                    case "Timeline Bar": return ThemeGroup.Timeline_Bar;
-                    case "Event/Check": return ThemeGroup.Event_Check;
-                    case "Event/Check Text": return ThemeGroup.Event_Check_Text;
-
-                    case "Dropdown 1": return ThemeGroup.Dropdown_1;
-                    case "Dropdown 1 Overlay": return ThemeGroup.Dropdown_1_Overlay;
-                    case "Dropdown 1 Item": return ThemeGroup.Dropdown_1_Item;
-                    case "Toggle 1": return ThemeGroup.Toggle_1;
-                    case "Toggle 1 Check": return ThemeGroup.Toggle_1_Check;
-                    case "Input Field": return ThemeGroup.Input_Field;
-                    case "Input Field Text": return ThemeGroup.Input_Field_Text;
-                    case "Slider 1": return ThemeGroup.Slider_1;
-                    case "Slider 1 Normal": return ThemeGroup.Slider_1_Normal;
-                    case "Slider 1 Highlight": return ThemeGroup.Slider_1_Highlighted;
-                    case "Slider 1 Selected": return ThemeGroup.Slider_1_Selected;
-                    case "Slider 1 Pressed": return ThemeGroup.Slider_1_Pressed;
-                    case "Slider 1 Disabled": return ThemeGroup.Slider_1_Disabled;
-                    case "Slider 1 Handle": return ThemeGroup.Slider_1_Handle;
-
-                    case "Slider": return ThemeGroup.Slider_2;
-                    case "Slider Handle": return ThemeGroup.Slider_2_Handle;
-
-                    case "Documentation": return ThemeGroup.Documentation;
-
-                    case "Timeline Background": return ThemeGroup.Timeline_Background;
-                    case "Timeline Scrollbar": return ThemeGroup.Timeline_Scrollbar;
-                    case "Timeline Scrollbar Normal": return ThemeGroup.Timeline_Scrollbar_Normal;
-                    case "Timeline Scrollbar Highlight": return ThemeGroup.Timeline_Scrollbar_Highlighted;
-                    case "Timeline Scrollbar Selected": return ThemeGroup.Timeline_Scrollbar_Selected;
-                    case "Timeline Scrollbar Pressed": return ThemeGroup.Timeline_Scrollbar_Pressed;
-                    case "Timeline Scrollbar Disabled": return ThemeGroup.Timeline_Scrollbar_Disabled;
-                    case "Timeline Scrollbar Base": return ThemeGroup.Timeline_Scrollbar_Base;
-                    case "Timeline Time Scrollbar": return ThemeGroup.Timeline_Time_Scrollbar;
-
-                    case "Title Bar Text": return ThemeGroup.Title_Bar_Text;
-                    case "Title Bar Button": return ThemeGroup.Title_Bar_Button;
-                    case "Title Bar Button Normal": return ThemeGroup.Title_Bar_Button_Normal;
-                    case "Title Bar Button Highlight": return ThemeGroup.Title_Bar_Button_Highlighted;
-                    case "Title Bar Button Selected": return ThemeGroup.Title_Bar_Button_Selected;
-                    case "Title Bar Button Pressed": return ThemeGroup.Title_Bar_Button_Pressed;
-                    case "Title Bar Dropdown": return ThemeGroup.Title_Bar_Dropdown;
-                    case "Title Bar Dropdown Normal": return ThemeGroup.Title_Bar_Dropdown_Normal;
-                    case "Title Bar Dropdown Highlight": return ThemeGroup.Title_Bar_Dropdown_Highlighted;
-                    case "Title Bar Dropdown Selected": return ThemeGroup.Title_Bar_Dropdown_Selected;
-                    case "Title Bar Dropdown Pressed": return ThemeGroup.Title_Bar_Dropdown_Pressed;
-                    case "Title Bar Dropdown Disabled": return ThemeGroup.Title_Bar_Dropdown_Disabled;
-
-                    case "Warning Confirm": return ThemeGroup.Warning_Confirm;
-                    case "Warning Cancel": return ThemeGroup.Warning_Cancel;
-
-                    case "Notification Background": return ThemeGroup.Notification_Background;
-                    case "Notification Info": return ThemeGroup.Notification_Info;
-                    case "Notification Success": return ThemeGroup.Notification_Success;
-                    case "Notification Error": return ThemeGroup.Notification_Error;
-                    case "Notification Warning": return ThemeGroup.Notification_Warning;
-
-                    case "Copy": return ThemeGroup.Copy;
-                    case "Copy Text": return ThemeGroup.Copy_Text;
-                    case "Paste": return ThemeGroup.Paste;
-                    case "Paste Text": return ThemeGroup.Paste_Text;
-
-                    case "Tab Color 1": return ThemeGroup.Tab_Color_1;
-                    case "Tab Color 1 Normal": return ThemeGroup.Tab_Color_1_Normal;
-                    case "Tab Color 1 Highlight": return ThemeGroup.Tab_Color_1_Highlighted;
-                    case "Tab Color 1 Selected": return ThemeGroup.Tab_Color_1_Selected;
-                    case "Tab Color 1 Pressed": return ThemeGroup.Tab_Color_1_Pressed;
-                    case "Tab Color 1 Disabled": return ThemeGroup.Tab_Color_1_Disabled;
-                    case "Tab Color 2": return ThemeGroup.Tab_Color_2;
-                    case "Tab Color 2 Normal": return ThemeGroup.Tab_Color_2_Normal;
-                    case "Tab Color 2 Highlight": return ThemeGroup.Tab_Color_2_Highlighted;
-                    case "Tab Color 2 Selected": return ThemeGroup.Tab_Color_2_Selected;
-                    case "Tab Color 2 Pressed": return ThemeGroup.Tab_Color_2_Pressed;
-                    case "Tab Color 2 Disabled": return ThemeGroup.Tab_Color_2_Disabled;
-                    case "Tab Color 3": return ThemeGroup.Tab_Color_3;
-                    case "Tab Color 3 Normal": return ThemeGroup.Tab_Color_3_Normal;
-                    case "Tab Color 3 Highlight": return ThemeGroup.Tab_Color_3_Highlighted;
-                    case "Tab Color 3 Selected": return ThemeGroup.Tab_Color_3_Selected;
-                    case "Tab Color 3 Pressed": return ThemeGroup.Tab_Color_3_Pressed;
-                    case "Tab Color 3 Disabled": return ThemeGroup.Tab_Color_3_Disabled;
-                    case "Tab Color 4": return ThemeGroup.Tab_Color_4;
-                    case "Tab Color 4 Normal": return ThemeGroup.Tab_Color_4_Normal;
-                    case "Tab Color 4 Highlight": return ThemeGroup.Tab_Color_4_Highlighted;
-                    case "Tab Color 4 Selected": return ThemeGroup.Tab_Color_4_Selected;
-                    case "Tab Color 4 Pressed": return ThemeGroup.Tab_Color_4_Pressed;
-                    case "Tab Color 4 Disabled": return ThemeGroup.Tab_Color_4_Disabled;
-                    case "Tab Color 5": return ThemeGroup.Tab_Color_5;
-                    case "Tab Color 5 Normal": return ThemeGroup.Tab_Color_5_Normal;
-                    case "Tab Color 5 Highlight": return ThemeGroup.Tab_Color_5_Highlighted;
-                    case "Tab Color 5 Selected": return ThemeGroup.Tab_Color_5_Selected;
-                    case "Tab Color 5 Pressed": return ThemeGroup.Tab_Color_5_Pressed;
-                    case "Tab Color 5 Disabled": return ThemeGroup.Tab_Color_5_Disabled;
-                    case "Tab Color 6": return ThemeGroup.Tab_Color_6;
-                    case "Tab Color 6 Normal": return ThemeGroup.Tab_Color_6_Normal;
-                    case "Tab Color 6 Highlight": return ThemeGroup.Tab_Color_6_Highlighted;
-                    case "Tab Color 6 Selected": return ThemeGroup.Tab_Color_6_Selected;
-                    case "Tab Color 6 Pressed": return ThemeGroup.Tab_Color_6_Pressed;
-                    case "Tab Color 6 Disabled": return ThemeGroup.Tab_Color_6_Disabled;
-                    case "Tab Color 7": return ThemeGroup.Tab_Color_7;
-                    case "Tab Color 7 Normal": return ThemeGroup.Tab_Color_7_Normal;
-                    case "Tab Color 7 Highlight": return ThemeGroup.Tab_Color_7_Highlighted;
-                    case "Tab Color 7 Selected": return ThemeGroup.Tab_Color_7_Selected;
-                    case "Tab Color 7 Pressed": return ThemeGroup.Tab_Color_7_Pressed;
-                    case "Tab Color 7 Disabled": return ThemeGroup.Tab_Color_7_Disabled;
-
-                    case "Event Color 1": return ThemeGroup.Event_Color_1; // 1
-                    case "Event Color 2": return ThemeGroup.Event_Color_2; // 2
-                    case "Event Color 3": return ThemeGroup.Event_Color_3; // 3
-                    case "Event Color 4": return ThemeGroup.Event_Color_4; // 4
-                    case "Event Color 5": return ThemeGroup.Event_Color_5; // 5
-                    case "Event Color 6": return ThemeGroup.Event_Color_6; // 6
-                    case "Event Color 7": return ThemeGroup.Event_Color_7; // 7
-                    case "Event Color 8": return ThemeGroup.Event_Color_8; // 8
-                    case "Event Color 9": return ThemeGroup.Event_Color_9; // 9
-                    case "Event Color 10": return ThemeGroup.Event_Color_10; // 10
-                    case "Event Color 11": return ThemeGroup.Event_Color_11; // 11
-                    case "Event Color 12": return ThemeGroup.Event_Color_12; // 12
-                    case "Event Color 13": return ThemeGroup.Event_Color_13; // 13
-                    case "Event Color 14": return ThemeGroup.Event_Color_14; // 14
-                    case "Event Color 15": return ThemeGroup.Event_Color_15; // 15
-
-                    case "Event Color 1 Keyframe": return ThemeGroup.Event_Color_1_Keyframe; // 1
-                    case "Event Color 2 Keyframe": return ThemeGroup.Event_Color_2_Keyframe; // 2
-                    case "Event Color 3 Keyframe": return ThemeGroup.Event_Color_3_Keyframe; // 3
-                    case "Event Color 4 Keyframe": return ThemeGroup.Event_Color_4_Keyframe; // 4
-                    case "Event Color 5 Keyframe": return ThemeGroup.Event_Color_5_Keyframe; // 5
-                    case "Event Color 6 Keyframe": return ThemeGroup.Event_Color_6_Keyframe; // 6
-                    case "Event Color 7 Keyframe": return ThemeGroup.Event_Color_7_Keyframe; // 7
-                    case "Event Color 8 Keyframe": return ThemeGroup.Event_Color_8_Keyframe; // 8
-                    case "Event Color 9 Keyframe": return ThemeGroup.Event_Color_9_Keyframe; // 9
-                    case "Event Color 10 Keyframe": return ThemeGroup.Event_Color_10_Keyframe; // 10
-                    case "Event Color 11 Keyframe": return ThemeGroup.Event_Color_11_Keyframe; // 11
-                    case "Event Color 12 Keyframe": return ThemeGroup.Event_Color_12_Keyframe; // 12
-                    case "Event Color 13 Keyframe": return ThemeGroup.Event_Color_13_Keyframe; // 13
-                    case "Event Color 14 Keyframe": return ThemeGroup.Event_Color_14_Keyframe; // 14
-                    case "Event Color 15 Keyframe": return ThemeGroup.Event_Color_15_Keyframe; // 15
-
-                    case "Event Color 1 Editor": return ThemeGroup.Event_Color_1_Editor; // 1
-                    case "Event Color 2 Editor": return ThemeGroup.Event_Color_2_Editor; // 2
-                    case "Event Color 3 Editor": return ThemeGroup.Event_Color_3_Editor; // 3
-                    case "Event Color 4 Editor": return ThemeGroup.Event_Color_4_Editor; // 4
-                    case "Event Color 5 Editor": return ThemeGroup.Event_Color_5_Editor; // 5
-                    case "Event Color 6 Editor": return ThemeGroup.Event_Color_6_Editor; // 6
-                    case "Event Color 7 Editor": return ThemeGroup.Event_Color_7_Editor; // 7
-                    case "Event Color 8 Editor": return ThemeGroup.Event_Color_8_Editor; // 8
-                    case "Event Color 9 Editor": return ThemeGroup.Event_Color_9_Editor; // 9
-                    case "Event Color 10 Editor": return ThemeGroup.Event_Color_10_Editor; // 10
-                    case "Event Color 11 Editor": return ThemeGroup.Event_Color_11_Editor; // 11
-                    case "Event Color 12 Editor": return ThemeGroup.Event_Color_12_Editor; // 12
-                    case "Event Color 13 Editor": return ThemeGroup.Event_Color_13_Editor; // 13
-                    case "Event Color 14 Editor": return ThemeGroup.Event_Color_14_Editor; // 14
-
-                    case "Object Keyframe Color 1": return ThemeGroup.Object_Keyframe_Color_1; // 1
-                    case "Object Keyframe Color 2": return ThemeGroup.Object_Keyframe_Color_2; // 2
-                    case "Object Keyframe Color 3": return ThemeGroup.Object_Keyframe_Color_3; // 3
-                    case "Object Keyframe Color 4": return ThemeGroup.Object_Keyframe_Color_4; // 4
-                }
-
-                return ThemeGroup.Null;
-            }
+                "Background" => ThemeGroup.Background_1,
+                "Background 2" => ThemeGroup.Background_2,
+                "Background 3" => ThemeGroup.Background_3,
+                "Preview Cover" => ThemeGroup.Preview_Cover,
+                "Scrollbar Handle" => ThemeGroup.Scrollbar_1_Handle,
+                "Scrollbar Handle Normal" => ThemeGroup.Scrollbar_1_Handle_Normal,
+                "Scrollbar Handle Highlight" => ThemeGroup.Scrollbar_1_Handle_Highlighted,
+                "Scrollbar Handle Selected" => ThemeGroup.Scrollbar_1_Handle_Selected,
+                "Scrollbar Handle Pressed" => ThemeGroup.Scrollbar_1_Handle_Pressed,
+                "Scrollbar Handle Disabled" => ThemeGroup.Scrollbar_1_Handle_Disabled,
+                "Scrollbar 2" => ThemeGroup.Scrollbar_2,
+                "Scrollbar Handle 2" => ThemeGroup.Scrollbar_2_Handle,
+                "Scrollbar Handle 2 Normal" => ThemeGroup.Scrollbar_2_Handle_Normal,
+                "Scrollbar Handle 2 Highlight" => ThemeGroup.Scrollbar_2_Handle_Highlighted,
+                "Scrollbar Handle 2 Selected" => ThemeGroup.Scrollbar_2_Handle_Selected,
+                "Scrollbar Handle 2 Pressed" => ThemeGroup.Scrollbar_2_Handle_Pressed,
+                "Scrollbar Handle 2 Disabled" => ThemeGroup.Scrollbar_2_Handle_Disabled,
+                "Close" => ThemeGroup.Close,
+                "Close Normal" => ThemeGroup.Close_Normal,
+                "Close Highlight" => ThemeGroup.Close_Highlighted,
+                "Close Selected" => ThemeGroup.Close_Selected,
+                "Close Pressed" => ThemeGroup.Close_Pressed,
+                "Close Disabled" => ThemeGroup.Close_Disabled,
+                "Close X" => ThemeGroup.Close_X,
+                "Picker" => ThemeGroup.Picker,
+                "Picker Normal" => ThemeGroup.Picker_Normal,
+                "Picker Highlight" => ThemeGroup.Picker_Highlighted,
+                "Picker Selected" => ThemeGroup.Picker_Selected,
+                "Picker Pressed" => ThemeGroup.Picker_Pressed,
+                "Picker Disabled" => ThemeGroup.Picker_Disabled,
+                "Picker Icon" => ThemeGroup.Picker_Icon,
+                "Light Text" => ThemeGroup.Light_Text,
+                "Dark Text" => ThemeGroup.Dark_Text,
+                "Function 1" => ThemeGroup.Function_1,// 0F7BF8FF
+                "Function 1 Text" => ThemeGroup.Function_1_Text,
+                "Function 2" => ThemeGroup.Function_2,
+                "Function 2 Normal" => ThemeGroup.Function_2_Normal,
+                "Function 2 Highlight" => ThemeGroup.Function_2_Highlighted,
+                "Function 2 Selected" => ThemeGroup.Function_2_Selected,
+                "Function 2 Pressed" => ThemeGroup.Function_2_Pressed,
+                "Function 2 Disabled" => ThemeGroup.Function_2_Disabled,
+                "Function 2 Text" => ThemeGroup.Function_2_Text,
+                "Function 3" => ThemeGroup.Function_3,
+                "Function 3 Text" => ThemeGroup.Function_3_Text,
+                "List Button 1" => ThemeGroup.List_Button_1,
+                "List Button 1 Normal" => ThemeGroup.List_Button_1_Normal,
+                "List Button 1 Highlight" => ThemeGroup.List_Button_1_Highlighted,
+                "List Button 1 Selected" => ThemeGroup.List_Button_1_Selected,
+                "List Button 1 Pressed" => ThemeGroup.List_Button_1_Pressed,
+                "List Button 1 Disabled" => ThemeGroup.List_Button_1_Disabled,
+                "List Button 2" => ThemeGroup.List_Button_2,
+                "List Button 2 Normal" => ThemeGroup.List_Button_2_Normal,
+                "List Button 2 Highlight" => ThemeGroup.List_Button_2_Highlighted,
+                "List Button 2 Selected" => ThemeGroup.List_Button_2_Selected,
+                "List Button 2 Pressed" => ThemeGroup.List_Button_2_Pressed,
+                "List Button 2 Disabled" => ThemeGroup.List_Button_2_Disabled,
+                "List Button 2 Text" => ThemeGroup.List_Button_2_Text,
+                "Back Button" => ThemeGroup.Back_Button,
+                "Back Button Text" => ThemeGroup.Back_Button_Text,
+                "Folder Button" => ThemeGroup.Folder_Button,
+                "Folder Button Text" => ThemeGroup.Folder_Button_Text,
+                "Search Field 1" => ThemeGroup.Search_Field_1,
+                "Search Field 1 Text" => ThemeGroup.Search_Field_1_Text,
+                "Search Field 2" => ThemeGroup.Search_Field_2,
+                "Search Field 2 Text" => ThemeGroup.Search_Field_2_Text,
+                "Add" => ThemeGroup.Add,
+                "Add Text" => ThemeGroup.Add_Text,
+                "Delete" => ThemeGroup.Delete,
+                "Delete Text" => ThemeGroup.Delete_Text,
+                "Delete Keyframe BG" => ThemeGroup.Delete_Keyframe_BG,
+                "Delete Keyframe Button" => ThemeGroup.Delete_Keyframe_Button,
+                "Delete Keyframe Button Normal" => ThemeGroup.Delete_Keyframe_Button_Normal,
+                "Delete Keyframe Button Highlight" => ThemeGroup.Delete_Keyframe_Button_Highlighted,
+                "Delete Keyframe Button Selected" => ThemeGroup.Delete_Keyframe_Button_Selected,
+                "Delete Keyframe Button Pressed" => ThemeGroup.Delete_Keyframe_Button_Pressed,
+                "Delete Keyframe Button Disabled" => ThemeGroup.Delete_Keyframe_Button_Disabled,
+                "Prefab" => ThemeGroup.Prefab,
+                "Prefab Text" => ThemeGroup.Prefab_Text,
+                "Object" => ThemeGroup.Object,
+                "Object Text" => ThemeGroup.Object_Text,
+                "Marker" => ThemeGroup.Marker,
+                "Marker Text" => ThemeGroup.Marker_Text,
+                "Checkpoint" => ThemeGroup.Checkpoint,
+                "Checkpoint Text" => ThemeGroup.Checkpoint_Text,
+                "Background Object" => ThemeGroup.Background_Object,
+                "Background Object Text" => ThemeGroup.Background_Object_Text,
+                "Timeline Bar" => ThemeGroup.Timeline_Bar,
+                "Event/Check" => ThemeGroup.Event_Check,
+                "Event/Check Text" => ThemeGroup.Event_Check_Text,
+                "Dropdown 1" => ThemeGroup.Dropdown_1,
+                "Dropdown 1 Overlay" => ThemeGroup.Dropdown_1_Overlay,
+                "Dropdown 1 Item" => ThemeGroup.Dropdown_1_Item,
+                "Toggle 1" => ThemeGroup.Toggle_1,
+                "Toggle 1 Check" => ThemeGroup.Toggle_1_Check,
+                "Input Field" => ThemeGroup.Input_Field,
+                "Input Field Text" => ThemeGroup.Input_Field_Text,
+                "Slider 1" => ThemeGroup.Slider_1,
+                "Slider 1 Normal" => ThemeGroup.Slider_1_Normal,
+                "Slider 1 Highlight" => ThemeGroup.Slider_1_Highlighted,
+                "Slider 1 Selected" => ThemeGroup.Slider_1_Selected,
+                "Slider 1 Pressed" => ThemeGroup.Slider_1_Pressed,
+                "Slider 1 Disabled" => ThemeGroup.Slider_1_Disabled,
+                "Slider 1 Handle" => ThemeGroup.Slider_1_Handle,
+                "Slider" => ThemeGroup.Slider_2,
+                "Slider Handle" => ThemeGroup.Slider_2_Handle,
+                "Documentation" => ThemeGroup.Documentation,
+                "Timeline Background" => ThemeGroup.Timeline_Background,
+                "Timeline Scrollbar" => ThemeGroup.Timeline_Scrollbar,
+                "Timeline Scrollbar Normal" => ThemeGroup.Timeline_Scrollbar_Normal,
+                "Timeline Scrollbar Highlight" => ThemeGroup.Timeline_Scrollbar_Highlighted,
+                "Timeline Scrollbar Selected" => ThemeGroup.Timeline_Scrollbar_Selected,
+                "Timeline Scrollbar Pressed" => ThemeGroup.Timeline_Scrollbar_Pressed,
+                "Timeline Scrollbar Disabled" => ThemeGroup.Timeline_Scrollbar_Disabled,
+                "Timeline Scrollbar Base" => ThemeGroup.Timeline_Scrollbar_Base,
+                "Timeline Time Scrollbar" => ThemeGroup.Timeline_Time_Scrollbar,
+                "Title Bar Text" => ThemeGroup.Title_Bar_Text,
+                "Title Bar Button" => ThemeGroup.Title_Bar_Button,
+                "Title Bar Button Normal" => ThemeGroup.Title_Bar_Button_Normal,
+                "Title Bar Button Highlight" => ThemeGroup.Title_Bar_Button_Highlighted,
+                "Title Bar Button Selected" => ThemeGroup.Title_Bar_Button_Selected,
+                "Title Bar Button Pressed" => ThemeGroup.Title_Bar_Button_Pressed,
+                "Title Bar Dropdown" => ThemeGroup.Title_Bar_Dropdown,
+                "Title Bar Dropdown Normal" => ThemeGroup.Title_Bar_Dropdown_Normal,
+                "Title Bar Dropdown Highlight" => ThemeGroup.Title_Bar_Dropdown_Highlighted,
+                "Title Bar Dropdown Selected" => ThemeGroup.Title_Bar_Dropdown_Selected,
+                "Title Bar Dropdown Pressed" => ThemeGroup.Title_Bar_Dropdown_Pressed,
+                "Title Bar Dropdown Disabled" => ThemeGroup.Title_Bar_Dropdown_Disabled,
+                "Warning Confirm" => ThemeGroup.Warning_Confirm,
+                "Warning Cancel" => ThemeGroup.Warning_Cancel,
+                "Notification Background" => ThemeGroup.Notification_Background,
+                "Notification Info" => ThemeGroup.Notification_Info,
+                "Notification Success" => ThemeGroup.Notification_Success,
+                "Notification Error" => ThemeGroup.Notification_Error,
+                "Notification Warning" => ThemeGroup.Notification_Warning,
+                "Copy" => ThemeGroup.Copy,
+                "Copy Text" => ThemeGroup.Copy_Text,
+                "Paste" => ThemeGroup.Paste,
+                "Paste Text" => ThemeGroup.Paste_Text,
+                "Tab Color 1" => ThemeGroup.Tab_Color_1,
+                "Tab Color 1 Normal" => ThemeGroup.Tab_Color_1_Normal,
+                "Tab Color 1 Highlight" => ThemeGroup.Tab_Color_1_Highlighted,
+                "Tab Color 1 Selected" => ThemeGroup.Tab_Color_1_Selected,
+                "Tab Color 1 Pressed" => ThemeGroup.Tab_Color_1_Pressed,
+                "Tab Color 1 Disabled" => ThemeGroup.Tab_Color_1_Disabled,
+                "Tab Color 2" => ThemeGroup.Tab_Color_2,
+                "Tab Color 2 Normal" => ThemeGroup.Tab_Color_2_Normal,
+                "Tab Color 2 Highlight" => ThemeGroup.Tab_Color_2_Highlighted,
+                "Tab Color 2 Selected" => ThemeGroup.Tab_Color_2_Selected,
+                "Tab Color 2 Pressed" => ThemeGroup.Tab_Color_2_Pressed,
+                "Tab Color 2 Disabled" => ThemeGroup.Tab_Color_2_Disabled,
+                "Tab Color 3" => ThemeGroup.Tab_Color_3,
+                "Tab Color 3 Normal" => ThemeGroup.Tab_Color_3_Normal,
+                "Tab Color 3 Highlight" => ThemeGroup.Tab_Color_3_Highlighted,
+                "Tab Color 3 Selected" => ThemeGroup.Tab_Color_3_Selected,
+                "Tab Color 3 Pressed" => ThemeGroup.Tab_Color_3_Pressed,
+                "Tab Color 3 Disabled" => ThemeGroup.Tab_Color_3_Disabled,
+                "Tab Color 4" => ThemeGroup.Tab_Color_4,
+                "Tab Color 4 Normal" => ThemeGroup.Tab_Color_4_Normal,
+                "Tab Color 4 Highlight" => ThemeGroup.Tab_Color_4_Highlighted,
+                "Tab Color 4 Selected" => ThemeGroup.Tab_Color_4_Selected,
+                "Tab Color 4 Pressed" => ThemeGroup.Tab_Color_4_Pressed,
+                "Tab Color 4 Disabled" => ThemeGroup.Tab_Color_4_Disabled,
+                "Tab Color 5" => ThemeGroup.Tab_Color_5,
+                "Tab Color 5 Normal" => ThemeGroup.Tab_Color_5_Normal,
+                "Tab Color 5 Highlight" => ThemeGroup.Tab_Color_5_Highlighted,
+                "Tab Color 5 Selected" => ThemeGroup.Tab_Color_5_Selected,
+                "Tab Color 5 Pressed" => ThemeGroup.Tab_Color_5_Pressed,
+                "Tab Color 5 Disabled" => ThemeGroup.Tab_Color_5_Disabled,
+                "Tab Color 6" => ThemeGroup.Tab_Color_6,
+                "Tab Color 6 Normal" => ThemeGroup.Tab_Color_6_Normal,
+                "Tab Color 6 Highlight" => ThemeGroup.Tab_Color_6_Highlighted,
+                "Tab Color 6 Selected" => ThemeGroup.Tab_Color_6_Selected,
+                "Tab Color 6 Pressed" => ThemeGroup.Tab_Color_6_Pressed,
+                "Tab Color 6 Disabled" => ThemeGroup.Tab_Color_6_Disabled,
+                "Tab Color 7" => ThemeGroup.Tab_Color_7,
+                "Tab Color 7 Normal" => ThemeGroup.Tab_Color_7_Normal,
+                "Tab Color 7 Highlight" => ThemeGroup.Tab_Color_7_Highlighted,
+                "Tab Color 7 Selected" => ThemeGroup.Tab_Color_7_Selected,
+                "Tab Color 7 Pressed" => ThemeGroup.Tab_Color_7_Pressed,
+                "Tab Color 7 Disabled" => ThemeGroup.Tab_Color_7_Disabled,
+                "Event Color 1" => ThemeGroup.Event_Color_1,// 1
+                "Event Color 2" => ThemeGroup.Event_Color_2,// 2
+                "Event Color 3" => ThemeGroup.Event_Color_3,// 3
+                "Event Color 4" => ThemeGroup.Event_Color_4,// 4
+                "Event Color 5" => ThemeGroup.Event_Color_5,// 5
+                "Event Color 6" => ThemeGroup.Event_Color_6,// 6
+                "Event Color 7" => ThemeGroup.Event_Color_7,// 7
+                "Event Color 8" => ThemeGroup.Event_Color_8,// 8
+                "Event Color 9" => ThemeGroup.Event_Color_9,// 9
+                "Event Color 10" => ThemeGroup.Event_Color_10,// 10
+                "Event Color 11" => ThemeGroup.Event_Color_11,// 11
+                "Event Color 12" => ThemeGroup.Event_Color_12,// 12
+                "Event Color 13" => ThemeGroup.Event_Color_13,// 13
+                "Event Color 14" => ThemeGroup.Event_Color_14,// 14
+                "Event Color 15" => ThemeGroup.Event_Color_15,// 15
+                "Event Color 1 Keyframe" => ThemeGroup.Event_Color_1_Keyframe,// 1
+                "Event Color 2 Keyframe" => ThemeGroup.Event_Color_2_Keyframe,// 2
+                "Event Color 3 Keyframe" => ThemeGroup.Event_Color_3_Keyframe,// 3
+                "Event Color 4 Keyframe" => ThemeGroup.Event_Color_4_Keyframe,// 4
+                "Event Color 5 Keyframe" => ThemeGroup.Event_Color_5_Keyframe,// 5
+                "Event Color 6 Keyframe" => ThemeGroup.Event_Color_6_Keyframe,// 6
+                "Event Color 7 Keyframe" => ThemeGroup.Event_Color_7_Keyframe,// 7
+                "Event Color 8 Keyframe" => ThemeGroup.Event_Color_8_Keyframe,// 8
+                "Event Color 9 Keyframe" => ThemeGroup.Event_Color_9_Keyframe,// 9
+                "Event Color 10 Keyframe" => ThemeGroup.Event_Color_10_Keyframe,// 10
+                "Event Color 11 Keyframe" => ThemeGroup.Event_Color_11_Keyframe,// 11
+                "Event Color 12 Keyframe" => ThemeGroup.Event_Color_12_Keyframe,// 12
+                "Event Color 13 Keyframe" => ThemeGroup.Event_Color_13_Keyframe,// 13
+                "Event Color 14 Keyframe" => ThemeGroup.Event_Color_14_Keyframe,// 14
+                "Event Color 15 Keyframe" => ThemeGroup.Event_Color_15_Keyframe,// 15
+                "Event Color 1 Editor" => ThemeGroup.Event_Color_1_Editor,// 1
+                "Event Color 2 Editor" => ThemeGroup.Event_Color_2_Editor,// 2
+                "Event Color 3 Editor" => ThemeGroup.Event_Color_3_Editor,// 3
+                "Event Color 4 Editor" => ThemeGroup.Event_Color_4_Editor,// 4
+                "Event Color 5 Editor" => ThemeGroup.Event_Color_5_Editor,// 5
+                "Event Color 6 Editor" => ThemeGroup.Event_Color_6_Editor,// 6
+                "Event Color 7 Editor" => ThemeGroup.Event_Color_7_Editor,// 7
+                "Event Color 8 Editor" => ThemeGroup.Event_Color_8_Editor,// 8
+                "Event Color 9 Editor" => ThemeGroup.Event_Color_9_Editor,// 9
+                "Event Color 10 Editor" => ThemeGroup.Event_Color_10_Editor,// 10
+                "Event Color 11 Editor" => ThemeGroup.Event_Color_11_Editor,// 11
+                "Event Color 12 Editor" => ThemeGroup.Event_Color_12_Editor,// 12
+                "Event Color 13 Editor" => ThemeGroup.Event_Color_13_Editor,// 13
+                "Event Color 14 Editor" => ThemeGroup.Event_Color_14_Editor,// 14
+                "Object Keyframe Color 1" => ThemeGroup.Object_Keyframe_Color_1,// 1
+                "Object Keyframe Color 2" => ThemeGroup.Object_Keyframe_Color_2,// 2
+                "Object Keyframe Color 3" => ThemeGroup.Object_Keyframe_Color_3,// 3
+                "Object Keyframe Color 4" => ThemeGroup.Object_Keyframe_Color_4,// 4
+                _ => ThemeGroup.Null,
+            };
 
             public Color GetEventKeyframeColor(int type) => type switch
             {
@@ -754,61 +736,46 @@ namespace BetterLegacy.Editor.Managers
                 _ => Color.white,
             };
 
-            public static string GetString(ThemeGroup group)
+            public static string GetString(ThemeGroup group) => group switch
             {
-                switch (group)
-                {
-                    case ThemeGroup.Background_1: return "Background";
-
-                    case ThemeGroup.Scrollbar_1_Handle: return "Scrollbar Handle";
-                    case ThemeGroup.Scrollbar_1_Handle_Normal: return "Scrollbar Handle Normal";
-                    case ThemeGroup.Scrollbar_1_Handle_Highlighted: return "Scrollbar Handle Highlight";
-                    case ThemeGroup.Scrollbar_1_Handle_Selected: return "Scrollbar Handle Selected";
-                    case ThemeGroup.Scrollbar_1_Handle_Pressed: return "Scrollbar Handle Pressed";
-                    case ThemeGroup.Scrollbar_1_Handle_Disabled: return "Scrollbar Handle Disabled";
-
-                    case ThemeGroup.Scrollbar_2: return "Scrollbar 2";
-                    case ThemeGroup.Scrollbar_2_Handle: return "Scrollbar Handle 2";
-                    case ThemeGroup.Scrollbar_2_Handle_Normal: return "Scrollbar Handle 2 Normal";
-                    case ThemeGroup.Scrollbar_2_Handle_Highlighted: return "Scrollbar Handle 2 Highlight";
-                    case ThemeGroup.Scrollbar_2_Handle_Selected: return "Scrollbar Handle 2 Selected";
-                    case ThemeGroup.Scrollbar_2_Handle_Pressed: return "Scrollbar Handle 2 Pressed";
-                    case ThemeGroup.Scrollbar_2_Handle_Disabled: return "Scrollbar Handle 2 Disabled";
-
-                    case ThemeGroup.Close_Highlighted: return "Close Highlight";
-
-                    case ThemeGroup.Function_2_Highlighted: return "Function 2 Highlight";
-
-                    case ThemeGroup.List_Button_1_Highlighted: return "List Button 1 Highlight";
-
-                    case ThemeGroup.List_Button_2_Highlighted: return "List Button 2 Highlight";
-
-                    case ThemeGroup.Delete_Keyframe_Button_Highlighted: return "Delete Keyframe Button Highlight";
-
-                    case ThemeGroup.Event_Check: return "Event/Check";
-                    case ThemeGroup.Event_Check_Text: return "Event/Check Text";
-
-                    case ThemeGroup.Slider_2: return "Slider";
-                    case ThemeGroup.Slider_2_Handle: return "Slider Handle";
-
-                    case ThemeGroup.Timeline_Scrollbar_Highlighted: return "Timeline Scrollbar Highlight";
-
-                    case ThemeGroup.Title_Bar_Button_Highlighted: return "Title Bar Button Highlight";
-                    case ThemeGroup.Title_Bar_Dropdown_Highlighted: return "Title Bar Dropdown Highlight";
-
-                    case ThemeGroup.Tab_Color_1_Highlighted: return "Tab Color 1 Highlight";
-                    case ThemeGroup.Tab_Color_2_Highlighted: return "Tab Color 2 Highlight";
-                    case ThemeGroup.Tab_Color_3_Highlighted: return "Tab Color 3 Highlight";
-                    case ThemeGroup.Tab_Color_4_Highlighted: return "Tab Color 4 Highlight";
-                    case ThemeGroup.Tab_Color_5_Highlighted: return "Tab Color 5 Highlight";
-                    case ThemeGroup.Tab_Color_6_Highlighted: return "Tab Color 6 Highlight";
-                    case ThemeGroup.Tab_Color_7_Highlighted: return "Tab Color 7 Highlight";
-                }
-
-                return group.ToString().Replace("_", " ");
-            }
+                ThemeGroup.Background_1 => "Background",
+                ThemeGroup.Scrollbar_1_Handle => "Scrollbar Handle",
+                ThemeGroup.Scrollbar_1_Handle_Normal => "Scrollbar Handle Normal",
+                ThemeGroup.Scrollbar_1_Handle_Highlighted => "Scrollbar Handle Highlight",
+                ThemeGroup.Scrollbar_1_Handle_Selected => "Scrollbar Handle Selected",
+                ThemeGroup.Scrollbar_1_Handle_Pressed => "Scrollbar Handle Pressed",
+                ThemeGroup.Scrollbar_1_Handle_Disabled => "Scrollbar Handle Disabled",
+                ThemeGroup.Scrollbar_2 => "Scrollbar 2",
+                ThemeGroup.Scrollbar_2_Handle => "Scrollbar Handle 2",
+                ThemeGroup.Scrollbar_2_Handle_Normal => "Scrollbar Handle 2 Normal",
+                ThemeGroup.Scrollbar_2_Handle_Highlighted => "Scrollbar Handle 2 Highlight",
+                ThemeGroup.Scrollbar_2_Handle_Selected => "Scrollbar Handle 2 Selected",
+                ThemeGroup.Scrollbar_2_Handle_Pressed => "Scrollbar Handle 2 Pressed",
+                ThemeGroup.Scrollbar_2_Handle_Disabled => "Scrollbar Handle 2 Disabled",
+                ThemeGroup.Close_Highlighted => "Close Highlight",
+                ThemeGroup.Function_2_Highlighted => "Function 2 Highlight",
+                ThemeGroup.List_Button_1_Highlighted => "List Button 1 Highlight",
+                ThemeGroup.List_Button_2_Highlighted => "List Button 2 Highlight",
+                ThemeGroup.Delete_Keyframe_Button_Highlighted => "Delete Keyframe Button Highlight",
+                ThemeGroup.Event_Check => "Event/Check",
+                ThemeGroup.Event_Check_Text => "Event/Check Text",
+                ThemeGroup.Slider_2 => "Slider",
+                ThemeGroup.Slider_2_Handle => "Slider Handle",
+                ThemeGroup.Timeline_Scrollbar_Highlighted => "Timeline Scrollbar Highlight",
+                ThemeGroup.Title_Bar_Button_Highlighted => "Title Bar Button Highlight",
+                ThemeGroup.Title_Bar_Dropdown_Highlighted => "Title Bar Dropdown Highlight",
+                ThemeGroup.Tab_Color_1_Highlighted => "Tab Color 1 Highlight",
+                ThemeGroup.Tab_Color_2_Highlighted => "Tab Color 2 Highlight",
+                ThemeGroup.Tab_Color_3_Highlighted => "Tab Color 3 Highlight",
+                ThemeGroup.Tab_Color_4_Highlighted => "Tab Color 4 Highlight",
+                ThemeGroup.Tab_Color_5_Highlighted => "Tab Color 5 Highlight",
+                ThemeGroup.Tab_Color_6_Highlighted => "Tab Color 6 Highlight",
+                ThemeGroup.Tab_Color_7_Highlighted => "Tab Color 7 Highlight",
+                _ => group.ToString().Replace("_", " "),
+            };
 
             public Color GetColor(string group) => ColorGroups[GetGroup(group)];
+
             public bool ContainsGroup(string group) => GetGroup(group) != ThemeGroup.Null;
         }
 
@@ -825,19 +792,27 @@ namespace BetterLegacy.Editor.Managers
                 this.isSelectable = isSelectable;
             }
 
-            ThemeGroup themeGroup = ThemeGroup.Null;
+            readonly ThemeGroup themeGroup = ThemeGroup.Null;
 
             public GameObject gameObject;
 
             Component[] components;
 
-            bool isSelectable = false;
+            readonly bool isSelectable = false;
 
-            bool canSetRounded = false;
+            readonly bool canSetRounded = false;
 
-            int rounded;
+            readonly int rounded;
 
-            SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
+            readonly SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
+
+            public void Clear()
+            {
+                gameObject = null;
+                for (int i = 0; i < components.Length; i++)
+                    components[i] = null;
+                components = null;
+            }
 
             public void ApplyTheme(EditorTheme theme)
             {

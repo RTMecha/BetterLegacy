@@ -50,8 +50,8 @@
     <Reference Include="BepInEx">
       <HintPath>..\lib\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="DOTween">
-      <HintPath>..\lib\DOTween.dll</HintPath>
+    <Reference Include="DOTween-publicized">
+      <HintPath>..\lib\DOTween-publicized.dll</HintPath>
     </Reference>
     <Reference Include="Facepunch.Steamworks.Win64">
       <HintPath>..\lib\Facepunch.Steamworks.Win64.dll</HintPath>

@@ -645,8 +645,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var use = viewThemeStorage.useButton;
                 var useStorage = use.GetComponent<FunctionButtonStorage>();
-                use.onClick.ClearAll();
-                use.onClick.AddListener(() =>
+                use.onClick.NewListener(() =>
                 {
                     if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => x.Type == 4))
                         foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
@@ -661,8 +660,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var convert = viewThemeStorage.convertButton;
                 var convertStorage = convert.GetComponent<FunctionButtonStorage>();
-                convert.onClick.ClearAll();
-                convert.onClick.AddListener(() => ConvertTheme(beatmapTheme));
+                convert.onClick.NewListener(() => ConvertTheme(beatmapTheme));
 
                 EditorThemeManager.ApplyGraphic(viewThemeStorage.baseImage, ThemeGroup.List_Button_1_Normal, true);
                 EditorThemeManager.ApplyLightText(viewThemeStorage.text);
@@ -697,6 +695,9 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RenderThemeList(string search)
         {
+            if (!GameData.Current)
+                yield break;
+
             if (!loadingThemes && !EventEditor.inst.eventDrag)
             {
                 loadingThemes = true;
@@ -844,7 +845,7 @@ namespace BetterLegacy.Editor.Managers
             RenderThemePreview();
             EventEditor.inst.showTheme = false;
             Dialog.Editor.SetActive(false);
-            GameData.Current.UpdateUsedThemes();
+            GameData.Current?.UpdateUsedThemes();
 
             RTEditor.inst.HideWarningPopup();
         }, RTEditor.inst.HideWarningPopup);

@@ -336,6 +336,9 @@ namespace BetterLegacy.Editor.Managers
 
             var levelData = GameData.Current?.data?.level;
 
+            if (!levelData)
+                return;
+
             var showIntro = Dialog.Content.Find("show intro/toggle").GetComponent<Toggle>();
             showIntro.onValueChanged.ClearAll();
             showIntro.isOn = !levelData.showIntro;

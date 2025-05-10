@@ -229,7 +229,7 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Velocities
 
-        public static bool MultiplyByPitch => GameData.Current && GameData.Current.data != null && GameData.Current.data.level.multiplyPlayerSpeed;
+        public static bool MultiplyByPitch => GameData.Current && GameData.Current.data && GameData.Current.data.level.multiplyPlayerSpeed;
 
         /// <summary>
         /// How fast all players are.
@@ -496,6 +496,9 @@ namespace BetterLegacy.Core.Components.Player
         {
             try
             {
+                if (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level)
+                    return;
+
                 var levelData = GameData.Current.data.level;
                 LockBoost = levelData.lockBoost;
                 SpeedMultiplier = levelData.speedMultiplier;
@@ -1343,7 +1346,7 @@ namespace BetterLegacy.Core.Components.Player
             var maxBoostTime = Model.basePart.maxBoostTime;
             var hitCooldown = Model.basePart.hitCooldown;
 
-            if (GameData.Current && GameData.Current.data != null && GameData.Current.data.level is LevelData levelData && levelData.limitPlayer)
+            if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData && levelData.limitPlayer)
             {
                 idleSpeed = Mathf.Clamp(idleSpeed, levelData.limitMoveSpeed.x, levelData.limitMoveSpeed.y);
                 boostSpeed = Mathf.Clamp(boostSpeed, levelData.limitBoostSpeed.x, levelData.limitBoostSpeed.y);

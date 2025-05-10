@@ -130,7 +130,7 @@ namespace BetterLegacy.Arcade.Managers
             if (RTEditor.inst)
                 RTEditor.inst.UpdateTimeline();
 
-            if (!GameManager.inst.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.data == null)
+            if (!GameManager.inst.timeline || !AudioManager.inst.CurrentAudioSource.clip || !GameData.Current || !GameData.Current.data)
                 return;
 
             checkpointImages.Clear();
@@ -158,8 +158,6 @@ namespace BetterLegacy.Arcade.Managers
         /// </summary>
         public Checkpoint ActiveCheckpoint { get; set; }
 
-        List<Checkpoint> Checkpoints => GameData.Current?.data?.checkpoints;
-
         int nextCheckpointIndex;
 
         RTAnimation checkpointAnimation;
@@ -171,7 +169,7 @@ namespace BetterLegacy.Arcade.Managers
         /// </summary>
         public void UpdateCheckpoints()
         {
-            var checkpoints = Checkpoints;
+            var checkpoints = GameData.Current?.data?.checkpoints;
             if (checkpoints != null && checkpoints.InRange(nextCheckpointIndex) && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
                 SetCheckpoint(nextCheckpointIndex);
         }
@@ -191,8 +189,8 @@ namespace BetterLegacy.Arcade.Managers
         /// <param name="spawnPlayers">If players should be respawned.</param>
         public void SetCheckpoint(int index)
         {
-            var checkpoints = Checkpoints;
-            if (!checkpoints.InRange(index))
+            var checkpoints = GameData.Current?.data?.checkpoints;
+            if (checkpoints == null || !checkpoints.InRange(index))
                 return;
 
             CoreHelper.Log($"Set checkpoint: {index}");
@@ -227,7 +225,8 @@ namespace BetterLegacy.Arcade.Managers
         /// <param name="baseOnTime">If true, reset to last checkpoint. Otherwise, reset to first.</param>
         public void ResetCheckpoint(bool baseOnTime = false)
         {
-            if (Checkpoints == null || (CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel))
+            var checkpoints = GameData.Current?.data?.checkpoints;
+            if (checkpoints == null || (CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel))
                 return;
 
             CoreHelper.Log($"Reset Checkpoints | Based on time: {baseOnTime}");
@@ -235,7 +234,7 @@ namespace BetterLegacy.Arcade.Managers
             if (baseOnTime)
                 index = GameData.Current.data.GetLastCheckpointIndex();
 
-            ActiveCheckpoint = Checkpoints[index];
+            ActiveCheckpoint = checkpoints[index];
             nextCheckpointIndex = index + 1;
         }
 

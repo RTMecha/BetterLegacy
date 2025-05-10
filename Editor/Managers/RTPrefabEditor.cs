@@ -2998,6 +2998,9 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="updateCurrentPrefab">If the current quick prefab should be set instead of importing.</param>
         public IEnumerator RefreshInternalPrefabs(bool updateCurrentPrefab = false)
         {
+            if (!GameData.Current)
+                yield break;
+
             var config = EditorConfig.Instance;
 
             // Here we add the Example prefab provided to you.

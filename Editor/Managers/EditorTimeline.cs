@@ -632,6 +632,9 @@ namespace BetterLegacy.Editor.Managers
                 timelineObjects.ForEach(x => Destroy(x.GameObject));
             timelineObjects.Clear();
 
+            if (!GameData.Current)
+                yield break;
+
             for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
             {
                 var beatmapObject = GameData.Current.beatmapObjects[i];
@@ -673,6 +676,9 @@ namespace BetterLegacy.Editor.Managers
             if (timelineObjects.Count > 0)
                 timelineObjects.ForEach(x => Destroy(x.GameObject));
             timelineObjects.Clear();
+
+            if (!GameData.Current)
+                return;
 
             for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
             {
@@ -718,6 +724,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateTransformIndex()
         {
+            if (!GameData.Current)
+                return;
+
             int siblingIndex = 0;
             for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
             {

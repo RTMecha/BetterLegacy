@@ -160,10 +160,10 @@ namespace BetterLegacy.Core.Helpers
                 if (!loadingText && SceneManager.inst.icon)
                     loadingText = SceneManager.inst.icon.GetComponent<Text>();
 
-                if (!loadingImage && !SceneManager.inst.canvas.transform.Find("loading sprite"))
-                    loadingImage = Creator.NewUIObject("loading sprite", SceneManager.inst.canvas.transform).AddComponent<Image>();
-                else if (SceneManager.inst.canvas.transform.Find("loading sprite"))
-                    loadingImage = SceneManager.inst.canvas.transform.Find("loading sprite").GetComponent<Image>();
+                if (!loadingImage)
+                    loadingImage = !SceneManager.inst.canvas.transform.Find("loading sprite") ?
+                        Creator.NewUIObject("loading sprite", SceneManager.inst.canvas.transform).AddComponent<Image>() :
+                        SceneManager.inst.canvas.transform.Find("loading sprite").GetComponent<Image>();
 
                 var loadingDisplayType = CoreConfig.Instance.LoadingDisplayType.Value;
                 if (loadingImage)
@@ -269,7 +269,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var loadingDisplayType = CoreConfig.Instance.LoadingDisplayType.Value;
             int num = 0;
-            while (Loading && (loadingDisplayType == LoadingDisplayType.Waveform || loadingDisplayType == LoadingDisplayType.Doggo) && loadingImage.isActiveAndEnabled)
+            while (Loading && (loadingDisplayType == LoadingDisplayType.Waveform || loadingDisplayType == LoadingDisplayType.Doggo) && loadingImage && loadingImage.isActiveAndEnabled)
             {
                 loadingImage.sprite = SceneManager.inst.loadingTextures[num];
                 yield return CoroutineHelper.Seconds(delay);

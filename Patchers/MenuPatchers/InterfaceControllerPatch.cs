@@ -28,7 +28,7 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                if (!CoreHelper.InEditor)
+                if (SceneHelper.CurrentSceneType != SceneType.Editor)
                 {
                     var eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
 
@@ -62,18 +62,22 @@ namespace BetterLegacy.Patchers
 
             InterfaceManager.inst.Clear();
 
-            if (__instance.gameObject.scene.name == SceneName.Main_Menu.ToName())
+            CoreHelper.Log($"Load On Start: {__instance.loadOnStart}");
+
+            var scene = __instance.gameObject.scene;
+
+            CoreHelper.Log($"Getting scene...");
+
+            if (scene.name == SceneName.Main_Menu.ToName())
                 InterfaceManager.inst.StartupInterface();
             
-            if (__instance.gameObject.scene.name == SceneName.Interface.ToName())
+            if (scene.name == SceneName.Interface.ToName())
                 InterfaceManager.inst.StartupStoryInterface();
             
-            if (__instance.gameObject.scene.name == SceneName.Input_Select.ToName())
+            if (scene.name == SceneName.Input_Select.ToName())
                 InputSelectMenu.Init();
 
             Destroy(__instance.gameObject);
-
-            CoreHelper.Log($"Load On Start: {__instance.loadOnStart}");
 
             return false;
         }

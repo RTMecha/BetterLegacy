@@ -569,7 +569,7 @@ namespace BetterLegacy.Configs
 
         void LDMChanged()
         {
-            if (!CoreHelper.InEditor)
+            if (!CoreHelper.InEditor || !GameData.Current)
                 return;
 
             var list = GameData.Current.beatmapObjects.FindAll(x => x.LDM);

@@ -60,19 +60,21 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// String to format from.
         /// </summary>
-        public const string DEFAULT_TEXT = "You are currently editing multiple objects.\n\nObject Count: {0}/{3}\nPrefab Object Count: {1}/{4}\nTotal: {2}";
+        public const string DEFAULT_TEXT = "You are currently editing multiple objects.\n\nObject Count: {0}/{3}\nBG Count: {5}/{6}\nPrefab Object Count: {1}/{4}\nTotal: {2}";
 
         void Update()
         {
-            if (!Text || !Text.isActiveAndEnabled)
+            if (!Text || !Text.isActiveAndEnabled || !GameData.Current)
                 return;
 
             Text.text = string.Format(DEFAULT_TEXT,
-                EditorTimeline.inst.SelectedObjects.Count,
+                EditorTimeline.inst.SelectedBeatmapObjects.Count,
                 EditorTimeline.inst.SelectedPrefabObjects.Count,
-                EditorTimeline.inst.SelectedObjects.Count + EditorTimeline.inst.SelectedPrefabObjects.Count,
+                EditorTimeline.inst.SelectedObjects.Count,
                 GameData.Current.beatmapObjects.Count,
-                GameData.Current.prefabObjects.Count);
+                GameData.Current.prefabObjects.Count,
+                EditorTimeline.inst.SelectedBackgroundObjects.Count,
+                GameData.Current.backgroundObjects.Count);
         }
 
         #endregion

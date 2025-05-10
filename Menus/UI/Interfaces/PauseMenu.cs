@@ -149,7 +149,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     num++;
                 }
 
-                if (i == 4 && LevelManager.Hub != null)
+                if (i == 4 && LevelManager.Hub)
                 {
                     elements.Add(new MenuButton
                     {

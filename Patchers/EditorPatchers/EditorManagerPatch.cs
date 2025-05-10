@@ -63,6 +63,8 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.LogInit(__instance.className);
 
+            EditorThemeManager.Clear();
+
             FontManager.inst.ChangeAllFontsInEditor();
 
             LevelManager.Clear();
@@ -103,6 +105,7 @@ namespace BetterLegacy.Patchers
             RTEditor.EasingDropdowns = easingDropdowns;
 
             RTLevel.Current?.Clear();
+            RTLevel.Current = null;
 
             InterfaceManager.inst.StopMusic();
             InterfaceManager.inst.CloseMenus();
@@ -372,19 +375,19 @@ namespace BetterLegacy.Patchers
                         Instance.handleViewShortcuts();
 
                     if (Instance.OpenedEditor)
-                        RTEditor.inst.StartPreview();
+                        RTEditor.inst.ExitPreview();
                     else if (Instance.ClosedEditor)
-                        RTEditor.inst.EndPreview();
+                        RTEditor.inst.EnterPreview();
 
                     Instance.updatePointer();
                     Instance.UpdateTooltip();
                     Instance.UpdateEditButtons();
 
-                    if (RTEditor.inst.timelineTime)
-                        RTEditor.inst.timelineTime.text = string.Format("{0:0}:{1:00}.{2:000}",
-                            Mathf.Floor(Instance.CurrentAudioPos / 60f),
-                            Mathf.Floor(Instance.CurrentAudioPos % 60f),
-                            Mathf.Floor(AudioManager.inst.CurrentAudioSource.time * 1000f % 1000f));
+                    //if (RTEditor.inst.timelineTime)
+                    //    RTEditor.inst.timelineTime.text = string.Format("{0:0}:{1:00}.{2:000}",
+                    //        Mathf.Floor(Instance.CurrentAudioPos / 60f),
+                    //        Mathf.Floor(Instance.CurrentAudioPos % 60f),
+                    //        Mathf.Floor(AudioManager.inst.CurrentAudioSource.time * 1000f % 1000f));
 
                     Instance.wasEditing = Instance.isEditing;
                 }
@@ -763,7 +766,7 @@ namespace BetterLegacy.Patchers
                     RTFile.CopyFile(file, saveTo);
                 }
 
-                GameData.Current.SaveData(RTFile.CombinePaths(str, Level.LEVEL_LSB), () => Instance.DisplayNotification($"Saved beatmap to {__0}", 3f, EditorManager.NotificationType.Success));
+                GameData.Current?.SaveData(RTFile.CombinePaths(str, Level.LEVEL_LSB), () => Instance.DisplayNotification($"Saved beatmap to {__0}", 3f, EditorManager.NotificationType.Success));
                 return false;
             }
             Instance.DisplayNotification("Beatmap can't be saved as until you load a level.", 3f, EditorManager.NotificationType.Error);
@@ -885,16 +888,18 @@ namespace BetterLegacy.Patchers
                     return;
                 }
 
-                DG.Tweening.DOTween.KillAll(false);
-                DG.Tweening.DOTween.Clear(true);
+                //if (DG.Tweening.DOTween.initialized)
+                //{
+                //    DG.Tweening.DOTween.KillAll();
+                //    DG.Tweening.DOTween.Clear();
+                //}
+
                 Instance.loadedLevels.Clear();
                 if (RTEditor.inst)
                     RTEditor.inst.LevelPanels.Clear();
                 GameData.Current = null;
-                GameData.Current = new GameData();
                 CoreHelper.UpdateDiscordStatus("", "", CoreHelper.discordIcon);
                 Debug.Log($"{Instance.className}Quit to Main Menu");
-                InputDataManager.inst.players.Clear();
                 SceneHelper.LoadScene(SceneName.Main_Menu);
             }, RTEditor.inst.HideWarningPopup);
 

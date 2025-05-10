@@ -45,7 +45,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            if (!GameData.Current)
+            if (!GameData.Current || !GameData.Current.data)
                 return false;
 
             if (RTEditor.inst.CheckpointEditorDialog.IsCurrent && EditorManager.inst.isEditing)
@@ -87,7 +87,7 @@ namespace BetterLegacy.Patchers
 
             Instance.currentObj = index;
 
-            if (GameData.Current == null || GameData.Current.data == null || GameData.Current.data.checkpoints == null)
+            if (!GameData.Current || !GameData.Current.data || GameData.Current.data.checkpoints == null)
                 return false;
 
             var checkpoint = GameData.Current.data.checkpoints[index];
@@ -225,6 +225,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewCheckpointPrefix(float __0, Vector2 __1)
         {
+            if (!GameData.Current || !GameData.Current.data)
+                return false;
+
             GameData.Current.data.checkpoints.Add(new Checkpoint(Checkpoint.DEFAULT_CHECKPOINT_NAME, Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length), __1));
 
             (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events ? (Action)Instance.CreateCheckpoints : Instance.CreateGhostCheckpoints).Invoke();
@@ -239,6 +242,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool DeleteCheckpointPrefix(int __0)
         {
+            if (!GameData.Current || !GameData.Current.data)
+                return false;
+
             Debug.Log($"{Instance.className}Deleting checkpoint at [{__0}] index.");
             GameData.Current.data.checkpoints.RemoveAt(__0);
             if (GameData.Current.data.checkpoints.Count > 0)
@@ -275,6 +281,9 @@ namespace BetterLegacy.Patchers
                 Instance.checkpointsDrag.Clear();
             }
 
+            if (!GameData.Current || !GameData.Current.data)
+                return false;
+
             int num = 0;
             foreach (var checkpoint in GameData.Current.data.checkpoints)
             {
@@ -305,6 +314,9 @@ namespace BetterLegacy.Patchers
                 Instance.checkpointsDrag.Clear();
             }
 
+            if (!GameData.Current || !GameData.Current.data)
+                return false;
+
             var parent = EventEditor.inst.EventHolders.transform.GetChild(14);
             int num = 0;
             foreach (var checkpoint in GameData.Current.data.checkpoints)
@@ -332,8 +344,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderCheckpointPrefix(int __0)
         {
-            if (__0 < 0 || Instance.checkpoints.Count <= __0)
+            if (!GameData.Current || __0 < 0 || Instance.checkpoints.Count <= __0)
                 return false;
+
             var gameObject = Instance.checkpoints[__0];
 
             float time = GameData.Current.data.checkpoints[__0].time;
@@ -361,7 +374,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderCheckpointsPrefix()
         {
-            if (!GameData.Current || GameData.Current.data == null || GameData.Current.data.checkpoints == null)
+            if (!GameData.Current || !GameData.Current.data || GameData.Current.data.checkpoints == null)
                 return false;
 
             for (int i = 0; i < GameData.Current.data.checkpoints.Count; i++)
@@ -374,6 +387,12 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderCheckpointListPrefix(string __0, int __1)
         {
+            if (!GameData.Current || !GameData.Current.data)
+            {
+                CoreHelper.LogError($"Failed to render checkpoint list as GameData is null.");
+                return false;
+            }
+
             var transform = Instance.right.Find("checkpoints/viewport/content");
             LSHelpers.DeleteChildren(transform, false);
 

@@ -3462,6 +3462,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderLayerBins()
         {
+            if (!GameData.Current)
+                return;
+
             var renderLeft = EditorConfig.Instance.EventLabelsRenderLeft.Value;
             var eventLabels = EventEditor.inst.EventLabels;
 

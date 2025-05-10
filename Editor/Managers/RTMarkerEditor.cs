@@ -468,8 +468,7 @@ namespace BetterLegacy.Editor.Managers
                 deleteText.text = "Delete Markers";
 
                 var deleteButton = deleteStorage.button;
-                deleteButton.onClick.ClearAll();
-                deleteButton.onClick.AddListener(() =>
+                deleteButton.onClick.NewListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete ALL markers? (This is irreversible!)", () =>
                     {
@@ -688,6 +687,9 @@ namespace BetterLegacy.Editor.Managers
                 timelineMarkers.Clear();
             }
 
+            if (!GameData.Current)
+                return;
+
             int num = 0;
             foreach (var marker in GameData.Current.data.markers)
             {
@@ -704,7 +706,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderMarkers()
         {
-            if (!GameData.Current || GameData.Current.data == null || GameData.Current.data.markers == null)
+            if (!GameData.Current || !GameData.Current.data || GameData.Current.data.markers == null)
                 return;
 
             for (int i = 0; i < GameData.Current.data.markers.Count; i++)
@@ -744,6 +746,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void OrderMarkers()
         {
+            if (!GameData.Current)
+                return;
+
             GameData.Current.data.markers = GameData.Current.data.markers.OrderBy(x => x.time).ToList();
 
             RenderMarkers();

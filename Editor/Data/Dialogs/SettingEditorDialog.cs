@@ -65,29 +65,29 @@ namespace BetterLegacy.Editor.Data.Dialogs
             new Info("Song Progress", () => $"{RTString.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%"),
             new Info("Level opened amount", () => RTEditor.inst.editorInfo.openAmount.ToString()),
 
-            new Info("Object Count", () => GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString()),
-            new Info("Total Object Count", () => GameData.Current.beatmapObjects.Count.ToString()),
-            new Info("Objects Alive Count", () => GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count.ToString()),
-            new Info("No Autokill Count", () => GameData.Current.beatmapObjects.FindAll(x => x.autoKillType == AutoKillType.NoAutokill).Count.ToString()),
-            new Info("Keyframe Offsets > Song Length Count", () => GameData.Current.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString()),
-            new Info("Text Object Count", () => GameData.Current.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Count.ToString()),
-            new Info("Text Symbol Total Count", () => GameData.Current.beatmapObjects.Where(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Sum(x => x.text.Length).ToString()),
+            new Info("Object Count", () => GameData.Current?.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString() ?? "null"),
+            new Info("Total Object Count", () => GameData.Current?.beatmapObjects.Count.ToString() ?? "null"),
+            new Info("Objects Alive Count", () => GameData.Current?.beatmapObjects.FindAll(x => x.Alive).Count.ToString() ?? "null"),
+            new Info("No Autokill Count", () => GameData.Current?.beatmapObjects.FindAll(x => x.autoKillType == AutoKillType.NoAutokill).Count.ToString() ?? "null"),
+            new Info("Keyframe Offsets > Song Length Count", () => GameData.Current?.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString() ?? "null"),
+            new Info("Text Object Count", () => GameData.Current?.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Count.ToString() ?? "null"),
+            new Info("Text Symbol Total Count", () => GameData.Current?.beatmapObjects.Where(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Sum(x => x.text.Length).ToString() ?? "null"),
 
-            new Info("BG Object Count", () => GameData.Current.backgroundObjects.Count.ToString()),
+            new Info("BG Object Count", () => GameData.Current?.backgroundObjects.Count.ToString() ?? "null"),
 
             new Info("Camera Position", () => $"X: {Camera.main.transform.position.x}, Y: {Camera.main.transform.position.y}"),
             new Info("Camera Zoom", () => Camera.main.orthographicSize.ToString()),
             new Info("Camera Rotation", () => Camera.main.transform.rotation.eulerAngles.z.ToString()),
-            new Info("Event Count", () => GameData.Current.events.Sum(x => x.Count).ToString()),
+            new Info("Event Count", () => GameData.Current && !GameData.Current.events.IsEmpty() ? GameData.Current.events.Sum(x => x.Count).ToString() : "null"),
             new Info("Theme Count", () => ThemeManager.inst.ThemeCount.ToString()),
 
             new Info("Prefab External Count", () => RTPrefabEditor.inst.PrefabPanels.Count.ToString()),
-            new Info("Prefab Internal Count", () => GameData.Current.prefabs.Count.ToString()),
-            new Info("Prefab Objects Count", () => GameData.Current.prefabObjects.Count.ToString()),
+            new Info("Prefab Internal Count", () => GameData.Current?.prefabs.Count.ToString() ?? "null"),
+            new Info("Prefab Objects Count", () => GameData.Current?.prefabObjects.Count.ToString() ?? "null"),
 
             new Info("Timeline Bin Count", () => EditorTimeline.inst.BinCount.ToString()),
-            new Info("Timeline Objects in Current Layer Count", () => EditorTimeline.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString()),
-            new Info("Markers Count", () => GameData.Current.data.markers.Count.ToString()),
+            new Info("Timeline Objects in Current Layer Count", () => EditorTimeline.inst.timelineObjects.FindAll(x => x.IsCurrentLayer).Count.ToString()),
+            new Info("Markers Count", () => GameData.Current?.data.markers.Count.ToString() ?? "null"),
         };
 
         #endregion
