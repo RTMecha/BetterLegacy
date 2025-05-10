@@ -469,20 +469,20 @@ namespace BetterLegacy.Editor.Data
                 return;
             }
 
-            var cmd = modifier.Name;
-            switch (cmd)
+            switch (name)
             {
-                case "setActive": {
+                case nameof(ModifierActions.setActive): {
                         BoolGenerator(modifier, "Active", 0, false);
 
                         break;
                     }
-                case "setActiveOther": {
+                case nameof(ModifierActions.setActiveOther): {
                         BoolGenerator(modifier, "Active", 0, false);
                         StringGenerator(modifier, "BG Group", 1);
 
                         break;
                     }
+
                 case "timeLesserEquals":
                 case "timeGreaterEquals":
                 case "timeLesser":
@@ -968,14 +968,23 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
-                case nameof(ModifierActions.rigidbody):
+                case nameof(ModifierActions.rigidbody): {
+                        SingleGenerator(modifier, "Gravity", 1, 0f);
+
+                        DropdownGenerator(modifier, "Collision Mode", 2, CoreHelper.StringToOptionData("Discrete", "Continuous"));
+
+                        SingleGenerator(modifier, "Drag", 3, 0f);
+                        SingleGenerator(modifier, "Velocity X", 4, 0f);
+                        SingleGenerator(modifier, "Velocity Y", 5, 0f);
+
+                        DropdownGenerator(modifier, "Body Type", 6, CoreHelper.StringToOptionData("Dynamic", "Kinematic", "Static"));
+
+                        break;
+                    }
                 case nameof(ModifierActions.rigidbodyOther): {
-                        if (cmd == "rigidbodyOther")
-                        {
-                            PrefabGroupOnly(modifier);
-                            var str = StringGenerator(modifier, "Object Group", 0);
-                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        }
+                        PrefabGroupOnly(modifier);
+                        var str = StringGenerator(modifier, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         SingleGenerator(modifier, "Gravity", 1, 0f);
 
@@ -2554,13 +2563,10 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Multiply", 0, 1f);
                         SingleGenerator(modifier, "Offset", 2, 10f);
 
-                        if (cmd == "lerpColorPlayerDistance")
-                        {
-                            SingleGenerator(modifier, "Opacity", 3, 1f);
-                            SingleGenerator(modifier, "Hue", 4, 0f);
-                            SingleGenerator(modifier, "Saturation", 5, 0f);
-                            SingleGenerator(modifier, "Value", 6, 0f);
-                        }
+                        SingleGenerator(modifier, "Opacity", 3, 1f);
+                        SingleGenerator(modifier, "Hue", 4, 0f);
+                        SingleGenerator(modifier, "Saturation", 5, 0f);
+                        SingleGenerator(modifier, "Value", 6, 0f);
 
                         break;
                     }
@@ -3431,7 +3437,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.applyAnimationTo):
                 case nameof(ModifierActions.applyAnimation): {
                         PrefabGroupOnly(modifier);
-                        if (cmd != "applyAnimation")
+                        if (name != "applyAnimation")
                         {
                             var str = StringGenerator(modifier, "Object Group", 0);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3460,7 +3466,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.applyAnimationToMath):
                 case nameof(ModifierActions.applyAnimationMath): {
                         PrefabGroupOnly(modifier);
-                        if (cmd != "applyAnimationMath")
+                        if (name != "applyAnimationMath")
                         {
                             var str = StringGenerator(modifier, "Object Group", 0);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3482,7 +3488,7 @@ namespace BetterLegacy.Editor.Data
                         BoolGenerator(modifier, "Use Visual", 7, false);
                         StringGenerator(modifier, "Length", 8);
                         StringGenerator(modifier, "Speed", 9);
-                        StringGenerator(modifier, "Time", cmd != "applyAnimationMath" ? 10 : 11);
+                        StringGenerator(modifier, "Time", name != "applyAnimationMath" ? 10 : 11);
 
                         break;
                     }
@@ -3497,8 +3503,8 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.spawnMultiPrefab):
                 case nameof(ModifierActions.spawnMultiPrefabOffset):
                 case nameof(ModifierActions.spawnMultiPrefabOffsetOther): {
-                        var isMulti = cmd.Contains("Multi");
-                        var isOther = cmd.Contains("Other");
+                        var isMulti = name.Contains("Multi");
+                        var isOther = name.Contains("Other");
                         if (isOther)
                         {
                             PrefabGroupOnly(modifier);
@@ -3920,19 +3926,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.pitchGreater):
                 case nameof(ModifierTriggers.playerDistanceLesser):
                 case nameof(ModifierTriggers.playerDistanceGreater): {
-                        if (cmd.Contains("Other"))
-                            PrefabGroupOnly(modifier);
-
                         SingleGenerator(modifier, "Value", 0, 1f);
-
-                        if (cmd == "setAlphaOther")
-                        {
-                            var str = StringGenerator(modifier, "Object Group", 1);
-                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        }
-
-                        if (cmd == "blackHole")
-                            BoolGenerator(modifier, "Use Opacity", 1, false);
 
                         break;
                     }
@@ -3958,21 +3952,11 @@ namespace BetterLegacy.Editor.Data
                         var str = StringGenerator(modifier, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        if (cmd == "setParentOther")
-                        {
-                            BoolGenerator(modifier, "Clear Parent", 1, false);
-                            var str2 = StringGenerator(modifier, "Parent Group To", 2);
-                            EditorHelper.AddInputFieldContextMenu(str2.transform.Find("Input").GetComponent<InputField>());
-                        }
-
                         break;
                     }
                 case nameof(ModifierTriggers.levelPathExists):
                 case nameof(ModifierTriggers.realTimeDayWeekEquals): {
-                        StringGenerator(modifier, cmd == "setText" || cmd == "addText" ? "Text" :
-                            cmd == "setWindowTitle" ? "Title" :
-                            cmd == "realTimeDayWeekEquals" ? "Day" :
-                            "Path", 0);
+                        StringGenerator(modifier, name == "realTimeDayWeekEquals" ? "Day" : "Path", 0);
 
                         break;
                     }
@@ -4056,9 +4040,10 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.realTimeYearGreaterEquals):
                 case nameof(ModifierTriggers.realTimeYearLesser):
                 case nameof(ModifierTriggers.realTimeYearGreater): {
-                        var isGroup = cmd.Contains("variableOther") || cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt";
+                        var isGroup = name.Contains("variableOther");
                         if (isGroup)
                             PrefabGroupOnly(modifier);
+
                         IntegerGenerator(modifier, "Value", 0, 0);
 
                         if (isGroup)
@@ -4102,23 +4087,23 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.loadLesser):
                 case nameof(ModifierTriggers.loadGreater):
                 case nameof(ModifierTriggers.loadExists): {
-                        if (cmd == "loadEquals" && modifier.commands.Count < 5)
+                        if (name == "loadEquals" && modifier.commands.Count < 5)
                             modifier.commands.Add("0");
 
-                        if (cmd == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 0 && !float.TryParse(modifier.value, out float abcdef))
+                        if (name == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 0 && !float.TryParse(modifier.value, out float abcdef))
                             modifier.value = "0";
 
                         StringGenerator(modifier, "Path", 1);
                         StringGenerator(modifier, "JSON 1", 2);
                         StringGenerator(modifier, "JSON 2", 3);
 
-                        if (cmd != "saveVariable" && cmd != "saveText" && cmd != "loadExists" && cmd != "saveString" && (cmd != "loadEquals" || Parser.TryParse(modifier.commands[4], 0) == 0))
+                        if (name != "loadExists" && (name != "loadEquals" || Parser.TryParse(modifier.commands[4], 0) == 0))
                             SingleGenerator(modifier, "Value", 0, 0f);
 
-                        if (cmd == "saveString" || cmd == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 1)
+                        if (name == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 1)
                             StringGenerator(modifier, "Value", 0);
 
-                        if (cmd == "loadEquals")
+                        if (name == "loadEquals")
                             DropdownGenerator(modifier, "Type", 4, CoreHelper.StringToOptionData("Number", "Text"));
 
                         break;
@@ -4201,7 +4186,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.levelRankCurrentGreaterEquals):
                 case nameof(ModifierTriggers.levelRankCurrentLesser):
                 case nameof(ModifierTriggers.levelRankCurrentGreater): {
-                        if (cmd.Contains("Other"))
+                        if (name.Contains("Other"))
                             StringGenerator(modifier, "ID", 1);
 
                         DropdownGenerator(modifier, "Rank", 0, DataManager.inst.levelRanks.Select(x => x.name).ToList());
@@ -4256,16 +4241,14 @@ namespace BetterLegacy.Editor.Data
 
                 #region Dev Only
 
-                case "loadSceneDEVONLY":
-                    {
+                case "loadSceneDEVONLY": {
                         StringGenerator(modifier, "Scene", 0);
                         if (modifier.commands.Count > 1)
                             BoolGenerator(modifier, "Show Loading", 1, true);
 
                         break;
                     }
-                case "loadStoryLevelDEVONLY":
-                    {
+                case "loadStoryLevelDEVONLY": {
                         IntegerGenerator(modifier, "Chapter", 1, 0);
                         IntegerGenerator(modifier, "Level", 2, 0);
                         BoolGenerator(modifier, "Bonus", 0, false);
@@ -4273,16 +4256,16 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
-                case "storySaveIntVariableDEVONLY":
-                case "storySaveIntDEVONLY":
-                    {
+                case "storySaveIntVariableDEVONLY": {
                         StringGenerator(modifier, "Save", 0);
-                        if (cmd == "storySaveIntDEVONLY")
-                            IntegerGenerator(modifier, "Value", 1, 0);
                         break;
                     }
-                case "storySaveBoolDEVONLY":
-                    {
+                case "storySaveIntDEVONLY": {
+                        StringGenerator(modifier, "Save", 0);
+                        IntegerGenerator(modifier, "Value", 1, 0);
+                        break;
+                    }
+                case "storySaveBoolDEVONLY": {
                         StringGenerator(modifier, "Save", 0);
                         BoolGenerator(modifier, "Value", 1, false);
                         break;
@@ -4291,23 +4274,20 @@ namespace BetterLegacy.Editor.Data
                 case "storyLoadIntLesserEqualsDEVONLY":
                 case "storyLoadIntGreaterEqualsDEVONLY":
                 case "storyLoadIntLesserDEVONLY":
-                case "storyLoadIntGreaterDEVONLY":
-                    {
+                case "storyLoadIntGreaterDEVONLY": {
                         StringGenerator(modifier, "Load", 0);
                         IntegerGenerator(modifier, "Default", 1, 0);
                         IntegerGenerator(modifier, "Equals", 2, 0);
 
                         break;
                     }
-                case "storyLoadBoolDEVONLY":
-                    {
+                case "storyLoadBoolDEVONLY": {
                         StringGenerator(modifier, "Load", 0);
                         BoolGenerator(modifier, "Default", 1, false);
 
                         break;
                     }
-                case "enableExampleDEVONLY":
-                    {
+                case "enableExampleDEVONLY": {
                         BoolGenerator(modifier, "Active", 0, false);
                         break;
                     }
