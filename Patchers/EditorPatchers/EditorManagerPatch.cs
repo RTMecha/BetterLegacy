@@ -383,11 +383,11 @@ namespace BetterLegacy.Patchers
                     Instance.UpdateTooltip();
                     Instance.UpdateEditButtons();
 
-                    //if (RTEditor.inst.timelineTime)
-                    //    RTEditor.inst.timelineTime.text = string.Format("{0:0}:{1:00}.{2:000}",
-                    //        Mathf.Floor(Instance.CurrentAudioPos / 60f),
-                    //        Mathf.Floor(Instance.CurrentAudioPos % 60f),
-                    //        Mathf.Floor(AudioManager.inst.CurrentAudioSource.time * 1000f % 1000f));
+                    if (RTEditor.inst.timelineTime)
+                        RTEditor.inst.timelineTime.text = string.Format("{0:0}:{1:00}.{2:000}",
+                            Mathf.Floor(Instance.CurrentAudioPos / 60f),
+                            Mathf.Floor(Instance.CurrentAudioPos % 60f),
+                            Mathf.Floor(AudioManager.inst.CurrentAudioSource.time * 1000f % 1000f));
 
                     Instance.wasEditing = Instance.isEditing;
                 }
@@ -888,11 +888,7 @@ namespace BetterLegacy.Patchers
                     return;
                 }
 
-                //if (DG.Tweening.DOTween.initialized)
-                //{
-                //    DG.Tweening.DOTween.KillAll();
-                //    DG.Tweening.DOTween.Clear();
-                //}
+                DG.Tweening.DOTween.Clear();
 
                 Instance.loadedLevels.Clear();
                 if (RTEditor.inst)

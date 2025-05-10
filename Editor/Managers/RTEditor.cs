@@ -2998,9 +2998,9 @@ namespace BetterLegacy.Editor.Managers
             var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 DG.Tweening.DOTween.Clear();
+
                 RTLevel.Reinit(false);
                 GameData.Current = null;
-                GameData.Current = new GameData();
                 TooltipHelper.InitTooltips();
                 SceneHelper.LoadEditorWithProgress();
             }, 7);
@@ -3033,8 +3033,7 @@ namespace BetterLegacy.Editor.Managers
                     switch (fileFormat)
                     {
                         case FileFormat.MP4:
-                        case FileFormat.MOV:
-                            {
+                        case FileFormat.MOV: {
                                 var copyTo = selectedFile.Replace(RTFile.AppendEndSlash(RTFile.GetDirectory(_val)), RTFile.AppendEndSlash(RTFile.BasePath)).Replace(Path.GetFileName(_val),
                                     RTFile.FileIsFormat(_val, FileFormat.MP4) ? $"bg{FileFormat.MP4.Dot()}" : $"bg{FileFormat.MOV.Dot()}");
 
@@ -3048,8 +3047,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 return;
                             }
-                        case FileFormat.LSP:
-                            {
+                        case FileFormat.LSP: {
                                 var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(selectedFile)));
 
                                 RTPrefabEditor.inst.OpenPopup();
@@ -3058,8 +3056,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 return;
                             }
-                        case FileFormat.VGP:
-                            {
+                        case FileFormat.VGP: {
                                 var prefab = Prefab.ParseVG(JSON.Parse(RTFile.ReadFromFile(selectedFile)));
 
                                 RTPrefabEditor.inst.OpenPopup();
@@ -5125,7 +5122,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.autosaves.RemoveAt(0);
             }
 
-            GameData.Current.SaveData(autosavePath);
+            GameData.Current?.SaveData(autosavePath);
 
             EditorManager.inst.DisplayNotification("Autosaved backup!", 2f, EditorManager.NotificationType.Success);
 
@@ -5165,7 +5162,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.DisplayNotification("Saving backup...", 2f, EditorManager.NotificationType.Warning);
 
-            GameData.Current.SaveData(autosavePath);
+            GameData.Current?.SaveData(autosavePath);
 
             EditorManager.inst.DisplayNotification("Autosaved backup!", 2f, EditorManager.NotificationType.Success);
 
@@ -5692,7 +5689,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateTimeline()
         {
-            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || !GameData.Current || GameData.Current.data == null)
+            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || !GameData.Current || !GameData.Current.data)
                 return;
 
             for (int i = 0; i < checkpointImages.Count; i++)
@@ -6898,7 +6895,26 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Starts the editor preview.
         /// </summary>
-        public void StartPreview()
+        public void EnterPreview()
+        {
+            if (!EditorManager.inst.hasLoadedLevel)
+                return;
+
+            GameManager.inst.playerGUI.SetActive(true);
+            CursorManager.inst.HideCursor();
+            EditorManager.inst.GUI.SetActive(false);
+            AudioManager.inst.CurrentAudioSource.Play();
+            EditorManager.inst.SetNormalRenderArea();
+            GameManager.inst.UpdateTimeline();
+            RTGameManager.inst.ResetCheckpoint(true);
+
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        /// <summary>
+        /// Ends the editor preview.
+        /// </summary>
+        public void ExitPreview()
         {
             GameManager.inst.playerGUI.SetActive(false);
             CursorManager.inst.ShowCursor();
@@ -6909,6 +6925,9 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.UpdateTimeline();
 
             if (!EditorConfig.Instance.ResetHealthInEditor.Value || InputDataManager.inst.players.IsEmpty())
+                return;
+
+            if (!EditorManager.inst.hasLoadedLevel)
                 return;
 
             try
@@ -6929,22 +6948,6 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogError($"Resetting player health error.\n{ex}");
             }
-        }
-
-        /// <summary>
-        /// Ends the editor preview.
-        /// </summary>
-        public void EndPreview()
-        {
-            GameManager.inst.playerGUI.SetActive(true);
-            CursorManager.inst.HideCursor();
-            EditorManager.inst.GUI.SetActive(false);
-            AudioManager.inst.CurrentAudioSource.Play();
-            EditorManager.inst.SetNormalRenderArea();
-            GameManager.inst.UpdateTimeline();
-            RTGameManager.inst.ResetCheckpoint(true);
-
-            EventSystem.current.SetSelectedGameObject(null);
         }
 
         public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));
