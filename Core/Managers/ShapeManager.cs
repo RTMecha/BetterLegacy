@@ -247,12 +247,11 @@ namespace BetterLegacy.Core.Managers
                     if (type != 6)
                         continue;
 
-                    if (SceneHelper.CurrentSceneType == SceneType.Editor)
-                    {
-                        DestroyImmediate(ObjectManager.inst.objectPrefabs[6].options[0].transform.GetChild(0).GetComponent<Rigidbody2D>());
-                        continue;
-                    }
-
+                    // Clear to remove original image object.
+                    // Originally I just kept the original "mesh" object and just got rid of the rigidbody it has (for some reason, wtf)
+                    // The rigidbody removal code didn't work until I changed the check. Then it started to work BUT it started to crash as well. ('Attempt to access invalid address.' crash)
+                    // So instead, we clear the Image group options and add our own. I guess this makes the image object 100% the same as in the arcade now.
+                    ObjectManager.inst.objectPrefabs[6].options.Clear();
                     var imageMesh = new GameObject("mesh");
                     imageMesh.layer = 8;
                     var imageObject = new GameObject("object");
@@ -272,7 +271,12 @@ namespace BetterLegacy.Core.Managers
                 {
                     var gameObject = objectPrefab.options[j];
                     if (gameObject)
+                    {
+                        var collider = gameObject.GetComponentInChildren<Collider2D>();
+                        if (collider)
+                            collider.enabled = false;
                         gameObject.SetActive(false);
+                    }
                 }
             }
 
