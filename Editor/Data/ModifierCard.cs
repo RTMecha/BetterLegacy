@@ -54,16 +54,12 @@ namespace BetterLegacy.Editor.Data
             if (modifier.reference is not IModifyable<T> modifyable)
                 return;
 
+            if (!dialog)
+                return;
+
             var name = modifier.Name;
-            var content = ModifiersEditor.inst.GetContent(modifier.referenceType);
-
-            if (!content)
-                return;
-
-            var scrollbar = ModifiersEditor.inst.GetScrollbar(modifier.referenceType);
-
-            if (!scrollbar)
-                return;
+            var content = dialog.Content;
+            var scrollbar = dialog.Scrollbar;
 
             var gameObject = this.gameObject;
 
@@ -84,15 +80,7 @@ namespace BetterLegacy.Editor.Data
             var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
             collapse.onValueChanged.ClearAll();
             collapse.isOn = modifier.collapse;
-            collapse.onValueChanged.AddListener(_val =>
-            {
-                modifier.collapse = _val;
-                RenderModifier<T>();
-                CoroutineHelper.PerformAtEndOfFrame(() =>
-                {
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
-                });
-            });
+            collapse.onValueChanged.AddListener(Collapse<T>);
 
             TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
             EditorThemeManager.ApplyToggle(collapse, ThemeGroup.List_Button_1_Normal);
@@ -101,39 +89,14 @@ namespace BetterLegacy.Editor.Data
                 EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.NewListener(() =>
-            {
-                modifyable.Modifiers.RemoveAt(index);
-                CoreHelper.Delete(gameObject);
-                dialog.modifierCards.RemoveAt(index);
-                for (int i = 0; i < dialog.modifierCards.Count; i++)
-                    dialog.modifierCards[i].index = i;
-
-                if (modifier.reference is BeatmapObject beatmapObject)
-                {
-                    beatmapObject.reactivePositionOffset = Vector3.zero;
-                    beatmapObject.reactiveScaleOffset = Vector3.zero;
-                    beatmapObject.reactiveRotationOffset = 0f;
-                    RTLevel.Current?.UpdateObject(beatmapObject);
-                }
-                if (modifier.reference is BackgroundObject backgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-            });
+            delete.button.onClick.NewListener(Delete<T>);
 
             TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
             EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
-            copy.button.onClick.NewListener(() =>
-            {
-                var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
-                copiedModifiers.Clear();
-                copiedModifiers.Add(modifier.Copy(default));
-
-                ModifiersEditor.inst.PasteGenerator(modifyable);
-                EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
-            });
+            copy.button.onClick.NewListener(Copy<T>);
 
             TooltipHelper.AssignTooltip(copy.gameObject, "Copy Modifier");
             EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
@@ -154,49 +117,12 @@ namespace BetterLegacy.Editor.Data
 
                 var buttonFunctions = new List<ButtonFunction>()
                 {
-                    new ButtonFunction("Add", () =>
-                    {
-                        ModifiersEditor.inst.DefaultModifiersPopup.Open();
-                        ModifiersEditor.inst.RefreshDefaultModifiersList(modifier.referenceType, modifyable);
-                    }),
-                    new ButtonFunction("Add Above", () =>
-                    {
-                        ModifiersEditor.inst.DefaultModifiersPopup.Open();
-                        ModifiersEditor.inst.RefreshDefaultModifiersList(modifier.referenceType, modifyable, index);
-                    }),
-                    new ButtonFunction("Add Below", () =>
-                    {
-                        ModifiersEditor.inst.DefaultModifiersPopup.Open();
-                        ModifiersEditor.inst.RefreshDefaultModifiersList(modifier.referenceType, modifyable, index + 1);
-                    }),
-                    new ButtonFunction("Delete", () =>
-                    {
-                        modifyable.Modifiers.RemoveAt(index);
-                        CoreHelper.Delete(gameObject);
-                        dialog.modifierCards.RemoveAt(index);
-                        for (int i = 0; i < dialog.modifierCards.Count; i++)
-                            dialog.modifierCards[i].index = i;
-
-                        if (modifier.reference is BeatmapObject beatmapObject)
-                        {
-                            beatmapObject.reactivePositionOffset = Vector3.zero;
-                            beatmapObject.reactiveScaleOffset = Vector3.zero;
-                            beatmapObject.reactiveRotationOffset = 0f;
-                            RTLevel.Current?.UpdateObject(beatmapObject);
-                        }
-                        if (modifier.reference is BackgroundObject backgroundObject)
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-                    }),
+                    new ButtonFunction("Add", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifier.referenceType, modifyable)),
+                    new ButtonFunction("Add Above", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifier.referenceType, modifyable, index)),
+                    new ButtonFunction("Add Below", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifier.referenceType, modifyable, index + 1)),
+                    new ButtonFunction("Delete", Delete<T>),
                     new ButtonFunction(true),
-                    new ButtonFunction("Copy", () =>
-                    {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
-                        copiedModifiers.Clear();
-                        copiedModifiers.Add(modifier.Copy(default));
-
-                        ModifiersEditor.inst.PasteGenerator(modifyable);
-                        EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
-                    }),
+                    new ButtonFunction("Copy", Copy<T>),
                     new ButtonFunction("Copy All", () =>
                     {
                         var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
@@ -316,31 +242,10 @@ namespace BetterLegacy.Editor.Data
                         CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                     }),
                     new ButtonFunction(true),
-                    new ButtonFunction("Update Modifier", () =>
-                    {
-                        modifier.active = false;
-                        modifier.runCount = 0;
-                        modifier.Inactive?.Invoke(modifier, null);
-                    }),
+                    new ButtonFunction("Update Modifier", Update<T>),
                     new ButtonFunction(true),
-                    new ButtonFunction("Collapse", () =>
-                    {
-                        modifier.collapse = true;
-                        RenderModifier<T>();
-                        CoroutineHelper.PerformAtEndOfFrame(() =>
-                        {
-                            LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
-                        });
-                    }),
-                    new ButtonFunction("Unollapse", () =>
-                    {
-                        modifier.collapse = false;
-                        RenderModifier<T>();
-                        CoroutineHelper.PerformAtEndOfFrame(() =>
-                        {
-                            LayoutRebuilder.ForceRebuildLayoutImmediate(content.AsRT());
-                        });
-                    }),
+                    new ButtonFunction("Collapse", () => Collapse<T>(true)),
+                    new ButtonFunction("Unollapse", () => Collapse<T>(false)),
                     new ButtonFunction("Collapse All", () =>
                     {
                         foreach (var mod in modifyable.Modifiers)
@@ -383,7 +288,7 @@ namespace BetterLegacy.Editor.Data
             constantToggle.onValueChanged.AddListener(_val =>
             {
                 modifier.constant = _val;
-                modifier.active = false;
+                Update<T>(modifier);
             });
 
             TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
@@ -425,7 +330,7 @@ namespace BetterLegacy.Editor.Data
                 notToggle.onValueChanged.AddListener(_val =>
                 {
                     modifier.not = _val;
-                    modifier.active = false;
+                    Update<T>(modifier);
                 });
 
                 TooltipHelper.AssignTooltip(notToggle.gameObject, "Trigger Not Modifier");
@@ -443,7 +348,7 @@ namespace BetterLegacy.Editor.Data
                 elseIfToggle.onValueChanged.AddListener(_val =>
                 {
                     modifier.elseIf = _val;
-                    modifier.active = false;
+                    Update<T>(modifier);
                 });
 
                 TooltipHelper.AssignTooltip(elseIfToggle.gameObject, "Trigger Else If Modifier");
@@ -456,10 +361,8 @@ namespace BetterLegacy.Editor.Data
                 modifier.verified = true;
                 if (!name.Contains("DEVONLY"))
                 {
-                    if (modifier.referenceType == ModifierReferenceType.BeatmapObject)
-                        (modifier as Modifier<BeatmapObject>).VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
-                    if (modifier.referenceType == ModifierReferenceType.BackgroundObject)
-                        (modifier as Modifier<BackgroundObject>).VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
+                    var defaultModifiers = ModifiersEditor.inst.GetDefaultModifiers(modifier.referenceType);
+                    modifier.VerifyModifier(defaultModifiers);
                 }
             }
 
@@ -860,86 +763,29 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.particleSystem): {
                         SingleGenerator(modifier, "Life Time", 0, 5f);
 
-                        // Shape
+                        DropdownGenerator(modifier, "Shape", 1, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
                         {
-                            var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, "Shape");
-                            dd.transform.localScale = Vector3.one;
-                            var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                            labelText.text = "Shape";
-
-                            CoreHelper.Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                            CoreHelper.Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
-
-                            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                            d.onValueChanged.ClearAll();
-                            d.options = CoreHelper.StringToOptionData("Square", "Circle", "Triangle", "Arrow", "Text", "Hexagon", "Image", "Pentagon", "Misc");
-
-                            d.value = Parser.TryParse(modifier.commands[1], 0);
-
-                            d.onValueChanged.AddListener(_val =>
-                            {
-                                if (_val == 4 || _val == 6)
-                                {
-                                    EditorManager.inst.DisplayNotification("Shape type not available for particle system.", 1.5f, EditorManager.NotificationType.Warning);
-                                    d.value = Parser.TryParse(modifier.commands[1], 0);
-                                    return;
-                                }
-
-                                modifier.commands[1] = Mathf.Clamp(_val, 0, ShapeManager.inst.Shapes2D.Count - 1).ToString();
-                                modifier.active = false;
-
-                                RenderModifier<T>();
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-                            });
-
-                            EditorThemeManager.ApplyLightText(labelText);
-                            EditorThemeManager.ApplyDropdown(d);
-
-                            TriggerHelper.AddEventTriggers(d.gameObject, TriggerHelper.ScrollDelta(d));
-                        }
-
-                        // Shape Option
+                            false, // square
+                            false, // circle
+                            false, // triangle
+                            true, // text
+                            false, // hexagon
+                            true, // image
+                            false, // pentagon
+                            false, // misc
+                            true, // polygon
+                        }, _val =>
                         {
-                            var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, "Shape");
-                            dd.transform.localScale = Vector3.one;
-                            var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                            labelText.text = "Shape";
+                            var shapeType = (ShapeType)_val;
+                            if (shapeType == ShapeType.Text || shapeType == ShapeType.Image || shapeType == ShapeType.Polygon)
+                                modifier.SetValue(1, "0");
 
-                            CoreHelper.Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                            CoreHelper.Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+                            RenderModifier<T>();
+                            Update(modifier);
+                        });
 
-                            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                            d.onValueChanged.ClearAll();
-                            d.options.Clear();
-
-                            var type = Parser.TryParse(modifier.commands[1], 0);
-                            for (int i = 0; i < ShapeManager.inst.Shapes2D[type].Count; i++)
-                            {
-                                var shape = ShapeManager.inst.Shapes2D[type][i].name.Replace("_", " ");
-                                d.options.Add(new Dropdown.OptionData(shape, ShapeManager.inst.Shapes2D[type][i].icon));
-                            }
-
-                            d.value = Parser.TryParse(modifier.commands[2], 0);
-
-                            d.onValueChanged.AddListener(_val =>
-                            {
-                                modifier.commands[2] = Mathf.Clamp(_val, 0, ShapeManager.inst.Shapes2D[type].Count - 1).ToString();
-                                modifier.active = false;
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-                            });
-
-                            EditorThemeManager.ApplyLightText(labelText);
-                            EditorThemeManager.ApplyDropdown(d);
-
-                            TriggerHelper.AddEventTriggers(d.gameObject, TriggerHelper.ScrollDelta(d));
-                        }
+                        var shape = modifier.GetInt(1, 0);
+                        DropdownGenerator(modifier, "Shape Option", 2, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
 
                         ColorGenerator(modifier, "Color", 3);
                         SingleGenerator(modifier, "Start Opacity", 4, 1f);
@@ -1409,7 +1255,7 @@ namespace BetterLegacy.Editor.Data
                     
                 case nameof(ModifierActions.gameMode): {
                         DropdownGenerator(modifier, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
-                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
+                        LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
 
                         break;
                     }
@@ -1503,15 +1349,8 @@ namespace BetterLegacy.Editor.Data
                         if (!options.IsEmpty())
                             DropdownGenerator(modifier, "Value", 1, options);
 
-                        var collapseEnum = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Collapse");
-                        collapseEnum.transform.localScale = Vector3.one;
-                        var collapseEnumText = collapseEnum.transform.Find("Text").GetComponent<Text>();
-                        collapseEnumText.text = "Collapse Enum Editor";
-
-                        var collapseEnumToggle = collapseEnum.transform.Find("Toggle").GetComponent<Toggle>();
-                        collapseEnumToggle.onValueChanged.ClearAll();
-                        collapseEnumToggle.isOn = modifier.GetBool(2, false);
-                        collapseEnumToggle.onValueChanged.AddListener(_val =>
+                        var collapseValue = modifier.GetBool(2, false);
+                        BoolGenerator("Collapse Enum Editor", collapseValue, _val =>
                         {
                             modifier.SetValue(2, _val.ToString());
                             var value = scrollbar ? scrollbar.value : 0f;
@@ -1523,47 +1362,20 @@ namespace BetterLegacy.Editor.Data
                             });
                         });
 
-                        EditorThemeManager.ApplyLightText(collapseEnumText);
-                        EditorThemeManager.ApplyToggle(collapseEnumToggle);
-
-                        if (modifier.GetBool(2, false))
+                        if (collapseValue)
                             break;
 
                         int a = 0;
                         for (int i = 3; i < modifier.commands.Count; i += 2)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Group {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Enum Value {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
-                                modifier.commands.RemoveAt(groupIndex);
-                                modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
+                                for (int j = 0; j < 2; j++)
+                                    modifier.commands.RemoveAt(groupIndex);
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var groupName = StringGenerator(modifier, "Name", i, _val =>
                             {
@@ -1586,19 +1398,6 @@ namespace BetterLegacy.Editor.Data
                         {
                             modifier.commands.Add($"Enum {a}");
                             modifier.commands.Add(a.ToString());
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -1792,36 +1591,12 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 2; i < modifier.commands.Count; i++)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Group {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Variable {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var groupName = StringGenerator(modifier, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -1832,19 +1607,6 @@ namespace BetterLegacy.Editor.Data
                         AddGenerator(modifier, "Add String Value", () =>
                         {
                             modifier.commands.Add($"SPLITSTRING_VAR_{a}");
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -1871,36 +1633,12 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 2; i < modifier.commands.Count; i++)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Group {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator(a == 0 ? "- Whole Match Variable" : $"- Match Variable {a}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var groupName = StringGenerator(modifier, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -1911,24 +1649,11 @@ namespace BetterLegacy.Editor.Data
                         AddGenerator(modifier, "Add Regex Value", () =>
                         {
                             modifier.commands.Add($"REGEX_VAR_{a}");
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
                     }
-                case nameof(ModifierActions.getFormatVariable): { // whaaaaaaat
+                case nameof(ModifierActions.getFormatVariable): { // whaaaaaaat (found i could use nameof() here)
                         StringGenerator(modifier, "Variable Name", 0);
                         StringGenerator(modifier, "Format Text", 1);
 
@@ -1936,36 +1661,12 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 2; i < modifier.commands.Count; i++)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Text {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Text Arg {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var groupName = StringGenerator(modifier, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -1976,19 +1677,6 @@ namespace BetterLegacy.Editor.Data
                         AddGenerator(modifier, "Add Text Value", () =>
                         {
                             modifier.commands.Add($"Text");
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -2014,36 +1702,12 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 1; i < modifier.commands.Count; i++)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Color {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Color {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var groupName = StringGenerator(modifier, "Color Hex Code", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -2054,19 +1718,6 @@ namespace BetterLegacy.Editor.Data
                         AddGenerator(modifier, "Add Color Value", () =>
                         {
                             modifier.commands.Add(RTColors.ColorToHexOptional(LSColors.pink500));
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -2197,36 +1848,12 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 2; i < modifier.commands.Count; i++)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Group {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Group {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var groupName = StringGenerator(modifier, "Object Group", i, _val =>
                             {
@@ -2243,22 +1870,9 @@ namespace BetterLegacy.Editor.Data
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Enum Value", () =>
+                        AddGenerator(modifier, "Add Group", () =>
                         {
                             modifier.commands.Add($"Object Group");
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -2270,7 +1884,7 @@ namespace BetterLegacy.Editor.Data
 
                         BoolGenerator(modifier, "Reset", 1, true);
 
-                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
+                        LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case nameof(ModifierActions.disableObjectTree): {
@@ -2280,7 +1894,7 @@ namespace BetterLegacy.Editor.Data
                         BoolGenerator(modifier, "Use Self", 0, true);
                         BoolGenerator(modifier, "Reset", 1, true);
 
-                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
+                        LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case nameof(ModifierActions.disableObjectOther): {
@@ -2289,7 +1903,7 @@ namespace BetterLegacy.Editor.Data
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, "Reset", 1, true);
 
-                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
+                        LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case nameof(ModifierActions.disableObjectTreeOther): {
@@ -2299,7 +1913,7 @@ namespace BetterLegacy.Editor.Data
                         BoolGenerator(modifier, "Use Self", 0, true);
                         BoolGenerator(modifier, "Reset", 2, true);
 
-                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
+                        LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
 
@@ -2675,59 +2289,16 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 12; i < modifier.commands.Count; i += 14)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Keyframe {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Keyframe {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
-                                modifier.commands.RemoveAt(groupIndex); // collapse keyframe
-                                modifier.commands.RemoveAt(groupIndex); // keyframe time
-                                modifier.commands.RemoveAt(groupIndex); // color slot 1
-                                modifier.commands.RemoveAt(groupIndex); // opacity 1
-                                modifier.commands.RemoveAt(groupIndex); // hue 1
-                                modifier.commands.RemoveAt(groupIndex); // saturation 1
-                                modifier.commands.RemoveAt(groupIndex); // value 1
-                                modifier.commands.RemoveAt(groupIndex); // color slot 2
-                                modifier.commands.RemoveAt(groupIndex); // opacity 2
-                                modifier.commands.RemoveAt(groupIndex); // hue 2
-                                modifier.commands.RemoveAt(groupIndex); // saturation 2
-                                modifier.commands.RemoveAt(groupIndex); // value 2
-                                modifier.commands.RemoveAt(groupIndex); // relative
-                                modifier.commands.RemoveAt(groupIndex); // easing
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
+                                for (int j = 0; j < 14; j++)
+                                    modifier.commands.RemoveAt(groupIndex);
                             });
 
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
-
-                            var collapseEnum = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Collapse");
-                            collapseEnum.transform.localScale = Vector3.one;
-                            var collapseEnumText = collapseEnum.transform.Find("Text").GetComponent<Text>();
-                            collapseEnumText.text = "Collapse Keyframe Editor";
-
-                            var collapseEnumToggle = collapseEnum.transform.Find("Toggle").GetComponent<Toggle>();
-                            collapseEnumToggle.onValueChanged.ClearAll();
-                            collapseEnumToggle.isOn = modifier.GetBool(i, false);
-                            collapseEnumToggle.onValueChanged.AddListener(_val =>
+                            var collapseValue = modifier.GetBool(i, false);
+                            BoolGenerator("Collapse Keyframe Editor", collapseValue, _val =>
                             {
                                 modifier.SetValue(groupIndex, _val.ToString());
                                 var value = scrollbar ? scrollbar.value : 0f;
@@ -2739,10 +2310,7 @@ namespace BetterLegacy.Editor.Data
                                 });
                             });
 
-                            EditorThemeManager.ApplyLightText(collapseEnumText);
-                            EditorThemeManager.ApplyToggle(collapseEnumToggle);
-
-                            if (modifier.GetBool(i, false))
+                            if (collapseValue)
                                 continue;
 
                             SingleGenerator(modifier, "Keyframe Time", i + 1);
@@ -2780,19 +2348,6 @@ namespace BetterLegacy.Editor.Data
                             modifier.commands.Add("0"); // value 2
                             modifier.commands.Add("True"); // relative
                             modifier.commands.Add("0"); // easing
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -2807,51 +2362,16 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 3; i < modifier.commands.Count; i += 6)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Keyframe {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Keyframe {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
-                                modifier.commands.RemoveAt(groupIndex); // collapse keyframe
-                                modifier.commands.RemoveAt(groupIndex); // keyframe time
-                                modifier.commands.RemoveAt(groupIndex); // color slot 1
-                                modifier.commands.RemoveAt(groupIndex); // color slot 2
-                                modifier.commands.RemoveAt(groupIndex); // relative
-                                modifier.commands.RemoveAt(groupIndex); // easing
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
+                                for (int j = 0; j < 6; j++)
+                                    modifier.commands.RemoveAt(groupIndex);
                             });
 
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
-
-                            var collapseEnum = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Collapse");
-                            collapseEnum.transform.localScale = Vector3.one;
-                            var collapseEnumText = collapseEnum.transform.Find("Text").GetComponent<Text>();
-                            collapseEnumText.text = "Collapse Keyframe Editor";
-
-                            var collapseEnumToggle = collapseEnum.transform.Find("Toggle").GetComponent<Toggle>();
-                            collapseEnumToggle.onValueChanged.ClearAll();
-                            collapseEnumToggle.isOn = modifier.GetBool(i, false);
-                            collapseEnumToggle.onValueChanged.AddListener(_val =>
+                            var collapseValue = modifier.GetBool(i, false);
+                            BoolGenerator("Collapse Keyframe Editor", collapseValue, _val =>
                             {
                                 modifier.SetValue(groupIndex, _val.ToString());
                                 var value = scrollbar ? scrollbar.value : 0f;
@@ -2863,11 +2383,8 @@ namespace BetterLegacy.Editor.Data
                                 });
                             });
 
-                            EditorThemeManager.ApplyLightText(collapseEnumText);
-                            EditorThemeManager.ApplyToggle(collapseEnumToggle);
-
-                            if (modifier.GetBool(i, false))
-                                break;
+                            if (collapseValue)
+                                continue;
 
                             SingleGenerator(modifier, "Keyframe Time", i + 1);
                             DropdownGenerator(modifier, "Easing", i + 5, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
@@ -2887,19 +2404,6 @@ namespace BetterLegacy.Editor.Data
                             modifier.commands.Add("0"); // color 2
                             modifier.commands.Add("True"); // relative
                             modifier.commands.Add("0"); // easing
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -3260,37 +2764,13 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 3; i < modifier.commands.Count; i += 8)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Group {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Group {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 for (int j = 0; j < 8; j++)
                                     modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var groupName = StringGenerator(modifier, "Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -3318,19 +2798,6 @@ namespace BetterLegacy.Editor.Data
                             modifier.commands.Add("-9999");
                             modifier.commands.Add("9999");
                             modifier.commands.Add("False");
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -3360,45 +2827,23 @@ namespace BetterLegacy.Editor.Data
                         path.transform.Find("Text").AsRT().sizeDelta = new Vector2(350f, 32f);
                         CoreHelper.Destroy(path.transform.Find("Input").gameObject);
 
+                        int a = 0;
                         for (int i = 1; i < modifier.commands.Count; i += 3)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $" Tail Group {(i + 2) / 3}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Tail Group {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 for (int j = 0; j < 3; j++)
                                     modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             var str = StringGenerator(modifier, "Object Group", i);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             SingleGenerator(modifier, "Distance", i + 1, 2f);
                             SingleGenerator(modifier, "Time", i + 2, 12f);
+                            a++;
                         }
 
                         AddGenerator(modifier, "Add Group", () =>
@@ -3415,19 +2860,6 @@ namespace BetterLegacy.Editor.Data
                             modifier.commands.Add("Object Group");
                             modifier.commands.Add(length);
                             modifier.commands.Add(time);
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -3665,37 +3097,13 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 9; i < modifier.commands.Count; i += 2)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $"Position {a + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Position {a + 1}");
 
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroupButton.button.onClick.NewListener(() =>
+                            DeleteGenerator(modifier, label.transform, () =>
                             {
                                 modifier.commands.RemoveAt(groupIndex);
                                 modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
-                                CoroutineHelper.PerformAtNextFrame(() =>
-                                {
-                                    if (scrollbar)
-                                        scrollbar.value = value;
-                                });
                             });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                             SingleGenerator(modifier, "Pos X", i);
                             SingleGenerator(modifier, "Pos Y", i + 1);
@@ -3707,19 +3115,6 @@ namespace BetterLegacy.Editor.Data
                         {
                             modifier.commands.Add("0");
                             modifier.commands.Add("0");
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
-                            CoroutineHelper.PerformAtNextFrame(() =>
-                            {
-                                if (scrollbar)
-                                    scrollbar.value = value;
-                            });
                         });
 
                         break;
@@ -3778,44 +3173,16 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 3; i < modifier.commands.Count; i++)
                         {
                             int groupIndex = i;
-                            var label = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
-                            label.transform.localScale = Vector3.one;
-                            var groupLabel = label.transform.Find("Text").GetComponent<Text>();
-                            groupLabel.text = $" Name {i + 1}";
-                            label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
-                            CoreHelper.Destroy(label.transform.Find("Input").gameObject);
+                            var label = LabelGenerator($"- Name {i + 1}");
+
+                            DeleteGenerator(modifier, label.transform, () => modifier.commands.RemoveAt(groupIndex));
 
                             StringGenerator(modifier, "Modifier Name", groupIndex);
-
-                            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
-                            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
-                            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
-                            deleteGroupButton.button.onClick.AddListener(() =>
-                            {
-                                modifier.commands.RemoveAt(groupIndex);
-
-                                if (modifier.reference is BeatmapObject beatmapObject)
-                                    RTLevel.Current?.UpdateObject(beatmapObject);
-                                if (modifier.reference is BackgroundObject backgroundObject)
-                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                                RenderModifier<T>();
-                            });
-
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
-                            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
                         }
 
-                        AddGenerator(modifier, "Add Group", () =>
+                        AddGenerator(modifier, "Add Modifier Ref", () =>
                         {
                             modifier.commands.Add("modifierName");
-
-                            if (modifier.reference is BeatmapObject beatmapObject)
-                                RTLevel.Current?.UpdateObject(beatmapObject);
-                            if (modifier.reference is BackgroundObject backgroundObject)
-                                RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
-
-                            RenderModifier<T>();
                         });
 
                         break;
@@ -4119,7 +3486,7 @@ namespace BetterLegacy.Editor.Data
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         SingleGenerator(modifier, "Delay", 0, 0f);
 
-                        MessageGenerator(layout, ModifiersHelper.DEPRECATED_MESSAGE);
+                        LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
 
@@ -4296,6 +3663,80 @@ namespace BetterLegacy.Editor.Data
             }
         }
 
+        #region Functions
+
+        public void Collapse<T>(bool collapse)
+        {
+            Modifier.collapse = collapse;
+            RenderModifier<T>();
+            CoroutineHelper.PerformAtEndOfFrame(() =>
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(dialog.Content.AsRT());
+            });
+        }
+
+        public void Delete<T>()
+        {
+            if (Modifier is not Modifier<T> modifier)
+                return;
+
+            if (modifier.reference is not IModifyable<T> modifyable)
+                return;
+
+            modifyable.Modifiers.RemoveAt(index);
+            CoreHelper.Delete(gameObject);
+            dialog.modifierCards.RemoveAt(index);
+            for (int i = 0; i < dialog.modifierCards.Count; i++)
+                dialog.modifierCards[i].index = i;
+
+            switch (modifier.referenceType)
+            {
+                case ModifierReferenceType.BeatmapObject: {
+                        var beatmapObject = modifyable as BeatmapObject;
+                        beatmapObject.reactivePositionOffset = Vector3.zero;
+                        beatmapObject.reactiveScaleOffset = Vector3.zero;
+                        beatmapObject.reactiveRotationOffset = 0f;
+                        RTLevel.Current?.UpdateObject(beatmapObject);
+                        break;
+                    }
+                case ModifierReferenceType.BackgroundObject: {
+                        var backgroundObject = modifyable as BackgroundObject;
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                        break;
+                    }
+            }
+        }
+
+        public void Copy<T>()
+        {
+            if (Modifier is not Modifier<T> modifier)
+                return;
+
+            if (modifier.reference is not IModifyable<T> modifyable)
+                return;
+
+            var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
+            copiedModifiers.Clear();
+            copiedModifiers.Add(modifier.Copy(default));
+
+            ModifiersEditor.inst.PasteGenerator(modifyable);
+            EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
+        }
+
+        public void Update<T>() => Update(Modifier as Modifier<T>);
+
+        public void Update<T>(Modifier<T> modifier)
+        {
+            if (!modifier)
+                return;
+
+            modifier.active = false;
+            modifier.runCount = 0;
+            modifier.Inactive?.Invoke(modifier, null);
+        }
+
+        #endregion
+
         #region Generators
 
         public void PrefabGroupOnly<T>(Modifier<T> modifier)
@@ -4335,13 +3776,12 @@ namespace BetterLegacy.Editor.Data
             EditorThemeManager.ApplyToggle(groupAliveToggle);
         }
 
-        public GameObject MessageGenerator(Transform layout, string label)
+        public GameObject LabelGenerator(string label)
         {
             var gameObject = ModifiersEditor.inst.stringInput.Duplicate(layout, "group label");
             gameObject.transform.localScale = Vector3.one;
             var groupLabel = gameObject.transform.Find("Text").GetComponent<Text>();
             groupLabel.text = label;
-            groupLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
             gameObject.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
             CoreHelper.Delete(gameObject.transform.Find("Input").gameObject);
             return gameObject;
@@ -4383,16 +3823,7 @@ namespace BetterLegacy.Editor.Data
                     _val = RTMath.ClampZero(num, min, max).ToString();
 
                 modifier.SetValue(type, _val);
-
-                try
-                {
-                    modifier.Inactive?.Invoke(modifier, null);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-                modifier.active = false;
+                Update(modifier);
             }, out InputField inputField);
 
             TriggerHelper.IncreaseDecreaseButtons(inputField, amount, multiply, min, max, single.transform);
@@ -4413,6 +3844,7 @@ namespace BetterLegacy.Editor.Data
                             if (modifier.reference is IModifyable<T> modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
+                            Update(modifier);
                         });
                     }));
             };
@@ -4429,15 +3861,7 @@ namespace BetterLegacy.Editor.Data
 
                 modifier.SetValue(type, _val);
 
-                try
-                {
-                    modifier.Inactive?.Invoke(modifier, null);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-                modifier.active = false;
+                Update(modifier);
             }, out InputField inputField);
 
             TriggerHelper.IncreaseDecreaseButtonsInt(inputField, amount, min, max, t: single.transform);
@@ -4458,6 +3882,7 @@ namespace BetterLegacy.Editor.Data
                             if (modifier.reference is IModifyable<T> modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
+                            Update(modifier);
                         });
                     }));
             };
@@ -4465,7 +3890,9 @@ namespace BetterLegacy.Editor.Data
             return single;
         }
 
-        public GameObject BoolGenerator<T>(Modifier<T> modifier, string label, int type, bool defaultValue = false)
+        public GameObject BoolGenerator(string label, bool value, Action<bool> action) => BoolGenerator(label, value, action, out Toggle toggle);
+
+        public GameObject BoolGenerator(string label, bool value, Action<bool> action, out Toggle toggle)
         {
             var global = ModifiersEditor.inst.booleanBar.Duplicate(layout, label);
             global.transform.localScale = Vector3.one;
@@ -4474,25 +3901,24 @@ namespace BetterLegacy.Editor.Data
 
             var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
             globalToggle.onValueChanged.ClearAll();
-            globalToggle.isOn = modifier.GetBool(type, defaultValue);
-            globalToggle.onValueChanged.AddListener(_val =>
-            {
-                modifier.SetValue(type, _val.ToString());
-
-                try
-                {
-                    modifier.Inactive?.Invoke(modifier, null);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-                modifier.active = false;
-            });
+            globalToggle.isOn = value;
+            globalToggle.onValueChanged.AddListener(_val => action?.Invoke(_val));
 
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyToggle(globalToggle);
 
+            toggle = globalToggle;
+            return global;
+        }
+
+        public GameObject BoolGenerator<T>(Modifier<T> modifier, string label, int type, bool defaultValue = false)
+        {
+            var global = BoolGenerator(label, modifier.GetBool(type, defaultValue), _val =>
+            {
+                modifier.SetValue(type, _val.ToString());
+
+                Update(modifier);
+            }, out Toggle globalToggle);
             var contextClickable = globalToggle.gameObject.AddComponent<ContextClickable>();
             contextClickable.onClick = eventData =>
             {
@@ -4509,6 +3935,7 @@ namespace BetterLegacy.Editor.Data
                             if (modifier.reference is IModifyable<T> modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
+                            Update(modifier);
                         });
                     }));
             };
@@ -4548,15 +3975,7 @@ namespace BetterLegacy.Editor.Data
         {
             modifier.SetValue(type, _val);
 
-            try
-            {
-                modifier.Inactive?.Invoke(modifier, null);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-            modifier.active = false;
+            Update(modifier);
         }, onEndEdit);
 
         public void SetObjectColors<T>(Toggle[] toggles, int index, int currentValue, Modifier<T> modifier, List<Color> colors)
@@ -4571,17 +3990,8 @@ namespace BetterLegacy.Editor.Data
                 {
                     modifier.SetValue(index, toggleIndex.ToString());
 
-                    try
-                    {
-                        modifier.Inactive?.Invoke(modifier, null);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreHelper.LogException(ex);
-                    }
-                    modifier.active = false;
-
                     SetObjectColors(toggles, index, toggleIndex, modifier, colors);
+                    Update(modifier);
                 });
 
                 toggle.GetComponent<Image>().color = colors.GetAt(toggleIndex);
@@ -4660,6 +4070,7 @@ namespace BetterLegacy.Editor.Data
                                 if (modifier.reference is IModifyable<T> modifyable)
                                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                                 RTEditor.inst.HideNameEditor();
+                                Update(modifier);
                             });
                         }));
                 };
@@ -4706,15 +4117,7 @@ namespace BetterLegacy.Editor.Data
                 modifier.SetValue(type, _val.ToString());
                 onSelect?.Invoke(_val);
 
-                try
-                {
-                    modifier.Inactive?.Invoke(modifier, null);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-                modifier.active = false;
+                Update(modifier);
             });
 
             if (dropdown.template)
@@ -4739,11 +4142,42 @@ namespace BetterLegacy.Editor.Data
                             if (modifier.reference is IModifyable<T> modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
+                            Update(modifier);
                         });
                     }));
             };
 
             return dd;
+        }
+
+        public GameObject DeleteGenerator<T>(Modifier<T> modifier, Transform parent, Action onDelete)
+        {
+            var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(parent, "delete");
+            deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
+            var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+            deleteGroupButton.button.onClick.NewListener(() =>
+            {
+                onDelete?.Invoke();
+
+                if (modifier.reference is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject);
+                if (modifier.reference is BackgroundObject backgroundObject)
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+
+                var scrollbar = dialog.Scrollbar;
+                var value = scrollbar ? scrollbar.value : 0f;
+                RenderModifier<T>();
+                CoroutineHelper.PerformAtNextFrame(() =>
+                {
+                    if (scrollbar)
+                        scrollbar.value = value;
+                });
+                Update(modifier);
+            });
+
+            EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
+            return deleteGroup;
         }
 
         public GameObject AddGenerator<T>(Modifier<T> modifier, string text, Action onAdd)
@@ -4757,7 +4191,25 @@ namespace BetterLegacy.Editor.Data
             RectValues.Default.AnchoredPosition(105f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(add.transform.AsRT());
 
             var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() => onAdd?.Invoke());
+            addButton.onClick.NewListener(() =>
+            {
+                onAdd?.Invoke();
+
+                if (modifier.reference is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject);
+                if (modifier.reference is BackgroundObject backgroundObject)
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+
+                var scrollbar = dialog.Scrollbar;
+                var value = scrollbar ? scrollbar.value : 0f;
+                RenderModifier<T>();
+                CoroutineHelper.PerformAtNextFrame(() =>
+                {
+                    if (scrollbar)
+                        scrollbar.value = value;
+                });
+                Update(modifier);
+            });
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
