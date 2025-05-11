@@ -21,31 +21,17 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Active = false;
         }
 
-        public void Start()
-        {
+        public void Start(float time) => Active = true;
 
-        }
+        public void Stop() => Active = false;
 
-        public void Stop()
-        {
-            Active = false;
-        }
+        public void SetEase(EaseFunction ease) => Ease = ease;
 
-        public void SetEase(EaseFunction ease)
-        {
-            Ease = ease;
-        }
+        public void SetValue(Vector2 value) => Value = value;
 
-        public void SetValue(Vector2 value)
-        {
-            Value = value;
-        }
+        public Vector2 GetValue() => Value;
 
-        public Vector2 Interpolate(IKeyframe<Vector2> other, float time)
-        {
-            var second = (Vector2Keyframe)other;
-            return RTMath.Lerp(Value, second.Value, second.Ease(time));
-        }
+        public Vector2 Interpolate(IKeyframe<Vector2> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
     }
 }
 

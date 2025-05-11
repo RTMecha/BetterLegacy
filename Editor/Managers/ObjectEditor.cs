@@ -711,8 +711,19 @@ namespace BetterLegacy.Editor.Managers
                         var toggleButtonStorage = toggle.GetComponent<ToggleButtonStorage>();
                         toggleButtonStorage.label.text = "Relative";
 
+                        EditorThemeManager.AddLightText(toggleLabelText);
                         EditorThemeManager.AddLightText(toggleButtonStorage.label);
                         EditorThemeManager.AddToggle(toggleButtonStorage.toggle, graphic: toggleButtonStorage.label);
+
+                        if (i != 1)
+                        {
+                            var fleeToggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "flee");
+                            var fleeToggleStorage = fleeToggle.GetComponent<ToggleButtonStorage>();
+                            fleeToggleStorage.label.text = "Flee";
+
+                            EditorThemeManager.AddLightText(fleeToggleStorage.label);
+                            EditorThemeManager.AddToggle(fleeToggleStorage.toggle, graphic: fleeToggleStorage.label);
+                        }
 
                         var flipX = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, "flipx");
                         var flipXText = flipX.transform.GetChild(0).GetComponent<Text>();
@@ -720,8 +731,7 @@ namespace BetterLegacy.Editor.Managers
                         ((RectTransform)flipX.transform).sizeDelta = new Vector2(366f, 32f);
                         var flipXButton = flipX.GetComponent<Button>();
 
-                        flipXButton.onClick.ClearAll();
-                        flipXButton.onClick.AddListener(() =>
+                        flipXButton.onClick.NewListener(() =>
                         {
                             foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                             {
@@ -747,8 +757,7 @@ namespace BetterLegacy.Editor.Managers
                             ((RectTransform)flipY.transform).sizeDelta = new Vector2(366f, 32f);
                             var flipYButton = flipY.GetComponent<Button>();
 
-                            flipYButton.onClick.ClearAll();
-                            flipYButton.onClick.AddListener(() =>
+                            flipYButton.onClick.NewListener(() =>
                             {
                                 foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
                                 {
@@ -3244,6 +3253,8 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < eventKeyframe.values.Length; i++)
                     eventKeyframe.values[i] = 0f;
 
+            eventKeyframe.SetEventRandomValues(eventKeyframe.randomValues[0], eventKeyframe.randomValues[1], eventKeyframe.randomValues[2], 0f);
+
             eventKeyframe.locked = false;
 
             beatmapObject.events[type].Add(eventKeyframe);
@@ -5295,15 +5306,12 @@ namespace BetterLegacy.Editor.Managers
             dialog.RandomIntervalField.gameObject.SetActive(randomType != 0 && randomType != 3 && randomType != 5);
             kfdialog.Find("r_label/interval").gameObject.SetActive(randomType != 0 && randomType != 3 && randomType != 5);
 
-            if (dialog.RelativeToggle && kfdialog.TryFind("relative-label", out Transform relativeLabelTransform))
+            if (dialog.FleeToggle)
             {
-                relativeLabelTransform.gameObject.SetActive(RTEditor.ShowModdedUI);
-                if (RTEditor.ShowModdedUI)
-                {
-                    relativeLabelTransform.GetChild(0).GetComponent<Text>().text =
-                        randomType == 6 && type != 2 ? "Object Flees from Player" : randomType == 6 ? "Object Turns Away from Player" : "Value Additive";
-                    dialog.RelativeToggle.label.text = randomType == 6 && type != 2 ? "Flee" : randomType == 6 ? "Turn Away" : "Relative";
-                }
+                var active = RTEditor.ShowModdedUI && randomType == 6;
+                dialog.FleeToggle.gameObject.SetActive(active);
+                if (active)
+                    dialog.FleeToggle.label.text = type != 2 ? "Flee" : "Turn";
             }
 
             dialog.RandomEventValueParent.transform.GetChild(1).gameObject.SetActive(type != 2 || randomType == 6);
@@ -5326,7 +5334,7 @@ namespace BetterLegacy.Editor.Managers
                 // We skip the 2nd random type for compatibility with old PA levels (for some reason).
                 int buttonTmp = (n >= 2 && (type != 2 || n < 3)) ? (n + 1) : (n > 2 && type == 2) ? n + 2 : n;
 
-                var active = buttonTmp != 5 && buttonTmp != 6 || RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value;
+                var active = buttonTmp != 5 && buttonTmp != 6 || RTEditor.ShowModdedUI;
 
                 var toggle = dialog.RandomToggles[n];
                 toggle.gameObject.SetActive(active);
@@ -5343,8 +5351,8 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
                             keyframe.random = buttonTmp;
 
-                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                            if (UpdateObjects)
+                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                        if (UpdateObjects)
                             RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                     }
 
@@ -5356,16 +5364,39 @@ namespace BetterLegacy.Editor.Managers
 
             if (dialog.RandomAxisDropdown)
             {
-                var active = (random == 5 || random == 6) && RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value;
+                var active = (random == 5 || random == 6) && RTEditor.ShowModdedUI;
                 dialog.RandomAxisDropdown.gameObject.SetActive(active);
                 dialog.RandomAxisDropdown.onValueChanged.ClearAll();
                 if (active)
                 {
+                    if (firstKF.eventKeyframe.randomValues.Length < 4)
+                    {
+                        var keyframe = firstKF.eventKeyframe;
+                        keyframe.SetEventRandomValues(keyframe.randomValues[0], keyframe.randomValues[1], keyframe.randomValues[2], 0f);
+                    }
+
                     dialog.RandomAxisDropdown.value = Mathf.Clamp((int)firstKF.eventKeyframe.randomValues[3], 0, 3);
                     dialog.RandomAxisDropdown.onValueChanged.AddListener(_val =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                            keyframe.randomValues[3] = _val;
+                            keyframe.SetEventRandomValues(keyframe.randomValues[0], keyframe.randomValues[1], keyframe.randomValues[2], _val);
+                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    });
+                }
+            }
+
+            if (dialog.FleeToggle)
+            {
+                var active = random == 6 && RTEditor.ShowModdedUI;
+                dialog.FleeToggle.gameObject.SetActive(active);
+                dialog.FleeToggle.toggle.onValueChanged.ClearAll();
+                if (active)
+                {
+                    dialog.FleeToggle.toggle.isOn = firstKF.eventKeyframe.flee;
+                    dialog.FleeToggle.toggle.onValueChanged.AddListener(_val =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                            keyframe.flee = _val;
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                     });
                 }
@@ -5393,17 +5424,13 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                 }
             });
-
-            TriggerHelper.AddEventTriggers(dialog.RandomIntervalField.gameObject,
-                TriggerHelper.ScrollDelta(dialog.RandomIntervalField, 0.01f));
-
             if (!dialog.RandomIntervalField.GetComponent<InputFieldSwapper>())
             {
                 var ifh = dialog.RandomIntervalField.gameObject.AddComponent<InputFieldSwapper>();
                 ifh.Init(dialog.RandomIntervalField, InputFieldSwapper.Type.Num);
             }
 
-            TriggerHelper.AddEventTriggers(dialog.RandomIntervalField.gameObject, TriggerHelper.ScrollDelta(dialog.RandomIntervalField, max: random == 6 ? 1f : 0f));
+            TriggerHelper.AddEventTriggers(dialog.RandomIntervalField.gameObject, TriggerHelper.ScrollDelta(dialog.RandomIntervalField, max: float.MaxValue));
         }
 
         void KeyframeRandomValueHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
@@ -5432,8 +5459,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            inputFieldStorage.leftButton.onClick.ClearAll();
-            inputFieldStorage.leftButton.onClick.AddListener(() =>
+            inputFieldStorage.leftButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float x))
                 {
@@ -5452,8 +5478,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            inputFieldStorage.rightButton.onClick.ClearAll();
-            inputFieldStorage.rightButton.onClick.AddListener(() =>
+            inputFieldStorage.rightButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float x))
                 {
@@ -5743,36 +5768,29 @@ namespace BetterLegacy.Editor.Managers
             dialog.EventTimeField.rightGreaterButton.interactable = !isFirst;
             dialog.EventTimeField.inputField.interactable = !isFirst;
 
-            dialog.JumpToStartButton.onClick.ClearAll();
             dialog.JumpToStartButton.interactable = !isFirst;
-            dialog.JumpToStartButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, 0, true));
+            dialog.JumpToStartButton.onClick.NewListener(() => SetCurrentKeyframe(beatmapObject, 0, true));
 
-            dialog.JumpToPrevButton.onClick.ClearAll();
             dialog.JumpToPrevButton.interactable = selected.Count() == 1 && firstKF.Index != 0;
-            dialog.JumpToPrevButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index - 1, true));
+            dialog.JumpToPrevButton.onClick.NewListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index - 1, true));
 
             dialog.KeyframeIndexer.text = firstKF.Index == 0 ? "S" : firstKF.Index == beatmapObject.events[firstKF.Type].Count - 1 ? "E" : firstKF.Index.ToString();
 
-            dialog.JumpToNextButton.onClick.ClearAll();
             dialog.JumpToNextButton.interactable = selected.Count() == 1 && firstKF.Index < beatmapObject.events[type].Count - 1;
-            dialog.JumpToNextButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index + 1, true));
+            dialog.JumpToNextButton.onClick.NewListener(() => SetCurrentKeyframe(beatmapObject, firstKF.Index + 1, true));
 
-            dialog.JumpToLastButton.onClick.ClearAll();
             dialog.JumpToLastButton.interactable = selected.Count() == 1 && firstKF.Index < beatmapObject.events[type].Count - 1;
-            dialog.JumpToLastButton.onClick.AddListener(() => SetCurrentKeyframe(beatmapObject, beatmapObject.events[type].Count - 1, true));
+            dialog.JumpToLastButton.onClick.NewListener(() => SetCurrentKeyframe(beatmapObject, beatmapObject.events[type].Count - 1, true));
 
-            dialog.CopyButton.button.onClick.ClearAll();
-            dialog.CopyButton.button.onClick.AddListener(() =>
+            dialog.CopyButton.button.onClick.NewListener(() =>
             {
                 CopyData(firstKF.Type, firstKF.eventKeyframe);
                 EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
             });
 
-            dialog.PasteButton.button.onClick.ClearAll();
-            dialog.PasteButton.button.onClick.AddListener(() => PasteKeyframeData(type, selected, beatmapObject));
+            dialog.PasteButton.button.onClick.NewListener(() => PasteKeyframeData(type, selected, beatmapObject));
 
-            dialog.DeleteButton.button.onClick.ClearAll();
-            dialog.DeleteButton.button.onClick.AddListener(DeleteKeyframes(beatmapObject).Start);
+            dialog.DeleteButton.button.onClick.NewListener(DeleteKeyframes(beatmapObject).Start);
 
             dialog.EventTimeField.eventTrigger.triggers.Clear();
             if (count == 1 && firstKF.Index != 0 || count > 1)
@@ -5808,8 +5826,7 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.IncreaseDecreaseButtons(dialog.EventTimeField.inputField, t: dialog.EventTimeField.transform);
             else
             {
-                dialog.EventTimeField.leftButton.onClick.ClearAll();
-                dialog.EventTimeField.leftButton.onClick.AddListener(() =>
+                dialog.EventTimeField.leftButton.onClick.NewListener(() =>
                 {
                     if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
@@ -5837,8 +5854,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                dialog.EventTimeField.rightButton.onClick.ClearAll();
-                dialog.EventTimeField.rightButton.onClick.AddListener(() =>
+                dialog.EventTimeField.rightButton.onClick.NewListener(() =>
                 {
                     if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
@@ -5866,8 +5882,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                dialog.EventTimeField.leftGreaterButton.onClick.ClearAll();
-                dialog.EventTimeField.leftGreaterButton.onClick.AddListener(() =>
+                dialog.EventTimeField.leftGreaterButton.onClick.NewListener(() =>
                 {
                     if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
@@ -5895,8 +5910,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                dialog.EventTimeField.rightGreaterButton.onClick.ClearAll();
-                dialog.EventTimeField.rightGreaterButton.onClick.AddListener(() =>
+                dialog.EventTimeField.rightGreaterButton.onClick.NewListener(() =>
                 {
                     if (float.TryParse(dialog.EventTimeField.inputField.text, out float result))
                     {
@@ -5946,8 +5960,7 @@ namespace BetterLegacy.Editor.Managers
 
             switch (type)
             {
-                case 0:
-                    {
+                case 0: {
                         for (int i = 0; i < 3; i++)
                             KeyframeHandler(type, i, selected, firstKF, beatmapObject);
 
@@ -5957,8 +5970,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case 1:
-                    {
+                case 1: {
                         for (int i = 0; i < 2; i++)
                             KeyframeHandler(type, i, selected, firstKF, beatmapObject);
 
@@ -5968,8 +5980,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case 2:
-                    {
+                case 2: {
                         KeyframeHandler(type, 0, selected, firstKF, beatmapObject);
 
                         KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
@@ -5978,8 +5989,7 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
-                case 3:
-                    {
+                case 3: {
                         bool showModifiedColors = EditorConfig.Instance.ShowModifiedColors.Value;
                         var eventTime = firstKF.eventKeyframe.time;
                         int index = 0;

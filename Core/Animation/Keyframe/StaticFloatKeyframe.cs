@@ -7,77 +7,53 @@ namespace BetterLegacy.Core.Animation.Keyframe
     /// <summary>
     /// A keyframe that animates a float value.
     /// </summary>
-    public struct StaticFloatKeyframe : IKeyframe<float>
+    public struct StaticFloatKeyframe : IKeyframe<float>, IHomingKeyframe, IHomingFloatKeyframe
     {
         public bool Active { get; set; }
 
         public float Time { get; set; }
         public EaseFunction Ease { get; set; }
         public float Value { get; set; }
-        public IKeyframe<float> PreviousKeyframe { get; set; }
 
         public Sequence<Vector3> PositionSequence { get; set; }
 
-        public Transform Player
-        {
-            get
-            {
-                var player = PlayerManager.GetClosestPlayer(PositionSequence.Value);
-                if (player && player.Player)
-                    return player.Player.transform.Find("Player");
-                return null;
-            }
-        }
-
-        public Vector2 Target { get; set; }
+        public Vector3 Target { get; set; }
 
         public float Angle { get; set; }
 
-        public StaticFloatKeyframe(float time, float value, EaseFunction ease, IKeyframe<float> previousKeyframe, Sequence<Vector3> positionSequence)
+        public StaticFloatKeyframe(float time, float value, EaseFunction ease, Sequence<Vector3> positionSequence)
         {
             Time = time;
             Value = value;
             Ease = ease;
             Active = false;
             Target = Vector3.zero;
-            PreviousKeyframe = previousKeyframe;
             PositionSequence = positionSequence;
             Angle = 0f;
         }
 
-        public void Start()
+        public void Start(float time)
         {
-            if (Player)
-                Target = Player.transform.position;
+            Active = true;
+            var player = this.GetPlayer(time);
+            if (player)
+                Target = player.transform.position;
+
+            Angle = -RTMath.VectorAngle(PositionSequence.Interpolate(time), Target);
         }
 
-        public void Stop()
-        {
-            Active = false;
-        }
+        public void Stop() => Active = false;
 
-        public void SetEase(EaseFunction ease)
-        {
-            Ease = ease;
-        }
+        public Vector3 GetPosition() => PositionSequence.Value;
 
-        public void SetValue(float value)
-        {
-            Value = value;
-        }
+        public Vector3 GetPosition(float time) => PositionSequence.Interpolate(time);
 
-        public float Interpolate(IKeyframe<float> other, float time)
-        {
-            var value = other is FloatKeyframe vector3Keyframe ? vector3Keyframe.Value : other is DynamicFloatKeyframe dynamicVector3Keyframe ? dynamicVector3Keyframe.Value : other is StaticFloatKeyframe staticVector3Keyframe ? staticVector3Keyframe.Value : 0f;
-            var ease = other is FloatKeyframe vector3Keyframe1 ? vector3Keyframe1.Ease(time) : other is DynamicFloatKeyframe dynamicVector3Keyframe1 ? dynamicVector3Keyframe1.Ease(time) : other is StaticFloatKeyframe staticVector3Keyframe1 ? staticVector3Keyframe1.Ease(time) : 0f;
+        public void SetEase(EaseFunction ease) => Ease = ease;
 
-            var prevtarget =
-                PreviousKeyframe is StaticFloatKeyframe staticFloatKeyframe ? staticFloatKeyframe.Angle : 
-                PreviousKeyframe is DynamicFloatKeyframe dynamicFloatKeyframe ? dynamicFloatKeyframe.Angle :
-                0f;
+        public void SetValue(float value) => Value = value;
 
-            Angle = -RTMath.VectorAngle(PositionSequence.Value, Target);
-            return RTMath.Lerp(prevtarget + Value, Angle + value, ease);
-        }
+        public float GetValue() => Angle + Value;
+
+        public float Interpolate(IKeyframe<float> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
     }
 }

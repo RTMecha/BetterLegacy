@@ -10,13 +10,17 @@
 
         public float Time { get; set; }
 
-        public void Start();
+        public EaseFunction Ease { get; set; }
+
+        public void Start(float time);
 
         public void Stop();
 
         public void SetEase(EaseFunction ease);
 
         public void SetValue(T value);
+
+        public T GetValue();
 
         public T Interpolate(IKeyframe<T> other, float time);
     }

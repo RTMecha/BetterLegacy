@@ -39,7 +39,7 @@ namespace BetterLegacy.Core.Animation
                 if (!first.Active)
                 {
                     first.Active = true;
-                    first.Start();
+                    first.Start(time);
                 }
 
                 Value = ResultFromSingleKeyframe(first, 1f);
@@ -52,7 +52,7 @@ namespace BetterLegacy.Core.Animation
                 if (!last.Active)
                 {
                     last.Active = true;
-                    last.Start();
+                    last.Start(time);
                 }
 
                 Value = ResultFromSingleKeyframe(keyframes[keyframes.Length - 1], 0.0f);
@@ -63,10 +63,10 @@ namespace BetterLegacy.Core.Animation
             IKeyframe<T> current = keyframes[index];
             IKeyframe<T> next = keyframes[index + 1];
 
-            if (!current.Active)
+            if (!next.Active)
             {
-                current.Active = true;
-                current.Start();
+                next.Active = true;
+                next.Start(time);
             }
 
             float t = Mathf.InverseLerp(current.Time, next.Time, time);

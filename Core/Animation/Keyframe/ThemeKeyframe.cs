@@ -38,7 +38,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Active = false;
         }
 
-        public void Start() { }
+        public void Start(float time) => Active = true;
 
         public void Stop() => Active = false;
 
@@ -46,22 +46,13 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetValue(Color value) { }
 
-        public Color Interpolate(IKeyframe<Color> other, float time)
-        {
-            var second = (ThemeKeyframe)other;
-            var ease = second.Ease(time);
-            var color = RTMath.Lerp(Theme[colorSlot], Theme[second.colorSlot], ease);
-            var opacity = -(RTMath.Lerp(this.opacity, second.opacity, ease) - 1f);
+        public Color GetValue() => LSColors.fadeColor(
+                    RTColors.ChangeColorHSV(Theme[colorSlot],
+                        hue,
+                        saturation,
+                        brightness),
+                    -(opacity - 1f));
 
-            color =
-                LSColors.fadeColor(
-                    RTColors.ChangeColorHSV(color,
-                        RTMath.Lerp(hue, second.hue, ease),
-                        RTMath.Lerp(saturation, second.saturation, ease),
-                        RTMath.Lerp(brightness, second.brightness, ease)),
-                    opacity);
-
-            return color;
-        }
+        public Color Interpolate(IKeyframe<Color> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
     }
 }

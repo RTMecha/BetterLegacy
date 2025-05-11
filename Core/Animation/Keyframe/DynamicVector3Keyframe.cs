@@ -5,7 +5,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
-    public struct DynamicVector3Keyframe : IKeyframe<Vector3>
+    public struct DynamicVector3Keyframe : IKeyframe<Vector3>, IHomingKeyframe
     {
         public bool Active { get; set; }
 
@@ -13,7 +13,6 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public EaseFunction Ease { get; set; }
         public Vector3 Value { get; set; }
         public Vector3 OriginalValue { get; set; }
-        public IKeyframe<Vector3> PreviousKeyframe { get; set; }
         public AxisMode Axis { get; set; }
 
         public float Delay { get; set; }
@@ -21,18 +20,9 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public float MaxRange { get; set; }
         public bool Flee { get; set; }
 
-        public Transform Player
-        {
-            get
-            {
-                var player = PlayerManager.GetClosestPlayer(Value);
-                if (player && player.Player)
-                    return player.Player.transform.Find("Player");
-                return null;
-            }
-        }
+        public Vector3 Target { get; set; }
 
-        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, IKeyframe<Vector3> previousKeyframe, AxisMode axisMode)
+        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, AxisMode axisMode)
         {
             Time = time;
             Value = value;
@@ -43,76 +33,52 @@ namespace BetterLegacy.Core.Animation.Keyframe
             MinRange = min;
             MaxRange = max;
             Flee = flee;
-            PreviousKeyframe = previousKeyframe;
+            Target = Vector3.zero;
             Axis = axisMode;
         }
 
-        public void Start()
+        public void Start(float time)
         {
-            if (PreviousKeyframe is StaticVector3Keyframe staticVector3Keyframe)
-            {
-                var target = staticVector3Keyframe.Target;
-                Value = OriginalValue + new Vector3(target.x, target.y, 0f);
-            }
-            else
-            {
-                Value = OriginalValue;
-            }
+            Active = true;
+            Value = OriginalValue;
         }
 
-        public void Stop()
+        public void Stop() => Active = false;
+
+        public Vector3 GetPosition() => Value;
+
+        public Vector3 GetPosition(float time) => Value;
+
+        public void SetEase(EaseFunction ease) => Ease = ease;
+
+        public void SetValue(Vector3 value) => Value = value;
+
+        public Vector3 GetValue()
         {
-            Active = false;
-        }
+            var player = this.GetPlayer();
+            var vector = player?.localPosition ?? Vector3.zero;
+            var delay = UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch * Delay;
 
-        public void SetEase(EaseFunction ease)
-        {
-            Ease = ease;
-        }
-
-        public void SetValue(Vector3 value)
-        {
-            Value = value;
-        }
-
-        public Vector3 Interpolate(IKeyframe<Vector3> other, float time)
-        {
-            //var secondValue = other is DynamicVector3Keyframe keyframe ? keyframe.Value : ((Vector3Keyframe)other).Value;
-            //var secondEase = other is DynamicVector3Keyframe keyframe1 ? keyframe1.Ease(time) : ((Vector3Keyframe)other).Ease(time);
-
-            var value = other is Vector3Keyframe vector3Keyframe ? vector3Keyframe.Value : other is DynamicVector3Keyframe dynamicVector3Keyframe ? dynamicVector3Keyframe.Value : other is StaticVector3Keyframe staticVector3Keyframe ? staticVector3Keyframe.Value : Vector3.zero;
-            var ease = other is Vector3Keyframe vector3Keyframe1 ? vector3Keyframe1.Ease(time) : other is DynamicVector3Keyframe dynamicVector3Keyframe1 ? dynamicVector3Keyframe1.Ease(time) : other is StaticVector3Keyframe staticVector3Keyframe1 ? staticVector3Keyframe1.Ease(time) : 0f;
-
-            var delayOther = other is DynamicVector3Keyframe keyframe2 ? keyframe2.Delay : -1f;
-
-            //return RTMath.Lerp(Value, new Vector3(Player?.localPosition.x ?? 0f, Player?.localPosition.y ?? 0f, 0f) + value, ease);
-
-            var vector = Player?.localPosition ?? Vector3.zero;
-
-            float pitch = CoreHelper.ForwardPitch;
-
-            float p = UnityEngine.Time.deltaTime * pitch;
-
-            float po = 1f - Mathf.Pow(1f - Mathf.Clamp(delayOther < 0f ? Delay : RTMath.Lerp(Delay, delayOther, ease), 0.001f, 1f), p);
             if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || Vector2.Distance(vector, Value) > MinRange && Vector2.Distance(vector, Value) < MaxRange) && Axis == AxisMode.Both)
-                Value += Flee ? -(vector - Value) * po : (vector - Value) * po;
+                Value += Flee ? -(vector - Value) * delay : (vector - Value) * delay;
 
-            if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || Vector2.Distance(vector.X(), Value.X()) > MinRange && Vector2.Distance(vector.X(), Value.X()) < MaxRange) && Axis == AxisMode.XOnly)
+            if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || RTMath.Distance(vector.x, Value.x) > MinRange && RTMath.Distance(vector.x, Value.x) < MaxRange) && Axis == AxisMode.XOnly)
             {
                 var x = Value;
-                x.x += Flee ? -(vector.x - Value.x) * po : (vector.x - Value.x) * po;
+                x.x += Flee ? -(vector.x - Value.x) * delay : (vector.x - Value.x) * delay;
                 Value = x;
             }
 
-            if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || Vector2.Distance(vector.Y(), Value.Y()) > MinRange && Vector2.Distance(vector.Y(), Value.Y()) < MaxRange) && Axis == AxisMode.YOnly)
+            if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || RTMath.Distance(vector.y, Value.y) > MinRange && RTMath.Distance(vector.y, Value.y) < MaxRange) && Axis == AxisMode.YOnly)
             {
                 var x = Value;
-                x.y += Flee ? -(vector.y - Value.y) * po : (vector.y - Value.y) * po;
+                x.y += Flee ? -(vector.y - Value.y) * delay : (vector.y - Value.y) * delay;
                 Value = x;
             }
 
-            //return RTMath.Lerp(Value + OriginalValue, value, ease);
             return Value;
         }
+
+        public Vector3 Interpolate(IKeyframe<Vector3> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
     }
 }

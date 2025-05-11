@@ -63,6 +63,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public GameObject RandomEventValueParent { get; set; }
         public List<InputFieldStorage> RandomEventValueFields { get; set; }
         public ToggleButtonStorage RelativeToggle { get; set; }
+        public ToggleButtonStorage FleeToggle { get; set; }
         public List<Toggle> RandomToggles { get; set; }
         public InputField RandomIntervalField { get; set; }
         public Dropdown RandomAxisDropdown { get; set; }
@@ -174,6 +175,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 if (GameObject.transform.TryFind("relative", out Transform relativeTransform))
                     RelativeToggle = relativeTransform.GetComponent<ToggleButtonStorage>();
+                
+                if (GameObject.transform.TryFind("flee", out Transform fleeTransform))
+                    FleeToggle = fleeTransform.GetComponent<ToggleButtonStorage>();
 
                 if (GameObject.transform.TryFind("random", out Transform randomTransform))
                 {

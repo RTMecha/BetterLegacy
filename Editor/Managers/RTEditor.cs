@@ -698,11 +698,6 @@ namespace BetterLegacy.Editor.Managers
                 AudioManager.inst.SetMusicTime(Mathf.Clamp(EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
                 EditorTimeline.inst.changingTime = false;
             }));
-            EditorTimeline.inst.timelineSlider.onValueChanged.AddListener(x =>
-            {
-                if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value && RTLevel.Current)
-                    System.Threading.Tasks.Task.Run(RTLevel.Current.UpdateHomingKeyframes);
-            });
 
             DestroyImmediate(EditorManager.inst.mouseTooltip);
             mouseTooltip = EditorManager.inst.notificationPrefabs[0].Duplicate(EditorManager.inst.notification.transform.parent, "tooltip");

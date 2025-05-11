@@ -397,6 +397,22 @@ namespace BetterLegacy.Core
         /// <returns>Returns a color channel.</returns>
         public static float At(this Color color, int index) => color[Mathf.Clamp(index, 0, 3)];
 
+        public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe)
+        {
+            var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition());
+            if (player && player.Player)
+                return player.Player.transform.Find("Player");
+            return null;
+        }
+        
+        public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, float time)
+        {
+            var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition());
+            if (player && player.Player)
+                return player.Player.transform.Find("Player");
+            return null;
+        }
+
         #endregion
 
         #region Collection

@@ -265,13 +265,13 @@ namespace BetterLegacy.Core.Runtime.Objects
                 else
                 {
                     var pos = new List<IKeyframe<Vector3>>();
-                    pos.Add(new Vector3Keyframe(0f, Vector3.zero, Ease.Linear, null));
+                    pos.Add(new Vector3Keyframe(0f, Vector3.zero, Ease.Linear));
 
                     var sca = new List<IKeyframe<Vector2>>();
                     sca.Add(new Vector2Keyframe(0f, Vector2.one, Ease.Linear));
 
                     var rot = new List<IKeyframe<float>>();
-                    rot.Add(new FloatKeyframe(0f, 0f, Ease.Linear, null));
+                    rot.Add(new FloatKeyframe(0f, 0f, Ease.Linear));
 
                     levelParentObject = new ParentObject
                     {
@@ -599,29 +599,16 @@ namespace BetterLegacy.Core.Runtime.Objects
                     value.y = random.y;
                 }
 
-                currentValue = eventKeyframe.relative && eventKeyframe.random != 6 ? new Vector3(currentValue.x, currentValue.y, 0f) + value : value;
+                currentValue = eventKeyframe.relative ? new Vector3(currentValue.x, currentValue.y, 0f) + value : value;
 
-                var isStaticHoming = eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5;
-                var isDynamicHoming = eventKeyframe.random == 6 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 6;
-
-                currentKeyfame =
-                    isStaticHoming ? new StaticVector3Keyframe(
-                        eventKeyframe.time,
-                        currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
-                        currentKeyfame,
-                        (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)) :
-                    isDynamicHoming ? new DynamicVector3Keyframe(
-                        eventKeyframe.time,
-                        currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
-                        eventKeyframe.randomValues[2],
-                        eventKeyframe.randomValues[0],
-                        eventKeyframe.randomValues[1],
-                        eventKeyframe.relative,
-                        currentKeyfame,
-                        (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)) :
-                    new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString()), currentKeyfame);
+                currentKeyfame = eventKeyframe.random switch
+                {
+                    5 => new StaticVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)),
+                    6 => new DynamicVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
+                        eventKeyframe.randomValues[2], eventKeyframe.randomValues[0], eventKeyframe.randomValues[1],
+                        eventKeyframe.flee, (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)),
+                    _ => new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve)),
+                };
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))
                     keyframes.Add(currentKeyfame);
@@ -681,28 +668,16 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 var value = eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(eventKeyframe, index) : eventKeyframe.values[index];
 
-                currentValue = eventKeyframe.relative && eventKeyframe.random != 6 && !color ? currentValue + value : value;
+                currentValue = eventKeyframe.relative && !color ? currentValue + value : value;
 
-                var isStaticHoming = (eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5) && !color;
-                var isDynamicHoming = (eventKeyframe.random == 6 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 6) && !color;
-
-                currentKeyfame =
-                    isStaticHoming ? new StaticFloatKeyframe(
-                        eventKeyframe.time,
-                        currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
-                        currentKeyfame,
-                        vector3Sequence) :
-                    isDynamicHoming ? new DynamicFloatKeyframe(
-                        eventKeyframe.time,
-                        currentValue,
-                        Ease.GetEaseFunction(eventKeyframe.curve.ToString()),
-                        eventKeyframe.randomValues[2],
-                        eventKeyframe.randomValues[0],
-                        eventKeyframe.randomValues[1],
-                        eventKeyframe.relative,
-                        vector3Sequence) :
-                    new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve.ToString()), currentKeyfame);
+                currentKeyfame = eventKeyframe.random switch
+                {
+                    5 => new StaticFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), vector3Sequence),
+                    6 => new DynamicFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
+                        eventKeyframe.randomValues[2], eventKeyframe.randomValues[0], eventKeyframe.randomValues[1],
+                        eventKeyframe.flee, vector3Sequence),
+                    _ => new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve)),
+                };
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))
                     keyframes.Add(currentKeyfame);

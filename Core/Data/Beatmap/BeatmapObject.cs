@@ -838,6 +838,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat, kfjn["rx2"].AsFloat);
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
+                    eventKeyframe.flee = kfjn["flee"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
                     events[0].Add(eventKeyframe);
@@ -862,6 +863,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
+                    eventKeyframe.flee = kfjn["flee"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
                     events[1].Add(eventKeyframe);
@@ -886,6 +888,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
                     eventKeyframe.relative = string.IsNullOrEmpty(kfjn["rel"]) || kfjn["rel"].AsBool;
+                    eventKeyframe.flee = kfjn["flee"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
                     events[2].Add(eventKeyframe);

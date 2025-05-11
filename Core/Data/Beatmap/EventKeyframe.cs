@@ -45,9 +45,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public EventKeyframe(float time, Vector2 value, string curve) : this(time, new float[2] { value.x, value.y }, curve) { }
         public EventKeyframe(float time, Vector3 value, string curve) : this(time, new float[3] { value.x, value.y, value.z }, curve) { }
 
-        public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[3]);
-        public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[3]);
-        public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[3]) { relative = true };
+        public static EventKeyframe DefaultPositionKeyframe => new EventKeyframe(0f, new float[3], new float[4]);
+        public static EventKeyframe DefaultScaleKeyframe => new EventKeyframe(0f, new float[2] { 1f, 1f }, new float[4]);
+        public static EventKeyframe DefaultRotationKeyframe => new EventKeyframe(0f, new float[1], new float[4]) { relative = true };
         public static EventKeyframe DefaultColorKeyframe => new EventKeyframe(0f, new float[10], new float[3]);
 
         #region Values
@@ -61,6 +61,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public int random;
 
         public bool relative;
+
+        public bool flee;
 
         public bool locked;
 
@@ -96,6 +98,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             values = orig.values.Copy();
             randomValues = orig.randomValues.Copy();
             random = orig.random;
+            flee = orig.flee;
             relative = orig.relative;
             locked = orig.locked;
         }
@@ -130,6 +133,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             eventKeyframe.random = jn["r"].AsInt;
 
             eventKeyframe.relative = !string.IsNullOrEmpty(jn["rel"]) ? jn["rel"].AsBool : defaultRelative;
+            eventKeyframe.flee = jn["flee"].AsBool;
 
             eventKeyframe.locked = !string.IsNullOrEmpty(jn["l"]) && jn["l"].AsBool;
 
@@ -163,6 +167,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (relative != defaultRelative)
                 jn["rel"] = relative;
+
+            if (flee)
+                jn["flee"] = flee;
 
             if (locked)
                 jn["l"] = locked;

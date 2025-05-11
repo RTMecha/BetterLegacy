@@ -6,7 +6,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
-    public struct DynamicFloatKeyframe : IKeyframe<float>
+    public struct DynamicFloatKeyframe : IKeyframe<float>, IHomingFloatKeyframe, IHomingKeyframe
     {
         public bool Active { get; set; }
 
@@ -29,17 +29,6 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public Sequence<Vector3> PositionSequence { get; set; }
         public Vector3 Position { get; set; }
 
-        public Transform Player
-        {
-            get
-            {
-                var player = PlayerManager.GetClosestPlayer(PositionSequence.Value);
-                if (player && player.Player)
-                    return player.Player.transform.Find("Player");
-                return null;
-            }
-        }
-
         public DynamicFloatKeyframe(float time, float value, EaseFunction ease, float delay, float min, float max, bool flee, Sequence<Vector3> positionSequence)
         {
             Time = time;
@@ -60,18 +49,20 @@ namespace BetterLegacy.Core.Animation.Keyframe
             PositionSequence = positionSequence;
         }
 
-        public void Start()
+        public void Start(float time)
         {
+            Active = true;
             Value = OriginalValue;
-            Target = Player?.localPosition ?? Vector3.zero;
+            var player = this.GetPlayer(time);
+            Target = player?.localPosition ?? Vector3.zero;
             Angle360 = 0f;
             Angle = 0f;
             AngleDegrees = 0f;
             PlayerSide = Side.Undetermined;
-            Position = PositionSequence.Value;
+            Position = PositionSequence.Interpolate(time);
 
-            var vector = Player?.localPosition ?? Vector3.zero;
-            var angle = -RTMath.VectorAngle(PositionSequence.Value, Flee ? vector - PositionSequence.Value : vector);
+            //var vector = player?.localPosition ?? Vector3.zero;
+            //var angle = -RTMath.VectorAngle(Position, Flee ? vector - Position : vector);
 
             // Calculation for rotation looping so it doesn't flip around with a lower delay.
 
@@ -87,10 +78,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         }
 
-        public void Stop()
-        {
-            Active = false;
-        }
+        public void Stop() => Active = false;
 
         public Side PlayerSide { get; set; }
 
@@ -101,23 +89,18 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Right
         }
 
-        public void SetEase(EaseFunction ease)
-        {
-            Ease = ease;
-        }
+        public Vector3 GetPosition() => PositionSequence.Value;
 
-        public void SetValue(float value)
-        {
-            Value = value;
-        }
+        public Vector3 GetPosition(float time) => PositionSequence.Interpolate(time);
 
-        public float Interpolate(IKeyframe<float> other, float time)
-        {
-            var secondValue = other is DynamicFloatKeyframe keyframe ? keyframe.Value : other is StaticFloatKeyframe staticKeyframe ? staticKeyframe.Value : ((FloatKeyframe)other).Value;
-            var secondEase = other is DynamicFloatKeyframe keyframe1 ? keyframe1.Ease(time) : other is StaticFloatKeyframe staticKeyframe1 ? staticKeyframe1.Ease(time) : ((FloatKeyframe)other).Ease(time);
-            var delayOther = other is DynamicFloatKeyframe keyframe2 ? keyframe2.Delay : -1f;
+        public void SetEase(EaseFunction ease) => Ease = ease;
 
-            var vector = Player?.localPosition ?? Vector3.zero;
+        public void SetValue(float value) => Value = value;
+
+        public float GetValue()
+        {
+            var player = this.GetPlayer();
+            var vector = player?.localPosition ?? Vector3.zero;
             var angle = -RTMath.VectorAngle(PositionSequence.Value, Flee ? vector - PositionSequence.Value : vector);
 
             // Calculation for rotation looping so it doesn't flip around with a lower delay.
@@ -188,20 +171,19 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
             AngleDegrees = angle;
             Angle = angle + Angle360;
-            Target = Player?.localPosition ?? Vector3.zero;
+            Target = player?.localPosition ?? Vector3.zero;
             Position = PositionSequence.Value;
 
-            float pitch = CoreHelper.ForwardPitch;
-
-            float p = UnityEngine.Time.deltaTime * pitch;
-
-            float po = 1f - Mathf.Pow(1f - Mathf.Clamp(delayOther < 0f ? Delay : RTMath.Lerp(Delay, delayOther, secondEase), 0.001f, 1f), p);
+            var delay = UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch * Delay;
 
             if (MinRange == 0f && MaxRange == 0f || Vector2.Distance(vector, PositionSequence.Value) > MinRange && Vector2.Distance(vector, PositionSequence.Value) < MaxRange)
-                Value += (Angle - Value) * po;
+                Value += (Angle - Value) * delay;
 
-            //return RTMath.Lerp(Value + OriginalValue, secondValue, secondEase);
             return Value;
         }
+
+        public float GetAngle() => Value;
+
+        public float Interpolate(IKeyframe<float> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
     }
 }
