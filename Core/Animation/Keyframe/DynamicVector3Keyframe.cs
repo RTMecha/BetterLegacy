@@ -14,6 +14,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public Vector3 Value { get; set; }
         public Vector3 OriginalValue { get; set; }
         public AxisMode Axis { get; set; }
+        public Vector3 TotalValue { get; set; }
+        public bool Relative { get; set; }
 
         public float Delay { get; set; }
         public float MinRange { get; set; }
@@ -22,7 +24,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public Vector3 Target { get; set; }
 
-        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, AxisMode axisMode)
+        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, AxisMode axisMode, bool relative)
         {
             Time = time;
             Value = value;
@@ -35,9 +37,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Flee = flee;
             Target = Vector3.zero;
             Axis = axisMode;
+            TotalValue = Vector3.zero;
+            Relative = relative;
         }
 
-        public void Start(float time)
+        public void Start(IKeyframe<Vector3> prev, Vector3 value, float time)
         {
             Active = true;
             Value = OriginalValue;

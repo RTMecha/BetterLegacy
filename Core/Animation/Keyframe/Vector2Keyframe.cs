@@ -12,16 +12,20 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public float Time { get; set; }
         public EaseFunction Ease { get; set; }
         public Vector2 Value { get; set; }
+        public Vector2 TotalValue { get; set; }
+        public bool Relative { get; set; }
 
-        public Vector2Keyframe(float time, Vector2 value, EaseFunction ease)
+        public Vector2Keyframe(float time, Vector2 value, EaseFunction ease, bool relative = false)
         {
             Time = time;
             Value = value;
             Ease = ease;
             Active = false;
+            TotalValue = Vector2.zero;
+            Relative = relative;
         }
 
-        public void Start(float time) => Active = true;
+        public void Start(IKeyframe<Vector2> prev, Vector2 value, float time) => Active = true;
 
         public void Stop() => Active = false;
 

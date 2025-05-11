@@ -223,6 +223,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 randomValues[index] = val;
         }
 
+        public bool IsRandomHoming() => random == 5 || random == 6;
+
         #endregion
 
         #region Operators

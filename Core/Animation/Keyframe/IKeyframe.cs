@@ -12,7 +12,11 @@
 
         public EaseFunction Ease { get; set; }
 
-        public void Start(float time);
+        public T TotalValue { get; set; }
+
+        public bool Relative { get; set; }
+
+        public void Start(IKeyframe<T> other, T value, float time);
 
         public void Stop();
 

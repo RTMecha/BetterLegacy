@@ -12,6 +12,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public float Time { get; set; }
         public EaseFunction Ease { get; set; }
         public Color Value { get; set; }
+        public Color TotalValue { get; set; }
+        public bool Relative { get; set; }
 
         public ColorKeyframe(float time, Color value, EaseFunction ease)
         {
@@ -19,9 +21,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Value = value;
             Ease = ease;
             Active = false;
+            TotalValue = Color.white;
+            Relative = false;
         }
 
-        public void Start(float time) => Active = true;
+        public void Start(IKeyframe<Color> prev, Color value, float time) => Active = true;
 
         public void Stop() => Active = false;
 

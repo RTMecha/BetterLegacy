@@ -17,6 +17,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public float Time { get; set; }
         public EaseFunction Ease { get; set; }
+        public Color TotalValue { get; set; }
+        public bool Relative { get; set; }
 
         public int colorSource;
         public int colorSlot;
@@ -47,13 +49,15 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Ease = ease;
             Active = false;
             this.invertOpacity = invertOpacity;
+            TotalValue = Color.white;
+            Relative = false;
         }
 
         public CustomThemeKeyframe(float time, int colorSlot, float opacity, float hue, float saturation, float value, EaseFunction ease, bool invertOpacity) : this(time, 0, colorSlot, opacity, hue, saturation, value, ease, invertOpacity) { }
 
         public CustomThemeKeyframe(float time, int colorSlot, float opacity, float hue, float saturation, float value, EaseFunction ease) : this(time, colorSlot, opacity, hue, saturation, value, ease, true) { }
         
-        public void Start(float time) => Active = true;
+        public void Start(IKeyframe<Color> prev, Color value, float time) => Active = true;
 
         public void Stop() => Active = false;
 

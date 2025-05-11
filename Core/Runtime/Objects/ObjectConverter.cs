@@ -603,11 +603,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 currentKeyfame = eventKeyframe.random switch
                 {
-                    5 => new StaticVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)),
+                    5 => new StaticVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2), eventKeyframe.relative),
                     6 => new DynamicVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
                         eventKeyframe.randomValues[2], eventKeyframe.randomValues[0], eventKeyframe.randomValues[1],
-                        eventKeyframe.flee, (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2)),
-                    _ => new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve)),
+                        eventKeyframe.flee, (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2), eventKeyframe.relative),
+                    _ => new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), eventKeyframe.relative),
                 };
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))
@@ -672,11 +672,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 currentKeyfame = eventKeyframe.random switch
                 {
-                    5 => new StaticFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), vector3Sequence),
+                    5 => new StaticFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), vector3Sequence, eventKeyframe.relative),
                     6 => new DynamicFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
                         eventKeyframe.randomValues[2], eventKeyframe.randomValues[0], eventKeyframe.randomValues[1],
-                        eventKeyframe.flee, vector3Sequence),
-                    _ => new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve)),
+                        eventKeyframe.flee, vector3Sequence, eventKeyframe.relative),
+                    _ => new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), eventKeyframe.relative),
                 };
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))

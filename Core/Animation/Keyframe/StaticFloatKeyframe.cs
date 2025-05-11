@@ -14,6 +14,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public float Time { get; set; }
         public EaseFunction Ease { get; set; }
         public float Value { get; set; }
+        public float TotalValue { get; set; }
+        public bool Relative { get; set; }
 
         public Sequence<Vector3> PositionSequence { get; set; }
 
@@ -21,7 +23,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public float Angle { get; set; }
 
-        public StaticFloatKeyframe(float time, float value, EaseFunction ease, Sequence<Vector3> positionSequence)
+        public StaticFloatKeyframe(float time, float value, EaseFunction ease, Sequence<Vector3> positionSequence, bool relative)
         {
             Time = time;
             Value = value;
@@ -30,10 +32,13 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Target = Vector3.zero;
             PositionSequence = positionSequence;
             Angle = 0f;
+            TotalValue = 0f;
+            Relative = relative;
         }
 
-        public void Start(float time)
+        public void Start(IKeyframe<float> prev, float value, float time)
         {
+            TotalValue = Relative ? prev is IHomingKeyframe ? prev.GetValue() : prev.TotalValue : 0f;
             Active = true;
             var player = this.GetPlayer(time);
             if (player)
@@ -52,7 +57,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetValue(float value) => Value = value;
 
-        public float GetValue() => Angle + Value;
+        public float GetValue() => Angle + Value + TotalValue;
 
         public float Interpolate(IKeyframe<float> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
     }
