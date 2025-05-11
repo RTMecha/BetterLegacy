@@ -2781,8 +2781,7 @@ namespace BetterLegacy.Core.Helpers
             if (value == "0")
                 value = "True";
 
-            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.top)
-                modifier.reference.runtimeObject.top.gameObject.SetActive(Parser.TryParse(value, true));
+            modifier.reference.runtimeObject?.SetBaseActive(Parser.TryParse(value, true));
         }
         
         public static void enableObjectTree(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2803,11 +2802,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var beatmapObject = list[i];
-                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                    beatmapObject.runtimeObject.top.gameObject.SetActive(enabled);
-            }
+                list[i].runtimeObject?.SetBaseActive(enabled);
         }
         
         public static void enableObjectOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2818,8 +2813,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!list.IsEmpty())
                 foreach (var beatmapObject in list)
-                    if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                        beatmapObject.runtimeObject.top.gameObject.SetActive(enabled);
+                    beatmapObject.runtimeObject?.SetBaseActive(enabled);
         }
         
         public static void enableObjectTreeOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2844,11 +2838,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var beatmapObject = list[i];
-                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                    beatmapObject.runtimeObject.top.gameObject.SetActive(enabled);
-            }
+                list[i].runtimeObject?.SetBaseActive(enabled);
         }
 
         // if this ever needs to be updated, add a "version" int number to modifiers that increment each time a major change was done to the modifier.
@@ -2872,17 +2862,13 @@ namespace BetterLegacy.Core.Helpers
                     continue;
 
                 foreach (var beatmapObject in list)
-                {
-                    if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                        beatmapObject.runtimeObject.top.gameObject.SetActive(innerEnabled);
-                }
+                    beatmapObject.runtimeObject?.SetBaseActive(innerEnabled);
             }
         }
 
         public static void disableObject(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.top)
-                modifier.reference.runtimeObject.top.gameObject.SetActive(false);
+            modifier.reference.runtimeObject?.SetBaseActive(false);
         }
 
         public static void disableObjectTree(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2900,11 +2886,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var beatmapObject = list[i];
-                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                    beatmapObject.runtimeObject.top.gameObject.SetActive(false);
-            }
+                list[i].runtimeObject?.SetBaseActive(false);
         }
 
         public static void disableObjectOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2913,8 +2895,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!list.IsEmpty())
                 foreach (var beatmapObject in list)
-                    if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                        beatmapObject.runtimeObject.top.gameObject.SetActive(false);
+                    beatmapObject.runtimeObject?.SetBaseActive(false);
         }
 
         public static void disableObjectTreeOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2937,11 +2918,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-            {
-                var beatmapObject = list[i];
-                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.top)
-                    beatmapObject.runtimeObject.top.gameObject.SetActive(false);
-            }
+                list[i].runtimeObject?.SetBaseActive(false);
         }
 
         public static void setActive(Modifier<BackgroundObject> modifier, Dictionary<string, string> variables)

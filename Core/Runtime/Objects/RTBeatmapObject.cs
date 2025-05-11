@@ -158,8 +158,29 @@ namespace BetterLegacy.Core.Runtime.Objects
             this.active = active;
         }
 
+        /// <summary>
+        /// If the object is active.
+        /// </summary>
+        public bool topActive;
+
+        /// <summary>
+        /// Sets the top object active.
+        /// </summary>
+        /// <param name="active">Active state to set.</param>
+        public virtual void SetBaseActive(bool active)
+        {
+            if (!top)
+                return;
+
+            top.gameObject.SetActive(active);
+            topActive = active;
+        }
+
         public void Interpolate(float time)
         {
+            if (!topActive)
+                return;
+
             // Set visual object color
             visualObject.InterpolateColor(time - StartTime);
 
