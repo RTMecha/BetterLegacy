@@ -1842,8 +1842,8 @@ namespace BetterLegacy.Core.Runtime
             {
                 beatmapObject.ResetOffsets();
 
-                beatmapObject.customShape = 0;
-                beatmapObject.customShapeOption = 0;
+                beatmapObject.customShape = -1;
+                beatmapObject.customShapeOption = -1;
                 beatmapObject.customParent = null;
             }
 
@@ -1851,8 +1851,8 @@ namespace BetterLegacy.Core.Runtime
             {
                 backgroundObject.ResetOffsets();
 
-                backgroundObject.customShape = 0;
-                backgroundObject.customShapeOption = 0;
+                backgroundObject.customShape = -1;
+                backgroundObject.customShapeOption = -1;
             }
         }
 
