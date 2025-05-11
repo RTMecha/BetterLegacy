@@ -726,6 +726,14 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     } // StartTime
                 case ObjectContext.AUTOKILL: {
+                        if (beatmapObject.runtimeModifiers)
+                        {
+                            beatmapObject.runtimeModifiers.orderMatters = beatmapObject.orderModifiers;
+                            beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
+                            beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                            beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
+                        }
+
                         if (!runtimeObject)
                             break;
 
@@ -853,6 +861,14 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     } // Text
                 case ObjectContext.KEYFRAMES: {
+                        if (beatmapObject.runtimeModifiers)
+                        {
+                            beatmapObject.runtimeModifiers.orderMatters = beatmapObject.orderModifiers;
+                            beatmapObject.runtimeModifiers.StartTime = beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime;
+                            beatmapObject.runtimeModifiers.KillTime = beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                            beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
+                        }
+
                         if (!runtimeObject)
                         {
                             RecacheSequences(beatmapObject);
