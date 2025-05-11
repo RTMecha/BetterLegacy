@@ -1,4 +1,13 @@
-﻿# snapshot-2025.5.11 - (pre-1.7.0) [May 11, 2025]
+﻿# ???
+
+## Features
+### Core
+- Added some values to the audioSource modifier to give it more control.
+
+## Fixes
+- Relative keyframes should now work with homing keyframes.
+
+# snapshot-2025.5.11 - (pre-1.7.0) [May 11, 2025]
 
 ## Features
 ### Core
