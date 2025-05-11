@@ -91,10 +91,6 @@
   Update: 1.9.0  
   Details: rewards the player with a prefab, theme, player model or player toolkit item.
 - playerAction trigger (allows for multiple different keybinds and buttons)
-- trailRendererGradient action modifier  
-  Update: 1.8.0
-- trailRendererColored action modifier  
-  Update: 1.8.0
 - particleSystemColored action modifier  
   Update: 1.8.0
 - color math modifiers.  
