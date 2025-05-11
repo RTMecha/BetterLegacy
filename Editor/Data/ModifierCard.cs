@@ -816,6 +816,15 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.trailRendererHex): {
+                        SingleGenerator(modifier, "Time", 0, 1f);
+                        SingleGenerator(modifier, "Start Width", 1, 1f);
+                        SingleGenerator(modifier, "End Width", 2, 0f);
+                        StringGenerator(modifier, "Start Color", 3);
+                        StringGenerator(modifier, "End Color", 4);
+
+                        break;
+                    }
                 case nameof(ModifierActions.rigidbody): {
                         SingleGenerator(modifier, "Gravity", 1, 0f);
 

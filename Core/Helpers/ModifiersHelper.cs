@@ -883,6 +883,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.doubleSided) => ModifierActions.doubleSided,
             nameof(ModifierActions.particleSystem) => ModifierActions.particleSystem,
             nameof(ModifierActions.trailRenderer) => ModifierActions.trailRenderer,
+            nameof(ModifierActions.trailRendererHex) => ModifierActions.trailRendererHex,
             nameof(ModifierActions.rigidbody) => ModifierActions.rigidbody,
             nameof(ModifierActions.rigidbodyOther) => ModifierActions.rigidbodyOther,
 

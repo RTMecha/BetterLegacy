@@ -808,6 +808,44 @@ namespace BetterLegacy.Core.Helpers
             }
         }
         
+        public static void trailRendererHex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var gameObject = runtimeObject.visualObject.gameObject;
+
+            if (!modifier.reference.trailRenderer && !gameObject.GetComponent<TrailRenderer>())
+            {
+                modifier.reference.trailRenderer = gameObject.AddComponent<TrailRenderer>();
+
+                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                modifier.reference.trailRenderer.material.color = Color.white;
+            }
+            else if (!modifier.reference.trailRenderer)
+            {
+                modifier.reference.trailRenderer = gameObject.GetComponent<TrailRenderer>();
+
+                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                modifier.reference.trailRenderer.material.color = Color.white;
+            }
+            else
+            {
+                var tr = modifier.reference.trailRenderer;
+
+                tr.time = modifier.GetFloat(0, 1f, variables);
+                tr.emitting = !(gameObject.transform.lossyScale.x < 0.001f && gameObject.transform.lossyScale.x > -0.001f || gameObject.transform.lossyScale.y < 0.001f && gameObject.transform.lossyScale.y > -0.001f) && gameObject.activeSelf && gameObject.activeInHierarchy;
+
+                var t = gameObject.transform.lossyScale.magnitude * 0.576635f;
+                tr.startWidth = modifier.GetFloat(1, 1f, variables) * t;
+                tr.endWidth = modifier.GetFloat(2, 1f, variables) * t;
+
+                tr.startColor = RTColors.HexToColor(modifier.GetValue(3, variables));
+                tr.endColor = RTColors.HexToColor(modifier.GetValue(4, variables));
+            }
+        }
+
         public static void rigidbody(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             var runtimeObject = modifier.reference.runtimeObject;
