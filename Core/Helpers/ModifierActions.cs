@@ -230,9 +230,20 @@ namespace BetterLegacy.Core.Helpers
         public static void audioSource(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             var levelObject = modifier.reference.runtimeObject;
-            if (modifier.HasResult() || !levelObject || !levelObject.visualObject ||
+            if (!levelObject || !levelObject.visualObject ||
                 !levelObject.visualObject.gameObject)
                 return;
+
+            if (modifier.TryGetResult(out AudioModifier audioModifier))
+            {
+                audioModifier.pitch = modifier.GetFloat(2, 1f, variables);
+                audioModifier.volume = modifier.GetFloat(3, 1f, variables);
+                audioModifier.loop = modifier.GetBool(4, true, variables);
+                audioModifier.timeOffset = modifier.GetBool(6, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(5, 0f, variables) : modifier.GetFloat(5, 0f, variables);
+                audioModifier.lengthOffset = modifier.GetFloat(7, 0f, variables);
+                audioModifier.playing = modifier.GetBool(8, true, variables);
+                return;
+            }
 
             var path = modifier.GetValue(0, variables);
 

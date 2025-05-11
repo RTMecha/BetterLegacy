@@ -633,6 +633,15 @@ namespace BetterLegacy.Editor.Data
                                 );
                         };
                         BoolGenerator(modifier, "Global", 1, false);
+                        SingleGenerator(modifier, "Pitch", 2, 1f);
+                        SingleGenerator(modifier, "Volume", 3, 1f);
+                        BoolGenerator(modifier, "Loop", 4, true);
+
+                        SingleGenerator(modifier, "Time", 5, 0f);
+                        BoolGenerator(modifier, "Time Relative", 6, true);
+                        SingleGenerator(modifier, "Length Offset", 7, 0f);
+
+                        BoolGenerator(modifier, "Playing", 8, true);
 
                         break;
                     }

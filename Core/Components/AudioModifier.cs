@@ -18,36 +18,45 @@ namespace BetterLegacy.Core.Components
             AudioClip = audioClip;
             BeatmapObject = beatmapObject;
             Modifier = modifier;
-            AudioSource = gameObject.GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+            AudioSource = gameObject.GetOrAddComponent<AudioSource>();
             AudioSource.loop = true;
             AudioSource.clip = AudioClip;
 
-            (gameObject.GetComponent<DestroyModifierResult>() ?? gameObject.AddComponent<DestroyModifierResult>()).Modifier = modifier;
+            gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
         }
 
         void Update()
         {
-            if (!AudioSource || !BeatmapObject || BeatmapObject.cachedSequences)
+            if (!AudioSource || !BeatmapObject)
                 return;
 
-            var time = CurrentAudioSource.time - BeatmapObject.StartTime;
+            var time = timeOffset - BeatmapObject.StartTime;
 
-            var sequence = BeatmapObject.cachedSequences.ScaleSequence.Interpolate(time);
-            var pitch = sequence.x * CurrentAudioSource.pitch;
+            AudioSource.pitch = pitch * CurrentAudioSource.pitch;
+            AudioSource.volume = volume * AudioManager.inst.sfxVol;
 
-            AudioSource.pitch = pitch;
-            AudioSource.volume = sequence.y * AudioManager.inst.sfxVol;
-
-            var isPlaying = CurrentAudioSource.isPlaying;
+            var isPlaying = CurrentAudioSource.isPlaying && playing;
             if (!isPlaying && AudioSource.isPlaying)
                 AudioSource.Pause();
             else if (isPlaying && !AudioSource.isPlaying)
                 AudioSource.Play();
 
-            var length = AudioSource.clip.length;
+            var length = AudioSource.clip.length - lengthOffset;
             if (AudioSource.time != Mathf.Clamp(time * pitch % length, 0f, length))
                 AudioSource.time = Mathf.Clamp(time * pitch % length, 0f, length);
         }
+
+        public float timeOffset;
+
+        public float pitch = 1f;
+
+        public float volume = 1f;
+
+        public bool loop = false;
+
+        public float lengthOffset;
+
+        public bool playing = true;
 
         /// <summary>
         /// The main audio source to base the time off of.
