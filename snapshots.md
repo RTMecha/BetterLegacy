@@ -12,6 +12,9 @@
 - You can now copy & paste multiple modifiers.
 
 ## Changes
+### Core
+- Hopefully optimized enableObject modifiers by preventing animation interpolation when it's inactive.
+
 ### Editor
 - Hidden objects now save to objects' editor data.
 - All modifier editors now act the exact same, including having a "Int Variable" displayer.
