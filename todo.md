@@ -139,8 +139,6 @@
 
 ## Fixes
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
-- Fix homing keyframe behaviour. (Going from homing to a normal relative keyframe should prevent the keyframe from moving)
-- Fix homing keyframes not retargetting in some cases.
 - Fix some issues with Player Models and extra tail parts. (verify if this is fixed, I think it should be)
 
 
