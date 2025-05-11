@@ -161,7 +161,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <summary>
         /// If the object is active.
         /// </summary>
-        public bool topActive;
+        public bool topActive = true;
 
         /// <summary>
         /// Sets the top object active.
