@@ -9,6 +9,7 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -16,7 +17,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/>.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IModifyable<PrefabObject>
     {
         public PrefabObject() : base()
         {
@@ -113,6 +114,88 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool Alive => false;
 
         public float SpawnDuration => 0f;
+
+        #endregion
+
+        #region Modifiers
+
+        /// <summary>
+        /// The tags used to identify a group of objects or object properties.
+        /// </summary>
+        public List<string> tags = new List<string>();
+
+        public List<string> Tags { get => tags; set => tags = value; }
+
+        /// <summary>
+        /// Modifiers the object contains.
+        /// </summary>
+        public List<Modifier<PrefabObject>> modifiers = new List<Modifier<PrefabObject>>();
+
+        public List<Modifier<PrefabObject>> Modifiers { get => modifiers; set => modifiers = value; }
+
+        /// <summary>
+        /// If modifiers ignore the lifespan restriction.
+        /// </summary>
+        public bool ignoreLifespan = false;
+
+        public bool IgnoreLifespan { get => ignoreLifespan; set => ignoreLifespan = value; }
+
+        /// <summary>
+        /// If the order of triggers and actions matter.
+        /// </summary>
+        public bool orderModifiers = false;
+
+        public bool OrderModifiers { get => orderModifiers; set => orderModifiers = value; }
+
+        /// <summary>
+        /// Variable set and used by modifiers.
+        /// </summary>
+        public int integerVariable;
+
+        public int IntVariable { get => integerVariable; set => integerVariable = value; }
+
+        /// <summary>
+        /// Variable set and used by modifiers.
+        /// </summary>
+        public float floatVariable;
+
+        /// <summary>
+        /// Variable set and used by modifiers.
+        /// </summary>
+        public string stringVariable = string.Empty;
+
+        public Vector3 reactivePositionOffset = Vector3.zero;
+        public Vector3 reactiveScaleOffset = Vector3.zero;
+        public float reactiveRotationOffset = 0f;
+
+        /// <summary>
+        /// Moves the objects' associated parent objects at this offset.
+        /// </summary>
+        public Vector3 positionOffset = Vector3.zero;
+
+        /// <summary>
+        /// Scales the objects' associated parent objects at this offset.
+        /// </summary>
+        public Vector3 scaleOffset = Vector3.zero;
+
+        /// <summary>
+        /// Rotates the objects' associated parent objects at this offset.
+        /// </summary>
+        public Vector3 rotationOffset = Vector3.zero;
+
+        public Vector3 PositionOffset { get => positionOffset; set => positionOffset = value; }
+        public Vector3 ScaleOffset { get => scaleOffset; set => scaleOffset = value; }
+        public Vector3 RotationOffset { get => rotationOffset; set => rotationOffset = value; }
+
+        public bool ModifiersActive
+        {
+            get
+            {
+                var startTime = ignoreLifespan ? 0f : StartTime;
+                var killTime = ignoreLifespan ? SoundManager.inst.MusicLength : StartTime + SpawnDuration;
+                return AudioManager.inst.CurrentAudioSource.time >= startTime && AudioManager.inst.CurrentAudioSource.time <= killTime;
+            }
+        }
 
         #endregion
 
@@ -478,6 +561,73 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return length;
         }
+        
+        public void ResetOffsets()
+        {
+            reactivePositionOffset = Vector3.zero;
+            reactiveScaleOffset = Vector3.zero;
+            reactiveRotationOffset = 0f;
+            positionOffset = Vector3.zero;
+            scaleOffset = Vector3.zero;
+            rotationOffset = Vector3.zero;
+        }
+
+        public Vector3 GetTransformOffset(int type) => type switch
+        {
+            0 => positionOffset,
+            1 => scaleOffset,
+            _ => rotationOffset,
+        };
+
+        public void SetTransform(int type, Vector3 value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        positionOffset = value;
+                        break;
+                    }
+                case 1: {
+                        scaleOffset = value;
+                        break;
+                    }
+                case 2: {
+                        rotationOffset = value;
+                        break;
+                    }
+            }
+        }
+
+        public void SetTransform(int type, int axis, float value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        positionOffset[axis] = value;
+                        break;
+                    }
+                case 1: {
+                        scaleOffset[axis] = value;
+                        break;
+                    }
+                case 2: {
+                        rotationOffset[axis] = value;
+                        break;
+                    }
+            }
+        }
+
+        public Vector3 GetFullPosition() => positionOffset + new Vector3(events[0].values[0], events[0].values[1]);
+
+        public Vector3 GetFullScale()
+        {
+            var scale = scaleOffset;
+            scale.x *= events[1].values[0];
+            scale.y *= events[1].values[1];
+            return scale.x != 0f && scale.y != 0f ? scale : Vector3.one;
+        }
+
+        public Vector3 GetFullRotation() => rotationOffset + new Vector3(0f, 0f, events[2].values[0]);
 
         /// <summary>
         /// Gets the transform offsets from the Prefab Object.
