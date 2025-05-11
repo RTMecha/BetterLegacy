@@ -5,6 +5,7 @@
 - Added opacity and hsv values to the getColorSlotHexCode modifier.
 - Added animateColorKF and animateColorKFHex modifiers. These allow you to animate both Beatmap Object and Background Object colors.
 - Added setShape modifier. This does exactly what the name suggests.
+- Added trailRendererHex modifier. Acts like the normal trailRenderer modifier, accept allows for hex codes for the colors.
 - Ported most compatible modifiers to BG objects.
 
 ### Editor
