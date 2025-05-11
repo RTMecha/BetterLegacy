@@ -75,8 +75,6 @@
 - List for pinned editor layers.  
   Update: 1.8.0
 - Add difficulty and artist name to the level creator popup.  
-  Update: 1.8.0
-- Customizable object templates. (reads from a .json file)  
   Update: 1.7.0 - 1.8.0
 - Prefab reference name in object editor.  
   Update: 1.7.0 - 1.8.0
@@ -88,8 +86,6 @@
 - Add a way to parse a interface function to text, color, etc.
 
 ### Modifiers
-- Variable Modifier that registers an object variable based on what the modifier takes.  
-  Update: 1.8.0
 - Transition time for applyAnimation modifiers.
 - prizeObject action modifier  
   Update: 1.9.0  
@@ -131,7 +127,6 @@
   Update: 1.8.0
 - Undo / redo everything.  
   Update: 1.13.0
-- Somehow figure out mutli BG object editing. (maybe consider reworking the BG object selection system to be timeline based?)
 - Improve profile menu.  
   Update: 1.8.0
 - Improve changelog menu.  
@@ -151,9 +146,6 @@
 - Fix homing keyframe behaviour. (Going from homing to a normal relative keyframe should prevent the keyframe from moving)
 - Fix homing keyframes not retargetting in some cases.
 - Fix some issues with Player Models and extra tail parts. (verify if this is fixed, I think it should be)
-- Fix editor crash on re-entry.
- - It only occurs when entering the editor after playing a level in the arcade / story. Could it be something to do with the game scene?
- - No proper errors, is it the same as the collision crash?
 
 
 ## Ideas
