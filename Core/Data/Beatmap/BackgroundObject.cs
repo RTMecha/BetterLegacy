@@ -803,7 +803,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetOtherObjectVariables(Dictionary<string, float> variables)
         {
-            //variables["otherIntVariable"] = integerVariable;
+            variables["otherIntVariable"] = integerVariable;
+
+            variables["otherObjectStartTime"] = StartTime;
+            variables["otherObjectKillTime"] = SpawnDuration;
 
             variables["otherPositionOffsetX"] = positionOffset.x;
             variables["otherPositionOffsetY"] = positionOffset.y;
@@ -842,7 +845,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetObjectVariables(Dictionary<string, float> variables)
         {
-            //variables["intVariable"] = integerVariable;
+            variables["intVariable"] = integerVariable;
+
+            variables["objectStartTime"] = StartTime;
+            variables["objectKillTime"] = SpawnDuration;
 
             variables["positionOffsetX"] = positionOffset.x;
             variables["positionOffsetY"] = positionOffset.y;

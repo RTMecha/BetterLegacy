@@ -1785,6 +1785,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             variables["otherIntVariable"] = integerVariable;
 
+            variables["otherObjectStartTime"] = StartTime;
+            variables["otherObjectKillTime"] = SpawnDuration;
+
             variables["otherPositionOffsetX"] = positionOffset.x;
             variables["otherPositionOffsetY"] = positionOffset.y;
             variables["otherPositionOffsetZ"] = positionOffset.z;
@@ -1797,27 +1800,30 @@ namespace BetterLegacy.Core.Data.Beatmap
             variables["otherRotationOffsetY"] = rotationOffset.y;
             variables["otherRotationOffsetZ"] = rotationOffset.z;
 
-            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-            {
-                var transform = runtimeObject.visualObject.gameObject.transform;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                return;
 
-                variables["otherVisualPosX"] = transform.position.x;
-                variables["otherVisualPosY"] = transform.position.y;
-                variables["otherVisualPosZ"] = transform.position.z;
+            var transform = runtimeObject.visualObject.gameObject.transform;
 
-                variables["otherVisualScaX"] = transform.lossyScale.x;
-                variables["otherVisualScaY"] = transform.lossyScale.y;
-                variables["otherVisualScaZ"] = transform.lossyScale.z;
+            variables["otherVisualPosX"] = transform.position.x;
+            variables["otherVisualPosY"] = transform.position.y;
+            variables["otherVisualPosZ"] = transform.position.z;
 
-                variables["otherVisualRotX"] = transform.rotation.eulerAngles.x;
-                variables["otherVisualRotY"] = transform.rotation.eulerAngles.y;
-                variables["otherVisualRotZ"] = transform.rotation.eulerAngles.z;
-            }
+            variables["otherVisualScaX"] = transform.lossyScale.x;
+            variables["otherVisualScaY"] = transform.lossyScale.y;
+            variables["otherVisualScaZ"] = transform.lossyScale.z;
+
+            variables["otherVisualRotX"] = transform.rotation.eulerAngles.x;
+            variables["otherVisualRotY"] = transform.rotation.eulerAngles.y;
+            variables["otherVisualRotZ"] = transform.rotation.eulerAngles.z;
         }
 
         public void SetObjectVariables(Dictionary<string, float> variables)
         {
             variables["intVariable"] = integerVariable;
+
+            variables["objectStartTime"] = StartTime;
+            variables["objectKillTime"] = SpawnDuration;
 
             variables["positionOffsetX"] = positionOffset.x;
             variables["positionOffsetY"] = positionOffset.y;
@@ -1831,22 +1837,22 @@ namespace BetterLegacy.Core.Data.Beatmap
             variables["rotationOffsetY"] = rotationOffset.y;
             variables["rotationOffsetZ"] = rotationOffset.z;
 
-            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
-            {
-                var transform = runtimeObject.visualObject.gameObject.transform;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                return;
 
-                variables["visualPosX"] = transform.position.x;
-                variables["visualPosY"] = transform.position.y;
-                variables["visualPosZ"] = transform.position.z;
+            var transform = runtimeObject.visualObject.gameObject.transform;
 
-                variables["visualScaX"] = transform.lossyScale.x;
-                variables["visualScaY"] = transform.lossyScale.y;
-                variables["visualScaZ"] = transform.lossyScale.z;
+            variables["visualPosX"] = transform.position.x;
+            variables["visualPosY"] = transform.position.y;
+            variables["visualPosZ"] = transform.position.z;
 
-                variables["visualRotX"] = transform.rotation.eulerAngles.x;
-                variables["visualRotY"] = transform.rotation.eulerAngles.y;
-                variables["visualRotZ"] = transform.rotation.eulerAngles.z;
-            }
+            variables["visualScaX"] = transform.lossyScale.x;
+            variables["visualScaY"] = transform.lossyScale.y;
+            variables["visualScaZ"] = transform.lossyScale.z;
+
+            variables["visualRotX"] = transform.rotation.eulerAngles.x;
+            variables["visualRotY"] = transform.rotation.eulerAngles.y;
+            variables["visualRotZ"] = transform.rotation.eulerAngles.z;
         }
 
         public void SetObjectFunctions(Dictionary<string, MathFunction> functions)
