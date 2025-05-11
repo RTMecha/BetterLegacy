@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.5.11 - (pre-1.7.0) [May 11, 2025]
 
 ## Features
 ### Core
@@ -15,6 +15,8 @@
 ## Changes
 ### Core
 - Hopefully optimized enableObject modifiers by preventing animation interpolation when it's inactive.
+- Overhauled how homing keyframes work internally. They should now act a lot more consistent with other keyframes. This also means homing keyframes are no longer considered experimental.
+- Dynamic homing keyframes speed value now allows for above 1.
 
 ### Editor
 - Hidden objects now save to objects' editor data.
@@ -24,6 +26,8 @@
 ## Fixes
 - Fixed BG objects in Prefabs not working in the Arcade.
 - FINALLY fixed the editor re-entry crash. This was due to the code trying to remove a rigidbody from an image object that is trying to load. (For some reason the image object in the editor had a rigidbody, and no this was not me)
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.5.10 - (pre-1.7.0) [May 8, 2025]
 
