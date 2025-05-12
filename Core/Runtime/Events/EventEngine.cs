@@ -4,8 +4,6 @@ using System.Linq;
 
 using UnityEngine;
 
-using LSFunctions;
-
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
@@ -633,19 +631,19 @@ namespace BetterLegacy.Core.Runtime.Events
             ThemeManager.inst.bgColorToLerp = RTColors.ChangeColorHSV(LerpColor(prevBGColor, nextBGColor, bgColor, beatmapTheme.backgroundColor), bgHue, bgSat, bgVal);
 
             ThemeManager.inst.timelineColorToLerp =
-                LSColors.fadeColor(RTColors.ChangeColorHSV(LerpColor(prevTimelineColor, nextTimelineColor, timelineColor, beatmapTheme.guiColor),
+                RTColors.FadeColor(RTColors.ChangeColorHSV(LerpColor(prevTimelineColor, nextTimelineColor, timelineColor, beatmapTheme.guiColor),
                 timelineHue, timelineSat, timelineVal), timelineOpacity);
 
             var dangerColorResult =
-                LSColors.fadeColor(RTColors.ChangeColorHSV(LerpColor(prevDangerColor, nextDangerColor, dangerColor, RTColors.defaultDangerColor),
+                RTColors.FadeColor(RTColors.ChangeColorHSV(LerpColor(prevDangerColor, nextDangerColor, dangerColor, RTColors.defaultDangerColor),
                 dangerHue, dangerSat, dangerVal), dangerOpacity);
 
             RTEffectsManager.inst.gradient.color1.Override(
-                LSColors.fadeColor(RTColors.ChangeColorHSV(LerpColor(prevGradientColor1, nextGradientColor1, gradientColor1, Color.black, RTColors.defaultGradientColor1),
+                RTColors.FadeColor(RTColors.ChangeColorHSV(LerpColor(prevGradientColor1, nextGradientColor1, gradientColor1, Color.black, RTColors.defaultGradientColor1),
                 gradientColor1Hue, gradientColor1Sat, gradientColor1Val), gradientColor1Opacity));
 
             RTEffectsManager.inst.gradient.color2.Override(
-                LSColors.fadeColor(RTColors.ChangeColorHSV(LerpColor(prevGradientColor2, nextGradientColor2, gradientColor2, Color.black, RTColors.defaultGradientColor2),
+                RTColors.FadeColor(RTColors.ChangeColorHSV(LerpColor(prevGradientColor2, nextGradientColor2, gradientColor2, Color.black, RTColors.defaultGradientColor2),
                 gradientColor2Hue, gradientColor2Sat, gradientColor2Val), gradientColor2Opacity));
 
             #endregion

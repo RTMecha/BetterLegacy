@@ -2,8 +2,6 @@
 
 using UnityEngine;
 
-using LSFunctions;
-
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
@@ -51,7 +49,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetValue(Color value) { }
 
-        public Color GetValue() => LSColors.fadeColor(
+        public Color GetValue() => RTColors.FadeColor(
                     RTColors.ChangeColorHSV(Theme[colorSlot],
                         hue,
                         saturation,

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -365,13 +364,13 @@ namespace BetterLegacy.Editor.Components
 
             var currentColor = levelObject.visualObject.GetPrimaryColor();
             currentColor += Highlight(currentColor);
-            renderer.material.color = LSColors.fadeColor(currentColor, 1f);
+            renderer.material.color = RTColors.FadeColor(currentColor, 1f);
 
             if (levelObject.visualObject.isGradient)
             {
                 var secondaryColor = levelObject.visualObject.GetSecondaryColor();
                 secondaryColor += Highlight(secondaryColor);
-                renderer.material.SetColor("_ColorSecondary", LSColors.fadeColor(secondaryColor, 1f));
+                renderer.material.SetColor("_ColorSecondary", RTColors.FadeColor(secondaryColor, 1f));
             }
         }
 
@@ -389,14 +388,14 @@ namespace BetterLegacy.Editor.Components
         {
             if (ShowObjectsOnlyOnLayer && layer != EditorManager.inst.layer)
             {
-                var color = LSColors.fadeColor(renderer.material.color, renderer.material.color.a * LayerOpacity);
+                var color = RTColors.FadeColor(renderer.material.color, renderer.material.color.a * LayerOpacity);
                 if (renderer.material.color != color)
                     renderer.material.color = color;
 
                 if (levelObject && levelObject.visualObject.isGradient)
                 {
                     var secondaryColor = levelObject.visualObject.GetSecondaryColor();
-                    var layerSecondaryColor = LSColors.fadeColor(secondaryColor, secondaryColor.a * LayerOpacity);
+                    var layerSecondaryColor = RTColors.FadeColor(secondaryColor, secondaryColor.a * LayerOpacity);
                     if (secondaryColor != layerSecondaryColor)
                         renderer.material.SetColor("_ColorSecondary", layerSecondaryColor);
                 }

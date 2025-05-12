@@ -7,8 +7,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using LSFunctions;
-
 using SimpleJSON;
 
 using BetterLegacy.Configs;
@@ -1238,14 +1236,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 {
                     var isSelected = button.selectionPosition == selected;
                     button.image.color = isSelected ?
-                        LSColors.fadeColor(
+                        RTColors.FadeColor(
                             RTColors.ChangeColorHSV(
                                 button.useOverrideSelectedColor ? button.overrideSelectedColor : Theme.GetObjColor(button.selectedColor),
                                 button.selectedHue,
                                 button.selectedSat,
                                 button.selectedVal),
                             button.selectedOpacity) :
-                        LSColors.fadeColor(
+                        RTColors.FadeColor(
                             RTColors.ChangeColorHSV(
                                 button.useOverrideColor ? button.overrideColor : Theme.GetObjColor(button.color),
                                 button.hue,
@@ -1286,7 +1284,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             inputField.textSat,
                             inputField.textVal);
                     inputField.inputField.GetPlaceholderText().color =
-                        LSColors.fadeColor(RTColors.ChangeColorHSV(
+                        RTColors.FadeColor(RTColors.ChangeColorHSV(
                             inputField.useOverridePlaceholderColor ? inputField.overridePlaceholderColor : Theme.GetObjColor(inputField.placeholderColor),
                             inputField.placeholderHue,
                             inputField.placeholderSat,
@@ -1294,7 +1292,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
 
                 element.image.color =
-                    LSColors.fadeColor(
+                    RTColors.FadeColor(
                         RTColors.ChangeColorHSV(
                             element.useOverrideColor ? element.overrideColor : Theme.GetObjColor(element.color),
                             element.hue,

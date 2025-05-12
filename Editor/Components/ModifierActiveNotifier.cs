@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-using LSFunctions;
-
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Editor.Components
@@ -15,7 +14,7 @@ namespace BetterLegacy.Editor.Components
         void Update()
         {
             if (notifier && modifierBase != null)
-                notifier.color = LSColors.fadeColor(notifier.color, (modifierBase.type == ModifierBase.Type.Action ? modifierBase.running : modifierBase.triggered) ? 1f : 0.1f);
+                notifier.color = RTColors.FadeColor(notifier.color, (modifierBase.type == ModifierBase.Type.Action ? modifierBase.running : modifierBase.triggered) ? 1f : 0.1f);
         }
     }
 }

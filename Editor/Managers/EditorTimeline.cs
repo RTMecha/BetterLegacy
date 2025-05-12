@@ -1376,7 +1376,6 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        // todo: look into improving this? is it possible to fix the issues with zooming in too close causing the grid to break and some issues with the grid going further than it should.
         /// <summary>
         /// Updates the timeline grids' size.
         /// </summary>
@@ -1390,31 +1389,11 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            //var clipLength = AudioManager.inst.CurrentAudioSource.clip.length;
-
-            //float x = RTEditor.inst.editorInfo.bpm / 60f;
-
-            //var closer = 40f * x;
-            //var close = 20f * x;
-            //var unrender = 6f * x;
-
-            //var bpm = EditorManager.inst.Zoom > closer ? RTEditor.inst.editorInfo.bpm : EditorManager.inst.Zoom > close ? RTEditor.inst.editorInfo.bpm / 2f : RTEditor.inst.editorInfo.bpm / 4f;
-            //var snapDivisions = RTEditor.inst.editorInfo.timeSignature * 2f;
-            //if (timelineGridRenderer && EditorManager.inst.Zoom > unrender)
-            //{
-            //    timelineGridRenderer.enabled = false;
-            //    timelineGridRenderer.gridCellSize.x = ((int)bpm / (int)snapDivisions) * (int)clipLength;
-            //    timelineGridRenderer.gridSize.x = clipLength * bpm / (snapDivisions * 1.875f);
-            //    timelineGridRenderer.enabled = true;
-            //}
-            //else if (timelineGridRenderer)
-            //    timelineGridRenderer.enabled = false;
-
             if (timelineGridRenderer)
             {
                 timelineGridRenderer.enabled = true;
                 var col = EditorConfig.Instance.TimelineGridColor.Value;
-                timelineGridRenderer.color = LSColors.fadeColor(col, col.a * RTMath.Clamp(RTMath.InverseLerp(4f, 128f, EditorManager.inst.Zoom), 0f, 1f));
+                timelineGridRenderer.color = RTColors.FadeColor(col, col.a * RTMath.Clamp(RTMath.InverseLerp(4f, 128f, EditorManager.inst.Zoom), 0f, 1f));
 
                 timelineGridRenderer.gridCellSize.x = 4000;
                 timelineGridRenderer.gridSize.x = (RTEditor.inst.editorInfo.bpm) * (SoundManager.inst.MusicLength / (60f / RTEditor.inst.editorInfo.timeSignature));

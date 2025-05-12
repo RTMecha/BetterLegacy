@@ -2,8 +2,6 @@
 
 using UnityEngine;
 
-using LSFunctions;
-
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
@@ -73,7 +71,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             if (invertOpacity)
                 opacity = -(opacity - 1f);
 
-            return LSColors.fadeColor(
+            return RTColors.FadeColor(
                     RTColors.ChangeColorHSV(color,
                         hue,
                         saturation,

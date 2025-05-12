@@ -789,7 +789,7 @@ namespace BetterLegacy.Core.Helpers
                 }, x =>
                 {
                     if (text)
-                        text.color = LSColors.fadeColor(text.color, x);
+                        text.color = RTColors.FadeColor(text.color, x);
                 }),
                 new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                 {

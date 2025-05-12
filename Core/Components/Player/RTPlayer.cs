@@ -1262,7 +1262,7 @@ namespace BetterLegacy.Core.Components.Player
                     var index = PlayersData.Current.GetMaxIndex(playerIndex, 4);
 
                     nametagText.text = NametagText;
-                    nametagBase.material.color = LSColors.fadeColor(ThemeManager.inst.Current.GetPlayerColor(index), 0.3f);
+                    nametagBase.material.color = RTColors.FadeColor(ThemeManager.inst.Current.GetPlayerColor(index), 0.3f);
                     nametagBase.transform.localScale = new Vector3(initialHealthCount * 2.25f, 1.5f, 1f);
                 }
             }

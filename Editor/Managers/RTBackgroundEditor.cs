@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,16 +11,13 @@ using LSFunctions;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
-using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -1525,7 +1521,7 @@ namespace BetterLegacy.Editor.Managers
             var gameObject = EditorManager.inst.colorGUI.Duplicate(parent, "color gui");
             gameObject.transform.localScale = Vector3.one;
             var button = gameObject.GetComponent<Button>();
-            button.image.color = LSColors.fadeColor(color, 1f);
+            button.image.color = RTColors.FadeColor(color, 1f);
             gameObject.transform.Find("Image").gameObject.SetActive(currentColor == colTmp);
 
             button.onClick.AddListener(() => onSetColor.Invoke(backgroundObject, colTmp));

@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 
-using LSFunctions;
-
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Events
@@ -67,7 +65,7 @@ namespace BetterLegacy.Core.Runtime.Events
                 _ => CoreHelper.CurrentBeatmapTheme.GetBGColor(colorSlot),
             };
             color = RTColors.ChangeColorHSV(color, hue, saturation, value);
-            color = LSColors.fadeColor(color, opacity);
+            color = RTColors.FadeColor(color, opacity);
             return color;
         }
     }

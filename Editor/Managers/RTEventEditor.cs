@@ -3455,7 +3455,7 @@ namespace BetterLegacy.Editor.Managers
             var title = EventEditor.inst.dialogRight.GetChild(i).GetChild(0);
             var image = title.GetChild(0).GetComponent<Image>();
             image.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1} Editor") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1} Editor") : Color.white;
-            image.color = LSColors.fadeColor(image.color, 1f);
+            image.color = RTColors.FadeColor(image.color, 1f);
             image.rectTransform.sizeDelta = new Vector2(17f, 0f);
             title.GetChild(1).GetComponent<Text>().text = $"- {EventTypes[i]} Editor - ";
         }

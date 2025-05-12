@@ -88,6 +88,14 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Changes the opacity of a color.
+        /// </summary>
+        /// <param name="col">Color to change the opacity of.</param>
+        /// <param name="opacity">Opacity to set.</param>
+        /// <returns>Returns the faded color.</returns>
+        public static Color FadeColor(Color col, float opacity) => new Color(col.r, col.g, col.b, opacity);
+
+        /// <summary>
         /// Changes the hue, saturation and value of a color.
         /// </summary>
         /// <param name="color">Color to change.</param>
@@ -142,7 +150,7 @@ namespace BetterLegacy.Core
         {
             var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
-            return LSColors.fadeColor(col >= 0 && col < 4 ? beatmapTheme.playerColors[col] : col == 4 ? beatmapTheme.guiColor : col > 4 && col < 23 ? beatmapTheme.objectColors[col - 5] :
+            return FadeColor(col >= 0 && col < 4 ? beatmapTheme.playerColors[col] : col == 4 ? beatmapTheme.guiColor : col > 4 && col < 23 ? beatmapTheme.objectColors[col - 5] :
                 col == 23 ? beatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : col == 25 ? beatmapTheme.guiAccentColor : LSColors.pink500, alpha);
         }
 

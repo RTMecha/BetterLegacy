@@ -409,7 +409,7 @@ namespace BetterLegacy.Arcade.Managers
         public static void SetIntroBGOpacity(float x)
         {
             if (GameManager.inst && GameManager.inst.introBG)
-                GameManager.inst.introBG.color = LSColors.fadeColor(GameManager.inst.introBG.color, inst.doIntroFadeInternal ? x : 0f);
+                GameManager.inst.introBG.color = RTColors.FadeColor(GameManager.inst.introBG.color, inst.doIntroFadeInternal ? x : 0f);
         }
 
         public static void SetIntroTitlePosition(Vector2 pos)
