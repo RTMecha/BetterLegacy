@@ -1,4 +1,10 @@
-﻿# snapshot-2025.5.12 - (pre-1.7.0) [May 12, 2025]
+﻿# ???
+
+## Features
+### Core
+- Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
+
+# snapshot-2025.5.12 - (pre-1.7.0) [May 12, 2025]
 
 ## Features
 ### Core
