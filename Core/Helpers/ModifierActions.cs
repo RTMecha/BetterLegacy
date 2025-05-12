@@ -814,8 +814,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
-                tr.startColor = LSColors.fadeColor(beatmapTheme.GetObjColor(modifier.GetInt(3, 0, variables)), modifier.GetFloat(4, 1f, variables));
-                tr.endColor = LSColors.fadeColor(beatmapTheme.GetObjColor(modifier.GetInt(5, 0, variables)), modifier.GetFloat(6, 1f, variables));
+                tr.startColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(3, 0, variables)), modifier.GetFloat(4, 1f, variables));
+                tr.endColor = RTColors.FadeColor(beatmapTheme.GetObjColor(modifier.GetInt(5, 0, variables)), modifier.GetFloat(6, 1f, variables));
             }
         }
         
@@ -2372,7 +2372,7 @@ namespace BetterLegacy.Core.Helpers
         public static void getColorSlotHexCode<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var color = ThemeManager.inst.Current.GetObjColor(modifier.GetInt(1, 0, variables));
-            color = LSColors.fadeColor(color, modifier.GetFloat(2, 1f, variables));
+            color = RTColors.FadeColor(color, modifier.GetFloat(2, 1f, variables));
             color = RTColors.ChangeColorHSV(color, modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables), modifier.GetFloat(5, 0f, variables));
 
             variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(color);
@@ -3406,7 +3406,7 @@ namespace BetterLegacy.Core.Helpers
                 var distance = Vector2.Distance(player.Player.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
 
                 runtimeObject.visualObject.SetColor(Color.Lerp(runtimeObject.visualObject.GetPrimaryColor(),
-                                LSColors.fadeColor(RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
+                                RTColors.FadeColor(RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
                                 -(distance * multiply - offset)));
             });
         }
@@ -3422,7 +3422,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                runtimeObject.visualObject.SetColor(LSColors.fadeColor(runtimeObject.visualObject.GetPrimaryColor(), opacity));
+                runtimeObject.visualObject.SetColor(RTColors.FadeColor(runtimeObject.visualObject.GetPrimaryColor(), opacity));
             });
         }
         
@@ -3441,7 +3441,7 @@ namespace BetterLegacy.Core.Helpers
                 foreach (var bm in list)
                 {
                     if (bm.runtimeObject && bm.runtimeObject.visualObject)
-                        bm.runtimeObject.visualObject.SetColor(LSColors.fadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), opacity));
+                        bm.runtimeObject.visualObject.SetColor(RTColors.FadeColor(bm.runtimeObject.visualObject.GetPrimaryColor(), opacity));
                 }
             });
         }
@@ -3529,7 +3529,7 @@ namespace BetterLegacy.Core.Helpers
                     if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                         lerp = 0f;
 
-                    color = LSColors.fadeColor(color, -(lerp - 1f));
+                    color = RTColors.FadeColor(color, -(lerp - 1f));
 
                     var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
                     var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
@@ -3559,7 +3559,7 @@ namespace BetterLegacy.Core.Helpers
                     if (float.IsNaN(lerp) || float.IsInfinity(lerp))
                         lerp = 0f;
 
-                    secondColor = LSColors.fadeColor(secondColor, -(lerp - 1f));
+                    secondColor = RTColors.FadeColor(secondColor, -(lerp - 1f));
 
                     lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
                     lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
@@ -3623,14 +3623,14 @@ namespace BetterLegacy.Core.Helpers
                 if (!runtimeObject.visualObject.isGradient)
                 {
                     var color = runtimeObject.visualObject.GetPrimaryColor();
-                    runtimeObject.visualObject.SetColor(string.IsNullOrEmpty(color1) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), color.a));
+                    runtimeObject.visualObject.SetColor(string.IsNullOrEmpty(color1) ? color : color1.Length == 8 ? RTColors.HexToColor(color1) : RTColors.FadeColor(RTColors.HexToColor(color1), color.a));
                 }
                 else if (runtimeObject.visualObject is SolidObject solidObject)
                 {
                     var colors = solidObject.GetColors();
                     solidObject.SetColor(
-                        string.IsNullOrEmpty(color1) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), colors.startColor.a),
-                        string.IsNullOrEmpty(color2) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color2), colors.endColor.a));
+                        string.IsNullOrEmpty(color1) ? colors.startColor : color1.Length == 8 ? RTColors.HexToColor(color1) : RTColors.FadeColor(RTColors.HexToColor(color1), colors.startColor.a),
+                        string.IsNullOrEmpty(color2) ? colors.endColor : color2.Length == 8 ? RTColors.HexToColor(color2) : RTColors.FadeColor(RTColors.HexToColor(color2), colors.endColor.a));
                 }
             });
         }
@@ -3657,14 +3657,14 @@ namespace BetterLegacy.Core.Helpers
                     if (!runtimeObject.visualObject.isGradient)
                     {
                         var color = runtimeObject.visualObject.GetPrimaryColor();
-                        runtimeObject.visualObject.SetColor(string.IsNullOrEmpty(color1) ? color : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), color.a));
+                        runtimeObject.visualObject.SetColor(string.IsNullOrEmpty(color1) ? color : color1.Length == 8 ? RTColors.HexToColor(color1) : RTColors.FadeColor(LSColors.HexToColorAlpha(color1), color.a));
                     }
                     else if (runtimeObject.visualObject is SolidObject solidObject)
                     {
                         var colors = solidObject.GetColors();
                         solidObject.SetColor(
-                            string.IsNullOrEmpty(color1) ? colors.startColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color1), colors.startColor.a),
-                            string.IsNullOrEmpty(color2) ? colors.endColor : LSColors.fadeColor(LSColors.HexToColorAlpha(color2), colors.endColor.a));
+                            string.IsNullOrEmpty(color1) ? colors.startColor : color1.Length == 8 ? RTColors.HexToColor(color1) : RTColors.FadeColor(LSColors.HexToColorAlpha(color1), colors.startColor.a),
+                            string.IsNullOrEmpty(color2) ? colors.endColor : color2.Length == 8 ? RTColors.HexToColor(color2) : RTColors.FadeColor(LSColors.HexToColorAlpha(color2), colors.endColor.a));
                     }
                 }
             });
