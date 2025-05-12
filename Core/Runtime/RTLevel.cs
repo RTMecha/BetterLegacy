@@ -1451,7 +1451,7 @@ namespace BetterLegacy.Core.Runtime
             for (int i = 0; i < gameData.beatmapObjects.Count; i++)
             {
                 var beatmapObject = gameData.beatmapObjects[i];
-                if (string.IsNullOrEmpty(beatmapObject.Parent) && beatmapObject.prefabInstanceID == prefabObject.id)
+                if ((string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObject.Parent == BeatmapObject.CAMERA_PARENT) && beatmapObject.prefabInstanceID == prefabObject.id)
                     UpdateObject(beatmapObject, reinsert: false, recalculate: recalculate);
             }
             
