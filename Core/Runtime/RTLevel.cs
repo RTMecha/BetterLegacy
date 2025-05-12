@@ -19,7 +19,6 @@ using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Core.Threading;
 using BetterLegacy.Editor.Components;
-using BetterLegacy.Editor.Managers;
 
 using UnityObject = UnityEngine.Object;
 

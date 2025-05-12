@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Components
 {
