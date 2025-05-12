@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.5.12 - (pre-1.7.0) [May 12, 2025]
 
 ## Features
 ### Core
@@ -6,6 +6,10 @@
 
 ## Fixes
 - Relative keyframes should now work with homing keyframes.
+- Fixed homing keyframes not working with parents.
+- Fixed objects in prefabs parented to the camera not updating properly.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.5.11 - (pre-1.7.0) [May 11, 2025]
 
