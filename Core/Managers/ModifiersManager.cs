@@ -278,6 +278,8 @@ namespace BetterLegacy.Core.Managers
         public static List<ModifierBase> defaultBeatmapObjectModifiers = new List<ModifierBase>();
 
         public static List<ModifierBase> defaultBackgroundObjectModifiers = new List<ModifierBase>();
+        
+        public static List<ModifierBase> defaultPrefabObjectModifiers = new List<ModifierBase>();
 
         public static List<ModifierBase> defaultPlayerModifiers = new List<ModifierBase>
         {
