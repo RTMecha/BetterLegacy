@@ -73,6 +73,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public bool regenerate = true;
 
+        /// <summary>
+        /// If the interface speed up controls should be disabled.
+        /// </summary>
+        public bool forceInterfaceSpeed;
+
         #region Elements
 
         /// <summary>

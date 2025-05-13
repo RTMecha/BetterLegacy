@@ -291,7 +291,7 @@ namespace BetterLegacy.Menus
         /// <summary>
         /// The current speed the interface should generate at.
         /// </summary>
-        public static float InterfaceSpeed => SpeedUp ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
+        public static float InterfaceSpeed => inst.CurrentInterface && inst.CurrentInterface.forceInterfaceSpeed ? 1f : SpeedUp ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
 
         /// <summary>
         /// Closes all interfaces and opens an interface.
