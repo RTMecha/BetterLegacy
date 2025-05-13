@@ -1482,7 +1482,10 @@ namespace BetterLegacy.Editor.Managers
             int index = GameData.Current.prefabs.FindIndex(x => x.id == prefabID);
             var originalPrefab = GameData.Current.prefabs[index];
 
-            var prefabObject = new PrefabObject(originalPrefab.id, startTime - originalPrefab.offset);
+            var prefabObject =
+                GameData.Current.prefabObjects.TryFind(x => x.id == prefabInstanceID && x.expanded, out PrefabObject originalPrefabObject) ? originalPrefabObject :
+                new PrefabObject(originalPrefab.id);
+            prefabObject.StartTime = startTime - originalPrefab.offset;
             prefabObject.editorData.Bin = editorData.Bin;
             prefabObject.editorData.Layer = editorData.Layer;
             var newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, new List<PrefabObject>(), backgroundObjects: bgObjects);
