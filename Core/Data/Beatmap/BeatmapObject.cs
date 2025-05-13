@@ -546,16 +546,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             parentOffsets = orig.parentOffsets.Copy();
             parentAdditive = orig.parentAdditive;
             parallaxSettings = orig.parallaxSettings.Copy();
-            tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>();
             renderLayerType = orig.renderLayerType;
-            ignoreLifespan = orig.ignoreLifespan;
-            orderModifiers = orig.orderModifiers;
             opacityCollision = orig.opacityCollision;
             desync = orig.desync;
 
             for (int i = 0; i < events.Count; i++)
                 events[i].AddRange(orig.events[i].Select(x => x.Copy()));
 
+            tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>();
+            ignoreLifespan = orig.ignoreLifespan;
+            orderModifiers = orig.orderModifiers;
             modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => x.Copy(this)).ToList() : new List<Modifier<BeatmapObject>>();
         }
 
@@ -963,8 +963,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["pid"] != null)
                 prefabID = jn["pid"];
 
+            #region Parent
+
             if (jn["p"] != null)
                 Parent = jn["p"];
+
+            if (jn["desync"] != null && !string.IsNullOrEmpty(Parent))
+                desync = jn["desync"].AsBool;
 
             if (jn["pt"] != null)
                 parentType = jn["pt"];
@@ -986,6 +991,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["pa"] != null)
                 parentAdditive = jn["pa"];
 
+            #endregion
+
             if (jn["d"] != null)
                 Depth = jn["d"].AsInt;
 
@@ -1000,9 +1007,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["ordmod"] != null)
                 orderModifiers = jn["ordmod"].AsBool;
-
-            if (jn["desync"] != null && !string.IsNullOrEmpty(Parent))
-                desync = jn["desync"].AsBool;
 
             if (jn["empty"] != null)
                 objectType = jn["empty"].AsBool ? ObjectType.Empty : ObjectType.Normal;
@@ -1224,11 +1228,24 @@ namespace BetterLegacy.Core.Data.Beatmap
             var jn = JSON.Parse("{}");
 
             jn["id"] = id;
+
             if (!string.IsNullOrEmpty(prefabID))
                 jn["pid"] = prefabID;
 
             if (!string.IsNullOrEmpty(prefabInstanceID))
                 jn["piid"] = prefabInstanceID;
+
+            if (tags != null && !tags.IsEmpty())
+                for (int i = 0; i < tags.Count; i++)
+                    jn["tags"][i] = tags[i];
+
+            #region Parent
+
+            if (!string.IsNullOrEmpty(parent))
+                jn["p"] = parent;
+
+            if (desync && !string.IsNullOrEmpty(parent))
+                jn["desync"] = desync;
 
             if (parentType != "101")
                 jn["pt"] = parentType;
@@ -1244,8 +1261,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < parallaxSettings.Length; i++)
                     jn["ps"][i] = parallaxSettings[i];
 
-            if (!string.IsNullOrEmpty(parent))
-                jn["p"] = parent;
+            #endregion
 
             if (Depth != 15)
                 jn["d"] = Depth;
@@ -1253,12 +1269,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["rdt"] = (int)renderLayerType;
             if (opacityCollision)
                 jn["opcol"] = opacityCollision;
-            if (ignoreLifespan)
-                jn["iglif"] = ignoreLifespan;
-            if (orderModifiers)
-                jn["ordmod"] = orderModifiers;
-            if (desync && !string.IsNullOrEmpty(parent))
-                jn["desync"] = desync;
 
             if (LDM)
                 jn["ldm"] = LDM;
@@ -1296,10 +1306,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (autoTextAlign)
                 jn["ata"] = autoTextAlign;
 
-            if (tags != null && !tags.IsEmpty())
-                for (int i = 0; i < tags.Count; i++)
-                    jn["tags"][i] = tags[i];
-
             if (origin.x != 0f || origin.y != 0f)
                 jn["o"] = origin.ToJSON();
 
@@ -1315,6 +1321,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < events[3].Count; i++)
                 jn["events"]["col"][i] = events[3][i].ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
 
+            if (ignoreLifespan)
+                jn["iglif"] = ignoreLifespan;
+            if (orderModifiers)
+                jn["ordmod"] = orderModifiers;
             for (int i = 0; i < modifiers.Count; i++)
                 jn["modifiers"][i] = modifiers[i].ToJSON();
 
