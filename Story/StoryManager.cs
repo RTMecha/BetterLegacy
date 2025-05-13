@@ -1164,8 +1164,13 @@ namespace BetterLegacy.Story
             SoundManager.inst.PlaySound(DefaultSounds.loadsound);
             CoreHelper.InStory = false;
             LevelManager.OnLevelEnd = null;
-            SceneHelper.LoadScene(SceneName.Main_Menu);
+            if (loadCredits)
+                InterfaceManager.inst.Parse(RTFile.GetAsset("Story/Interfaces/story_credits.lsi"));
+            else
+                SceneHelper.LoadScene(SceneName.Main_Menu);
         }
+
+        bool loadCredits = false;
 
         void AssignStoryLevelMusic(string songName, Level level)
         {
