@@ -32,15 +32,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             };
         }
 
-        public PrefabObject(string prefabID, float startTime) : this()
-        {
-			this.prefabID = prefabID;
-			this.startTime = startTime;
-        }
+        public PrefabObject(string prefabID) : this() => this.prefabID = prefabID;
+
+        public PrefabObject(string prefabID, float startTime) : this(prefabID) => this.startTime = startTime;
 
         #region Values
 
         public string prefabID = "";
+
+        public bool expanded;
 
         public List<EventKeyframe> events = new List<EventKeyframe>();
 
@@ -241,6 +241,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 foreach (var eventKeyframe in orig.events)
                     events.Add(eventKeyframe.Copy(newID));
 
+            tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>();
+            ignoreLifespan = orig.ignoreLifespan;
+            orderModifiers = orig.orderModifiers;
+            modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => x.Copy(this)).ToList() : new List<Modifier<PrefabObject>>();
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -322,8 +326,35 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabID = jn["pid"];
             StartTime = jn["st"].AsFloat;
 
+            #region Parent
+
             if (jn["p"] != null)
                 parent = jn["p"];
+
+            if (jn["desync"] != null && !string.IsNullOrEmpty(parent))
+                desync = jn["desync"].AsBool;
+
+            if (jn["pt"] != null)
+                parentType = jn["pt"];
+
+            if (jn["po"] != null)
+                for (int i = 0; i < parentOffsets.Length; i++)
+                    if (jn["po"].Count > i && jn["po"][i] != null)
+                        parentOffsets[i] = jn["po"][i].AsFloat;
+
+            if (jn["ps"] != null)
+            {
+                for (int i = 0; i < parentParallax.Length; i++)
+                {
+                    if (jn["ps"].Count > i && jn["ps"][i] != null)
+                        parentParallax[i] = jn["ps"][i].AsFloat;
+                }
+            }
+
+            if (jn["pa"] != null)
+                parentAdditive = jn["pa"];
+
+            #endregion
 
             if (jn["rc"] != null)
                 RepeatCount = jn["rc"].AsInt;
@@ -342,6 +373,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
+
+            expanded = jn["exp"].AsBool;
 
             events.Clear();
 
@@ -393,6 +426,19 @@ namespace BetterLegacy.Core.Data.Beatmap
                     new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }),
                 };
             }
+
+            if (jn["iglif"] != null)
+                ignoreLifespan = jn["iglif"].AsBool;
+
+            if (jn["ordmod"] != null)
+                orderModifiers = jn["ordmod"].AsBool;
+
+            for (int i = 0; i < jn["modifiers"].Count; i++)
+            {
+                var modifier = Modifier<PrefabObject>.Parse(jn["modifiers"][i], this);
+                if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultPrefabObjectModifiers))
+                    modifiers.Add(modifier);
+            }
         }
 
         public override JSONNode ToJSONVG()
@@ -431,26 +477,29 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (Speed != 1f)
                 jn["sp"] = Speed;
 
-            if (parentType != "111")
+            #region Parent
+
+            if (!string.IsNullOrEmpty(parent))
+                jn["p"] = parent;
+
+            if (desync && !string.IsNullOrEmpty(parent))
+                jn["desync"] = desync;
+
+            if (parentType != "101")
                 jn["pt"] = parentType;
 
             if (parentOffsets.Any(x => x != 0f))
-            {
                 for (int i = 0; i < parentOffsets.Length; i++)
                     jn["po"][i] = parentOffsets[i];
-            }
 
             if (parentAdditive != "000")
                 jn["pa"] = parentAdditive;
 
             if (parentParallax.Any(x => x != 1f))
-            {
                 for (int i = 0; i < parentParallax.Length; i++)
                     jn["ps"][i] = parentParallax[i];
-            }
 
-            if (!string.IsNullOrEmpty(parent))
-                jn["p"] = parent;
+            #endregion
 
             if (autoKillType != PrefabAutoKillType.Regular)
             {
@@ -474,6 +523,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["ed"]["layer"] = editorData.Layer;
             if (editorData.Bin != 0)
                 jn["ed"]["bin"] = editorData.Bin;
+
+            if (expanded)
+                jn["exp"] = expanded;
 
             jn["e"]["pos"]["x"] = events[0].values[0];
             jn["e"]["pos"]["y"] = events[0].values[1];
@@ -502,6 +554,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["e"]["rot"]["rx"] = events[2].randomValues[0];
                 jn["e"]["rot"]["rz"] = events[2].randomValues[2];
             }
+
+            if (ignoreLifespan)
+                jn["iglif"] = ignoreLifespan;
+            if (orderModifiers)
+                jn["ordmod"] = orderModifiers;
+            for (int i = 0; i < modifiers.Count; i++)
+                jn["modifiers"][i] = modifiers[i].ToJSON();
 
             return jn;
         }
