@@ -4,6 +4,9 @@
 ### Core
 - Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
 
+## Fixes
+- Fixed most parent settings in Prefab Objects not being read from the .lsb files.
+
 # snapshot-2025.5.12 - (pre-1.7.0) [May 12, 2025]
 
 ## Features
