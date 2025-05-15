@@ -290,15 +290,35 @@ namespace BetterLegacy.Companion.Entity
                 }));
 
             commands.Add(new ExampleCommand("Select all objects", "Selects every Beatmap Object and Prefab Object in the current level.", true,
-                response => EditorHelper.SelectAllObjects()));
+                response =>
+                {
+                    EditorHelper.SelectAllObjects();
+                    reference?.chatBubble?.Say($"Selected all objects!");
+                }));
             commands.Add(new ExampleCommand("Select all objects on current layer", "Selects every Beatmap Object and Prefab Object in the current level's currently viewed editor layer.", true,
-                response => EditorHelper.SelectAllObjectsOnCurrentLayer()));
+                response =>
+                {
+                    EditorHelper.SelectAllObjectsOnCurrentLayer();
+                    reference?.chatBubble?.Say($"Selected all objects on the current editor layer!");
+                }));
             commands.Add(new ExampleCommand("Mirror Selection", "Horizontally mirrors selected objects.", true,
-                response => EditorHelper.MirrorSelectedObjects()));
+                response =>
+                {
+                    EditorHelper.MirrorSelectedObjects();
+                    reference?.chatBubble?.Say($"Mirrored objects horizontally!");
+                }));
             commands.Add(new ExampleCommand("Flip Selection", "Vertically flips selected objects.", true,
-                response => EditorHelper.MirrorSelectedObjects()));
+                response =>
+                {
+                    EditorHelper.FlipSelectedObjects();
+                    reference?.chatBubble?.Say($"Flipped objects vertically!");
+                }));
             commands.Add(new ExampleCommand("Refresh selected objects animations", "Updates just the animation of all selected objects.", true,
-                response => EditorHelper.RefreshKeyframesFromSelection()));
+                response =>
+                {
+                    EditorHelper.RefreshKeyframesFromSelection();
+                    reference?.chatBubble?.Say($"Refreshed the selected objects animations.");
+                }));
             commands.Add(new ExampleCommand("Give a random idea", "Example outputs a random idea.", true,
                 response =>
                 {
