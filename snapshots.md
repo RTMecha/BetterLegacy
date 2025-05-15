@@ -5,7 +5,7 @@
 - Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
 - Fully implemented Polygon Shape. Thanks Pidge! :D
 - With the Polygon Shape fully implemented, new values were added to it: Thickness Offset and Thickness Scale.
-- Added setPolygonShape and setPolygonShapeOther modifiers. This modifies the values of the current polygon shape.
+- Added setPolygonShape and setPolygonShapeOther modifiers. These modify the values of the current polygon shape.
 - Polygon Shape ported to Custom Player Objects.
 - Added Store / Clear Data to Player Image Objects. This now means images from Image Objects can be transfered between levels.
 - setImage and setImageOther modifiers now accept stored images.
@@ -14,8 +14,13 @@
 ### Core
 - Optimized setImageOther modifier by loading the sprite before iterating through the group.
 
+### Example Companion
+- Example's commands make him say something now.
+- Mirror and flip commands now flip BG and Prefab objects.
+
 ## Fixes
 - Fixed most parent settings in Prefab Objects not being read from the .lsb files.
+- Fixed Example's mirror and flip commands being the same.
 
 # snapshot-2025.5.12 - (pre-1.7.0) [May 12, 2025]
 
