@@ -341,39 +341,90 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
                 // Position
-                labelGenerator2(prefabSelectorLeft, "pos", "Position X Offset", "Position Y Offset");
+                RTEditor.GenerateLabels("pos label", prefabSelectorLeft, new LabelSettings("Position X Offset"), new LabelSettings("Position Y Offset"));
 
                 var position = vector2Input.Duplicate(prefabSelectorLeft, "position");
-                var positionX = position.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
-                positionX.Init(position.transform.Find("x").GetComponent<InputField>());
-                var positionY = position.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
-                positionY.Init(position.transform.Find("y").GetComponent<InputField>());
+                TriggerHelper.InversableField(position.transform.Find("x").GetComponent<InputField>());
+                TriggerHelper.InversableField(position.transform.Find("y").GetComponent<InputField>());
                 EditorThemeManager.AddInputFields(position, true, "");
                 EditorHelper.SetComplexity(prefabSelectorLeft.Find($"pos label").gameObject, Complexity.Normal);
                 EditorHelper.SetComplexity(position, Complexity.Normal);
 
+                RTEditor.GenerateLabels("r_position label", prefabSelectorLeft, new LabelSettings("Random X"), new LabelSettings("Random Y"));
+
+                var r_position = vector2Input.Duplicate(prefabSelectorLeft, "r_position");
+                TriggerHelper.InversableField(r_position.transform.Find("x").GetComponent<InputField>());
+                TriggerHelper.InversableField(r_position.transform.Find("y").GetComponent<InputField>());
+                EditorThemeManager.AddInputFields(r_position, true, "");
+
+                var randomPrefab = ObjEditor.inst.KeyframeDialogs[0].transform.Find("random").gameObject;
+                RTEditor.GenerateLabels("position-random-label", prefabSelectorLeft, new LabelSettings("Randomize"));
+                var randomPosition = randomPrefab.Duplicate(prefabSelectorLeft, "position-random");
+                CoreHelper.DestroyChildren(randomPosition.transform, x => x.name == "homing-static" || x.name == "homing-dynamic");
+
+                foreach (var toggle in randomPosition.GetComponentsInChildren<Toggle>())
+                {
+                    EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
+                    EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                }
+                EditorThemeManager.AddInputField(randomPosition.transform.Find("interval-input").GetComponent<InputField>());
+
                 // Scale
-                labelGenerator2(prefabSelectorLeft, "sca", "Scale X Offset", "Scale Y Offset");
+                RTEditor.GenerateLabels("sca label", prefabSelectorLeft, new LabelSettings("Scale X Offset"), new LabelSettings("Scale Y Offset"));
 
                 var scale = vector2Input.Duplicate(prefabSelectorLeft, "scale");
-                var scaleX = scale.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
-                scaleX.Init(scale.transform.Find("x").GetComponent<InputField>());
-                var scaleY = scale.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
-                scaleY.Init(scale.transform.Find("y").GetComponent<InputField>());
+                TriggerHelper.InversableField(scale.transform.Find("x").GetComponent<InputField>());
+                TriggerHelper.InversableField(scale.transform.Find("y").GetComponent<InputField>());
                 EditorThemeManager.AddInputFields(scale, true, "");
                 EditorHelper.SetComplexity(prefabSelectorLeft.Find($"sca label").gameObject, Complexity.Normal);
                 EditorHelper.SetComplexity(scale, Complexity.Normal);
 
+                RTEditor.GenerateLabels("r_scale label", prefabSelectorLeft, new LabelSettings("Random X"), new LabelSettings("Random Y"));
+
+                var r_scale = vector2Input.Duplicate(prefabSelectorLeft, "r_scale");
+                TriggerHelper.InversableField(r_scale.transform.Find("x").GetComponent<InputField>());
+                TriggerHelper.InversableField(r_scale.transform.Find("y").GetComponent<InputField>());
+                EditorThemeManager.AddInputFields(r_scale, true, "");
+
+                RTEditor.GenerateLabels("scale-random-label", prefabSelectorLeft, new LabelSettings("Randomize"));
+                var randomScale = randomPrefab.Duplicate(prefabSelectorLeft, "scale-random");
+                CoreHelper.DestroyChildren(randomScale.transform, x => x.name == "homing-static" || x.name == "homing-dynamic");
+
+                foreach (var toggle in randomScale.GetComponentsInChildren<Toggle>())
+                {
+                    EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
+                    EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                }
+                EditorThemeManager.AddInputField(randomScale.transform.Find("interval-input").GetComponent<InputField>());
+
                 // Rotation
-                labelGenerator(prefabSelectorLeft, "rot", "Rotation Offset");
+                RTEditor.GenerateLabels("rot label", prefabSelectorLeft, new LabelSettings("Rotation Offset"));
 
                 var rot = vector2Input.Duplicate(prefabSelectorLeft, "rotation");
-                Destroy(rot.transform.GetChild(1).gameObject);
-                var rotX = rot.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
-                rotX.Init(rot.transform.Find("x").GetComponent<InputField>());
+                CoreHelper.Destroy(rot.transform.GetChild(1).gameObject);
+                TriggerHelper.InversableField(rot.transform.Find("x").GetComponent<InputField>());
                 EditorThemeManager.AddInputFields(rot, true, "");
                 EditorHelper.SetComplexity(prefabSelectorLeft.Find($"rot label").gameObject, Complexity.Normal);
                 EditorHelper.SetComplexity(rot, Complexity.Normal);
+
+                RTEditor.GenerateLabels("r_rotation label", prefabSelectorLeft, new LabelSettings("Random X"), new LabelSettings("Random Y"));
+
+                var r_rot = vector2Input.Duplicate(prefabSelectorLeft, "r_rotation");
+                TriggerHelper.InversableField(r_rot.transform.Find("x").GetComponent<InputField>());
+                CoreHelper.Destroy(r_rot.transform.GetChild(1).gameObject);
+                EditorThemeManager.AddInputFields(r_rot, true, "");
+
+                RTEditor.GenerateLabels("rotation-random-label", prefabSelectorLeft, new LabelSettings("Randomize"));
+                var randomRotation = randomPrefab.Duplicate(prefabSelectorLeft, "rotation-random");
+                CoreHelper.DestroyChildren(randomRotation.transform, x => x.name == "scale" || x.name == "homing-static" || x.name == "homing-dynamic");
+                CoreHelper.Destroy(randomRotation.transform.GetChild(1).gameObject);
+
+                foreach (var toggle in randomRotation.GetComponentsInChildren<Toggle>())
+                {
+                    EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
+                    EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                }
+                EditorThemeManager.AddInputField(randomRotation.transform.Find("interval-input").GetComponent<InputField>());
 
                 // Repeat
                 labelGenerator2(prefabSelectorLeft, "repeat", "Repeat Count", "Repeat Offset Time");
@@ -1244,11 +1295,11 @@ namespace BetterLegacy.Editor.Managers
 
                 var currentKeyframe = prefabObject.events[index];
 
-                var inputField = PrefabObjectEditor.LeftContent.Find(type + inx).GetComponent<InputField>();
+                var inputFieldX = PrefabObjectEditor.LeftContent.Find(type + inx).GetComponent<InputField>();
 
-                inputField.onValueChanged.ClearAll();
-                inputField.text = currentKeyframe.values[0].ToString();
-                inputField.onValueChanged.AddListener(_val =>
+                inputFieldX.onValueChanged.ClearAll();
+                inputFieldX.text = currentKeyframe.values[0].ToString();
+                inputFieldX.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -1257,15 +1308,45 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.IncreaseDecreaseButtons(inputField);
+                var r_type = "r_" + types[index];
+
+                var r_inputFieldX = PrefabObjectEditor.LeftContent.Find(r_type + inx).GetComponent<InputField>();
+                r_inputFieldX.onValueChanged.ClearAll();
+                r_inputFieldX.text = currentKeyframe.randomValues[0].ToString();
+                r_inputFieldX.onValueChanged.AddListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        currentKeyframe.randomValues[0] = num;
+                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                    }
+                });
+
+                var toggles = PrefabObjectEditor.LeftContent.Find(type + "-random").GetComponentsInChildren<Toggle>();
+                int num = 0;
+                foreach (var toggle in toggles)
+                {
+                    var randomIndex = num;
+                    toggle.onValueChanged.ClearAll();
+                    toggle.isOn = currentKeyframe.random == randomIndex;
+                    toggle.onValueChanged.AddListener(_val =>
+                    {
+                        currentKeyframe.random = randomIndex;
+                        RenderPrefabObjectTransforms(prefabObject);
+                    });
+                    num++;
+                }
+
+                PrefabObjectEditor.LeftContent.Find(r_type + " label").gameObject.SetActive(currentKeyframe.random != 0 && RTEditor.ShowModdedUI);
+                PrefabObjectEditor.LeftContent.Find(r_type).gameObject.SetActive(currentKeyframe.random != 0 && RTEditor.ShowModdedUI);
 
                 if (index != 2)
                 {
-                    var inputField2 = PrefabObjectEditor.LeftContent.Find(type + iny).GetComponent<InputField>();
+                    var inputFieldY = PrefabObjectEditor.LeftContent.Find(type + iny).GetComponent<InputField>();
 
-                    inputField2.onValueChanged.ClearAll();
-                    inputField2.text = currentKeyframe.values[1].ToString();
-                    inputField2.onValueChanged.AddListener(_val =>
+                    inputFieldY.onValueChanged.ClearAll();
+                    inputFieldY.text = currentKeyframe.values[1].ToString();
+                    inputFieldY.onValueChanged.AddListener(_val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
@@ -1274,17 +1355,64 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                    TriggerHelper.IncreaseDecreaseButtons(inputField2);
-                    TriggerHelper.AddEventTriggers(inputField2.gameObject,
-                        TriggerHelper.ScrollDelta(inputField2, multi: true),
-                        TriggerHelper.ScrollDeltaVector2(inputField, inputField2, 0.1f, 10f));
+                    TriggerHelper.IncreaseDecreaseButtons(inputFieldX);
+                    TriggerHelper.IncreaseDecreaseButtons(inputFieldY);
 
-                    TriggerHelper.AddEventTriggers(inputField.gameObject,
-                        TriggerHelper.ScrollDelta(inputField, multi: true),
-                        TriggerHelper.ScrollDeltaVector2(inputField, inputField2, 0.1f, 10f));
+                    TriggerHelper.AddEventTriggers(inputFieldX.gameObject,
+                        TriggerHelper.ScrollDelta(inputFieldX, multi: true),
+                        TriggerHelper.ScrollDeltaVector2(inputFieldX, inputFieldY, 0.1f, 10f));
+                    TriggerHelper.AddEventTriggers(inputFieldY.gameObject,
+                        TriggerHelper.ScrollDelta(inputFieldY, multi: true),
+                        TriggerHelper.ScrollDeltaVector2(inputFieldX, inputFieldY, 0.1f, 10f));
+
+                    var r_inputFieldY = PrefabObjectEditor.LeftContent.Find(r_type + iny).GetComponent<InputField>();
+                    r_inputFieldY.onValueChanged.ClearAll();
+                    r_inputFieldY.text = currentKeyframe.randomValues[1].ToString();
+                    r_inputFieldY.onValueChanged.AddListener(_val =>
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            currentKeyframe.randomValues[1] = num;
+                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(r_inputFieldX);
+                    TriggerHelper.IncreaseDecreaseButtons(r_inputFieldY);
+
+                    TriggerHelper.AddEventTriggers(r_inputFieldX.gameObject,
+                        TriggerHelper.ScrollDelta(r_inputFieldX, multi: true),
+                        TriggerHelper.ScrollDeltaVector2(r_inputFieldX, r_inputFieldY, 0.1f, 10f));
+                    TriggerHelper.AddEventTriggers(r_inputFieldY.gameObject,
+                        TriggerHelper.ScrollDelta(r_inputFieldY, multi: true),
+                        TriggerHelper.ScrollDeltaVector2(r_inputFieldX, r_inputFieldY, 0.1f, 10f));
                 }
                 else
-                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, 15f, 3f));
+                {
+                    TriggerHelper.IncreaseDecreaseButtons(inputFieldX, 15f, 3f);
+                    TriggerHelper.AddEventTriggers(inputFieldX.gameObject, TriggerHelper.ScrollDelta(inputFieldX, 15f, 3f));
+
+                    TriggerHelper.IncreaseDecreaseButtons(r_inputFieldX, 15f, 3f);
+                    TriggerHelper.AddEventTriggers(r_inputFieldX.gameObject, TriggerHelper.ScrollDelta(r_inputFieldX, 15f, 3f));
+                }
+
+                float randomInterval = 0f;
+                if (currentKeyframe.randomValues.Length > 2)
+                    randomInterval = currentKeyframe.randomValues[2];
+
+                var randomIntervalField = PrefabObjectEditor.LeftContent.Find(type + "-random/interval-input").GetComponent<InputField>();
+                randomIntervalField.gameObject.SetActive(currentKeyframe.random != 0 && currentKeyframe.random != 3);
+                randomIntervalField.NewValueChangedListener(randomInterval.ToString(), _val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        currentKeyframe.randomValues[2] = num;
+                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                    }
+                });
+
+                TriggerHelper.InversableField(randomIntervalField);
+                TriggerHelper.AddEventTriggers(randomIntervalField.gameObject, TriggerHelper.ScrollDelta(randomIntervalField, max: float.MaxValue));
             }
         }
 
