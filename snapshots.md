@@ -3,6 +3,16 @@
 ## Features
 ### Core
 - Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
+- Fully implemented Polygon Shape. Thanks Pidge! :D
+- With the Polygon Shape fully implemented, new values were added to it: Thickness Offset and Thickness Scale.
+- Added setPolygonShape and setPolygonShapeOther modifiers. This modifies the values of the current polygon shape.
+- Polygon Shape ported to Custom Player Objects.
+- Added Store / Clear Data to Player Image Objects. This now means images from Image Objects can be transfered between levels.
+- setImage and setImageOther modifiers now accept stored images.
+
+## Changes
+### Core
+- Optimized setImageOther modifier by loading the sprite before iterating through the group.
 
 ## Fixes
 - Fixed most parent settings in Prefab Objects not being read from the .lsb files.
