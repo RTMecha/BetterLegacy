@@ -1813,12 +1813,25 @@ namespace BetterLegacy.Core.Runtime
                 timeToAdd += t;
             }
 
+            prefabObject.cachedTransform = null;
             if (update)
             {
+                var transform = prefabObject.GetTransformOffset();
+
                 foreach (var beatmapObject in notParented.Count > 0 ? notParented : prefabObject.expandedObjects.Where(x => x is BeatmapObject).Select(x => x as BeatmapObject))
                     UpdateObject(beatmapObject, recalculate: recalculate);
                 foreach (var backgroundObject in prefabObject.expandedObjects.Where(x => x is BackgroundObject).Select(x => x as BackgroundObject))
                     UpdateBackgroundObject(backgroundObject, recalculate: recalculate);
+
+                foreach (var prefabable in prefabObject.expandedObjects)
+                {
+                    if (prefabable.GetRuntimeObject() is IPrefabOffset prefabOffset)
+                    {
+                        prefabOffset.PrefabOffsetPosition = transform.position;
+                        prefabOffset.PrefabOffsetScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+                        prefabOffset.PrefabOffsetRotation = new Vector3(0f, 0f, transform.rotation);
+                    }
+                }
             }
 
             notParented.Clear();

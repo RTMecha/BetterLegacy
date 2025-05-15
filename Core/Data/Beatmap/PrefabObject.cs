@@ -201,6 +201,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region References
 
+        public ObjectTransform? cachedTransform;
+
         public bool fromModifier;
 
         public List<IPrefabable> expandedObjects = new List<IPrefabable>();
@@ -695,6 +697,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a struct representing the objects' transform values.</returns>
         public ObjectTransform GetTransformOffset()
         {
+            if (cachedTransform != null && cachedTransform.HasValue)
+                return cachedTransform.Value;
+
             var transform = ObjectTransform.Default;
 
             bool hasPosX = events.Count > 0 && events[0] && events[0].values.Length > 0;
@@ -724,6 +729,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             transform.scale = transform.scale.x != 0f && transform.scale.y != 0f ? transform.scale : Vector3.one;
+            cachedTransform = transform;
 
             return transform;
         }
