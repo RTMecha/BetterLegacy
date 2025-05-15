@@ -995,7 +995,7 @@ namespace BetterLegacy.Core
 
         public static JSONNode ToJSONArray(this Vector2Int vector2)
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONArray();
             jn[0] = vector2.x;
             jn[1] = vector2.y;
             return jn;
@@ -1003,7 +1003,7 @@ namespace BetterLegacy.Core
         
         public static JSONNode ToJSONArray(this Vector2 vector2)
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONArray();
             jn[0] = vector2.x;
             jn[1] = vector2.y;
             return jn;
@@ -1011,7 +1011,7 @@ namespace BetterLegacy.Core
         
         public static JSONNode ToJSONArray(this Vector3Int vector3)
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONArray();
             jn[0] = vector3.x;
             jn[1] = vector3.y;
             jn[2] = vector3.z;
@@ -1020,7 +1020,7 @@ namespace BetterLegacy.Core
         
         public static JSONNode ToJSONArray(this Vector3 vector3)
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONArray();
             jn[0] = vector3.x;
             jn[1] = vector3.y;
             jn[2] = vector3.z;
@@ -1029,7 +1029,7 @@ namespace BetterLegacy.Core
         
         public static JSONNode ToJSONArray(this Vector4 vector4)
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONArray();
             jn[0] = vector4.x;
             jn[1] = vector4.y;
             jn[2] = vector4.z;
@@ -1039,55 +1039,45 @@ namespace BetterLegacy.Core
 
         public static JSONNode ToJSON(this Vector2Int vector2)
         {
-            var jn = JSON.Parse("{}");
-
+            var jn = Parser.NewJSONObject();
             jn["x"] = vector2.x.ToString();
             jn["y"] = vector2.y.ToString();
-
             return jn;
         }
         
-        public static JSONNode ToJSON(this Vector2 vector2, bool toString = true)
+        public static JSONNode ToJSON(this Vector2 vector2)
         {
-            var jn = JSON.Parse("{}");
-
+            var jn = Parser.NewJSONObject();
             jn["x"] = vector2.x;
             jn["y"] = vector2.y;
-
             return jn;
         }
 
         public static JSONNode ToJSON(this Vector3Int vector3)
         {
-            var jn = JSON.Parse("{}");
-
+            var jn = Parser.NewJSONObject();
             jn["x"] = vector3.x.ToString();
             jn["y"] = vector3.y.ToString();
             jn["z"] = vector3.z.ToString();
-
             return jn;
         }
         
         public static JSONNode ToJSON(this Vector3 vector3)
         {
-            var jn = JSON.Parse("{}");
-
+            var jn = Parser.NewJSONObject();
             jn["x"] = vector3.x.ToString();
             jn["y"] = vector3.y.ToString();
             jn["z"] = vector3.z.ToString();
-
             return jn;
         }
 
         public static JSONNode ToJSON(this Vector4 vector4)
         {
-            var jn = JSON.Parse("{}");
-
+            var jn = Parser.NewJSONObject();
             jn["x"] = vector4.x.ToString();
             jn["y"] = vector4.y.ToString();
             jn["z"] = vector4.z.ToString();
             jn["w"] = vector4.w.ToString();
-
             return jn;
         }
 
