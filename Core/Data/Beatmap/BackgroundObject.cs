@@ -562,9 +562,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["c"] = color;
 
             if (pos.x != 0f || pos.y != 0f)
-                jn["t"]["p"] = pos.ToJSON(false);
+                jn["t"]["p"] = pos.ToJSON();
             if (scale.x != 0f || scale.y != 0f)
-                jn["t"]["s"] = scale.ToJSON(false);
+                jn["t"]["s"] = scale.ToJSON();
             if (rot != 0f)
                 jn["t"]["r"] = rot;
 
@@ -606,10 +606,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     jn["tags"][i] = tags[i];
 
             if (pos.x != 0f || pos.y != 0f)
-                jn["pos"] = pos.ToJSON(false);
+                jn["pos"] = pos.ToJSON();
 
             if (scale.x != 0f || scale.y != 0f)
-                jn["size"] = scale.ToJSON(false);
+                jn["size"] = scale.ToJSON();
 
             if (rot != 0f)
                 jn["rot"] = rot;

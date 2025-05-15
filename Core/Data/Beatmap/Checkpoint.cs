@@ -145,7 +145,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 			if (time != 0f)
 				jn["t"] = time;
 			if (pos.x != 0f && pos.y != 0f)
-				jn["p"] = pos.ToJSON(false);
+				jn["p"] = pos.ToJSON();
 
 			return jn;
 		}
@@ -157,7 +157,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 			jn["name"] = name ?? string.Empty;
 			if (time != 0f)
 				jn["t"] = time;
-			jn["pos"] = pos.ToJSON(false);
+			jn["pos"] = pos.ToJSON();
 
 			return jn;
 		}
