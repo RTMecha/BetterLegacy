@@ -80,7 +80,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.Init();
 
-
             #region Instance Values
 
             Left = GameObject.transform.Find("data/left").AsRT();
