@@ -212,55 +212,68 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < Shapes2D.Count; i++)
             {
                 var shapeGroup = Shapes2D[i];
-                for (int j = 0; j < shapeGroup.Count; j++)
+                var type = shapeGroup.type;
+                var shapeType = shapeGroup.ShapeType;
+
+                // Adds new shape group
+                if (ObjectManager.inst.objectPrefabs.Count < type + 1)
+                    ObjectManager.inst.objectPrefabs.Add(new ObjectManager.ObjectPrefabHolder() { options = new List<GameObject>() });
+
+                switch (shapeType)
                 {
-                    var shape = shapeGroup[j];
-                    var type = shape.type;
-                    var option = shape.option;
+                    case ShapeType.Image: {
 
-                    // Adds new shape group
-                    if (ObjectManager.inst.objectPrefabs.Count < type + 1)
-                        ObjectManager.inst.objectPrefabs.Add(new ObjectManager.ObjectPrefabHolder() { options = new List<GameObject>() });
+                                // Clear to remove original image object.
+                                // Originally I just kept the original "mesh" object and just got rid of the rigidbody it has (for some reason, wtf)
+                                // The rigidbody removal code didn't work until I changed the check. Then it started to work BUT it started to crash as well. ('Attempt to access invalid address.' crash)
+                                // So instead, we clear the Image group options and add our own. I guess this makes the image object 100% the same as in the arcade now.
+                                ObjectManager.inst.objectPrefabs[6].options.Clear();
+                                var imageMesh = new GameObject("mesh");
+                                imageMesh.layer = 8;
+                                var imageObject = new GameObject("object");
+                                imageObject.layer = 8;
+                                imageObject.transform.SetParent(imageMesh.transform);
 
-                    // Creates new shape object
-                    if (ObjectManager.inst.objectPrefabs[type].options.Count < option + 1 && shape.mesh)
-                    {
-                        var gameObject = ObjectManager.inst.objectPrefabs[1].options[0].Duplicate(shapeParent, shape.name);
+                                imageObject.AddComponent<SpriteRenderer>();
 
-                        gameObject.transform.GetChild(0).GetComponent<MeshFilter>().mesh = shape.mesh;
-
-                        if (shape.name == "triangle_outline_thin")
-                        {
-                            var polygonCollider = gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>();
-                            polygonCollider.points = thinTrianglePoints.Copy();
-                            polygonCollider.pathCount = 1;
-
-                            ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
-                            continue;
+                                ObjectManager.inst.objectPrefabs[6].options.Add(imageMesh);
+                            break;
                         }
+                    case ShapeType.Polygon: {
+                            var gameObject = ObjectManager.inst.objectPrefabs[1].options[0].Duplicate(shapeParent, "Polygon");
+                            ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
 
-                        CoreHelper.CreateCollider(gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>(), shape.mesh);
-                        ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
-                    }
+                            break;
+                        }
+                    default: {
+                            for (int j = 0; j < shapeGroup.Count; j++)
+                            {
+                                var shape = shapeGroup[j];
+                                var option = shape.option;
 
-                    // Creates image shape object
-                    if (type != 6)
-                        continue;
+                                // Creates new shape object
+                                if (ObjectManager.inst.objectPrefabs[type].options.Count < option + 1 && shape.mesh)
+                                {
+                                    var gameObject = ObjectManager.inst.objectPrefabs[1].options[0].Duplicate(shapeParent, shape.name);
 
-                    // Clear to remove original image object.
-                    // Originally I just kept the original "mesh" object and just got rid of the rigidbody it has (for some reason, wtf)
-                    // The rigidbody removal code didn't work until I changed the check. Then it started to work BUT it started to crash as well. ('Attempt to access invalid address.' crash)
-                    // So instead, we clear the Image group options and add our own. I guess this makes the image object 100% the same as in the arcade now.
-                    ObjectManager.inst.objectPrefabs[6].options.Clear();
-                    var imageMesh = new GameObject("mesh");
-                    imageMesh.layer = 8;
-                    var imageObject = new GameObject("object");
-                    imageObject.layer = 8;
-                    imageObject.transform.SetParent(imageMesh.transform);
+                                    gameObject.transform.GetChild(0).GetComponent<MeshFilter>().mesh = shape.mesh;
 
-                    imageObject.AddComponent<SpriteRenderer>();
+                                    if (shape.name == "triangle_outline_thin")
+                                    {
+                                        var polygonCollider = gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>();
+                                        polygonCollider.points = thinTrianglePoints.Copy();
+                                        polygonCollider.pathCount = 1;
 
-                    ObjectManager.inst.objectPrefabs[6].options.Add(imageMesh);
+                                        ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
+                                        continue;
+                                    }
+
+                                    CoreHelper.CreateCollider(gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>(), shape.mesh);
+                                    ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
+                                }
+                            }
+                            break;
+                        }
                 }
             }
 

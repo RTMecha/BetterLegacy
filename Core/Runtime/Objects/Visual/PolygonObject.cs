@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
@@ -9,9 +10,57 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class PolygonObject : SolidObject
     {
+        public MeshFilter meshFilter;
+        public PolygonCollider2D polygonCollider;
+
+        float radius = 0.5f;
+        int sides = 3;
+        float roundness;
+        float thickness = 1f;
+        int slices = 3;
+        Vector2 thicknessOffset;
+        Vector2 thicknessScale = Vector2.one;
+
         public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation)
         {
+            meshFilter = gameObject.GetComponent<MeshFilter>();
 
+            polygonCollider = collider as PolygonCollider2D;
+            CoreHelper.Log($"Collider: {collider}\n" +
+                        $"Polygon Collider: {polygonCollider}");
+
+            UpdatePolygon(polygonShape);
+        }
+
+        public void UpdatePolygon(PolygonShape polygonShape) => UpdatePolygon(polygonShape.Radius, polygonShape.Sides, polygonShape.Roundness, polygonShape.Thickness, polygonShape.Slices, polygonShape.ThicknessOffset, polygonShape.ThicknessScale);
+
+        public void UpdatePolygon(float radius, int sides, float roundness, float thickness, int slices, Vector2 thicknessOffset, Vector2 thicknessScale)
+        {
+            this.radius = radius;
+            this.sides = sides;
+            this.roundness = roundness;
+            this.thickness = thickness;
+            this.slices = slices;
+            this.thicknessOffset = thicknessOffset;
+            this.thicknessScale = thicknessScale;
+            UpdatePolygon();
+        }
+
+        public void UpdatePolygon()
+        {
+            if (!meshFilter)
+            {
+                CoreHelper.LogError($"Mesh Filter doesn't exist!");
+                return;
+            }
+            
+            if (!polygonCollider)
+            {
+                CoreHelper.LogError($"Polygon Collider doesn't exist!");
+                return;
+            }
+
+            VGShapes.RoundedRingMesh(meshFilter, polygonCollider, radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
         }
     }
 }

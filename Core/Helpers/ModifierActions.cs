@@ -3907,6 +3907,72 @@ namespace BetterLegacy.Core.Helpers
                 backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
         }
 
+        public static void setPolygonShape(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not PolygonObject polygonObject)
+                return;
+
+            var radius = RTMath.Clamp(modifier.GetFloat(0, 0.5f, variables), 0.1f, 10f);
+            var sides = RTMath.Clamp(modifier.GetInt(1, 3, variables), 3, 32);
+            var roundness = RTMath.Clamp(modifier.GetFloat(2, 0f, variables), 0f, 1f);
+            var thickness = RTMath.Clamp(modifier.GetFloat(3, 1f, variables), 0f, 1f);
+            var slices = RTMath.Clamp(modifier.GetInt(4, 3, variables), 1, sides);
+            var thicknessOffset = new Vector2(modifier.GetFloat(5, 0f, variables), modifier.GetFloat(6, 0f, variables));
+            var thicknessScale = new Vector2(modifier.GetFloat(7, 1f, variables), modifier.GetFloat(8, 1f, variables));
+
+            var meshParams = new VGShapes.MeshParams
+            {
+                radius = radius,
+                VertexCount = sides,
+                cornerRoundness = roundness,
+                thickness = thickness,
+                SliceCount = slices,
+                thicknessOffset = thicknessOffset,
+                thicknessScale = thicknessScale,
+            };
+
+            if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
+                return;
+
+            polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
+            modifier.Result = meshParams;
+        }
+
+        public static void setPolygonShapeOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var radius = RTMath.Clamp(modifier.GetFloat(1, 0.5f, variables), 0.1f, 10f);
+            var sides = RTMath.Clamp(modifier.GetInt(2, 3, variables), 3, 32);
+            var roundness = RTMath.Clamp(modifier.GetFloat(3, 0f, variables), 0f, 1f);
+            var thickness = RTMath.Clamp(modifier.GetFloat(4, 1f, variables), 0f, 1f);
+            var slices = RTMath.Clamp(modifier.GetInt(5, 3, variables), 1, sides);
+            var thicknessOffset = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
+            var thicknessScale = new Vector2(modifier.GetFloat(8, 1f, variables), modifier.GetFloat(9, 1f, variables));
+
+            var meshParams = new VGShapes.MeshParams
+            {
+                VertexCount = sides,
+                cornerRoundness = roundness,
+                thickness = thickness,
+                SliceCount = slices,
+                thicknessOffset = thicknessOffset,
+                thicknessScale = thicknessScale,
+            };
+
+            if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var beatmapObject = list[i];
+                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is PolygonObject polygonObject)
+                    polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
+            }
+
+            modifier.Result = meshParams;
+        }
+
         public static void actorFrameTexture(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             if (modifier.reference.ShapeType != ShapeType.Image || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not ImageObject imageObject)
@@ -3938,7 +4004,15 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || modifier.reference.ShapeType != ShapeType.Image || !modifier.reference.runtimeObject || modifier.reference.runtimeObject.visualObject is not ImageObject imageObject)
                 return;
 
-            var path = RTFile.CombinePaths(RTFile.BasePath, modifier.GetValue(0, variables));
+            var value = modifier.GetValue(0, variables);
+            var sprite = GameData.Current.assets.GetSprite(value);
+            if (sprite)
+            {
+                imageObject.SetSprite(sprite);
+                return;
+            }
+
+            var path = RTFile.CombinePaths(RTFile.BasePath, value);
 
             if (!RTFile.FileExists(path))
             {
@@ -3961,21 +4035,43 @@ namespace BetterLegacy.Core.Helpers
 
             var value = modifier.GetValue(0, variables);
 
-            foreach (var bm in list)
+            var sprite = GameData.Current.assets.GetSprite(value);
+            if (sprite)
             {
-                if (bm.ShapeType != ShapeType.Image || !bm.runtimeObject || bm.runtimeObject.visualObject is not ImageObject imageObject)
-                    continue;
-
-                var path = RTFile.CombinePaths(RTFile.BasePath, value);
-
-                if (!RTFile.FileExists(path))
+                foreach (var bm in list)
                 {
-                    imageObject.SetDefaultSprite();
-                    continue;
+                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                        imageObject.SetSprite(sprite);
                 }
-
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
+                return;
             }
+
+            var path = RTFile.CombinePaths(RTFile.BasePath, value);
+            if (!RTFile.FileExists(path))
+            {
+                foreach (var bm in list)
+                {
+                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                        imageObject.SetDefaultSprite();
+                }
+                return;
+            }
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, (Texture2D texture2D) =>
+            {
+                foreach (var bm in list)
+                {
+                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                        imageObject.SetTexture(texture2D);
+                }
+            }, onError =>
+            {
+                foreach (var bm in list)
+                {
+                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                        imageObject.SetDefaultSprite();
+                }
+            }));
         }
 
         public static void setText(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)

@@ -301,8 +301,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Settings for the custom polygon shape.
         /// </summary>
-        public PolygonShape polygonShapeSettings = new PolygonShape();
-        public PolygonShape Polygon { get => polygonShapeSettings; set => polygonShapeSettings = value; }
+        public PolygonShape polygonShape = new PolygonShape();
+        public PolygonShape Polygon { get => polygonShape; set => polygonShape = value; }
 
         public ShapeType ShapeType { get => (ShapeType)Shape; set => Shape = (int)value; }
 
@@ -538,7 +538,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             gradientRotation = orig.gradientRotation;
             shape = orig.shape;
             shapeOption = orig.shapeOption;
-            polygonShapeSettings = new PolygonShape(orig.polygonShapeSettings.Sides, orig.polygonShapeSettings.Roundness, orig.polygonShapeSettings.Thickness, orig.polygonShapeSettings.Slices);
+            polygonShape = orig.polygonShape.Copy();
             autoTextAlign = orig.autoTextAlign;
             text = orig.text;
             LDM = orig.LDM;
@@ -768,7 +768,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["csp"] != null)
             {
                 ShapeType = ShapeType.Polygon;
-                polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
+                polygonShape = PolygonShape.ParseVG(jn["csp"]);
             }
 
             autoTextAlign = ShapeType == ShapeType.Text;
@@ -1038,7 +1038,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 shapeOption = jn["so"].AsInt;
 
             if (jn["csp"] != null)
-                polygonShapeSettings = PolygonShape.Parse(jn["csp"]);
+                polygonShape = PolygonShape.Parse(jn["csp"]);
 
             if (jn["gt"] != null)
                 gradientType = (GradientType)jn["gt"].AsInt;
@@ -1114,8 +1114,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["s"] = 3; // for some reason the polygon is under the arrow shape group???
                 jn["so"] = 2;
 
-                if (polygonShapeSettings != null)
-                    jn["csp"] = polygonShapeSettings.ToJSON();
+                if (polygonShape != null)
+                    jn["csp"] = polygonShape.ToJSONVG();
             }
             else
             {
@@ -1297,8 +1297,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (shapeOption != 0)
                 jn["so"] = shapeOption;
 
-            if (ShapeType == ShapeType.Polygon && polygonShapeSettings != null)
-                jn["csp"] = polygonShapeSettings.ToJSON();
+            if (ShapeType == ShapeType.Polygon && polygonShape != null)
+                jn["csp"] = polygonShape.ToJSON();
 
             if (!string.IsNullOrEmpty(text))
                 jn["text"] = text;

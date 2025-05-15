@@ -245,6 +245,8 @@ namespace BetterLegacy.Core.Data.Player
         public static PlayerModel DeepCopy(PlayerModel orig, bool newID = true)
         {
             var playerModel = new PlayerModel(false);
+            playerModel.assets.CopyData(orig.assets);
+
             playerModel.basePart = Base.DeepCopy(playerModel, orig.basePart, newID);
             playerModel.stretchPart = Stretch.DeepCopy(playerModel, orig.stretchPart);
             playerModel.guiPart = GUI.DeepCopy(playerModel, orig.guiPart);
@@ -2181,6 +2183,8 @@ namespace BetterLegacy.Core.Data.Player
             {
                 active = orig.active,
                 shape = orig.shape,
+                text = orig.text,
+                polygonShape = orig.polygonShape.Copy(),
                 position = orig.position,
                 scale = orig.scale,
                 rotation = orig.rotation,
@@ -2199,6 +2203,12 @@ namespace BetterLegacy.Core.Data.Player
                     generic.active = jn["active"].AsBool;
 
                 generic.shape = ShapeManager.inst.Shapes2D[jn["s"].AsInt][jn["so"].AsInt];
+
+                if (jn["csp"] != null)
+                    generic.polygonShape = PolygonShape.Parse(jn["csp"]);
+
+                if (!string.IsNullOrEmpty(jn["t"]))
+                    generic.text = jn["t"];
 
                 if (jn["pos"] != null && !string.IsNullOrEmpty(jn["pos"]["x"]) && !string.IsNullOrEmpty(jn["pos"]["y"]))
                     generic.position = new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat);
@@ -2235,6 +2245,11 @@ namespace BetterLegacy.Core.Data.Player
                 if (shape.option != 0)
                     jn["so"] = shape.option.ToString();
 
+                if (!string.IsNullOrEmpty(text))
+                    jn["t"] = text;
+                if (polygonShape)
+                    jn["csp"] = polygonShape.ToJSON();
+
                 jn["pos"]["x"] = position.x.ToString();
                 jn["pos"]["y"] = position.y.ToString();
 
@@ -2260,6 +2275,10 @@ namespace BetterLegacy.Core.Data.Player
             public bool active = true;
 
             public Shape shape = ShapeManager.inst.Shapes2D[0][0];
+
+            public string text = string.Empty;
+
+            public PolygonShape polygonShape = new PolygonShape();
 
             public Vector2 position = Vector2.zero;
 
@@ -3195,6 +3214,8 @@ namespace BetterLegacy.Core.Data.Player
             public static CustomObject DeepCopy(PlayerModel playerModelRef, CustomObject orig, bool newID = true) => new CustomObject(playerModelRef)
             {
                 shape = orig.shape,
+                text = orig.text,
+                polygonShape = orig.polygonShape.Copy(),
                 position = orig.position,
                 scale = orig.scale,
                 rotation = orig.rotation,
@@ -3214,7 +3235,6 @@ namespace BetterLegacy.Core.Data.Player
                 rotationParent = orig.rotationParent,
                 scaleParent = orig.scaleParent,
                 active = orig.active,
-                text = orig.text,
                 requireAll = orig.requireAll,
                 visibilitySettings = new List<Visiblity>(orig.visibilitySettings.Select(x => new Visiblity
                 {
@@ -3239,6 +3259,12 @@ namespace BetterLegacy.Core.Data.Player
                     so = jn["so"].AsInt;
 
                 customObject.shape = ShapeManager.inst.Shapes2D[s][so];
+
+                if (jn["csp"] != null)
+                    customObject.polygonShape = PolygonShape.Parse(jn["csp"]);
+
+                if (!string.IsNullOrEmpty(jn["t"]))
+                    customObject.text = jn["t"];
 
                 if (jn["pos"] != null && !string.IsNullOrEmpty(jn["pos"]["x"]) && !string.IsNullOrEmpty(jn["pos"]["y"]))
                     customObject.position = new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat);
@@ -3301,9 +3327,6 @@ namespace BetterLegacy.Core.Data.Player
                 float visibleValue = 0f;
                 if (!string.IsNullOrEmpty(jn["vhp"]))
                     visibleValue = jn["vhp"].AsFloat;
-
-                if (!string.IsNullOrEmpty(jn["t"]))
-                    customObject.text = jn["t"];
 
                 switch (visible)
                 {
@@ -3424,6 +3447,11 @@ namespace BetterLegacy.Core.Data.Player
                 if (shape.option != 0)
                     jn["so"] = shape.option.ToString();
 
+                if (!string.IsNullOrEmpty(text))
+                    jn["t"] = text;
+                if (polygonShape)
+                    jn["csp"] = polygonShape.ToJSON();
+
                 jn["pos"]["x"] = position.x.ToString();
                 jn["pos"]["y"] = position.y.ToString();
 
@@ -3490,8 +3518,6 @@ namespace BetterLegacy.Core.Data.Player
             public bool rotationParent = true;
 
             public bool requireAll;
-
-            public string text = "";
 
             public List<Visiblity> visibilitySettings = new List<Visiblity>();
             public class Visiblity

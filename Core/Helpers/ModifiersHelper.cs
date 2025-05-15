@@ -1125,10 +1125,11 @@ namespace BetterLegacy.Core.Helpers
             #endregion
 
             // todo: figure out how to get actorFrameTexture to work
-            // todo: add polygon modifier stuff
             #region Shape
 
             nameof(ModifierActions.setShape) => ModifierActions.setShape,
+            nameof(ModifierActions.setPolygonShape) => ModifierActions.setPolygonShape,
+            nameof(ModifierActions.setPolygonShapeOther) => ModifierActions.setPolygonShapeOther,
 
             // image
             nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
@@ -2266,10 +2267,11 @@ namespace BetterLegacy.Core.Helpers
             #endregion
 
             // todo: figure out how to get actorFrameTexture to work
-            // todo: add polygon modifier stuff
             #region Shape
 
             nameof(ModifierActions.setShape) => ModifierActions.setShape,
+            //nameof(ModifierActions.setPolygonShape) => ModifierActions.setPolygonShape,
+            //nameof(ModifierActions.setPolygonShapeOther) => ModifierActions.setPolygonShapeOther,
 
             //nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
 

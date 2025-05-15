@@ -44,7 +44,7 @@ namespace BetterLegacy.Editor.Managers
 
         GameObject labelPrefab;
 
-        public EditorDialog Dialog { get; set; }
+        public PlayerEditorDialog Dialog { get; set; }
 
         public static void Init() => Creator.NewGameObject(nameof(PlayerEditor), EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
 
@@ -108,7 +108,7 @@ namespace BetterLegacy.Editor.Managers
             var searchField = search.transform.GetChild(0).GetComponent<InputField>();
 
             searchField.onValueChanged.ClearAll();
-            searchField.text = "";
+            searchField.text = string.Empty;
             searchField.onValueChanged.AddListener(_val =>
             {
                 searchTerm = _val;
@@ -1258,7 +1258,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                Dialog = new EditorDialog(EditorDialog.PLAYER_EDITOR);
+                Dialog = new PlayerEditorDialog();
                 Dialog.Init();
             }
             catch (Exception ex)
@@ -2639,7 +2639,6 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     var shapeToggle = obj.GetComponent<Toggle>();
-                    shapeToggle.interactable = shapeType != ShapeType.Polygon;
                     EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
 
                     ui.shapeToggles.Add(shapeToggle);
@@ -2725,11 +2724,13 @@ namespace BetterLegacy.Editor.Managers
 
                         so.gameObject.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 0.05f);
 
-                        var verticalLayoutGroup = so.gameObject.AddComponent<VerticalLayoutGroup>();
+                        var verticalLayoutGroup = so.gameObject.GetOrAddComponent<VerticalLayoutGroup>();
                         verticalLayoutGroup.spacing = 4f;
 
                         // Polygon Settings
                         {
+                            #region Sides
+
                             var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
                             var sidesStorage = sides.GetComponent<InputFieldStorage>();
 
@@ -2751,6 +2752,10 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.AddLightText(sidesLabelText);
                             var sidesLabelLayout = sidesLabel.AddComponent<LayoutElement>();
                             sidesLabelLayout.minWidth = 100f;
+
+                            #endregion
+
+                            #region Roundness
 
                             var roundness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "roundness");
                             var roundnessStorage = roundness.GetComponent<InputFieldStorage>();
@@ -2774,6 +2779,10 @@ namespace BetterLegacy.Editor.Managers
                             var roundnessLabelLayout = roundnessLabel.AddComponent<LayoutElement>();
                             roundnessLabelLayout.minWidth = 100f;
 
+                            #endregion
+
+                            #region Thickness
+
                             var thickness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness");
                             var thicknessStorage = thickness.GetComponent<InputFieldStorage>();
 
@@ -2796,6 +2805,94 @@ namespace BetterLegacy.Editor.Managers
                             var thicknessLabelLayout = thicknessLabel.AddComponent<LayoutElement>();
                             thicknessLabelLayout.minWidth = 100f;
 
+                            #endregion
+
+                            #region Thickness Offset
+
+                            var thicknessOffset = Creator.NewUIObject("thickness offset", so);
+                            var thicknessOffsetLayout = thicknessOffset.AddComponent<HorizontalLayoutGroup>();
+
+                            var thicknessOffsetLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessOffset.transform, "label");
+                            var thicknessOffsetLabelText = thicknessOffsetLabel.GetComponent<Text>();
+                            thicknessOffsetLabelText.alignment = TextAnchor.MiddleLeft;
+                            thicknessOffsetLabelText.text = "Thick Offset";
+                            thicknessOffsetLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
+                            EditorThemeManager.AddLightText(thicknessOffsetLabelText);
+                            var thicknessOffsetLabelLayout = thicknessOffsetLabel.AddComponent<LayoutElement>();
+                            thicknessOffsetLabelLayout.minWidth = 130f;
+
+                            var thicknessOffsetX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "x");
+                            var thicknessOffsetXStorage = thicknessOffsetX.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessOffsetXStorage.addButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.subButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.middleButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessOffsetXStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessOffsetXStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessOffsetXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            var thicknessOffsetY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "y");
+                            var thicknessOffsetYStorage = thicknessOffsetY.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessOffsetYStorage.addButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.subButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.middleButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessOffsetYStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessOffsetYStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessOffsetYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            #endregion
+
+                            #region Thickness Scale
+
+                            var thicknessScale = Creator.NewUIObject("thickness scale", so);
+                            var thicknessScaleLayout = thicknessScale.AddComponent<HorizontalLayoutGroup>();
+
+                            var thicknessScaleLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessScale.transform, "label");
+                            var thicknessScaleLabelText = thicknessScaleLabel.GetComponent<Text>();
+                            thicknessScaleLabelText.alignment = TextAnchor.MiddleLeft;
+                            thicknessScaleLabelText.text = "Thick Scale";
+                            thicknessScaleLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
+                            EditorThemeManager.AddLightText(thicknessScaleLabelText);
+                            var thicknessScaleLabelLayout = thicknessScaleLabel.AddComponent<LayoutElement>();
+                            thicknessScaleLabelLayout.minWidth = 130f;
+
+                            var thicknessScaleX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "x");
+                            var thicknessScaleXStorage = thicknessScaleX.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessScaleXStorage.addButton.gameObject);
+                            Destroy(thicknessScaleXStorage.subButton.gameObject);
+                            Destroy(thicknessScaleXStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessScaleXStorage.middleButton.gameObject);
+                            Destroy(thicknessScaleXStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessScaleXStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessScaleXStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessScaleXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            var thicknessScaleY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "y");
+                            var thicknessScaleYStorage = thicknessScaleY.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessScaleYStorage.addButton.gameObject);
+                            Destroy(thicknessScaleYStorage.subButton.gameObject);
+                            Destroy(thicknessScaleYStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessScaleYStorage.middleButton.gameObject);
+                            Destroy(thicknessScaleYStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessScaleYStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessScaleYStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessScaleYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            #endregion
+
+                            #region Slices
+
                             var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");
                             var slicesStorage = slices.GetComponent<InputFieldStorage>();
 
@@ -2817,6 +2914,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.AddLightText(slicesLabelText);
                             var slicesLabelLayout = slicesLabel.AddComponent<LayoutElement>();
                             slicesLabelLayout.minWidth = 100f;
+
+                            #endregion
                         }
                     }
                 }
@@ -2856,21 +2955,7 @@ namespace BetterLegacy.Editor.Managers
 
                 PlayerManager.UpdatePlayerModels();
                 RenderShape(ui);
-            }
-
-            if (type == 4)
-            {
-                shapeSettings.AsRT().sizeDelta = new Vector2(400f, 74f);
-                var child = shapeSettings.GetChild(4);
-                child.AsRT().sizeDelta = new Vector2(400f, 74f);
-                child.Find("Text").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
-                child.Find("Placeholder").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
-                child.GetComponent<InputField>().lineType = InputField.LineType.MultiLineNewline;
-            }
-            else
-            {
-                shapeSettings.AsRT().sizeDelta = new Vector2(400f, 32f);
-                shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(400f, 32f);
+                return;
             }
 
             shapeSettings.GetChild(type).gameObject.SetActive(true);
@@ -2898,113 +2983,379 @@ namespace BetterLegacy.Editor.Managers
 
                             PlayerManager.UpdatePlayerModels();
                             RenderShape(ui);
+                            LayoutRebuilder.ForceRebuildLayoutImmediate(ui.GameObject.transform.parent.AsRT());
                         }
                     });
 
                 num++;
             }
-
-            if (type != 4 && type != 6)
+            
+            switch ((ShapeType)type)
             {
-                num = 0;
-                foreach (var toggle in ui.shapeOptionToggles[type])
-                {
-                    int index = num;
-                    toggle.onValueChanged.ClearAll();
-                    toggle.isOn = option == index;
-                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type]);
-
-                    if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type])
-                        toggle.onValueChanged.AddListener(_val =>
+                case ShapeType.Text: {
+                        if (ui.Reference is not PlayerModel.CustomObject customObject)
                         {
-                            if (_val)
+                            CoreHelper.Log($"Player shape cannot be text.");
+                            if (generic != null)
+                                generic.shape = ShapeManager.inst.Shapes2D[0][0];
+                            if (bullet != null)
+                                bullet.shape = ShapeManager.inst.Shapes2D[0][0];
+                            if (pulse != null)
+                                pulse.shape = ShapeManager.inst.Shapes2D[0][0];
+
+                            PlayerManager.UpdatePlayerModels();
+                            RenderShape(ui);
+
+                            break;
+                        }
+
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 114f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(400f, 74f);
+                        shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(400f, 74f);
+
+                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
+                        textIF.textComponent.alignment = TextAnchor.UpperLeft;
+                        textIF.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
+                        textIF.lineType = InputField.LineType.MultiLineNewline;
+                        textIF.onValueChanged.ClearAll();
+                        textIF.text = customObject.text;
+                        textIF.onValueChanged.AddListener(_val =>
+                        {
+                            CoreHelper.Log($"Set text to {_val}");
+                            customObject.text = _val;
+
+                            PlayerManager.UpdatePlayerModels();
+                        });
+
+                        break;
+                    }
+                case ShapeType.Image: {
+                        if (ui.Reference is not PlayerModel.CustomObject customObject)
+                        {
+                            CoreHelper.Log($"Player shape cannot be image.");
+                            if (generic != null)
+                                generic.shape = ShapeManager.inst.Shapes2D[0][0];
+                            if (bullet != null)
+                                bullet.shape = ShapeManager.inst.Shapes2D[0][0];
+                            if (pulse != null)
+                                pulse.shape = ShapeManager.inst.Shapes2D[0][0];
+
+                            PlayerManager.UpdatePlayerModels();
+                            RenderShape(ui);
+
+                            break;
+                        }
+
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+
+                        var textIF = shapeSettings.Find("5").GetComponent<InputField>();
+                        textIF.onValueChanged.ClearAll();
+                        textIF.text = customObject.text;
+                        textIF.onValueChanged.AddListener(_val =>
+                        {
+                            CoreHelper.Log($"Set text to {_val}");
+                            customObject.text = _val;
+
+                            PlayerManager.UpdatePlayerModels();
+                        });
+                        var select = shapeSettings.Find("7/select").GetComponent<Button>();
+                        select.onClick.NewListener(() => OpenImageSelector(ui));
+                        shapeSettings.Find("7/text").GetComponent<Text>().text = string.IsNullOrEmpty(customObject.text) ? "No image selected" : customObject.text;
+
+                        var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
+
+                        // Stores / Removes Image Data for transfering of Image Objects between levels.
+                        var dataText = shapeSettings.Find("7/set/Text").GetComponent<Text>();
+                        dataText.text = !currentModel.assets.sprites.Has(x => x.name == customObject.text) ? "Store Data" : "Clear Data";
+                        var set = shapeSettings.Find("7/set").GetComponent<Button>();
+                        set.onClick.NewListener(() =>
+                        {
+                            var path = RTFile.CombinePaths(RTFile.BasePath, customObject.text);
+
+                            if (!currentModel.assets.sprites.Has(x => x.name == customObject.text))
+                                StoreImage(ui, path);
+                            else
                             {
-                                CoreHelper.Log($"Set shape option to {index}");
-                                if (generic != null)
-                                    generic.shape = ShapeManager.inst.Shapes2D[type][index];
-                                if (pulse != null)
-                                    pulse.shape = ShapeManager.inst.Shapes2D[type][index];
-                                if (bullet != null)
-                                    bullet.shape = ShapeManager.inst.Shapes2D[type][index];
+                                currentModel.assets.RemoveSprite(customObject.text);
+                                if (!RTFile.FileExists(path))
+                                    customObject.text = string.Empty;
+                            }
+
+                            PlayerManager.UpdatePlayerModels();
+
+                            RenderShape(ui);
+                        });
+
+                        break;
+                    }
+                case ShapeType.Polygon: {
+                        if (ui.Reference is not PlayerModel.CustomObject customObject)
+                        {
+                            CoreHelper.Log($"Player shape cannot be polygon.");
+                            if (generic != null)
+                                generic.shape = ShapeManager.inst.Shapes2D[0][0];
+                            if (bullet != null)
+                                bullet.shape = ShapeManager.inst.Shapes2D[0][0];
+                            if (pulse != null)
+                                pulse.shape = ShapeManager.inst.Shapes2D[0][0];
+
+                            PlayerManager.UpdatePlayerModels();
+                            RenderShape(ui);
+
+                            break;
+                        }
+
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 300f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -145f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 212f);
+
+                        var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
+                        sides.inputField.onValueChanged.ClearAll();
+                        sides.inputField.text = customObject.polygonShape.Sides.ToString();
+                        sides.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                num = Mathf.Clamp(num, 3, 32);
+                                customObject.polygonShape.Sides = num;
 
                                 PlayerManager.UpdatePlayerModels();
-                                RenderShape(ui);
                             }
                         });
 
-                    num++;
-                }
-            }
-            else if (generic is PlayerModel.CustomObject customObject)
-            {
-                if (customObject.shape.type == 4)
-                {
-                    var textIF = shapeSettings.Find("5").GetComponent<InputField>();
-                    textIF.onValueChanged.ClearAll();
-                    textIF.text = customObject.text;
-                    textIF.onValueChanged.AddListener(_val =>
-                    {
-                        CoreHelper.Log($"Set text to {_val}");
-                        customObject.text = _val;
+                        TriggerHelper.IncreaseDecreaseButtonsInt(sides, min: 3, max: 32);
+                        TriggerHelper.AddEventTriggers(sides.inputField.gameObject, TriggerHelper.ScrollDeltaInt(sides.inputField, min: 3, max: 32));
+                        
+                        var roundness = shapeSettings.Find("10/roundness").gameObject.GetComponent<InputFieldStorage>();
+                        roundness.inputField.onValueChanged.ClearAll();
+                        roundness.inputField.text = customObject.polygonShape.Roundness.ToString();
+                        roundness.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                customObject.polygonShape.Roundness = num;
 
-                        PlayerManager.UpdatePlayerModels();
-                    });
-                }
-                else if (customObject.shape.type == 6)
-                {
-                    var select = shapeSettings.Find("7/select").GetComponent<Button>();
-                    select.onClick.ClearAll();
-                    select.onClick.AddListener(() => OpenImageSelector(ui));
-                    shapeSettings.Find("7/text").GetComponent<Text>().text = string.IsNullOrEmpty(customObject.text) ? "No image selected" : customObject.text;
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
 
-                    if (shapeSettings.Find("7/set"))
-                        Destroy(shapeSettings.Find("7/set").gameObject);
-                }
-            }
-            else
-            {
-                CoreHelper.Log($"Player shape cannot be text nor image.");
-                if (generic != null)
-                    generic.shape = ShapeManager.inst.Shapes2D[0][0];
-                if (bullet != null)
-                    bullet.shape = ShapeManager.inst.Shapes2D[0][0];
-                if (pulse != null)
-                    pulse.shape = ShapeManager.inst.Shapes2D[0][0];
+                        TriggerHelper.IncreaseDecreaseButtons(roundness, max: 1f);
+                        TriggerHelper.AddEventTriggers(roundness.inputField.gameObject, TriggerHelper.ScrollDelta(roundness.inputField, max: 1f));
 
-                PlayerManager.UpdatePlayerModels();
-                RenderShape(ui);
+                        var thickness = shapeSettings.Find("10/thickness").gameObject.GetComponent<InputFieldStorage>();
+                        thickness.inputField.onValueChanged.ClearAll();
+                        thickness.inputField.text = customObject.polygonShape.Thickness.ToString();
+                        thickness.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                num = Mathf.Clamp(num, 0f, 1f);
+                                customObject.polygonShape.Thickness = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thickness, max: 1f);
+                        TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
+                        
+                        var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetX.inputField.onValueChanged.ClearAll();
+                        thicknessOffsetX.inputField.text = customObject.polygonShape.ThicknessOffset.x.ToString();
+                        thicknessOffsetX.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                customObject.polygonShape.ThicknessOffset = new Vector2(num, customObject.polygonShape.ThicknessOffset.y);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetX);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
+                        
+                        var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetY.inputField.onValueChanged.ClearAll();
+                        thicknessOffsetY.inputField.text = customObject.polygonShape.ThicknessOffset.y.ToString();
+                        thicknessOffsetY.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                customObject.polygonShape.ThicknessOffset = new Vector2(customObject.polygonShape.ThicknessOffset.x, num);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetY);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
+                        
+                        var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleX.inputField.onValueChanged.ClearAll();
+                        thicknessScaleX.inputField.text = customObject.polygonShape.ThicknessScale.x.ToString();
+                        thicknessScaleX.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                customObject.polygonShape.ThicknessScale = new Vector2(num, customObject.polygonShape.ThicknessScale.y);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleX);
+                        TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
+                        
+                        var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleY.inputField.onValueChanged.ClearAll();
+                        thicknessScaleY.inputField.text = customObject.polygonShape.ThicknessScale.y.ToString();
+                        thicknessScaleY.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                customObject.polygonShape.ThicknessScale = new Vector2(customObject.polygonShape.ThicknessScale.x, num);
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
+                        TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
+
+                        var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
+                        slices.inputField.onValueChanged.ClearAll();
+                        slices.inputField.text = customObject.polygonShape.Slices.ToString();
+                        slices.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                num = Mathf.Clamp(num, 1, 32);
+                                customObject.polygonShape.Slices = num;
+
+                                PlayerManager.UpdatePlayerModels();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(slices, min: 1, max: 32);
+                        TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
+
+                        break;
+                    }
+                default: {
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
+                        shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -54f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+
+                        num = 0;
+                        foreach (var toggle in ui.shapeOptionToggles[type])
+                        {
+                            int index = num;
+                            toggle.onValueChanged.ClearAll();
+                            toggle.isOn = option == index;
+                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type]);
+
+                            if (RTEditor.ShowModdedUI || index < Shape.unmoddedMaxShapes[type])
+                                toggle.onValueChanged.AddListener(_val =>
+                                {
+                                    if (_val)
+                                    {
+                                        CoreHelper.Log($"Set shape option to {index}");
+                                        if (generic != null)
+                                            generic.shape = ShapeManager.inst.Shapes2D[type][index];
+                                        if (pulse != null)
+                                            pulse.shape = ShapeManager.inst.Shapes2D[type][index];
+                                        if (bullet != null)
+                                            bullet.shape = ShapeManager.inst.Shapes2D[type][index];
+
+                                        PlayerManager.UpdatePlayerModels();
+                                        RenderShape(ui);
+                                    }
+                                });
+
+                            num++;
+                        }
+
+                        break;
+                    }
             }
         }
 
-        public void OpenImageSelector(PlayerEditorUI ui)
+        public void OpenImageSelector(PlayerEditorUI ui, bool copyFile = true, bool storeImage = false)
         {
-            var customObject = (PlayerModel.CustomObject)ui.Reference;
-
-            var editorPath = RTEditor.inst.CurrentLevel.path;
+            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
-            CoreHelper.Log($"Selected file: {jpgFile}");
-            if (!string.IsNullOrEmpty(jpgFile))
+            SelectImage(jpgFile, ui, copyFile: copyFile, storeImage: storeImage);
+        }
+
+        public void StoreImage(PlayerEditorUI ui, string file)
+        {
+            if (ui.Reference is not PlayerModel.Generic generic)
+                return;
+
+            var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
+
+            if (RTFile.FileExists(file))
             {
-                string jpgFileLocation = editorPath + "/" + Path.GetFileName(jpgFile);
-                CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
+                var imageData = File.ReadAllBytes(file);
 
-                var levelPath = jpgFile.Replace("\\", "/").Replace(editorPath + "/", "");
-                CoreHelper.Log($"levelPath: {levelPath}");
+                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+                texture2d.LoadImage(imageData);
 
-                if (!RTFile.FileExists(jpgFileLocation) && !jpgFile.Replace("\\", "/").Contains(editorPath))
-                {
-                    File.Copy(jpgFile, jpgFileLocation);
-                    CoreHelper.Log($"Copied file to : {jpgFileLocation}");
-                }
-                else
-                    jpgFileLocation = editorPath + "/" + levelPath;
+                texture2d.wrapMode = TextureWrapMode.Clamp;
+                texture2d.filterMode = FilterMode.Point;
+                texture2d.Apply();
 
-                CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
-                customObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
-
-                PlayerManager.UpdatePlayerModels();
-                RenderShape(ui);
+                currentModel.assets.AddSprite(generic.text, SpriteHelper.CreateSprite(texture2d));
             }
+            else
+            {
+                var imageData = LegacyPlugin.PALogoSprite.texture.EncodeToPNG();
+
+                var texture2d = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+                texture2d.LoadImage(imageData);
+
+                texture2d.wrapMode = TextureWrapMode.Clamp;
+                texture2d.filterMode = FilterMode.Point;
+                texture2d.Apply();
+
+                currentModel.assets.AddSprite(generic.text, SpriteHelper.CreateSprite(texture2d));
+            }
+        }
+
+        void SelectImage(string file, PlayerEditorUI ui, bool renderEditor = true, bool updateObject = true, bool copyFile = true, bool storeImage = false)
+        {
+            if (ui.Reference is not PlayerModel.Generic generic)
+                return;
+
+            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+            RTFile.CreateDirectory(RTFile.CombinePaths(editorPath, "images"));
+
+            file = RTFile.ReplaceSlash(file);
+            CoreHelper.Log($"Selected file: {file}");
+            if (!RTFile.FileExists(file))
+                return;
+
+            string jpgFileLocation = RTFile.CombinePaths(editorPath, "images", Path.GetFileName(file));
+
+            if (copyFile && (EditorConfig.Instance.OverwriteImportedImages.Value || !RTFile.FileExists(jpgFileLocation)) && !file.Contains(editorPath))
+                RTFile.CopyFile(file, jpgFileLocation);
+
+            generic.text = jpgFileLocation.Remove(editorPath + "/");
+
+            if (storeImage)
+                StoreImage(ui, file);
+
+            // Since setting image has no affect on the timeline object, we will only need to update the physical object.
+            if (updateObject)
+                PlayerManager.UpdatePlayerModels();
+
+            if (renderEditor)
+                RenderShape(ui);
         }
 
         public int VisibilityToInt(string vis) => vis switch

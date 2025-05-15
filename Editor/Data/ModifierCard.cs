@@ -2464,6 +2464,36 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.setPolygonShape): {
+                        SingleGenerator(modifier, "Radius", 0);
+                        IntegerGenerator(modifier, "Sides", 1, min: 3, max: 32);
+                        SingleGenerator(modifier, "Roundness", 2, max: 1f);
+                        SingleGenerator(modifier, "Thickness", 3, max: 1f);
+                        SingleGenerator(modifier, "Thick Offset X", 5);
+                        SingleGenerator(modifier, "Thick Offset Y", 6);
+                        SingleGenerator(modifier, "Thick Scale X", 7);
+                        SingleGenerator(modifier, "Thick Scale Y", 8);
+                        IntegerGenerator(modifier, "Slices", 4, min: 1, max: 32);
+
+                        break;
+                    }
+                case nameof(ModifierActions.setPolygonShapeOther): {
+                        PrefabGroupOnly(modifier);
+                        var str = StringGenerator(modifier, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        SingleGenerator(modifier, "Radius", 1, max: 1f);
+                        IntegerGenerator(modifier, "Sides", 2, min: 3, max: 32);
+                        SingleGenerator(modifier, "Roundness", 3, max: 1f);
+                        SingleGenerator(modifier, "Thickness", 4, max: 1f);
+                        SingleGenerator(modifier, "Thick Offset X", 6);
+                        SingleGenerator(modifier, "Thick Offset Y", 7);
+                        SingleGenerator(modifier, "Thick Scale X", 8);
+                        SingleGenerator(modifier, "Thick Scale Y", 9);
+                        IntegerGenerator(modifier, "Slices", 5, min: 1, max: 32);
+
+                        break;
+                    }
                 case nameof(ModifierActions.actorFrameTexture): {
                         DropdownGenerator(modifier, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
                         IntegerGenerator(modifier, "Width", 1, 512);

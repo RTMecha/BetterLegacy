@@ -17,6 +17,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public string name;
+        public ShapeType ShapeType => (ShapeType)type;
         public int type;
         public Sprite icon;
 

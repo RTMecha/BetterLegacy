@@ -3084,9 +3084,6 @@ namespace BetterLegacy.Core.Components.Player
             {
                 var reference = currentModelCustomObjects[i];
 
-                if (reference.shape.type == 9)
-                    continue;
-
                 var customObj = new CustomObject()
                 {
                     id = reference.id,
@@ -3097,6 +3094,7 @@ namespace BetterLegacy.Core.Components.Player
 
                 int s = Mathf.Clamp(shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
                 int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+                var shapeType = (ShapeType)s;
 
                 customObj.parent = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent).transform;
                 customObj.parent.gameObject.SetActive(true);
@@ -3125,36 +3123,70 @@ namespace BetterLegacy.Core.Components.Player
                 renderer.enabled = true;
                 customObj.renderer = renderer;
 
-                Destroy(customObj.gameObject.GetComponent<Collider2D>());
-
-                if (s == 4 && customObj.gameObject.gameObject.TryGetComponent(out TextMeshPro tmp))
-                {
-                    tmp.text = customObj.reference.text;
-                    customObj.text = tmp;
-                }
-
                 UpdateCustomAnimations(customObj);
 
                 playerObjects.Add(customObj);
                 customObjects.Add(customObj);
 
-                if (s == 6 && renderer is SpriteRenderer spriteRenderer)
+                switch (shapeType)
                 {
-                    var path = RTFile.CombinePaths(RTFile.BasePath, reference.text);
+                    case ShapeType.Text: {
+                            if (customObj.gameObject.gameObject.TryGetComponent(out TextMeshPro tmp))
+                            {
+                                tmp.text = customObj.reference.text;
+                                customObj.text = tmp;
+                            }
 
-                    if (!RTFile.FileExists(path))
-                    {
-                        spriteRenderer.sprite = LegacyPlugin.PALogoSprite;
-                        continue;
-                    }
+                            break;
+                        }
+                    case ShapeType.Image: {
+                            if (renderer is SpriteRenderer spriteRenderer)
+                            {
+                                var sprite = currentModel.assets.GetSprite(reference.text);
+                                if (sprite)
+                                {
+                                    sprite.texture.filterMode = FilterMode.Point;
+                                    spriteRenderer.sprite = sprite;
+                                    break;
+                                }
 
-                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{path}", texture2D =>
-                    {
-                        if (!spriteRenderer)
-                            return;
+                                var path = RTFile.CombinePaths(RTFile.BasePath, reference.text);
 
-                        spriteRenderer.sprite = SpriteHelper.CreateSprite(texture2D);
-                    }));
+                                if (!RTFile.FileExists(path))
+                                {
+                                    spriteRenderer.sprite = LegacyPlugin.PALogoSprite;
+                                    break;
+                                }
+
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{path}", texture2D =>
+                                {
+                                    if (!spriteRenderer)
+                                        return;
+
+                                    texture2D.filterMode = FilterMode.Point;
+                                    spriteRenderer.sprite = SpriteHelper.CreateSprite(texture2D);
+                                }));
+                            }
+
+                            break;
+                        }
+                    case ShapeType.Polygon: {
+                            var sides = reference.polygonShape.Sides;
+                            var roundness = reference.polygonShape.Roundness;
+                            var thickness = reference.polygonShape.Thickness;
+                            var slices = reference.polygonShape.Slices;
+                            var thicknessOffset = reference.polygonShape.ThicknessOffset;
+                            var thicknessScale = reference.polygonShape.ThicknessScale;
+
+                            VGShapes.RoundedRingMesh(customObj.gameObject, 0.5f, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
+
+                            break;
+                        }
+                    default: {
+                            Destroy(customObj.gameObject.GetComponent<Collider2D>());
+
+                            break;
+                        }
                 }
             }
 

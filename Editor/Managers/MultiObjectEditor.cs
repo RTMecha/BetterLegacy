@@ -2875,6 +2875,8 @@ namespace BetterLegacy.Editor.Managers
 
                         // Polygon Settings
                         {
+                            #region Sides
+
                             var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
                             var sidesStorage = sides.GetComponent<InputFieldStorage>();
 
@@ -2896,6 +2898,10 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.AddLightText(sidesLabelText);
                             var sidesLabelLayout = sidesLabel.AddComponent<LayoutElement>();
                             sidesLabelLayout.minWidth = 100f;
+
+                            #endregion
+
+                            #region Roundness
 
                             var roundness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "roundness");
                             var roundnessStorage = roundness.GetComponent<InputFieldStorage>();
@@ -2919,6 +2925,10 @@ namespace BetterLegacy.Editor.Managers
                             var roundnessLabelLayout = roundnessLabel.AddComponent<LayoutElement>();
                             roundnessLabelLayout.minWidth = 100f;
 
+                            #endregion
+
+                            #region Thickness
+
                             var thickness = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "thickness");
                             var thicknessStorage = thickness.GetComponent<InputFieldStorage>();
 
@@ -2941,6 +2951,94 @@ namespace BetterLegacy.Editor.Managers
                             var thicknessLabelLayout = thicknessLabel.AddComponent<LayoutElement>();
                             thicknessLabelLayout.minWidth = 100f;
 
+                            #endregion
+
+                            #region Thickness Offset
+
+                            var thicknessOffset = Creator.NewUIObject("thickness offset", so);
+                            var thicknessOffsetLayout = thicknessOffset.AddComponent<HorizontalLayoutGroup>();
+
+                            var thicknessOffsetLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessOffset.transform, "label");
+                            var thicknessOffsetLabelText = thicknessOffsetLabel.GetComponent<Text>();
+                            thicknessOffsetLabelText.alignment = TextAnchor.MiddleLeft;
+                            thicknessOffsetLabelText.text = "Thick Offset";
+                            thicknessOffsetLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
+                            EditorThemeManager.AddLightText(thicknessOffsetLabelText);
+                            var thicknessOffsetLabelLayout = thicknessOffsetLabel.AddComponent<LayoutElement>();
+                            thicknessOffsetLabelLayout.minWidth = 130f;
+
+                            var thicknessOffsetX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "x");
+                            var thicknessOffsetXStorage = thicknessOffsetX.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessOffsetXStorage.addButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.subButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.middleButton.gameObject);
+                            Destroy(thicknessOffsetXStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessOffsetXStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessOffsetXStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessOffsetXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            var thicknessOffsetY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessOffset.transform, "y");
+                            var thicknessOffsetYStorage = thicknessOffsetY.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessOffsetYStorage.addButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.subButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.middleButton.gameObject);
+                            Destroy(thicknessOffsetYStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessOffsetYStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessOffsetYStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessOffsetYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            #endregion
+
+                            #region Thickness Scale
+
+                            var thicknessScale = Creator.NewUIObject("thickness scale", so);
+                            var thicknessScaleLayout = thicknessScale.AddComponent<HorizontalLayoutGroup>();
+
+                            var thicknessScaleLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(thicknessScale.transform, "label");
+                            var thicknessScaleLabelText = thicknessScaleLabel.GetComponent<Text>();
+                            thicknessScaleLabelText.alignment = TextAnchor.MiddleLeft;
+                            thicknessScaleLabelText.text = "Thick Scale";
+                            thicknessScaleLabelText.rectTransform.sizeDelta = new Vector2(130f, 32f);
+                            EditorThemeManager.AddLightText(thicknessScaleLabelText);
+                            var thicknessScaleLabelLayout = thicknessScaleLabel.AddComponent<LayoutElement>();
+                            thicknessScaleLabelLayout.minWidth = 130f;
+
+                            var thicknessScaleX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "x");
+                            var thicknessScaleXStorage = thicknessScaleX.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessScaleXStorage.addButton.gameObject);
+                            Destroy(thicknessScaleXStorage.subButton.gameObject);
+                            Destroy(thicknessScaleXStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessScaleXStorage.middleButton.gameObject);
+                            Destroy(thicknessScaleXStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessScaleXStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessScaleXStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessScaleXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            var thicknessScaleY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(thicknessScale.transform, "y");
+                            var thicknessScaleYStorage = thicknessScaleY.GetComponent<InputFieldStorage>();
+
+                            Destroy(thicknessScaleYStorage.addButton.gameObject);
+                            Destroy(thicknessScaleYStorage.subButton.gameObject);
+                            Destroy(thicknessScaleYStorage.leftGreaterButton.gameObject);
+                            Destroy(thicknessScaleYStorage.middleButton.gameObject);
+                            Destroy(thicknessScaleYStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(thicknessScaleYStorage.inputField);
+                            EditorThemeManager.AddSelectable(thicknessScaleYStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.AddSelectable(thicknessScaleYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                            #endregion
+
+                            #region Slices
+
                             var slices = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "slices");
                             var slicesStorage = slices.GetComponent<InputFieldStorage>();
 
@@ -2962,6 +3060,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.AddLightText(slicesLabelText);
                             var slicesLabelLayout = slicesLabel.AddComponent<LayoutElement>();
                             slicesLabelLayout.minWidth = 100f;
+
+                            #endregion
                         }
                     }
                 }
@@ -3146,7 +3246,7 @@ namespace BetterLegacy.Editor.Managers
                                 num = Mathf.Clamp(num, 3, 32);
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
-                                    beatmapObject.polygonShapeSettings.Sides = num;
+                                    beatmapObject.polygonShape.Sides = num;
                                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
                                 }
                             }
@@ -3163,7 +3263,7 @@ namespace BetterLegacy.Editor.Managers
                                 num = Mathf.Clamp(num, 0f, 1f);
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
-                                    beatmapObject.polygonShapeSettings.Roundness = num;
+                                    beatmapObject.polygonShape.Roundness = num;
                                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
                                 }
                             }
@@ -3180,7 +3280,7 @@ namespace BetterLegacy.Editor.Managers
                                 num = Mathf.Clamp(num, 0f, 1f);
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
-                                    beatmapObject.polygonShapeSettings.Thickness = num;
+                                    beatmapObject.polygonShape.Thickness = num;
                                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
                                 }
                             }
@@ -3188,6 +3288,70 @@ namespace BetterLegacy.Editor.Managers
 
                         TriggerHelper.IncreaseDecreaseButtons(thickness, max: 1f);
                         TriggerHelper.AddEventTriggers(thickness.inputField.gameObject, TriggerHelper.ScrollDelta(thickness.inputField, max: 1f));
+                        
+                        var thicknessOffsetX = shapeSettings.Find("10/thickness offset/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetX.inputField.onValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                {
+                                    beatmapObject.polygonShape.ThicknessOffset = new Vector2(num, beatmapObject.polygonShape.ThicknessOffset.y);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetX);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetX.inputField));
+                        
+                        var thicknessOffsetY = shapeSettings.Find("10/thickness offset/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessOffsetY.inputField.onValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                {
+                                    beatmapObject.polygonShape.ThicknessOffset = new Vector2(beatmapObject.polygonShape.ThicknessOffset.x, num);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessOffsetY);
+                        TriggerHelper.AddEventTriggers(thicknessOffsetY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessOffsetY.inputField));
+                        
+                        var thicknessScaleX = shapeSettings.Find("10/thickness scale/x").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleX.inputField.onValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                {
+                                    beatmapObject.polygonShape.ThicknessScale = new Vector2(num, beatmapObject.polygonShape.ThicknessScale.y);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleX);
+                        TriggerHelper.AddEventTriggers(thicknessScaleX.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleX.inputField));
+                        
+                        var thicknessScaleY = shapeSettings.Find("10/thickness scale/y").gameObject.GetComponent<InputFieldStorage>();
+                        thicknessScaleY.inputField.onValueChanged.NewListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                                {
+                                    beatmapObject.polygonShape.ThicknessScale = new Vector2(beatmapObject.polygonShape.ThicknessScale.x, num);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(thicknessScaleY);
+                        TriggerHelper.AddEventTriggers(thicknessScaleY.inputField.gameObject, TriggerHelper.ScrollDelta(thicknessScaleY.inputField));
 
                         var slices = shapeSettings.Find("10/slices").gameObject.GetComponent<InputFieldStorage>();
                         slices.inputField.onValueChanged.NewListener(_val =>
@@ -3197,7 +3361,7 @@ namespace BetterLegacy.Editor.Managers
                                 num = Mathf.Clamp(num, 1, 32);
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
-                                    beatmapObject.polygonShapeSettings.Slices = num;
+                                    beatmapObject.polygonShape.Slices = num;
                                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
                                 }
                             }

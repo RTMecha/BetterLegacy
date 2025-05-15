@@ -54,6 +54,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string internalName;
 
+        public ShapeType ShapeType => (ShapeType)Type;
         /// <summary>
         /// Group type of the shape.
         /// </summary>
@@ -270,15 +271,16 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public static int[] maxShapes = new int[]
         {
-            6,
-            17,
-            5,
-            3,
-            1,
-            6,
-            1,
-            6,
-            23
+            6, // square
+            17, // circle
+            5, // triangle
+            3, // arrow
+            1, // text
+            6, // hexagon
+            1, // image
+            6, // pentagon
+            23, // misc
+            1, // polygon
         };
 
         public static int[] unmoddedMaxShapes = new int[]
