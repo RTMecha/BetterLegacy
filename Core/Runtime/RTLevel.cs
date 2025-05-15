@@ -887,6 +887,12 @@ namespace BetterLegacy.Core.Runtime
 
                         if (runtimeModifiers)
                         {
+                            runtimeModifiers.modifiers.ForLoop(modifier =>
+                            {
+                                modifier.Inactive?.Invoke(modifier, null);
+                                modifier.Result = null;
+                            });
+
                             objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
                             modifiers.Remove(runtimeModifiers);
 
@@ -987,6 +993,12 @@ namespace BetterLegacy.Core.Runtime
 
             if (runtimeModifiers)
             {
+                runtimeModifiers.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = null;
+                });
+
                 objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
                 modifiers.Remove(runtimeModifiers);
 
