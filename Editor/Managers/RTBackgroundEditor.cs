@@ -294,10 +294,9 @@ namespace BetterLegacy.Editor.Managers
         {
             Dialog.NameField.onValueChanged.ClearAll();
             Dialog.NameField.text = backgroundObject.name;
-            Dialog.NameField.onValueChanged.AddListener(_val =>
-            {
-                backgroundObject.name = _val;
-            });
+            Dialog.NameField.onValueChanged.AddListener(_val => backgroundObject.name = _val);
+
+            TriggerHelper.InversableField(Dialog.NameField, InputFieldSwapper.Type.String);
         }
 
         public void RenderTags(BackgroundObject backgroundObject)
@@ -315,12 +314,10 @@ namespace BetterLegacy.Editor.Managers
                 input.text = tag;
                 input.onValueChanged.AddListener(_val => { backgroundObject.tags[index] = _val; });
 
-                var inputFieldSwapper = gameObject.AddComponent<InputFieldSwapper>();
-                inputFieldSwapper.Init(input, InputFieldSwapper.Type.String);
+                TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(() =>
+                deleteStorage.button.onClick.NewListener(() =>
                 {
                     backgroundObject.tags.RemoveAt(index);
                     RenderTags(backgroundObject);
@@ -341,8 +338,7 @@ namespace BetterLegacy.Editor.Managers
             var addText = add.transform.Find("Text").GetComponent<Text>();
             addText.text = "Add Tag";
             var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(() =>
+            addButton.onClick.NewListener(() =>
             {
                 backgroundObject.tags.Add("New Tag");
                 RenderTags(backgroundObject);
@@ -532,6 +528,7 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField);
             TriggerHelper.AddEventTriggers(Dialog.DepthField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.DepthField.inputField));
+            TriggerHelper.InversableField(Dialog.DepthField);
         }
 
         public void RenderIterations(BackgroundObject backgroundObject)
@@ -584,6 +581,9 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(Dialog.PositionFields.y.inputField.gameObject,
                 TriggerHelper.ScrollDelta(Dialog.PositionFields.y.inputField, multi: true),
                 TriggerHelper.ScrollDeltaVector2(Dialog.PositionFields.x.inputField, Dialog.PositionFields.y.inputField, 0.1f, 10f));
+
+            TriggerHelper.InversableField(Dialog.PositionFields.x);
+            TriggerHelper.InversableField(Dialog.PositionFields.y);
         }
         
         public void RenderScale(BackgroundObject backgroundObject)
@@ -619,6 +619,9 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(Dialog.ScaleFields.y.inputField.gameObject,
                 TriggerHelper.ScrollDelta(Dialog.ScaleFields.y.inputField, multi: true),
                 TriggerHelper.ScrollDeltaVector2(Dialog.ScaleFields.x.inputField, Dialog.ScaleFields.y.inputField, 0.1f, 10f));
+
+            TriggerHelper.InversableField(Dialog.ScaleFields.x);
+            TriggerHelper.InversableField(Dialog.ScaleFields.y);
         }
 
         public void RenderZPosition(BackgroundObject backgroundObject)
@@ -636,6 +639,7 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.ZPositionField);
             TriggerHelper.AddEventTriggers(Dialog.ZPositionField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.ZPositionField.inputField));
+            TriggerHelper.InversableField(Dialog.ZPositionField);
         }
 
         public void RenderZScale(BackgroundObject backgroundObject)
@@ -653,6 +657,7 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.ZScaleField);
             TriggerHelper.AddEventTriggers(Dialog.ZScaleField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.ZScaleField.inputField));
+            TriggerHelper.InversableField(Dialog.ZPositionField);
         }
 
         public void RenderRotation(BackgroundObject backgroundObject)
@@ -679,6 +684,10 @@ namespace BetterLegacy.Editor.Managers
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
                 RenderRotation(backgroundObject);
             });
+
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.RotationField);
+            TriggerHelper.AddEventTriggers(Dialog.RotationField.gameObject, TriggerHelper.ScrollDelta(Dialog.RotationField));
+            TriggerHelper.InversableField(Dialog.RotationField);
         }
 
         public void Render3DRotation(BackgroundObject backgroundObject)
@@ -714,6 +723,9 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(Dialog.DepthRotation.y.inputField.gameObject,
                 TriggerHelper.ScrollDelta(Dialog.DepthRotation.y.inputField, multi: true),
                 TriggerHelper.ScrollDeltaVector2(Dialog.DepthRotation.x.inputField, Dialog.DepthRotation.y.inputField, 0.1f, 10f));
+
+            TriggerHelper.InversableField(Dialog.DepthRotation.x);
+            TriggerHelper.InversableField(Dialog.DepthRotation.y);
         }
 
         public void RenderShape(BackgroundObject backgroundObject)
@@ -1476,6 +1488,16 @@ namespace BetterLegacy.Editor.Managers
                     backgroundObject.value = num;
                 }
             });
+
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.HueSatVal.x);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.HueSatVal.y);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.HueSatVal.z);
+            TriggerHelper.AddEventTriggers(Dialog.HueSatVal.x.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.HueSatVal.x.inputField));
+            TriggerHelper.AddEventTriggers(Dialog.HueSatVal.y.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.HueSatVal.y.inputField));
+            TriggerHelper.AddEventTriggers(Dialog.HueSatVal.z.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.HueSatVal.z.inputField));
+            TriggerHelper.InversableField(Dialog.HueSatVal.x);
+            TriggerHelper.InversableField(Dialog.HueSatVal.y);
+            TriggerHelper.InversableField(Dialog.HueSatVal.z);
         }
 
         public void RenderFadeColor(BackgroundObject backgroundObject)
@@ -1512,6 +1534,16 @@ namespace BetterLegacy.Editor.Managers
                     backgroundObject.fadeValue = num;
                 }
             });
+
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.FadeHueSatVal.x);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.FadeHueSatVal.y);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.FadeHueSatVal.z);
+            TriggerHelper.AddEventTriggers(Dialog.FadeHueSatVal.x.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.FadeHueSatVal.x.inputField));
+            TriggerHelper.AddEventTriggers(Dialog.FadeHueSatVal.y.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.FadeHueSatVal.y.inputField));
+            TriggerHelper.AddEventTriggers(Dialog.FadeHueSatVal.z.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.FadeHueSatVal.z.inputField));
+            TriggerHelper.InversableField(Dialog.FadeHueSatVal.x);
+            TriggerHelper.InversableField(Dialog.FadeHueSatVal.y);
+            TriggerHelper.InversableField(Dialog.FadeHueSatVal.z);
         }
 
         #endregion

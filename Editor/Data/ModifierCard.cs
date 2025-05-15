@@ -3890,8 +3890,7 @@ namespace BetterLegacy.Editor.Data
             EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
             EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
 
-            var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
-            inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
+            TriggerHelper.InversableField(inputField);
             result = inputField;
             return single;
         }

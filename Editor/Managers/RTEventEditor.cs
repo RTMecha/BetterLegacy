@@ -2949,8 +2949,7 @@ namespace BetterLegacy.Editor.Managers
                 var btR = tf.Find("<").GetComponent<Button>();
                 var btL = tf.Find(">").GetComponent<Button>();
 
-                btR.onClick.ClearAll();
-                btR.onClick.AddListener(() =>
+                btR.onClick.NewListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -2969,8 +2968,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                btL.onClick.ClearAll();
-                btL.onClick.AddListener(() =>
+                btL.onClick.NewListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -2992,11 +2990,8 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(zoom.gameObject, TriggerHelper.ScrollDelta(zoom, increase, multiply, min, max));
 
-            if (allowNegative && !zoom.gameObject.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = zoom.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(zoom, InputFieldSwapper.Type.Num);
-            }
+            if (allowNegative)
+                TriggerHelper.InversableField(zoom);
         }
 
         public void SetIntInputField(Transform dialogTmp, string name, int index, int increase = 1, int min = 0, int max = 0, bool allowNegative = true)
@@ -3036,8 +3031,7 @@ namespace BetterLegacy.Editor.Managers
                 var btR = tf.Find("<").GetComponent<Button>();
                 var btL = tf.Find(">").GetComponent<Button>();
 
-                btR.onClick.ClearAll();
-                btR.onClick.AddListener(() =>
+                btR.onClick.NewListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -3056,8 +3050,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                btL.onClick.ClearAll();
-                btL.onClick.AddListener(() =>
+                btL.onClick.NewListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -3079,11 +3072,8 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(zoom.gameObject, TriggerHelper.ScrollDeltaInt(zoom, increase, min, max));
 
-            if (allowNegative && !zoom.gameObject.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = zoom.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(zoom, InputFieldSwapper.Type.Num);
-            }
+            if (allowNegative)
+                TriggerHelper.InversableField(zoom);
         }
 
         public void SetVector2InputField(Transform dialogTmp, string name, int xindex, int yindex, float min = 0f, float max = 0f, bool allowNegative = true)
@@ -3263,16 +3253,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (allowNegative)
             {
-                if (!posX.gameObject.GetComponent<InputFieldSwapper>())
-                {
-                    var ifh = posX.gameObject.AddComponent<InputFieldSwapper>();
-                    ifh.Init(posX, InputFieldSwapper.Type.Num);
-                }
-                if (!posY.gameObject.GetComponent<InputFieldSwapper>())
-                {
-                    var ifh = posY.gameObject.AddComponent<InputFieldSwapper>();
-                    ifh.Init(posY, InputFieldSwapper.Type.Num);
-                }
+                TriggerHelper.InversableField(posX);
+                TriggerHelper.InversableField(posY);
             }
         }
 
@@ -3432,16 +3414,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (allowNegative)
             {
-                if (!posX.gameObject.GetComponent<InputFieldSwapper>())
-                {
-                    var ifh = posX.gameObject.AddComponent<InputFieldSwapper>();
-                    ifh.Init(posX, InputFieldSwapper.Type.Num);
-                }
-                if (!posY.gameObject.GetComponent<InputFieldSwapper>())
-                {
-                    var ifh = posY.gameObject.AddComponent<InputFieldSwapper>();
-                    ifh.Init(posY, InputFieldSwapper.Type.Num);
-                }
+                TriggerHelper.InversableField(posX);
+                TriggerHelper.InversableField(posY);
             }
         }
 

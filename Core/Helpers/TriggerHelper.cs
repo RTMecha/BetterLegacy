@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
@@ -308,6 +309,19 @@ namespace BetterLegacy.Core.Helpers
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
             });
+        }
+
+        public static void InversableField(InputFieldStorage inputFieldStorage, InputFieldSwapper.Type type = InputFieldSwapper.Type.Num)
+        {
+            if (!inputFieldStorage.fieldSwapper)
+                inputFieldStorage.fieldSwapper = inputFieldStorage.gameObject.GetOrAddComponent<InputFieldSwapper>();
+            inputFieldStorage.fieldSwapper.Init(inputFieldStorage.inputField, type);
+        }
+        
+        public static void InversableField(InputField inputField, InputFieldSwapper.Type type = InputFieldSwapper.Type.Num)
+        {
+            if (!inputField.GetComponent<InputFieldSwapper>())
+                inputField.gameObject.AddComponent<InputFieldSwapper>().Init(inputField, type);
         }
 
         public static void SetInteractable(bool interactable, params Selectable[] buttons)

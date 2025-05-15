@@ -233,18 +233,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             OriginParent = Content.Find("origin").AsRT();
             OriginXField = OriginParent.Find("x").gameObject.GetComponent<InputFieldStorage>();
-            if (!OriginXField.inputField.gameObject.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = OriginXField.inputField.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(OriginXField.inputField, InputFieldSwapper.Type.Num);
-            }
-
+            TriggerHelper.InversableField(OriginXField);
             OriginYField = OriginParent.Find("y").gameObject.GetComponent<InputFieldStorage>();
-            if (!OriginYField.inputField.gameObject.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = OriginYField.inputField.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(OriginYField.inputField, InputFieldSwapper.Type.Num);
-            }
+            TriggerHelper.InversableField(OriginYField);
 
             for (int i = 0; i < 3; i++)
             {
@@ -272,12 +263,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             DepthParent = Content.Find("depth").AsRT();
             DepthField = Content.Find("depth input/depth").GetComponent<InputFieldStorage>();
-
-            if (!DepthField.inputField.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = DepthField.inputField.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(DepthField.inputField, InputFieldSwapper.Type.Num);
-            }
 
             DepthSlider = Content.Find("depth/depth").GetComponent<Slider>();
             DepthSliderLeftButton = DepthParent.Find("<").GetComponent<Button>();

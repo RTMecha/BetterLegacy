@@ -805,6 +805,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var position = ObjEditor.inst.KeyframeDialogs[0].transform;
                 var randomPosition = position.transform.Find("random");
+                CoreHelper.Destroy(randomPosition.GetComponent<ToggleGroup>());
                 randomPosition.Find("interval-input/x").gameObject.SetActive(false);
                 var homingStaticPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-static", 4);
 
@@ -816,8 +817,13 @@ namespace BetterLegacy.Editor.Managers
                 if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png"))
                     homingDynamicPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png");
 
+                var scale = ObjEditor.inst.KeyframeDialogs[1].transform;
+                var scaleRotation = scale.Find("random");
+                CoreHelper.Destroy(scaleRotation.GetComponent<ToggleGroup>());
+
                 var rotation = ObjEditor.inst.KeyframeDialogs[2].transform;
                 var randomRotation = rotation.Find("random");
+                CoreHelper.Destroy(randomRotation.GetComponent<ToggleGroup>());
                 randomRotation.Find("interval-input/x").gameObject.SetActive(false);
                 var homingStaticRotation = randomRotation.Find("none").gameObject.Duplicate(randomRotation, "homing-static", 3);
 
@@ -1330,6 +1336,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (!toggle)
                                     continue;
 
+                                toggle.group = null;
                                 EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
                                 EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
                             }
@@ -3630,20 +3637,13 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderName(BeatmapObject beatmapObject)
         {
-            var name = Dialog.NameField;
-
             // Allows for left / right flipping.
-            if (!name.GetComponent<InputFieldSwapper>() && name.gameObject)
-            {
-                var t = name.gameObject.AddComponent<InputFieldSwapper>();
-                t.Init(name, InputFieldSwapper.Type.String);
-            }
+            TriggerHelper.InversableField(Dialog.NameField, InputFieldSwapper.Type.String);
+            EditorHelper.AddInputFieldContextMenu(Dialog.NameField);
 
-            EditorHelper.AddInputFieldContextMenu(name);
-
-            name.onValueChanged.ClearAll();
-            name.text = beatmapObject.name;
-            name.onValueChanged.AddListener(_val =>
+            Dialog.NameField.onValueChanged.ClearAll();
+            Dialog.NameField.text = beatmapObject.name;
+            Dialog.NameField.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.name = _val;
 
@@ -3680,18 +3680,15 @@ namespace BetterLegacy.Editor.Managers
                 input.text = tag;
                 input.onValueChanged.AddListener(_val => beatmapObject.tags[index] = _val);
 
-                var inputFieldSwapper = gameObject.AddComponent<InputFieldSwapper>();
-                inputFieldSwapper.Init(input, InputFieldSwapper.Type.String);
-
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(() =>
+                deleteStorage.button.onClick.NewListener(() =>
                 {
                     beatmapObject.tags.RemoveAt(index);
                     RenderTags(beatmapObject);
                 });
 
                 EditorHelper.AddInputFieldContextMenu(input);
+                TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
 
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
 
@@ -4499,6 +4496,7 @@ namespace BetterLegacy.Editor.Managers
 
                 TriggerHelper.IncreaseDecreaseButtons(Dialog.GradientScale);
                 TriggerHelper.AddEventTriggers(Dialog.GradientScale.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.GradientScale.inputField));
+                TriggerHelper.InversableField(Dialog.GradientScale);
             }
 
             Dialog.GradientRotation.inputField.onValueChanged.ClearAll();
@@ -4516,6 +4514,7 @@ namespace BetterLegacy.Editor.Managers
 
                 TriggerHelper.IncreaseDecreaseButtons(Dialog.GradientRotation, 15f, 3f);
                 TriggerHelper.AddEventTriggers(Dialog.GradientRotation.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.GradientRotation.inputField, 15f, 3f));
+                TriggerHelper.InversableField(Dialog.GradientRotation);
             }
         }
 
@@ -5016,6 +5015,12 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(Dialog.DepthField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.DepthField.inputField, 1, min, max));
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.DepthField.inputField, -1, min, max, Dialog.DepthParent);
 
+            // allow negative flipping
+            if (min < 0)
+                TriggerHelper.InversableField(Dialog.DepthField);
+            else if (Dialog.DepthField.fieldSwapper)
+                CoreHelper.Destroy(Dialog.DepthField.fieldSwapper);
+
             Dialog.RenderTypeDropdown.onValueChanged.ClearAll();
             Dialog.RenderTypeDropdown.value = (int)beatmapObject.renderLayerType;
             Dialog.RenderTypeDropdown.onValueChanged.AddListener(_val =>
@@ -5369,11 +5374,7 @@ namespace BetterLegacy.Editor.Managers
             var dialog = Dialog.keyframeDialogs[type];
             var inputFieldStorage = dialog.EventValueFields[valueIndex];
 
-            if (!inputFieldStorage.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = inputFieldStorage.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(inputFieldStorage.inputField, InputFieldSwapper.Type.Num);
-            }
+            TriggerHelper.InversableField(inputFieldStorage);
 
             if (!inputFieldStorage.eventTrigger)
                 inputFieldStorage.eventTrigger = inputFieldStorage.gameObject.AddComponent<EventTrigger>();
@@ -5691,11 +5692,8 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                 }
             });
-            if (!dialog.RandomIntervalField.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = dialog.RandomIntervalField.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(dialog.RandomIntervalField, InputFieldSwapper.Type.Num);
-            }
+
+            TriggerHelper.InversableField(dialog.RandomIntervalField);
 
             TriggerHelper.AddEventTriggers(dialog.RandomIntervalField.gameObject, TriggerHelper.ScrollDelta(dialog.RandomIntervalField, max: float.MaxValue));
         }
@@ -5768,11 +5766,7 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.ScrollDelta(inputFieldStorage.inputField, type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f, multi: true),
                 TriggerHelper.ScrollDeltaVector2(inputFieldStorage.inputField, dialog.RandomEventValueFields[1].inputField, type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f));
 
-            if (!inputFieldStorage.GetComponent<InputFieldSwapper>())
-            {
-                var ifh = inputFieldStorage.gameObject.AddComponent<InputFieldSwapper>();
-                ifh.Init(inputFieldStorage.inputField, InputFieldSwapper.Type.Num);
-            }
+            TriggerHelper.InversableField(inputFieldStorage);
         }
 
         /// <summary>

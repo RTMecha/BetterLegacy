@@ -11,8 +11,10 @@ namespace BetterLegacy.Core.Components
     /// </summary>
     public class InputFieldSwapper : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
+        [SerializeField]
         public InputField inputField;
         bool hovered;
+        [SerializeField]
         public Type type = Type.Num;
         public enum Type
         {
@@ -25,13 +27,6 @@ namespace BetterLegacy.Core.Components
             this.inputField = inputField;
             this.type = type;
         }
-
-        public void Init(InputField inputField)
-        {
-            this.inputField = inputField;
-            type = Type.Num;
-        }
-
 
         public void OnPointerEnter(PointerEventData pointerEventData) => hovered = true;
 

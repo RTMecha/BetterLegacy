@@ -191,6 +191,8 @@ namespace BetterLegacy.Core.Prefabs
         public Toggle lockToggle;
         [SerializeField]
         public EventTrigger eventTrigger;
+        [SerializeField]
+        public InputFieldSwapper fieldSwapper;
 
         public void Assign() => Assign(gameObject);
 

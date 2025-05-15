@@ -3447,8 +3447,7 @@ namespace BetterLegacy.Editor.Managers
             oldNameIF.onValueChanged.ClearAll();
 
             EditorHelper.AddInputFieldContextMenu(oldNameIF);
-            var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
-            oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
+            TriggerHelper.InversableField(oldNameIF, InputFieldSwapper.Type.String);
 
             EditorThemeManager.AddInputField(oldNameIF);
 
@@ -3468,8 +3467,7 @@ namespace BetterLegacy.Editor.Managers
             newNameIF.onValueChanged.ClearAll();
 
             EditorHelper.AddInputFieldContextMenu(newNameIF);
-            var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
-            newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
+            TriggerHelper.InversableField(newNameIF, InputFieldSwapper.Type.String);
 
             EditorThemeManager.AddInputField(newNameIF);
 
@@ -3486,8 +3484,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(replaceText, ThemeGroup.Function_1_Text);
 
             var button = replace.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() => replacer?.Invoke(oldNameIF, newNameIF));
+            button.onClick.NewListener(() => replacer?.Invoke(oldNameIF, newNameIF));
 
             EditorHelper.SetComplexity(labels, Complexity.Advanced);
             EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
