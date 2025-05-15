@@ -10,8 +10,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class PolygonObject : SolidObject
     {
-        public MeshFilter meshFilter;
-        public PolygonCollider2D polygonCollider;
+        MeshFilter meshFilter;
+        PolygonCollider2D polygonCollider;
 
         float radius = 0.5f;
         int sides = 3;
@@ -32,8 +32,22 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             UpdatePolygon(polygonShape);
         }
 
+        /// <summary>
+        /// Updates the custom polygon.
+        /// </summary>
+        /// <param name="polygonShape">Polygon shape values to apply.</param>
         public void UpdatePolygon(PolygonShape polygonShape) => UpdatePolygon(polygonShape.Radius, polygonShape.Sides, polygonShape.Roundness, polygonShape.Thickness, polygonShape.Slices, polygonShape.ThicknessOffset, polygonShape.ThicknessScale);
 
+        /// <summary>
+        /// Updates the custom polygon.
+        /// </summary>
+        /// <param name="radius">Radius of the shape.</param>
+        /// <param name="sides">How many sides the shape has.</param>
+        /// <param name="roundness">Roundness of the shapes' corners.</param>
+        /// <param name="thickness">Thickness of the shape outline.</param>
+        /// <param name="slices">Slices to cut away from the shape.</param>
+        /// <param name="thicknessOffset">Offset of the center outline.</param>
+        /// <param name="thicknessScale">Scale of the center outline.</param>
         public void UpdatePolygon(float radius, int sides, float roundness, float thickness, int slices, Vector2 thicknessOffset, Vector2 thicknessScale)
         {
             this.radius = radius;
@@ -46,6 +60,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             UpdatePolygon();
         }
 
+        /// <summary>
+        /// Updates the custom polygon.
+        /// </summary>
         public void UpdatePolygon()
         {
             if (!meshFilter)
@@ -61,6 +78,13 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             }
 
             VGShapes.RoundedRingMesh(meshFilter, polygonCollider, radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
+        }
+
+        public override void Clear()
+        {
+            base.Clear();
+            meshFilter = null;
+            polygonCollider = null;
         }
     }
 }
