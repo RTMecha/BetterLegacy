@@ -41,7 +41,6 @@
 - Game Timeline Editor. (skipping regions, custom images, etc)
 - Glow object that acts like bloom.
 - Ignore start time object spawn?
-- Polygon Shape port. (almost done, still just waiting on the code...)
 
 ### Story
 - Chapter 1.  
@@ -135,6 +134,7 @@
 - Make Editor Documentation read from a json file.  
   Update: 1.8.0
 - Update the file browser UI to include more info / functions.
+- Cleanup Player Editor code.
 
 
 ## Fixes
