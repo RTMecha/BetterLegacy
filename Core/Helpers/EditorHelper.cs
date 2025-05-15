@@ -225,18 +225,40 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
-                for (int i = 0; i < 3; i++)
+                switch (timelineObject.TimelineReference)
                 {
-                    for (int j = 0; j < beatmapObject.events[i].Count; j++)
-                    {
-                        beatmapObject.events[i][j].values[0] = -beatmapObject.events[i][j].values[0];
-                        beatmapObject.events[i][j].randomValues[0] = -beatmapObject.events[i][j].randomValues[0];
-                    }
-                }
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            for (int i = 0; i < 3; i++)
+                            {
+                                for (int j = 0; j < beatmapObject.events[i].Count; j++)
+                                {
+                                    beatmapObject.events[i][j].values[0] = -beatmapObject.events[i][j].values[0];
+                                    beatmapObject.events[i][j].randomValues[0] = -beatmapObject.events[i][j].randomValues[0];
+                                }
+                            }
 
-                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            prefabObject.events[0].values[0] = -prefabObject.events[0].values[0];
+                            prefabObject.events[1].values[0] = -prefabObject.events[1].values[0];
+                            prefabObject.events[2].values[0] = -prefabObject.events[2].values[0];
+                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                            backgroundObject.pos.x = -backgroundObject.pos.x;
+                            backgroundObject.scale.x = -backgroundObject.scale.x;
+                            backgroundObject.rot = -backgroundObject.rot;
+                            break;
+                        }
+                }
             }
 
             return true;
@@ -247,18 +269,38 @@ namespace BetterLegacy.Core.Helpers
             if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
-            foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
-                for (int i = 0; i < 2; i++)
+                switch (timelineObject.TimelineReference)
                 {
-                    for (int j = 0; j < beatmapObject.events[i].Count; j++)
-                    {
-                        beatmapObject.events[i][j].values[1] = -beatmapObject.events[i][j].values[1];
-                        beatmapObject.events[i][j].randomValues[1] = -beatmapObject.events[i][j].randomValues[1];
-                    }
-                }
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            for (int i = 0; i < 2; i++)
+                            {
+                                for (int j = 0; j < beatmapObject.events[i].Count; j++)
+                                {
+                                    beatmapObject.events[i][j].values[1] = -beatmapObject.events[i][j].values[1];
+                                    beatmapObject.events[i][j].randomValues[1] = -beatmapObject.events[i][j].randomValues[1];
+                                }
+                            }
 
-                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            prefabObject.events[0].values[1] = -prefabObject.events[0].values[1];
+                            prefabObject.events[1].values[1] = -prefabObject.events[1].values[1];
+                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                            backgroundObject.pos.y = -backgroundObject.pos.y;
+                            backgroundObject.scale.y = -backgroundObject.scale.y;
+                            break;
+                        }
+                }
             }
 
             return true;
