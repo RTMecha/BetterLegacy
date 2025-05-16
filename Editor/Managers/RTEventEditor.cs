@@ -2186,16 +2186,14 @@ namespace BetterLegacy.Editor.Managers
             #region Edit
 
             dialog.JumpToStartButton.interactable = isNotFirst;
-            dialog.JumpToStartButton.onClick.ClearAll();
-            dialog.JumpToStartButton.onClick.AddListener(() =>
+            dialog.JumpToStartButton.onClick.NewListener(() =>
             {
                 RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
             });
 
             dialog.JumpToPrevButton.interactable = isNotFirst;
-            dialog.JumpToPrevButton.onClick.ClearAll();
-            dialog.JumpToPrevButton.onClick.AddListener(() =>
+            dialog.JumpToPrevButton.onClick.NewListener(() =>
             {
                 RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 int num = EventEditor.inst.currentEvent - 1;
@@ -2210,8 +2208,7 @@ namespace BetterLegacy.Editor.Managers
             dialog.KeyframeIndexer.text = !isNotFirst ? "S" : EventEditor.inst.currentEvent == events.Count - 1 ? "E" : EventEditor.inst.currentEvent.ToString();
 
             dialog.JumpToNextButton.interactable = EventEditor.inst.currentEvent != events.Count - 1;
-            dialog.JumpToNextButton.onClick.ClearAll();
-            dialog.JumpToNextButton.onClick.AddListener(() =>
+            dialog.JumpToNextButton.onClick.NewListener(() =>
             {
                 RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 int num = EventEditor.inst.currentEvent + 1;
@@ -2222,24 +2219,19 @@ namespace BetterLegacy.Editor.Managers
             });
 
             dialog.JumpToLastButton.interactable = EventEditor.inst.currentEvent != events.Count - 1;
-            dialog.JumpToLastButton.onClick.ClearAll();
-            dialog.JumpToLastButton.onClick.AddListener(() =>
+            dialog.JumpToLastButton.onClick.NewListener(() =>
             {
                 RTLevel.Current?.UpdateEvents(EventEditor.inst.currentEventType);
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, events.IndexOf(events.Last()));
             });
 
-            dialog.DeleteButton.button.onClick.ClearAll();
             dialog.DeleteButton.button.interactable = isNotFirst;
-            dialog.DeleteButton.button.onClick.AddListener(DeleteKeyframes().Start);
+            dialog.DeleteButton.button.onClick.NewListener(DeleteKeyframes().Start);
 
             if (dialog.CopyButton && dialog.PasteButton)
             {
-                dialog.CopyButton.button.onClick.ClearAll();
-                dialog.CopyButton.button.onClick.AddListener(() => CopyKeyframeData(CurrentSelectedTimelineKeyframe));
-
-                dialog.PasteButton.button.onClick.ClearAll();
-                dialog.PasteButton.button.onClick.AddListener(() => PasteKeyframeData(EventEditor.inst.currentEventType));
+                dialog.CopyButton.button.onClick.NewListener(() => CopyKeyframeData(CurrentSelectedTimelineKeyframe));
+                dialog.PasteButton.button.onClick.NewListener(() => PasteKeyframeData(EventEditor.inst.currentEventType));
             }
 
             #endregion
