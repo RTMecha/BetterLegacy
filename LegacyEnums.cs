@@ -631,6 +631,23 @@ namespace BetterLegacy
         SongTime
     }
 
+    public enum RandomType
+    {
+        // actual random
+        None,
+        Normal,
+        /// <summary>
+        /// Support for really old levels (for some reason).
+        /// </summary>
+        BETA_SUPPORT,
+        Toggle,
+        Scale,
+
+        // homing
+        HomingStatic,
+        HomingDynamic,
+    }
+
     #endregion
 
     #region Arcade / Game
@@ -859,7 +876,7 @@ namespace BetterLegacy
         Advanced
     }
 
-    public enum EditorTheme
+    public enum EditorThemeType
     {
         Legacy,
         Dark,
@@ -981,6 +998,11 @@ namespace BetterLegacy
         Background_Object,
         Background_Object_Text,
         Timeline_Bar,
+        Layer_1,
+        Layer_2,
+        Layer_3,
+        Layer_4,
+        Layer_5,
         Event_Check,
         Event_Check_Text,
 
