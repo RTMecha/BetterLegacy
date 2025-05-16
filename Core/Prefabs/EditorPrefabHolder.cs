@@ -19,6 +19,7 @@ namespace BetterLegacy.Core.Prefabs
         public Transform PrefabParent { get; set; }
         public GameObject StringInputField { get; set; }
         public GameObject NumberInputField { get; set; }
+        public GameObject Vector2InputFields { get; set; }
         public GameObject DefaultInputField { get; set; }
 
         public GameObject SpriteButton { get; set; }
