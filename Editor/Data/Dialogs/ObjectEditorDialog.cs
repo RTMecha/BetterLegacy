@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
@@ -9,6 +10,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
@@ -106,8 +108,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         #region Editor Settings
 
         public RectTransform EditorSettingsParent { get; set; }
-        public Slider BinSlider { get; set; }
         public InputField EditorLayerField { get; set; }
+        public Slider BinSlider { get; set; }
+        public Toggle[] EditorLayerToggles { get; set; }
 
         public InputFieldStorage EditorIndexField { get; set; }
 
@@ -274,9 +277,30 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Editor Settings
 
             EditorSettingsParent = Content.Find("editor").AsRT();
-            EditorLayerField = EditorSettingsParent.Find("layers")?.GetComponent<InputField>();
+            EditorLayerField = EditorSettingsParent.Find("layers").GetComponent<InputField>();
             EditorLayerField.image = EditorLayerField.GetComponent<Image>();
-            BinSlider = EditorSettingsParent.Find("bin")?.GetComponent<Slider>();
+            BinSlider = EditorSettingsParent.Find("bin").GetComponent<Slider>();
+            EditorLayerToggles = EditorSettingsParent.Find("layer").GetComponentsInChildren<Toggle>();
+            CoreHelper.Destroy(EditorSettingsParent.Find("layer").GetComponent<ToggleGroup>());
+            int layerNum = 0;
+            foreach (var toggle in EditorLayerToggles)
+            {
+                toggle.group = null;
+                CoreHelper.Destroy(toggle.GetComponent<EventTrigger>());
+                EditorThemeManager.AddGraphic(toggle.image, layerNum switch
+                {
+                    0 => ThemeGroup.Layer_1,
+                    1 => ThemeGroup.Layer_2,
+                    2 => ThemeGroup.Layer_3,
+                    3 => ThemeGroup.Layer_4,
+                    4 => ThemeGroup.Layer_5,
+                    _ => ThemeGroup.Null,
+                });
+                EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
+                toggle.gameObject.AddComponent<ContrastColors>().Init(toggle.transform.Find("Background/Text").GetComponent<Text>(), toggle.image);
+                layerNum++;
+            }
+
             EditorIndexField = Content.Find("indexer").GetComponent<InputFieldStorage>();
 
             #endregion

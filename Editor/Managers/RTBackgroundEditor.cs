@@ -301,7 +301,14 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderTags(BackgroundObject backgroundObject)
         {
+            var tagsScrollView = Dialog.TagsScrollView;
+            tagsScrollView.parent.GetChild(tagsScrollView.GetSiblingIndex() - 1).gameObject.SetActive(RTEditor.ShowModdedUI);
+            tagsScrollView.gameObject.SetActive(RTEditor.ShowModdedUI);
+
             LSHelpers.DeleteChildren(Dialog.TagsContent);
+
+            if (!RTEditor.ShowModdedUI)
+                return;
 
             int num = 0;
             foreach (var tag in backgroundObject.tags)
@@ -685,8 +692,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderRotation(backgroundObject);
             });
 
-            TriggerHelper.IncreaseDecreaseButtons(Dialog.RotationField);
-            TriggerHelper.AddEventTriggers(Dialog.RotationField.gameObject, TriggerHelper.ScrollDelta(Dialog.RotationField));
+            TriggerHelper.AddEventTriggers(Dialog.RotationField.gameObject, TriggerHelper.ScrollDelta(Dialog.RotationField, 15f, 3f));
             TriggerHelper.InversableField(Dialog.RotationField);
         }
 
@@ -718,11 +724,11 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtons(Dialog.DepthRotation.y, 15f, 3f);
 
             TriggerHelper.AddEventTriggers(Dialog.DepthRotation.x.inputField.gameObject,
-                TriggerHelper.ScrollDelta(Dialog.DepthRotation.x.inputField, multi: true),
-                TriggerHelper.ScrollDeltaVector2(Dialog.DepthRotation.x.inputField, Dialog.DepthRotation.y.inputField, 0.1f, 10f));
+                TriggerHelper.ScrollDelta(Dialog.DepthRotation.x.inputField, 15f, 3f, multi: true),
+                TriggerHelper.ScrollDeltaVector2(Dialog.DepthRotation.x.inputField, Dialog.DepthRotation.y.inputField, 15f, 3f));
             TriggerHelper.AddEventTriggers(Dialog.DepthRotation.y.inputField.gameObject,
-                TriggerHelper.ScrollDelta(Dialog.DepthRotation.y.inputField, multi: true),
-                TriggerHelper.ScrollDeltaVector2(Dialog.DepthRotation.x.inputField, Dialog.DepthRotation.y.inputField, 0.1f, 10f));
+                TriggerHelper.ScrollDelta(Dialog.DepthRotation.y.inputField, 15f, 3f, multi: true),
+                TriggerHelper.ScrollDeltaVector2(Dialog.DepthRotation.x.inputField, Dialog.DepthRotation.y.inputField, 15f, 3f));
 
             TriggerHelper.InversableField(Dialog.DepthRotation.x);
             TriggerHelper.InversableField(Dialog.DepthRotation.y);
@@ -927,37 +933,64 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderLayers(BackgroundObject backgroundObject)
         {
-            Dialog.EditorLayerField.onValueChanged.ClearAll();
-            Dialog.EditorLayerField.text = (backgroundObject.editorData.Layer + 1).ToString();
-            Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(backgroundObject.editorData.Layer);
-            Dialog.EditorLayerField.onValueChanged.AddListener(_val =>
+            Dialog.EditorLayerField.gameObject.SetActive(RTEditor.NotSimple);
+
+            if (RTEditor.NotSimple)
             {
-                if (int.TryParse(_val, out int num))
+                Dialog.EditorLayerField.image.color = EditorTimeline.GetLayerColor(backgroundObject.editorData.Layer);
+                Dialog.EditorLayerField.onValueChanged.ClearAll();
+                Dialog.EditorLayerField.text = (backgroundObject.editorData.Layer + 1).ToString();
+                Dialog.EditorLayerField.onValueChanged.AddListener(_val =>
                 {
-                    num = Mathf.Clamp(num - 1, 0, int.MaxValue);
-                    backgroundObject.editorData.Layer = num;
+                    if (int.TryParse(_val, out int n))
+                    {
+                        n = n - 1;
+                        if (n < 0)
+                            n = 0;
 
-                    // Since layers have no effect on the physical object, we will only need to update the timeline object.
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                        backgroundObject.editorData.Layer = EditorTimeline.GetLayer(n);
+                        EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                        RenderLayers(backgroundObject);
+                    }
+                    else
+                        EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
+                });
 
-                    //editorLayersImage.color = RTEditor.GetLayerColor(beatmapObject.editorData.Layer);
-                    RenderLayers(backgroundObject);
-                }
-            });
+                TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, min: 1, max: int.MaxValue));
 
-            if (Dialog.EditorLayerField.gameObject)
-                TriggerHelper.AddEventTriggers(Dialog.EditorLayerField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.EditorLayerField, 1, 1, int.MaxValue));
+                var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
+                editorLayerContextMenu.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
 
-            var editorLayerContextMenu = Dialog.EditorLayerField.gameObject.GetOrAddComponent<ContextClickable>();
-            editorLayerContextMenu.onClick = eventData =>
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(backgroundObject.editorData.Layer, EditorTimeline.LayerType.Objects))
+                        );
+                };
+            }
+
+            if (Dialog.EditorLayerToggles == null)
+                return;
+
+            Dialog.EditorSettingsParent.Find("layer").gameObject.SetActive(!RTEditor.NotSimple);
+
+            if (RTEditor.NotSimple)
+                return;
+
+            for (int i = 0; i < Dialog.EditorLayerToggles.Length; i++)
             {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Go to Editor Layer", () => EditorTimeline.inst.SetLayer(backgroundObject.editorData.Layer, EditorTimeline.LayerType.Objects))
-                    );
-            };
+                var index = i;
+                var toggle = Dialog.EditorLayerToggles[i];
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = index == backgroundObject.editorData.Layer;
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    backgroundObject.editorData.Layer = index;
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                    RenderLayers(backgroundObject);
+                });
+            }
         }
 
         public void RenderBin(BackgroundObject backgroundObject)

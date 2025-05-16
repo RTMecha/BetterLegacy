@@ -1517,6 +1517,18 @@ namespace BetterLegacy.Editor.Managers
                     SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
             });
 
+            if (RTEditor.inst.editorLayerToggles != null)
+            {
+                for (int i = 0; i < RTEditor.inst.editorLayerToggles.Length; i++)
+                {
+                    var toggle = RTEditor.inst.editorLayerToggles[i];
+                    var index = i;
+                    toggle.onValueChanged.ClearAll();
+                    toggle.isOn = index == layer;
+                    toggle.onValueChanged.AddListener(_val => SetLayer(index));
+                }
+            }
+
             RTEditor.inst.eventLayerToggle.onValueChanged.ClearAll();
             RTEditor.inst.eventLayerToggle.isOn = layerType == LayerType.Events;
             RTEditor.inst.eventLayerToggle.onValueChanged.AddListener(_val => SetLayer(_val ? LayerType.Events : LayerType.Objects));

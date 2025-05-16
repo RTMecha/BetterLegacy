@@ -452,7 +452,7 @@ namespace BetterLegacy.Editor.Managers
             defaultInputField.localScale = Vector3.one;
             EditorManager.inst.speedText.transform.parent.SetParent(transform);
 
-            if (EditorPrefabHolder.Instance.DefaultInputField.TryGetComponent(out InputField frick))
+            if (prefabHolder.DefaultInputField.TryGetComponent(out InputField frick))
                 frick.textComponent.fontSize = 18;
 
             if (ObjEditor.inst)
@@ -461,17 +461,13 @@ namespace BetterLegacy.Editor.Managers
 
                 var floatInputFieldStorage = prefabHolder.NumberInputField.AddComponent<InputFieldStorage>();
                 floatInputFieldStorage.Assign(prefabHolder.NumberInputField);
-                DestroyImmediate(floatInputFieldStorage.leftGreaterButton.GetComponent<Animator>());
-                floatInputFieldStorage.leftGreaterButton.transition = Selectable.Transition.ColorTint;
-                DestroyImmediate(floatInputFieldStorage.leftButton.GetComponent<Animator>());
-                floatInputFieldStorage.leftButton.transition = Selectable.Transition.ColorTint;
-                DestroyImmediate(floatInputFieldStorage.middleButton.GetComponent<Animator>());
-                floatInputFieldStorage.middleButton.transition = Selectable.Transition.ColorTint;
-                DestroyImmediate(floatInputFieldStorage.rightButton.GetComponent<Animator>());
-                floatInputFieldStorage.rightButton.transition = Selectable.Transition.ColorTint;
-                DestroyImmediate(floatInputFieldStorage.rightGreaterButton.GetComponent<Animator>());
-                floatInputFieldStorage.rightGreaterButton.transition = Selectable.Transition.ColorTint;
-                floatInputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.addButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.subButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.leftGreaterButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.leftButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.middleButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.rightButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.rightGreaterButton);
                 floatInputFieldStorage.inputField.characterLimit = 0;
                 prefabHolder.NumberInputField.transform.Find("time").gameObject.name = "input";
 
@@ -581,6 +577,36 @@ namespace BetterLegacy.Editor.Managers
 
                 var delete = prefabHolder.DeleteButton.Duplicate(prefabHolder.Tag.transform, "Delete");
                 new RectValues(Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f)).AssignToRectTransform(delete.transform.AsRT());
+            }
+
+            prefabHolder.Vector2InputFields = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/move/position").gameObject.Duplicate(prefabHolder.PrefabParent);
+            var vector2InputFieldStorage = prefabHolder.Vector2InputFields.AddComponent<Vector2InputFieldStorage>();
+            vector2InputFieldStorage.Assign();
+            if (vector2InputFieldStorage.x)
+            {
+                var floatInputFieldStorage = vector2InputFieldStorage.x;
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.addButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.subButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.leftGreaterButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.leftButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.middleButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.rightButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.rightGreaterButton);
+                floatInputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+                floatInputFieldStorage.inputField.characterLimit = 0;
+            }
+            if (vector2InputFieldStorage.y)
+            {
+                var floatInputFieldStorage = vector2InputFieldStorage.y;
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.addButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.subButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.leftGreaterButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.leftButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.middleButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.rightButton);
+                CoreHelper.RemoveAnimator(floatInputFieldStorage.rightGreaterButton);
+                floatInputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
+                floatInputFieldStorage.inputField.characterLimit = 0;
             }
 
             prefabHolder.Toggle = EditorManager.inst.GetDialog("Settings Editor").Dialog.Find("snap/toggle/toggle").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle");
@@ -1164,6 +1190,11 @@ namespace BetterLegacy.Editor.Managers
         public Image editorLayerImage;
 
         /// <summary>
+        /// The vanilla editor layer toggles.
+        /// </summary>
+        public Toggle[] editorLayerToggles;
+
+        /// <summary>
         /// The event layer toggle. If on, renders <see cref="LayerType.Events"/>, otherwise renders <see cref="LayerType.Objects"/>.
         /// </summary>
         public Toggle eventLayerToggle;
@@ -1374,7 +1405,7 @@ namespace BetterLegacy.Editor.Managers
                 notif.transform.localScale = Vector3.one;
 
                 EditorThemeManager.ApplyGraphic(notif.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
-                EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/bg").GetComponent<Image>(), EditorThemeManager.EditorTheme.GetGroup($"Notification {type}"), true, roundedSide: SpriteHelper.RoundedSide.Top);
+                EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/bg").GetComponent<Image>(), EditorTheme.GetGroup($"Notification {type}"), true, roundedSide: SpriteHelper.RoundedSide.Top);
                 EditorThemeManager.ApplyGraphic(textComponent, ThemeGroup.Light_Text);
                 EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
                 EditorThemeManager.ApplyLightText(notif.transform.Find("bg/title").GetComponent<Text>());
@@ -2308,9 +2339,9 @@ namespace BetterLegacy.Editor.Managers
             return spacer;
         }
 
-        public static GameObject GenerateLabels(string name, Transform parent, params LabelSettings[] labels) => GenerateLabels(name, parent, -1, labels);
+        public static GameObject GenerateLabels(string name, Transform parent, params Label[] labels) => GenerateLabels(name, parent, -1, labels);
 
-        public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, params LabelSettings[] labels)
+        public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, params Label[] labels)
         {
             var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, name, siblingIndex);
             var first = label.transform.GetChild(0);
@@ -2331,7 +2362,7 @@ namespace BetterLegacy.Editor.Managers
             return label;
         }
         
-        public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, bool applyThemes, params LabelSettings[] labels)
+        public static GameObject GenerateLabels(string name, Transform parent, int siblingIndex, bool applyThemes, params Label[] labels)
         {
             var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, name, siblingIndex);
             var first = label.transform.GetChild(0);
@@ -2379,10 +2410,36 @@ namespace BetterLegacy.Editor.Managers
             if (EditorManager.inst.markerTimeline)
                 EditorManager.inst.markerTimeline.SetActive(EditorConfig.Instance.ShowMarkers.Value);
 
+            var layers = Creator.NewUIObject("layer toggles", timelineBar.transform, 7);
+            var layersLayout = layers.AddComponent<HorizontalLayoutGroup>();
+            layersLayout.childControlWidth = true;
+            layersLayout.spacing = 8f;
+
             for (int i = 1; i <= 5; i++)
-                timelineBar.transform.Find(i.ToString()).SetParent(transform);
+                timelineBar.transform.Find(i.ToString()).SetParent(layers.transform);
+            editorLayerToggles = layers.GetComponentsInChildren<Toggle>();
+            int layerNum = 0;
+            foreach (var toggle in editorLayerToggles)
+            {
+                toggle.group = null;
+                CoreHelper.Destroy(toggle.GetComponent<EventTrigger>());
+                EditorThemeManager.AddGraphic(toggle.image, layerNum switch
+                {
+                    0 => ThemeGroup.Layer_1,
+                    1 => ThemeGroup.Layer_2,
+                    2 => ThemeGroup.Layer_3,
+                    3 => ThemeGroup.Layer_4,
+                    4 => ThemeGroup.Layer_5,
+                    _ => ThemeGroup.Null,
+                });
+                EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
+                toggle.gameObject.AddComponent<ContrastColors>().Init(toggle.transform.Find("Background/Text").GetComponent<Text>(), toggle.image);
+                layerNum++;
+            }
+            EditorHelper.SetComplexity(layers, Complexity.Simple);
 
             eventLayerToggle = timelineBar.transform.Find("6").GetComponent<Toggle>();
+            eventLayerToggle.group = null;
             Destroy(eventLayerToggle.GetComponent<EventTrigger>());
 
             var timeObj = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(timelineBar.transform, "Time Input", 0);
@@ -2412,7 +2469,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.SetComplexity(timeField.gameObject, Complexity.Normal);
 
             var layersObj = timeObj.Duplicate(timelineBar.transform, "layers", 7);
-            layersObj.SetActive(true);
+            EditorHelper.SetComplexity(layersObj, Complexity.Normal);
             layersObj.transform.localScale = Vector3.one;
 
             TooltipHelper.AssignTooltip(layersObj, "Editor Layer", 3f);
