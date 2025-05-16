@@ -11,9 +11,17 @@
 - setImage and setImageOther modifiers now accept stored images.
 - Implemented Prefab Object random transform.
 
+### Editor
+- Added a BG Object counter to Prefab Object Editor.
+- Editor Layer toggles now re-enable when Editor Complexity is set to "Simple".
+- Added Indexer to Prefab Object Editor.
+
 ## Changes
 ### Core
 - Optimized setImageOther modifier by loading the sprite before iterating through the group.
+
+### Editor
+- Reorganized / reworked a ton of Editor UI.
 
 ### Example Companion
 - Example's commands make him say something now.
@@ -22,6 +30,8 @@
 ## Fixes
 - Fixed most parent settings in Prefab Objects not being read from the .lsb files.
 - Fixed Example's mirror and flip commands being the same.
+- Fixed animateObject not running.
+- Fixed modifier editors not disabling when Editor Complexity is changed.
 
 ------------------------------------------------------------------------------------------
 
