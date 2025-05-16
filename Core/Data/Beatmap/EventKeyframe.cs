@@ -60,6 +60,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public int random;
 
+        public RandomType RandomType => (RandomType)random;
+
         public bool relative;
 
         public bool flee;
