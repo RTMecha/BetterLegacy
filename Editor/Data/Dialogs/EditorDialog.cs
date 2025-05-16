@@ -14,17 +14,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     {
         public EditorDialog() { }
 
-        public EditorDialog(string name)
-        {
-            Name = name;
-            GameObject = GetLegacyDialog().Dialog.gameObject;
-            if (GameObject)
-            {
-                var clickable = GameObject.AddComponent<Clickable>();
-                clickable.onEnter = eventData => MouseOver = true;
-                clickable.onExit = eventData => MouseOver = false;
-            }
-        }
+        public EditorDialog(string name) => InitDialog(name);
 
         #region Properties
 
@@ -93,6 +83,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Methods
 
+        /// <summary>
+        /// Initializes the editor dialog UI.
+        /// </summary>
         public virtual void Init()
         {
             if (init)
@@ -135,10 +128,34 @@ namespace BetterLegacy.Editor.Data.Dialogs
         }
 
         /// <summary>
+        /// Initializes the editor dialog with a name.
+        /// </summary>
+        /// <param name="name">Name to initialize.</param>
+        public virtual void InitDialog(string name)
+        {
+            Name = name;
+            GameObject = GetLegacyDialog().Dialog.gameObject;
+            SetupHover();
+        }
+
+        /// <summary>
         /// Gets the original dialog.
         /// </summary>
         /// <returns>Returns the vanilla dialog class.</returns>
         public EditorManager.EditorDialog GetLegacyDialog() => EditorManager.inst.GetDialog(Name);
+
+        /// <summary>
+        /// Sets up the mouse hover controller.
+        /// </summary>
+        public virtual void SetupHover()
+        {
+            if (!GameObject)
+                return;
+
+            var clickable = GameObject.AddComponent<Clickable>();
+            clickable.onEnter = eventData => MouseOver = true;
+            clickable.onExit = eventData => MouseOver = false;
+        }
 
         public override string ToString() => Name;
 
