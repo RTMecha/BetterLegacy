@@ -4365,9 +4365,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static void animateObject<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not ITransformable transformable || modifier.referenceType != ModifierReferenceType.CustomPlayer)
-                return;
-
             var time = modifier.GetFloat(0, 0f, variables);
             var type = modifier.GetInt(1, 0, variables);
             var x = modifier.GetFloat(2, 0f, variables);
@@ -4379,12 +4376,17 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            ITransformable transformable;
             if (modifier.referenceType == ModifierReferenceType.CustomPlayer)
             {
                 var id = modifier.GetValue(7, variables);
                 if (modifier.reference is CustomPlayer customPlayer && customPlayer.Player && customPlayer.Player.customObjects.TryFind(x => x.id == id, out RTPlayer.CustomObject customObject))
                     transformable = customObject;
+                else
+                    transformable = null;
             }
+            else
+                transformable = modifier.reference as ITransformable;
 
             if (transformable == null)
                 return;
