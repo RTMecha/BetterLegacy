@@ -170,13 +170,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (!RTEditor.ShowModdedUI)
                 showModifiers = false;
 
+            ScrollView.gameObject.SetActive(showModifiers);
+
             ActiveToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
             ActiveToggle.onValueChanged.ClearAll();
             ActiveToggle.isOn = showModifiers;
             ActiveToggle.onValueChanged.AddListener(_val =>
             {
                 showModifiers = _val;
-                ScrollView.gameObject.SetActive(showModifiers);
                 CoroutineHelper.StartCoroutine(RenderModifiers(modifyable));
             });
 
