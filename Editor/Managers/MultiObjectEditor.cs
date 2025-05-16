@@ -138,7 +138,7 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(dataLeft.GetComponent<VerticalLayoutGroup>());
 
-            GenerateLabels(parent, 32f, new LabelSettings("- Main Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            GenerateLabels(parent, 32f, new Label("- Main Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
             // Layers
             {
                 GenerateLabels(parent, 32f, "Set Group Editor Layer");
@@ -538,7 +538,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             GeneratePad(parent);
-            GenerateLabels(parent, 32f, new LabelSettings("- Actions -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            GenerateLabels(parent, 32f, new Label("- Actions -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
             // Clear data
             {
@@ -689,7 +689,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             GeneratePad(parent);
-            GenerateLabels(parent, 32f, new LabelSettings("- Object Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            GenerateLabels(parent, 32f, new Label("- Object Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
             // Autokill Type
             {
@@ -1225,7 +1225,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             GeneratePad(parent);
-            GenerateLabels(parent, 32f, new LabelSettings("- Prefab -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            GenerateLabels(parent, 32f, new Label("- Prefab -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
             // Assign Objects to Prefab
             {
@@ -1497,7 +1497,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             GeneratePad(parent);
-            GenerateLabels(parent, 32f, new LabelSettings("- Toggles -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            GenerateLabels(parent, 32f, new Label("- Toggles -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
             // Lock
             {
@@ -1761,7 +1761,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             GeneratePad(parent);
-            GenerateLabels(parent, 32f, new LabelSettings("- Pasting -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            GenerateLabels(parent, 32f, new Label("- Pasting -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
             // Paste Modifier
             {
@@ -2031,7 +2031,7 @@ namespace BetterLegacy.Editor.Managers
 
             GeneratePad(parent, Complexity.Advanced);
 
-            var replaceLabels = GenerateLabels(parent, 32f, new LabelSettings("- Replace strings -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            var replaceLabels = GenerateLabels(parent, 32f, new Label("- Replace strings -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
             EditorHelper.SetComplexity(replaceLabels, Complexity.Advanced);
 
             // Replace Name
@@ -2088,7 +2088,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Assign Colors
             {
-                var labels1 = GenerateLabels(parent, 32f, new LabelSettings("- Assign colors -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+                var labels1 = GenerateLabels(parent, 32f, new Label("- Assign colors -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
                 var labelsColor = GenerateLabels(parent, 32f, "Primary Color");
 
@@ -2617,7 +2617,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             GeneratePad(parent, Complexity.Normal);
-            var pastingDataLabels = GenerateLabels(parent, 32f, new LabelSettings("- Pasting Data -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            var pastingDataLabels = GenerateLabels(parent, 32f, new Label("- Pasting Data -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
             EditorHelper.SetComplexity(pastingDataLabels, Complexity.Normal);
 
             // Paste Data
@@ -3782,7 +3782,7 @@ namespace BetterLegacy.Editor.Managers
             return labelBase;
         }
 
-        public GameObject GenerateLabels(Transform parent, float sizeY, params LabelSettings[] labels)
+        public GameObject GenerateLabels(Transform parent, float sizeY, params Label[] labels)
         {
             var labelBase = Creator.NewUIObject("label", parent);
             labelBase.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);

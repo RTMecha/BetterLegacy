@@ -144,7 +144,7 @@ namespace BetterLegacy.Editor.Managers
                         StartCoroutine(RefreshEditor());
                     });
 
-                    EditorThemeManager.AddSelectable(functionButtonStorage.button, EditorThemeManager.EditorTheme.GetGroup($"Tab Color {i + 1}"));
+                    EditorThemeManager.AddSelectable(functionButtonStorage.button, EditorTheme.GetGroup($"Tab Color {i + 1}"));
                     tab.AddComponent<ContrastColors>().Init(functionButtonStorage.label, tab.GetComponent<Image>());
                 }
             }

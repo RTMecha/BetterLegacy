@@ -18,6 +18,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Planners;
 
 namespace BetterLegacy.Editor.Managers
@@ -133,8 +134,6 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 EditorThemeManager.AddInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
-
-                var tfv = ObjEditor.inst.ObjectView.transform;
 
                 var addNewItem = EditorPrefabHolder.Instance.Function2Button.Duplicate(contentBase, "new", 1);
                 addNewItem.SetActive(true);
@@ -305,6 +304,9 @@ namespace BetterLegacy.Editor.Managers
 
             // Item Prefabs
             {
+                textEditorPrefab = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(assetsParent, "text editor");
+                CoreHelper.Delete(textEditorPrefab.transform.Find("edit"));
+
                 // Document
                 {
                     var prefab = baseCardPrefab.Duplicate(assetsParent, "document prefab");
@@ -767,7 +769,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -788,7 +790,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
+                    var text2 = textEditorPrefab.Duplicate(g1.transform, "text");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 720f);
                     text2.gameObject.SetActive(true);
 
@@ -826,12 +828,9 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
-
-                    if (text1.transform.Find("edit"))
-                        Destroy(text1.transform.Find("edit").gameObject);
 
                     todoEditorText = text1.GetComponent<InputField>();
                     EditorThemeManager.AddInputField(todoEditorText);
@@ -900,7 +899,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "name");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -921,7 +920,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "gender");
+                    var text2 = textEditorPrefab.Duplicate(g1.transform, "gender");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -942,7 +941,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "description");
+                    var text3 = textEditorPrefab.Duplicate(g1.transform, "description");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -1175,7 +1174,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1210,7 +1209,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "name");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1231,7 +1230,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "description");
+                    var text2 = textEditorPrefab.Duplicate(g1.transform, "description");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -1255,7 +1254,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "path");
+                    var text3 = textEditorPrefab.Duplicate(g1.transform, "path");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -1309,7 +1308,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "name");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1330,7 +1329,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "year");
+                    var text2 = textEditorPrefab.Duplicate(g1.transform, "year");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -1351,7 +1350,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var renderType = ObjEditor.inst.ObjectView.transform.Find("autokill/tod-dropdown").gameObject.Duplicate(g1.transform, "month");
+                    var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(g1.transform, "month");
                     scheduleEditorMonth = renderType.GetComponent<Dropdown>();
                     scheduleEditorMonth.options = CoreHelper.StringToOptionData("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
                     EditorThemeManager.AddDropdown(scheduleEditorMonth);
@@ -1370,7 +1369,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "day");
+                    var text3 = textEditorPrefab.Duplicate(g1.transform, "day");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -1391,7 +1390,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text4 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "hour");
+                    var text4 = textEditorPrefab.Duplicate(g1.transform, "hour");
                     text4.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text4.gameObject.SetActive(true);
 
@@ -1412,7 +1411,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text5 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "minute");
+                    var text5 = textEditorPrefab.Duplicate(g1.transform, "minute");
                     text5.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text5.gameObject.SetActive(true);
 
@@ -1447,7 +1446,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1468,7 +1467,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
+                    var text2 = textEditorPrefab.Duplicate(g1.transform, "text");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 360f);
                     text2.gameObject.SetActive(true);
 
@@ -1552,7 +1551,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1564,7 +1563,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "path");
+                    var text1 = textEditorPrefab.Duplicate(g1.transform, "path");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1573,7 +1572,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1585,7 +1584,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
+                    var text2 = textEditorPrefab.Duplicate(g1.transform, "name");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -1594,7 +1593,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(334.4f, 32f);
@@ -1619,7 +1618,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1644,7 +1643,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1671,7 +1670,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
+                        var label = EditorPrefabHolder.Instance.Labels.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1683,7 +1682,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "index");
+                    var text3 = textEditorPrefab.Duplicate(g1.transform, "index");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -1846,6 +1845,8 @@ namespace BetterLegacy.Editor.Managers
         public Texture2D verticalDrag;
 
         #region Editor
+
+        public GameObject textEditorPrefab;
 
         public Image editorTitlePanel;
 
@@ -3002,7 +3003,7 @@ namespace BetterLegacy.Editor.Managers
             var toggle = gameObject.GetComponent<Toggle>();
             tabs.Add(gameObject.GetComponent<Toggle>());
 
-            EditorThemeManager.AddGraphic(image, EditorThemeManager.EditorTheme.GetGroup($"Tab Color {tabs.Count}"), true);
+            EditorThemeManager.AddGraphic(image, EditorTheme.GetGroup($"Tab Color {tabs.Count}"), true);
             EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Background_1);
 
             return gameObject;
