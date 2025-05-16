@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
@@ -86,6 +87,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public RectTransform EditorSettingsParent { get; set; }
         public Slider BinSlider { get; set; }
         public InputField EditorLayerField { get; set; }
+        public Toggle[] EditorLayerToggles { get; set; }
 
         public InputFieldStorage EditorIndexField { get; set; }
 
@@ -406,10 +408,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // ZPosition
             {
-                var iLabel = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "label", 6);
-                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Z Position";
+                var iLabel = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "label", 8);
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Position Z";
 
-                var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "zposition", 7);
+                var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "zposition", 9);
                 CoreHelper.Delete(iterations.transform.GetChild(1).gameObject);
 
                 ZPositionField = iterations.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
@@ -418,10 +420,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // ZScale
             {
-                var iLabel = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "label", 8);
-                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Z Scale";
+                var iLabel = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "label", 12);
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Scale Z";
 
-                var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "zscale", 9);
+                var iterations = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "zscale", 13);
                 CoreHelper.Delete(iterations.transform.GetChild(1).gameObject);
 
                 ZScaleField = iterations.transform.Find("x").gameObject.GetOrAddComponent<InputFieldStorage>();
@@ -463,7 +465,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     // Samples
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 24, false,
-                        new LabelSettings("Reactive Position Samples") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Position Samples") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactivePositionSamples = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-position-samples", 25);
                     ReactivePositionSamplesFields = reactivePositionSamples.AddComponent<Vector2InputFieldStorage>();
@@ -472,7 +474,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Intensity
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 26, false,
-                        new LabelSettings("Reactive Position Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Position Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactivePositionIntensity = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-position-intensity", 27);
                     ReactivePositionIntensityFields = reactivePositionIntensity.AddComponent<Vector2InputFieldStorage>();
@@ -484,7 +486,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     // Samples
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 28, false,
-                        new LabelSettings("Reactive Scale Samples") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Scale Samples") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveScaleSamples = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-scale-samples", 29);
                     ReactiveScaleSamplesFields = reactiveScaleSamples.AddComponent<Vector2InputFieldStorage>();
@@ -493,7 +495,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Intensity
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 30, false,
-                        new LabelSettings("Reactive Scale Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Scale Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveScaleIntensity = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-scale-intensity", 31);
                     ReactiveScaleIntensityFields = reactiveScaleIntensity.AddComponent<Vector2InputFieldStorage>();
@@ -505,7 +507,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     // Sample
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 32, false,
-                        new LabelSettings("Reactive Rotation Samples") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Rotation Samples") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveRotationSample = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-rotation-sample", 33);
 
@@ -517,7 +519,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Intensity
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 34, false,
-                        new LabelSettings("Reactive Rotation Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Rotation Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveRotationIntensity = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-rotation-intensity", 35);
 
@@ -532,7 +534,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     // Sample
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 36, false,
-                        new LabelSettings("Reactive Color Sample") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Color Sample") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveColorSample = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-color-sample", 37);
 
@@ -544,7 +546,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Intensity
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 38, false,
-                        new LabelSettings("Reactive Color Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Color Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveColorIntensity = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-color-intensity", 39);
 
@@ -556,7 +558,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Color Slot
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 40, false,
-                        new LabelSettings("Reactive Color") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Color") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveColor = LeftContent.Find("color").gameObject.Duplicate(LeftContent, "reactive-color", 41);
                     CustomReactive.Add(reactiveColor);
@@ -567,7 +569,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     // Sample
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 42, false,
-                        new LabelSettings("Reactive Z Sample") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Z Sample") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveZPositionSample = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-z-sample", 43);
 
@@ -579,7 +581,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Intensity
                     CustomReactive.Add(RTEditor.GenerateLabels("label", LeftContent, 44, false,
-                        new LabelSettings("Reactive Z Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
+                        new Label("Reactive Z Intensity") { horizontalWrap = HorizontalWrapMode.Overflow }));
 
                     var reactiveZPositionIntensity = LeftContent.Find("position").gameObject.Duplicate(LeftContent, "reactive-z-intensity", 45);
 
@@ -732,7 +734,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Start Time
             {
                 RTEditor.GenerateLabels("label", LeftContent, 4, false,
-                    new LabelSettings("Start Time") { horizontalWrap = HorizontalWrapMode.Overflow });
+                    new Label("Start Time") { horizontalWrap = HorizontalWrapMode.Overflow });
 
                 var time = ObjectEditor.inst.Dialog.StartTimeField.gameObject.Duplicate(LeftContent, "time", 5);
                 StartTimeField = time.GetComponent<InputFieldStorage>();
@@ -749,7 +751,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Autokill
             {
                 RTEditor.GenerateLabels("label", LeftContent, 6, false,
-                    new LabelSettings("Time of Death") { horizontalWrap = HorizontalWrapMode.Overflow });
+                    new Label("Time of Death") { horizontalWrap = HorizontalWrapMode.Overflow });
 
                 var autokill = ObjectEditor.inst.Dialog.AutokillDropdown.transform.parent.gameObject.Duplicate(LeftContent, "autokill", 7);
 
@@ -772,30 +774,46 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Editor Settings
             {
                 RTEditor.GenerateLabels("editorlabel", LeftContent, 35, false,
-                    new LabelSettings("Editor Layer") { horizontalWrap = HorizontalWrapMode.Overflow },
-                    new LabelSettings("Editor Bin") { horizontalWrap = HorizontalWrapMode.Overflow }
+                    new Label("Editor Layer") { horizontalWrap = HorizontalWrapMode.Overflow },
+                    new Label("Editor Bin") { horizontalWrap = HorizontalWrapMode.Overflow }
                     );
 
                 EditorSettingsParent = ObjectEditor.inst.Dialog.EditorSettingsParent.gameObject.Duplicate(LeftContent, "editor", 36).transform.AsRT();
                 try
                 {
-                    EditorLayerField = EditorSettingsParent.Find("layers")?.GetComponent<InputField>();
+                    EditorLayerField = EditorSettingsParent.Find("layers").GetComponent<InputField>();
                     EditorLayerField.image = EditorLayerField.GetComponent<Image>();
-                    BinSlider = EditorSettingsParent.Find("bin")?.GetComponent<Slider>();
+                    BinSlider = EditorSettingsParent.Find("bin").GetComponent<Slider>();
+
+                    EditorLayerToggles = EditorSettingsParent.Find("layer").GetComponentsInChildren<Toggle>();
+                    CoreHelper.Destroy(EditorSettingsParent.Find("layer").GetComponent<ToggleGroup>());
+                    int layerNum = 0;
+                    foreach (var toggle in EditorLayerToggles)
+                    {
+                        toggle.group = null;
+                        CoreHelper.Destroy(toggle.GetComponent<EventTrigger>());
+                        EditorThemeManager.AddGraphic(toggle.image, layerNum switch
+                        {
+                            0 => ThemeGroup.Layer_1,
+                            1 => ThemeGroup.Layer_2,
+                            2 => ThemeGroup.Layer_3,
+                            3 => ThemeGroup.Layer_4,
+                            4 => ThemeGroup.Layer_5,
+                            _ => ThemeGroup.Null,
+                        });
+                        EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Timeline_Bar);
+                        toggle.gameObject.AddComponent<ContrastColors>().Init(toggle.transform.Find("Background/Text").GetComponent<Text>(), toggle.image);
+                        layerNum++;
+                    }
 
                     RTEditor.GenerateLabels("indexer_label", LeftContent, 37, false,
-                        new LabelSettings("Editor Index") { horizontalWrap = HorizontalWrapMode.Overflow });
+                        new Label("Editor Index") { horizontalWrap = HorizontalWrapMode.Overflow });
 
                     var indexer = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "indexer", 38);
                     EditorIndexField = indexer.GetComponent<InputFieldStorage>();
-                    EditorThemeManager.AddInputField(EditorIndexField.inputField);
-                    EditorThemeManager.AddSelectable(EditorIndexField.leftGreaterButton, ThemeGroup.Function_2, false);
-                    EditorThemeManager.AddSelectable(EditorIndexField.leftButton, ThemeGroup.Function_2, false);
-                    EditorThemeManager.AddSelectable(EditorIndexField.rightButton, ThemeGroup.Function_2, false);
-                    EditorThemeManager.AddSelectable(EditorIndexField.rightGreaterButton, ThemeGroup.Function_2, false);
-
                     if (EditorIndexField.middleButton)
                         CoreHelper.Delete(EditorIndexField.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(EditorIndexField);
                 }
                 catch (Exception ex)
                 {
@@ -806,7 +824,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Prefab Reference
             {
                 CollapsePrefabLabel = RTEditor.GenerateLabels("collapselabel", LeftContent, 39, false,
-                    new LabelSettings("Prefab Collapse / Apply to All") { horizontalWrap = HorizontalWrapMode.Overflow });
+                    new Label("Prefab Collapse / Apply to All") { horizontalWrap = HorizontalWrapMode.Overflow });
 
                 var collapsePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "applyprefab", 40);
                 CollapsePrefabButton = collapsePrefab.GetComponent<FunctionButtonStorage>();
@@ -816,7 +834,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddGraphic(CollapsePrefabButton.label, ThemeGroup.Function_2_Text);
 
                 AssignPrefabLabel = RTEditor.GenerateLabels("assignlabel", LeftContent, 41, false,
-                    new LabelSettings("Assign Object to Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
+                    new Label("Assign Object to Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
 
                 var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "assignprefab", 42);
                 AssignPrefabButton = assignPrefab.GetComponent<FunctionButtonStorage>();
