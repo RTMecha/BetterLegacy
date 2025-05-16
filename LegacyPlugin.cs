@@ -115,24 +115,7 @@ namespace BetterLegacy
             try
             {
                 CoreHelper.Log("Setting up Editor Themes...");
-
-                EditorThemeManager.EditorThemes = new List<EditorThemeManager.EditorTheme>();
-
-                var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_themes.lst"));
-
-                for (int i = 0; i < jn["themes"].Count; i++)
-                {
-                    var dictionary = new Dictionary<ThemeGroup, Color>();
-                    for (int j = 0; j < jn["themes"][i]["groups"].Count; j++)
-                    {
-                        var colorJN = jn["themes"][i]["groups"][j]["color"];
-                        string name = jn["themes"][i]["groups"][j]["name"];
-                        if (Enum.TryParse(name, out ThemeGroup group) && !dictionary.ContainsKey(group))
-                            dictionary.Add(group, new Color(colorJN["r"].AsFloat, colorJN["g"].AsFloat, colorJN["b"].AsFloat, colorJN["a"].AsFloat));
-                    }
-
-                    EditorThemeManager.EditorThemes.Add(new EditorThemeManager.EditorTheme(jn["themes"][i]["name"], dictionary));
-                }
+                EditorThemeManager.LoadEditorThemes();
             }
             catch (Exception ex)
             {
