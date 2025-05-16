@@ -550,7 +550,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             jn["e"]["rot"]["x"] = events[2].values[0];
-            if (events[1].random != 0)
+            if (events[2].random != 0)
             {
                 jn["e"]["rot"]["r"] = events[2].random;
                 jn["e"]["rot"]["rx"] = events[2].randomValues[0];
