@@ -259,6 +259,16 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
+        /// Deletes a <see cref="Transform"/> by removing it from its parent and destroying it.
+        /// </summary>
+        /// <param name="transform">Transform to destroy.</param>
+        public static void Delete(Transform transform)
+        {
+            if (transform)
+                Delete(transform.gameObject);
+        }
+
+        /// <summary>
         /// Deletes several <see cref="GameObject"/>s by removing it from its parent and destroying it.
         /// </summary>
         /// <param name="objects">GameObjects to destroy.</param>
@@ -328,6 +338,19 @@ namespace BetterLegacy.Core.Helpers
         {
             if (gameObject)
                 gameObject.SetActive(active);
+        }
+
+        /// <summary>
+        /// Removes unnecessary animator from selectables, due to it getting in the way of editor themes.
+        /// </summary>
+        /// <param name="selectable">Selectable element to remove an animator from.</param>
+        public static void RemoveAnimator(Selectable selectable)
+        {
+            if (!selectable)
+                return;
+
+            Destroy(selectable.GetComponent<Animator>(), true);
+            selectable.transition = Selectable.Transition.ColorTint;
         }
 
         public static IEnumerator FixUIText()
@@ -819,10 +842,9 @@ namespace BetterLegacy.Core.Helpers
             switch (preset)
             {
                 // Beginner
-                case UserPreferenceType.Beginner:
-                    {
+                case UserPreferenceType.Beginner: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Simple;
-                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Legacy;
+                        EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Legacy;
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = true;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = true;
@@ -858,10 +880,9 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                 // Legacy
-                case UserPreferenceType.Legacy:
-                    {
+                case UserPreferenceType.Legacy: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
-                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Legacy;
+                        EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Legacy;
                         EditorConfig.Instance.RoundedUI.Value = false;
                         EditorConfig.Instance.DraggingPlaysSound.Value = false;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = true;
@@ -897,10 +918,9 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                 // Alpha
-                case UserPreferenceType.Alpha:
-                    {
+                case UserPreferenceType.Alpha: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
-                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Modern;
+                        EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Modern;
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = false;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = false;
@@ -936,10 +956,9 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                 // Modded
-                case UserPreferenceType.None:
-                    {
+                case UserPreferenceType.None: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Advanced;
-                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Dark;
+                        EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Dark;
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = true;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = false;
