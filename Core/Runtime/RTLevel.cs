@@ -1494,16 +1494,17 @@ namespace BetterLegacy.Core.Runtime
             switch (lower)
             {
                 case PrefabContext.TRANSFORM_OFFSET: {
+                        prefabObject.cachedTransform = null;
                         var transform = prefabObject.GetTransformOffset();
 
                         foreach (var prefabable in prefabObject.expandedObjects)
                         {
-                            if (prefabable.GetRuntimeObject() is IPrefabOffset prefabOffset)
-                            {
-                                prefabOffset.PrefabOffsetPosition = transform.position;
-                                prefabOffset.PrefabOffsetScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-                                prefabOffset.PrefabOffsetRotation = new Vector3(0f, 0f, transform.rotation);
-                            }
+                            if (prefabable.GetRuntimeObject() is not IPrefabOffset prefabOffset)
+                                continue;
+
+                            prefabOffset.PrefabOffsetPosition = transform.position;
+                            prefabOffset.PrefabOffsetScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+                            prefabOffset.PrefabOffsetRotation = new Vector3(0f, 0f, transform.rotation);
                         }
 
                         break;
