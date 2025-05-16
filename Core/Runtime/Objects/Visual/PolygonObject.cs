@@ -26,8 +26,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             meshFilter = gameObject.GetComponent<MeshFilter>();
 
             polygonCollider = collider as PolygonCollider2D;
-            CoreHelper.Log($"Collider: {collider}\n" +
-                        $"Polygon Collider: {polygonCollider}");
 
             UpdatePolygon(polygonShape);
         }
