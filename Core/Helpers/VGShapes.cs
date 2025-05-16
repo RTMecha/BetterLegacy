@@ -544,7 +544,7 @@ namespace BetterLegacy.Core.Helpers
         public static void RoundedRingMesh(MeshFilter meshFilter, PolygonCollider2D polygonCollider, float radius = 0.5f, int cornerCount = 4, float cornerRoundness = 0.25f, float thickness = 0.2f, int sliceCount = -1, Vector2 thicknessOffset = default, Vector2? thicknessScale = null) // -1 means draw full shape
         {
             cornerCount = Mathf.Clamp(cornerCount, MIN_VERTEX_COUNT, MAX_VERTEX_COUNT);
-            sliceCount = sliceCount < 0 ? cornerCount : Mathf.Clamp(sliceCount, 1, cornerCount);
+            sliceCount = sliceCount < 0 ? cornerCount : Mathf.Clamp(sliceCount, 0, cornerCount);
 
             if (cornerCount > 12)
                 cornerRoundness = 0;
