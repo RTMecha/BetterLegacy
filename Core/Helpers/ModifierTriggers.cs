@@ -1,35 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using UnityEngine;
 
-using LSFunctions;
-
 using SimpleJSON;
 
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
-using BetterLegacy.Core.Runtime.Objects;
-using BetterLegacy.Core.Runtime.Objects.Visual;
-using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Managers;
-using BetterLegacy.Menus;
-using BetterLegacy.Menus.UI.Interfaces;
 
 // ignore naming styles since modifiers are named like this.
 #pragma warning disable IDE1006 // Naming Styles
