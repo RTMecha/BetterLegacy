@@ -3916,7 +3916,7 @@ namespace BetterLegacy.Core.Helpers
             var sides = RTMath.Clamp(modifier.GetInt(1, 3, variables), 3, 32);
             var roundness = RTMath.Clamp(modifier.GetFloat(2, 0f, variables), 0f, 1f);
             var thickness = RTMath.Clamp(modifier.GetFloat(3, 1f, variables), 0f, 1f);
-            var slices = RTMath.Clamp(modifier.GetInt(4, 3, variables), 1, sides);
+            var slices = RTMath.Clamp(modifier.GetInt(4, 3, variables), 0, sides);
             var thicknessOffset = new Vector2(modifier.GetFloat(5, 0f, variables), modifier.GetFloat(6, 0f, variables));
             var thicknessScale = new Vector2(modifier.GetFloat(7, 1f, variables), modifier.GetFloat(8, 1f, variables));
 
@@ -3944,7 +3944,7 @@ namespace BetterLegacy.Core.Helpers
             var sides = RTMath.Clamp(modifier.GetInt(2, 3, variables), 3, 32);
             var roundness = RTMath.Clamp(modifier.GetFloat(3, 0f, variables), 0f, 1f);
             var thickness = RTMath.Clamp(modifier.GetFloat(4, 1f, variables), 0f, 1f);
-            var slices = RTMath.Clamp(modifier.GetInt(5, 3, variables), 1, sides);
+            var slices = RTMath.Clamp(modifier.GetInt(5, 3, variables), 0, sides);
             var thicknessOffset = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
             var thicknessScale = new Vector2(modifier.GetFloat(8, 1f, variables), modifier.GetFloat(9, 1f, variables));
 
