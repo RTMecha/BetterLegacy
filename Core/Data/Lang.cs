@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using SimpleJSON;
 
+using BetterLegacy.Configs;
+
 namespace BetterLegacy.Core.Data
 {
     /// <summary>
@@ -15,6 +17,7 @@ namespace BetterLegacy.Core.Data
         public Lang() { }
 
         public Lang(string text) : this(Language.English, text) { }
+
         public Lang(Language language, string text) => languages[language] = text;
 
         public Lang(string[] array) => Read(array);
@@ -148,9 +151,13 @@ namespace BetterLegacy.Core.Data
             set => languages[language] = value;
         }
 
-        public static implicit operator string(Lang lang) => lang ? lang.GetText(Configs.CoreConfig.Instance.Language.Value) : null;
+        public static implicit operator string(Lang lang) => lang ? lang.GetText(CurrentLanguage) : null;
 
-        public static implicit operator Lang(string input) => new Lang(Configs.CoreConfig.Instance.Language.Value, input);
+        public static implicit operator Lang(string input) => new Lang(CurrentLanguage, input);
+
+        public static Language CurrentLanguage => CoreConfig.Instance?.Language?.Value ?? Language.English;
+
+        public string ToLower() => GetText(CurrentLanguage)?.ToLower() ?? string.Empty;
 
         public override string ToString() => this;
 
