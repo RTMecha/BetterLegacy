@@ -15,6 +15,10 @@
 - Added a BG Object counter to Prefab Object Editor.
 - Editor Layer toggles now re-enable when Editor Complexity is set to "Simple".
 - Added Indexer to Prefab Object Editor.
+- Added Background and Dialogue to the default Prefab Types.
+
+### Internal
+- Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
 
 ## Changes
 ### Core
