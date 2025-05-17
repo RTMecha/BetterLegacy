@@ -15,6 +15,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
@@ -25,6 +26,8 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(DataManager))]
     public class DataManagerPatch
     {
+        static bool run;
+
         public static DataManager Instance { get => DataManager.inst; set => DataManager.inst = value; }
 
         [HarmonyPatch(nameof(DataManager.Start))]
@@ -269,6 +272,35 @@ namespace BetterLegacy.Patchers
             } // Example Prefab
 
             Instance.PrefabTypes.Clear();
+
+            if (run)
+                return;
+
+            run = true;
+
+            var commandLineArgs = Environment.GetCommandLineArgs();
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Length: {commandLineArgs.Length}");
+            foreach (var line in commandLineArgs)
+                sb.AppendLine(line);
+            CoreHelper.Log($"Command line\n: {sb}");
+
+            if (commandLineArgs.Length > 1 && !string.IsNullOrEmpty(commandLineArgs[1]))
+            {
+                var path = commandLineArgs[1];
+                path = path.Remove(Level.LEVEL_LSB);
+                path = path.Remove(Level.LEVEL_VGD);
+                path = path.Remove(Level.METADATA_LSB);
+                path = path.Remove(Level.PLAYERS_LSB);
+
+                if (!Level.Verify(path))
+                    return;
+
+                if (!ModCompatibility.EditorOnStartupInstalled)
+                    LevelManager.Play(new Level(path));
+                else
+                    LegacyPlugin.LevelStartupPath = path;
+            }
         }
 
         [HarmonyPatch(nameof(DataManager.SaveMetadata), typeof(string), typeof(DataManager.MetaData))]

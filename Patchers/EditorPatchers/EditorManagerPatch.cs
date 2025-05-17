@@ -323,8 +323,11 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                CoreHelper.Log($"EDITOR START -> {nameof(EditorTimeline.AssignTimelineTexture)}");
-                CoroutineHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
+                if (string.IsNullOrEmpty(LegacyPlugin.LevelStartupPath))
+                {
+                    CoreHelper.Log($"EDITOR START -> {nameof(EditorTimeline.AssignTimelineTexture)}");
+                    CoroutineHelper.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(Instance.baseSong));
+                }
                 CoreHelper.Log($"EDITOR START -> {nameof(EditorTimeline.UpdateTimelineSizes)}");
                 EditorTimeline.inst.UpdateTimelineSizes();
                 Instance.firstOpened = true;

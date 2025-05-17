@@ -341,6 +341,18 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"RTEDITOR INIT -> DONE!");
         }
 
+        void Start()
+        {
+            if (string.IsNullOrEmpty(LegacyPlugin.LevelStartupPath))
+                return;
+
+            // allows for opening a level directly using Open With
+            CoreHelper.Log($"Level Startup Path: {LegacyPlugin.LevelStartupPath}");
+            EditorManager.inst.loading = false;
+            CoroutineHelper.StartCoroutine(LoadLevel(new Level(LegacyPlugin.LevelStartupPath)));
+            LegacyPlugin.LevelStartupPath = null;
+        }
+
         void OnDestroy()
         {
             CoreHelper.LogError($"RTEditor was destroyed!");
@@ -1127,6 +1139,8 @@ namespace BetterLegacy.Editor.Managers
         public InputField editorPathField;
         public InputField themePathField;
         public InputField prefabPathField;
+
+        public bool loadingLevel;
 
         #endregion
 
@@ -3198,10 +3212,7 @@ namespace BetterLegacy.Editor.Managers
             var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 if (EditorConfig.Instance.WaveformGenerate.Value)
-                {
-                    EditorTimeline.inst.SetTimelineSprite(null);
-                    StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(true));
-                }
+                    StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(AudioManager.inst.CurrentAudioSource.clip, true));
                 else
                     EditorTimeline.inst.SetTimelineSprite(null);
             });
@@ -4761,12 +4772,13 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="level">Level to load and edit.</param>
         public IEnumerator LoadLevel(Level level)
         {
+            loadingLevel = true;
+
             CurrentLevel = level;
             var fullPath = RTFile.RemoveEndSlash(level.path);
             var currentFile = level.CurrentFile;
             level.currentFile = null; // reset since autosave loading should be temporary.
 
-            EditorManager.inst.loading = true;
             var sw = CoreHelper.StartNewStopwatch();
 
             RTPlayer.GameMode = GameMode.Regular;
@@ -4945,8 +4957,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.Log("Assigning waveform textures...");
                 InfoPopup.SetInfo($"Assigning Waveform Textures for [ {name} ]");
-                EditorTimeline.inst.SetTimelineSprite(null);
-                StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
+                StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(level.music));
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
             else
@@ -5036,7 +5047,7 @@ namespace BetterLegacy.Editor.Managers
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.LOADED_LEVEL);
 
-            EditorManager.inst.loading = false;
+            loadingLevel = false;
             fromNewLevel = false;
 
             rawJSON = null;

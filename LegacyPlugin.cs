@@ -52,6 +52,8 @@ namespace BetterLegacy
 
         public static Prefab ExamplePrefab { get; set; }
 
+        public static string LevelStartupPath { get; set; }
+
         void Awake()
         {
             inst = this;
