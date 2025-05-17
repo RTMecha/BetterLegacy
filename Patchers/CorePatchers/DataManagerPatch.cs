@@ -293,6 +293,12 @@ namespace BetterLegacy.Patchers
                 path = path.Remove(Level.METADATA_LSB);
                 path = path.Remove(Level.PLAYERS_LSB);
 
+                if (path.EndsWith(FileFormat.ASSET.Dot()))
+                {
+                    CoroutineHelper.StartCoroutine(StoryLevel.LoadFromAsset(path, LevelManager.Play));
+                    return;
+                }
+
                 if (!Level.Verify(path))
                     return;
 
