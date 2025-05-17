@@ -17,6 +17,7 @@ using Crosstales.FB;
 
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion;
+using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -3890,7 +3891,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
 
                 path.text = text;
-                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 1);
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 1);
             });
 
             var browseInternal = browseLocal.gameObject.Duplicate(browseBase.transform, "internal browse");
@@ -3907,7 +3908,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     path.text = _val;
-                    Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 1);
+                    Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 1);
                     BrowserPopup.Close();
                 });
             });
@@ -3944,7 +3945,7 @@ namespace BetterLegacy.Editor.Managers
             songTitleInputField.onValueChanged.AddListener(_val =>
             {
                 newLevelSongTitle = _val;
-                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 3);
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 3);
             });
 
             var levelNameField = levelName.GetComponent<InputField>();
@@ -3952,14 +3953,14 @@ namespace BetterLegacy.Editor.Managers
             levelNameField.onValueChanged.NewListener(_val =>
             {
                 EditorManager.inst.NewLevelName(_val);
-                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 2);
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 2);
             });
 
             var create = newFilePopup.Find("submit").GetComponent<Button>();
             create.onClick.NewListener(() =>
             {
                 CreateNewLevel();
-                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 4);
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 4);
             });
 
             EditorThemeManager.AddLightText(levelNameLabel.GetComponent<Text>());

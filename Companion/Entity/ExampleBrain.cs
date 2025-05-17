@@ -109,7 +109,7 @@ namespace BetterLegacy.Companion.Entity
                     #region Editor
 
                     case Notices.LOADED_LEVEL: {
-                            Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 5);
+                            Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 5);
 
                             break;
                         }

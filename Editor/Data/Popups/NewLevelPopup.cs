@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine.UI;
 
-using UnityEngine.UI;
-
+using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Entity;
 
 namespace BetterLegacy.Editor.Data.Popups
@@ -21,7 +16,7 @@ namespace BetterLegacy.Editor.Data.Popups
             base.Open();
 
             // progresses the Create New Level tutorial if it's at the start.
-            Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorials.Tutorials.CREATE_LEVEL, 0);
+            Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 0);
         }
     }
 }

@@ -42,7 +42,7 @@ namespace BetterLegacy.Configs
         /// <summary>
         /// The size of the game window in pixels.
         /// </summary>
-        public Setting<Resolutions> Resolution { get; set; }
+        public Setting<ResolutionType> Resolution { get; set; }
 
         /// <summary>
         /// If FPS matches your monitors refresh rate.
@@ -101,16 +101,16 @@ namespace BetterLegacy.Configs
         /// Updates resolution.
         /// </summary>
         /// <param name="value">Value to update.</param>
-        void SetResolution(Resolutions value)
+        void SetResolution(ResolutionType value)
         {
             prevResolution = Resolution.Value;
 
-            DataManager.inst.UpdateSettingInt("Resolution_i", (int)value);
+            DataManager.inst.UpdateSettingInt("Resolution_i", value);
 
-            var res = DataManager.inst.resolutions[(int)value];
+            var resolution = value.Resolution;
 
-            DataManager.inst.UpdateSettingFloat("Resolution_x", res.x);
-            DataManager.inst.UpdateSettingFloat("Resolution_y", res.y);
+            DataManager.inst.UpdateSettingFloat("Resolution_x", resolution.x);
+            DataManager.inst.UpdateSettingFloat("Resolution_y", resolution.y);
 
             SaveManager.inst.ApplyVideoSettings();
             SaveManager.inst.UpdateSettingsFile(false);
@@ -183,7 +183,7 @@ namespace BetterLegacy.Configs
 
         public bool prevFullscreen;
 
-        public Resolutions prevResolution;
+        public ResolutionType prevResolution = ResolutionType.p720;
 
         public int prevMasterVol;
 
@@ -427,7 +427,7 @@ namespace BetterLegacy.Configs
             OpenConfigKey = BindEnum(this, SETTINGS, "Open Config Key", KeyCode.F12, "The key to press to open the Config Manager.");
             FullscreenKey = BindEnum(this, SETTINGS, "Fullscreen Key", KeyCode.F11, "The key to toggle fullscreen.");
             Fullscreen = Bind(this, SETTINGS, "Fullscreen", false, "If game window should cover the entire screen or not.");
-            Resolution = BindEnum(this, SETTINGS, "Resolution", Resolutions.p720, "The size of the game window in pixels.");
+            Resolution = Bind(this, SETTINGS, "Resolution", ResolutionType.p720, "The size of the game window in pixels.");
             VSync = Bind(this, SETTINGS, "VSync", true, "If FPS matches your monitors refresh rate.");
             FPSLimit = Bind(this, SETTINGS, "FPS Limit", -1, "The amount the FPS is limited to. If the number is -1, it is unlimited.");
             MasterVol = Bind(this, SETTINGS, "Volume Master", 8, "Total volume.", 0, 9);

@@ -775,13 +775,13 @@ namespace BetterLegacy.Configs
                         dropdown.onValueChanged.ClearAll();
                         dropdown.options.Clear();
                         hide.DisabledOptions = new List<bool>();
+                        hide.remove = true;
 
                         var enums = Enum.GetValues(type);
 
                         for (int j = 0; j < enums.Length; j++)
                         {
                             var name = Enum.GetName(type, j);
-                            hide.remove = true;
                             hide.DisabledOptions.Add(name == null);
 
                             dropdown.options.Add(new Dropdown.OptionData(name ?? "Invalid Value"));
@@ -789,6 +789,35 @@ namespace BetterLegacy.Configs
 
                         dropdown.value = (int)setting.BoxedValue;
                         dropdown.onValueChanged.AddListener(_val => setting.BoxedValue = _val);
+
+                        EditorThemeManager.ApplyDropdown(dropdown);
+                    }
+
+                    if (setting.BoxedValue is ICustomEnum customEnum)
+                    {
+                        var enumObject = UIManager.GenerateDropdown("Dropdown", gameObject.transform);
+                        var dropdown = enumObject.dropdown;
+                        var hide = enumObject.hideOptions;
+
+                        RectValues.Default.AnchoredPosition(196f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(dropdown.transform.AsRT());
+
+                        dropdown.onValueChanged.ClearAll();
+                        dropdown.options.Clear();
+                        hide.DisabledOptions = new List<bool>();
+                        hide.remove = true;
+
+                        var values = customEnum.GetBoxedValues();
+
+                        for (int j = 0; j < values.Length; j++)
+                        {
+                            var value = values[j];
+                            hide.DisabledOptions.Add(value == null);
+
+                            dropdown.options.Add(new Dropdown.OptionData(value.DisplayName ?? "Invalid Value"));
+                        }
+
+                        dropdown.value = customEnum.Ordinal;
+                        dropdown.onValueChanged.AddListener(_val => setting.BoxedValue = customEnum.GetBoxedValue(_val));
 
                         EditorThemeManager.ApplyDropdown(dropdown);
                     }

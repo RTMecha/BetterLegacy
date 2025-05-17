@@ -1460,7 +1460,7 @@ namespace BetterLegacy.Configs
             #region Editor GUI
 
             DragUI = Bind(this, EDITOR_GUI, "Drag UI", true, "Specific UI popups can be dragged around (such as the parent selector, etc).");
-            EditorTheme = BindEnum(this, EDITOR_GUI, "Editor Theme", EditorThemeType.Legacy, "The current theme the editor uses.");
+            EditorTheme = Bind(this, EDITOR_GUI, "Editor Theme", EditorThemeType.Legacy, "The current theme the editor uses.");
             EditorFont = BindEnum(this, EDITOR_GUI, "Editor Font", BetterLegacy.EditorFont.Inconsolata_Variable, "The current font the editor uses.");
             RoundedUI = Bind(this, EDITOR_GUI, "Rounded UI", false, "If all elements that can be rounded should be so.");
             EditorComplexity = BindEnum(this, EDITOR_GUI, "Editor Complexity", Complexity.Advanced, "What features show in the editor.");

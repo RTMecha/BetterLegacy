@@ -426,7 +426,7 @@ namespace BetterLegacy.Core.Managers
         /// Displays the achievement popup.
         /// </summary>
         /// <param name="achievement">Achievement to apply to the popup UI.</param>
-        public void ShowAchievement(Achievement achievement) => ShowAchievement(achievement.name, achievement.description, achievement.icon, achievement.DifficultyType.color);
+        public void ShowAchievement(Achievement achievement) => ShowAchievement(achievement.name, achievement.description, achievement.icon, achievement.DifficultyType.Color);
 
         /// <summary>
         /// Displays the achievement popup.

@@ -457,34 +457,36 @@ namespace BetterLegacy.Editor.Managers
             var toggles = content.Find("song/difficulty/toggles");
             LSHelpers.DeleteChildren(toggles);
 
-            int num = 0;
-            foreach (var difficulty in DataManager.inst.difficulties)
+            var values = CustomEnumHelper.GetValues<DifficultyType>();
+            var count = values.Length - 1;
+
+            foreach (var difficulty in values)
             {
-                int index = num;
-                var gameObject = difficultyToggle.Duplicate(toggles, difficulty.name.ToLower(), num == DataManager.inst.difficulties.Count - 1 ? 0 : num + 1);
+                if (difficulty.Ordinal < 0) // skip unknown difficulty
+                    continue;
+
+                var gameObject = difficultyToggle.Duplicate(toggles, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
                 gameObject.transform.localScale = Vector3.one;
 
                 gameObject.transform.AsRT().sizeDelta = new Vector2(69f, 32f);
 
                 var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
-                text.color = LSColors.ContrastColor(difficulty.color);
-                text.text = num == DataManager.inst.difficulties.Count - 1 ? "Anim" : difficulty.name;
+                text.color = LSColors.ContrastColor(difficulty.Color);
+                text.text = difficulty == count - 1 ? "Anim" : difficulty.DisplayName;
                 text.fontSize = 17;
                 var toggle = gameObject.GetComponent<Toggle>();
-                toggle.image.color = difficulty.color;
+                toggle.image.color = difficulty.Color;
                 toggle.group = null;
                 toggle.onValueChanged.ClearAll();
-                toggle.isOn = metadata.song.difficulty == num;
+                toggle.isOn = metadata.song.DifficultyType == difficulty;
                 toggle.onValueChanged.AddListener(_val =>
                 {
-                    metadata.song.difficulty = index;
+                    metadata.song.DifficultyType = difficulty;
                     RenderDifficulty(metadata);
                 });
 
                 EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
-
-                num++;
             }
         }
 

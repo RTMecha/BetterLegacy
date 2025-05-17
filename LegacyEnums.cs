@@ -2,6 +2,360 @@
 
 namespace BetterLegacy
 {
+    #region Custom
+
+    using System.Linq;
+    using System.Runtime.CompilerServices;
+
+    using UnityEngine;
+
+    using BetterLegacy.Core;
+    using BetterLegacy.Core.Data;
+
+    /* INFO
+     This file serves to test a custom enum system.
+     Custom enums are built to act like Java's enums.
+     However, in this case enums can be iterated via the ICustomEnum<T>.GetEnumValues() extension.
+     Or if this class is utilized in pre-net9.0, then EnumHelper.GetValues<T>();
+
+     The only thing that custom enums can't do compared to regular enums is the switch case statement. Example:
+     switch (objectType)
+     {
+        case ObjectType.Normal: {
+            break;
+        }
+        case ObjectType.Helper: {
+            break;
+        }
+     }
+     'case ObjectType.Normal' cannot be a class because it is not constant. This is the only issue, but can be resolved by doing:
+     switch (objectType)
+     {
+        case 0: {
+            break;
+        }
+        case 1: {
+            break;
+        }
+     }
+     However, there is a work-around.
+     switch (objectType.Name)
+     {
+        case nameof(ObjectType.Normal): {
+            break;
+        }
+        case nameof(ObjectType.Helper): {
+            break;
+        }
+     }
+     This gets around the issue and allows you to directly reference the enum name.
+
+     Onto how custom enums should work.
+
+     - Each 'Value' of a custom enum should be static and readonly, meaning they cannot be modified, just like actual enums.
+
+     - The custom enum class must implement a static ENUM array, I.E: static ObjectType[] ENUMS = [NORMAL, HELPER, ...]
+
+     - Inner values of an enum value should only be get. I.E: public float Opacity { get; }
+     */
+
+    /// <summary>
+    /// Indicates an object can be classified as a custom enum.
+    /// </summary>
+    public interface ICustomEnum
+    {
+        /// <summary>
+        /// Ordinal value of the enum value.
+        /// </summary>
+        public int Ordinal { get; }
+
+        /// <summary>
+        /// Name of the enum value.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// The name to display in-game. Capable of multi-language.
+        /// </summary>
+        public Lang DisplayName { get; }
+
+        /// <summary>
+        /// Gets the amount of enum values.
+        /// </summary>
+        public int Count { get; }
+
+        /// <summary>
+        /// Gets an array containing all enum values.
+        /// </summary>
+        /// <returns>Returns an array containing all enum values.</returns>
+        public ICustomEnum[] GetBoxedValues();
+
+        /// <summary>
+        /// Gets an enum value at an index.
+        /// </summary>
+        /// <param name="index">Index of the enum value.</param>
+        /// <returns>Returns the enum value at the index.</returns>
+        public ICustomEnum GetBoxedValue(int index);
+
+        /// <summary>
+        /// Gets an enum value with a matching name.
+        /// </summary>
+        /// <param name="name">Name of the enum value.</param>
+        /// <returns>Returns the enum value with a matching name.</returns>
+        public ICustomEnum GetBoxedValue(string name);
+
+        /// <summary>
+        /// Checks if the index is in the range of enum values.
+        /// </summary>
+        /// <param name="index">Index of the value.</param>
+        /// <returns>Returns true if the index is in the range of the values.</returns>
+        public bool InRange(int index);
+    }
+
+    /// <summary>
+    /// Indicates an object can be classified as a custom enum.
+    /// </summary>
+    /// <typeparam name="T">Type of the enum class.</typeparam>
+    public interface ICustomEnum<T> : ICustomEnum
+    {
+        /// <summary>
+        /// Gets an array containing all enum values.
+        /// </summary>
+        /// <returns>Returns an array containing all enum values.</returns>
+        public T[] GetValues();
+
+        /// <summary>
+        /// Gets an enum value at an index.
+        /// </summary>
+        /// <param name="index">Index of the enum value.</param>
+        /// <returns>Returns the enum value at the index.</returns>
+        public T GetValue(int index);
+
+        /// <summary>
+        /// Overrides the custom enum values.
+        /// </summary>
+        /// <param name="values">Values to set.</param>
+        public void SetValues(T[] values);
+    }
+
+    /// <summary>
+    /// This class demonstrates a regular enum type, with just ordinal and name values per enum value.
+    /// </summary>
+    public class CustomEnum : Exists, ICustomEnum<CustomEnum>
+    {
+        public CustomEnum() { }
+
+        public CustomEnum(int ordinal, string name)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = name;
+        }
+
+        #region Enum Values
+
+        public static readonly CustomEnum ONE = new(0, nameof(ONE));
+        public static readonly CustomEnum TWO = new(1, nameof(TWO));
+
+        static CustomEnum[] ENUMS = new CustomEnum[] { ONE, TWO };
+
+        #endregion
+
+        public int Ordinal { get; }
+        public string Name { get; }
+        public Lang DisplayName { get; }
+
+        #region Implementation
+
+        public int Count => ENUMS.Length;
+
+        public CustomEnum[] GetValues() => ENUMS;
+
+        public CustomEnum GetValue(int index) => ENUMS[index];
+
+        public void SetValues(CustomEnum[] values) => ENUMS = values;
+
+        public ICustomEnum[] GetBoxedValues() => ENUMS;
+
+        public ICustomEnum GetBoxedValue(int index) => ENUMS[index];
+
+        public ICustomEnum GetBoxedValue(string name) => ENUMS.First(x => x.Name == name);
+
+        public bool InRange(int index) => ENUMS.InRange(index);
+
+        #endregion
+
+        #region Comparison
+
+        public override bool Equals(object obj) => obj is CustomEnum other && Ordinal == other.Ordinal && Name == other.Name && DisplayName == other.DisplayName;
+
+        public override int GetHashCode() => Core.Helpers.CoreHelper.CombineHashCodes(Ordinal, Name, DisplayName);
+
+        public override string ToString() => $"Ordinal: {Ordinal} Name: {Name} Display Name: {DisplayName}";
+
+        public static implicit operator int(CustomEnum value) => value.Ordinal;
+
+        public static implicit operator string(CustomEnum value) => value.Name;
+
+        public static implicit operator CustomEnum(int value) => CustomEnumHelper.GetValue<CustomEnum>(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(CustomEnum a, CustomEnum b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(CustomEnum a, CustomEnum b) => !(a == b);
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Custom Enum helper class.
+    /// </summary>
+    public static class CustomEnumHelper
+    {
+        /// <summary>
+        /// Gets all enum values from the <see cref="ICustomEnum{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <returns>Returns an array of enum values.</returns>
+        public static T[] GetValues<T>() where T : ICustomEnum<T>, new() => new T().GetValues();
+
+        /// <summary>
+        /// Modifies the enum values of a custom enum.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="values">Values to set.</param>
+        public static void SetValues<T>(T[] values) where T : ICustomEnum<T>, new() => new T().SetValues(values);
+
+        /// <summary>
+        /// Gets a specific enum value at an index from the <see cref="ICustomEnum{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="index">Index to get at.</param>
+        /// <returns>Returns the custom enum value at the index.</returns>
+        public static T GetValue<T>(int index) where T : ICustomEnum<T>, new() => (T)GetValue(new T(), index);
+
+        /// <summary>
+        /// Gets a specific enum value at an index from the <see cref="ICustomEnum"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="customEnum">Custom Enum.</param>
+        /// <param name="index">Index to get at.</param>
+        /// <returns>Returns the custom enum value at the index.</returns>
+        public static ICustomEnum GetValue(ICustomEnum customEnum, int index)
+        {
+            var values = customEnum.GetBoxedValues();
+            for (int i = 0; i < values.Length; i++)
+                if (values[i].Ordinal == index)
+                    return values[i];
+
+            return default;
+        }
+
+        /// <summary>
+        /// Gets a specific enum value at an index from the <see cref="ICustomEnum{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="index">Index to get at.</param>
+        /// <param name="defaultValue">Default value to return if no values were found.</param>
+        /// <returns>Returns the custom enum value at the index.</returns>
+        public static T GetValueOrDefault<T>(int index, T defaultValue) where T : ICustomEnum<T>, new() => TryGetValue(index, out T result) ? result : defaultValue;
+
+        /// <summary>
+        /// Checks if an item is in the range of enum values.
+        /// </summary>
+        /// <param name="customEnum">Custom enum reference.</param>
+        /// <param name="index">Index of the value to check.</param>
+        /// <returns>Returns true if the index is in the range of the enum values, otherwise returns false.</returns>
+        public static bool InRange(this ICustomEnum customEnum, int index)
+        {
+            var values = customEnum.GetBoxedValues();
+            for (int i = 0; i < values.Length; i++)
+            {
+                var value = values[i];
+                if (value.Ordinal == index)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get a specific enum value at an index from the <paramref name="customEnum"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="index">Index to get at.</param>
+        /// <param name="result">Found value.</param>
+        /// <returns>Returns true if a value was found, otherwise returns false.</returns>
+        public static bool TryGetValue<T>(int index, out T result) where T : ICustomEnum<T>, new() => TryGetValue(new T(), index, out result);
+
+        /// <summary>
+        /// Tries to get a specific enum value at an index from the <paramref name="customEnum"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="customEnum">Custom enum type.</param>
+        /// <param name="index">Index to get at.</param>
+        /// <param name="result">Found value.</param>
+        /// <returns>Returns true if a value was found, otherwise returns false.</returns>
+        public static bool TryGetValue<T>(ICustomEnum<T> customEnum, int index, out T result) where T : ICustomEnum
+        {
+            var values = customEnum.GetValues();
+            for (int i = 0; i < values.Length; i++)
+            {
+                var value = values[i];
+                if (value.Ordinal == index)
+                {
+                    result = value;
+                    return true;
+                }
+            }
+            result = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Adds a custom enum value.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="value">Value to add.</param>
+        public static void AddValue<T>(T value) where T : ICustomEnum<T>, new()
+        {
+            if (value is null)
+                return;
+
+            var baseReference = new T();
+            var values = baseReference.GetValues();
+            var newValues = new T[values.Length + 1];
+            System.Array.Copy(values, newValues, values.Length);
+            newValues[values.Length] = value;
+            baseReference.SetValues(newValues);
+        }
+
+        /// <summary>
+        /// Gets the amount of enum values.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <returns>Returns the amount of values a custom enum has.</returns>
+        public static int GetCount<T>() where T : ICustomEnum, new() => GetCount(new T());
+
+        /// <summary>
+        /// Gets the amount of enum values.
+        /// </summary>
+        /// <param name="customEnum">Custom enum type.</param>
+        /// <returns>Returns the amount of values a custom enum has.</returns>
+        public static int GetCount(ICustomEnum customEnum) => customEnum.Count;
+
+        /// <summary>
+        /// Compares two custom enum values and checks if they match.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="a">Reference enum value.</param>
+        /// <param name="b">Enum value to compare to.</param>
+        /// <returns>Returns true if the custom enum values match, otherwise returns false.</returns>
+        public static bool Is<T>(this T a, T b) where T : ICustomEnum<T> => a is not null && b is not null && a.Equals(b);
+    }
+
+    #endregion
+
     #region Core
 
     /// <summary>
@@ -203,6 +557,91 @@ namespace BetterLegacy
     }
 
     /// <summary>
+    /// Resolution setting.
+    /// </summary>
+    public class ResolutionType : Exists, ICustomEnum<ResolutionType>
+    {
+        public ResolutionType() { }
+
+        public ResolutionType(int ordinal, string name, Vector2 resolution)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = name.Remove("p");
+
+            Resolution = resolution;
+        }
+
+        #region Enum Values
+
+        public static readonly ResolutionType p270 = new(0, nameof(p270), new Vector2(480f, 270f));
+        public static readonly ResolutionType p360 = new(1, nameof(p360), new Vector2(640f, 360f));
+        public static readonly ResolutionType p540 = new(2, nameof(p540), new Vector2(960f, 540f));
+        public static readonly ResolutionType p720 = new(3, nameof(p720), new Vector2(1280f, 720f));
+        public static readonly ResolutionType p768 = new(4, nameof(p768), new Vector2(1360f, 768f));
+        public static readonly ResolutionType p810 = new(5, nameof(p810), new Vector2(1440f, 810f));
+        public static readonly ResolutionType p900 = new(6, nameof(p900), new Vector2(1600f, 900f));
+        public static readonly ResolutionType p1080 = new(7, nameof(p1080), new Vector2(1920f, 1080f));
+        public static readonly ResolutionType p1440 = new(8, nameof(p1440), new Vector2(2560f, 1440f));
+        public static readonly ResolutionType p2160 = new(9, nameof(p2160), new Vector2(3840f, 2160f));
+
+        static ResolutionType[] ENUMS = new ResolutionType[] { p270, p360, p540, p720, p768, p810, p900, p1080, p1440, p2160 };
+
+        #endregion
+
+        public int Ordinal { get; }
+        public string Name { get; }
+        public Lang DisplayName { get; }
+
+        /// <summary>
+        /// Resolution size.
+        /// </summary>
+        public Vector2 Resolution { get; }
+
+        #region Implementation
+
+        public int Count => ENUMS.Length;
+
+        public ResolutionType[] GetValues() => ENUMS;
+
+        public ResolutionType GetValue(int index) => ENUMS[index];
+
+        public void SetValues(ResolutionType[] values) => ENUMS = values;
+
+        public ICustomEnum[] GetBoxedValues() => ENUMS;
+
+        public ICustomEnum GetBoxedValue(int index) => ENUMS[index];
+
+        public ICustomEnum GetBoxedValue(string name) => ENUMS.First(x => x.Name == name);
+
+        public bool InRange(int index) => ENUMS.InRange(index);
+
+        #endregion
+
+        #region Comparison
+
+        public override bool Equals(object obj) => obj is ResolutionType other && Ordinal == other.Ordinal && Name == other.Name && DisplayName == other.DisplayName;
+
+        public override int GetHashCode() => Core.Helpers.CoreHelper.CombineHashCodes(Ordinal, Name, DisplayName, Resolution.x, Resolution.y);
+
+        public override string ToString() => $"Ordinal: {Ordinal} Name: {Name} Display Name: {DisplayName} Resolution: {Resolution}";
+
+        public static implicit operator int(ResolutionType value) => value.Ordinal;
+
+        public static implicit operator string(ResolutionType value) => value.Name;
+
+        public static implicit operator ResolutionType(int value) => CustomEnumHelper.GetValue<ResolutionType>(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(ResolutionType a, ResolutionType b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(ResolutionType a, ResolutionType b) => !(a == b);
+
+        #endregion
+    }
+
+    /// <summary>
     /// Where a URL is from.
     /// </summary>
     public enum URLSource
@@ -284,23 +723,6 @@ namespace BetterLegacy
         Polish,
         AncientAutobot,
         Matoran
-    }
-
-    /// <summary>
-    /// Resolution setting.
-    /// </summary>
-    public enum Resolutions
-    {
-        p270,
-        p360,
-        p540,
-        p720,
-        p768,
-        p810,
-        p900,
-        p1080,
-        p1440,
-        p2160
     }
 
     /// <summary>
@@ -653,6 +1075,93 @@ namespace BetterLegacy
     #region Arcade / Game
 
     /// <summary>
+    /// Difficulty of a level.
+    /// </summary>
+    public class DifficultyType : Exists, ICustomEnum<DifficultyType>
+    {
+        public DifficultyType() { }
+
+        public DifficultyType(int ordinal, string name, Color color)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = name;
+            Color = color;
+        }
+
+        public DifficultyType(int ordinal, string name, string displayName, Color color)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = displayName;
+            Color = color;
+        }
+
+        #region Enum Values
+
+        public static readonly DifficultyType Unknown = new(-1, nameof(Unknown), "Unknown Difficulty", RTColors.HexToColor("424242"));
+        public static readonly DifficultyType Easy = new(0, nameof(Easy), RTColors.HexToColor("29B6F6"));
+        public static readonly DifficultyType Normal = new(1, nameof(Normal), RTColors.HexToColor("9CCC65"));
+        public static readonly DifficultyType Hard = new(2, nameof(Hard), RTColors.HexToColor("FFB039"));
+        public static readonly DifficultyType Expert = new(3, nameof(Expert), RTColors.HexToColor("E47272"));
+        public static readonly DifficultyType ExpertPlus = new(4, nameof(ExpertPlus), "Expert+", RTColors.HexToColor("373737"));
+        public static readonly DifficultyType Master = new(5, nameof(Master), new Color(0.25f, 0.01f, 0.01f));
+        public static readonly DifficultyType Animation = new(6, nameof(Animation), RTColors.HexToColor("999999"));
+
+        static DifficultyType[] ENUMS = new DifficultyType[] { Unknown, Easy, Normal, Hard, Expert, ExpertPlus, Master, Animation };
+
+        #endregion
+
+        public int Ordinal { get; }
+        public string Name { get; }
+        public Lang DisplayName { get; }
+
+        public Color Color { get; }
+
+        #region Implementation
+
+        public int Count => ENUMS.Length;
+
+        public DifficultyType[] GetValues() => ENUMS;
+
+        public DifficultyType GetValue(int index) => ENUMS[index];
+
+        public void SetValues(DifficultyType[] values) => ENUMS = values;
+
+        public ICustomEnum[] GetBoxedValues() => ENUMS;
+
+        public ICustomEnum GetBoxedValue(int index) => ENUMS[index];
+
+        public ICustomEnum GetBoxedValue(string name) => ENUMS.First(x => x.Name == name);
+
+        public bool InRange(int index) => ENUMS.InRange(index);
+
+        #endregion
+
+        #region Comparison
+
+        public override bool Equals(object obj) => obj is DifficultyType other && Ordinal == other.Ordinal && Name == other.Name && DisplayName == other.DisplayName;
+
+        public override int GetHashCode() => Core.Helpers.CoreHelper.CombineHashCodes(Ordinal, Name, DisplayName, Color.r, Color.g, Color.b, Color.a);
+
+        public override string ToString() => $"Ordinal: {Ordinal} Name: {Name} Display Name: {DisplayName}";
+
+        public static implicit operator int(DifficultyType value) => value.Ordinal;
+
+        public static implicit operator string(DifficultyType value) => value.Name;
+
+        public static implicit operator DifficultyType(int value) => CustomEnumHelper.GetValue<DifficultyType>(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(DifficultyType a, DifficultyType b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(DifficultyType a, DifficultyType b) => !(a == b);
+
+        #endregion
+    }
+
+    /// <summary>
     /// Rank that is awarded depending on how many hits you have. 0 hits is SS and 16+ hits is F.
     /// </summary>
     public enum Rank
@@ -689,21 +1198,6 @@ namespace BetterLegacy
         /// 16+ hits.
         /// </summary>
         F
-    }
-
-    /// <summary>
-    /// Difficulty of a level.
-    /// </summary>
-    public enum LevelDifficulty
-    {
-        Unknown,
-        Easy,
-        Normal,
-        Hard,
-        Expert,
-        ExpertPlus,
-        Master,
-        Animation
     }
 
     /// <summary>
@@ -876,18 +1370,82 @@ namespace BetterLegacy
         Advanced
     }
 
-    public enum EditorThemeType
+    /// <summary>
+    /// Editor theme enum.
+    /// </summary>
+    public class EditorThemeType : Exists, ICustomEnum<EditorThemeType>
     {
-        Legacy,
-        Dark,
-        Light,
-        Vision,
-        Butter,
-        Arrhythmia,
-        Modern,
-        Beats,
-        Archives,
-        Void
+        public EditorThemeType() { }
+
+        public EditorThemeType(int ordinal, string name)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = name;
+        }
+
+        #region Enum Values
+
+        public static readonly EditorThemeType Legacy = new(0, nameof(Legacy));
+        public static readonly EditorThemeType Dark = new(1, nameof(Dark));
+        public static readonly EditorThemeType Light = new(2, nameof(Light));
+        public static readonly EditorThemeType Vision = new(3, nameof(Vision));
+        public static readonly EditorThemeType Butter = new(4, nameof(Butter));
+        public static readonly EditorThemeType Arrhythmia = new(5, nameof(Arrhythmia));
+        public static readonly EditorThemeType Modern = new(6, nameof(Modern));
+        public static readonly EditorThemeType Beats = new(7, nameof(Beats));
+        public static readonly EditorThemeType Archives = new(8, nameof(Archives));
+        public static readonly EditorThemeType Void = new(9, nameof(Void));
+
+        static EditorThemeType[] ENUMS = new EditorThemeType[] { Legacy, Dark, Light, Vision, Butter, Arrhythmia, Modern, Beats, Archives, Void };
+
+        #endregion
+
+        public int Ordinal { get; }
+        public string Name { get; }
+        public Lang DisplayName { get; }
+
+        #region Implementation
+
+        public int Count => ENUMS.Length;
+
+        public EditorThemeType[] GetValues() => ENUMS;
+
+        public EditorThemeType GetValue(int index) => ENUMS[index];
+
+        public void SetValues(EditorThemeType[] values) => ENUMS = values;
+
+        public ICustomEnum[] GetBoxedValues() => ENUMS;
+
+        public ICustomEnum GetBoxedValue(int index) => ENUMS[index];
+
+        public ICustomEnum GetBoxedValue(string name) => ENUMS.First(x => x.Name == name);
+
+        public bool InRange(int index) => ENUMS.InRange(index);
+
+        #endregion
+
+        #region Comparison
+
+        public override bool Equals(object obj) => obj is EditorThemeType other && Ordinal == other.Ordinal && Name == other.Name && DisplayName == other.DisplayName;
+
+        public override int GetHashCode() => Core.Helpers.CoreHelper.CombineHashCodes(Ordinal, Name, DisplayName);
+
+        public override string ToString() => $"Ordinal: {Ordinal} Name: {Name} Display Name: {DisplayName}";
+
+        public static implicit operator int(EditorThemeType value) => value.Ordinal;
+
+        public static implicit operator string(EditorThemeType value) => value.Name;
+
+        public static implicit operator EditorThemeType(int value) => CustomEnumHelper.GetValue<EditorThemeType>(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(EditorThemeType a, EditorThemeType b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(EditorThemeType a, EditorThemeType b) => !(a == b);
+
+        #endregion
     }
 
     /// <summary>

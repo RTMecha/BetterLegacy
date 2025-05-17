@@ -109,6 +109,8 @@ namespace BetterLegacy.Configs
                 JSON[section][key]["value"] = vector2Int.ToJSON();
             else if (value is Vector3Int vector3Int)
                 JSON[section][key]["value"] = vector3Int.ToJSON();
+            else if (value is ICustomEnum customEnum)
+                JSON[section][key]["value"] = customEnum.Name;
             else
                 JSON[section][key]["value"] = value.ToString().Replace(":", "{{colon}}");
         }
@@ -159,6 +161,8 @@ namespace BetterLegacy.Configs
                     setting.BoxedValue = Parser.TryParse(JSON[section][key]["value"], defaultVector3Int);
                 else if (defaultValue is Color defaultColor)
                     setting.BoxedValue = ((string)JSON[section][key]["value"]).Length == 8 ? LSColors.HexToColorAlpha(JSON[section][key]["value"]) : ((string)JSON[section][key]["value"]).Length == 6 ? LSColors.HexToColor(JSON[section][key]["value"]) : defaultColor;
+                else if (defaultValue is ICustomEnum customEnum)
+                    setting.BoxedValue = JSON[section][key]["value"].IsString ? customEnum.GetBoxedValue(JSON[section][key]["value"].Value) : customEnum.GetBoxedValue(JSON[section][key]["value"].AsInt);
                 else if (defaultValue is string)
                     setting.BoxedValue = ((string)JSON[section][key]["value"]).Replace("{{colon}}", ":");
 

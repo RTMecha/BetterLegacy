@@ -760,7 +760,7 @@ namespace BetterLegacy.Core.Data
         public string link;
         public string[] tags;
 
-        public LevelDifficulty LevelDifficulty => (LevelDifficulty)(difficulty + 1);
+        public DifficultyType DifficultyType { get => difficulty; set => difficulty = value; }
 
         #region Operators
 

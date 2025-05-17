@@ -69,7 +69,7 @@ namespace BetterLegacy.Patchers
         static bool ApplyVideoSettingsPrefix()
         {
             var resolution = CoreHelper.CurrentResolution;
-            Screen.SetResolution(resolution.x, resolution.y, CoreConfig.Instance.Fullscreen.Value);
+            Screen.SetResolution((int)resolution.x, (int)resolution.y, CoreConfig.Instance.Fullscreen.Value);
             
             QualitySettings.vSyncCount = CoreConfig.Instance.VSync.Value ? 1 : 0;
             QualitySettings.antiAliasing = DataManager.inst.GetSettingEnum("AntiAliasing", 0);

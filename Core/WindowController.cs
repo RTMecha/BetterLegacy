@@ -36,11 +36,11 @@ namespace BetterLegacy.Core
             SetWindowPos(WindowHandle, 0, x, y, 0, 0, 1);
         }
 
-        public static void SetResolution(Resolutions value, bool fullScreen = false)
+        public static void SetResolution(ResolutionType value, bool fullScreen = false)
         {
-            var res = DataManager.inst.resolutions[(int)value];
+            var resolution = value.Resolution;
 
-            SetResolution((int)res.x, (int)res.y, fullScreen);
+            SetResolution((int)resolution.x, (int)resolution.y, fullScreen);
         }
 
         public static void SetResolution(int x, int y, bool fullScreen = false)

@@ -794,7 +794,7 @@ namespace BetterLegacy.Core.Managers
 
             if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
             {
-                if (NextLevelInCollection && CurrentLevel.metadata && CurrentLevel.metadata.song.LevelDifficulty == LevelDifficulty.Animation)
+                if (NextLevelInCollection && CurrentLevel.metadata && CurrentLevel.metadata.song.DifficultyType == DifficultyType.Animation)
                     SetLevelData(levels, NextLevelInCollection, false);
                 return;
             }
@@ -826,7 +826,7 @@ namespace BetterLegacy.Core.Managers
                 currentLevel.saveData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
             }
 
-            if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion && (currentLevel.metadata.song.LevelDifficulty == LevelDifficulty.Animation || !PlayerManager.IsZenMode && !PlayerManager.IsPractice))
+            if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion && (currentLevel.metadata.song.DifficultyType == DifficultyType.Animation || !PlayerManager.IsZenMode && !PlayerManager.IsPractice))
                 currentLevel.saveData.Unlocked = true;
 
             if (Saves.TryFindIndex(x => x.ID == currentLevel.id, out int saveIndex))

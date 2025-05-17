@@ -64,7 +64,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// The metadata difficulty type.
         /// </summary>
-        public DataManager.Difficulty DifficultyType => difficulty == 0 ? DataManager.inst.difficulties.Last() : difficulty - 1 >= 0 && difficulty - 1 < DataManager.inst.difficulties.Count ? DataManager.inst.difficulties[difficulty - 1] : new DataManager.Difficulty("Unknown Difficulty", Color.red);
+        public DifficultyType DifficultyType => difficulty == 0 ? DataManager.inst.difficulties.Count - 1 : difficulty - 1;
 
         public void Unlock()
         {

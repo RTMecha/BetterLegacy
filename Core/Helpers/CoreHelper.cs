@@ -146,14 +146,14 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// Gets the current resolution as a Vector2Int based on Core Config's resolution value.
         /// </summary>
-        public static Vector2Int CurrentResolution => GetResolution((int)CoreConfig.Instance.Resolution.Value);
+        public static Vector2 CurrentResolution => CoreConfig.Instance.Resolution.Value.Resolution;
 
         /// <summary>
         /// Gets a resolution from the resolution list.
         /// </summary>
         /// <param name="resolution">The resolution index.</param>
         /// <returns>Returns a Vector2Int representing a resolution.</returns>
-        public static Vector2Int GetResolution(int resolution) => new Vector2Int((int)DataManager.inst.resolutions[resolution].x, (int)DataManager.inst.resolutions[resolution].y);
+        public static Vector2 GetResolution(int resolution) => CustomEnumHelper.GetValue<ResolutionType>(resolution).Resolution;
 
         /// <summary>
         /// Gets a difficulty from the difficulty list.
@@ -713,6 +713,31 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Misc
+
+        public static int CombineHashCodes<T1, T2>(T1 t1, T2 t2)
+        {
+            int hash = 17;
+            hash = hash * 23 + t1.GetHashCode();
+            hash = hash * 23 + t2.GetHashCode();
+            return hash;
+        }
+        
+        public static int CombineHashCodes<T1, T2, T3>(T1 t1, T2 t2, T3 t3)
+        {
+            int hash = 17;
+            hash = hash * 23 + t1.GetHashCode();
+            hash = hash * 23 + t2.GetHashCode();
+            hash = hash * 23 + t3.GetHashCode();
+            return hash;
+        }
+
+        public static int CombineHashCodes(params object[] array)
+        {
+            int hash = 17;
+            for (int i = 0; i < array.Length; i++)
+                hash = hash * 23 + array[i].GetHashCode();
+            return hash;
+        }
 
         /// <summary>
         /// Compares a singular object against an array of objects.
