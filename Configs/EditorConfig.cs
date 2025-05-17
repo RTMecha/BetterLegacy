@@ -3000,7 +3000,7 @@ namespace BetterLegacy.Configs
                 return;
 
             if (WaveformRerender.Value)
-                RTEditor.inst.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture());
+                RTEditor.inst.StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(AudioManager.inst.CurrentAudioSource.clip));
         }
 
         void ThemePopupChanged()

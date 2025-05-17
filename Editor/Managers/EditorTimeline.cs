@@ -937,18 +937,23 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Updates the timelines' waveform texture.
         /// </summary>
-        public IEnumerator AssignTimelineTexture(bool forceReload = false)
+        /// <param name="clip">The audio clip to create a waveform texture from.</param>
+        /// <param name="forceReload">If the waveform should re-render regardless of user settings.</param>
+        public IEnumerator AssignTimelineTexture(AudioClip clip, bool forceReload = false)
         {
+            CoreHelper.Log(
+                $"Clip: {clip}\n" +
+                $"Has Loaded Level: {EditorManager.inst.hasLoadedLevel}\n" +
+                $"");
+
             var config = EditorConfig.Instance;
             var path = RTFile.CombinePaths(RTFile.BasePath, $"waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
             var settingsPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, $"settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}{FileFormat.PNG.Dot()}");
 
             SetTimelineSprite(null);
 
-            if ((!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && !RTFile.FileExists(settingsPath) ||
-                !RTFile.FileExists(path)) && !config.WaveformRerender.Value || config.WaveformRerender.Value || forceReload)
+            if (forceReload || config.WaveformRerender.Value || (!EditorManager.inst.hasLoadedLevel && !RTEditor.inst.loadingLevel && !RTFile.FileExists(settingsPath) || !RTFile.FileExists(path)))
             {
-                var clip = AudioManager.inst.CurrentAudioSource.clip;
                 int num = Mathf.Clamp((int)clip.length * 48, 100, 15000);
                 Texture2D waveform = null;
 
@@ -970,7 +975,7 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
+                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !RTEditor.inst.loadingLevel ?
                 settingsPath :
                 path), texture2D => SetTimelineSprite(SpriteHelper.CreateSprite(texture2D))));
             }
