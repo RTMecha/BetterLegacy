@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -511,6 +512,45 @@ namespace BetterLegacy.Core.Helpers
             }
 
             EditorTimeline.inst.UpdateTransformIndex();
+        }
+
+        public static void SaveDefaultPrefabTypes()
+        {
+            var jn = Parser.NewJSONObject();
+
+            int index = 0;
+            for (int i = 0; i < RTPrefabEditor.inst.prefabTypes.Count; i++)
+            {
+                var prefabType = RTPrefabEditor.inst.prefabTypes[i];
+                if (!prefabType.isDefault)
+                    continue;
+                jn["prefab_types"][index] = prefabType.ToJSON();
+
+                index++;
+            }
+
+            RTFile.WriteToFile(RTFile.GetAsset("default_prefabtypes" + FileFormat.LSPT.Dot()), jn.ToString(3));
+        }
+
+        public static void ModifyEditorThemes(Action<EditorTheme> action)
+        {
+            EditorThemeManager.EditorThemes.ForLoop(action);
+
+            EditorThemeManager.SaveEditorThemes();
+            CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
+        }
+
+        public static void ModifyEditorTheme(EditorThemeType editorThemeType, ThemeGroup themeGroup, Color color) => ModifyEditorTheme(editorThemeType.Name.ToString(), themeGroup, color);
+
+        public static void ModifyEditorTheme(string name, ThemeGroup themeGroup, Color color)
+        {
+            if (!EditorThemeManager.EditorThemesDictionary.TryGetValue(name, out EditorTheme editorTheme))
+                return;
+
+            editorTheme.ColorGroups[themeGroup] = color;
+
+            EditorThemeManager.SaveEditorThemes();
+            CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
         }
     }
 }
