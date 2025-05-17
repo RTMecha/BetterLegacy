@@ -193,7 +193,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             /// </summary>
             Decoration,
             /// <summary>
-            /// Doesn't spawn a physical level object to be seen in-game.
+            /// Doesn't spawn a runtime object.
             /// </summary>
             Empty,
             /// <summary>
@@ -2119,7 +2119,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Operators
 
-        public override bool Equals(object obj) => obj is PrefabObject paObj && id == paObj.id;
+        public override bool Equals(object obj) => obj is BeatmapObject paObj && id == paObj.id;
 
         public override int GetHashCode() => base.GetHashCode();
 
