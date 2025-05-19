@@ -1462,6 +1462,55 @@ namespace BetterLegacy.Core
             return functions;
         }
 
+        /// <summary>
+        /// Reads <see cref="IShapeable"/> data from JSON.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <param name="jn">JSON to read from.</param>
+        public static void ReadShapeJSON(this IShapeable shapeable, JSONNode jn)
+        {
+            if (jn["s"] != null)
+                shapeable.Shape = jn["s"].AsInt;
+
+            if (jn["shape"] != null)
+                shapeable.Shape = jn["shape"].AsInt;
+
+            if (jn["so"] != null)
+                shapeable.ShapeOption = jn["so"].AsInt;
+
+            if (jn["csp"] != null)
+                shapeable.Polygon = PolygonShape.Parse(jn["csp"]);
+
+            if (jn["text"] != null)
+                shapeable.Text = ((string)jn["text"]).Replace("{{colon}}", ":");
+
+            if (jn["ata"] != null)
+                shapeable.AutoTextAlign = jn["ata"];
+        }
+
+        /// <summary>
+        /// Writes <see cref="IShapeable"/> data to JSON.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <param name="jn">JSON to write to.</param>
+        public static void WriteShapeJSON(this IShapeable shapeable, JSONNode jn)
+        {
+            if (shapeable.Shape != 0)
+                jn["s"] = shapeable.Shape;
+
+            if (shapeable.ShapeOption != 0)
+                jn["so"] = shapeable.ShapeOption;
+
+            if (shapeable.ShapeType == ShapeType.Polygon && shapeable.Polygon != null)
+                jn["csp"] = shapeable.Polygon.ToJSON();
+
+            if (!string.IsNullOrEmpty(shapeable.Text))
+                jn["text"] = shapeable.Text;
+
+            if (shapeable.AutoTextAlign)
+                jn["ata"] = shapeable.AutoTextAlign;
+        }
+
         #endregion
 
         #region Misc

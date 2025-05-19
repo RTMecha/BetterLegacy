@@ -414,14 +414,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["iter"] != null)
                 iterations = jn["iter"].AsInt;
 
-            if (jn["s"] != null)
-                shape = jn["s"].AsInt;
-
-            if (jn["so"] != null)
-                shapeOption = jn["so"].AsInt;
-
-            if (jn["text"] != null)
-                text = jn["text"];
+            this.ReadShapeJSON(jn);
 
             if (jn["col"] != null)
             {
@@ -524,13 +517,16 @@ namespace BetterLegacy.Core.Data.Beatmap
                 orderModifiers = jn["ordmod"].AsBool;
 
             modifiers.Clear();
-            for (int i = 0; i < jn["modifiers"].Count; i++)
+            var modifiersCount = jn["modifiers"].Count;
+            for (int i = 0; i < modifiersCount; i++)
             {
                 var modifierJN = jn["modifiers"][i];
 
-                // this is for backwards compatibility due to modifiers having multiple lists previously.
+                // this is for backwards compatibility due to BG modifiers having multiple lists previously.
                 if (modifierJN.IsArray)
                 {
+                    var wasOrderModifiers = orderModifiers;
+
                     orderModifiers = true;
                     var list = new List<Modifier<BackgroundObject>>();
                     for (int j = 0; j < jn["modifiers"][i].Count; j++)
@@ -539,7 +535,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
                             list.Add(modifier);
                     }
-                    list.Sort((a, b) => a.type.CompareTo(b.type));
+
+                    if (!wasOrderModifiers)
+                        list.Sort((a, b) => a.type.CompareTo(b.type));
+                    else if (i != modifiersCount - 1 && ModifiersManager.defaultBackgroundObjectModifiers.TryFind(x => x.Name == "break", out ModifierBase breakModifierBase) && breakModifierBase is Modifier<BackgroundObject> breakModifier)
+                        list.Add(breakModifier.Copy(this));
+
                     modifiers.AddRange(list);
                 }
                 else
@@ -650,11 +651,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (iterations != 9)
                 jn["iter"] = iterations;
 
-            if (shape != 0)
-                jn["s"] = shape;
-            
-            if (shapeOption != 0)
-                jn["so"] = shapeOption;
+            this.WriteShapeJSON(jn);
 
             if (flat)
                 jn["flat"] = flat;

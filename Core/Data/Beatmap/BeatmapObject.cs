@@ -1028,17 +1028,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < jn["tags"].Count; i++)
                     tags.Add(((string)jn["tags"][i]).Replace("{{colon}}", ":"));
 
-            if (jn["s"] != null)
-                shape = jn["s"].AsInt;
-
-            if (jn["shape"] != null)
-                shape = jn["shape"].AsInt;
-
-            if (jn["so"] != null)
-                shapeOption = jn["so"].AsInt;
-
-            if (jn["csp"] != null)
-                polygonShape = PolygonShape.Parse(jn["csp"]);
+            this.ReadShapeJSON(jn);
 
             if (jn["gt"] != null)
                 gradientType = (GradientType)jn["gt"].AsInt;
@@ -1048,12 +1038,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["gr"] != null)
                 gradientRotation = jn["gr"].AsFloat;
-
-            if (jn["text"] != null)
-                text = ((string)jn["text"]).Replace("{{colon}}", ":");
-
-            if (jn["ata"] != null)
-                autoTextAlign = jn["ata"];
 
             if (jn["ak"] != null)
                 autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.NoAutokill;
@@ -1291,20 +1275,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     jn["gr"] = gradientRotation;
             }
 
-            if (shape != 0)
-                jn["s"] = shape;
-
-            if (shapeOption != 0)
-                jn["so"] = shapeOption;
-
-            if (ShapeType == ShapeType.Polygon && polygonShape != null)
-                jn["csp"] = polygonShape.ToJSON();
-
-            if (!string.IsNullOrEmpty(text))
-                jn["text"] = text;
-
-            if (autoTextAlign)
-                jn["ata"] = autoTextAlign;
+            this.WriteShapeJSON(jn);
 
             if (origin.x != 0f || origin.y != 0f)
                 jn["o"] = origin.ToJSON();
