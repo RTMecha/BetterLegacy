@@ -10,6 +10,8 @@
 - Added Store / Clear Data to Player Image Objects. This now means images from Image Objects can be transfered between levels.
 - setImage and setImageOther modifiers now accept stored images.
 - Implemented Prefab Object random transform.
+- Added isEditing trigger modifier. This checks if you're only in the editor. If you're in preview mode or in the regular game, this won't activate.
+- Added copyEventOffset math evaluator function.
 
 ### Editor
 - Added a BG Object counter to Prefab Object Editor.
