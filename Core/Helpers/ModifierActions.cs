@@ -3158,7 +3158,11 @@ namespace BetterLegacy.Core.Helpers
         public static void eventOffsetMath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             if (RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.offsets != null && modifier.reference is IEvaluatable evaluatable)
-                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), RTMath.Parse(modifier.GetValue(0, variables), evaluatable.GetObjectVariables()));
+            {
+                var numberVariables = evaluatable.GetObjectVariables();
+                ModifiersHelper.SetVariables(variables, numberVariables);
+                RTLevel.Current.eventEngine.SetOffset(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), RTMath.Parse(modifier.GetValue(0, variables), numberVariables, evaluatable.GetObjectFunctions()));
+            }
         }
         
         public static void eventOffsetAnimate<T>(Modifier<T> modifier, Dictionary<string, string> variables)
