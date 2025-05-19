@@ -25,9 +25,6 @@ namespace BetterLegacy.Story
         /// </summary>
         public static void Init()
         {
-            if (CoreHelper.InStory)
-                return;
-
             CoreHelper.Log($"Init {nameof(StoryMode)}");
             var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/{CoreConfig.Instance.StoryFile.Value}";
             if (RTFile.FileExists(path))

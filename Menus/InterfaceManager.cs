@@ -395,7 +395,7 @@ namespace BetterLegacy.Menus
             if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
                 Companion.Entity.Example.Current.model.SetActive(true); // if Example was disabled
 
-            var storyStarted = StoryManager.inst.LoadBool("StoryModeStarted", false);
+            var storyStarted = StoryManager.inst.CurrentSave.LoadBool("StoryModeStarted", false);
             var chapter = StoryMode.Instance.chapters[chapterIndex];
 
             if (onReturnToStoryInterface != null)
@@ -794,7 +794,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt("Chapter", 0) == (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) == (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryChapterLesserEquals":
@@ -802,7 +802,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt("Chapter", 0) <= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) <= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryChapterGreaterEquals":
@@ -810,7 +810,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt("Chapter", 0) >= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) >= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryChapterLesser":
@@ -818,7 +818,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt("Chapter", 0) < (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) < (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryChapterGreater":
@@ -826,7 +826,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt("Chapter", 0) > (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) > (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
                 case "DisplayNameEquals":
@@ -847,7 +847,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) == Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
+                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) == Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
                 case "StoryLoadIntLesserEquals":
@@ -855,7 +855,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) <= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
+                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) <= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
                 case "StoryLoadIntGreaterEquals":
@@ -863,7 +863,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) >= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
+                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) >= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
                 case "StoryLoadIntLesser":
@@ -871,7 +871,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) < Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
+                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) < Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
                 case "StoryLoadIntGreater":
@@ -879,7 +879,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) > Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
+                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) > Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
                 case "StoryLoadBool":
@@ -887,7 +887,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["load"] == null)
                             break;
 
-                        var value = StoryManager.inst.LoadBool(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], false));
+                        var value = StoryManager.inst.CurrentSave.LoadBool(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], false));
                         return !not ? value : !value;
                     }
 
@@ -1068,7 +1068,7 @@ namespace BetterLegacy.Menus
                         var value =
                             chapter < levelIDs.Count &&
                             levelIDs[chapter].levels.All(x => x.bonus ||
-                                            StoryManager.inst.Saves.TryFind(y => y.ID == x.id, out SaveData playerData) &&
+                                            StoryManager.inst.CurrentSave.Saves.TryFind(y => y.ID == x.id, out SaveData playerData) &&
                                             LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= maxRank &&
                                             LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= minRank);
 
@@ -1122,7 +1122,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankLesserEquals":
@@ -1133,7 +1133,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankGreaterEquals":
@@ -1144,7 +1144,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankLesser":
@@ -1155,7 +1155,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankGreater":
@@ -1166,7 +1166,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                     #endregion
@@ -3540,8 +3540,8 @@ namespace BetterLegacy.Menus
 
                         StoryManager.inst.ContinueStory = true;
 
-                        int chapter = StoryManager.inst.ChapterIndex;
-                        StoryManager.inst.Play(chapter, StoryManager.inst.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0), StoryManager.inst.inBonusChapter);
+                        int chapter = StoryManager.inst.CurrentSave.ChapterIndex;
+                        StoryManager.inst.Play(chapter, StoryManager.inst.CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0), StoryManager.inst.inBonusChapter);
 
                         break;
                     }
@@ -3578,7 +3578,7 @@ namespace BetterLegacy.Menus
 
                         StoryManager.inst.ContinueStory = true;
 
-                        var chapter = StoryManager.inst.ChapterIndex;
+                        var chapter = StoryManager.inst.CurrentSave.ChapterIndex;
                         StoryManager.inst.Play(chapter, StoryMode.Instance.chapters[chapter].Count, StoryManager.inst.inBonusChapter);
 
                         break;
@@ -3597,9 +3597,9 @@ namespace BetterLegacy.Menus
                         string saveName = isArray ? parameters[0] : parameters["name"];
                         var value = isArray ? parameters[1].AsBool : parameters["value"].AsBool;
                         if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["toggle"] != null && parameters["toggle"].AsBool)
-                            value = !StoryManager.inst.LoadBool(saveName, value);
+                            value = !StoryManager.inst.CurrentSave.LoadBool(saveName, value);
 
-                        StoryManager.inst.SaveBool(saveName, value);
+                        StoryManager.inst.CurrentSave.SaveBool(saveName, value);
 
                         break;
                     }
@@ -3617,9 +3617,9 @@ namespace BetterLegacy.Menus
                         string saveName = isArray ? parameters[0] : parameters["name"];
                         var value = isArray ? parameters[1].AsInt : parameters["value"].AsInt;
                         if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
-                            value += StoryManager.inst.LoadInt(saveName, value);
+                            value += StoryManager.inst.CurrentSave.LoadInt(saveName, value);
 
-                        StoryManager.inst.SaveInt(saveName, value);
+                        StoryManager.inst.CurrentSave.SaveInt(saveName, value);
 
                         break;
                     }
@@ -3637,9 +3637,9 @@ namespace BetterLegacy.Menus
                         string saveName = isArray ? parameters[0] : parameters["name"];
                         var value = isArray ? parameters[1].AsFloat : parameters["value"].AsFloat;
                         if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
-                            value += StoryManager.inst.LoadFloat(saveName, value);
+                            value += StoryManager.inst.CurrentSave.LoadFloat(saveName, value);
 
-                        StoryManager.inst.SaveFloat(saveName, value);
+                        StoryManager.inst.CurrentSave.SaveFloat(saveName, value);
 
                         break;
                     }
@@ -3657,9 +3657,9 @@ namespace BetterLegacy.Menus
                         string saveName = isArray ? parameters[0] : parameters["name"];
                         var value = isArray ? parameters[1].Value : parameters["value"].Value;
                         if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
-                            value += StoryManager.inst.LoadString(saveName, value);
+                            value += StoryManager.inst.CurrentSave.LoadString(saveName, value);
 
-                        StoryManager.inst.SaveString(saveName, value);
+                        StoryManager.inst.CurrentSave.SaveString(saveName, value);
 
                         break;
                     }
@@ -3677,7 +3677,7 @@ namespace BetterLegacy.Menus
                         string saveName = isArray ? parameters[0] : parameters["name"];
                         var value = isArray ? parameters[1] : parameters["value"];
 
-                        StoryManager.inst.SaveNode(saveName, value);
+                        StoryManager.inst.CurrentSave.SaveNode(saveName, value);
 
                         break;
                     }
@@ -3694,7 +3694,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         string saveName = isArray ? parameters[0] : parameters["name"];
 
-                        var text = StoryManager.inst.LoadString(saveName, "");
+                        var text = StoryManager.inst.CurrentSave.LoadString(saveName, "");
 
                         if (thisElement is MenuText menuText)
                             menuText.text = text;

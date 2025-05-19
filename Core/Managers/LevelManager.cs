@@ -243,7 +243,7 @@ namespace BetterLegacy.Core.Managers
             LoadingFromHere = true;
             LevelEnded = false;
 
-            if (!level.saveData && (level.isStory ? StoryManager.inst.Saves : Saves).TryFind(x => x.ID == level.id, out SaveData saveData))
+            if (!level.saveData && (level.isStory ? StoryManager.inst.CurrentSave.Saves : Saves).TryFind(x => x.ID == level.id, out SaveData saveData))
                 level.saveData = saveData;
             level.LoadAchievements();
 

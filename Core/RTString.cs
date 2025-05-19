@@ -709,12 +709,12 @@ namespace BetterLegacy.Core
             RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
             {
                 DataManager.LevelRank levelRank =
-                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out SaveData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out SaveData playerData) ? LevelManager.GetLevelRank(playerData) :
                     CoreHelper.InEditor ?
                         LevelManager.EditorRank :
                         DataManager.inst.levelRanks[0];
 
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
+                input = input.Replace(match.Groups[0].ToString(), FormatLevelRank(levelRank));
             });
 
             RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
@@ -733,13 +733,13 @@ namespace BetterLegacy.Core
             {
                 RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
                 {
-                    input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
+                    input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.CurrentSave.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
                 });
 
                 input = input
                 .Replace("{{CurrentPlayingChapterNumber}}", ToStoryNumber(StoryManager.inst.currentPlayingChapterIndex))
                 .Replace("{{CurrentPlayingLevelNumber}}", ToStoryNumber(StoryManager.inst.currentPlayingLevelSequenceIndex))
-                .Replace("{{SaveSlotNumber}}", ToStoryNumber(StoryManager.inst.SaveSlot))
+                .Replace("{{SaveSlotNumber}}", ToStoryNumber(StoryManager.inst.CurrentSave.Slot))
                 ;
             }
 

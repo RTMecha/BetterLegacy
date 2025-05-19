@@ -4,23 +4,21 @@ using System.Collections.Generic;
 using SimpleJSON;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Story
 {
-    public class SaveSlot
+    /// <summary>
+    /// Represents a story save slot.
+    /// </summary>
+    public class StorySave : Exists
     {
-        public SaveSlot()
-        {
+        public StorySave() { }
 
-        }
-
-        public SaveSlot(int slot)
-        {
-            Slot = slot;
-        }
+        public StorySave(int slot) => Slot = slot;
 
         #region Data
 
@@ -30,19 +28,19 @@ namespace BetterLegacy.Story
         public int ChapterIndex => LoadInt("Chapter", 0);
 
         /// <summary>
-        /// The currently saved level index.
+        /// Gets the currently saved level index of a chapter.
         /// </summary>
-        public int LevelSequenceIndex => LoadInt($"DOC{(ChapterIndex + 1).ToString("00")}Progress", 0);
+        /// <param name="chapterIndex">The chapter progress.</param>
+        public int GetLevelSequenceIndex(int chapterIndex) => LoadInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", 0);
 
         /// <summary>
         /// Path to the current save slot file.
         /// </summary>
         public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{RTString.ToStoryNumber(Slot)}{FileFormat.LSS.Dot()}";
 
-        public JSONNode storySavesJSON;
+        JSONNode storySavesJSON;
 
         int slot;
-
         /// <summary>
         /// The current story save slot.
         /// </summary>
@@ -70,10 +68,10 @@ namespace BetterLegacy.Story
         /// </summary>
         public void UpdateCurrentLevelProgress()
         {
-            if (LevelManager.CurrentLevel == null)
-                return;
-
             var level = LevelManager.CurrentLevel;
+
+            if (!level)
+                return;
 
             CoreHelper.Log($"Setting Player Data");
 
@@ -127,6 +125,17 @@ namespace BetterLegacy.Story
             {
                 CoreHelper.LogException(ex);
             }
+        }
+
+        /// <summary>
+        /// Saves the progress of the story mode.
+        /// </summary>
+        /// <param name="chapter">Chapter to save.</param>
+        /// <param name="level">Level to save.</param>
+        public void SaveProgress(int chapter, int level)
+        {
+            SaveInt("Chapter", chapter);
+            SaveInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", level);
         }
 
         /// <summary>

@@ -89,23 +89,21 @@ namespace BetterLegacy.Story
             for (int i = 0; i < MAX_SAVE_SLOTS; i++)
             {
                 int index = i;
-                string progress = "";
+                string progress = string.Empty;
                 var fileExists = RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/story_saves_{RTString.ToStoryNumber(index)}{FileFormat.LSS.Dot()}");
+                var saveSlot = new StorySave(i);
                 if (fileExists)
                 {
-                    var saveSlot = new SaveSlot(i);
                     var chapterIndex = RTMath.Clamp(saveSlot.ChapterIndex, 0, StoryMode.Instance.chapters.Count - 1);
-                    var levelSequenceIndex = RTMath.Clamp(saveSlot.LevelSequenceIndex, 0, StoryMode.Instance.chapters[chapterIndex].Count - 1);
+                    var levelSequenceIndex = RTMath.Clamp(saveSlot.GetLevelSequenceIndex(chapterIndex), 0, StoryMode.Instance.chapters[chapterIndex].Count - 1);
                     progress = $" | DOC{RTString.ToStoryNumber(chapterIndex)} - SIM{RTString.ToStoryNumber(levelSequenceIndex)} |";
-                    saveSlot.storySavesJSON = null;
-                    saveSlot = null;
                 }
 
                 elements.Add(new MenuButton
                 {
                     id = "4918487",
                     name = name,
-                    text = $"<b> [ SLOT {(index + 1).ToString("00")}{progress} ]",
+                    text = $"<b> [ SLOT {RTString.ToStoryNumber(index)}{progress} ]",
                     parentLayout = "buttons",
                     selectionPosition = new Vector2Int(0, index + 1),
                     rect = RectValues.Default.SizeDelta(200f, 64f),
@@ -119,10 +117,14 @@ namespace BetterLegacy.Story
                     playBlipSound = true,
                     func = () =>
                     {
-                        StoryManager.inst.SaveSlot = index;
+                        StoryManager.inst.CurrentSave = saveSlot;
+                        StoryManager.inst.CurrentSave.SaveString("LastPlayedModVersion", LegacyPlugin.ModVersion.ToString());
+
+                        // reinitialize story mode in cases where changes were made during runtime
+                        StoryMode.Init();
+
                         LevelManager.IsArcade = false;
-                        StoryManager.inst.SaveString("LastPlayedModVersion", LegacyPlugin.ModVersion.ToString());
-                        if (InputDataManager.inst.players.Count == 0 || InputDataManager.inst.players.Any(x => x is not CustomPlayer))
+                        if (PlayerManager.InvalidPlayers)
                             SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
                         else
                             SceneHelper.LoadInterfaceScene();
@@ -160,19 +162,13 @@ namespace BetterLegacy.Story
                     selectedTextColor = 6,
                     length = 1f,
                     playBlipSound = true,
-                    func = () =>
+                    func = () => new ConfirmMenu("Are you sure you want to delete this save slot?", () =>
                     {
-                        int slot = index;
-                        new ConfirmMenu("Are you sure you want to delete this save slot?", () =>
-                        {
-                            InterfaceManager.inst.CloseMenus();
-                            StoryManager.inst.SaveSlot = slot;
-                            RTFile.DeleteFile(StoryManager.inst.StorySavesPath);
-                            StoryManager.inst.SaveSlot = 0;
-                            SetupUI();
-                            InterfaceManager.inst.SetCurrentInterface(InterfaceManager.STORY_SAVES_MENU_ID);
-                        }, () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.STORY_SAVES_MENU_ID));
-                    },
+                        InterfaceManager.inst.CloseMenus();
+                        RTFile.DeleteFile(saveSlot.StorySavesPath);
+                        SetupUI();
+                        InterfaceManager.inst.SetCurrentInterface(this);
+                    }, () => InterfaceManager.inst.SetCurrentInterface(this)),
                 });
             }
 

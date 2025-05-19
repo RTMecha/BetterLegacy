@@ -297,7 +297,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     case "storyjson": {
                                             var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
 
-                                            var storyJN = Story.StoryManager.inst.LoadJSON(jnElement["to"]);
+                                            var storyJN = Story.StoryManager.inst.CurrentSave.LoadJSON(jnElement["to"]);
                                             for (int k = 0; k < storyJN["to"].Count; k++)
                                             {
                                                 foreach (var toElement in storyJN["to"][k])
