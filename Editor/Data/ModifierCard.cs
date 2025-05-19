@@ -288,7 +288,7 @@ namespace BetterLegacy.Editor.Data
             constantToggle.onValueChanged.AddListener(_val =>
             {
                 modifier.constant = _val;
-                Update<T>(modifier);
+                Update(modifier);
             });
 
             TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
