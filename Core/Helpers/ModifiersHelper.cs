@@ -778,6 +778,7 @@ namespace BetterLegacy.Core.Helpers
             #region Misc
 
             nameof(ModifierTriggers.inEditor) => ModifierTriggers.inEditor,
+            nameof(ModifierTriggers.isEditing) => ModifierTriggers.isEditing,
             nameof(ModifierTriggers.requireSignal) => ModifierTriggers.requireSignal,
             nameof(ModifierTriggers.isFullscreen) => ModifierTriggers.isFullscreen,
             nameof(ModifierTriggers.objectAlive) => ModifierTriggers.objectAlive,
@@ -789,27 +790,27 @@ namespace BetterLegacy.Core.Helpers
 
             "storyLoadIntEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntLesserEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntGreaterEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntLesserDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntGreaterDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
             },
             "storyLoadBoolDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
+                return Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
             },
 
             #endregion
@@ -1274,21 +1275,21 @@ namespace BetterLegacy.Core.Helpers
                 if (!CoreHelper.InStory)
                     return;
 
-                Story.StoryManager.inst.SaveInt(modifier.GetValue(0, variables), modifier.reference.integerVariable);
+                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifier.reference.integerVariable);
             },
             "storySaveIntDEVONLY" => (modifier, variables) =>
             {
                 if (!CoreHelper.InStory)
                     return;
 
-                Story.StoryManager.inst.SaveInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables));
+                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables));
             },
             "storySaveBoolDEVONLY" => (modifier, variables) =>
             {
                 if (!CoreHelper.InStory)
                     return;
 
-                Story.StoryManager.inst.SaveBool(modifier.GetValue(0, variables), modifier.GetBool(1, false, variables));
+                Story.StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, variables), modifier.GetBool(1, false, variables));
             },
             "exampleEnableDEVONLY" => (modifier, variables) =>
             {
@@ -1918,6 +1919,7 @@ namespace BetterLegacy.Core.Helpers
             #region Misc
 
             nameof(ModifierTriggers.inEditor) => ModifierTriggers.inEditor,
+            nameof(ModifierTriggers.isEditing) => ModifierTriggers.isEditing,
             nameof(ModifierTriggers.requireSignal) => ModifierTriggers.requireSignal,
             nameof(ModifierTriggers.isFullscreen) => ModifierTriggers.isFullscreen,
             //nameof(ModifierTriggers.objectAlive) => ModifierTriggers.objectAlive,
@@ -1929,27 +1931,27 @@ namespace BetterLegacy.Core.Helpers
 
             "storyLoadIntEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntLesserEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntGreaterEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntLesserDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntGreaterDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
             },
             "storyLoadBoolDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
+                return Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
             },
 
             #endregion

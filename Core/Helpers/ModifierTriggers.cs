@@ -1301,11 +1301,10 @@ namespace BetterLegacy.Core.Helpers
             return time > modifier.GetFloat(0, 0f, variables);
         }
 
-        public static bool inEditor<T>(Modifier<T> modifier, Dictionary<string, string> variables)
-        {
-            return CoreHelper.InEditor;
-        }
+        public static bool inEditor<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CoreHelper.InEditor;
         
+        public static bool isEditing<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CoreHelper.IsEditing;
+
         public static bool requireSignal<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             return modifier.HasResult();
