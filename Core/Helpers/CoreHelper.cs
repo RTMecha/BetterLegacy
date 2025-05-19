@@ -791,6 +791,16 @@ namespace BetterLegacy.Core.Helpers
                 action?.Invoke(current);
         }
 
+        /// <summary>
+        /// Cleans up memory.
+        /// </summary>
+        public static void Cleanup()
+        {
+            Log($"{nameof(Cleanup)} unused memory.");
+            Resources.UnloadUnusedAssets();
+            GC.Collect();
+        }
+
         // CoreHelper.Notify("abcdefghijklmnopqrstuvwxyz", Color.white);
         static UICanvas currentNotification;
         static RTAnimation currentNotificationAnim;

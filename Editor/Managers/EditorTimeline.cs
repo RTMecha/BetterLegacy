@@ -1006,8 +1006,14 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="sprite">Sprite to set.</param>
         public void SetTimelineSprite(Sprite sprite)
         {
+            // destroy previous timeline sprite so it gets unloaded.
+            CoreHelper.Destroy(timelineImage.sprite);
+
             timelineImage.sprite = sprite;
             timelineOverlayImage.sprite = timelineImage.sprite;
+
+            // refresh memory
+            CoreHelper.Cleanup();
         }
 
         /// <summary>
