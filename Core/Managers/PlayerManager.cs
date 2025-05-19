@@ -65,7 +65,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// If any of the players are not the modded versions.
         /// </summary>
-        public static bool InvalidPlayers => InputDataManager.inst.players == null || InputDataManager.inst.players.Any(x => x is not CustomPlayer);
+        public static bool InvalidPlayers => NoPlayers || InputDataManager.inst.players.Any(x => x is not CustomPlayer);
 
         /// <summary>
         /// If other players should be considered in the level ranking.
@@ -193,11 +193,11 @@ namespace BetterLegacy.Core.Managers
         {
             var invalid = InvalidPlayers;
 
-            if (invalid)
-                InputDataManager.inst.players.Clear();
+            if (!invalid)
+                return;
 
-            if (NoPlayers || invalid)
-                InputDataManager.inst.players.Add(CreateDefaultPlayer());
+            InputDataManager.inst.players.Clear();
+            InputDataManager.inst.players.Add(CreateDefaultPlayer());
         }
 
         /// <summary>
