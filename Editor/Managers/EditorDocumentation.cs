@@ -926,6 +926,8 @@ namespace BetterLegacy.Editor.Managers
                                     "<b>greaterEquals(a, b, trueResult, falseResult)</b> - If a and b are greater or equal, then the function returns the trueResult, otherwise returns the falseResult.\n" +
                                     "<b>lesser(a, b, trueResult, falseResult)</b> - If a and b are lesser, then the function returns the trueResult, otherwise returns the falseResult.\n" +
                                     "<b>greater(a, b, trueResult, falseResult)</b> - If a and b are greater, then the function returns the trueResult, otherwise returns the falseResult.\n" +
+                                    "<b>copyEvent(type, valueIndex, time)</b> - Copies the value of an event at a specific time.\n" +
+                                    "<b>copyEventOffset(type, valueIndex)</b> - Copies the value of an event offset.\n" +
                                     "<b>findAxis#object_group(int fromType, int fromAxis, float time)</b> - Finds an object with the matching tag, takes an axis from fromType and fromAxis and interpolates it via time.\n" +
                                     "<b>findOffset#object_group(int fromType, int fromAxis)</b> - Finds an object with the matching tag and takes an axis from fromType and fromAxis.\n" +
                                     "<b>findObject#object_group#Property()</b> - Finds an object with the matching tag and a property of the object.\n" +
