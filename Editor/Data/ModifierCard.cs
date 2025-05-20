@@ -330,7 +330,7 @@ namespace BetterLegacy.Editor.Data
                 notToggle.onValueChanged.AddListener(_val =>
                 {
                     modifier.not = _val;
-                    Update<T>(modifier);
+                    Update(modifier);
                 });
 
                 TooltipHelper.AssignTooltip(notToggle.gameObject, "Trigger Not Modifier");
@@ -348,7 +348,7 @@ namespace BetterLegacy.Editor.Data
                 elseIfToggle.onValueChanged.AddListener(_val =>
                 {
                     modifier.elseIf = _val;
-                    Update<T>(modifier);
+                    Update(modifier);
                 });
 
                 TooltipHelper.AssignTooltip(elseIfToggle.gameObject, "Trigger Else If Modifier");
@@ -3767,10 +3767,7 @@ namespace BetterLegacy.Editor.Data
         {
             Modifier.collapse = collapse;
             RenderModifier<T>();
-            CoroutineHelper.PerformAtEndOfFrame(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(dialog.Content.AsRT());
-            });
+            CoroutineHelper.PerformAtEndOfFrame(() => LayoutRebuilder.ForceRebuildLayoutImmediate(dialog.Content.AsRT()));
         }
 
         public void Delete<T>()
