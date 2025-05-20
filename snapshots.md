@@ -38,6 +38,7 @@
 - Fixed Example's mirror and flip commands being the same.
 - Fixed animateObject not running.
 - Fixed modifier editors not disabling when Editor Complexity is changed.
+- Fixed theme keyframe not transitioning hsv values correctly.
 
 ------------------------------------------------------------------------------------------
 
