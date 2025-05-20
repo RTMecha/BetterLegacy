@@ -682,7 +682,7 @@ namespace BetterLegacy.Editor.Managers
             eventKeyframe.locked = false;
 
             if (type == 2 && EditorConfig.Instance.RotationEventKeyframeResets.Value)
-                eventKeyframe.SetEventValues(new float[1]);
+                eventKeyframe.SetValues(new float[1]);
 
             GameData.Current.events[type].Add(eventKeyframe);
 

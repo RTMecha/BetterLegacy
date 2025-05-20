@@ -1699,27 +1699,26 @@ namespace BetterLegacy.Editor.Managers
             var idRight = ObjEditor.inst.objTimelineContent.parent.Find("id/right");
             for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
             {
-                int tmpIndex = i;
+                var type = i;
                 var entry = TriggerHelper.CreateEntry(EventTriggerType.PointerUp, eventData =>
                 {
                     if (((PointerEventData)eventData).button != PointerEventData.InputButton.Right)
                         return;
 
-                    float timeTmp = MouseTimelineCalc();
+                    var timeTmp = MouseTimelineCalc();
 
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                    int index = beatmapObject.events[tmpIndex].FindLastIndex(x => x.time <= timeTmp);
-                    var eventKeyfame = AddEvent(beatmapObject, timeTmp, tmpIndex, (EventKeyframe)beatmapObject.events[tmpIndex][index], false);
+                    var eventKeyfame = CreateEventKeyframe(beatmapObject, timeTmp, type, beatmapObject.events[type].FindLast(x => x.time <= timeTmp), false);
                     UpdateKeyframeOrder(beatmapObject);
 
                     RenderKeyframes(beatmapObject);
 
-                    int keyframe = beatmapObject.events[tmpIndex].FindLastIndex(x => x.time == eventKeyfame.time);
+                    var keyframe = beatmapObject.events[type].FindLastIndex(x => x.id == eventKeyfame.id);
                     if (keyframe < 0)
                         keyframe = 0;
 
-                    SetCurrentKeyframe(beatmapObject, tmpIndex, keyframe, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
+                    SetCurrentKeyframe(beatmapObject, type, keyframe, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
                     ResizeKeyframeTimeline(beatmapObject);
 
                     RenderObjectKeyframesDialog(beatmapObject);
@@ -1731,11 +1730,11 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                 });
 
-                var comp = ObjEditor.inst.TimelineParents[tmpIndex].GetComponent<EventTrigger>();
+                var comp = ObjEditor.inst.TimelineParents[type].GetComponent<EventTrigger>();
                 comp.triggers.RemoveAll(x => x.eventID == EventTriggerType.PointerUp);
                 comp.triggers.Add(entry);
 
-                EditorThemeManager.AddGraphic(idRight.GetChild(i).GetComponent<Image>(), EditorTheme.GetGroup($"Object Keyframe Color {i + 1}"));
+                EditorThemeManager.AddGraphic(idRight.GetChild(type).GetComponent<Image>(), EditorTheme.GetGroup($"Object Keyframe Color {type + 1}"));
             }
 
             ObjEditor.inst.objTimelineSlider.onValueChanged.ClearAll();
@@ -3447,9 +3446,9 @@ namespace BetterLegacy.Editor.Managers
             RenderObjectKeyframesDialog(beatmapObject);
         }
 
-        public EventKeyframe AddEvent(BeatmapObject beatmapObject, float time, int type, EventKeyframe _keyframe, bool openDialog)
+        public EventKeyframe CreateEventKeyframe(BeatmapObject beatmapObject, float time, int type, EventKeyframe previousKeyframe, bool openDialog)
         {
-            var eventKeyframe = _keyframe.Copy();
+            var eventKeyframe = previousKeyframe.Copy();
             var t = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(beatmapObject.StartTime - RTEditor.SnapToBPM(beatmapObject.StartTime + time)) : time;
             eventKeyframe.time = t;
 
@@ -3457,7 +3456,10 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < eventKeyframe.values.Length; i++)
                     eventKeyframe.values[i] = 0f;
 
-            eventKeyframe.SetEventRandomValues(eventKeyframe.randomValues[0], eventKeyframe.randomValues[1], eventKeyframe.randomValues[2], 0f);
+            if (type == 0) // position type has 4 random values.
+                eventKeyframe.SetRandomValues(eventKeyframe.GetRandomValue(0), eventKeyframe.GetRandomValue(1), eventKeyframe.GetRandomValue(2), eventKeyframe.GetRandomValue(3));
+            else
+                eventKeyframe.SetRandomValues(eventKeyframe.GetRandomValue(0), eventKeyframe.GetRandomValue(1), eventKeyframe.GetRandomValue(2));
 
             eventKeyframe.locked = false;
 
@@ -5659,14 +5661,14 @@ namespace BetterLegacy.Editor.Managers
                     if (firstKF.eventKeyframe.randomValues.Length < 4)
                     {
                         var keyframe = firstKF.eventKeyframe;
-                        keyframe.SetEventRandomValues(keyframe.randomValues[0], keyframe.randomValues[1], keyframe.randomValues[2], 0f);
+                        keyframe.SetRandomValues(keyframe.randomValues[0], keyframe.randomValues[1], keyframe.randomValues[2], 0f);
                     }
 
                     dialog.RandomAxisDropdown.value = Mathf.Clamp((int)firstKF.eventKeyframe.randomValues[3], 0, 3);
                     dialog.RandomAxisDropdown.onValueChanged.AddListener(_val =>
                     {
                         foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                            keyframe.SetEventRandomValues(keyframe.randomValues[0], keyframe.randomValues[1], keyframe.randomValues[2], _val);
+                            keyframe.SetRandomValues(keyframe.randomValues[0], keyframe.randomValues[1], keyframe.randomValues[2], _val);
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                     });
                 }

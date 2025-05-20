@@ -22,14 +22,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         public EventKeyframe(float[] values, float[] randomValues, int random = 0) : this()
         {
             this.random = random;
-            SetEventValues(values);
-            SetEventRandomValues(randomValues);
+            SetValues(values);
+            SetRandomValues(randomValues);
         }
 
         public EventKeyframe(float time, float[] values, string curve) : this()
         {
             this.time = time;
-            SetEventValues(values);
+            SetValues(values);
             this.curve = Parser.TryParse(curve, Easing.Linear);
         }
 
@@ -37,8 +37,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             this.time = time;
             this.random = random;
-            SetEventValues(values);
-            SetEventRandomValues(randomValues);
+            SetValues(values);
+            SetRandomValues(randomValues);
         }
 
         public EventKeyframe(float time, float value, string curve) : this(time, new float[1] { value }, curve) { }
@@ -125,7 +125,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             while (eventValues.Count > valueCount)
                 eventValues.RemoveAt(eventValues.Count - 1);
 
-            eventKeyframe.SetEventValues(eventValues.ToArray());
+            eventKeyframe.SetValues(eventValues.ToArray());
 
             var eventRandomValues = new List<float>();
             for (int i = 0; i < raxis.Length; i++)
@@ -139,7 +139,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             eventKeyframe.locked = !string.IsNullOrEmpty(jn["l"]) && jn["l"].AsBool;
 
-            eventKeyframe.SetEventRandomValues(eventRandomValues.ToArray());
+            eventKeyframe.SetRandomValues(eventRandomValues.ToArray());
 
             return eventKeyframe;
         }
@@ -193,7 +193,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="ease">The ease to set to the keyframe</param>
         public void SetCurve(string ease) => curve = Parser.TryParse(ease, Easing.Linear);
 
-        public void SetEventValues(params float[] vals)
+        public void SetValues(params float[] vals)
         {
             if (vals == null)
                 return;
@@ -203,7 +203,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 values[i] = vals[i];
         }
 
-        public void SetEventRandomValues(params float[] vals)
+        public void SetRandomValues(params float[] vals)
         {
             if (vals == null)
                 return;
@@ -224,6 +224,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (randomValues.InRange(index))
                 randomValues[index] = val;
         }
+
+        public float GetValue(int index, float defaultValue = 0f) => values.TryGetAt(index, out float result) ? result : defaultValue;
+
+        public float GetRandomValue(int index, float defaultValue = 0f) => randomValues.TryGetAt(index, out float result) ? result : defaultValue;
 
         public bool IsRandomHoming() => random == 5 || random == 6;
 

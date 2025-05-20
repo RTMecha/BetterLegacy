@@ -585,17 +585,19 @@ namespace BetterLegacy.Core.Data.Beatmap
                         if (kfjn["ct"] != null)
                             eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                        eventKeyframe.SetEventValues(
+                        eventKeyframe.SetValues(
                             kfjn["ev"][0].AsFloat,
                             kfjn["ev"][1].AsFloat,
+                            // camera parent in alpha is above all other objects for some reason
                             isCameraParented ? -10f : 0f);
 
                         eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.SetEventRandomValues(
+                        eventKeyframe.SetRandomValues(
                             kfjn["er"][0].AsFloat,
                             kfjn["er"][1].AsFloat,
-                            kfjn["er"][2].AsFloat);
+                            kfjn["er"][2].AsFloat,
+                            0f);
 
                         eventKeyframe.relative = false;
                         events[0].Add(eventKeyframe);
@@ -616,13 +618,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                         if (kfjn["ct"] != null)
                             eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                        eventKeyframe.SetEventValues(
+                        eventKeyframe.SetValues(
                             kfjn["ev"][0].AsFloat,
                             kfjn["ev"][1].AsFloat);
 
                         eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.SetEventRandomValues(
+                        eventKeyframe.SetRandomValues(
                             kfjn["er"][0].AsFloat,
                             kfjn["er"][1].AsFloat,
                             kfjn["er"][2].AsFloat);
@@ -646,12 +648,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         if (kfjn["ct"] != null)
                             eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                        eventKeyframe.SetEventValues(
+                        eventKeyframe.SetValues(
                             kfjn["ev"][0].AsFloat);
 
                         eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.SetEventRandomValues(
+                        eventKeyframe.SetRandomValues(
                             kfjn["er"][0].AsFloat,
                             kfjn["er"][1].AsFloat,
                             kfjn["er"][2].AsFloat);
@@ -688,7 +690,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         // 7 = end hue
                         // 8 = end saturation
                         // 9 = end value
-                        eventKeyframe.SetEventValues(
+                        eventKeyframe.SetValues(
                             kfjn["ev"][0].AsFloat,
                             kfjn["ev"].Count <= 1 ? 0f : (-(kfjn["ev"][1].AsFloat / 100f) + 1f),
                             0f,
@@ -702,7 +704,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         eventKeyframe.random = kfjn["r"].AsInt;
 
-                        eventKeyframe.SetEventRandomValues(
+                        eventKeyframe.SetRandomValues(
                             kfjn["er"][0].AsFloat,
                             kfjn["er"][1].AsFloat,
                             kfjn["er"][2].AsFloat,
@@ -822,12 +824,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     try
                     {
-                        eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat);
+                        eventKeyframe.SetValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat);
                     }
                     catch
                     {
                         // If all values end up as zero, then we definitely know Z axis didn't load for whatever reason.
-                        eventKeyframe.SetEventValues(0f, 0f, 0f);
+                        eventKeyframe.SetValues(0f, 0f, 0f);
                     }
 
                     eventKeyframe.random = kfjn["r"].AsInt;
@@ -835,7 +837,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     // ry = random y
                     // rz = random interval
                     // rx2 = random axis
-                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat, kfjn["rx2"].AsFloat);
+                    eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat, kfjn["rx2"].AsFloat);
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
                     eventKeyframe.flee = kfjn["flee"].AsBool;
@@ -857,10 +859,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     if (kfjn["ct"] != null)
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                    eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat);
+                    eventKeyframe.SetValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat);
 
                     eventKeyframe.random = kfjn["r"].AsInt;
-                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
+                    eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
                     eventKeyframe.flee = kfjn["flee"].AsBool;
@@ -882,10 +884,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     if (kfjn["ct"] != null)
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
-                    eventKeyframe.SetEventValues(kfjn["x"].AsFloat);
+                    eventKeyframe.SetValues(kfjn["x"].AsFloat);
 
                     eventKeyframe.random = kfjn["r"].AsInt;
-                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
+                    eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
                     eventKeyframe.relative = string.IsNullOrEmpty(kfjn["rel"]) || kfjn["rel"].AsBool;
                     eventKeyframe.flee = kfjn["flee"].AsBool;
@@ -920,7 +922,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     // x4 = end value
 
                     if (kfjn["z2"] != null) // check for gradient values
-                        eventKeyframe.SetEventValues(
+                        eventKeyframe.SetValues(
                         kfjn["x"].AsFloat,
                         kfjn["y"].AsFloat,
                         kfjn["z"].AsFloat,
@@ -932,7 +934,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["z3"].AsFloat,
                         kfjn["x4"].AsFloat);
                     else // no gradient values
-                        eventKeyframe.SetEventValues(
+                        eventKeyframe.SetValues(
                             kfjn["x"].AsFloat,
                             kfjn["y"].AsFloat,
                             kfjn["z"].AsFloat,
@@ -945,7 +947,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                             0f);
 
                     eventKeyframe.random = kfjn["r"].AsInt;
-                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat);
+                    eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat);
 
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 

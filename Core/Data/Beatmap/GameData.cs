@@ -807,7 +807,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, kfjn["ev"][1].AsFloat);
+                    eventKeyframe.SetValues(kfjn["ev"][0].AsFloat, kfjn["ev"][1].AsFloat);
 
                     gameData.events[0].Add(eventKeyframe);
                 }
@@ -826,7 +826,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat);
+                    eventKeyframe.SetValues(kfjn["ev"][0].AsFloat);
 
                     gameData.events[1].Add(eventKeyframe);
                 }
@@ -845,7 +845,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat);
+                    eventKeyframe.SetValues(kfjn["ev"][0].AsFloat);
 
                     gameData.events[2].Add(eventKeyframe);
                 }
@@ -866,9 +866,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.time = kfjn["t"].AsFloat;
 
                     if (kfjn["ev"].Count > 3)
-                        eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, kfjn["ev"][1].AsFloat, kfjn["ev"][2].AsFloat);
+                        eventKeyframe.SetValues(kfjn["ev"][0].AsFloat, kfjn["ev"][1].AsFloat, kfjn["ev"][2].AsFloat);
                     else
-                        eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, 1f, 1f);
+                        eventKeyframe.SetValues(kfjn["ev"][0].AsFloat, 1f, 1f);
 
                     gameData.events[3].Add(eventKeyframe);
                 }
@@ -889,9 +889,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.time = kfjn["t"].AsFloat;
                     // Since theme keyframes use random string IDs as their value instead of numbers (wtf), we have to convert the new IDs to numbers.
                     if (!string.IsNullOrEmpty(kfjn["evs"][0]) && idConversion.TryGetValue(kfjn["evs"][0], out string themeID))
-                        eventKeyframe.SetEventValues(Parser.TryParse(themeID, 0f));
+                        eventKeyframe.SetValues(Parser.TryParse(themeID, 0f));
                     else
-                        eventKeyframe.SetEventValues(0f);
+                        eventKeyframe.SetValues(0f);
 
                     gameData.events[4].Add(eventKeyframe);
                 }
@@ -910,7 +910,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat);
+                    eventKeyframe.SetValues(kfjn["ev"][0].AsFloat);
 
                     gameData.events[5].Add(eventKeyframe);
                 }
@@ -929,7 +929,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(
+                    eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat,
                         kfjn["ev"][1].AsFloat,
                         1f,
@@ -953,7 +953,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(
+                    eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat,
                         kfjn["ev"][1].AsFloat,
                         kfjn["ev"][2].AsFloat,
@@ -979,7 +979,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(
+                    eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat,
                         kfjn["ev"][1].AsFloat,
                         kfjn["ev"][2].AsFloat,
@@ -1004,7 +1004,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(
+                    eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat,
                         kfjn["ev"][1].AsFloat,
                         kfjn["ev"][2].AsFloat);
@@ -1026,7 +1026,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(
+                    eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat);
 
                     gameData.events[10].Add(eventKeyframe);
@@ -1055,7 +1055,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(
+                    eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat,
                         kfjn["ev"][1].AsFloat,
                         kfjn["ev"][2].AsFloat == 9f ? 19f : kfjn["ev"][2].AsFloat,
@@ -1091,7 +1091,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 firstKF.id = LSText.randomNumString(8);
                 firstKF.time = 0f;
-                firstKF.SetEventValues(jn["events"][13][0]["ev"][0].AsFloat, jn["events"][13][0]["ev"][1].AsFloat);
+                firstKF.SetValues(jn["events"][13][0]["ev"][0].AsFloat, jn["events"][13][0]["ev"][1].AsFloat);
 
                 for (int i = 1; i < jn["events"][13].Count; i++)
                 {
@@ -1104,7 +1104,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         eventKeyframe.curve = Parser.TryParse(kfjn["ct"], Easing.Linear);
 
                     eventKeyframe.time = kfjn["t"].AsFloat;
-                    eventKeyframe.SetEventValues(
+                    eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat,
                         kfjn["ev"][1].AsFloat);
 

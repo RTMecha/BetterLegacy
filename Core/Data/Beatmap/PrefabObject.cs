@@ -387,9 +387,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                     var kf = new EventKeyframe();
                     var jnpos = jn["e"]["pos"];
 
-                    kf.SetEventValues(jnpos["x"].AsFloat, jnpos["y"].AsFloat);
+                    kf.SetValues(jnpos["x"].AsFloat, jnpos["y"].AsFloat);
                     kf.random = jnpos["r"].AsInt;
-                    kf.SetEventRandomValues(jnpos["rx"].AsFloat, jnpos["ry"].AsFloat, jnpos["rz"].AsFloat);
+                    kf.SetRandomValues(jnpos["rx"].AsFloat, jnpos["ry"].AsFloat, jnpos["rz"].AsFloat);
                     events.Add(kf);
                 }
                 else
@@ -399,9 +399,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     var kf = new EventKeyframe();
                     var jnsca = jn["e"]["sca"];
-                    kf.SetEventValues(jnsca["x"].AsFloat, jnsca["y"].AsFloat);
+                    kf.SetValues(jnsca["x"].AsFloat, jnsca["y"].AsFloat);
                     kf.random = jnsca["r"].AsInt;
-                    kf.SetEventRandomValues(jnsca["rx"].AsFloat, jnsca["ry"].AsFloat, jnsca["rz"].AsFloat);
+                    kf.SetRandomValues(jnsca["rx"].AsFloat, jnsca["ry"].AsFloat, jnsca["rz"].AsFloat);
                     events.Add(kf);
                 }
                 else
@@ -411,9 +411,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     var kf = new EventKeyframe();
                     var jnrot = jn["e"]["rot"];
-                    kf.SetEventValues(jnrot["x"].AsFloat);
+                    kf.SetValues(jnrot["x"].AsFloat);
                     kf.random = jnrot["r"].AsInt;
-                    kf.SetEventRandomValues(jnrot["rx"].AsFloat, 0f, jnrot["rz"].AsFloat);
+                    kf.SetRandomValues(jnrot["rx"].AsFloat, 0f, jnrot["rz"].AsFloat);
                     events.Add(kf);
                 }
                 else
