@@ -56,6 +56,23 @@ namespace BetterLegacy.Core.Animation.Keyframe
                         brightness),
                     -(opacity - 1f));
 
-        public Color Interpolate(IKeyframe<Color> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+        public Color Interpolate(IKeyframe<Color> other, float time)
+        {
+            // interpolate HSV values so the color values properly transition.
+            if (other is ThemeKeyframe themeKeyframe)
+            {
+                var ease = other.Ease(time);
+
+                return RTColors.FadeColor(
+                            RTColors.ChangeColorHSV(RTMath.Lerp(Theme[colorSlot], Theme[themeKeyframe.colorSlot], ease),
+                                RTMath.Lerp(hue, themeKeyframe.hue, ease),
+                                RTMath.Lerp(saturation, themeKeyframe.saturation, ease),
+                                RTMath.Lerp(brightness, themeKeyframe.brightness, ease)),
+                            -(RTMath.Lerp(opacity, themeKeyframe.opacity, ease) - 1f));
+            }
+
+            // if other is not a ThemeKeyframe (e.g. ColorKeyframe), just interpolate the color values.
+            return RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+        }
     }
 }
