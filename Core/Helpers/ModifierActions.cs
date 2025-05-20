@@ -2537,6 +2537,16 @@ namespace BetterLegacy.Core.Helpers
             catch { }
         }
 
+        public static void getModifiedColor<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var color = RTColors.HexToColor(modifier.GetValue(1, variables));
+
+            variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(color,
+                    modifier.GetFloat(3, 0f, variables),
+                    modifier.GetFloat(4, 0f, variables),
+                    modifier.GetFloat(5, 0f, variables)), modifier.GetFloat(2, 1f, variables)));
+        }
+
         public static void getMixedColors<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var colors = new List<Color>();
@@ -2544,6 +2554,65 @@ namespace BetterLegacy.Core.Helpers
                 colors.Add(RTColors.HexToColor(modifier.GetValue(1, variables)));
 
             variables[modifier.GetValue(0)] = RTColors.MixColors(colors).ToString();
+        }
+
+        public static void getVisualColor(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject is SolidObject solidObject)
+            {
+                var colors = solidObject.GetColors();
+                variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(colors.startColor);
+                variables[modifier.GetValue(1)] = RTColors.ColorToHexOptional(colors.endColor);
+            }
+        }
+
+        public static void getFloatAnimationKF<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var audioTime = modifier.GetFloat(1, 0f, variables);
+            var type = modifier.GetInt(2, 0, variables);
+
+            Sequence<float> sequence;
+
+            // get cache
+            if (modifier.HasResult() && modifier.GetBool(3, true, variables))
+                sequence = modifier.GetResult<Sequence<float>>();
+            else
+            {
+                var value = modifier.GetFloat(4, 0f, variables);
+
+                var currentTime = 0f;
+
+                var keyframes = new List<IKeyframe<float>>();
+                keyframes.Add(new FloatKeyframe(currentTime, value, Ease.Linear));
+                for (int i = 5; i < modifier.commands.Count; i += 4)
+                {
+                    var time = modifier.GetFloat(i, 0f, variables);
+                    if (time < currentTime)
+                        continue;
+
+                    var x = modifier.GetFloat(i + 1, 0f, variables);
+                    var relative = modifier.GetBool(i + 2, true, variables);
+
+                    var easing = modifier.GetValue(i + 3, variables);
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                        easing = DataManager.inst.AnimationList[e].Name;
+
+                    var setvalue = x;
+                    if (relative)
+                        setvalue += value;
+
+                    keyframes.Add(new FloatKeyframe(currentTime + time, setvalue, Ease.GetEaseFunction(easing, Ease.Linear)));
+
+                    value = setvalue;
+                    currentTime = time;
+                }
+
+                sequence = new Sequence<float>(keyframes);
+                modifier.Result = sequence;
+            }
+
+            if (sequence != null)
+                variables[modifier.GetValue(0)] = sequence.Interpolate(audioTime).ToString();
         }
 
         public static void getSignaledVariables<T>(Modifier<T> modifier, Dictionary<string, string> variables)

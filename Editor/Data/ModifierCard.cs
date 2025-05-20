@@ -1542,7 +1542,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.getColorSlotHexCode): {
                         StringGenerator(modifier, "Variable Name", 0);
                         ColorGenerator(modifier, "Color", 1);
-                        SingleGenerator(modifier, "Opacity", 2, 1f);
+                        SingleGenerator(modifier, "Opacity", 2, 1f, max: 1f);
                         SingleGenerator(modifier, "Hue", 3);
                         SingleGenerator(modifier, "Saturation", 4);
                         SingleGenerator(modifier, "Value", 5);
@@ -1558,6 +1558,50 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.getHexCodeFromFloat): {
                         StringGenerator(modifier, "Variable Name", 0);
                         SingleGenerator(modifier, "Value", 1, 0f, max: 1f);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getMixedColors): {
+                        StringGenerator(modifier, "Variable Name", 0);
+
+                        int a = 0;
+                        for (int i = 1; i < modifier.commands.Count; i++)
+                        {
+                            int groupIndex = i;
+                            var label = LabelGenerator($"- Color {a + 1}");
+
+                            DeleteGenerator(modifier, label.transform, () =>
+                            {
+                                modifier.commands.RemoveAt(groupIndex);
+                            });
+
+                            var groupName = StringGenerator(modifier, "Color Hex Code", i);
+                            EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
+
+                            a++;
+                        }
+
+                        AddGenerator(modifier, "Add Color Value", () =>
+                        {
+                            modifier.commands.Add(RTColors.ColorToHexOptional(LSColors.pink500));
+                        });
+
+                        break;
+                    }
+                case nameof(ModifierActions.getModifiedColor): {
+                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, "Hex Color", 1);
+
+                        SingleGenerator(modifier, "Opacity", 2, 1f, max: 1f);
+                        SingleGenerator(modifier, "Hue", 3);
+                        SingleGenerator(modifier, "Saturation", 4);
+                        SingleGenerator(modifier, "Value", 5);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getVisualColor): {
+                        StringGenerator(modifier, "Color 1 Var Name", 0);
+                        StringGenerator(modifier, "Color 2 Var Name", 1);
 
                         break;
                     }
@@ -1712,33 +1756,6 @@ namespace BetterLegacy.Editor.Data
                         StringGenerator(modifier, "Variable Name", 0);
                         StringGenerator(modifier, "Compare From", 1);
                         StringGenerator(modifier, "Compare To", 2);
-
-                        break;
-                    }
-                case nameof(ModifierActions.getMixedColors): {
-                        StringGenerator(modifier, "Variable Name", 0);
-
-                        int a = 0;
-                        for (int i = 1; i < modifier.commands.Count; i++)
-                        {
-                            int groupIndex = i;
-                            var label = LabelGenerator($"- Color {a + 1}");
-
-                            DeleteGenerator(modifier, label.transform, () =>
-                            {
-                                modifier.commands.RemoveAt(groupIndex);
-                            });
-
-                            var groupName = StringGenerator(modifier, "Color Hex Code", i);
-                            EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
-
-                            a++;
-                        }
-
-                        AddGenerator(modifier, "Add Color Value", () =>
-                        {
-                            modifier.commands.Add(RTColors.ColorToHexOptional(LSColors.pink500));
-                        });
 
                         break;
                     }
