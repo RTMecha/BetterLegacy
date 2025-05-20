@@ -12,6 +12,7 @@
 - Implemented Prefab Object random transform.
 - Added isEditing trigger modifier. This checks if you're only in the editor. If you're in preview mode or in the regular game, this won't activate.
 - Added copyEventOffset math evaluator function.
+- Added getModifiedColor and getVisualColor modifiers.
 
 ### Editor
 - Added a BG Object counter to Prefab Object Editor.
@@ -39,6 +40,7 @@
 - Fixed animateObject not running.
 - Fixed modifier editors not disabling when Editor Complexity is changed.
 - Fixed theme keyframe not transitioning hsv values correctly.
+- Fixed Hidden objects unhiding automatically when their regular active state is changed.
 
 ------------------------------------------------------------------------------------------
 
