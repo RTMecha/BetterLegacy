@@ -929,10 +929,10 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case ObjectContext.HIDE: {
-                        if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty() || !beatmapObject.runtimeObject.parentObjects[0].gameObject)
+                        if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.parentObjects.IsEmpty() || !beatmapObject.runtimeObject.visualObject || !beatmapObject.runtimeObject.visualObject.gameObject)
                             break;
 
-                        beatmapObject.runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.editorData.hidden);
+                        beatmapObject.runtimeObject.visualObject.gameObject.SetActive(!beatmapObject.editorData.hidden);
 
                         break;
                     }
@@ -1137,7 +1137,7 @@ namespace BetterLegacy.Core.Runtime
 
             if (CoreHelper.InEditor)
             {
-                runtimeObject.parentObjects[0].gameObject.SetActive(!beatmapObject.editorData.hidden);
+                runtimeObject.visualObject.gameObject.SetActive(!beatmapObject.editorData.hidden);
 
                 if (beatmapObject.editorData.selectable)
                 {

@@ -179,7 +179,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (CoreHelper.InEditor)
             {
-                parentObjects[0].gameObject.SetActive(!beatmapObject.editorData.hidden);
+                visualObject.SetActive(!beatmapObject.editorData.hidden);
 
                 if (beatmapObject.editorData.selectable)
                 {
