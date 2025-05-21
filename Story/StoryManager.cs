@@ -720,7 +720,7 @@ namespace BetterLegacy.Story
                 }
 
                 // no cutscenes
-                while (storyLevel.preCutscenes.IsEmpty() && storyLevel.postCutscenes.IsEmpty())
+                while (storyLevel.preCutscenes.IsEmpty() && storyLevel.postCutscenes.IsEmpty() && level < storyChapter.Count + 1)
                 {
                     level++;
                     storyLevel = storyChapter.GetLevel(level);

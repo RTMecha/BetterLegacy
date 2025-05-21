@@ -77,6 +77,8 @@
   Update: 1.7.0 - 1.8.0
 - Prefab reference name in object editor.  
   Update: 1.7.0 - 1.8.0
+- Level priority sort
+  Update: 1.8.0
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.

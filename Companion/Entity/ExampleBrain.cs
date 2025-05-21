@@ -510,7 +510,7 @@ namespace BetterLegacy.Companion.Entity
                 })
             {
                 canDo = () => !reference.Dragging && !reference.brain.talking &&
-                    interactedTimer.time > 600f && !CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.01f) && RandomHelper.PercentChanceSingle(0.01f),
+                    interactedTimer.time > 600f && !CompanionManager.MusicPlaying && RandomHelper.PercentChanceSingle(0.01f) && RandomHelper.PercentChanceSingle(50f),
                 interruptCheck = () => false,
                 interruptible = false,
                 setAsCurrent = false,
