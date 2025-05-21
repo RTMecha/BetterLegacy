@@ -1,6 +1,10 @@
 ﻿# ???
 
 ## Features
+### Story
+- All cutscenes are now at a pre-polish state.
+- You can now view cutscenes of levels you've beaten.
+
 ### Core
 - Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
 - Fully implemented Polygon Shape. Thanks Pidge! :D
@@ -13,6 +17,8 @@
 - Added isEditing trigger modifier. This checks if you're only in the editor. If you're in preview mode or in the regular game, this won't activate.
 - Added copyEventOffset math evaluator function.
 - Added getModifiedColor and getVisualColor modifiers.
+- animateObject modifiers now have a "Apply Delta Time" value. With this on and the modifier set to constant, the animation will calculate the distance between the previous frame and the current frame. This is for cases where the game has low FPS or lags, but can cause the object to jitter in some cases.
+- getToggle modifier now has a "Invert Value" toggle. This acts like a not gate.
 
 ### Editor
 - Added a BG Object counter to Prefab Object Editor.
@@ -26,9 +32,11 @@
 ## Changes
 ### Core
 - Optimized setImageOther modifier by loading the sprite before iterating through the group.
+- Reworked dynamic homing speed again to actually act as a delay rather than a speed value.
 
 ### Editor
 - Reorganized / reworked a ton of Editor UI.
+- Renamed Dynamic Homing's "Speed" value to "Delay" due to the behavior of this changing.
 
 ### Example Companion
 - Example's commands make him say something now.
