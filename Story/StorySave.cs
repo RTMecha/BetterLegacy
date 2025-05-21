@@ -263,7 +263,7 @@ namespace BetterLegacy.Story
         /// </summary>
         /// <param name="name">Name of the value to check.</param>
         /// <returns>Returns true if the value exists, otherwise returns false.</returns>
-        public bool HasSave(string name) => storySavesJSON["saves"][name] != null;
+        public bool HasSave(string name) => storySavesJSON != null && storySavesJSON["saves"][name] != null;
 
         #endregion
     }
