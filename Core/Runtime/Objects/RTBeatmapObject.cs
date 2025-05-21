@@ -137,39 +137,46 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (!parentObjects.IsEmpty())
                 parentObjects[parentObjects.Count - 1].gameObject?.SetActive(active);
 
-            if (!active && this.active)
-            {
-                // stop objects' own keyframes due to stopping parent chain keyframes causing the homing keyframes to bug out.
-                var parentObject = parentObjects[0];
-                for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
-                    parentObject.positionSequence.keyframes[j].Stop();
-                for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
-                    parentObject.scaleSequence.keyframes[j].Stop();
-                for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
-                    parentObject.rotationSequence.keyframes[j].Stop();
+            if (active && !this.active)
+                UpdateSpawning();
 
-                // despawn entire parent chain to get desync to work
-                for (int i = 0; i < parentObjects.Count; i++)
-                    parentObjects[i].spawned = false;
-
-                // this is what was originally done. however this caused problems as said above.
-                //for (int i = 0; i < parentObjects.Count; i++)
-                //{
-                //    var parentObject = parentObjects[i];
-                //    parentObject.spawned = false;
-                //    for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
-                //        parentObject.positionSequence.keyframes[j].Stop();
-                //    for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
-                //        parentObject.scaleSequence.keyframes[j].Stop();
-                //    for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
-                //        parentObject.rotationSequence.keyframes[j].Stop();
-                //}
-
-                for (int i = 0; i < visualObject.colorSequence.keyframes.Length; i++)
-                    visualObject.colorSequence.keyframes[i].Stop();
-            }
+            // original method
+            //if (!active && this.active)
+            //    UpdateSpawning();
 
             this.active = active;
+        }
+
+        void UpdateSpawning()
+        {
+            // stop objects' own keyframes due to stopping parent chain keyframes causing the homing keyframes to bug out.
+            var parentObject = parentObjects[0];
+            for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
+                parentObject.positionSequence.keyframes[j].Stop();
+            for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
+                parentObject.scaleSequence.keyframes[j].Stop();
+            for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
+                parentObject.rotationSequence.keyframes[j].Stop();
+
+            // despawn entire parent chain to get desync to work
+            for (int i = 0; i < parentObjects.Count; i++)
+                parentObjects[i].spawned = false;
+
+            // this is what was originally done. however this caused problems as said above.
+            //for (int i = 0; i < parentObjects.Count; i++)
+            //{
+            //    var parentObject = parentObjects[i];
+            //    parentObject.spawned = false;
+            //    for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
+            //        parentObject.positionSequence.keyframes[j].Stop();
+            //    for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
+            //        parentObject.scaleSequence.keyframes[j].Stop();
+            //    for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
+            //        parentObject.rotationSequence.keyframes[j].Stop();
+            //}
+
+            for (int i = 0; i < visualObject.colorSequence.keyframes.Length; i++)
+                visualObject.colorSequence.keyframes[i].Stop();
         }
 
         /// <summary>
