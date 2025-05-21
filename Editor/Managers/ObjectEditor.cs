@@ -5609,7 +5609,7 @@ namespace BetterLegacy.Editor.Managers
             dialog.RandomEventValueParent.transform.GetChild(1).GetChild(0).AsRT().sizeDelta = new Vector2(type != 2 || randomType == 6 ? 117 : 317f, 32f);
 
             if (randomType != 0 && randomType != 3 && randomType != 5)
-                kfdialog.Find("r_label/interval").GetComponent<Text>().text = randomType == 6 ? "Speed" : "Random Interval";
+                kfdialog.Find("r_label/interval").GetComponent<Text>().text = randomType == 6 ? "Delay" : "Random Interval";
         }
 
         void KeyframeRandomHandler(int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)

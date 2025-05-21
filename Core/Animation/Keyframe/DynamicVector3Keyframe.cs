@@ -5,7 +5,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
-    public struct DynamicVector3Keyframe : IKeyframe<Vector3>, IHomingKeyframe
+    public struct DynamicVector3Keyframe : IKeyframe<Vector3>, IHomingKeyframe, IDynamicHomingKeyframe
     {
         public bool Active { get; set; }
 
@@ -44,7 +44,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public void Start(IKeyframe<Vector3> prev, Vector3 value, float time)
         {
             Active = true;
-            Value = OriginalValue;
+            if (prev is not IDynamicHomingKeyframe)
+                Value = OriginalValue;
         }
 
         public void Stop() => Active = false;
@@ -57,23 +58,37 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetValue(Vector3 value) => Value = value;
 
-        public Vector3 GetValue()
+        public Vector3 GetValue() => GetValue(0f);
+
+        public Vector3 GetValue(float ease) => GetValue(null, ease);
+
+        public Vector3 GetValue(IDynamicHomingKeyframe dynamicHomingKeyframe, float ease)
         {
             var player = this.GetPlayer();
             var vector = player?.localPosition ?? Vector3.zero;
-            var delay = UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch * Delay;
 
-            if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || Vector2.Distance(vector, Value) > MinRange && Vector2.Distance(vector, Value) < MaxRange) && Axis == AxisMode.Both)
+            var minRange = MinRange;
+            var maxRange = MaxRange;
+            var delay = CalculateDelay();
+
+            if (dynamicHomingKeyframe != null)
+            {
+                minRange = RTMath.Lerp(minRange, dynamicHomingKeyframe.MinRange, ease);
+                maxRange = RTMath.Lerp(maxRange, dynamicHomingKeyframe.MaxRange, ease);
+                delay = RTMath.Lerp(delay, dynamicHomingKeyframe.CalculateDelay(), ease);
+            }
+
+            if ((minRange == 0f && maxRange == 0f || minRange > maxRange || Vector2.Distance(vector, Value) > minRange && Vector2.Distance(vector, Value) < maxRange) && Axis == AxisMode.Both)
                 Value += Flee ? -(vector - Value) * delay : (vector - Value) * delay;
 
-            if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || RTMath.Distance(vector.x, Value.x) > MinRange && RTMath.Distance(vector.x, Value.x) < MaxRange) && Axis == AxisMode.XOnly)
+            if ((minRange == 0f && maxRange == 0f || minRange > maxRange || RTMath.Distance(vector.x, Value.x) > minRange && RTMath.Distance(vector.x, Value.x) < maxRange) && Axis == AxisMode.XOnly)
             {
                 var x = Value;
                 x.x += Flee ? -(vector.x - Value.x) * delay : (vector.x - Value.x) * delay;
                 Value = x;
             }
 
-            if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || RTMath.Distance(vector.y, Value.y) > MinRange && RTMath.Distance(vector.y, Value.y) < MaxRange) && Axis == AxisMode.YOnly)
+            if ((minRange == 0f && maxRange == 0f || minRange > maxRange || RTMath.Distance(vector.y, Value.y) > minRange && RTMath.Distance(vector.y, Value.y) < maxRange) && Axis == AxisMode.YOnly)
             {
                 var x = Value;
                 x.y += Flee ? -(vector.y - Value.y) * delay : (vector.y - Value.y) * delay;
@@ -83,6 +98,20 @@ namespace BetterLegacy.Core.Animation.Keyframe
             return Value;
         }
 
-        public Vector3 Interpolate(IKeyframe<Vector3> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+        public float CalculateDelay() => 1f - Mathf.Pow(Delay, UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch);
+
+        public Vector3 Interpolate(IKeyframe<Vector3> other, float time)
+        {
+            var ease = other.Ease(time);
+            if (other is IDynamicHomingKeyframe dynamicHomingKeyframe)
+            {
+                var value = GetValue(dynamicHomingKeyframe, ease);
+                // set the value to the other dynamic homing keyframe so it doesn't snap to 0 when the keyframe starts interpolating.
+                other.SetValue(value);
+                return value;
+            }
+
+            return RTMath.Lerp(GetValue(ease), other.GetValue(), other.Ease(time));
+        }
     }
 }

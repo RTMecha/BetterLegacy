@@ -6,7 +6,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
-    public struct DynamicFloatKeyframe : IKeyframe<float>, IHomingFloatKeyframe, IHomingKeyframe
+    public struct DynamicFloatKeyframe : IKeyframe<float>, IHomingFloatKeyframe, IHomingKeyframe, IDynamicHomingKeyframe
     {
         public bool Active { get; set; }
 
@@ -56,7 +56,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public void Start(IKeyframe<float> prev, float value, float time)
         {
             Active = true;
-            Value = OriginalValue;
+            if (prev is not IDynamicHomingKeyframe)
+                Value = OriginalValue;
             var player = this.GetPlayer(time);
             Target = player?.localPosition ?? Vector3.zero;
             Angle360 = 0f;
@@ -101,7 +102,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public void SetValue(float value) => Value = value;
 
-        public float GetValue()
+        public float GetValue() => GetValue(0f);
+
+        public float GetValue(float ease) => GetValue(null, ease);
+
+        public float GetValue(IDynamicHomingKeyframe dynamicHomingKeyframe, float ease)
         {
             var player = this.GetPlayer();
             var vector = player?.localPosition ?? Vector3.zero;
@@ -178,16 +183,39 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Target = player?.localPosition ?? Vector3.zero;
             Position = PositionSequence.Value;
 
-            var delay = UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch * Delay;
+            var minRange = MinRange;
+            var maxRange = MaxRange;
+            var delay = CalculateDelay();
 
-            if (MinRange == 0f && MaxRange == 0f || Vector2.Distance(vector, PositionSequence.Value) > MinRange && Vector2.Distance(vector, PositionSequence.Value) < MaxRange)
+            if (dynamicHomingKeyframe != null)
+            {
+                minRange = RTMath.Lerp(minRange, dynamicHomingKeyframe.MinRange, ease);
+                maxRange = RTMath.Lerp(maxRange, dynamicHomingKeyframe.MaxRange, ease);
+                delay = RTMath.Lerp(delay, dynamicHomingKeyframe.CalculateDelay(), ease);
+            }
+
+            if (minRange == 0f && maxRange == 0f || Vector2.Distance(vector, PositionSequence.Value) > minRange && Vector2.Distance(vector, PositionSequence.Value) < maxRange)
                 Value += (Angle - Value) * delay;
 
             return Value;
         }
 
+        public float CalculateDelay() => 1f - Mathf.Pow(Delay, UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch);
+
         public float GetAngle() => Value;
 
-        public float Interpolate(IKeyframe<float> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+        public float Interpolate(IKeyframe<float> other, float time)
+        {
+            var ease = other.Ease(time);
+            if (other is IDynamicHomingKeyframe dynamicHomingKeyframe)
+            {
+                var value = GetValue(dynamicHomingKeyframe, ease);
+                // set the value to the other dynamic homing keyframe so it doesn't snap to 0 when the keyframe starts interpolating.
+                other.SetValue(value);
+                return value;
+            }
+
+            return RTMath.Lerp(GetValue(ease), other.GetValue(), ease);
+        }
     }
 }
