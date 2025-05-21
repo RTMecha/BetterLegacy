@@ -282,6 +282,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<string> StoryFile { get; set; }
 
+        /// <summary>
+        /// If the story mode levels are loaded via the editor path or not.
+        /// </summary>
+        public Setting<bool> StoryEditorMode { get; set; }
+
         #endregion
 
         #region Level
@@ -465,6 +470,7 @@ namespace BetterLegacy.Configs
             OpenPAFolder = BindEnum(this, FILE, "Open Project Arrhythmia Folder", KeyCode.F4, "Opens the folder containing the Project Arrhythmia application and all files related to it.");
             OpenPAPersistentFolder = BindEnum(this, FILE, "Open LocalLow Folder", KeyCode.F5, "Opens the data folder all instances of PA share containing the log files and global editor data.");
             StoryFile = Bind(this, FILE, "Story File", "story.json", "Where the story mode JSON file is located. Only change this if you know what you're doing.");
+            StoryEditorMode = Bind(this, FILE, "Story Editor Mode", false, "If the story mode levels are loaded via the editor path or not.");
 
             #endregion
 

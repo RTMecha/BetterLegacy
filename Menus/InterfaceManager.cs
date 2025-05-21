@@ -3498,13 +3498,57 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
                         var level = isArray ? parameters[1].AsInt : parameters["level"].AsInt;
-                        var bonus = isArray && parameters.Count > 3 ? parameters[3].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
-                        var skipCutscenes = isArray && parameters.Count > 4 ? parameters[4].AsBool : parameters["skip_cutscenes"] != null ? parameters["skip_cutscenes"].AsBool : true;
+                        var cutsceneIndex = isArray ? parameters[2].AsInt : parameters["cutscene_index"].AsInt;
+                        var bonus = isArray && parameters.Count > 4 ? parameters[4].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
+                        var skipCutscenes = isArray && parameters.Count > 5 ? parameters[5].AsBool : parameters["skip_cutscenes"] != null ? parameters["skip_cutscenes"].AsBool : true;
 
-                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 2 && parameters[2].AsBool || parameters.IsObject && parameters["continue"].AsBool;
+                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 3 && parameters[3].AsBool || parameters.IsObject && parameters["continue"].AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
-                        StoryManager.inst.Play(chapter, level, bonus, skipCutscenes);
+                        StoryManager.inst.Play(chapter, level, cutsceneIndex, bonus, skipCutscenes);
+
+                        break;
+                    }
+
+                #endregion
+                    
+                #region LoadStoryCutscene
+
+                case "LoadStoryCutscene":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && (parameters["chapter"] == null || parameters["level"] == null))
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
+                        var level = isArray ? parameters[1].AsInt : parameters["level"].AsInt;
+                        var cutsceneDestinationJN = isArray ? parameters[2] : parameters["cutscene_destination"];
+                        var cutsceneDestination = Parser.TryParse(cutsceneDestinationJN, CutsceneDestination.Pre);
+                        var cutsceneIndex = isArray ? parameters[3].AsInt : parameters["cutscene_index"].AsInt;
+                        var bonus = isArray && parameters.Count > 4 ? parameters[4].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
+
+                        StoryManager.inst.ContinueStory = false;
+
+                        ArcadeHelper.ResetModifiedStates();
+                        StoryManager.inst.PlayCutscene(chapter, level, cutsceneDestination, cutsceneIndex, bonus);
+
+                        break;
+                    }
+
+                #endregion
+
+                #region PlayAllCutscenes
+
+                case "PlayAllCutscenes":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
+                        var bonus = isArray && parameters.Count > 1 ? parameters[1].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
+
+                        StoryManager.inst.PlayAllCutscenes(chapter, bonus);
 
                         break;
                     }
@@ -3541,7 +3585,7 @@ namespace BetterLegacy.Menus
                         StoryManager.inst.ContinueStory = true;
 
                         int chapter = StoryManager.inst.CurrentSave.ChapterIndex;
-                        StoryManager.inst.Play(chapter, StoryManager.inst.CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0), StoryManager.inst.inBonusChapter);
+                        StoryManager.inst.Play(chapter, StoryManager.inst.CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapter)}Progress", 0), 0, StoryManager.inst.inBonusChapter);
 
                         break;
                     }
@@ -3579,7 +3623,7 @@ namespace BetterLegacy.Menus
                         StoryManager.inst.ContinueStory = true;
 
                         var chapter = StoryManager.inst.CurrentSave.ChapterIndex;
-                        StoryManager.inst.Play(chapter, StoryMode.Instance.chapters[chapter].Count, StoryManager.inst.inBonusChapter);
+                        StoryManager.inst.Play(chapter, StoryMode.Instance.chapters[chapter].Count, 0, StoryManager.inst.inBonusChapter);
 
                         break;
                     }

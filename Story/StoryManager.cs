@@ -665,17 +665,77 @@ namespace BetterLegacy.Story
         /// <param name="level">Index of the story level.</param>
         /// <param name="bonus">If the story level is from a bonus chapter.</param>
         /// <param name="skipCutscenes">If cutscenes should be skipped.</param>
-        public void Play(int chapter, int level, bool bonus = false, bool skipCutscenes = false)
+        public void Play(int chapter, int level, int cutsceneIndex = 0, bool bonus = false, bool skipCutscenes = false)
         {
             var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
-
-            // select transition level if the "level" parameter is greater than or equal to the chapter's level count.
-            var storyLevel = level < storyChapter.Count ? storyChapter.levels[level] : storyChapter.transition.levelSequence;
+            var storyLevel = storyChapter.GetLevel(level);
 
             currentPlayingChapterIndex = chapter;
             currentPlayingLevelSequenceIndex = level;
 
-            StartCoroutine(IPlay(storyLevel, skipCutscenes: skipCutscenes));
+            StartCoroutine(IPlay(storyLevel, cutsceneIndex, skipCutscenes));
+        }
+
+        public void PlayCutscene(int chapter, int level, CutsceneDestination cutsceneDestination, int cutsceneIndex, bool bonus = false, Action onLevelEnd = null)
+        {
+            var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
+            var storyLevel = storyChapter.GetLevel(level);
+
+            currentPlayingChapterIndex = chapter;
+            currentPlayingLevelSequenceIndex = level;
+
+            StartCoroutine(IPlayCutscene(storyLevel, cutsceneDestination, cutsceneIndex, onLevelEnd));
+        }
+
+        public void PlayAllCutscenes(int chapter, bool bonus = false)
+        {
+            var level = 0;
+            var cutsceneDestination = CutsceneDestination.Pre;
+            var cutsceneIndex = 0;
+            PlayCutsceneRecursive(chapter, level, cutsceneDestination, cutsceneIndex, bonus);
+        }
+
+        void PlayCutsceneRecursive(int chapter, int level, CutsceneDestination cutsceneDestination, int cutsceneIndex, bool bonus)
+        {
+            var storyChapter = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter];
+
+            PlayCutscene(chapter, level, cutsceneDestination, cutsceneIndex, bonus, () =>
+            {
+                var storyLevel = storyChapter.GetLevel(level);
+                cutsceneIndex++;
+
+                // end of pre-cutscenes
+                if (cutsceneDestination == CutsceneDestination.Pre && cutsceneIndex >= storyLevel.preCutscenes.Count)
+                {
+                    cutsceneDestination = CutsceneDestination.Post;
+                    cutsceneIndex = 0;
+                }
+
+                // end of post-cutscenes
+                if (cutsceneDestination == CutsceneDestination.Post && cutsceneIndex >= storyLevel.postCutscenes.Count)
+                {
+                    level++;
+                    cutsceneDestination = CutsceneDestination.Pre;
+                    cutsceneIndex = 0;
+                }
+
+                // no cutscenes
+                while (storyLevel.preCutscenes.IsEmpty() && storyLevel.postCutscenes.IsEmpty())
+                {
+                    level++;
+                    storyLevel = storyChapter.GetLevel(level);
+                    cutsceneDestination = CutsceneDestination.Pre;
+                    cutsceneIndex = 0;
+                }
+
+                if (level >= storyChapter.Count + 1)
+                {
+                    SceneHelper.LoadInterfaceScene();
+                    return;
+                }
+
+                PlayCutsceneRecursive(chapter, level, cutsceneDestination, cutsceneIndex, bonus);
+            });
         }
 
         /// <summary>
@@ -745,6 +805,86 @@ namespace BetterLegacy.Story
             yield break;
         }
 
+        public IEnumerator IPlayCutscene(StoryMode.LevelSequence level, CutsceneDestination cutsceneDestination, int cutsceneIndex, Action onLevelEnd = null)
+        {
+            var path = level.GetPaths(cutsceneDestination)[cutsceneIndex];
+
+            int chapterIndex = CurrentSave.ChapterIndex;
+            int levelIndex = CurrentSave.LoadInt($"DOC{RTString.ToStoryNumber(chapterIndex)}Progress", 0);
+
+            if (!RTFile.FileExists(path))
+            {
+                CoreHelper.LogError($"File \'{path}\' does not exist.");
+                SoundManager.inst.PlaySound(DefaultSounds.Block);
+                Loaded = false;
+                CoreHelper.InStory = false;
+                LevelManager.OnLevelEnd = null;
+                SceneHelper.LoadScene(SceneName.Main_Menu);
+                yield break;
+            }
+
+            CoreHelper.Log($"Loading story mode level... {path}");
+            if (RTFile.FileIsFormat(path, FileFormat.LSB))
+            {
+                var storyLevel = new Level(RTFile.GetDirectory(path)) { isStory = true };
+                AssignStoryLevelMusic(path.songName, storyLevel);
+                LevelManager.Play(storyLevel, () =>
+                {
+                    LevelManager.OnLevelEnd = null;
+                    if (onLevelEnd != null)
+                    {
+                        onLevelEnd();
+                        return;
+                    }
+
+                    SceneHelper.LoadInterfaceScene();
+                });
+                yield break;
+            }
+
+            StartCoroutine(StoryLevel.LoadFromAsset(path, storyLevel =>
+            {
+                Loaded = true;
+
+                CoreHelper.InStory = true;
+
+                if (storyLevel == null)
+                {
+                    LevelManager.OnLevelEnd = null;
+                    if (onLevelEnd != null)
+                    {
+                        onLevelEnd();
+                        return;
+                    }
+
+                    SceneHelper.LoadInterfaceScene();
+                    return;
+                }
+
+                AssignStoryLevelMusic(path.songName, storyLevel);
+
+                if (!storyLevel.music)
+                {
+                    CoreHelper.LogError($"Music is null for some reason wtf");
+                    return;
+                }
+
+                LevelManager.Play(storyLevel, () =>
+                {
+                    LevelManager.OnLevelEnd = null;
+                    if (onLevelEnd != null)
+                    {
+                        onLevelEnd();
+                        return;
+                    }
+
+                    SceneHelper.LoadInterfaceScene();
+                });
+            }));
+
+            yield break;
+        }
+
         /// <summary>
         /// Plays a story level directly from a path.
         /// </summary>
@@ -767,7 +907,11 @@ namespace BetterLegacy.Story
             {
                 var storyLevel = new Level(RTFile.GetDirectory(path)) { isStory = true };
                 AssignStoryLevelMusic(songName, storyLevel);
-                LevelManager.Play(storyLevel, OnLevelEnd);
+                LevelManager.Play(storyLevel, () =>
+                {
+                    LevelManager.OnLevelEnd = null;
+                    SceneHelper.LoadInterfaceScene();
+                });
                 yield break;
             }
 
@@ -792,7 +936,11 @@ namespace BetterLegacy.Story
                     return;
                 }
 
-                LevelManager.Play(storyLevel, OnLevelEnd);
+                LevelManager.Play(storyLevel, () =>
+                {
+                    LevelManager.OnLevelEnd = null;
+                    SceneHelper.LoadInterfaceScene();
+                });
             }));
 
             yield break;

@@ -115,6 +115,13 @@ namespace BetterLegacy.Story
             #endregion
 
             /// <summary>
+            /// Gets a story level at an index.
+            /// </summary>
+            /// <param name="level">Index of the story level.</param>
+            /// <returns>Returns the level sequence that represents the story level.</returns>
+            public LevelSequence GetLevel(int level) => level < Count ? levels[level] : transition.levelSequence;
+
+            /// <summary>
             /// Parses a <see cref="Chapter"/> from JSON.
             /// </summary>
             /// <param name="jn">JSON to parse.</param>
@@ -221,6 +228,18 @@ namespace BetterLegacy.Story
             #endregion
 
             /// <summary>
+            /// Gets the levels based on their destination in a level sequence.
+            /// </summary>
+            /// <param name="cutsceneDestination">Cutscene destination.</param>
+            /// <returns>Returns a list of levels (cutscene or otherwise).</returns>
+            public List<LevelPath> GetPaths(CutsceneDestination cutsceneDestination) => cutsceneDestination switch
+            {
+                CutsceneDestination.Pre => preCutscenes,
+                CutsceneDestination.Post => postCutscenes,
+                _ => new List<LevelPath>() { filePath }
+            };
+
+            /// <summary>
             /// Parses a <see cref="LevelSequence"/> from JSON.
             /// </summary>
             /// <param name="jn">JSON to parse.</param>
@@ -262,6 +281,7 @@ namespace BetterLegacy.Story
             public LevelPath(string filePath) => this.filePath = filePath;
 
             public LevelPath(string filePath, string songName) : this(filePath) => this.songName = songName;
+            public LevelPath(string filePath, string editorFilePath, string songName) : this(filePath, songName) => this.editorFilePath = editorFilePath;
 
             /// <summary>
             /// Path to the level file.
@@ -269,13 +289,18 @@ namespace BetterLegacy.Story
             public string filePath;
 
             /// <summary>
+            /// Path to the level file in the editor. Good for quickly editing the level.
+            /// </summary>
+            public string editorFilePath;
+
+            /// <summary>
             /// Song to override to save on space.
             /// </summary>
             public string songName;
 
-            public static LevelPath Parse(JSONNode jn) => jn.IsString ? new LevelPath(RTFile.ParsePaths(jn)) : new LevelPath(RTFile.ParsePaths(jn["path"]), jn["song"]);
+            public static LevelPath Parse(JSONNode jn) => jn.IsString ? new LevelPath(RTFile.ParsePaths(jn)) : new LevelPath(RTFile.ParsePaths(jn["path"]), RTFile.ParsePaths(jn["editor_path"]), jn["song"]);
 
-            public static implicit operator string(LevelPath levelPath) => levelPath.filePath;
+            public static implicit operator string(LevelPath levelPath) => CoreConfig.Instance.StoryEditorMode.Value && RTFile.FileExists(levelPath.editorFilePath) ? levelPath.editorFilePath : levelPath.filePath;
 
             public override string ToString() => System.IO.Path.GetFileName(filePath);
         }

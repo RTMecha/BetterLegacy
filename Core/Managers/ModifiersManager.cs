@@ -72,10 +72,18 @@ namespace BetterLegacy.Core.Managers
         void AddDevelopmentModifiers()
         {
             defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "loadSceneDEVONLY", false, "Interface", "False"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "loadStoryLevelDEVONLY", false, "False", "0", "0", "False"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveIntVariableDEVONLY", false, "IntVariable"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveIntDEVONLY", false, "IntVariable", "0"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "loadStoryLevelDEVONLY", false, "False", "0", "0", "False", "0"));
+
             defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveBoolDEVONLY", false, "BoolVariable", "True"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveIntDEVONLY", false, "IntVariable", "0"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveFloatDEVONLY", false, "FloatVariable", "0"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveStringDEVONLY", false, "StringVariable", "Value"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveIntVariableDEVONLY", false, "IntVariable"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveBoolDEVONLY", true, "STORY_BOOL_VAR", "BoolVariable", "False"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveIntDEVONLY", true, "STORY_INT_VAR", "IntVariable", "0"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveFloatDEVONLY", true, "STORY_FLOAT_VAR", "FloatVariable", "0"));
+            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveStringDEVONLY", true, "STORY_STRING_VAR", "StringVariable", string.Empty));
+
             defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "exampleEnableDEVONLY", false, "False"));
             defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "exampleSayDEVONLY", false, "Something!"));
 

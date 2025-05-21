@@ -1321,6 +1321,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.getToggle): {
                         StringGenerator(modifier, "Variable Name", 0);
                         BoolGenerator(modifier, "Value", 1, false);
+                        BoolGenerator(modifier, "Invert Value", 2, false);
 
                         break;
                     }
@@ -2639,6 +2640,8 @@ namespace BetterLegacy.Editor.Data
 
                         DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
+                        BoolGenerator(modifier, "Apply Delta Time", 7, true);
+
                         break;
                     }
                 case nameof(ModifierActions.animateObjectOther): {
@@ -2658,6 +2661,7 @@ namespace BetterLegacy.Editor.Data
 
                         DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
+                        BoolGenerator(modifier, "Apply Delta Time", 8, true);
 
                         break;
                     }
@@ -2679,6 +2683,8 @@ namespace BetterLegacy.Editor.Data
                         StringGenerator(modifier, "Signal Group", 7);
                         SingleGenerator(modifier, "Signal Delay", 8, 0f);
                         BoolGenerator(modifier, "Signal Deactivate", 9, true);
+
+                        BoolGenerator(modifier, "Apply Delta Time", 10, true);
 
                         break;
                     }
@@ -2704,6 +2710,8 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Signal Delay", 9, 0f);
                         BoolGenerator(modifier, "Signal Deactivate", 10, true);
 
+                        BoolGenerator(modifier, "Apply Delta Time", 11, true);
+
                         break;
                     }
                     
@@ -2719,6 +2727,8 @@ namespace BetterLegacy.Editor.Data
                         BoolGenerator(modifier, "Relative", 5, true);
 
                         DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+
+                        BoolGenerator(modifier, "Apply Delta Time", 7, true);
 
                         break;
                     }
@@ -2738,6 +2748,8 @@ namespace BetterLegacy.Editor.Data
                         BoolGenerator(modifier, "Relative", 5, true);
 
                         DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+
+                        BoolGenerator(modifier, "Apply Delta Time", 8, true);
 
                         break;
                     }
@@ -2759,6 +2771,8 @@ namespace BetterLegacy.Editor.Data
                         StringGenerator(modifier, "Signal Group", 7);
                         StringGenerator(modifier, "Signal Delay", 8);
                         BoolGenerator(modifier, "Signal Deactivate", 9, true);
+
+                        BoolGenerator(modifier, "Apply Delta Time", 10, true);
 
                         break;
                     }
@@ -2783,6 +2797,8 @@ namespace BetterLegacy.Editor.Data
                         StringGenerator(modifier, "Signal Group", 8);
                         StringGenerator(modifier, "Signal Delay", 9);
                         BoolGenerator(modifier, "Signal Deactivate", 10, true);
+
+                        BoolGenerator(modifier, "Apply Delta Time", 11, true);
 
                         break;
                     }
@@ -3706,14 +3722,14 @@ namespace BetterLegacy.Editor.Data
 
                 #region Dev Only
 
-                case "loadSceneDEVONLY": {
+                case nameof(ModifierActions.loadSceneDEVONLY): {
                         StringGenerator(modifier, "Scene", 0);
                         if (modifier.commands.Count > 1)
                             BoolGenerator(modifier, "Show Loading", 1, true);
 
                         break;
                     }
-                case "loadStoryLevelDEVONLY": {
+                case nameof(ModifierActions.loadStoryLevelDEVONLY): {
                         IntegerGenerator(modifier, "Chapter", 1, 0);
                         IntegerGenerator(modifier, "Level", 2, 0);
                         BoolGenerator(modifier, "Bonus", 0, false);
@@ -3721,20 +3737,55 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
-                case "storySaveIntVariableDEVONLY": {
-                        StringGenerator(modifier, "Save", 0);
-                        break;
-                    }
-                case "storySaveIntDEVONLY": {
-                        StringGenerator(modifier, "Save", 0);
-                        IntegerGenerator(modifier, "Value", 1, 0);
-                        break;
-                    }
-                case "storySaveBoolDEVONLY": {
+                case nameof(ModifierActions.storySaveBoolDEVONLY): {
                         StringGenerator(modifier, "Save", 0);
                         BoolGenerator(modifier, "Value", 1, false);
                         break;
                     }
+                case nameof(ModifierActions.storySaveIntDEVONLY): {
+                        StringGenerator(modifier, "Save", 0);
+                        IntegerGenerator(modifier, "Value", 1, 0);
+                        break;
+                    }
+                case nameof(ModifierActions.storySaveFloatDEVONLY): {
+                        StringGenerator(modifier, "Save", 0);
+                        SingleGenerator(modifier, "Value", 1, 0f);
+                        break;
+                    }
+                case nameof(ModifierActions.storySaveStringDEVONLY): {
+                        StringGenerator(modifier, "Save", 0);
+                        StringGenerator(modifier, "Value", 1);
+                        break;
+                    }
+                case nameof(ModifierActions.storySaveIntVariableDEVONLY): {
+                        StringGenerator(modifier, "Save", 0);
+                        break;
+                    }
+                case nameof(ModifierActions.getStorySaveBoolDEVONLY): {
+                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, "Value Name", 1);
+                        BoolGenerator(modifier, "Default Value", 2, false);
+                        break;
+                    }
+                case nameof(ModifierActions.getStorySaveIntDEVONLY): {
+                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, "Value Name", 1);
+                        IntegerGenerator(modifier, "Default Value", 2, 0);
+                        break;
+                    }
+                case nameof(ModifierActions.getStorySaveFloatDEVONLY): {
+                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, "Value Name", 1);
+                        SingleGenerator(modifier, "Default Value", 2, 0f);
+                        break;
+                    }
+                case nameof(ModifierActions.getStorySaveStringDEVONLY): {
+                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, "Value Name", 1);
+                        StringGenerator(modifier, "Default Value", 2);
+                        break;
+                    }
+
                 case "storyLoadIntEqualsDEVONLY":
                 case "storyLoadIntLesserEqualsDEVONLY":
                 case "storyLoadIntGreaterEqualsDEVONLY":
@@ -3752,8 +3803,13 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
-                case "enableExampleDEVONLY": {
+
+                case nameof(ModifierActions.exampleEnableDEVONLY): {
                         BoolGenerator(modifier, "Active", 0, false);
+                        break;
+                    }
+                case nameof(ModifierActions.exampleSayDEVONLY): {
+                        StringGenerator(modifier, "Dialogue", 0);
                         break;
                     }
 

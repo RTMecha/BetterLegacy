@@ -790,27 +790,27 @@ namespace BetterLegacy.Core.Helpers
 
             "storyLoadIntEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntLesserEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntGreaterEqualsDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntLesserDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
             },
             "storyLoadIntGreaterDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
             },
             "storyLoadBoolDEVONLY" => (modifier, variables) =>
             {
-                return Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
             },
 
             #endregion
@@ -1258,51 +1258,19 @@ namespace BetterLegacy.Core.Helpers
             // dev only (story mode)
             #region Dev Only
 
-            "loadSceneDEVONLY" => (modifier, variables) =>
-            {
-                if (!CoreHelper.InStory)
-                    return;
-
-                SceneManager.inst.LoadScene(modifier.GetValue(0, variables), modifier.commands.Count > 1 && modifier.GetBool(1, true, variables));
-            },
-            "loadStoryLevelDEVONLY" => (modifier, variables) =>
-            {
-                if (!CoreHelper.InStory)
-                    return;
-
-                Story.StoryManager.inst.Play(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), modifier.GetBool(0, false, variables), modifier.GetBool(3, false, variables));
-            },
-            "storySaveIntVariableDEVONLY" => (modifier, variables) =>
-            {
-                if (!CoreHelper.InStory)
-                    return;
-
-                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifier.reference.integerVariable);
-            },
-            "storySaveIntDEVONLY" => (modifier, variables) =>
-            {
-                if (!CoreHelper.InStory)
-                    return;
-
-                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables));
-            },
-            "storySaveBoolDEVONLY" => (modifier, variables) =>
-            {
-                if (!CoreHelper.InStory)
-                    return;
-
-                Story.StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, variables), modifier.GetBool(1, false, variables));
-            },
-            "exampleEnableDEVONLY" => (modifier, variables) =>
-            {
-                if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
-                    Companion.Entity.Example.Current.model.SetActive(modifier.GetBool(0, false, variables));
-            },
-            "exampleSayDEVONLY" => (modifier, variables) =>
-            {
-                if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.chatBubble)
-                    Companion.Entity.Example.Current.chatBubble.Say(modifier.GetValue(0, variables));
-            },
+            nameof(ModifierActions.loadSceneDEVONLY) => ModifierActions.loadSceneDEVONLY,
+            nameof(ModifierActions.loadStoryLevelDEVONLY) => ModifierActions.loadStoryLevelDEVONLY,
+            nameof(ModifierActions.storySaveBoolDEVONLY) => ModifierActions.storySaveBoolDEVONLY,
+            nameof(ModifierActions.storySaveIntDEVONLY) => ModifierActions.storySaveIntDEVONLY,
+            nameof(ModifierActions.storySaveFloatDEVONLY) => ModifierActions.storySaveFloatDEVONLY,
+            nameof(ModifierActions.storySaveStringDEVONLY) => ModifierActions.storySaveStringDEVONLY,
+            nameof(ModifierActions.storySaveIntVariableDEVONLY) => ModifierActions.storySaveIntVariableDEVONLY,
+            nameof(ModifierActions.getStorySaveBoolDEVONLY) => ModifierActions.getStorySaveBoolDEVONLY,
+            nameof(ModifierActions.getStorySaveIntDEVONLY) => ModifierActions.getStorySaveIntDEVONLY,
+            nameof(ModifierActions.getStorySaveFloatDEVONLY) => ModifierActions.getStorySaveFloatDEVONLY,
+            nameof(ModifierActions.getStorySaveStringDEVONLY) => ModifierActions.getStorySaveStringDEVONLY,
+            nameof(ModifierActions.exampleEnableDEVONLY) => ModifierActions.exampleEnableDEVONLY,
+            nameof(ModifierActions.exampleSayDEVONLY) => ModifierActions.exampleSayDEVONLY,
 
             #endregion
 

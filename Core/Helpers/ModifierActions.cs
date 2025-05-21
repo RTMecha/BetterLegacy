@@ -2181,7 +2181,12 @@ namespace BetterLegacy.Core.Helpers
         // local variables
         public static void getToggle<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0)] = modifier.GetBool(1, false, variables).ToString();
+            var value = modifier.GetBool(1, false, variables);
+
+            if (modifier.GetBool(2, false, variables))
+                value = !value;
+
+            variables[modifier.GetValue(0)] = value.ToString();
         }
         
         public static void getFloat<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -4449,6 +4454,8 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(7, true, variables);
+
             ITransformable transformable;
             if (modifier.referenceType == ModifierReferenceType.CustomPlayer)
             {
@@ -4469,7 +4476,7 @@ namespace BetterLegacy.Core.Helpers
             var setVector = new Vector3(x, y, z);
             if (relative)
             {
-                if (modifier.constant)
+                if (modifier.constant && applyDeltaTime)
                     setVector *= CoreHelper.TimeFrame;
 
                 setVector += vector;
@@ -4516,6 +4523,8 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(8, true, variables);
+
             foreach (var bm in list)
             {
                 Vector3 vector = bm.GetTransformOffset(type);
@@ -4523,7 +4532,7 @@ namespace BetterLegacy.Core.Helpers
                 var setVector = new Vector3(x, y, z);
                 if (relative)
                 {
-                    if (modifier.constant)
+                    if (modifier.constant && applyDeltaTime)
                         setVector *= CoreHelper.TimeFrame;
 
                     setVector += vector;
@@ -4646,12 +4655,14 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(10, true, variables);
+
             Vector3 vector = transformable.GetTransformOffset(type);
 
             var setVector = new Vector3(x, y, z);
             if (relative)
             {
-                if (modifier.constant)
+                if (modifier.constant && applyDeltaTime)
                     setVector *= CoreHelper.TimeFrame;
 
                 setVector += vector;
@@ -4722,6 +4733,8 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(11, true, variables);
+
             foreach (var bm in list)
             {
                 Vector3 vector = bm.GetTransformOffset(type);
@@ -4729,7 +4742,7 @@ namespace BetterLegacy.Core.Helpers
                 var setVector = new Vector3(x, y, z);
                 if (relative)
                 {
-                    if (modifier.constant)
+                    if (modifier.constant && applyDeltaTime)
                         setVector *= CoreHelper.TimeFrame;
 
                     setVector += vector;
@@ -4785,12 +4798,14 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(7, true, variables);
+
             Vector3 vector = transformable.GetTransformOffset(type);
 
             var setVector = new Vector3(x, y, z);
             if (relative)
             {
-                if (modifier.constant)
+                if (modifier.constant && applyDeltaTime)
                     setVector *= CoreHelper.TimeFrame;
 
                 setVector += vector;
@@ -4843,6 +4858,8 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(8, true, variables);
+
             foreach (var bm in list)
             {
                 Vector3 vector = bm.GetTransformOffset(type);
@@ -4850,7 +4867,7 @@ namespace BetterLegacy.Core.Helpers
                 var setVector = new Vector3(x, y, z);
                 if (relative)
                 {
-                    if (modifier.constant)
+                    if (modifier.constant && applyDeltaTime)
                         setVector *= CoreHelper.TimeFrame;
 
                     setVector += vector;
@@ -4889,9 +4906,9 @@ namespace BetterLegacy.Core.Helpers
 
             float time = (float)RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions);
             var type = modifier.GetInt(1, 0, variables);
-            float x = (float)RTMath.Parse(modifier.commands[2], numberVariables, functions);
-            float y = (float)RTMath.Parse(modifier.commands[3], numberVariables, functions);
-            float z = (float)RTMath.Parse(modifier.commands[4], numberVariables, functions);
+            float x = (float)RTMath.Parse(modifier.GetValue(2, variables), numberVariables, functions);
+            float y = (float)RTMath.Parse(modifier.GetValue(3, variables), numberVariables, functions);
+            float z = (float)RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
             var relative = modifier.GetBool(5, true, variables);
             var signalGroup = modifier.GetValue(7, variables);
             float signalTime = (float)RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
@@ -4912,12 +4929,14 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(10, true, variables);
+
             Vector3 vector = transformable.GetTransformOffset(type);
 
             var setVector = new Vector3(x, y, z);
             if (relative)
             {
-                if (modifier.constant)
+                if (modifier.constant && applyDeltaTime)
                     setVector *= CoreHelper.TimeFrame;
 
                 setVector += vector;
@@ -4991,6 +5010,8 @@ namespace BetterLegacy.Core.Helpers
             if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                 easing = DataManager.inst.AnimationList[e].Name;
 
+            var applyDeltaTime = modifier.GetBool(11, true, variables);
+
             foreach (var bm in list)
             {
                 Vector3 vector = bm.GetTransformOffset(type);
@@ -4998,7 +5019,7 @@ namespace BetterLegacy.Core.Helpers
                 var setVector = new Vector3(x, y, z);
                 if (relative)
                 {
-                    if (modifier.constant)
+                    if (modifier.constant && applyDeltaTime)
                         setVector *= CoreHelper.TimeFrame;
 
                     setVector += vector;
@@ -6452,6 +6473,84 @@ namespace BetterLegacy.Core.Helpers
                     string.Format(modifier.value, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                     string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                     discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
+        }
+
+        #endregion
+
+        #region DEVONLY
+
+        public static void loadSceneDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InStory)
+                SceneManager.inst.LoadScene(modifier.GetValue(0, variables), modifier.commands.Count > 1 && modifier.GetBool(1, true, variables));
+        }
+        
+        public static void loadStoryLevelDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InStory)
+                Story.StoryManager.inst.Play(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), modifier.GetInt(4, 0, variables), modifier.GetBool(0, false, variables), modifier.GetBool(3, false, variables));
+        }
+        
+        public static void storySaveBoolDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InStory)
+                Story.StoryManager.inst.CurrentSave.SaveBool(modifier.GetValue(0, variables), modifier.GetBool(1, false, variables));
+        }
+
+        public static void storySaveIntDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InStory)
+                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables));
+        }
+
+        public static void storySaveFloatDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InStory)
+                Story.StoryManager.inst.CurrentSave.SaveFloat(modifier.GetValue(0, variables), modifier.GetFloat(1, 0f, variables));
+        }
+
+        public static void storySaveStringDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InStory)
+                Story.StoryManager.inst.CurrentSave.SaveString(modifier.GetValue(0, variables), modifier.GetValue(1, variables));
+        }
+
+        public static void storySaveIntVariableDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (CoreHelper.InStory && modifier.reference is IModifyable<T> modifyable)
+                Story.StoryManager.inst.CurrentSave.SaveInt(modifier.GetValue(0, variables), modifyable.IntVariable);
+        }
+
+        public static void getStorySaveBoolDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetBool(2, false, variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(1, variables), modifier.GetBool(2, false, variables)).ToString();
+        }
+        
+        public static void getStorySaveIntDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetInt(2, 0, variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(1, variables), modifier.GetInt(2, 0, variables)).ToString();
+        }
+        
+        public static void getStorySaveFloatDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetFloat(2, 0f, variables).ToString() : Story.StoryManager.inst.CurrentSave.LoadFloat(modifier.GetValue(1, variables), modifier.GetFloat(2, 0f, variables)).ToString();
+        }
+        
+        public static void getStorySaveStringDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = !CoreHelper.InStory ? modifier.GetValue(2, variables) : Story.StoryManager.inst.CurrentSave.LoadString(modifier.GetValue(1, variables), modifier.GetValue(2, variables)).ToString();
+        }
+
+        public static void exampleEnableDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.model)
+                Companion.Entity.Example.Current.model.SetActive(modifier.GetBool(0, false, variables));
+        }
+        
+        public static void exampleSayDEVONLY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.chatBubble)
+                Companion.Entity.Example.Current.chatBubble.Say(modifier.GetValue(0, variables));
         }
 
         #endregion
