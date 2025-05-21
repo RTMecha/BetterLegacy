@@ -7,8 +7,8 @@ using UnityEngine;
 using LSFunctions;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
@@ -126,13 +126,6 @@ namespace BetterLegacy.Arcade.Interfaces
         List<MenuText> nanobots = new List<MenuText>();
         List<string> noTexts = new List<string>();
         List<string> noColors = new List<string>();
-        static List<Color> playerColors = new List<Color>()
-        {
-            LSColors.HexToColor(BeatmapTheme.PLAYER_1_COLOR),
-            LSColors.HexToColor(BeatmapTheme.PLAYER_2_COLOR),
-            LSColors.HexToColor(BeatmapTheme.PLAYER_3_COLOR),
-            LSColors.HexToColor(BeatmapTheme.PLAYER_4_COLOR),
-        };
 
         IEnumerator ChangeText()
         {
@@ -151,6 +144,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         void UpdateText(bool assignToUI = true)
         {
+            var playerColors = InterfaceManager.inst.CurrentTheme.playerColors;
             for (int i = 0; i < nanobots.Count; i++)
             {
                 string text;
@@ -158,7 +152,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 {
                     var customPlayer = InputDataManager.inst.players[i];
 
-                    string textColor = "#" + LSColors.ColorToHex(playerColors[customPlayer.index % playerColors.Count]);
+                    string textColor = "#" + RTColors.ColorToHex(playerColors[customPlayer.index % playerColors.Count]);
                     string device = customPlayer.deviceType.ToString();
                     if (device != customPlayer.deviceModel)
                         device = customPlayer.deviceType.ToString() + " (" + customPlayer.deviceModel + ")";
