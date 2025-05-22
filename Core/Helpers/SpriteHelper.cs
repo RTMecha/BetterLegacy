@@ -117,49 +117,61 @@ namespace BetterLegacy.Core.Helpers
         // Inspect(CoreHelper.AssignRenderTexture(512, 512, 10f, -10f))
         public static Sprite CaptureFrame(Camera camera, int width = 512, int height = 512, float offsetX = 0f, float offsetY = 0f)
         {
+            //var alpha = camera.backgroundColor.a;
+            //camera.backgroundColor = RTColors.FadeColor(camera.backgroundColor, 1f);
+            //Arcade.Managers.RTEventManager.inst.glitchCam.enabled = false;
+            //var isOrtho = camera.orthographic;
+            //var zoom = camera.orthographicSize;
+            //if (isOrtho)
+            //    camera.orthographicSize = 1f;
+
+            // Prep camera position so it renders the offset area
             camera.transform.localPosition = new Vector3(offsetX, offsetY);
-            var sprite = AssignRenderTexture(camera, width, height, 0f, 0f);
-            camera.transform.localPosition = Vector3.zero;
 
-            return sprite;
-        }
+            // Get render texture
+            var renderTexture = new RenderTexture(width, height, 0);
+            renderTexture.name = DEFAULT_TEXTURE_NAME;
 
-        public static Sprite AssignRenderTexture(Camera camera, int width = 512, int height = 512, float offsetX = 0f, float offsetY = 0f)
-        {
-            var renderTexture = RenderTexture.GetTemporary(width, height, 0);
-            renderTexture.name = "Default_Texture";
-            camera.targetTexture = renderTexture;
-            var modelView = ToTexture2D(camera, camera.targetTexture, offsetX, offsetY);
-            var sprite = Sprite.Create(modelView, new Rect(0, 0, modelView.width, modelView.height), new Vector2(0.5f, 0.5f));
-            sprite.name = modelView.name;
-            camera.targetTexture = null;
-
-            renderTexture.Release();
-            RenderTexture.ReleaseTemporary(renderTexture);
-            renderTexture = null;
-            return sprite;
-        }
-
-        public static Texture2D ToTexture2D(Camera camera, RenderTexture rTex, float offsetX = 0f, float offsetY = 0f)
-        {
             var currentActiveRT = RenderTexture.active;
-            RenderTexture.active = rTex;
+            RenderTexture.active = renderTexture;
 
+            // Assign render texture to camera and render the camera
+            camera.targetTexture = renderTexture;
             camera.Render();
 
             // Create a new Texture2D and read the RenderTexture image into it
-            var texture = new Texture2D(rTex.width, rTex.height);
-            texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0, true);
+            var texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
+
+            texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
             texture.Apply();
 
+            var sprite = CreateSprite(texture);
+            sprite.name = texture.name;
+            camera.targetTexture = null;
+
+            // Reset to defaults
             RenderTexture.active = currentActiveRT;
-            return texture;
+
+            renderTexture.Release();
+            CoreHelper.Destroy(renderTexture);
+            renderTexture = null;
+
+            // Reset camera position to normal
+            camera.transform.localPosition = Vector3.zero;
+
+            //Graphics.CopyTexture(renderTexture, texture);
+
+            //if (isOrtho)
+            //    camera.orthographicSize = zoom;
+            //Arcade.Managers.RTEventManager.inst.glitchCam.enabled = true;
+            //camera.backgroundColor = RTColors.FadeColor(camera.backgroundColor, alpha);
+
+            //texture.SetPixels(new List<Color>().Fill(texture.width * texture.height, LSFunctions.LSColors.transparent).ToArray());
+
+            return sprite;
         }
 
-        public static void Test()
-        {
-
-        }
+        public const string DEFAULT_TEXTURE_NAME = "Default_Texture";
 
         #endregion
 

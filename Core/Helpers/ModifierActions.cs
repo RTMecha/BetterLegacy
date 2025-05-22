@@ -4062,7 +4062,7 @@ namespace BetterLegacy.Core.Helpers
 
             var renderer = (SpriteRenderer)imageObject.renderer;
 
-            if (modifier.HasResult())
+            if (modifier.HasResult() && renderer.sprite != LegacyPlugin.PALogoSprite)
             {
                 if (renderer.sprite)
                     CoreHelper.Destroy(renderer.sprite.texture);
