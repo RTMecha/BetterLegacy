@@ -574,9 +574,16 @@ namespace BetterLegacy.Editor.Data
                         if (!isCurrentLayer)
                             return;
 
-                        var color = selected ?
-                            ObjEditor.inst.SelectedColor : !string.IsNullOrEmpty(GetData<BeatmapObject>().prefabID) ?
-                                GetData<BeatmapObject>().GetPrefab().GetPrefabType().color : ObjEditor.inst.NormalColor;
+                        var beatmapObject = GetData<BeatmapObject>();
+                        Prefab prefab = null;
+                        if (!string.IsNullOrEmpty(beatmapObject.prefabID))
+                        {
+                            prefab = beatmapObject.GetPrefab();
+                            if (!prefab)
+                                beatmapObject.RemovePrefabReference();
+                        }
+
+                        var color = selected ? ObjEditor.inst.SelectedColor : prefab ? prefab.GetPrefabType().color : ObjEditor.inst.NormalColor;
 
                         if (Image.color != color)
                             Image.color = color;
@@ -595,7 +602,9 @@ namespace BetterLegacy.Editor.Data
                         if (!isCurrentLayer)
                             return;
 
-                        var color = selected ? ObjEditor.inst.SelectedColor : GetData<PrefabObject>().GetPrefab().GetPrefabType().color;
+                        var prefabObject = GetData<PrefabObject>();
+
+                        var color = selected ? ObjEditor.inst.SelectedColor : prefabObject.GetPrefab().GetPrefabType().color;
 
                         if (Image.color != color)
                             Image.color = color;
@@ -614,9 +623,16 @@ namespace BetterLegacy.Editor.Data
                         if (!isCurrentLayer)
                             return;
 
-                        var color = selected ?
-                            ObjEditor.inst.SelectedColor : !string.IsNullOrEmpty(GetData<BackgroundObject>().prefabID) ?
-                                GetData<BackgroundObject>().GetPrefab().GetPrefabType().color : ObjEditor.inst.NormalColor;
+                        var backgroundObject = GetData<BackgroundObject>();
+                        Prefab prefab = null;
+                        if (!string.IsNullOrEmpty(backgroundObject.prefabID))
+                        {
+                            prefab = backgroundObject.GetPrefab();
+                            if (!prefab)
+                                backgroundObject.RemovePrefabReference();
+                        }
+
+                        var color = selected ? ObjEditor.inst.SelectedColor : prefab ? prefab.GetPrefabType().color : ObjEditor.inst.NormalColor;
 
                         if (Image.color != color)
                             Image.color = color;

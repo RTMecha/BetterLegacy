@@ -2411,6 +2411,15 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.prefabObjects.RemoveAll(x => x.prefabID == id);
 
+            foreach (var timelineObject in EditorTimeline.inst.timelineObjects)
+            {
+                if (!timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                    continue;
+
+                prefabable.RemovePrefabReference();
+                timelineObject.RenderVisibleState(false);
+            }
+
             StartCoroutine(RefreshInternalPrefabs());
         }
 
