@@ -49,6 +49,7 @@
 - Fixed modifier editors not disabling when Editor Complexity is changed.
 - Fixed theme keyframe not transitioning hsv values correctly.
 - Fixed Hidden objects unhiding automatically when their regular active state is changed.
+- Fixed Prefab references not being removed when a Prefab is deleted.
 
 ------------------------------------------------------------------------------------------
 
