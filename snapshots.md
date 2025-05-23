@@ -27,6 +27,7 @@
 - Added Background and Dialogue to the default Prefab Types.
 - Text & Image object selection in preview area can be customized via the new "Select Text Objects" and "Select Image Objects" settings found under Config Manager > Editor > Preview.
 - Due to the above feature, text objects can now be highlighted.
+- Moved Editor Level code to its own manager.
 
 ### Internal
 - Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
@@ -54,6 +55,7 @@
 - Fixed theme keyframe not transitioning hsv values correctly.
 - Fixed Hidden objects unhiding automatically when their regular active state is changed.
 - Fixed Prefab references not being removed when a Prefab is deleted.
+- Fixed some issues relating to VG to LS conversion.
 
 ------------------------------------------------------------------------------------------
 
