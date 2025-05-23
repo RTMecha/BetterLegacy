@@ -18,6 +18,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 
@@ -194,8 +195,8 @@ namespace BetterLegacy.Core.Helpers
             if (endedLevel)
                 LevelManager.LevelEnded = false;
 
-            GameManager.inst.hits.Clear();
-            GameManager.inst.deaths.Clear();
+            RTBeatmap.Current.hits.Clear();
+            RTBeatmap.Current.deaths.Clear();
 
             PlayerManager.SpawnPlayersOnStart();
 
@@ -292,7 +293,7 @@ namespace BetterLegacy.Core.Helpers
                     case EndLevelFunction.ContinueCollection: {
                             var metadata = LevelManager.CurrentLevel.metadata;
                             var nextLevel = LevelManager.NextLevelInCollection;
-                            if (LevelManager.CurrentLevelCollection && (metadata.song.DifficultyType == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
+                            if (LevelManager.CurrentLevelCollection && (metadata.song.DifficultyType == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !RTBeatmap.Current.challengeMode.Invincible || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
                             {
                                 if (nextLevel)
                                     CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
@@ -392,6 +393,8 @@ namespace BetterLegacy.Core.Helpers
             catch (Exception ex)
             {
                 CoreHelper.LogError($"End Level Func: {endLevelFunc}\nEnd Level String: {endLevelData}\nException: {ex}");
+                // boot to main menu if level ending issues occur.
+                SceneHelper.LoadScene(SceneName.Main_Menu);
             }
 
             ResetEndLevelVariables();
