@@ -8,7 +8,7 @@
 ### Core
 - Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
 - Fully implemented Polygon Shape. Thanks Pidge! :D
-- With the Polygon Shape fully implemented, new values were added to it: Thickness Offset and Thickness Scale.
+- With the Polygon Shape fully implemented, new values were added to it: Radius, Thickness Offset and Thickness Scale. Radius can be right clicked to switch between built-in offsets.
 - Added setPolygonShape and setPolygonShapeOther modifiers. These modify the values of the current polygon shape.
 - Polygon Shape ported to Custom Player Objects.
 - Added Store / Clear Data to Player Image Objects. This now means images from Image Objects can be transfered between levels.
@@ -25,6 +25,8 @@
 - Editor Layer toggles now re-enable when Editor Complexity is set to "Simple".
 - Added Indexer to Prefab Object Editor.
 - Added Background and Dialogue to the default Prefab Types.
+- Text & Image object selection in preview area can be customized via the new "Select Text Objects" and "Select Image Objects" settings found under Config Manager > Editor > Preview.
+- Due to the above feature, text objects can now be highlighted.
 
 ### Internal
 - Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
@@ -33,10 +35,12 @@
 ### Core
 - Optimized setImageOther modifier by loading the sprite before iterating through the group.
 - Reworked dynamic homing speed again to actually act as a delay rather than a speed value.
+- Continuing work on the parallax port. It'll be a while until it's fully ready.
 
 ### Editor
 - Reorganized / reworked a ton of Editor UI.
 - Renamed Dynamic Homing's "Speed" value to "Delay" due to the behavior of this changing.
+- Image objects' selection area now changes to fit the image size.
 
 ### Example Companion
 - Example's commands make him say something now.
