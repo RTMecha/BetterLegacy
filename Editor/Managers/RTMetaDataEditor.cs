@@ -174,7 +174,7 @@ namespace BetterLegacy.Editor.Managers
 
             var artistLinkTypes = Dialog.Content.Find("artist/link/inputs/dropdown").GetComponent<Dropdown>();
             artistLinkTypes.onValueChanged.ClearAll();
-            artistLinkTypes.options = DataManager.inst.linkTypes.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            artistLinkTypes.options = AlephNetwork.ArtistLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
             artistLinkTypes.value = metadata.artist.LinkType;
             artistLinkTypes.onValueChanged.AddListener(_val =>
             {
