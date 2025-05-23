@@ -70,11 +70,8 @@ namespace BetterLegacy.Menus
 
             try
             {
-                if (!postProcessResourcesAssetBundle)
-                    postProcessResourcesAssetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("effectresources.asset"));
-                var postProcessLayer = camera.gameObject.GetComponent<PostProcessLayer>() ?? camera.gameObject.AddComponent<PostProcessLayer>();
-                postProcessResources = postProcessResourcesAssetBundle.LoadAsset<PostProcessResources>("postprocessresources.asset");
-                HarmonyLib.AccessTools.Field(typeof(PostProcessLayer), "m_Resources").SetValue(postProcessLayer, postProcessResources);
+                var postProcessLayer = camera.gameObject.GetOrAddComponent<PostProcessLayer>();
+                HarmonyLib.AccessTools.Field(typeof(PostProcessLayer), "m_Resources").SetValue(postProcessLayer, LegacyResources.postProcessResources);
                 postProcessLayer.volumeLayer = 1824;
             }
             catch (Exception ex)
@@ -506,9 +503,6 @@ namespace BetterLegacy.Menus
         public bool analogGlitchEnabled;
 
         PostProcessVolume ppvolume;
-
-        static AssetBundle postProcessResourcesAssetBundle;
-        static PostProcessResources postProcessResources;
 
         public Camera glitchCam;
 

@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 
+using BetterLegacy.Core.Runtime;
+
 namespace BetterLegacy.Arcade.Managers
 {
     public class RTEffectsManager : MonoBehaviour
@@ -117,8 +119,12 @@ namespace BetterLegacy.Arcade.Managers
             dithering.enabled.Override(true);
             dithering.intensity.Override(0f);
 
+            //depthOfField = ScriptableObject.CreateInstance<DepthOfField>();
+            //depthOfField.enabled.Override(true);
+            //depthOfField.focusDistance.Override(0f);
+
             //PP Volume
-            ppvolume = PostProcessManager.instance.QuickVolume(gameObject.layer, 100f, new PostProcessEffectSettings[]
+            volume = PostProcessManager.instance.QuickVolume(RTLevel.FOREGROUND_LAYER, 100f, new PostProcessEffectSettings[]
             {
                 colorGrading,
                 gradient,
@@ -134,9 +140,14 @@ namespace BetterLegacy.Arcade.Managers
                 tiltShift,
                 tubeDistortion,
                 ripples,
-                dithering
+                dithering,
             });
-            ppvolume.isGlobal = true;
+            volume.isGlobal = true;
+            //backgroundVolume = PostProcessManager.instance.QuickVolume(RTLevel.BACKGROUND_LAYER, 100f, new PostProcessEffectSettings[]
+            //{
+            //    depthOfField,
+            //});
+            //backgroundVolume.isGlobal = true;
         }
 
         public void UpdateColorGrading(float _hueShift, float _contrast, Vector4 _gamma, float _saturation, float _temperature, float _tint)
@@ -257,8 +268,17 @@ namespace BetterLegacy.Arcade.Managers
             LSEffectsManager.inst.lensDistort.scale.Override(_scale);
         }
 
+        //public void UpdateDepthOfField(bool active, float focalLength, float depth, KernelSize kernelSize = KernelSize.Medium)
+        //{
+        //    depthOfField.active = active;
+        //    depthOfField.focalLength.Override(focalLength);
+        //    depthOfField.focusDistance.Override(depth);
+        //    depthOfField.kernelSize.Override(kernelSize);
+        //}
+
         public static RTEffectsManager inst;
-        private PostProcessVolume ppvolume;
+        PostProcessVolume volume;
+        //PostProcessVolume backgroundVolume;
 
         public ColorGrading colorGrading;
         public SCPE.Gradient gradient;
@@ -281,5 +301,7 @@ namespace BetterLegacy.Arcade.Managers
         public SCPE.Mosaic mosaic;
         public SCPE.TiltShift tiltShift;
         public SCPE.TubeDistortion tubeDistortion;
+
+        //public DepthOfField depthOfField;
     }
 }

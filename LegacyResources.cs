@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 
 using BetterLegacy.Core;
 
@@ -94,6 +95,16 @@ namespace BetterLegacy
             var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("gui.asset"));
             canvasImageMask = new Material(assetBundle.LoadAsset<Shader>("canvasimagemask.shader"));
             assetBundle.Unload(false);
+        }
+
+
+        public static AssetBundle postProcessResourcesAssetBundle;
+        public static PostProcessResources postProcessResources;
+
+        public static void GetEffects()
+        {
+            postProcessResourcesAssetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("effectresources.asset"));
+            postProcessResources = postProcessResourcesAssetBundle.LoadAsset<PostProcessResources>("postprocessresources.asset");
         }
     }
 }

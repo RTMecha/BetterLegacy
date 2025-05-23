@@ -424,7 +424,16 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var renderers = new List<Renderer>();
 
-            var baseObject = Creator.NewGameObject(backgroundObject.name, BackgroundManager.inst.backgroundParent);
+            var parent = BackgroundManager.inst.backgroundParent;
+
+            if (!string.IsNullOrEmpty(backgroundObject.layer) &&
+                RTLevel.Current.backgroundLayers.TryFind(x => x.backgroundLayer && x.backgroundLayer.id == backgroundObject.layer, out BackgroundLayerObject backgroundLayerObject) &&
+                backgroundLayerObject.gameObject)
+            {
+                parent = backgroundLayerObject.gameObject.transform;
+            }
+
+            var baseObject = Creator.NewGameObject(backgroundObject.name, parent);
 
             var gameObject = BackgroundManager.inst.backgroundPrefab.Duplicate(baseObject.transform, backgroundObject.name);
             gameObject.layer = 9;
@@ -485,6 +494,31 @@ namespace BetterLegacy.Core.Runtime.Objects
             backgroundObject.runtimeObject = runtimeObject;
 
             return runtimeObject;
+        }
+
+        public IEnumerable<BackgroundLayerObject> ToBackgroundLayerObjects()
+        {
+            foreach (var backgroundLayer in gameData.backgroundLayers)
+            {
+                var backgroundLayerObject = ToBackgroundLayerObject(backgroundLayer);
+                yield return backgroundLayerObject;
+            }
+        }
+
+        public BackgroundLayerObject ToBackgroundLayerObject(BackgroundLayer backgroundLayer)
+        {
+            var gameObject = Creator.NewGameObject("Background Layer", BackgroundManager.inst.backgroundParent);
+            gameObject.transform.localPosition = new Vector3(0f, 0f, backgroundLayer.depth);
+
+            var backgroundLayerObject = new BackgroundLayerObject()
+            {
+                gameObject = gameObject,
+                backgroundLayer = backgroundLayer,
+            };
+
+            backgroundLayer.runtimeObject = backgroundLayerObject;
+
+            return backgroundLayerObject;
         }
 
         #endregion

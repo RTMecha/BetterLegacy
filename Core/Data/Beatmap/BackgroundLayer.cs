@@ -1,5 +1,7 @@
 ﻿using SimpleJSON;
 
+using BetterLegacy.Core.Runtime.Objects;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     public class BackgroundLayer : PAObject<BackgroundLayer>
@@ -21,6 +23,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Color slot override for all Background Objects on this BG layer. If the value is -1, then BG objects will continue to use their own color.
         /// </summary>
         public int color = -1;
+
+        /// <summary>
+        /// Runtime object reference.
+        /// </summary>
+        public BackgroundLayerObject runtimeObject;
 
         #region Methods
 

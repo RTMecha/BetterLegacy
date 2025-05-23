@@ -774,6 +774,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             if (jn["parallax_settings"] != null)
+            {
+                gameData.mainBackgroundLayer = jn["parallax_settings"]["ml"].AsInt;
+                // parse depth of field here when that event is added
                 for (int i = 0; i < jn["parallax_settings"]["l"].Count; i++)
                 {
                     var jnLayer = jn["parallax_settings"]["l"][i];
@@ -786,6 +789,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         gameData.backgroundObjects.Add(bg);
                     }
                 }
+            }
 
             gameData.events = new List<List<EventKeyframe>>();
 
@@ -1197,6 +1201,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["assets"] != null)
                 gameData.assets.ReadJSON(jn["assets"]);
 
+            if (jn["bg_data"] != null)
+                gameData.mainBackgroundLayer = jn["bg_data"]["main_layer"].AsInt;
+
             if (jn["bg_layers"] != null)
                 for (int i = 0; i < jn["bg_layers"].Count; i++)
                     gameData.backgroundLayers.Add(BackgroundLayer.Parse(jn["bg_layers"][i]));
@@ -1261,6 +1268,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             for (int i = 0; i < 6; i++)
                 jn["editor_prefab_spawn"][i] = new JSONObject();
+
+            if (mainBackgroundLayer != 0)
+                jn["parallax_settings"]["ml"] = mainBackgroundLayer;
 
             int numLayer = 1;
             for (int i = 0; i < Mathf.Clamp(backgroundLayers.Count, 0, 5); i++)
@@ -1591,6 +1601,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 CoreHelper.Log("skipping objects");
                 jn["beatmap_objects"] = new JSONArray();
+            }
+
+            if (mainBackgroundLayer != 0)
+            {
+                jn["bg_data"]["main_layer"] = mainBackgroundLayer;
             }
 
             CoreHelper.Log("Saving Background Layers");
@@ -2085,6 +2100,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<PrefabObject> prefabObjects = new List<PrefabObject>();
 
         public List<Prefab> prefabs = new List<Prefab>();
+
+        public int mainBackgroundLayer;
 
         public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
 

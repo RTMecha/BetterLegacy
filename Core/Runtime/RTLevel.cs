@@ -65,6 +65,9 @@ namespace BetterLegacy.Core.Runtime
             modifiers = runtimeModifiers.ToList();
             objectModifiersEngine = new ObjectEngine(Modifiers);
 
+            IEnumerable<BackgroundLayerObject> backgroundLayerObjects = converter.ToBackgroundLayerObjects();
+            backgroundLayers = backgroundLayerObjects.ToList();
+
             IEnumerable<IRTObject> runtimeBGObjects = converter.ToRuntimeBGObjects();
 
             bgObjects = runtimeBGObjects.ToList();
@@ -118,6 +121,19 @@ namespace BetterLegacy.Core.Runtime
         /// The current room to render. If the room number is 0, all objects are active regardless of room number.
         /// </summary>
         public int CurrentRoom { get; set; }
+
+        /// <summary>
+        /// Layer where 2D objects are.
+        /// </summary>
+        public const int FOREGROUND_LAYER = 8;
+        /// <summary>
+        /// Layer where 3D objects are.
+        /// </summary>
+        public const int BACKGROUND_LAYER = 9;
+        /// <summary>
+        /// Layer that doesn't get affected by post process effects and appears above other layers.
+        /// </summary>
+        public const int UI_LAYER = 11;
 
         /// <summary>
         /// Performs heavy calculations on a separate tick thread.
@@ -176,6 +192,10 @@ namespace BetterLegacy.Core.Runtime
                 for (int i = 0; i < Current.bgModifiers.Count; i++)
                     Current.bgModifiers[i].Clear();
                 Current.bgModifiers.Clear();
+
+                for (int i = 0; i < Current.backgroundLayers.Count; i++)
+                    Current.backgroundLayers[i].Clear();
+                Current.backgroundLayers.Clear();
             }
 
             // Delete all the "GameObjects" children.
@@ -227,6 +247,10 @@ namespace BetterLegacy.Core.Runtime
                 for (int i = 0; i < Current.bgModifiers.Count; i++)
                     Current.bgModifiers[i].Clear();
                 Current.bgModifiers.Clear();
+
+                for (int i = 0; i < Current.backgroundLayers.Count; i++)
+                    Current.backgroundLayers[i].Clear();
+                Current.backgroundLayers.Clear();
             }
 
             // Delete all the "GameObjects" children.
@@ -1230,6 +1254,11 @@ namespace BetterLegacy.Core.Runtime
         #region Background Objects
 
         /// <summary>
+        /// Parents for Background Objects to use.
+        /// </summary>
+        public List<BackgroundLayerObject> backgroundLayers = new List<BackgroundLayerObject>();
+
+        /// <summary>
         /// Background Objects time engine. Handles BG object spawning and interpolation.
         /// </summary>
         public ObjectEngine backgroundEngine;
@@ -1248,6 +1277,35 @@ namespace BetterLegacy.Core.Runtime
         {
             if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel) && BackgroundManager.inst?.backgroundParent?.gameObject)
                 backgroundEngine?.Update(CurrentTime);
+        }
+
+        /// <summary>
+        /// Updates all BackgroundLayers.
+        /// </summary>
+        public void UpdateBackgroundLayers()
+        {
+            foreach (var backgroundLayer in GameData.Current.backgroundLayers)
+                ReinitObject(backgroundLayer);
+        }
+
+        public void ReinitObject(BackgroundLayer backgroundLayer, bool reinsert = true)
+        {
+            var runtimeObject = backgroundLayer.runtimeObject;
+
+            if (runtimeObject)
+            {
+                runtimeObject.Clear();
+                backgroundLayers.Remove(runtimeObject);
+                backgroundLayer.runtimeObject = null;
+                runtimeObject = null;
+            }
+
+            if (!reinsert)
+                return;
+
+            runtimeObject = converter.ToBackgroundLayerObject(backgroundLayer);
+            if (runtimeObject != null)
+                backgroundLayers.Add(runtimeObject);
         }
 
         /// <summary>
