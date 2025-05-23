@@ -180,6 +180,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public bool InvalidID => string.IsNullOrEmpty(id) || id == "0" || id == "-1";
 
+        /// <summary>
+        /// If the level has no set icon, therefore it has the default icon.
+        /// </summary>
+        public bool HasNoIcon => icon == SteamWorkshop.inst.defaultSteamImageSprite;
+
         #endregion
 
         #region Constants
