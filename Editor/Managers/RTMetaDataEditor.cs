@@ -89,8 +89,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (RTEditor.inst.CurrentLevel)
-                Dialog.IconImage.sprite = RTEditor.inst.CurrentLevel.icon;
+            if (EditorLevelManager.inst.CurrentLevel)
+                Dialog.IconImage.sprite = EditorLevelManager.inst.CurrentLevel.icon;
 
             Dialog.Open();
             RenderDialog(metadata);
@@ -592,10 +592,10 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetLevelCover(Sprite sprite)
         {
-            if (RTEditor.inst.CurrentLevel)
+            if (EditorLevelManager.inst.CurrentLevel)
             {
-                RTEditor.inst.CurrentLevel.icon = sprite;
-                Dialog.IconImage.sprite = RTEditor.inst.CurrentLevel.icon;
+                EditorLevelManager.inst.CurrentLevel.icon = sprite;
+                Dialog.IconImage.sprite = EditorLevelManager.inst.CurrentLevel.icon;
             }
         }
 
@@ -952,9 +952,9 @@ namespace BetterLegacy.Editor.Managers
                 var jn = JSON.Parse(json);
 
                 if (GameData.Current)
-                    GameData.Current.SaveData(RTFile.CombinePaths(RTEditor.inst.CurrentLevel.path, "reload-level-backup.lsb"));
+                    GameData.Current.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "reload-level-backup.lsb"));
 
-                UploadedLevelsManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path), jn["name"], RTEditor.inst.LoadLevel(RTEditor.inst.CurrentLevel).Start);
+                UploadedLevelsManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
             }, (string onError, long responseCode, string errorMsg) =>
             {
                 switch (responseCode)

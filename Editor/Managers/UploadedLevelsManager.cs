@@ -343,7 +343,7 @@ namespace BetterLegacy.Editor.Managers
 
                 File.Delete($"{directory}{FileFormat.ZIP.Dot()}");
 
-                CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevels());
+                EditorLevelManager.inst.LoadLevels();
                 EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
 
                 onDownload?.Invoke();

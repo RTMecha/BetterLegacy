@@ -1133,7 +1133,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ShowDialog(dialog);
         }
 
-        public static void SaveBeatmap(Keybind keybind) => EditorManager.inst.SaveBeatmap();
+        public static void SaveBeatmap(Keybind keybind) => EditorLevelManager.inst.SaveLevel();
 
         public static void OpenBeatmapPopup(Keybind keybind) => EditorManager.inst.OpenBeatmapPopup();
 

@@ -3355,7 +3355,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void OpenImageSelector(PlayerEditorUI ui, bool copyFile = true, bool storeImage = false)
         {
-            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+            var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
             SelectImage(jpgFile, ui, copyFile: copyFile, storeImage: storeImage);
         }
@@ -3400,7 +3400,7 @@ namespace BetterLegacy.Editor.Managers
             if (ui.Reference is not PlayerModel.Generic generic)
                 return;
 
-            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+            var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
             RTFile.CreateDirectory(RTFile.CombinePaths(editorPath, "images"));
 
             file = RTFile.ReplaceSlash(file);
@@ -3479,8 +3479,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void Reload()
         {
-            if (RTEditor.inst.CurrentLevel)
-                PlayersData.Load(RTEditor.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
+            if (EditorLevelManager.inst.CurrentLevel)
+                PlayersData.Load(EditorLevelManager.inst.CurrentLevel.GetFile(Level.PLAYERS_LSB));
             PlayerManager.RespawnPlayers();
             if (Dialog.IsCurrent)
                 StartCoroutine(RefreshEditor());

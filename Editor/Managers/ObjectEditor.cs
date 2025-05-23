@@ -4702,7 +4702,7 @@ namespace BetterLegacy.Editor.Managers
                                     new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject)),
                                     new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
                                     {
-                                        var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+                                        var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
                                         RTEditor.inst.BrowserPopup.Open();
                                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, file =>
                                         {
@@ -4713,7 +4713,7 @@ namespace BetterLegacy.Editor.Managers
                                     new ButtonFunction($"Store & Use {RTEditor.SYSTEM_BROWSER}", () => OpenImageSelector(beatmapObject, copyFile: false, storeImage: true)),
                                     new ButtonFunction($"Store & Use {RTEditor.EDITOR_BROWSER}", () =>
                                     {
-                                        var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+                                        var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
                                         RTEditor.inst.BrowserPopup.Open();
                                         RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, file =>
                                         {
@@ -4734,7 +4734,7 @@ namespace BetterLegacy.Editor.Managers
                                     }),
                                     new ButtonFunction("Delete Image", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete the image and remove it from the image object?", () =>
                                     {
-                                        RTFile.DeleteFile(RTFile.CombinePaths(RTEditor.inst.CurrentLevel.path, beatmapObject.text));
+                                        RTFile.DeleteFile(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, beatmapObject.text));
 
                                         beatmapObject.text = string.Empty;
 
@@ -6778,7 +6778,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void OpenImageSelector(BeatmapObject beatmapObject, bool copyFile = true, bool storeImage = false)
         {
-            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+            var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
             SelectImage(jpgFile, beatmapObject, copyFile: copyFile, storeImage: storeImage);
         }
@@ -6815,7 +6815,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SelectImage(string file, BeatmapObject beatmapObject, bool renderEditor = true, bool updateObject = true, bool copyFile = true, bool storeImage = false)
         {
-            var editorPath = RTFile.RemoveEndSlash(RTEditor.inst.CurrentLevel.path);
+            var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
             RTFile.CreateDirectory(RTFile.CombinePaths(editorPath, "images"));
 
             file = RTFile.ReplaceSlash(file);

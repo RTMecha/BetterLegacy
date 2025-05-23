@@ -50,7 +50,7 @@ namespace BetterLegacy.Editor.Data.Planners
                         if (Level.TryVerify(path, true, out Level actualLevel))
                         {
                             ProjectPlanner.inst.Close();
-                            RTEditor.inst.StartCoroutine(RTEditor.inst.LoadLevel(actualLevel));
+                            EditorLevelManager.inst.LoadLevel(actualLevel);
                         }
                     });
 

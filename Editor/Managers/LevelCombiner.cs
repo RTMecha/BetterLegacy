@@ -206,7 +206,7 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(editorDialogContent);
 
-            foreach (var editorWrapper in RTEditor.inst.LevelPanels)
+            foreach (var editorWrapper in EditorLevelManager.inst.LevelPanels)
                 editorWrapper.InitLevelCombiner();
 
             yield break;
@@ -228,7 +228,7 @@ namespace BetterLegacy.Editor.Managers
         /// Combines all selected editor levels into one.
         /// </summary>
         /// <param name="savePath">Path to save the level to.</param>
-        public void Combine(string savePath, Action onCombined = null) => Combine(savePath, RTEditor.inst.LevelPanels.Where(x => x.combinerSelected && x.Level && RTFile.FileExists(x.Level.GetFile(x.Level.CurrentFile))), onCombined);
+        public void Combine(string savePath, Action onCombined = null) => Combine(savePath, EditorLevelManager.inst.LevelPanels.Where(x => x.combinerSelected && x.Level && RTFile.FileExists(x.Level.GetFile(x.Level.CurrentFile))), onCombined);
 
         /// <summary>
         /// Combines editor levels into one.

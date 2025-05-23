@@ -238,7 +238,7 @@ namespace BetterLegacy.Patchers
             __instance.spriteFolderButtonPrefab = spriteLevelButtonPrefab;
 
             // New Level Name input field contains text but newLevelName does not, so people might end up making an empty named level if they don't name it anything else.
-            __instance.newLevelName = "New Awesome Beatmap";
+            __instance.newLevelName = EditorLevelManager.DEFAULT_LEVEL_NAME;
 
             try
             {
@@ -250,6 +250,7 @@ namespace BetterLegacy.Patchers
                 CoreHelper.LogError($"Could not destroy the interface.\n{ex}");
             }
 
+            EditorLevelManager.Init();
             EditorTimeline.Init();
             RTEditor.Init();
 
@@ -276,8 +277,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix()
         {
-            CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.GetLevelList)}");
-            Instance.GetLevelList();
+            CoreHelper.Log($"EDITOR START -> {nameof(EditorLevelManager.LoadLevels)}");
+            EditorLevelManager.inst.LoadLevels();
 
             CoreHelper.Log($"EDITOR START -> {nameof(CoreHelper.UpdateDiscordStatus)}");
             CoreHelper.UpdateDiscordStatus("", "In Editor (Selecting level)", "editor");
@@ -503,7 +504,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetLevelListPrefix()
         {
-            CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevels());
+            EditorLevelManager.inst.LoadLevels();
             return false;
         }
 
@@ -536,8 +537,8 @@ namespace BetterLegacy.Patchers
 
         static void AssignGameData()
         {
-            GameData.Current = RTEditor.inst.CreateBaseBeatmap();
-            RTEditor.inst.SetCurrentAudio(Instance.baseSong);
+            GameData.Current = EditorLevelManager.inst.CreateBaseBeatmap();
+            EditorLevelManager.inst.SetCurrentAudio(Instance.baseSong);
             GameManager.inst.gameState = GameManager.State.Playing;
         }
 
@@ -553,7 +554,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadLevelPrefix(ref IEnumerator __result, string __0)
         {
-            __result = RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, __0)));
+            __result = EditorLevelManager.inst.ILoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, __0)));
             return false;
         }
 
@@ -731,7 +732,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SaveBeatmapPrefix()
         {
-            RTEditor.inst.SaveLevel();
+            EditorLevelManager.inst.SaveLevel();
             return false;
         }
 
@@ -758,13 +759,13 @@ namespace BetterLegacy.Patchers
                 string str = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, __0);
                 RTFile.CreateDirectory(str);
 
-                var files = Directory.GetFiles(RTEditor.inst.CurrentLevel.path);
+                var files = Directory.GetFiles(EditorLevelManager.inst.CurrentLevel.path);
 
                 foreach (var file in files)
                 {
                     RTFile.CreateDirectory(Path.GetDirectoryName(file));
 
-                    string saveTo = file.Replace("\\", "/").Replace(RTEditor.inst.CurrentLevel.path, str);
+                    string saveTo = file.Replace("\\", "/").Replace(EditorLevelManager.inst.CurrentLevel.path, str);
                     RTFile.CreateDirectory(Path.GetDirectoryName(saveTo));
                     RTFile.CopyFile(file, saveTo);
                 }
@@ -827,7 +828,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderOpenBeatmapPopupPrefix()
         {
-            RTEditor.inst.StartCoroutine(RTEditor.inst.RefreshLevelList());
+            EditorLevelManager.inst.RenderLevels();
             return false;
         }
 
@@ -847,7 +848,7 @@ namespace BetterLegacy.Patchers
             Debug.Log("Selected file: " + jpgFile);
             if (!string.IsNullOrEmpty(jpgFile))
             {
-                string jpgFileLocation = RTEditor.inst.CurrentLevel.GetFile(Level.LEVEL_JPG);
+                string jpgFileLocation = EditorLevelManager.inst.CurrentLevel.GetFile(Level.LEVEL_JPG);
                 CoroutineHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
                 {
                     RTFile.CopyFile(jpgFile, jpgFileLocation);
@@ -894,8 +895,8 @@ namespace BetterLegacy.Patchers
                 DG.Tweening.DOTween.Clear();
 
                 Instance.loadedLevels.Clear();
-                if (RTEditor.inst)
-                    RTEditor.inst.LevelPanels.Clear();
+                if (EditorLevelManager.inst)
+                    EditorLevelManager.inst.LevelPanels.Clear();
                 GameData.Current = null;
                 CoreHelper.UpdateDiscordStatus("", "", CoreHelper.discordIcon);
                 Debug.Log($"{Instance.className}Quit to Main Menu");
@@ -935,7 +936,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewLevelPrefix()
         {
-            RTEditor.inst.CreateNewLevel();
+            EditorLevelManager.inst.CreateNewLevel();
             return false;
         }
 
@@ -952,9 +953,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenLevelFolder()
         {
-            if (RTEditor.inst.CurrentLevel && RTFile.DirectoryExists(RTEditor.inst.CurrentLevel.path))
+            if (EditorLevelManager.inst.CurrentLevel && RTFile.DirectoryExists(EditorLevelManager.inst.CurrentLevel.path))
             {
-                RTFile.OpenInFileBrowser.Open(RTEditor.inst.CurrentLevel.path);
+                RTFile.OpenInFileBrowser.Open(EditorLevelManager.inst.CurrentLevel.path);
                 return false;
             }
             RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath));

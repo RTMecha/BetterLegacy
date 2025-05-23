@@ -952,7 +952,7 @@ namespace BetterLegacy.Editor.Managers
 
             SetTimelineSprite(null);
 
-            if (forceReload || config.WaveformRerender.Value || (!EditorManager.inst.hasLoadedLevel && !RTEditor.inst.loadingLevel && !RTFile.FileExists(settingsPath) || !RTFile.FileExists(path)))
+            if (forceReload || config.WaveformRerender.Value || (!EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.loadingLevel && !RTFile.FileExists(settingsPath) || !RTFile.FileExists(path)))
             {
                 int num = Mathf.Clamp((int)clip.length * 48, 100, 15000);
                 Texture2D waveform = null;
@@ -975,7 +975,7 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !RTEditor.inst.loadingLevel ?
+                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.loadingLevel ?
                 settingsPath :
                 path), texture2D => SetTimelineSprite(SpriteHelper.CreateSprite(texture2D))));
             }

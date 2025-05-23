@@ -3212,7 +3212,7 @@ namespace BetterLegacy.Editor.Managers
                         var select = shapeSettings.Find("7/select").GetComponent<Button>();
                         select.onClick.NewListener(() =>
                         {
-                            var editorPath = RTEditor.inst.CurrentLevel.path;
+                            var editorPath = EditorLevelManager.inst.CurrentLevel.path;
                             string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
                             CoreHelper.Log($"Selected file: {jpgFile}");
                             if (!string.IsNullOrEmpty(jpgFile))

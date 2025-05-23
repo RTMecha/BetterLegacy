@@ -71,7 +71,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// The currently open level.
         /// </summary>
-        public static Level CurrentLevel => InEditor ? RTEditor.inst.CurrentLevel : LevelManager.CurrentLevel;
+        public static Level CurrentLevel => InEditor ? EditorLevelManager.inst.CurrentLevel : LevelManager.CurrentLevel;
 
         /// <summary>
         /// If the game is loading.

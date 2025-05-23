@@ -156,7 +156,7 @@ namespace BetterLegacy.Core.Helpers
         public static void LogIsNull<T>(string message, object obj) => Debug.Log($"{message}{typeof(T)} is null: {obj == null}");
 
         //EditorHelper.LoadLevel("C:/Users/Mecha/Desktop/Project Launcher/instances/Mod Testing/beatmaps/editor/RhythmTech/Apocrypha but Platformer")
-        public static void LoadLevel(string fullPath) => SceneHelper.LoadScene(SceneName.Editor, scene => CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(fullPath))));
+        public static void LoadLevel(string fullPath) => SceneHelper.LoadScene(SceneName.Editor, scene => EditorLevelManager.inst.LoadLevel(new Level(fullPath)));
 
         public static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
         {
@@ -166,7 +166,7 @@ namespace BetterLegacy.Core.Helpers
             if (delay != 0.0)
                 yield return CoroutineHelper.Seconds(delay);
 
-            CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(fullPath)));
+            EditorLevelManager.inst.LoadLevel(new Level(fullPath));
         }
 
         public static bool SelectAllObjects()

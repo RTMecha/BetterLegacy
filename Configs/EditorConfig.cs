@@ -2961,7 +2961,7 @@ namespace BetterLegacy.Configs
         void AutosaveChanged()
         {
             if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
-                RTEditor.inst.SetAutosave();
+                EditorLevelManager.inst.SetAutosave();
         }
 
         void EditorThemeChanged()

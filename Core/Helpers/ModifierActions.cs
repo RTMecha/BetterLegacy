@@ -315,7 +315,7 @@ namespace BetterLegacy.Core.Helpers
                         });
                     }
 
-                    CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, path))));
+                    EditorLevelManager.inst.LoadLevel(new Level(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, path)));
                 }, RTEditor.inst.HideWarningPopup);
 
                 return;
@@ -350,7 +350,7 @@ namespace BetterLegacy.Core.Helpers
             if (!CoreHelper.IsEditing)
                 return;
 
-            if (RTEditor.inst.LevelPanels.TryFind(x => x.Level && x.Level.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel editorWrapper))
+            if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Level && x.Level.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel editorWrapper))
             {
                 if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                     return;
@@ -368,7 +368,7 @@ namespace BetterLegacy.Core.Helpers
                         });
                     }
 
-                    CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(editorWrapper.Level));
+                    EditorLevelManager.inst.LoadLevel(editorWrapper.Level);
                 }, RTEditor.inst.HideWarningPopup);
             }
             else
@@ -406,7 +406,7 @@ namespace BetterLegacy.Core.Helpers
                         });
                     }
 
-                    CoroutineHelper.StartCoroutine(RTEditor.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, path))));
+                    EditorLevelManager.inst.LoadLevel(new Level(RTFile.CombinePaths(EditorManager.inst.currentLoadedLevel, path)));
                 }, RTEditor.inst.HideWarningPopup);
             }
         }

@@ -173,7 +173,7 @@ namespace BetterLegacy.Editor.Data
         /// <returns>Returns a loaded game data from the template.</returns>
         public GameData GetGameData() =>
             !RTFile.FileExists(RTFile.CombinePaths(Directory, Level.LEVEL_LSB)) ?
-                RTEditor.inst.CreateBaseBeatmap() :
+                EditorLevelManager.inst.CreateBaseBeatmap() :
                 GameData.ReadFromFile(RTFile.CombinePaths(Directory, Level.LEVEL_LSB), ArrhythmiaType.LS);
 
         #endregion
