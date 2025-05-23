@@ -133,6 +133,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> CopyPasteGlobal { get; set; }
         public Setting<ArrhythmiaType> CombinerOutputFormat { get; set; }
         public Setting<bool> SavingSavesThemeOpacity { get; set; }
+        public Setting<bool> AutoPolygonRadius { get; set; }
         public Setting<bool> UpdatePrefabListOnFilesChanged { get; set; }
         public Setting<bool> UpdateThemeListOnFilesChanged { get; set; }
         public Setting<bool> ShowFoldersInLevelList { get; set; }
@@ -1331,6 +1332,8 @@ namespace BetterLegacy.Configs
         public Setting<float> ObjectDraggerRotatorRadius { get; set; }
         public Setting<float> ObjectDraggerScalerOffset { get; set; }
         public Setting<float> ObjectDraggerScalerScale { get; set; }
+        public Setting<bool> SelectTextObjectsInPreview { get; set; }
+        public Setting<bool> SelectImageObjectsInPreview { get; set; }
 
         public Setting<bool> PreviewGridEnabled { get; set; }
         public Setting<float> PreviewGridSize { get; set; }
@@ -1440,6 +1443,7 @@ namespace BetterLegacy.Configs
             CopyPasteGlobal = Bind(this, DATA, "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
             CombinerOutputFormat = BindEnum(this, DATA, "Combiner Output Format", ArrhythmiaType.LS, "Which PA file type the level combiner outputs.");
             SavingSavesThemeOpacity = Bind(this, DATA, "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
+            AutoPolygonRadius = Bind(this, DATA, "Auto Polygon Radius", true, "If polygon shapes' should have their radius automatically modified to fit the way VG handles them.");
             UpdatePrefabListOnFilesChanged = Bind(this, DATA, "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
             UpdateThemeListOnFilesChanged = Bind(this, DATA, "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");
             ShowFoldersInLevelList = Bind(this, DATA, "Show Folders In Level List", true, "If folders should appear in the level list UI. This allows you to quickly navigate level folders.");
@@ -2638,6 +2642,9 @@ namespace BetterLegacy.Configs
             ObjectDraggerScalerOffset = Bind(this, PREVIEW, "Object Dragger Scaler Offset", 6f, "The distance of the Object Draggers' scale arrows.");
             ObjectDraggerScalerScale = Bind(this, PREVIEW, "Object Dragger Scaler Scale", 1.6f, "The size of the Object Draggers' scale arrows.");
 
+            SelectTextObjectsInPreview = Bind(this, PREVIEW, "Select Text Objects", false, "If text objects can be selected in the preview area.");
+            SelectImageObjectsInPreview = Bind(this, PREVIEW, "Select Image Objects", true, "If image objects can be selected in the preview area.");
+
             PreviewGridEnabled = Bind(this, PREVIEW, "Grid Enabled", false, "If the preview grid should be enabled.");
             PreviewGridSize = Bind(this, PREVIEW, "Grid Size", 0.5f, "The overall size of the preview grid.");
             PreviewGridThickness = Bind(this, PREVIEW, "Grid Thickness", 0.1f, "The line thickness of the preview grid.", 0.01f, 2f);
@@ -2669,6 +2676,7 @@ namespace BetterLegacy.Configs
 
             DragUI.SettingChanged += DragUIChanged;
 
+            AutoPolygonRadius.SettingChanged += ObjectEditorChanged;
             HideVisualElementsWhenObjectIsEmpty.SettingChanged += ObjectEditorChanged;
             KeyframeZoomBounds.SettingChanged += ObjectEditorChanged;
             ObjectSelectionColor.SettingChanged += ObjectEditorChanged;

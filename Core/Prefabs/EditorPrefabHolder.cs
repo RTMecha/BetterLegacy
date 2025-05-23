@@ -195,6 +195,32 @@ namespace BetterLegacy.Core.Prefabs
         [SerializeField]
         public InputFieldSwapper fieldSwapper;
 
+        public void SetInteractible(bool interactable)
+        {
+            if (leftGreaterButton)
+                leftGreaterButton.interactable = interactable;
+            if (leftButton)
+                leftButton.interactable = interactable;
+            if (middleButton)
+                middleButton.interactable = interactable;
+            if (rightButton)
+                rightButton.interactable = interactable;
+            if (rightGreaterButton)
+                rightGreaterButton.interactable = interactable;
+            if (subButton)
+                subButton.interactable = interactable;
+            if (addButton)
+                addButton.interactable = interactable;
+            if (inputField)
+                inputField.interactable = interactable;
+            if (lockToggle)
+                lockToggle.interactable = interactable;
+            if (eventTrigger)
+                eventTrigger.enabled = interactable;
+            if (fieldSwapper)
+                fieldSwapper.enabled = interactable;
+        }
+
         public void Assign() => Assign(gameObject);
 
         public void Assign(GameObject gameObject)

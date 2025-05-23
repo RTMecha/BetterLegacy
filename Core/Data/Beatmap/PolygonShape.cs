@@ -90,7 +90,22 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Fields
 
-        float radius = 0.5f;
+        /// <summary>
+        /// The default radius for the triangle polygon.
+        /// </summary>
+        public const float TRIANGLE_RADIUS = 0.575f;
+
+        /// <summary>
+        /// The default radius for the square polygon.
+        /// </summary>
+        public const float SQUARE_RADIUS = 0.7071f;
+
+        /// <summary>
+        /// The normal radius.
+        /// </summary>
+        public const float NORMAL_RADIUS = 0.5f;
+
+        float radius = NORMAL_RADIUS;
         int sides = 3;
         float roundness;
         float thickness = 1f;
@@ -104,6 +119,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void CopyData(PolygonShape orig, bool newID = true)
         {
+            Radius = orig.Radius;
             Sides = orig.Sides;
             Roundness = orig.Roundness;
             Thickness = orig.Thickness;
@@ -118,6 +134,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             Roundness = jn[1].AsFloat;
             Thickness = jn[2].AsFloat;
             Slices = jn[3].AsInt;
+
+            // assign a radius
+            Radius = GetAutoRadius();
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -148,10 +167,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        /// <summary>
-        /// Writes the <see cref="PolygonShape"/> to a JSON.
-        /// </summary>
-        /// <returns>Returns a JSON object representing the <see cref="PolygonShape"/>.</returns>
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
@@ -167,6 +182,24 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["ths"] = thicknessScale.ToJSONArray();
             return jn;
         }
+
+        /// <summary>
+        /// Gets the determined radius of the polygon based on its side count.
+        /// </summary>
+        /// <returns>Returns the radius that fits the polygon best.</returns>
+        public float GetAutoRadius() => GetAutoRadius(Sides);
+
+        /// <summary>
+        /// Gets the determined radius of the polygon based on its side count.
+        /// </summary>
+        /// <param name="sides">Sides the polygon has.</param>
+        /// <returns>Returns the radius that fits the polygon best.</returns>
+        public static float GetAutoRadius(int sides) => sides switch
+        {
+            3 => TRIANGLE_RADIUS,
+            4 => SQUARE_RADIUS,
+            _ => NORMAL_RADIUS,
+        };
 
         #endregion
     }

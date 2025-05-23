@@ -1940,6 +1940,30 @@ namespace BetterLegacy.Editor.Managers
 
                         // Polygon Settings
                         {
+                            #region Radius
+
+                            var radius = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "radius");
+                            var radiusStorage = radius.GetComponent<InputFieldStorage>();
+
+                            Destroy(radiusStorage.addButton.gameObject);
+                            Destroy(radiusStorage.subButton.gameObject);
+                            Destroy(radiusStorage.leftGreaterButton.gameObject);
+                            Destroy(radiusStorage.middleButton.gameObject);
+                            Destroy(radiusStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(radiusStorage);
+
+                            var radiusLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(radius.transform, "label", 0);
+                            var radiusLabelText = radiusLabel.GetComponent<Text>();
+                            radiusLabelText.alignment = TextAnchor.MiddleLeft;
+                            radiusLabelText.text = "Radius";
+                            radiusLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                            EditorThemeManager.AddLightText(radiusLabelText);
+                            var radiusLabelLayout = radiusLabel.AddComponent<LayoutElement>();
+                            radiusLabelLayout.minWidth = 100f;
+
+                            #endregion
+
                             #region Sides
 
                             var sides = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "sides");
@@ -4582,6 +4606,9 @@ namespace BetterLegacy.Editor.Managers
                         if (beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6))
                             beatmapObject.Shape = 0;
 
+                        if (beatmapObject.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
+                            beatmapObject.polygonShape.Radius = beatmapObject.polygonShape.GetAutoRadius();
+
                         // Since shape has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects)
                             RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
@@ -4752,7 +4779,64 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case ShapeType.Polygon: {
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 212f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 244f);
+
+                        var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
+                        radius.inputField.onValueChanged.ClearAll();
+                        radius.inputField.text = beatmapObject.polygonShape.Radius.ToString();
+                        radius.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
+                        if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                        {
+                            radius.inputField.onValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float num))
+                                {
+                                    num = Mathf.Clamp(num, 0.1f, 10f);
+                                    beatmapObject.polygonShape.Radius = num;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }
+                            });
+
+                            TriggerHelper.IncreaseDecreaseButtons(radius, min: 0.1f, max: 10f);
+                            TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
+                        }
+
+                        var contextMenu = radius.inputField.gameObject.GetOrAddComponent<ContextClickable>();
+                        contextMenu.onClick = eventData =>
+                        {
+                            if (eventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            var buttonFunctions = new List<ButtonFunction>()
+                            {
+                                new ButtonFunction($"Auto Assign Radius [{(EditorConfig.Instance.AutoPolygonRadius.Value ? "On" : "Off")}]", () =>
+                                {
+                                    EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
+                                    RenderShape(beatmapObject);
+                                })
+                            };
+
+                            if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                            {
+                                buttonFunctions.Add(new ButtonFunction("Set to Triangle Radius", () =>
+                                {
+                                    beatmapObject.polygonShape.Radius = PolygonShape.TRIANGLE_RADIUS;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }));
+                                buttonFunctions.Add(new ButtonFunction("Set to Square Radius", () =>
+                                {
+                                    beatmapObject.polygonShape.Radius = PolygonShape.SQUARE_RADIUS;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }));
+                                buttonFunctions.Add(new ButtonFunction("Set to Normal Radius", () =>
+                                {
+                                    beatmapObject.polygonShape.Radius = PolygonShape.NORMAL_RADIUS;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                }));
+                            }
+
+                            EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                        };
 
                         var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
                         sides.inputField.onValueChanged.ClearAll();
@@ -4763,6 +4847,11 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 num = Mathf.Clamp(num, 3, 32);
                                 beatmapObject.polygonShape.Sides = num;
+                                if (EditorConfig.Instance.AutoPolygonRadius.Value)
+                                {
+                                    beatmapObject.polygonShape.Radius = beatmapObject.polygonShape.GetAutoRadius();
+                                    RenderShape(beatmapObject);
+                                }
                                 RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
                             }
                         });

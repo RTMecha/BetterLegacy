@@ -2981,6 +2981,9 @@ namespace BetterLegacy.Editor.Managers
                             if (bullet != null)
                                 bullet.shape = ShapeManager.inst.Shapes2D[index][0];
 
+                            if (ui.Reference is PlayerModel.CustomObject customObject && customObject.shape.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
+                                customObject.polygonShape.Radius = customObject.polygonShape.GetAutoRadius();
+
                             PlayerManager.UpdatePlayerModels();
                             RenderShape(ui);
                             LayoutRebuilder.ForceRebuildLayoutImmediate(ui.GameObject.transform.parent.AsRT());
@@ -3108,9 +3111,69 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
 
-                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 300f);
+                        ui.GameObject.transform.AsRT().sizeDelta = new Vector2(750f, 332f);
                         shapeSettings.AsRT().anchoredPosition = new Vector2(568f, -145f);
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 212f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 244f);
+
+                        var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
+                        radius.inputField.onValueChanged.ClearAll();
+                        radius.inputField.text = customObject.polygonShape.Radius.ToString();
+                        radius.SetInteractible(!EditorConfig.Instance.AutoPolygonRadius.Value);
+                        if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                        {
+                            radius.inputField.onValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float num))
+                                {
+                                    num = Mathf.Clamp(num, 0.1f, 10f);
+                                    customObject.polygonShape.Radius = num;
+
+                                    PlayerManager.UpdatePlayerModels();
+                                }
+                            });
+
+                            TriggerHelper.IncreaseDecreaseButtons(radius, min: 0.1f, max: 10f);
+                            TriggerHelper.AddEventTriggers(radius.inputField.gameObject, TriggerHelper.ScrollDelta(radius.inputField, min: 0.1f, max: 10f));
+                        }
+
+                        var contextMenu = radius.inputField.gameObject.GetOrAddComponent<ContextClickable>();
+                        contextMenu.onClick = eventData =>
+                        {
+                            if (eventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            var buttonFunctions = new List<ButtonFunction>()
+                            {
+                                new ButtonFunction($"Auto Assign Radius [{(EditorConfig.Instance.AutoPolygonRadius.Value ? "On" : "Off")}]", () =>
+                                {
+                                    EditorConfig.Instance.AutoPolygonRadius.Value = !EditorConfig.Instance.AutoPolygonRadius.Value;
+                                    RenderShape(ui);
+                                })
+                            };
+                            if (!EditorConfig.Instance.AutoPolygonRadius.Value)
+                            {
+                                buttonFunctions.Add(new ButtonFunction("Set to Triangle Radius", () =>
+                                {
+                                    customObject.polygonShape.Radius = PolygonShape.TRIANGLE_RADIUS;
+
+                                    PlayerManager.UpdatePlayerModels();
+                                }));
+                                buttonFunctions.Add(new ButtonFunction("Set to Square Radius", () =>
+                                {
+                                    customObject.polygonShape.Radius = PolygonShape.SQUARE_RADIUS;
+
+                                    PlayerManager.UpdatePlayerModels();
+                                }));
+                                buttonFunctions.Add(new ButtonFunction("Set to Normal Radius", () =>
+                                {
+                                    customObject.polygonShape.Radius = PolygonShape.NORMAL_RADIUS;
+
+                                    PlayerManager.UpdatePlayerModels();
+                                }));
+                            }
+
+                            EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                        };
 
                         var sides = shapeSettings.Find("10/sides").gameObject.GetComponent<InputFieldStorage>();
                         sides.inputField.onValueChanged.ClearAll();
@@ -3121,6 +3184,11 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 num = Mathf.Clamp(num, 3, 32);
                                 customObject.polygonShape.Sides = num;
+                                if (EditorConfig.Instance.AutoPolygonRadius.Value)
+                                {
+                                    customObject.polygonShape.Radius = customObject.polygonShape.GetAutoRadius();
+                                    RenderShape(ui);
+                                }
 
                                 PlayerManager.UpdatePlayerModels();
                             }
