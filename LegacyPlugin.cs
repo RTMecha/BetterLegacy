@@ -90,6 +90,7 @@ namespace BetterLegacy
                 LegacyResources.GetKinoGlitch();
                 LegacyResources.GetObjectMaterials();
                 LegacyResources.GetGUIAssets();
+                LegacyResources.GetEffects();
                 
                 LockSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
                 EmptyObjectSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
