@@ -210,74 +210,6 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
-        #region Level Difficulties
-
-        /// <summary>
-        /// Sets the challenge mode.
-        /// </summary>
-        /// <param name="mode">Mode to set.</param>
-        public static void SetChallengeMode(ChallengeMode mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", (int)mode);
-
-        /// <summary>
-        /// Sets the challenge mode.
-        /// </summary>
-        /// <param name="mode">Mode to set.</param>
-        public static void SetChallengeMode(int mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", mode);
-
-        /// <summary>
-        /// Challenge mode the level should use.
-        /// </summary>
-        public static ChallengeMode ChallengeMode => (ChallengeMode)DataManager.inst.GetSettingInt("ArcadeDifficulty", 0);
-
-        /// <summary>
-        /// Players take no damage.
-        /// </summary>
-        public static bool IsZenMode => ChallengeMode == ChallengeMode.ZenMode;
-        /// <summary>
-        /// Players take damage and can die if health hits zero.
-        /// </summary>
-        public static bool IsNormal => ChallengeMode == ChallengeMode.Normal;
-        /// <summary>
-        /// Players take damage and only have 1 life. When they die, restart the level.
-        /// </summary>
-        public static bool Is1Life => ChallengeMode == ChallengeMode.OneLife;
-        /// <summary>
-        /// Players take damage and only have 1 health. When they die, restart the level.
-        /// </summary>
-        public static bool IsNoHit => ChallengeMode == ChallengeMode.OneHit;
-        /// <summary>
-        /// Players take damage but lose health and don't die.
-        /// </summary>
-        public static bool IsPractice => ChallengeMode == ChallengeMode.Practice;
-
-        /// <summary>
-        /// Names of the challenge modes.
-        /// </summary>
-        public static string[] ChallengeModeNames => new string[] { "ZEN", "NORMAL", "ONE LIFE", "ONE HIT", "PRACTICE" };
-
-        /// <summary>
-        /// If the player is invincible.
-        /// </summary>
-        public static bool Invincible => CoreHelper.InEditor ? (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) : IsZenMode;
-
-        /// <summary>
-        /// Customizable game speeds.
-        /// </summary>
-        public static float[] GameSpeeds => new float[] { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
-
-        /// <summary>
-        /// The current game speed index.
-        /// </summary>
-        public static int ArcadeGameSpeed => DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2);
-
-        /// <summary>
-        /// Sets the current game speed index.
-        /// </summary>
-        /// <param name="speed">Game speed index.</param>
-        public static void SetGameSpeed(int speed) => DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", speed);
-
-        #endregion
-
         #region Spawning
 
         /// <summary>
@@ -338,7 +270,7 @@ namespace BetterLegacy.Core.Managers
         public static void SpawnPlayer(CustomPlayer customPlayer, Vector3 pos)
         {
             if (customPlayer.PlayerModel && customPlayer.PlayerModel.basePart)
-                customPlayer.Health = IsNoHit ? 1 : customPlayer.PlayerModel.basePart.health;
+                customPlayer.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : customPlayer.PlayerModel.basePart.health;
 
             var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(GameManager.inst.players.transform, "Player " + (customPlayer.index + 1));
             gameObject.layer = 8;
@@ -390,20 +322,22 @@ namespace BetterLegacy.Core.Managers
 
             player.SetPath(pos);
 
-            if (Is1Life || IsNoHit)
+            if (RTBeatmap.Current.challengeMode.Lives > 0)
             {
                 player.playerDeathEvent += _val =>
                 {
                     if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.Alive)))
                     {
-                        RTGameManager.inst.ResetCheckpoint();
+                        RTBeatmap.Current.lives--;
 
-                        // todo: implement hits to editor
-                        if (!CoreHelper.InEditor)
+                        if (RTBeatmap.Current.OutOfLives) // reset checkpoint and deaths when out of lives
                         {
-                            GameManager.inst.hits.Clear();
-                            GameManager.inst.deaths.Clear();
+                            RTGameManager.inst.ResetCheckpoint();
+
+                            RTBeatmap.Current.hits.Clear();
+                            RTBeatmap.Current.deaths.Clear();
                         }
+
                         GameManager.inst.gameState = GameManager.State.Reversing;
                     }
                 };
@@ -422,7 +356,7 @@ namespace BetterLegacy.Core.Managers
                 player.playerDeathEvent += _val =>
                 {
                     if (!CoreHelper.InEditor)
-                        GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(_val, GameManager.inst.UpcomingCheckpointIndex, AudioManager.inst.CurrentAudioSource.time));
+                        RTBeatmap.Current.deaths.Add(new PlayerDataPoint(_val));
                     else
                         AchievementManager.inst.UnlockAchievement("death_hd");
                 };
@@ -430,7 +364,7 @@ namespace BetterLegacy.Core.Managers
                 if (!CoreHelper.InEditor)
                     player.playerHitEvent += (int _health, Vector3 _val) =>
                     {
-                        GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(_val, GameManager.inst.UpcomingCheckpointIndex, AudioManager.inst.CurrentAudioSource.time));
+                        RTBeatmap.Current.hits.Add(new PlayerDataPoint(_val));
                     };
             }
 

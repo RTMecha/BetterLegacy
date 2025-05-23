@@ -1379,9 +1379,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[i];
-                var levelRank = LevelManager.GetLevelRank(level);
+                var rank = LevelManager.GetLevelRank(level);
 
-                var isSSRank = levelRank.name == "SS";
+                var isSSRank = rank == Rank.SS;
 
                 MenuImage shine = null;
 
@@ -1516,7 +1516,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Difficulty",
                     parent = level.id,
                     rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color,
+                    overrideColor = level.metadata.song.DifficultyType.Color,
                     useOverrideColor = true,
                     opacity = 1f,
                     roundedSide = SpriteHelper.RoundedSide.Left,
@@ -1524,15 +1524,15 @@ namespace BetterLegacy.Arcade.Interfaces
                     wait = false,
                 });
 
-                if (levelRank.name != "-")
+                if (rank != Rank.Null)
                     elements.Add(new MenuText
                     {
                         id = "0",
                         name = "Rank",
                         parent = level.id,
-                        text = $"<size=70><b><align=center>{levelRank.name}",
+                        text = $"<size=70><b><align=center>{rank.Name}",
                         rect = RectValues.Default.AnchoredPosition(65f, 25f).SizeDelta(64f, 64f),
-                        overrideTextColor = levelRank.color,
+                        overrideTextColor = rank.Color,
                         useOverrideTextColor = true,
                         hideBG = true,
                         length = 0f,
@@ -1709,7 +1709,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 name = "Difficulty",
                                 parent = id,
                                 rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                                overrideColor = CoreHelper.GetDifficulty(difficulty).color,
+                                overrideColor = CustomEnumHelper.GetValueOrDefault(difficulty, DifficultyType.Unknown).Color,
                                 useOverrideColor = true,
                                 opacity = 1f,
                                 roundedSide = SpriteHelper.RoundedSide.Left,
@@ -1863,7 +1863,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                 if (Level.TryVerify(folder, true, out Level level))
                 {
-                    var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
+                    var isSSRank = LevelManager.GetLevelRank(level) == Rank.SS;
 
                     MenuImage shine = null;
 
@@ -1931,7 +1931,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         name = "Difficulty",
                         parent = level.id,
                         rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                        overrideColor = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color,
+                        overrideColor = level.metadata.song.DifficultyType.Color,
                         useOverrideColor = true,
                         opacity = 1f,
                         roundedSide = SpriteHelper.RoundedSide.Left,
@@ -2074,7 +2074,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                 var level = levels[index];
 
-                var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
+                var isSSRank = LevelManager.GetLevelRank(level) == Rank.SS;
 
                 MenuImage shine = null;
 
@@ -2148,7 +2148,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Difficulty",
                     parent = level.id,
                     rect = new RectValues(new Vector2(0f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color,
+                    overrideColor = level.metadata.song.DifficultyType.Color,
                     useOverrideColor = true,
                     opacity = 1f,
                     roundedSide = SpriteHelper.RoundedSide.Left,
@@ -2351,9 +2351,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[index];
-                var levelRank = LevelManager.GetLevelRank(level);
+                var rank = LevelManager.GetLevelRank(level);
 
-                var isSSRank = levelRank.name == "SS";
+                var isSSRank = rank == Rank.SS;
 
                 MenuImage shine = null;
 
@@ -2422,7 +2422,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Difficulty",
                     parent = level.id,
                     rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color,
+                    overrideColor = level.metadata.song.DifficultyType.Color,
                     useOverrideColor = true,
                     opacity = 1f,
                     roundedSide = SpriteHelper.RoundedSide.Left,
@@ -2430,15 +2430,15 @@ namespace BetterLegacy.Arcade.Interfaces
                     wait = false,
                 });
 
-                if (levelRank.name != "-")
+                if (rank != Rank.Null)
                     elements.Add(new MenuText
                     {
                         id = "0",
                         name = "Rank",
                         parent = level.id,
-                        text = $"<size=70><b><align=center>{levelRank.name}",
+                        text = $"<size=70><b><align=center>{rank.Name}",
                         rect = RectValues.Default.AnchoredPosition(65f, 25f).SizeDelta(64f, 64f),
-                        overrideTextColor = levelRank.color,
+                        overrideTextColor = rank.Color,
                         useOverrideTextColor = true,
                         hideBG = true,
                         length = 0f,

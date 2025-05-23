@@ -2804,7 +2804,7 @@ namespace BetterLegacy.Core.Helpers
         public static bool GetLevelRank(Level level, out int levelRankIndex)
         {
             var active = level && level.saveData;
-            levelRankIndex = active ? LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] : 0;
+            levelRankIndex = active ? LevelManager.GetLevelRank(level) : 0;
             return active;
         }
 

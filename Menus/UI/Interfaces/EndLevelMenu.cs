@@ -10,6 +10,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 
@@ -44,18 +45,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
             int prevHits = LevelManager.CurrentLevel.saveData ? LevelManager.CurrentLevel.saveData.Hits : -1;
 
             CoreHelper.Log($"Setting More Info");
-            var hitsNormalized = LevelManager.GetHitsNormalized(GameManager.inst.hits);
+            var hitsNormalized = LevelManager.GetHitsNormalized(RTBeatmap.Current.hits);
             CoreHelper.Log($"Setting Level Ranks");
-            var levelRank = DataManager.inst.levelRanks.Find(x => hitsNormalized.Sum() >= x.minHits && hitsNormalized.Sum() <= x.maxHits);
-            var prevLevelRank = DataManager.inst.levelRanks.Find(x => prevHits >= x.minHits && prevHits <= x.maxHits);
+            var rank = Rank.Null.TryGetValue(x => hitsNormalized.Sum() >= x.MinHits && hitsNormalized.Sum() <= x.MaxHits, out Rank _rank) ? _rank : Rank.Null;
+            var prevLevelRank = Rank.Null.TryGetValue(x => prevHits >= x.MinHits && prevHits <= x.MaxHits, out Rank _prevRank) ? _prevRank : Rank.Null;
 
-            if (PlayerManager.IsZenMode)
+            if (!RTBeatmap.Current.challengeMode.Damageable)
             {
-                levelRank = DataManager.inst.levelRanks.Find(x => x.name == "-");
-                prevLevelRank = null;
+                rank = Rank.Null;
+                prevLevelRank = Rank.Null;
             }
 
-            AchievementManager.inst.CheckLevelEndAchievements(metadata, levelRank);
+            AchievementManager.inst.CheckLevelEndAchievements(metadata, rank);
 
             CoreHelper.Log($"Setting End UI");
             string easy = LSColors.GetThemeColorHex("easy");
@@ -120,24 +121,24 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 {
                     text = "<voffset=0.6em>" + text;
 
-                    if (prevHits > GameManager.inst.hits.Count && prevLevelRank != null)
-                        text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(prevLevelRank)}<size=150%> <voffset=0.325em><b>-></b> <voffset=0em><size=300%>{RTString.FormatLevelRank(levelRank)}";
+                    if (prevHits > RTBeatmap.Current.hits.Count && prevLevelRank != Rank.Null)
+                        text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(prevLevelRank)}<size=150%> <voffset=0.325em><b>-></b> <voffset=0em><size=300%>{RTString.FormatLevelRank(rank)}";
                     else
-                        text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(levelRank)}";
+                        text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(rank)}";
                 }
 
                 if (line == 7)
-                    text = "<voffset=0.6em>" + text + $"       <voffset=0em><size=300%><color=#{LSColors.ColorToHex(levelRank.color)}><b>{LevelManager.CalculateAccuracy(GameManager.inst.hits.Count, AudioManager.inst.CurrentAudioSource.clip.length)}%</b></color>";
+                    text = "<voffset=0.6em>" + text + $"       <voffset=0em><size=300%><color=#{LSColors.ColorToHex(rank.Color)}><b>{LevelManager.CalculateAccuracy(RTBeatmap.Current.hits.Count, AudioManager.inst.CurrentAudioSource.clip.length)}%</b></color>";
                 if (line == 9)
-                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You died a total of {GameManager.inst.deaths.Count} times.</b></color>";
+                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You died a total of {RTBeatmap.Current.deaths.Count} times.</b></color>";
                 if (line == 10)
-                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You got hit a total of {GameManager.inst.hits.Count} times</b></color>";
+                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You got hit a total of {RTBeatmap.Current.hits.Count} times</b></color>";
                 if (line == 11)
-                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You boosted a total of {LevelManager.BoostCount} times</b></color>";
+                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You boosted a total of {RTBeatmap.Current.boosts.Count} times</b></color>";
                 if (line == 12)
                     text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>Song length is {RTString.SecondsToTime(AudioManager.inst.CurrentAudioSource.clip.length)}</b></color>";
                 if (line == 13)
-                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You spent {RTString.SecondsToTime(LevelManager.timeInLevel)} in the level.</b></color>";
+                    text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You spent {RTString.SecondsToTime(RTBeatmap.Current.levelTimer.time)} in the level.</b></color>";
 
                 elements.Add(new MenuText
                 {
@@ -155,10 +156,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
 
             if (Example.Current && Example.Current.model && Example.Current.model.Visible)
-                Example.Current.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.END_LEVEL_SCREEN, new LevelDialogueParameters(LevelManager.CurrentLevel, levelRank.GetEnum()));
+                Example.Current.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.END_LEVEL_SCREEN, new LevelDialogueParameters(LevelManager.CurrentLevel, rank));
             else
             {
-                var sayings = LSText.WordWrap(levelRank.sayings[Random.Range(0, levelRank.sayings.Length)], 32);
+                var rankSayings = metadata && metadata.customSayings.TryGetValue(rank, out string[] customSayings) ? customSayings : LegacyResources.sayings[rank];
+                var sayings = LSText.WordWrap(rankSayings[Random.Range(0, rankSayings.Length)], 32);
                 layouts.Add("sayings", new MenuVerticalLayout
                 {
                     name = "sayings",
@@ -183,7 +185,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
 
             var nextLevel = LevelManager.NextLevelInCollection;
-            if (LevelManager.CurrentLevelCollection && (metadata.song.DifficultyType == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !PlayerManager.IsZenMode && !PlayerManager.IsPractice || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
+            if (LevelManager.CurrentLevelCollection && (metadata.song.DifficultyType == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !RTBeatmap.Current.challengeMode.Invincible || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
             {
                 if (nextLevel)
                     CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");

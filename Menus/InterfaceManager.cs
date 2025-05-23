@@ -1069,8 +1069,7 @@ namespace BetterLegacy.Menus
                             chapter < levelIDs.Count &&
                             levelIDs[chapter].levels.All(x => x.bonus ||
                                             StoryManager.inst.CurrentSave.Saves.TryFind(y => y.ID == x.id, out SaveData playerData) &&
-                                            LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= maxRank &&
-                                            LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= minRank);
+                                            LevelManager.GetLevelRank(playerData) >= maxRank && LevelManager.GetLevelRank(playerData) <= minRank);
 
                         return !not ? value : !value;
                     }
@@ -1079,7 +1078,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
                             break;
 
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] == (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LevelRankLesserEquals":
@@ -1087,7 +1086,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
                             break;
 
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] <= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LevelRankGreaterEquals":
@@ -1095,7 +1094,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
                             break;
 
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] >= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LevelRankLesser":
@@ -1103,7 +1102,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
                             break;
 
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] < (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LevelRankGreater":
@@ -1111,7 +1110,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
                             break;
 
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] > (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankEquals":
@@ -1122,7 +1121,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankLesserEquals":
@@ -1133,7 +1132,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankGreaterEquals":
@@ -1144,7 +1143,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankLesser":
@@ -1155,7 +1154,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelRankGreater":
@@ -1166,7 +1165,7 @@ namespace BetterLegacy.Menus
                         var isArray = parameters.IsArray;
                         var id = isArray ? parameters[0].Value : parameters["id"].Value;
 
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
                         return !not ? value : !value;
                     }
                     #endregion

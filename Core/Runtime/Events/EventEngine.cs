@@ -1391,7 +1391,7 @@ namespace BetterLegacy.Core.Runtime.Events
         {
             var active = (int)x == 0;
 
-            var zen = !CoreHelper.InStory && (PlayerManager.IsZenMode || CoreHelper.InEditor);
+            var zen = !CoreHelper.InStory && (!RTBeatmap.Current.challengeMode.Damageable || CoreHelper.InEditor);
 
             var a = active && !zen || active && EventsConfig.Instance.ShowGUI.Value;
 
@@ -1467,7 +1467,7 @@ namespace BetterLegacy.Core.Runtime.Events
         #region Audio - 25
 
         // 25 - 0
-        void UpdateAudioPitch(float x) => AudioManager.inst.pitch = Mathf.Clamp(x, 0.001f, 10f) * CoreHelper.Pitch * pitchOffset;
+        void UpdateAudioPitch(float x) => AudioManager.inst.pitch = Mathf.Clamp(x, 0.001f, 10f) * RTBeatmap.Current.Pitch * pitchOffset;
 
         // 25 - 1
         void UpdateAudioVolume(float x) => audioVolume = Mathf.Clamp(x, 0f, 1f);

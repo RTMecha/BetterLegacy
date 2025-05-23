@@ -194,13 +194,13 @@ namespace BetterLegacy.Arcade.Interfaces
                 length = 0.5f,
             });
 
-            var difficulty = CoreHelper.GetDifficulty(jn["difficulty"].AsInt);
+            var difficulty = CustomEnumHelper.GetValueOrDefault(jn["difficulty"].AsInt, DifficultyType.Unknown);
             elements.Add(new MenuText
             {
                 id = "4624859539",
                 name = "Difficulty",
                 rect = RectValues.Default.AnchoredPosition(-100f, 90f),
-                text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
+                text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.Color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.DisplayName}",
                 hideBG = true,
                 textColor = 6,
             });

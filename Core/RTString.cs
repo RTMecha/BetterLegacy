@@ -13,6 +13,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 using BetterLegacy.Story;
 
@@ -265,11 +266,11 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Formats a <see cref="DataManager.LevelRank"/> to have the proper style and color.
+        /// Formats a <see cref="Rank"/> to have the proper style and color.
         /// </summary>
-        /// <param name="levelRank">Level Rank to format.</param>
+        /// <param name="rank">Rank to format.</param>
         /// <returns>Returns a formatted Level Rank.</returns>
-        public static string FormatLevelRank(DataManager.LevelRank levelRank) => $"<#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
+        public static string FormatLevelRank(Rank rank) => $"<#{LSColors.ColorToHex(rank.Color)}><b>{rank.DisplayName}</b></color>";
 
         /// <summary>
         /// Custom text formatting.
@@ -481,17 +482,17 @@ namespace BetterLegacy.Core
             }
 
             if (str.Contains("<deathCount>"))
-                str = str.Replace("<deathCount>", GameManager.inst.deaths.Count.ToString());
+                str = str.Replace("<deathCount>", RTBeatmap.Current.deaths.Count.ToString());
 
             if (str.Contains("<hitCount>"))
             {
-                var pd = GameManager.inst.hits.Count;
+                var pd = RTBeatmap.Current.hits.Count;
 
                 str = str.Replace("<hitCount>", pd.ToString());
             }
 
             if (str.Contains("<boostCount>"))
-                str = str.Replace("<boostCount>", LevelManager.BoostCount.ToString());
+                str = str.Replace("<boostCount>", RTBeatmap.Current.boosts.Count.ToString());
 
             #endregion
 
@@ -570,53 +571,53 @@ namespace BetterLegacy.Core
 
             if (str.Contains("<levelRank>"))
             {
-                var levelRank =
+                var rank =
                     !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
                         LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
+                        Rank.Null;
 
-                str = str.Replace("<levelRank>", FormatLevelRank(levelRank));
+                str = str.Replace("<levelRank>", FormatLevelRank(rank));
             }
 
             if (str.Contains("<levelRankName>"))
             {
-                var levelRank =
+                var rank =
                     !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
                         LevelManager.GetLevelRank(LevelManager.CurrentLevel) :
-                        DataManager.inst.levelRanks[0];
+                        Rank.Null;
 
-                str = str.Replace("<levelRankName>", levelRank.name);
+                str = str.Replace("<levelRankName>", rank.DisplayName);
             }
 
             if (str.Contains("<levelRankColor>"))
             {
-                var levelRank =
+                var rank =
                     !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
                         LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
+                        Rank.Null;
 
-                str = str.Replace("<levelRankColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                str = str.Replace("<levelRankColor>", $"<color=#{LSColors.ColorToHex(rank.Color)}>");
             }
 
             if (str.Contains("<levelRankCurrent>"))
             {
-                var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : LevelManager.EditorRank;
 
-                str = str.Replace("<levelRankCurrent>", FormatLevelRank(levelRank));
+                str = str.Replace("<levelRankCurrent>", FormatLevelRank(rank));
             }
 
             if (str.Contains("<levelRankCurrentName>"))
             {
-                var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : LevelManager.EditorRank;
 
-                str = str.Replace("<levelRankCurrentName>", levelRank.name);
+                str = str.Replace("<levelRankCurrentName>", rank.DisplayName);
             }
 
             if (str.Contains("<levelRankCurrentColor>"))
             {
-                var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : LevelManager.EditorRank;
 
-                str = str.Replace("<levelRankCurrentColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                str = str.Replace("<levelRankCurrentColor>", $"<color=#{LSColors.ColorToHex(rank.Color)}>");
             }
 
             // Level Rank Other
@@ -624,42 +625,42 @@ namespace BetterLegacy.Core
                 if (str.Contains("levelRankOther"))
                     RegexMatches(str, new Regex(@"<levelRankOther=([0-9]+)>"), match =>
                     {
-                        DataManager.LevelRank levelRank;
+                        Rank rank;
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
-                            levelRank = LevelManager.GetLevelRank(level);
+                            rank = LevelManager.GetLevelRank(level);
                         else
-                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                            rank = CoreHelper.InEditor ? LevelManager.EditorRank : Rank.Null;
 
-                        str = str.Replace(match.Groups[0].ToString(), FormatLevelRank(levelRank));
+                        str = str.Replace(match.Groups[0].ToString(), FormatLevelRank(rank));
                     });
 
                 if (str.Contains("levelRankOtherName"))
                     RegexMatches(str, new Regex(@"<levelRankOtherName=([0-9]+)>"), match =>
                     {
-                        DataManager.LevelRank levelRank;
+                        Rank rank;
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
-                            levelRank = LevelManager.GetLevelRank(level);
+                            rank = LevelManager.GetLevelRank(level);
                         else
-                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                            rank = CoreHelper.InEditor ? LevelManager.EditorRank : Rank.Null;
 
-                        str = str.Replace(match.Groups[0].ToString(), levelRank.name);
+                        str = str.Replace(match.Groups[0].ToString(), rank.DisplayName);
                     });
 
                 if (str.Contains("levelRankOtherColor"))
                     RegexMatches(str, new Regex(@"<levelRankOtherColor=([0-9]+)>"), match =>
                     {
-                        DataManager.LevelRank levelRank;
+                        Rank rank;
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
-                            levelRank = LevelManager.GetLevelRank(level);
+                            rank = LevelManager.GetLevelRank(level);
                         else
-                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                            rank = CoreHelper.InEditor ? LevelManager.EditorRank : Rank.Null;
 
-                        str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                        str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(rank.Color)}>");
                     });
             }
 
             if (str.Contains("<accuracy>"))
-                str = str.Replace("<accuracy>", $"{LevelManager.CalculateAccuracy(GameManager.inst.hits.Count, AudioManager.inst.CurrentAudioSource.clip.length)}");
+                str = str.Replace("<accuracy>", $"{LevelManager.CalculateAccuracy(RTBeatmap.Current.hits.Count, AudioManager.inst.CurrentAudioSource.clip.length)}");
 
             #endregion
 
@@ -697,24 +698,24 @@ namespace BetterLegacy.Core
         {
             RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
             {
-                DataManager.LevelRank levelRank =
+                Rank rank =
                     LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
                     CoreHelper.InEditor ?
                         LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
+                        Rank.Null;
 
-                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
+                input = input.Replace(match.Groups[0].ToString(), FormatLevelRank(rank));
             });
 
             RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
             {
-                DataManager.LevelRank levelRank =
+                Rank rankType =
                     StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out SaveData playerData) ? LevelManager.GetLevelRank(playerData) :
                     CoreHelper.InEditor ?
                         LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
+                        Rank.Null;
 
-                input = input.Replace(match.Groups[0].ToString(), FormatLevelRank(levelRank));
+                input = input.Replace(match.Groups[0].ToString(), FormatLevelRank(rankType));
             });
 
             RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>

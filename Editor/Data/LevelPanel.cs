@@ -306,12 +306,9 @@ namespace BetterLegacy.Editor.Data
             folderButtonStorage.label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
             folderButtonStorage.label.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
 
-            var difficultyColor = metadata.song.difficulty >= 0 && metadata.song.difficulty < DataManager.inst.difficulties.Count ?
-                DataManager.inst.difficulties[metadata.song.difficulty].color : LSColors.themeColors["none"].color;
-
             gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
-                desc = "<#" + LSColors.ColorToHex(difficultyColor) + ">" + metadata.artist.Name + " - " + metadata.song.title,
+                desc = "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.Name + " - " + metadata.song.title,
                 hint = "</color>" + metadata.song.description
             });
 
@@ -435,8 +432,7 @@ namespace BetterLegacy.Editor.Data
 
             var metadata = Level.metadata;
 
-            TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.difficulty >= 0 && metadata.song.difficulty < DataManager.inst.difficulties.Count ?
-                DataManager.inst.difficulties[metadata.song.difficulty].color : LSColors.themeColors["none"].color) + ">" + metadata.artist.Name + " - " + metadata.song.title,
+            TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.Name + " - " + metadata.song.title,
                 $"</color><br>Folder: {Level.FolderName}<br>Date Edited: {metadata.beatmap.date_edited}<br>Date Created: {metadata.beatmap.date_created}<br>Description: {metadata.song.description}");
         }
 

@@ -262,6 +262,15 @@ namespace BetterLegacy
         public static T GetValueOrDefault<T>(int index, T defaultValue) where T : ICustomEnum<T>, new() => TryGetValue(index, out T result) ? result : defaultValue;
 
         /// <summary>
+        /// Gets a matching enum value from the <see cref="ICustomEnum{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="match">Predicate match.</param>
+        /// <param name="defaultValue">Default value to return if no values were found.</param>
+        /// <returns>Returns the found custom enum value, or the default if no matching values were found..</returns>
+        public static T GetValueOrDefault<T>(System.Predicate<T> match, T defaultValue) where T : ICustomEnum<T>, new() => TryGetValue(match, out T result) ? result : defaultValue;
+
+        /// <summary>
         /// Checks if an item is in the range of enum values.
         /// </summary>
         /// <param name="customEnum">Custom enum reference.</param>
@@ -312,6 +321,48 @@ namespace BetterLegacy
             return false;
         }
 
+        public static bool TryGetValue<T>(System.Predicate<T> match, out T result) where T: ICustomEnum<T>, new()
+        {
+            var values = GetValues<T>();
+            for (int i = 0; i < values.Length; i++)
+            {
+                var value = values[i];
+                if (match(value))
+                {
+                    result = value;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get an enum value from a match.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="customEnum">Custom enum reference.</param>
+        /// <param name="match">Predicate match.</param>
+        /// <param name="result">Found enum value.</param>
+        /// <returns>Returns true if an enum value was found, otherwise returns false.</returns>
+        public static bool TryGetValue<T>(this ICustomEnum<T> customEnum, System.Predicate<T> match, out T result)
+        {
+            var values = customEnum.GetValues();
+            for (int i = 0; i < values.Length; i++)
+            {
+                var value = values[i];
+                if (match(value))
+                {
+                    result = value;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
         /// <summary>
         /// Adds a custom enum value.
         /// </summary>
@@ -343,6 +394,24 @@ namespace BetterLegacy
         /// <param name="customEnum">Custom enum type.</param>
         /// <returns>Returns the amount of values a custom enum has.</returns>
         public static int GetCount(ICustomEnum customEnum) => customEnum.Count;
+
+        public static string[] GetNames(this ICustomEnum customEnum)
+        {
+            var values = customEnum.GetBoxedValues();
+            var names = new string[values.Length];
+            for (int i = 0; i < values.Length; i++)
+                names[i] = values[i].Name;
+            return names;
+        }
+        
+        public static string[] GetDisplayNames(this ICustomEnum customEnum)
+        {
+            var values = customEnum.GetBoxedValues();
+            var names = new string[values.Length];
+            for (int i = 0; i < values.Length; i++)
+                names[i] = values[i].DisplayName;
+            return names;
+        }
 
         /// <summary>
         /// Compares two custom enum values and checks if they match.
@@ -1161,43 +1230,120 @@ namespace BetterLegacy
         #endregion
     }
 
-    /// <summary>
-    /// Rank that is awarded depending on how many hits you have. 0 hits is SS and 16+ hits is F.
-    /// </summary>
-    public enum Rank
+    public class Rank : Exists, ICustomEnum<Rank>
     {
+        public Rank() { }
+
+        public Rank(int ordinal, string name, Color color, int minHits, int maxHits)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = name;
+            Color = color;
+            MinHits = minHits;
+            MaxHits = maxHits;
+        }
+
+        public Rank(int ordinal, string name, string displayName, Color color, int minHits, int maxHits)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = displayName;
+            Color = color;
+            MinHits = minHits;
+            MaxHits = maxHits;
+        }
+
+        #region Enum Values
+
         /// <summary>
         /// Does not set a rank.
         /// </summary>
-        Null,
+        public static readonly Rank Null = new(0, nameof(Null), "-", RTColors.HexToColor("424242"), -1, -1);
         /// <summary>
         /// 0 hits.
         /// </summary>
-        SS,
+        public static readonly Rank SS = new(1, nameof(SS), RTColors.HexToColor("29B6F6"), 0, 0);
         /// <summary>
         /// 1 hit.
         /// </summary>
-        S,
+        public static readonly Rank S = new(2, nameof(S), RTColors.HexToColor("9CCC65"), 1, 1);
         /// <summary>
         /// 2 to 3 hits.
         /// </summary>
-        A,
+        public static readonly Rank A = new(3, nameof(A), RTColors.HexToColor("9CCC65"), 2, 3);
         /// <summary>
         /// 4 to 6 hits.
         /// </summary>
-        B,
+        public static readonly Rank B = new(4, nameof(B), RTColors.HexToColor("FFB039"), 4, 6);
         /// <summary>
         /// 7 to 9 hits.
         /// </summary>
-        C,
+        public static readonly Rank C = new(5, nameof(C), RTColors.HexToColor("FFB039"), 7, 9);
         /// <summary>
         /// 10 to 15 hits.
         /// </summary>
-        D,
+        public static readonly Rank D = new(6, nameof(D), RTColors.HexToColor("E47272"), 10, 15);
         /// <summary>
         /// 16+ hits.
         /// </summary>
-        F
+        public static readonly Rank F = new(7, nameof(F), RTColors.HexToColor("E47272"), 16, int.MaxValue);
+
+        static Rank[] ENUMS = new Rank[] { Null, SS, S, A, B, C, D, F };
+
+        #endregion
+
+        public int Ordinal { get; }
+        public string Name { get; }
+        public Lang DisplayName { get; }
+
+        public Color Color { get; }
+
+        public int MinHits { get; }
+
+        public int MaxHits { get; }
+
+        #region Implementation
+
+        public int Count => ENUMS.Length;
+
+        public Rank[] GetValues() => ENUMS;
+
+        public Rank GetValue(int index) => ENUMS[index];
+
+        public void SetValues(Rank[] values) => ENUMS = values;
+
+        public ICustomEnum[] GetBoxedValues() => ENUMS;
+
+        public ICustomEnum GetBoxedValue(int index) => ENUMS[index];
+
+        public ICustomEnum GetBoxedValue(string name) => ENUMS.First(x => x.Name == name);
+
+        public bool InRange(int index) => ENUMS.InRange(index);
+
+        #endregion
+
+        #region Comparison
+
+        public override bool Equals(object obj) => obj is Rank other && Ordinal == other.Ordinal && Name == other.Name && DisplayName == other.DisplayName && MinHits == other.MinHits && MaxHits == other.MaxHits;
+
+        public override int GetHashCode() => Core.Helpers.CoreHelper.CombineHashCodes(Ordinal, Name, DisplayName, Color.r, Color.g, Color.b, Color.a, MinHits, MaxHits);
+
+        public override string ToString() => $"Ordinal: {Ordinal} Name: {Name} Display Name: {DisplayName}";
+
+        public static implicit operator int(Rank value) => value.Ordinal;
+
+        public static implicit operator string(Rank value) => value.Name;
+
+        public static implicit operator Rank(int value) => CustomEnumHelper.GetValue<Rank>(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(Rank a, Rank b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(Rank a, Rank b) => !(a == b);
+
+        #endregion
     }
 
     /// <summary>
@@ -1235,6 +1381,206 @@ namespace BetterLegacy
     }
 
     /// <summary>
+    /// Game speed / pitch setting.
+    /// </summary>
+    public class GameSpeed : Exists, ICustomEnum<GameSpeed>
+    {
+        public GameSpeed() { }
+
+        public GameSpeed(int ordinal, string name, float pitch)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = name;
+            Pitch = pitch;
+        }
+
+        public GameSpeed(int ordinal, string name, string displayName, float pitch)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = displayName;
+            Pitch = pitch;
+        }
+
+        #region Enum Values
+
+        public static readonly GameSpeed X0_1 = new(0, nameof(X0_1), "0.1x", 0.1f);
+        public static readonly GameSpeed X0_5 = new(1, nameof(X0_5), "0.5x", 0.5f);
+        public static readonly GameSpeed X0_8 = new(2, nameof(X0_8), "0.8x", 0.8f);
+        public static readonly GameSpeed X1_0 = new(3, nameof(X1_0), "1.0x", 1.0f);
+        public static readonly GameSpeed X1_2 = new(4, nameof(X1_2), "1.2x", 1.2f);
+        public static readonly GameSpeed X1_5 = new(5, nameof(X1_5), "1.5x", 1.5f);
+        public static readonly GameSpeed X2_0 = new(6, nameof(X2_0), "2.0x", 2.0f);
+
+        static GameSpeed[] ENUMS = new GameSpeed[] { X0_1, X0_5, X0_8, X1_0, X1_2, X1_5, X2_0 };
+
+        #endregion
+
+        public int Ordinal { get; }
+        public string Name { get; }
+        public Lang DisplayName { get; }
+
+        public float Pitch { get; }
+
+        #region Implementation
+
+        public int Count => ENUMS.Length;
+
+        public GameSpeed[] GetValues() => ENUMS;
+
+        public GameSpeed GetValue(int index) => ENUMS[index];
+
+        public void SetValues(GameSpeed[] values) => ENUMS = values;
+
+        public ICustomEnum[] GetBoxedValues() => ENUMS;
+
+        public ICustomEnum GetBoxedValue(int index) => ENUMS[index];
+
+        public ICustomEnum GetBoxedValue(string name) => ENUMS.First(x => x.Name == name);
+
+        public bool InRange(int index) => ENUMS.InRange(index);
+
+        #endregion
+
+        #region Comparison
+
+        public override bool Equals(object obj) => obj is GameSpeed other && Ordinal == other.Ordinal && Name == other.Name && DisplayName == other.DisplayName && Pitch == other.Pitch;
+
+        public override int GetHashCode() => Core.Helpers.CoreHelper.CombineHashCodes(Ordinal, Name, DisplayName, Pitch);
+
+        public override string ToString() => $"Ordinal: {Ordinal} Name: {Name} Display Name: {DisplayName}";
+
+        public static implicit operator int(GameSpeed value) => value.Ordinal;
+
+        public static implicit operator string(GameSpeed value) => value.Name;
+
+        public static implicit operator GameSpeed(int value) => CustomEnumHelper.GetValue<GameSpeed>(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(GameSpeed a, GameSpeed b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(GameSpeed a, GameSpeed b) => !(a == b);
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Custom challenge setting.
+    /// </summary>
+    public class ChallengeMode : Exists, ICustomEnum<ChallengeMode>
+    {
+        public ChallengeMode() { }
+
+        public ChallengeMode(int ordinal, string name, bool invincible, bool damageable, int defaultHealth, int lives) : this(ordinal, name, name, invincible, damageable, defaultHealth, lives) { }
+
+        public ChallengeMode(int ordinal, string name, string displayName, bool invincible, bool damageable, int defaultHealth, int lives)
+        {
+            Ordinal = ordinal;
+            Name = name;
+            DisplayName = displayName;
+            Invincible = invincible;
+            Damageable = damageable;
+            DefaultHealth = defaultHealth;
+            Lives = lives;
+        }
+
+        #region Enum Values
+
+        /// <summary>
+        /// No damage is taken.
+        /// </summary>
+        public static readonly ChallengeMode Zen = new(0, nameof(Zen), true, false, -1, -1);
+        /// <summary>
+        /// Damage is taken, but health is not subtracted so the Player will not die.
+        /// </summary>
+        public static readonly ChallengeMode Practice = new(1, nameof(Practice), true, true, -1, -1);
+        /// <summary>
+        /// Damage is taken and health is subtracted.
+        /// </summary>
+        public static readonly ChallengeMode Normal = new(2, nameof(Normal), false, true, -1, -1);
+        /// <summary>
+        /// The level restarts when all Players are dead.
+        /// </summary>
+        public static readonly ChallengeMode OneLife = new(3, nameof(OneLife), "1 Life", false, true, -1, 1);
+        /// <summary>
+        /// The level restarts when any Player takes damage.
+        /// </summary>
+        public static readonly ChallengeMode OneHit = new(4, nameof(OneHit), "1 Hit", false, true, 1, 1);
+
+        static ChallengeMode[] ENUMS = new ChallengeMode[] { Zen, Practice, Normal, OneLife, OneHit, };
+
+        #endregion
+
+        public int Ordinal { get; }
+        public string Name { get; }
+        public Lang DisplayName { get; }
+
+        /// <summary>
+        /// If the player's health is not subtracted when colliding with normal objects. If false, <see cref="Damageable"/> must be on for noticable affects.
+        /// </summary>
+        public bool Invincible { get; }
+
+        /// <summary>
+        /// If the player takes damage, but the health is not subtracted.
+        /// </summary>
+        public bool Damageable { get; }
+
+        /// <summary>
+        /// The default health the player spawns with. If set to -1, custom spawn health is allowed.
+        /// </summary>
+        public int DefaultHealth { get; }
+
+        /// <summary>
+        /// How many lives the player has until they have to restart the level. -1 represents infinite lives.
+        /// </summary>
+        public int Lives { get; }
+
+        #region Implementation
+
+        public int Count => ENUMS.Length;
+
+        public ChallengeMode[] GetValues() => ENUMS;
+
+        public ChallengeMode GetValue(int index) => ENUMS[index];
+
+        public void SetValues(ChallengeMode[] values) => ENUMS = values;
+
+        public ICustomEnum[] GetBoxedValues() => ENUMS;
+
+        public ICustomEnum GetBoxedValue(int index) => ENUMS[index];
+
+        public ICustomEnum GetBoxedValue(string name) => ENUMS.First(x => x.Name == name);
+
+        public bool InRange(int index) => ENUMS.InRange(index);
+
+        #endregion
+
+        #region Comparison
+
+        public override bool Equals(object obj) => obj is ChallengeMode other && Ordinal == other.Ordinal && Name == other.Name && DisplayName == other.DisplayName && Invincible == other.Invincible && Damageable == other.Damageable && DefaultHealth == other.DefaultHealth && Lives == other.Lives;
+
+        public override int GetHashCode() => Core.Helpers.CoreHelper.CombineHashCodes(Ordinal, Name, DisplayName, Invincible, Damageable, DefaultHealth, Lives);
+
+        public override string ToString() => $"Ordinal: {Ordinal} Name: {Name} Display Name: {DisplayName} Invincible: {Invincible} Damagable: {Damageable} Default Health: {DefaultHealth} Lives: {Lives}";
+
+        public static implicit operator int(ChallengeMode value) => value.Ordinal;
+
+        public static implicit operator string(ChallengeMode value) => value.Name;
+
+        public static implicit operator ChallengeMode(int value) => CustomEnumHelper.GetValue<ChallengeMode>(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(ChallengeMode a, ChallengeMode b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(ChallengeMode a, ChallengeMode b) => !(a == b);
+
+        #endregion
+    }
+
+    /// <summary>
     /// The type of shake to be used when playing a level.
     /// </summary>
     public enum ShakeType
@@ -1247,33 +1593,6 @@ namespace BetterLegacy
         /// Shake behavior based on Catalyst. Allows for the extra shake event values.
         /// </summary>
         Catalyst
-    }
-
-    /// <summary>
-    /// The challenge mode the user wants to play a level with.
-    /// </summary>
-    public enum ChallengeMode
-    {
-        /// <summary>
-        /// No damage is taken.
-        /// </summary>
-        ZenMode,
-        /// <summary>
-        /// Damage is taken.
-        /// </summary>
-        Normal,
-        /// <summary>
-        /// Player restarts the level when dead.
-        /// </summary>
-        OneLife,
-        /// <summary>
-        /// Player restarts the level when hit.
-        /// </summary>
-        OneHit,
-        /// <summary>
-        /// Damage is taken, but health is not subtracted so the Player will not die.
-        /// </summary>
-        Practice
     }
 
     /// <summary>

@@ -3670,7 +3670,7 @@ namespace BetterLegacy.Editor.Data
                         if (name.Contains("Other"))
                             StringGenerator(modifier, "ID", 1);
 
-                        DropdownGenerator(modifier, "Rank", 0, DataManager.inst.levelRanks.Select(x => x.name).ToList());
+                        DropdownGenerator(modifier, "Rank", 0, Rank.Null.GetNames().ToList());
 
                         break;
                     }

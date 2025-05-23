@@ -233,9 +233,6 @@ namespace BetterLegacy.Editor.Managers
                             //folderButtonStorage.text.verticalOverflow = verticalOverflow;
                             //folderButtonStorage.text.fontSize = fontSize;
 
-                            var difficultyColor = difficulty >= 0 && difficulty < DataManager.inst.difficulties.Count ?
-                                DataManager.inst.difficulties[difficulty].color : LSColors.themeColors["none"].color;
-
                             folderButtonStorage.button.onClick.ClearAll();
                             folderButtonFunction.onClick = eventData =>
                             {

@@ -1439,7 +1439,7 @@ namespace BetterLegacy.Configs
             LevelPausesOnStart = Bind(this, DATA, "Level Pauses on Start", false, "Editor pauses on level load.");
             BackupPreviousLoadedLevel = Bind(this, DATA, "Backup Previous Loaded Level", false, "Saves the previously loaded level when loading a different level to a level-previous.lsb file.");
             SettingPathReloads = Bind(this, DATA, "Setting Path Reloads", true, "With this setting on, update the list for levels, prefabs and themes when changing the directory.");
-            EditorRank = BindEnum(this, DATA, "Editor Rank", Rank.Null, "What rank should be used when displaying / calculating level rank while in the editor.");
+            EditorRank = Bind(this, DATA, "Editor Rank", Rank.Null, "What rank should be used when displaying / calculating level rank while in the editor.");
             CopyPasteGlobal = Bind(this, DATA, "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
             CombinerOutputFormat = BindEnum(this, DATA, "Combiner Output Format", ArrhythmiaType.LS, "Which PA file type the level combiner outputs.");
             SavingSavesThemeOpacity = Bind(this, DATA, "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");

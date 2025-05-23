@@ -22,6 +22,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Components;
 
@@ -435,7 +436,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanTakeDamage
         {
-            get => (CoreHelper.InEditor || CoreHelper.InStory || !PlayerManager.IsZenMode) && !CoreHelper.Paused && !CoreHelper.IsEditing && (!CoreHelper.InEditor || !ZenModeInEditor) && canTakeDamage;
+            get => (CoreHelper.InEditor || CoreHelper.InStory || RTBeatmap.Current.challengeMode.Damageable) && !CoreHelper.Paused && !CoreHelper.IsEditing && (!CoreHelper.InEditor || !ZenModeInEditor) && canTakeDamage;
             set => canTakeDamage = value;
         }
 
@@ -1279,7 +1280,7 @@ namespace BetterLegacy.Core.Components.Player
                 boost.trailRenderer.endWidth = Model.boostPart.Trail.endWidth * v.magnitude / 1.414213f;
             }
 
-            if (!Alive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
+            if (!Alive && !isDead && CustomPlayer && RTBeatmap.Current.challengeMode.Damageable)
                 StartCoroutine(IKill());
         }
 
@@ -2242,7 +2243,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!CustomPlayer)
                 return;
 
-            if (!PlayerManager.IsPractice)
+            if (RTBeatmap.Current.challengeMode.Damageable)
                 CustomPlayer.Health -= damage;
             playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
         }
@@ -2266,7 +2267,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!CustomPlayer)
                 return;
 
-            if (!PlayerManager.IsPractice)
+            if (RTBeatmap.Current.challengeMode.Damageable)
                 CustomPlayer.Health--;
             playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
         }
@@ -2315,8 +2316,6 @@ namespace BetterLegacy.Core.Components.Player
                 animatingBoost = true;
                 boostTail.parent.DOScale(Vector3.zero, 0.05f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[2].Animation);
             }
-
-            LevelManager.BoostCount++;
         }
 
         /// <summary>
@@ -2711,6 +2710,8 @@ namespace BetterLegacy.Core.Components.Player
 
         IEnumerator IKill()
         {
+            if (RTBeatmap.Current)
+                RTBeatmap.Current.playerDied = true;
             isDead = true;
             playerDeathEvent?.Invoke(rb.position);
             CustomPlayer.active = false;
@@ -2742,6 +2743,8 @@ namespace BetterLegacy.Core.Components.Player
 
         void InitBeforeBoost()
         {
+            if (RTBeatmap.Current && rb)
+                RTBeatmap.Current.boosts.Add(new PlayerDataPoint(rb.position));
             CanBoost = false;
             isBoosting = true;
             CanTakeDamage = false;
@@ -2789,6 +2792,8 @@ namespace BetterLegacy.Core.Components.Player
             CanBoost = true;
             SetTriggerCollision(false);
             isBoosting = false;
+            if (RTBeatmap.Current)
+                RTBeatmap.Current.playerHit = true;
             isTakingHit = true;
             CanTakeDamage = false;
 
@@ -2989,8 +2994,8 @@ namespace BetterLegacy.Core.Components.Player
 
             rb.sharedMaterial.bounciness = bounciness;
 
-            circleCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
-            polygonCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
+            circleCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
+            polygonCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
 
             var colAcc = currentModel.basePart.collisionAccurate;
             circleCollider2D.enabled = !colAcc;
@@ -2999,7 +3004,7 @@ namespace BetterLegacy.Core.Components.Player
                 polygonCollider2D.CreateCollider(head.meshFilter);
 
             if (CustomPlayer && CoreHelper.InEditor)
-                CustomPlayer.Health = PlayerManager.IsNoHit ? 1 : currentModel.basePart.health;
+                CustomPlayer.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : currentModel.basePart.health;
 
             var healthSprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
                         RTFile.FileExists(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) :
@@ -3332,7 +3337,7 @@ namespace BetterLegacy.Core.Components.Player
             {
                 "isBoosting" => isBoosting,
                 "isTakingHit" => isTakingHit,
-                "isZenMode" => PlayerManager.Invincible,
+                "isZenMode" => RTBeatmap.Current.Invincible,
                 "isHealthPercentageGreater" => (float)CustomPlayer.health / initialHealthCount * 100f >= visiblity.value,
                 "isHealthGreaterEquals" => CustomPlayer.health >= visiblity.value,
                 "isHealthEquals" => CustomPlayer.health == visiblity.value,

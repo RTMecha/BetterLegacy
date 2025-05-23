@@ -13,6 +13,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Managers
@@ -244,19 +245,19 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="metadata">Metadata of the level.</param>
         /// <param name="levelRank">Level rank that was gained.</param>
-        public void CheckLevelEndAchievements(MetaData metadata, DataManager.LevelRank levelRank)
+        public void CheckLevelEndAchievements(MetaData metadata, Rank rank)
         {
             if (metadata.song.difficulty == 6)
                 UnlockAchievement("complete_animation");
-            if (metadata.song.difficulty != 6 && LevelManager.BoostCount == 0)
+            if (metadata.song.difficulty != 6 && RTBeatmap.Current && RTBeatmap.Current.boosts.Count == 0)
                 UnlockAchievement("no_boost");
-            if (levelRank.name == "F")
+            if (rank.Name == Rank.F)
                 UnlockAchievement("f_rank");
-            if (metadata.song.difficulty == 4 && levelRank.name == "SS")
+            if (metadata.song.difficulty == 4 && rank == Rank.SS)
                 UnlockAchievement("expert_plus_ss_rank");
-            if (metadata.song.difficulty == 5 && levelRank.name == "SS")
+            if (metadata.song.difficulty == 5 && rank == Rank.SS)
                 UnlockAchievement("master_ss_rank");
-            if (LevelManager.CurrentMusicVolume == 0)
+            if (RTBeatmap.Current.CurrentMusicVolume == 0)
                 UnlockAchievement("no_volume");
 
             if (LevelManager.currentQueueIndex >= 9)

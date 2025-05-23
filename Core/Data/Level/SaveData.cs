@@ -5,6 +5,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Data.Level
 {
@@ -94,11 +95,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public void Update()
         {
-            if (Hits > GameManager.inst.hits.Count)
-                Hits = GameManager.inst.hits.Count;
+            if (Hits > RTBeatmap.Current.hits.Count)
+                Hits = RTBeatmap.Current.hits.Count;
 
-            if (Deaths > GameManager.inst.deaths.Count)
-                Deaths = GameManager.inst.deaths.Count;
+            if (Deaths > RTBeatmap.Current.deaths.Count)
+                Deaths = RTBeatmap.Current.deaths.Count;
 
             var l = AudioManager.inst.CurrentAudioSource.clip.length;
             if (LevelLength != l)
@@ -141,7 +142,7 @@ namespace BetterLegacy.Core.Data.Level
                 if (Percentage < calc)
                     Percentage = calc;
 
-                TimeInLevel = LevelManager.timeInLevel;
+                TimeInLevel = RTBeatmap.Current.levelTimer.time;
             }
             catch (Exception ex)
             {

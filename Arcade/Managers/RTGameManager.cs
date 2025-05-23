@@ -15,6 +15,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
@@ -295,8 +296,11 @@ namespace BetterLegacy.Arcade.Managers
             yield return CoroutineHelper.Seconds(2f);
 
             float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
-            if (!CoreHelper.InEditor && (PlayerManager.Is1Life || PlayerManager.IsNoHit))
+            if (!CoreHelper.InEditor && RTBeatmap.Current.challengeMode.Lives > 0)
+            {
                 time = 0.1f;
+                RTBeatmap.Current.lives = RTBeatmap.Current.challengeMode.Lives;
+            }
 
             if (checkpoint.setTime)
                 AudioManager.inst.SetMusicTime(time);
@@ -304,7 +308,7 @@ namespace BetterLegacy.Arcade.Managers
             GameManager.inst.gameState = GameManager.State.Playing;
 
             AudioManager.inst.CurrentAudioSource.Play();
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
+            AudioManager.inst.SetPitch(RTBeatmap.Current.Pitch);
 
             GameManager.inst.UpdateEventSequenceTime();
             GameManager.inst.isReversing = false;

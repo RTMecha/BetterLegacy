@@ -377,30 +377,30 @@ namespace BetterLegacy.Companion.Entity
                 {
                     if (parameters is LevelDialogueParameters levelParameters)
                     {
-                        switch (levelParameters.rank)
+                        switch (levelParameters.rank.Name)
                         {
-                            case Rank.Null: {
+                            case nameof(Rank.Null): {
                                     return $"That level was awesome!";
                                 }
-                            case Rank.SS: {
+                            case nameof(Rank.SS): {
                                     return $"Woah!!! Great job, {CoreConfig.Instance.DisplayName.Value}!!";
                                 }
-                            case Rank.S: {
+                            case nameof(Rank.S): {
                                     return $"Woah!! Great job, {CoreConfig.Instance.DisplayName.Value}!";
                                 }
-                            case Rank.A: {
+                            case nameof(Rank.A): {
                                     return $"Good job, {CoreConfig.Instance.DisplayName.Value}!";
                                 }
-                            case Rank.B: {
+                            case nameof(Rank.B): {
                                     return $"Good job, {CoreConfig.Instance.DisplayName.Value}.";
                                 }
-                            case Rank.C: {
+                            case nameof(Rank.C): {
                                     return $"You can do better, {CoreConfig.Instance.DisplayName.Value}!";
                                 }
-                            case Rank.D: {
+                            case nameof(Rank.D): {
                                     return $"You can do better, {CoreConfig.Instance.DisplayName.Value}.";
                                 }
-                            case Rank.F: {
+                            case nameof(Rank.F): {
                                     return $"Aww... I know you can do better!";
                                 }
                         }

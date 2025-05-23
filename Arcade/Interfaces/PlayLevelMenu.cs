@@ -279,13 +279,13 @@ namespace BetterLegacy.Arcade.Interfaces
                 },
             });
 
-            var difficulty = CoreHelper.GetDifficulty(CurrentLevel.metadata.song.difficulty);
+            var difficulty = CurrentLevel.metadata.song.DifficultyType;
             elements.Add(new MenuText
             {
                 id = "4624859539",
                 name = "Difficulty",
                 rect = RectValues.Default.AnchoredPosition(-100f, 90f),
-                text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
+                text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.Color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.DisplayName}",
                 hideBG = true,
                 textColor = 6,
             });
@@ -327,13 +327,13 @@ namespace BetterLegacy.Arcade.Interfaces
                 alignment = TMPro.TextAlignmentOptions.TopLeft,
             });
 
-            var levelRank = LevelManager.GetLevelRank(CurrentLevel);
+            var rank = LevelManager.GetLevelRank(CurrentLevel);
             elements.Add(new MenuText
             {
                 id = "92595",
                 name = "Rank",
                 rect = RectValues.Default.AnchoredPosition(-250f, -90f).Rotation(-10f),
-                text = $"<size=140><b><align=center><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}",
+                text = $"<size=140><b><align=center><#{LSColors.ColorToHex(rank.Color)}>{rank.Name}",
                 hideBG = true,
                 textColor = 6,
             });
@@ -458,7 +458,7 @@ namespace BetterLegacy.Arcade.Interfaces
             {
                 id = "0",
                 name = "Speed Text",
-                text = $"<align=center>{CoreHelper.Pitch.ToString("0.0")}x SPEED",
+                text = $"<align=center>{CoreConfig.Instance.GameSpeedSetting.Value.DisplayName} SPEED",
                 rect = RectValues.Default.AnchoredPosition(510f, -260f).SizeDelta(64f, 64f),
                 hideBG = true,
                 color = 6,
@@ -483,7 +483,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
-                    var speed = PlayerManager.ArcadeGameSpeed - 1;
+                    var speed = CoreConfig.Instance.GameSpeedSetting.Value - 1;
                     if (speed < 0)
                     {
                         SoundManager.inst.PlaySound(DefaultSounds.Block);
@@ -491,9 +491,9 @@ namespace BetterLegacy.Arcade.Interfaces
                     }
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    PlayerManager.SetGameSpeed(speed);
-                    AudioManager.inst.SetPitch(CoreHelper.Pitch);
-                    speedText.text = $"<align=center>{CoreHelper.Pitch.ToString("0.0")}x SPEED";
+                    CoreConfig.Instance.GameSpeedSetting.Value = speed;
+                    AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
+                    speedText.text = $"<align=center>{CoreConfig.Instance.GameSpeedSetting.Value.DisplayName} SPEED";
                     speedText.textUI.maxVisibleCharacters = speedText.text.Length;
                     speedText.textUI.text = speedText.text;
                 },
@@ -518,17 +518,17 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
-                    var speed = PlayerManager.ArcadeGameSpeed + 1;
-                    if (speed >= PlayerManager.GameSpeeds.Length)
+                    var speed = CoreConfig.Instance.GameSpeedSetting.Value + 1;
+                    if (speed >= CoreConfig.Instance.GameSpeedSetting.Value.GetBoxedValues().Length)
                     {
                         SoundManager.inst.PlaySound(DefaultSounds.Block);
                         return;
                     }
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    PlayerManager.SetGameSpeed(speed);
-                    AudioManager.inst.SetPitch(CoreHelper.Pitch);
-                    speedText.text = $"<align=center>{CoreHelper.Pitch.ToString("0.0")}x SPEED";
+                    CoreConfig.Instance.GameSpeedSetting.Value = speed;
+                    AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
+                    speedText.text = $"<align=center>{CoreConfig.Instance.GameSpeedSetting.Value.DisplayName} SPEED";
                     speedText.textUI.maxVisibleCharacters = speedText.text.Length;
                     speedText.textUI.text = speedText.text;
                 },
@@ -550,7 +550,7 @@ namespace BetterLegacy.Arcade.Interfaces
             {
                 id = "0",
                 name = "Challenge Text",
-                text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}",
+                text = $"<align=center>{CoreConfig.Instance.ChallengeModeSetting.Value.DisplayName}",
                 rect = RectValues.Default.AnchoredPosition(510f, -360f).SizeDelta(64f, 64f),
                 hideBG = true,
                 color = 6,
@@ -575,7 +575,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
-                    var challenge = (int)PlayerManager.ChallengeMode - 1;
+                    var challenge = CoreConfig.Instance.ChallengeModeSetting.Value - 1;
                     if (challenge < 0)
                     {
                         SoundManager.inst.PlaySound(DefaultSounds.Block);
@@ -583,8 +583,8 @@ namespace BetterLegacy.Arcade.Interfaces
                     }
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    PlayerManager.SetChallengeMode(challenge);
-                    challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}";
+                    CoreConfig.Instance.ChallengeModeSetting.Value = challenge;
+                    challengeText.text = $"<align=center>{CoreConfig.Instance.ChallengeModeSetting.Value.DisplayName}";
                     challengeText.textUI.maxVisibleCharacters = challengeText.text.Length;
                     challengeText.textUI.text = challengeText.text;
                 },
@@ -609,16 +609,16 @@ namespace BetterLegacy.Arcade.Interfaces
                 playBlipSound = false,
                 func = () =>
                 {
-                    var challenge = (int)PlayerManager.ChallengeMode + 1;
-                    if (challenge >= 5)
+                    var challenge = CoreConfig.Instance.ChallengeModeSetting.Value + 1;
+                    if (challenge >= CoreConfig.Instance.ChallengeModeSetting.Value.GetBoxedValues().Length)
                     {
                         SoundManager.inst.PlaySound(DefaultSounds.Block);
                         return;
                     }
 
                     SoundManager.inst.PlaySound(DefaultSounds.blip);
-                    PlayerManager.SetChallengeMode(challenge);
-                    challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}";
+                    CoreConfig.Instance.ChallengeModeSetting.Value = challenge;
+                    challengeText.text = $"<align=center>{CoreConfig.Instance.ChallengeModeSetting.Value.DisplayName}";
                     challengeText.textUI.maxVisibleCharacters = challengeText.text.Length;
                     challengeText.textUI.text = challengeText.text;
                 },
@@ -651,7 +651,7 @@ namespace BetterLegacy.Arcade.Interfaces
             CurrentLevel = level;
             Current = new PlayLevelMenu();
             AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
+            AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
         }
 
         public static void Close()
