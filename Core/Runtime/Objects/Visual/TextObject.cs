@@ -2,6 +2,9 @@
 
 using TMPro;
 
+using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
+
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
     /// <summary>
@@ -32,6 +35,29 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             if (autoTextAlign)
                 textMeshPro.alignment = textAlignment;
+
+            UpdateCollider();
+        }
+
+        /// <summary>
+        /// Updates the text objects' collision.
+        /// </summary>
+        public void UpdateCollider()
+        {
+            if (CoreHelper.InEditor && EditorConfig.Instance.SelectTextObjectsInPreview.Value)
+            {
+                var collider = gameObject.AddComponent<BoxCollider2D>();
+                gameObject.tag = Tags.HELPER;
+                collider.isTrigger = true;
+                this.collider = collider;
+                CoroutineHelper.PerformAtNextFrame(() =>
+                {
+                    if (this.collider)
+                        CoreHelper.GetColliderSize(collider, textMeshPro);
+                });
+            }
+            else if (collider)
+                CoreHelper.Destroy(collider);
         }
 
         /// <summary>
@@ -51,6 +77,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public string GetText() => textMeshPro ? textMeshPro.text : string.Empty;
 
         public override void SetColor(Color color) => textMeshPro.color = new Color(color.r, color.g, color.b, color.a * opacity);
+
+        public override void SetPrimaryColor(Color color) => textMeshPro.color = color;
 
         public override Color GetPrimaryColor() => textMeshPro.color;
 

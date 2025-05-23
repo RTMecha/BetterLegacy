@@ -499,6 +499,20 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// Gets the size of a box collider based on a texts' size.
+        /// </summary>
+        /// <param name="collider">Box Collider to set the size to.</param>
+        /// <param name="text">TMP Text to get the size from.</param>
+        public static void GetColliderSize(BoxCollider2D collider, TMPro.TextMeshPro text) => collider.size = !text ? Vector2.one : text.GetRenderedValues();
+
+        /// <summary>
+        /// Gets the size of a box collider based on a texts' size.
+        /// </summary>
+        /// <param name="collider">Box Collider to set the size to.</param>
+        /// <param name="spriteRenderer">Sprite Renderer to get the size from.</param>
+        public static void GetColliderSize(BoxCollider2D collider, SpriteRenderer spriteRenderer) => collider.size = !spriteRenderer || !spriteRenderer.sprite || !spriteRenderer.sprite.texture ? Vector2.one : new Vector2(spriteRenderer.sprite.texture.width / 100f, spriteRenderer.sprite.texture.height / 100f);
+
         #endregion
 
         #region Logging

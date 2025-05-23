@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
@@ -30,16 +31,24 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             if (this.renderer)
                 material = this.renderer.material;
 
-            if (CoreHelper.InEditor)
+            UpdateImage(text, imageData);
+        }
+
+        /// <summary>
+        /// Updates the image objects' collision.
+        /// </summary>
+        public void UpdateCollider()
+        {
+            if (CoreHelper.InEditor && EditorConfig.Instance.SelectImageObjectsInPreview.Value)
             {
                 var collider = gameObject.AddComponent<BoxCollider2D>();
                 gameObject.tag = Tags.HELPER;
                 collider.isTrigger = true;
-                collider.size = Vector2.one;
+                CoreHelper.GetColliderSize(collider, spriteRenderer);
                 this.collider = collider;
             }
-
-            UpdateImage(text, imageData);
+            else if (collider)
+                CoreHelper.Destroy(collider);
         }
 
         /// <summary>
@@ -72,6 +81,8 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         public override void SetColor(Color color) => material?.SetColor(new Color(color.r, color.g, color.b, color.a * opacity));
 
+        public override void SetPrimaryColor(Color color) => material.color = color;
+
         public override Color GetPrimaryColor() => material.color;
 
         /// <summary>
@@ -93,7 +104,11 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// Sets the image objects' image.
         /// </summary>
         /// <param name="sprite">Applies this to the sprite renderer</param>
-        public void SetSprite(Sprite sprite) => spriteRenderer.sprite = sprite;
+        public void SetSprite(Sprite sprite)
+        {
+            spriteRenderer.sprite = sprite;
+            UpdateCollider();
+        }
 
         public override void Clear()
         {
