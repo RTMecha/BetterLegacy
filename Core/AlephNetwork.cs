@@ -72,6 +72,10 @@ namespace BetterLegacy.Core
             if (string.IsNullOrEmpty(link))
                 return link;
 
+            // no sussy
+            if (link.Contains("http://") || link.Contains("https://") || link.Contains(".") || link.Contains("/") || link.Contains("\\"))
+                return null;
+
             var links = source switch
             {
                 URLSource.Artist => ArtistLinks,
