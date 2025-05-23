@@ -75,48 +75,6 @@ namespace BetterLegacy.Patchers
             __instance.indexToLangauge.Add(4, "russian");
             __instance.indexToLangauge.Add(5, "pirate");
 
-            __instance.difficulties = new List<DataManager.Difficulty>
-            {
-                new DataManager.Difficulty("Easy", LSColors.GetThemeColor("easy")),
-                new DataManager.Difficulty("Normal", LSColors.GetThemeColor("normal")),
-                new DataManager.Difficulty("Hard", LSColors.GetThemeColor("hard")),
-                new DataManager.Difficulty("Expert", LSColors.GetThemeColor("expert")),
-                new DataManager.Difficulty("Expert+", LSColors.GetThemeColor("expert+")),
-                new DataManager.Difficulty("Master", new Color(0.25f, 0.01f, 0.01f)),
-                new DataManager.Difficulty("Animation", LSColors.GetThemeColor("none"))
-            };
-
-            __instance.linkTypes = new List<DataManager.LinkType>
-            {
-                new DataManager.LinkType("Spotify", "https://open.spotify.com/artist/{0}"),
-                new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
-                new DataManager.LinkType("Bandcamp", "https://{0}.bandcamp.com"),
-                new DataManager.LinkType("YouTube", "https://www.youtube.com/c/{0}"),
-                new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/")
-            };
-
-            try
-            {
-                var sayings = JSON.Parse(RTFile.ReadFromFile(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}") ? $"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}" : $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sayings{FileFormat.JSON.Dot()}"))["sayings"];
-
-                if (sayings != null)
-                    __instance.levelRanks = new List<DataManager.LevelRank>
-                    {
-                        new DataManager.LevelRank("-", LSColors.GetThemeColor("none"), -1, -1, sayings["null"].Children.Select(x => x.Value).ToArray()),
-                        new DataManager.LevelRank("SS", LSColors.GetThemeColor("easy"), 0, 0, sayings["ss"].Children.Select(x => x.Value).ToArray()),
-                        new DataManager.LevelRank("S", LSColors.GetThemeColor("normal"), 1, 1, sayings["s"].Children.Select(x => x.Value).ToArray()),
-                        new DataManager.LevelRank("A", LSColors.GetThemeColor("normal"), 2, 3, sayings["a"].Children.Select(x => x.Value).ToArray()),
-                        new DataManager.LevelRank("B", LSColors.GetThemeColor("hard"), 4, 6, sayings["b"].Children.Select(x => x.Value).ToArray()),
-                        new DataManager.LevelRank("C", LSColors.GetThemeColor("hard"), 7, 9, sayings["c"].Children.Select(x => x.Value).ToArray()),
-                        new DataManager.LevelRank("D", LSColors.GetThemeColor("expert"), 10, 15, sayings["d"].Children.Select(x => x.Value).ToArray()),
-                        new DataManager.LevelRank("F", LSColors.GetThemeColor("expert"), 16, int.MaxValue, sayings["f"].Children.Select(x => x.Value).ToArray())
-                    };
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to set LevelRank sayings.\nException: {ex}");
-            }
-
             __instance.UpdateSettingString("versionNumber", ProjectArrhythmia.GAME_VERSION);
             __instance.UpdateSettingBool("CanEdit", true);
 
