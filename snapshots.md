@@ -19,6 +19,8 @@
 - Added getModifiedColor and getVisualColor modifiers.
 - animateObject modifiers now have a "Apply Delta Time" value. With this on and the modifier set to constant, the animation will calculate the distance between the previous frame and the current frame. This is for cases where the game has low FPS or lags, but can cause the object to jitter in some cases.
 - getToggle modifier now has a "Invert Value" toggle. This acts like a not gate.
+- Challenge Mode and Game Speed now exists as Config Manager settings. These only work in the Arcade (aka not Story & Editor) and only update when a level begins. They also have extended functionality, so a custom game speed / challenge mode can be registered.
+- Custom end level sayings can be added per-level by adding the sayings.json file to the metadata JSON object and modifying it.
 
 ### Editor
 - Added a BG Object counter to Prefab Object Editor.
