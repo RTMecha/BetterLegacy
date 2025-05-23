@@ -861,21 +861,29 @@ namespace BetterLegacy.Core
         /// Checks if a list contains no elements.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
-        /// <returns>Returns true if the list contains elements.</returns>
+        /// <returns>Returns true if the list doesn't contain elements.</returns>
         public static bool IsEmpty<T>(this List<T> list) => list.Count < 1;
 
         /// <summary>
         /// Checks if a queue contains no elements.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="Queue{T}"/>.</typeparam>
-        /// <returns>Returns true if the queue contains elements.</returns>
+        /// <returns>Returns true if the queue doesn't contain elements.</returns>
         public static bool IsEmpty<T>(this Queue<T> queue) => queue.Count < 1;
+
+        /// <summary>
+        /// Checks if a dictionary contains no elements.
+        /// </summary>
+        /// <typeparam name="TKey">Type of the keys in <see cref="Dictionary{TKey, TValue}"/>.</typeparam>
+        /// <typeparam name="TValue">Type of the values in <see cref="Dictionary{TKey, TValue}"/>.</typeparam>
+        /// <returns>Returns true if the dictionary doesn't contain elements.</returns>
+        public static bool IsEmpty<TKey, TValue>(this Dictionary<TKey, TValue> dictionary) => dictionary.Count < 1;
 
         /// <summary>
         /// Checks if an array contains no elements.
         /// </summary>
         /// <typeparam name="T">Type of the array.</typeparam>
-        /// <returns>Returns true if the array contains elements.</returns>
+        /// <returns>Returns true if the array doesn't contain elements.</returns>
         public static bool IsEmpty<T>(this T[] array) => array.Length < 1;
 
         /// <summary>
@@ -1293,8 +1301,6 @@ namespace BetterLegacy.Core
             AudioType.MPEG => FileFormat.MP3,
             _ => FileFormat.NULL,
         };
-
-        public static Rank GetEnum(this DataManager.LevelRank levelRank) => Enum.TryParse(levelRank.name, out Rank rank) ? rank : Rank.Null;
 
         /// <summary>
         /// Sorts a query.
