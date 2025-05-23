@@ -58,9 +58,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="renderType">Render type to set.</param>
         public void SetRenderType(int renderType) => gameObject.layer = renderType switch
         {
-            1 => 9,
-            2 => 11,
-            _ => 8
+            1 => RTLevel.BACKGROUND_LAYER,
+            2 => RTLevel.UI_LAYER,
+            _ => RTLevel.FOREGROUND_LAYER,
         };
 
         /// <summary>
@@ -74,6 +74,18 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         /// <param name="color">Color to set.</param>
         public abstract void SetColor(Color color);
+
+        /// <summary>
+        /// Sets the visual objects' primary color.
+        /// </summary>
+        /// <param name="color">Color to set.</param>
+        public abstract void SetPrimaryColor(Color color);
+
+        /// <summary>
+        /// Sets the visual objects' secondary color.
+        /// </summary>
+        /// <param name="color">Color to set.</param>
+        public virtual void SetSecondaryColor(Color color) { }
 
         /// <summary>
         /// Gets the visual objects' main color.

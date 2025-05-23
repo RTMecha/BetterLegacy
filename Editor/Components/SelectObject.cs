@@ -313,19 +313,7 @@ namespace BetterLegacy.Editor.Components
                     .FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty);
 
                 for (int i = 0; i < beatmapObjects.Count; i++)
-                {
-                    var bm = beatmapObjects[i];
-                    var levelObject = bm.runtimeObject;
-                    if (!levelObject || !levelObject.visualObject)
-                        continue;
-
-                    var renderer = levelObject.visualObject.renderer;
-                    if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
-                        continue;
-
-                    SetHoverColor(levelObject, renderer);
-                    SetLayerColor(levelObject, renderer, prefabObject.editorData.Layer);
-                }
+                    SetColor(beatmapObjects[i].runtimeObject, prefabObject.editorData.Layer);
 
                 return;
             }
@@ -334,7 +322,7 @@ namespace BetterLegacy.Editor.Components
             if (!beatmapObject.editorData || !selfLevelObject)
                 return;
 
-            SetColor(selfLevelObject, renderer, beatmapObject.editorData.Layer);
+            SetColor(selfLevelObject, beatmapObject.editorData.Layer);
         }
 
         void FixedUpdate()
@@ -348,29 +336,29 @@ namespace BetterLegacy.Editor.Components
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObjectToDrag);
         }
 
-        void SetColor(RTBeatmapObject levelObject, Renderer renderer, int layer)
+        void SetColor(RTBeatmapObject levelObject, int layer)
         {
-            if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
+            if (!levelObject)
                 return;
 
-            SetHoverColor(levelObject, renderer);
-            SetLayerColor(levelObject, renderer, layer);
+            SetHoverColor(levelObject);
+            SetLayerColor(levelObject, layer);
         }
 
-        void SetHoverColor(RTBeatmapObject levelObject, Renderer renderer)
+        void SetHoverColor(RTBeatmapObject levelObject)
         {
-            if (!HighlightObjects || !hovered || !levelObject || levelObject.visualObject == null)
+            if (!HighlightObjects || !hovered || !levelObject || !levelObject.visualObject)
                 return;
 
             var currentColor = levelObject.visualObject.GetPrimaryColor();
             currentColor += Highlight(currentColor);
-            renderer.material.color = RTColors.FadeColor(currentColor, 1f);
+            levelObject.visualObject.SetPrimaryColor(RTColors.FadeColor(currentColor, 1f));
 
             if (levelObject.visualObject.isGradient)
             {
                 var secondaryColor = levelObject.visualObject.GetSecondaryColor();
                 secondaryColor += Highlight(secondaryColor);
-                renderer.material.SetColor("_ColorSecondary", RTColors.FadeColor(secondaryColor, 1f));
+                levelObject.visualObject.SetSecondaryColor(RTColors.FadeColor(secondaryColor, 1f));
             }
         }
 
@@ -384,21 +372,17 @@ namespace BetterLegacy.Editor.Components
                 currentColor.b > 0.9f ? -HighlightColor.b : HighlightColor.b,
                 0f);
 
-        void SetLayerColor(RTBeatmapObject levelObject, Renderer renderer, int layer)
+        void SetLayerColor(RTBeatmapObject levelObject, int layer)
         {
-            if (ShowObjectsOnlyOnLayer && layer != EditorManager.inst.layer)
-            {
-                var color = RTColors.FadeColor(renderer.material.color, renderer.material.color.a * LayerOpacity);
-                if (renderer.material.color != color)
-                    renderer.material.color = color;
+            if (!ShowObjectsOnlyOnLayer || layer == EditorManager.inst.layer || !levelObject || !levelObject.visualObject)
+                return;
 
-                if (levelObject && levelObject.visualObject.isGradient)
-                {
-                    var secondaryColor = levelObject.visualObject.GetSecondaryColor();
-                    var layerSecondaryColor = RTColors.FadeColor(secondaryColor, secondaryColor.a * LayerOpacity);
-                    if (secondaryColor != layerSecondaryColor)
-                        renderer.material.SetColor("_ColorSecondary", layerSecondaryColor);
-                }
+            var primaryColor = levelObject.visualObject.GetPrimaryColor();
+            levelObject.visualObject.SetPrimaryColor(RTColors.FadeColor(primaryColor, primaryColor.a * LayerOpacity));
+            if (levelObject && levelObject.visualObject.isGradient)
+            {
+                var secondaryColor = levelObject.visualObject.GetSecondaryColor();
+                levelObject.visualObject.SetSecondaryColor(RTColors.FadeColor(secondaryColor, secondaryColor.a * LayerOpacity));
             }
         }
 

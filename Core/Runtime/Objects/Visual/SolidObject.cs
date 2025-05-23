@@ -138,6 +138,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 colliderEnabled = color.a + color2.a > 1.99f;
         }
 
+        public override void SetPrimaryColor(Color color) => material.color = color;
+
+        public override void SetSecondaryColor(Color color)
+        {
+            if (isGradient)
+                material.SetColor("_ColorSecondary", color);
+        }
+
         public override Color GetPrimaryColor() => material.color;
 
         /// <summary>
