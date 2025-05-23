@@ -525,7 +525,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 // this is for backwards compatibility due to BG modifiers having multiple lists previously.
                 if (modifierJN.IsArray)
                 {
-                    var wasOrderModifiers = orderModifiers;
+                    //var wasOrderModifiers = orderModifiers;
 
                     orderModifiers = true;
                     var list = new List<Modifier<BackgroundObject>>();
@@ -536,10 +536,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                             list.Add(modifier);
                     }
 
-                    if (!wasOrderModifiers)
+                    //if (!wasOrderModifiers)
                         list.Sort((a, b) => a.type.CompareTo(b.type));
-                    else if (i != modifiersCount - 1 && ModifiersManager.defaultBackgroundObjectModifiers.TryFind(x => x.Name == "break", out ModifierBase breakModifierBase) && breakModifierBase is Modifier<BackgroundObject> breakModifier)
-                        list.Add(breakModifier.Copy(this));
+                    //else if (i != modifiersCount - 1 && ModifiersManager.defaultBackgroundObjectModifiers.TryFind(x => x.Name == "break", out ModifierBase breakModifierBase) && breakModifierBase is Modifier<BackgroundObject> breakModifier)
+                    //    list.Add(breakModifier.Copy(this));
 
                     modifiers.AddRange(list);
                 }
