@@ -137,27 +137,27 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool playerDeathsEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return GameManager.inst.deaths.Count == modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count == modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerDeathsLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return GameManager.inst.deaths.Count <= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count <= modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerDeathsGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return GameManager.inst.deaths.Count >= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count >= modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerDeathsLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return GameManager.inst.deaths.Count < modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count < modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerDeathsGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return GameManager.inst.deaths.Count > modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.deaths.Count > modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerDistanceGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -227,55 +227,37 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool onPlayerHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var hasResult = modifier.HasResult();
-
-            if (!hasResult || modifier.Result is int count && count != GameManager.inst.hits.Count)
-            {
-                modifier.Result = GameManager.inst.hits.Count;
-                if (hasResult)
-                    return true;
-            }
-
-            return false;
+            return RTBeatmap.Current.playerHit;
         }
         
         public static bool onPlayerDeath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var hasResult = modifier.HasResult();
-
-            if (!hasResult || modifier.Result is int count && count != GameManager.inst.deaths.Count)
-            {
-                modifier.Result = GameManager.inst.deaths.Count;
-                if (hasResult)
-                    return true;
-            }
-
-            return false;
+            return RTBeatmap.Current.playerDied;
         }
         
         public static bool playerBoostEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.BoostCount == modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count == modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerBoostLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.BoostCount <= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count <= modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerBoostGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.BoostCount >= modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count >= modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerBoostLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.BoostCount < modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count < modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerBoostGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.BoostCount > modifier.GetInt(0, 0, variables);
+            return RTBeatmap.Current.boosts.Count > modifier.GetInt(0, 0, variables);
         }
 
         #endregion
@@ -699,27 +681,27 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool inZenMode<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return PlayerManager.Invincible;
+            return RTBeatmap.Current.Invincible;
         }
         
         public static bool inNormal<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return PlayerManager.IsNormal;
+            return RTBeatmap.Current.IsNormal;
         }
         
         public static bool in1Life<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return PlayerManager.Is1Life;
+            return RTBeatmap.Current.Is1Life;
         }
         
         public static bool inNoHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return PlayerManager.IsNoHit;
+            return RTBeatmap.Current.IsNoHit;
         }
         
         public static bool inPractice<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return PlayerManager.IsPractice;
+            return RTBeatmap.Current.IsPractice;
         }
 
         #endregion
@@ -1014,27 +996,27 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool levelRankCurrentEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] == modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) == modifier.GetInt(0, 0, variables);
         }
         
         public static bool levelRankCurrentLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] <= modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) <= modifier.GetInt(0, 0, variables);
         }
         
         public static bool levelRankCurrentGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] >= modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) >= modifier.GetInt(0, 0, variables);
         }
         
         public static bool levelRankCurrentLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] < modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) < modifier.GetInt(0, 0, variables);
         }
         
         public static bool levelRankCurrentGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] > modifier.GetInt(0, 0, variables);
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) > modifier.GetInt(0, 0, variables);
         }
 
         #endregion

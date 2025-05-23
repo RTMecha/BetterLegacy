@@ -302,6 +302,16 @@ namespace BetterLegacy.Configs
         public Setting<bool> LDM { get; set; }
 
         /// <summary>
+        /// Custom game pitch.
+        /// </summary>
+        public Setting<GameSpeed> GameSpeedSetting { get; set; }
+
+        /// <summary>
+        /// Custom challenge mode.
+        /// </summary>
+        public Setting<ChallengeMode> ChallengeModeSetting { get; set; }
+
+        /// <summary>
         /// If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.
         /// </summary>
         public Setting<bool> ShowBackgroundObjects { get; set; }
@@ -478,6 +488,13 @@ namespace BetterLegacy.Configs
 
             Seed = Bind(this, LEVEL, "Seed", "", "The current seed randomization in a level uses. Leave empty to randomize the seed each time you play a level.");
             LDM = Bind(this, LEVEL, "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
+            GameSpeedSetting = Bind(this, LEVEL, "Game Speed", GameSpeed.X1_0, "Custom game pitch.");
+            ChallengeModeSetting = Bind(this, LEVEL, "Challenge Mode", ChallengeMode.Normal, "Custom challenge mode that affects gameplay.<br>" +
+                "<b>Zen</b>: No damage is taken.<br>" +
+                "<b>Practice</b>: Damage is taken, but health is not subtracted so the Player will not die.<br>" +
+                "<b>Normal</b>: Damage is taken and health is subtracted.<br>" +
+                "<b>1 Life</b>: The level restarts when all Players are dead.<br>" +
+                "<b>1 Hit</b>: The level restarts when any Player takes damage.");
             ShowBackgroundObjects = Bind(this, LEVEL, "Show Background Objects", true, "If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.");
             EnableVideoBackground = Bind(this, LEVEL, "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
             UseNewUpdateMethod = Bind(this, LEVEL, "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");

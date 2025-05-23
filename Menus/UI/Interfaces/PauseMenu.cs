@@ -10,6 +10,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 
@@ -220,7 +221,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 id = "463472367",
                 name = "Info Text",
-                text = $"<align=right>Times hit: {GameManager.inst.hits.Count}",
+                text = $"<align=right>Times hit: {RTBeatmap.Current.hits.Count}",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,
@@ -232,7 +233,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 id = "738347853",
                 name = "Info Text",
-                text = $"<align=right>Times died: {GameManager.inst.deaths.Count}",
+                text = $"<align=right>Times died: {RTBeatmap.Current.deaths.Count}",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,
@@ -240,13 +241,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 parentLayout = "info",
             });
 
-            var levelRank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
+            var rank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
 
             elements.Add(new MenuText
             {
                 id = "738347853",
                 name = "Info Text",
-                text = $"<align=right>Previous rank: <b><size=60><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}</color>",
+                text = $"<align=right>Previous rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.Name}</color>",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,
@@ -254,13 +255,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 parentLayout = "info",
             });
 
-            levelRank = LevelManager.GetLevelRank(GameManager.inst.hits);
+            rank = LevelManager.GetLevelRank(RTBeatmap.Current.hits);
 
             elements.Add(new MenuText
             {
                 id = "248576321",
                 name = "Info Text",
-                text = $"<align=right>Current rank: <b><size=60><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}</color>",
+                text = $"<align=right>Current rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.Name}</color>",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,
@@ -272,7 +273,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 id = "738347853",
                 name = "Info Text",
-                text = $"<align=right>Time in level: {LevelManager.timeInLevel}",
+                text = $"<align=right>Time in level: {RTBeatmap.Current.levelTimer.time}",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,
@@ -293,17 +294,33 @@ namespace BetterLegacy.Menus.UI.Interfaces
             });
 
             if (!CoreHelper.InStory)
+            {
+                // game speed
                 elements.Add(new MenuText
                 {
-                    id = "7463783",
+                    id = "51625256325",
                     name = "Info Text",
-                    text = $"<align=right>Challenge mode: {PlayerManager.ChallengeMode}",
+                    text = $"<align=right>Game Speed: {RTBeatmap.Current.gameSpeed.DisplayName}",
                     rect = RectValues.Default.SizeDelta(300f, 32f),
                     hideBG = true,
                     textVal = 40f,
                     length = 0.3f,
                     parentLayout = "info",
                 });
+
+                // challenge mode
+                elements.Add(new MenuText
+                {
+                    id = "7463783",
+                    name = "Info Text",
+                    text = $"<align=right>Challenge mode: {RTBeatmap.Current.challengeMode.DisplayName}",
+                    rect = RectValues.Default.SizeDelta(300f, 32f),
+                    hideBG = true,
+                    textVal = 40f,
+                    length = 0.3f,
+                    parentLayout = "info",
+                });
+            }
 
             if (LevelManager.HasQueue)
             {
@@ -325,6 +342,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             exitFunc = UnPause;
 
             InterfaceManager.inst.SetCurrentInterface(this);
+
+            RTBeatmap.Current.pausedTimer.Reset();
         }
 
         public override void UpdateTheme()
@@ -401,6 +420,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
             AudioManager.inst.CurrentAudioSource.UnPause();
             onCooldownEnd?.Invoke();
             GameManager.inst.gameState = GameManager.State.Playing;
+
+            // remove time spent in pause menu from total timer
+            RTBeatmap.Current.levelTimer.offset -= RTBeatmap.Current.pausedTimer.time;
         }
 
         #endregion

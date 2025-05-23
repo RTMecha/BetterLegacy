@@ -55,12 +55,6 @@ namespace BetterLegacy.Core.Managers
             LoadProgress();
         }
 
-        void Update()
-        {
-            if (CoreHelper.InEditor && EditorManager.inst.isEditing)
-                BoostCount = 0;
-        }
-
         #endregion
 
         #region Path
@@ -78,17 +72,6 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #region Data
-
-        /// <summary>
-        /// Total time a user has been in a level.
-        /// </summary>
-        public static float timeInLevel = 0f;
-        public static float timeInLevelOffset = 0f;
-
-        /// <summary>
-        /// Used for the no music achievement.
-        /// </summary>
-        public static int CurrentMusicVolume { get; set; }
 
         /// <summary>
         /// Whether the scene after Input Select should be the Arcade scene or the Interface scene.
@@ -178,11 +161,6 @@ namespace BetterLegacy.Core.Managers
         /// The current index in <see cref="ArcadeQueue"/>
         /// </summary>
         public static int currentQueueIndex;
-
-        /// <summary>
-        /// How many times a player has boosted.
-        /// </summary>
-        public static int BoostCount { get; set; }
 
         /// <summary>
         /// What should happen when an in-game level starts.
@@ -295,10 +273,24 @@ namespace BetterLegacy.Core.Managers
             if (BackgroundManager.inst)
                 LSHelpers.DeleteChildren(BackgroundManager.inst.backgroundParent);
 
-            if (GameManager.inst)
+            RTBeatmap.Current.levelTimer.offset = 0f;
+            RTBeatmap.Current.levelTimer.Reset();
+            RTBeatmap.Current.boosts.Clear();
+            RTBeatmap.Current.hits.Clear();
+            RTBeatmap.Current.deaths.Clear();
+
+            // for now, challenge mode and game speeds aren't supported in the story mode. TODO: consider this in a future update? maybe it can be unlocked after SS ranking the level.
+            if (level.isStory)
             {
-                GameManager.inst.hits.Clear();
-                GameManager.inst.deaths.Clear();
+                RTBeatmap.Current.challengeMode = ChallengeMode.Normal;
+                RTBeatmap.Current.gameSpeed = GameSpeed.X1_0;
+                RTBeatmap.Current.lives = -1;
+            }
+            else
+            {
+                RTBeatmap.Current.challengeMode = CoreConfig.Instance.ChallengeModeSetting.Value;
+                RTBeatmap.Current.gameSpeed = CoreConfig.Instance.GameSpeedSetting.Value;
+                RTBeatmap.Current.lives = RTBeatmap.Current.challengeMode.Lives;
             }
 
             #endregion
@@ -368,7 +360,7 @@ namespace BetterLegacy.Core.Managers
                 yield return null;
 
             AudioManager.inst.PlayMusic(null, level.music, true, songFadeTransition, false);
-            AudioManager.inst.SetPitch(CoreHelper.Pitch);
+            AudioManager.inst.SetPitch(RTBeatmap.Current.Pitch);
             GameManager.inst.songLength = level.music.length;
 
             // preload audio clips
@@ -407,7 +399,6 @@ namespace BetterLegacy.Core.Managers
             #region Spawning
 
             Debug.Log($"{className}Spawning...");
-            BoostCount = 0;
 
             if (!storyLevel)
                 PlayersData.Load(level.GetFile(Level.PLAYERS_LSB));
@@ -442,7 +433,7 @@ namespace BetterLegacy.Core.Managers
             LoadingFromHere = false;
 
             ResetTransition();
-            CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
+            RTBeatmap.Current.CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
             AchievementManager.inst.CheckLevelBeginAchievements();
 
             OnLevelStart?.Invoke(level);
@@ -738,24 +729,9 @@ namespace BetterLegacy.Core.Managers
         public static List<SaveData> Saves { get; set; } = new List<SaveData>();
 
         /// <summary>
-        /// Level rank dictionary indexer.
-        /// </summary>
-        public static Dictionary<string, int> levelRankIndexes = new Dictionary<string, int>
-        {
-            { "-", 0 },
-            { "SS", 1 },
-            { "S", 2 },
-            { "A", 3 },
-            { "B", 4 },
-            { "C", 5 },
-            { "D", 6 },
-            { "F", 7 },
-        };
-
-        /// <summary>
         /// Level rank to use in the editor.
         /// </summary>
-        public static DataManager.LevelRank EditorRank => DataManager.inst.levelRanks[(int)EditorConfig.Instance.EditorRank.Value];
+        public static Rank EditorRank => EditorConfig.Instance.EditorRank.Value;
 
         /// <summary>
         /// Finds and sets the levels' save data.
@@ -792,7 +768,7 @@ namespace BetterLegacy.Core.Managers
 
             var levels = CurrentLevelCollection ? CurrentLevelCollection.levels : Levels;
 
-            if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
+            if (RTBeatmap.Current.challengeMode.Invincible)
             {
                 if (NextLevelInCollection && CurrentLevel.metadata && CurrentLevel.metadata.song.DifficultyType == DifficultyType.Animation)
                     SetLevelData(levels, NextLevelInCollection, false);
@@ -819,14 +795,14 @@ namespace BetterLegacy.Core.Managers
             {
                 CoreHelper.Log($"Updating save data\n" +
                     $"New Player Data = {makeNewSaveData}\n" +
-                    $"Deaths [OLD = {currentLevel.saveData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
-                    $"Hits: [OLD = {currentLevel.saveData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
-                    $"Boosts: [OLD = {currentLevel.saveData.Boosts} > NEW = {BoostCount}]");
+                    $"Deaths [OLD = {currentLevel.saveData.Deaths} > NEW = {RTBeatmap.Current.deaths.Count}]\n" +
+                    $"Hits: [OLD = {currentLevel.saveData.Hits} > NEW = {RTBeatmap.Current.hits.Count}]\n" +
+                    $"Boosts: [OLD = {currentLevel.saveData.Boosts} > NEW = {RTBeatmap.Current.boosts.Count}]");
 
-                currentLevel.saveData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
+                currentLevel.saveData.Update(RTBeatmap.Current.deaths.Count, RTBeatmap.Current.hits.Count, RTBeatmap.Current.boosts.Count, true);
             }
 
-            if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion && (currentLevel.metadata.song.DifficultyType == DifficultyType.Animation || !PlayerManager.IsZenMode && !PlayerManager.IsPractice))
+            if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion && (currentLevel.metadata.song.DifficultyType == DifficultyType.Animation || !RTBeatmap.Current.challengeMode.Invincible))
                 currentLevel.saveData.Unlocked = true;
 
             if (Saves.TryFindIndex(x => x.ID == currentLevel.id, out int saveIndex))
@@ -928,7 +904,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="hits">Hits to normalize.</param>
         /// <returns>Returns an array representing the normalized hits.</returns>
-        public static int[] GetHitsNormalized(List<SaveManager.SaveGroup.Save.PlayerDataPoint> hits)
+        public static int[] GetHitsNormalized(List<PlayerDataPoint> hits)
         {
             int[] hitsNormalized = new int[DATA_POINT_MAX + 1];
             foreach (var playerDataPoint in hits)
@@ -945,16 +921,17 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="hits">Hits player data list.</param>
         /// <returns>A calculated rank from hits.</returns>
-        public static DataManager.LevelRank GetLevelRank(List<SaveManager.SaveGroup.Save.PlayerDataPoint> hits)
+        public static Rank GetLevelRank(List<PlayerDataPoint> hits)
         {
             if (CoreHelper.InEditor)
                 return EditorRank;
 
-            if (!CoreHelper.InStory && (PlayerManager.IsZenMode || PlayerManager.IsPractice))
-                return DataManager.inst.levelRanks[0];
+            if (!CoreHelper.InStory && (RTBeatmap.Current.challengeMode.Invincible))
+                return Rank.Null;
 
             var hitsNormalized = GetHitsNormalized(hits);
-            return DataManager.inst.levelRanks.Find(x => hitsNormalized.Sum() >= x.minHits && hitsNormalized.Sum() <= x.maxHits);
+            var ranks = Rank.Null.GetValues();
+            return Rank.Null.TryGetValue(x => hitsNormalized.Sum() >= x.MinHits && hitsNormalized.Sum() <= x.MaxHits, out Rank rankType) ? rankType : Rank.Null;
         }
 
         /// <summary>
@@ -962,22 +939,22 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="hits">Hit count.</param>
         /// <returns>A calculated rank from the amount of hits.</returns>
-        public static DataManager.LevelRank GetLevelRank(int hits)
-            => CoreHelper.InEditor ? EditorRank : DataManager.inst.levelRanks.TryFind(x => hits >= x.minHits && hits <= x.maxHits, out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
+        public static Rank GetLevelRank(int hits)
+            => CoreHelper.InEditor ? EditorRank : Rank.Null.TryGetValue(x => hits >= x.MinHits && hits <= x.MaxHits, out Rank rankType) ? rankType : Rank.Null;
 
         /// <summary>
         /// Gets a levels' rank.
         /// </summary>
         /// <param name="level">Level to get a rank from.</param>
         /// <returns>A levels' stored rank.</returns>
-        public static DataManager.LevelRank GetLevelRank(Level level) => GetLevelRank(level?.saveData?.Hits ?? -1);
+        public static Rank GetLevelRank(Level level) => GetLevelRank(level?.saveData?.Hits ?? -1);
 
         /// <summary>
         /// Gets a levels' rank.
         /// </summary>
         /// <param name="playerData">PlayerData to get a rank from.</param>
         /// <returns>A levels' stored rank.</returns>
-        public static DataManager.LevelRank GetLevelRank(SaveData playerData) => GetLevelRank(playerData?.Hits ?? -1);
+        public static Rank GetLevelRank(SaveData playerData) => GetLevelRank(playerData?.Hits ?? -1);
 
         /// <summary>
         /// Calculates the players' accuracy in a level.

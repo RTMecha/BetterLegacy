@@ -127,18 +127,6 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
-        /// The current pitch setting.
-        /// </summary>
-        public static float Pitch
-        {
-            get
-            {
-                var gameSpeeds = PlayerManager.GameSpeeds;
-                return InEditor || InStory ? 1f : gameSpeeds[Mathf.Clamp(PlayerManager.ArcadeGameSpeed, 0, gameSpeeds.Length - 1)];
-            }
-        }
-
-        /// <summary>
         /// Gets the current interpolated theme or if the user is in the theme editor, the preview theme.
         /// </summary>
         public static BeatmapTheme CurrentBeatmapTheme => InEditor && EventEditor.inst.showTheme ? RTThemeEditor.inst.PreviewTheme : ThemeManager.inst.Current;
@@ -154,15 +142,6 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="resolution">The resolution index.</param>
         /// <returns>Returns a Vector2Int representing a resolution.</returns>
         public static Vector2 GetResolution(int resolution) => CustomEnumHelper.GetValue<ResolutionType>(resolution).Resolution;
-
-        /// <summary>
-        /// Gets a difficulty from the difficulty list.
-        /// </summary>
-        /// <param name="difficulty">The difficulty index.</param>
-        /// <returns>Returns a known difficulty if the index is in the range of the difficulty list. If it isn't, it'll return an unknown difficulty.</returns>
-        public static DataManager.Difficulty GetDifficulty(int difficulty)
-            => DataManager.inst.difficulties.InRange(difficulty) ?
-                DataManager.inst.difficulties[difficulty] : new DataManager.Difficulty("Unknown Difficulty", LSColors.HexToColor("424242"));
 
         #endregion
 

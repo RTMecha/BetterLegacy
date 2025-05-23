@@ -5928,6 +5928,8 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorManager.inst.hasLoadedLevel)
                 return;
 
+            RTBeatmap.Current?.Reset();
+
             GameManager.inst.playerGUI.SetActive(true);
             CursorManager.inst.HideCursor();
             EditorManager.inst.GUI.SetActive(false);
@@ -5976,6 +5978,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogError($"Resetting player health error.\n{ex}");
             }
+
+            RTBeatmap.Current?.Reset();
         }
 
         public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));

@@ -920,7 +920,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerHit(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
+            if (!modifier.reference || RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -936,7 +936,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerHitIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Invincible || modifier.constant)
+            if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             var damage = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
@@ -946,7 +946,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerHitAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Invincible || modifier.constant)
+            if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             var damage = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
@@ -956,7 +956,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerHeal(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
+            if (!modifier.reference || RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             var heal = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
@@ -974,7 +974,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerHealIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Invincible || modifier.constant)
+            if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             var health = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
@@ -984,7 +984,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerHealAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Invincible || modifier.constant)
+            if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             var heal = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
@@ -1002,7 +1002,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerKill(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
+            if (!modifier.reference || RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             // queue post tick so the position of the object is accurate.
@@ -1018,7 +1018,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerKillIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Invincible || modifier.constant)
+            if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
@@ -1027,7 +1027,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerKillAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Invincible || modifier.constant)
+            if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
             foreach (var player in PlayerManager.Players)
@@ -6053,15 +6053,11 @@ namespace BetterLegacy.Core.Helpers
         
         public static void clearHits<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (!CoreHelper.InEditor) // hit and death counters are not supported in the editor yet.
-                GameManager.inst.hits.Clear();
+            RTBeatmap.Current.hits.Clear();
         }
         
         public static void addHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (CoreHelper.InEditor)
-                return;
-
             var vector = Vector3.zero;
             if (modifier.reference is BeatmapObject beatmapObject)
             {
@@ -6085,26 +6081,22 @@ namespace BetterLegacy.Core.Helpers
                 time = RTMath.Parse(timeValue, numberVariables, evaluatable.GetObjectFunctions());
             }
 
-            GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
+            RTBeatmap.Current.hits.Add(new PlayerDataPoint(vector, time));
         }
         
         public static void subHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (!CoreHelper.InEditor && !GameManager.inst.hits.IsEmpty())
-                GameManager.inst.hits.RemoveAt(GameManager.inst.hits.Count - 1);
+            if (!RTBeatmap.Current.hits.IsEmpty())
+                RTBeatmap.Current.hits.RemoveAt(RTBeatmap.Current.hits.Count - 1);
         }
         
         public static void clearDeaths<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (!CoreHelper.InEditor)
-                GameManager.inst.deaths.Clear();
+            RTBeatmap.Current.deaths.Clear();
         }
         
         public static void addDeath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (CoreHelper.InEditor)
-                return;
-
             var vector = Vector3.zero;
             if (modifier.reference is BeatmapObject beatmapObject)
             {
@@ -6128,13 +6120,13 @@ namespace BetterLegacy.Core.Helpers
                 time = RTMath.Parse(timeValue, numberVariables, evaluatable.GetObjectFunctions());
             }
 
-            GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(vector, GameManager.inst.UpcomingCheckpointIndex, time));
+            RTBeatmap.Current.deaths.Add(new PlayerDataPoint(vector, time));
         }
         
         public static void subDeath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (!CoreHelper.InEditor && !GameManager.inst.deaths.IsEmpty())
-                GameManager.inst.deaths.RemoveAt(GameManager.inst.deaths.Count - 1);
+            if (!RTBeatmap.Current.deaths.IsEmpty())
+                RTBeatmap.Current.deaths.RemoveAt(RTBeatmap.Current.deaths.Count - 1);
         }
 
         #endregion

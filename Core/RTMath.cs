@@ -109,9 +109,9 @@ namespace BetterLegacy.Core
                 // In-game only variables and functions
                 if (CoreHelper.InGame)
                 {
-                    context.RegisterVariable("deathCount", GameManager.inst.deaths.Count);
-                    context.RegisterVariable("hitCount", GameManager.inst.hits.Count);
-                    context.RegisterVariable("boostCount", LevelManager.BoostCount);
+                    context.RegisterVariable("deathCount", RTBeatmap.Current.deaths.Count);
+                    context.RegisterVariable("hitCount", RTBeatmap.Current.hits.Count);
+                    context.RegisterVariable("boostCount", RTBeatmap.Current.boosts.Count);
                     if (RTLevel.Current)
                         context.RegisterVariable("smoothedTime", RTLevel.Current.CurrentTime);
                     context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);

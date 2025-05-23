@@ -307,6 +307,13 @@ namespace BetterLegacy.Core.Runtime
             OnBeatmapObjectsTick(); // objects update fifth
             OnBackgroundObjectsTick(); // bgs update sixth
 
+            // reset player cache
+            if (RTBeatmap.Current)
+            {
+                RTBeatmap.Current.playerHit = false;
+                RTBeatmap.Current.playerDied = false;
+            }
+
             while (postTick != null && !postTick.IsEmpty())
                 postTick.Dequeue()?.Invoke();
         }

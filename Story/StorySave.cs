@@ -8,6 +8,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Story
 {
@@ -86,11 +87,11 @@ namespace BetterLegacy.Story
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewSaveData}\n" +
-                $"Deaths [OLD = {level.saveData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
-                $"Hits: [OLD = {level.saveData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
-                $"Boosts: [OLD = {level.saveData.Boosts} > NEW = {LevelManager.BoostCount}]");
+                $"Deaths [OLD = {level.saveData.Deaths} > NEW = {RTBeatmap.Current.deaths.Count}]\n" +
+                $"Hits: [OLD = {level.saveData.Hits} > NEW = {RTBeatmap.Current.hits.Count}]\n" +
+                $"Boosts: [OLD = {level.saveData.Boosts} > NEW = {RTBeatmap.Current.boosts.Count}]");
 
-            level.saveData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, LevelManager.BoostCount, true);
+            level.saveData.Update(RTBeatmap.Current.deaths.Count, RTBeatmap.Current.hits.Count, RTBeatmap.Current.boosts.Count, true);
 
             if (Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
                 Saves[saveIndex] = level.saveData;
