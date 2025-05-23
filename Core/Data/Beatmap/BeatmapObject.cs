@@ -747,7 +747,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 var ot = jn["ot"].AsInt;
 
-                objectType = ot == 4 ? ObjectType.Normal : ot == 5 ? ObjectType.Decoration : ot == 6 ? ObjectType.Empty : (ObjectType)ot;
+                // handle extra object types alpha has for some reason...
+                objectType = ot switch
+                {
+                    4 => ObjectType.Normal,
+                    5 => ObjectType.Decoration,
+                    6 => ObjectType.Empty,
+                    _ => (ObjectType)ot,
+                };
             }
 
             if (jn["st"] != null)
@@ -769,9 +776,13 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["csp"] != null)
             {
-                ShapeType = ShapeType.Polygon;
+                if (ShapeType != ShapeType.Arrow || shapeOption > 1)
+                    ShapeType = ShapeType.Polygon;
                 polygonShape = PolygonShape.ParseVG(jn["csp"]);
             }
+            // why is custom polygon a part of EVERY shape type...
+            else if (shape < GameData.UnmoddedShapeOptions.Length && shapeOption >= GameData.UnmoddedShapeOptions[shape])
+                shapeOption = 0;
 
             autoTextAlign = ShapeType == ShapeType.Text;
 
