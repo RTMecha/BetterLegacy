@@ -82,9 +82,6 @@ namespace BetterLegacy.Patchers
             Instance.gameObject.AddComponent<RTGameManager>();
 
             ArcadeHelper.fromLevel = true;
-
-            LevelManager.timeInLevelOffset = Time.time;
-            LevelManager.timeInLevel = 0f;
             return false;
         }
 
@@ -93,7 +90,10 @@ namespace BetterLegacy.Patchers
         static bool UpdatePrefix(GameManager __instance)
         {
             if (!LevelManager.LevelEnded)
-                LevelManager.timeInLevel = Time.time - LevelManager.timeInLevelOffset;
+                Core.Runtime.RTBeatmap.Current.levelTimer.Update();
+
+            if (PauseMenu.Current)
+                Core.Runtime.RTBeatmap.Current.pausedTimer.Update();
 
             if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && CoreHelper.Paused && !LevelManager.LevelEnded && PauseMenu.Current && !PauseMenu.Current.generating)
                 PauseMenu.UnPause();
@@ -172,7 +172,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool getPitch(ref float __result)
         {
-            __result = CoreHelper.Pitch;
+            __result = Core.Runtime.RTBeatmap.Current.Pitch;
             return false;
         }
 
