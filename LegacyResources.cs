@@ -1,5 +1,10 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+
+using SimpleJSON;
 
 using BetterLegacy.Core;
 
@@ -105,6 +110,33 @@ namespace BetterLegacy
         {
             postProcessResourcesAssetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("effectresources.asset"));
             postProcessResources = postProcessResourcesAssetBundle.LoadAsset<PostProcessResources>("postprocessresources.asset");
+        }
+
+        public static Dictionary<Rank, string[]> sayings = new Dictionary<Rank, string[]>()
+        {
+            { Rank.Null, null },
+            { Rank.SS, null },
+            { Rank.S, null },
+            { Rank.A, null },
+            { Rank.B, null },
+            { Rank.C, null },
+            { Rank.D, null },
+            { Rank.F, null },
+        };
+
+        public static void GetSayings()
+        {
+            var sayingsJN = JSON.Parse(RTFile.ReadFromFile(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}") ? $"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}" : $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sayings{FileFormat.JSON.Dot()}"))["sayings"];
+
+            if (sayingsJN == null)
+                return;
+
+            var ranks = Rank.Null.GetValues();
+            foreach (var rank in ranks)
+            {
+                if (sayingsJN[rank.Name.ToLower()] != null)
+                    sayings[rank] = sayingsJN[rank.Name.ToLower()].Children.Select(x => x.Value).ToArray();
+            }
         }
     }
 }

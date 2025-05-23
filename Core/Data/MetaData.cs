@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 
@@ -457,6 +459,17 @@ namespace BetterLegacy.Core.Data
 
                 if (!string.IsNullOrEmpty(jn["version_comparison"]))
                     result.versionRange = (DataManager.VersionComparison)jn["version_comparison"].AsInt;
+
+                var sayings = jn["sayings"];
+                if (sayings != null)
+                {
+                    var ranks = Rank.Null.GetValues();
+                    foreach (var rank in ranks)
+                    {
+                        if (sayings[rank.Name.ToLower()] != null)
+                            result.customSayings[rank] = sayings[rank.Name.ToLower()].Children.Select(x => x.Value).ToArray();
+                    }
+                }
             }
             catch
             {
@@ -596,6 +609,15 @@ namespace BetterLegacy.Core.Data
             if (versionRange != DataManager.VersionComparison.EqualTo)
                 jn["version_comparison"] = ((int)versionRange).ToString();
 
+            if (customSayings != null)
+            {
+                foreach (var keyValuePair in customSayings)
+                {
+                    for (int i = 0; i < keyValuePair.Value.Length; i++)
+                        jn["sayings"][keyValuePair.Key.Name.ToLower()][i] = keyValuePair.Value[i];
+                }
+            }
+
             return jn;
         }
 
@@ -675,6 +697,8 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public bool requireVersion;
         public DataManager.VersionComparison versionRange = DataManager.VersionComparison.EqualTo;
+
+        public Dictionary<Rank, string[]> customSayings = new Dictionary<Rank, string[]>();
 
         #endregion
 

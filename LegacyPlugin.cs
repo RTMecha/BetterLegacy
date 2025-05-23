@@ -91,6 +91,7 @@ namespace BetterLegacy
                 LegacyResources.GetObjectMaterials();
                 LegacyResources.GetGUIAssets();
                 LegacyResources.GetEffects();
+                LegacyResources.GetSayings();
                 
                 LockSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
                 EmptyObjectSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
