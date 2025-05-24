@@ -4,6 +4,7 @@
 ### Story
 - All cutscenes are now at a pre-polish state.
 - You can now view cutscenes of levels you've beaten.
+- Challenge mode and game settings can be used after you SS rank a level in the story mode.
 
 ### Core
 - Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
@@ -30,6 +31,7 @@
 - Text & Image object selection in preview area can be customized via the new "Select Text Objects" and "Select Image Objects" settings found under Config Manager > Editor > Preview.
 - Due to the above feature, text objects can now be highlighted.
 - Moved Editor Level code to its own manager.
+- Added Apply Game Settings In Preview Mode to Config Manager > Editor > General.
 
 ### Internal
 - Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
