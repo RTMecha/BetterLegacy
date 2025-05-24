@@ -20,6 +20,7 @@
 - 2D option for BG objects (VG parallax support?)
 - Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers, respawnable)  
   Update: 1.8.0
+  Think about allowing players to respawn even if all players haven't died yet.
 - Level preview song.
 - Custom end level function defaults.
 - Add Set Data to image shape for Custom Player objects.
@@ -94,8 +95,6 @@
 - playerAction trigger (allows for multiple different keybinds and buttons)
 - particleSystemColored action modifier  
   Update: 1.8.0
-- color math modifiers.  
-  Update: 1.7.0 - 1.8.0
 - Ignore opacity toggle for color modifiers.  
   Update: 1.7.0 - 1.8.0
 
