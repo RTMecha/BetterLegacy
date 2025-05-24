@@ -279,8 +279,7 @@ namespace BetterLegacy.Core.Managers
             RTBeatmap.Current.hits.Clear();
             RTBeatmap.Current.deaths.Clear();
 
-            // for now, challenge mode and game speeds aren't supported in the story mode. TODO: consider this in a future update? maybe it can be unlocked after SS ranking the level.
-            if (level.isStory)
+            if (level.isStory && GetLevelRank(level) != Rank.SS)
             {
                 RTBeatmap.Current.challengeMode = ChallengeMode.Normal;
                 RTBeatmap.Current.gameSpeed = GameSpeed.X1_0;
