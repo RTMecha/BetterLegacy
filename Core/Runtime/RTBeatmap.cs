@@ -32,11 +32,14 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// Resets the current beatmap cache.
         /// </summary>
-        public void Reset()
+        public void Reset(bool apply = true)
         {
             hits.Clear();
             deaths.Clear();
             boosts.Clear();
+
+            if (!apply)
+                return;
 
             challengeMode = CoreConfig.Instance.ChallengeModeSetting.Value;
             gameSpeed = CoreConfig.Instance.GameSpeedSetting.Value;

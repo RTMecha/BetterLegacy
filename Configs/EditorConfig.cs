@@ -60,6 +60,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> Debug { get; set; }
         public Setting<bool> EditorZenMode { get; set; }
         public Setting<bool> ResetHealthInEditor { get; set; }
+        public Setting<bool> ApplyGameSettingsInPreviewMode { get; set; }
         public Setting<bool> DraggingPlaysSound { get; set; }
         public Setting<bool> DraggingPlaysSoundOnlyWithBPM { get; set; }
         public Setting<bool> ShowCollapsePrefabWarning { get; set; }
@@ -1370,6 +1371,7 @@ namespace BetterLegacy.Configs
             Debug = Bind(this, GENERAL, "Debug", false, "If enabled, specific debugging functions for the editor will be enabled.");
             EditorZenMode = Bind(this, GENERAL, "Editor Zen Mode", false, "If on, the player will not take damage in Preview Mode.");
             ResetHealthInEditor = Bind(this, GENERAL, "Reset Health In Editor View", true, "If on, the player's health will reset when the creator exits Preview Mode.");
+            ApplyGameSettingsInPreviewMode = Bind(this, GENERAL, "Apply Game Settings In Preview Mode", true, "If game settings (such as challenge mode and game speed) should apply in preview mode.");
             DraggingPlaysSound = Bind(this, GENERAL, "Dragging Plays Sound", true, "If dragging an object plays a sound.");
             DraggingPlaysSoundOnlyWithBPM = Bind(this, GENERAL, "Dragging Plays Sound Only With BPM", true, "If dragging an object plays a sound ONLY when BPM Snap is active.");
             ShowCollapsePrefabWarning = Bind(this, GENERAL, "Show Collapse Prefab Warning", true, "If a warning should popup when the user is trying to apply a prefab. Can be good for accidental Apply Prefab button clicks.");

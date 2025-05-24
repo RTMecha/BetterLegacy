@@ -5928,7 +5928,13 @@ namespace BetterLegacy.Editor.Managers
             if (!EditorManager.inst.hasLoadedLevel)
                 return;
 
-            RTBeatmap.Current?.Reset();
+            RTBeatmap.Current?.Reset(EditorConfig.Instance.ApplyGameSettingsInPreviewMode.Value);
+
+            if (RTBeatmap.Current && !EditorConfig.Instance.ApplyGameSettingsInPreviewMode.Value)
+            {
+                RTBeatmap.Current.challengeMode = ChallengeMode.Normal;
+                RTBeatmap.Current.gameSpeed = GameSpeed.X1_0;
+            }
 
             GameManager.inst.playerGUI.SetActive(true);
             CursorManager.inst.HideCursor();
