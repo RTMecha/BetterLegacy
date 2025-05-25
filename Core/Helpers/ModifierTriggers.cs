@@ -351,11 +351,10 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
+            var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
-            if (!player || player.device == null && !CoreHelper.InEditor || InControl.InputManager.ActiveDevice == null)
+            if (device == null)
                 return false;
-
-            var device = player.device ?? InControl.InputManager.ActiveDevice;
 
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
         }
@@ -368,11 +367,10 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
+            var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
-            if (!player || player.device == null && !CoreHelper.InEditor || InControl.InputManager.ActiveDevice == null)
+            if (device == null)
                 return false;
-
-            var device = player.device ?? InControl.InputManager.ActiveDevice;
 
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
         }
@@ -385,11 +383,10 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
+            var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
-            if (!player || player.device == null && !CoreHelper.InEditor || InControl.InputManager.ActiveDevice == null)
+            if (device == null)
                 return false;
-
-            var device = player.device ?? InControl.InputManager.ActiveDevice;
 
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
         }
