@@ -32,6 +32,9 @@ namespace BetterLegacy.Editor
                 OpenSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_open{FileFormat.PNG.Dot()}"));
 
                 LinkSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_link{FileFormat.PNG.Dot()}"));
+
+                FlagStartSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_start{FileFormat.PNG.Dot()}"));
+                FlagEndSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_end{FileFormat.PNG.Dot()}"));
             }
             catch (Exception ex)
             {
@@ -64,6 +67,10 @@ namespace BetterLegacy.Editor
         public static Sprite LinkSprite { get; set; }
 
         public static Sprite DottedLineSprite { get; set; }
+
+        public static Sprite FlagStartSprite { get; set; }
+
+        public static Sprite FlagEndSprite { get; set; }
 
         #endregion
     }

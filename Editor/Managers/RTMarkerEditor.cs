@@ -43,11 +43,10 @@ namespace BetterLegacy.Editor.Managers
         void Awake()
         {
             inst = this;
-            StartCoroutine(SetupUI());
 
             try
             {
-                Dialog = new EditorDialog(EditorDialog.MARKER_EDITOR);
+                Dialog = new MarkerEditorDialog();
                 Dialog.Init();
             }
             catch (Exception ex)
@@ -56,137 +55,11 @@ namespace BetterLegacy.Editor.Managers
             } // init dialog
         }
 
-        IEnumerator SetupUI()
-        {
-            var dialog = EditorManager.inst.GetDialog("Marker Editor").Dialog;
-
-            var activeState = dialog.gameObject.AddComponent<ActiveState>();
-            activeState.onStateChanged = active => editorOpen = active;
-
-            MarkerEditor.inst.dialog = dialog;
-            MarkerEditor.inst.left = dialog.Find("data/left");
-            MarkerEditor.inst.right = dialog.Find("data/right");
-
-            var indexparent = new GameObject("index");
-            indexparent.transform.SetParent(MarkerEditor.inst.left);
-            indexparent.transform.SetSiblingIndex(0);
-            var rtindexpr = indexparent.AddComponent<RectTransform>();
-            rtindexpr.pivot = new Vector2(0f, 1f);
-            rtindexpr.sizeDelta = new Vector2(371f, 32f);
-
-            var index = new GameObject("text");
-            index.transform.parent = indexparent.transform;
-            var rtindex = index.AddComponent<RectTransform>();
-            index.AddComponent<CanvasRenderer>();
-            var ttindex = index.AddComponent<Text>();
-
-            rtindex.anchoredPosition = Vector2.zero;
-            rtindex.anchorMax = Vector2.one;
-            rtindex.anchorMin = Vector2.zero;
-            rtindex.pivot = new Vector2(0f, 1f);
-            rtindex.sizeDelta = Vector2.zero;
-
-            ttindex.text = "Index: 0";
-            ttindex.font = FontManager.inst.DefaultFont;
-            ttindex.color = new Color(0.9f, 0.9f, 0.9f);
-            ttindex.alignment = TextAnchor.MiddleLeft;
-            ttindex.fontSize = 16;
-            ttindex.horizontalOverflow = HorizontalWrapMode.Overflow;
-
-            EditorThemeManager.AddLightText(ttindex);
-
-            EditorHelper.SetComplexity(indexparent, Complexity.Normal);
-
-            // Makes label consistent with other labels. Originally said "Marker Time" where other labels do not mention "Marker".
-            var timeLabel = MarkerEditor.inst.left.GetChild(3).GetChild(0).GetComponent<Text>();
-            timeLabel.text = "Time";
-            // Fixes "Name" label.
-            var descriptionLabel = MarkerEditor.inst.left.GetChild(5).GetChild(0).GetComponent<Text>();
-            descriptionLabel.text = "Description";
-
-            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
-
-            EditorThemeManager.AddInputField(MarkerEditor.inst.right.Find("InputField").GetComponent<InputField>(), ThemeGroup.Search_Field_2);
-
-            var scrollbar = MarkerEditor.inst.right.transform.Find("Scrollbar").GetComponent<Scrollbar>();
-            EditorThemeManager.ApplyGraphic(scrollbar.GetComponent<Image>(), ThemeGroup.Scrollbar_2, true);
-            EditorThemeManager.ApplyGraphic(scrollbar.image, ThemeGroup.Scrollbar_2_Handle, true);
-
-            EditorThemeManager.AddLightText(MarkerEditor.inst.left.GetChild(1).GetChild(0).GetComponent<Text>());
-            EditorThemeManager.AddLightText(timeLabel);
-            EditorThemeManager.AddLightText(descriptionLabel);
-
-            EditorThemeManager.AddInputField(MarkerEditor.inst.left.Find("name").GetComponent<InputField>());
-            EditorThemeManager.AddInputField(MarkerEditor.inst.left.Find("desc").GetComponent<InputField>());
-
-            var time = EditorPrefabHolder.Instance.NumberInputField.Duplicate(MarkerEditor.inst.left, "time new", 4);
-            Destroy(MarkerEditor.inst.left.Find("time").gameObject);
-
-            var timeStorage = time.GetComponent<InputFieldStorage>();
-            EditorThemeManager.AddInputField(timeStorage.inputField);
-
-            EditorThemeManager.AddSelectable(timeStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.middleButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(timeStorage.rightGreaterButton, ThemeGroup.Function_2, false);
-
-            time.name = "time";
-
-            // fixes color slot spacing
-            MarkerEditor.inst.left.Find("color").GetComponent<GridLayoutGroup>().spacing = new Vector2(8f, 8f);
-
-            if (!EditorPrefabHolder.Instance.Function2Button)
-            {
-                CoreHelper.LogError("No Function 2 button for some reason.");
-                yield break;
-            }
-
-            var makeNote = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "convert to note", 8);
-            var makeNoteStorage = makeNote.GetComponent<FunctionButtonStorage>();
-            makeNoteStorage.label.text = "Convert to Planner Note";
-            makeNoteStorage.button.onClick.ClearAll();
-
-            EditorThemeManager.AddSelectable(makeNoteStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(makeNoteStorage.label, ThemeGroup.Function_2_Text);
-
-            EditorHelper.SetComplexity(makeNote, Complexity.Advanced);
-
-            var snapToBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "snap bpm", 5);
-            var snapToBPMStorage = snapToBPM.GetComponent<FunctionButtonStorage>();
-            snapToBPMStorage.label.text = "Snap BPM";
-            snapToBPMStorage.button.onClick.ClearAll();
-
-            EditorThemeManager.AddSelectable(snapToBPMStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(snapToBPMStorage.label, ThemeGroup.Function_2_Text);
-
-            EditorHelper.SetComplexity(snapToBPM, Complexity.Normal);
-
-            var prefab = MarkerEditor.inst.markerPrefab;
-            var prefabCopy = prefab.Duplicate(transform, prefab.name);
-            Destroy(prefabCopy.GetComponent<MarkerHelper>());
-            MarkerEditor.inst.markerPrefab = prefabCopy;
-
-            var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
-
-            var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(desc.transform, "edit");
-            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-            buttonStorage.image.sprite = EditorSprites.EditSprite;
-            EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-            buttonStorage.button.onClick.ClearAll();
-            buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(desc); });
-            UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(171f, 51f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
-            EditorHelper.SetComplexity(button, Complexity.Advanced);
-
-            yield break;
-        }
-
         #endregion
 
         #region Variables
 
-        public EditorDialog Dialog { get; set; }
+        public MarkerEditorDialog Dialog { get; set; }
 
         /// <summary>
         /// List of timeline markers.
@@ -654,10 +527,82 @@ namespace BetterLegacy.Editor.Managers
                 }),
                 new ButtonFunction("Delete", () => DeleteMarker(timelineMarker.Index)),
                 new ButtonFunction(true),
-                new ButtonFunction("Start Marker Looping", () => markerLooping = true),
+                new ButtonFunction("Start Marker Looping", () =>
+                {
+                    if (!markerLoopBegin && !markerLoopEnd)
+                    {
+                        markerLooping = false;
+                        EditorManager.inst.DisplayNotification("Cannot start Marker looping without a start and end Marker set.", 3f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+                    
+                    if (!markerLoopBegin)
+                    {
+                        markerLooping = false;
+                        EditorManager.inst.DisplayNotification("Cannot start Marker looping without a start Marker set.", 3f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+                    
+                    if (!markerLoopEnd)
+                    {
+                        markerLooping = false;
+                        EditorManager.inst.DisplayNotification("Cannot start Marker looping without an end Marker set.", 3f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    markerLooping = true;
+                    EditorManager.inst.DisplayNotification("Started Marker looping!", 1.5f, EditorManager.NotificationType.Success);
+                }),
                 new ButtonFunction("Stop Marker Looping", () => markerLooping = false),
-                new ButtonFunction("Set Begin Loop", () => markerLoopBegin = timelineMarker),
-                new ButtonFunction("Set End Loop", () => markerLoopEnd = timelineMarker),
+                new ButtonFunction("Set Begin Loop", () =>
+                {
+                    if (markerLoopEnd && markerLoopEnd.Marker && timelineMarker.Marker && markerLoopEnd.Marker.id == timelineMarker.Marker.id)
+                    {
+                        EditorManager.inst.DisplayNotification("Cannot set this Marker as the start of the Marker loop as it is also the end.", 3f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    markerLoopBegin?.RenderFlags(false, false);
+                    markerLoopBegin = timelineMarker;
+                    markerLoopBegin.RenderFlags(true, false);
+
+                    if (markerLoopBegin && markerLoopEnd)
+                    {
+                        markerLooping = true;
+                        EditorManager.inst.DisplayNotification("Marker set to start of Marker loop and began the loop.", 2f, EditorManager.NotificationType.Success);
+                    }
+                    else
+                        EditorManager.inst.DisplayNotification("Marker has been set to the start of the Marker loop.", 3f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonFunction("Set End Loop", () =>
+                {
+                    if (markerLoopBegin && markerLoopBegin.Marker && timelineMarker.Marker && markerLoopBegin.Marker.id == timelineMarker.Marker.id)
+                    {
+                        EditorManager.inst.DisplayNotification("Cannot set this Marker as the end of the Marker loop as it is also the start.", 3f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    markerLoopEnd?.RenderFlags(false, false);
+                    markerLoopEnd = timelineMarker;
+                    markerLoopEnd.RenderFlags(false, true);
+
+                    if (markerLoopBegin && markerLoopEnd)
+                    {
+                        markerLooping = true;
+                        EditorManager.inst.DisplayNotification("Marker set to end of Marker loop and began the loop.", 2f, EditorManager.NotificationType.Success);
+                    }
+                    else
+                        EditorManager.inst.DisplayNotification("Marker has been set to the end of the Marker loop.", 3f, EditorManager.NotificationType.Success);
+                }),
+                new ButtonFunction("Clear Marker Loop", () =>
+                {
+                    markerLoopBegin?.RenderFlags(false, false);
+                    markerLoopBegin = null;
+                    markerLoopEnd?.RenderFlags(false, false);
+                    markerLoopEnd = null;
+                    markerLooping = false;
+                    EditorManager.inst.DisplayNotification("Stopped and cleared Marker loop.", 3f, EditorManager.NotificationType.Success);
+                }),
                 new ButtonFunction(true),
                 new ButtonFunction("Run Functions", () => RunMarkerFunctions(timelineMarker.Marker))
                 );
@@ -686,6 +631,10 @@ namespace BetterLegacy.Editor.Managers
                         CoreHelper.Destroy(timelineMarkers[i].GameObject);
                 timelineMarkers.Clear();
             }
+
+            markerLoopBegin = null;
+            markerLoopEnd = null;
+            markerLooping = false;
 
             if (!GameData.Current)
                 return;

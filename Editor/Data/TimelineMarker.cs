@@ -11,6 +11,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
@@ -54,6 +55,18 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public Image Line { get; set; }
 
+        /// <summary>
+        /// Start flag of the timeline marker.
+        /// </summary>
+        public Image FlagStart { get; set; }
+        /// <summary>
+        /// End flag of the timeline marker.
+        /// </summary>
+        public Image FlagEnd { get; set; }
+
+        /// <summary>
+        /// Info tooltip of the timeline marker.
+        /// </summary>
         public HoverTooltip HoverTooltip { get; set; }
 
         #endregion
@@ -105,16 +118,21 @@ namespace BetterLegacy.Editor.Data
             gameObject = MarkerEditor.inst.markerPrefab.Duplicate(EditorManager.inst.markerTimeline.transform, $"Marker {index + 1}");
             gameObject.SetActive(true);
             gameObject.transform.localScale = Vector3.one;
+            var markerStorage = gameObject.GetComponent<MarkerStorage>();
 
             Index = index;
             GameObject = gameObject;
             RectTransform = gameObject.transform.AsRT();
-            Handle = gameObject.GetComponent<Image>();
-            Line = gameObject.transform.Find("line").GetComponent<Image>();
-            Text = gameObject.GetComponentInChildren<Text>();
-            HoverTooltip = gameObject.GetComponent<HoverTooltip>();
+            Handle = markerStorage.handle;
+            Line = markerStorage.line;
+            Text = markerStorage.label;
+            FlagStart = markerStorage.flagStart;
+            FlagEnd = markerStorage.flagEnd;
+            HoverTooltip = markerStorage.hoverTooltip;
 
             EditorThemeManager.ApplyLightText(Text);
+            EditorThemeManager.ApplyGraphic(FlagStart, ThemeGroup.Add);
+            EditorThemeManager.ApplyGraphic(FlagEnd, ThemeGroup.Delete);
 
             TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
             {
@@ -122,14 +140,12 @@ namespace BetterLegacy.Editor.Data
 
                 switch (pointerEventData.button)
                 {
-                    case PointerEventData.InputButton.Left:
-                        {
+                    case PointerEventData.InputButton.Left: {
                             RTMarkerEditor.inst.SetCurrentMarker(this);
                             AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
                             break;
                         }
-                    case PointerEventData.InputButton.Right:
-                        {
+                    case PointerEventData.InputButton.Right: {
                             if (EditorConfig.Instance.MarkerShowContextMenu.Value)
                             {
                                 RTMarkerEditor.inst.ShowMarkerContextMenu(this);
@@ -138,8 +154,7 @@ namespace BetterLegacy.Editor.Data
                             RTMarkerEditor.inst.DeleteMarker(Index);
                             break;
                         }
-                    case PointerEventData.InputButton.Middle:
-                        {
+                    case PointerEventData.InputButton.Middle: {
                             if (EditorConfig.Instance.MarkerDragButton.Value == PointerEventData.InputButton.Middle)
                                 return;
 
@@ -309,6 +324,19 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         /// <param name="width">Width of the line.</param>
         public void RenderLineWidth(float width) => Line.rectTransform.sizeDelta = new Vector2(width, 301f);
+
+        /// <summary>
+        /// Renders the timeline markers' start & end loop flags.
+        /// </summary>
+        /// <param name="start">If the marker is the start of the marker loop.</param>
+        /// <param name="end">If the marker is the end of the marker loop.</param>
+        public void RenderFlags(bool start, bool end)
+        {
+            if (FlagStart)
+                FlagStart.gameObject.SetActive(start);
+            if (FlagEnd)
+                FlagEnd.gameObject.SetActive(end);
+        }
 
         #endregion
     }
