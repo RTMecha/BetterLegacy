@@ -32,6 +32,7 @@
 - Due to the above feature, text objects can now be highlighted.
 - Moved Editor Level code to its own manager.
 - Added Apply Game Settings In Preview Mode to Config Manager > Editor > General.
+- Improved Marker looping usability by adding start & end flags to the Timeline Marker and added "Clear Marker Loop" to the Marker Context Menu.
 
 ### Internal
 - Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
