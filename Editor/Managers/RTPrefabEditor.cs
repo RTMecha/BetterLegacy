@@ -1569,7 +1569,7 @@ namespace BetterLegacy.Editor.Managers
 
         void CreatePrefabTypesPopup()
         {
-            var gameObject = Creator.NewUIObject("Prefab Types Popup", EditorManager.inst.dialogs, 9);
+            var gameObject = Creator.NewUIObject("Prefab Types Popup", RTEditor.inst.popups, 9);
 
             var baseImage = gameObject.AddComponent<Image>();
             EditorThemeManager.AddGraphic(baseImage, ThemeGroup.Background_1);
@@ -1589,8 +1589,7 @@ namespace BetterLegacy.Editor.Managers
             var title = panel.transform.Find("Text").GetComponent<Text>();
             title.text = "Prefab Type Editor / Selector";
             var closeButton = panel.transform.Find("x").GetComponent<Button>();
-            closeButton.onClick.ClearAll();
-            closeButton.onClick.AddListener(() => RTEditor.inst.PrefabTypesPopup.Close());
+            closeButton.onClick.NewListener(() => RTEditor.inst.PrefabTypesPopup.Close());
 
             var refresh = Creator.NewUIObject("Refresh", panel.transform);
             UIManager.SetRectTransform(refresh.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(32f, 32f));
