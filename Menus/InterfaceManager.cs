@@ -649,25 +649,27 @@ namespace BetterLegacy.Menus
             if (jn.IsObject)
                 return ParseIfFunctionSingle(jn, thisElement);
 
-            bool canProceed = true;
+            bool result = true;
 
             if (jn.IsArray)
             {
                 for (int i = 0; i < jn.Count; i++)
                 {
-                    var value = ParseIfFunctionSingle(jn[i], thisElement);
-                    if (!jn[i]["otherwise"].AsBool && !value)
-                        canProceed = false;
+                    var checkJN = jn[i];
+                    var value = ParseIfFunction(checkJN, thisElement);
 
-                    if (jn[i]["otherwise"].AsBool && value)
-                        canProceed = true;
+                    // if json is array then count it as an else if statement
+                    var elseIf = checkJN.IsArray || checkJN["otherwise"].AsBool;
 
-                    //if (jn[i]["and"].AsBool && !value)
-                    //    canProceed = false;
+                    if (elseIf && !result && value)
+                        result = true;
+
+                    if (!elseIf && !value)
+                        result = false;
                 }
             }
 
-            return canProceed;
+            return result;
         }
 
         /// <summary>
