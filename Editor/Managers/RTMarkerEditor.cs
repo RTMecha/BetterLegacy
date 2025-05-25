@@ -72,11 +72,6 @@ namespace BetterLegacy.Editor.Managers
         public TimelineMarker CurrentMarker { get; set; }
 
         /// <summary>
-        /// Quick references to the markers list.
-        /// </summary>
-        public List<Marker> Markers => GameData.Current.data.markers;
-
-        /// <summary>
         /// Copied marker.
         /// </summary>
         public Marker markerCopy;
@@ -86,12 +81,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public bool dragging;
 
-        /// <summary>
-        /// If the Marker editor is open.
-        /// </summary>
-        public bool editorOpen;
-
-        List<GameObject> markerColors = new List<GameObject>();
+        public List<Marker> copiedMarkers = new List<Marker>();
 
         #region Looping
 
@@ -126,7 +116,7 @@ namespace BetterLegacy.Editor.Managers
                 timelineMarkers[i].RenderPosition();
             }
 
-            if (dragging && CurrentMarker && editorOpen)
+            if (dragging && CurrentMarker && Dialog.IsCurrent)
                 RenderTime(CurrentMarker.Marker);
 
             if (EditorManager.inst.loading || !markerLooping || GameData.Current.data.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
@@ -157,9 +147,7 @@ namespace BetterLegacy.Editor.Managers
             RenderDescriptionEditor(marker);
             RenderTime(marker);
 
-            var convertToNote = MarkerEditor.inst.left.Find("convert to note").GetComponent<Button>();
-            convertToNote.onClick.ClearAll();
-            convertToNote.onClick.AddListener(() =>
+            Dialog.ConvertToPlannerNoteButton.button.onClick.NewListener(() =>
             {
                 ProjectPlanner.inst.AddPlanner(new NotePlanner
                 {
@@ -187,10 +175,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderNameEditor(Marker marker)
         {
-            var name = MarkerEditor.inst.left.Find("name").GetComponent<InputField>();
-            name.onValueChanged.ClearAll();
-            name.text = marker.name;
-            name.onValueChanged.AddListener(SetName);
+            Dialog.NameField.SetTextWithoutNotify(marker.name);
+            Dialog.NameField.onValueChanged.NewListener(SetName);
         }
 
         /// <summary>
@@ -199,10 +185,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderDescriptionEditor(Marker marker)
         {
-            var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
-            desc.onValueChanged.ClearAll();
-            desc.text = marker.desc;
-            desc.onValueChanged.AddListener(SetDescription);
+            Dialog.DescriptionField.SetTextWithoutNotify(marker.desc);
+            Dialog.DescriptionField.onValueChanged.NewListener(SetDescription);
         }
 
         /// <summary>
@@ -211,25 +195,18 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderTime(Marker marker)
         {
-            var time = MarkerEditor.inst.left.Find("time/input").GetComponent<InputField>();
-            time.onValueChanged.ClearAll();
-            time.text = marker.time.ToString();
-            time.onValueChanged.AddListener(_val =>
+            Dialog.TimeField.inputField.SetTextWithoutNotify(marker.time.ToString());
+            Dialog.TimeField.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                     SetTime(num);
             });
 
-            TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
-            TriggerHelper.IncreaseDecreaseButtons(time, t: MarkerEditor.inst.left.Find("time"));
+            TriggerHelper.AddEventTriggers(Dialog.TimeField.inputField.gameObject, TriggerHelper.ScrollDelta(Dialog.TimeField.inputField));
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.TimeField);
 
-            var set = MarkerEditor.inst.left.Find("time/|").GetComponent<Button>();
-            set.onClick.ClearAll();
-            set.onClick.AddListener(() => time.text = AudioManager.inst.CurrentAudioSource.time.ToString());
-
-            var snapBPM = MarkerEditor.inst.left.Find("snap bpm").GetComponent<Button>();
-            snapBPM.onClick.ClearAll();
-            snapBPM.onClick.AddListener(() => time.text = RTEditor.SnapToBPM(marker.time).ToString());
+            Dialog.TimeField.middleButton.onClick.NewListener(() => Dialog.TimeField.inputField.text = AudioManager.inst.CurrentAudioSource.time.ToString());
+            Dialog.SnapBPMButton.button.onClick.NewListener(() => Dialog.TimeField.inputField.text = RTEditor.SnapToBPM(marker.time).ToString());
         }
 
         /// <summary>
@@ -238,24 +215,22 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="marker">Marker to edit.</param>
         public void RenderColors(Marker marker)
         {
-            var colorsParent = MarkerEditor.inst.left.Find("color");
-            LSHelpers.DeleteChildren(MarkerEditor.inst.left.Find("color"));
-            markerColors.Clear();
+            LSHelpers.DeleteChildren(Dialog.ColorsParent);
+            Dialog.Colors.Clear();
             int num = 0;
             foreach (var color in MarkerEditor.inst.markerColors)
             {
                 int colorIndex = num;
-                var gameObject = EditorManager.inst.colorGUI.Duplicate(colorsParent, "marker color");
+                var gameObject = EditorManager.inst.colorGUI.Duplicate(Dialog.ColorsParent, "marker color");
                 gameObject.transform.localScale = Vector3.one;
 
                 var markerColorSelection = gameObject.transform.Find("Image").gameObject;
                 markerColorSelection.SetActive(marker.color == colorIndex);
-                markerColors.Add(markerColorSelection);
+                Dialog.Colors.Add(markerColorSelection);
 
                 var button = gameObject.GetComponent<Button>();
                 button.image.color = color;
-                button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+                button.onClick.NewListener(() =>
                 {
                     Debug.Log($"{EditorManager.inst.className}Set Marker {colorIndex}'s color to {colorIndex}");
                     SetColor(colorIndex);
@@ -293,8 +268,8 @@ namespace BetterLegacy.Editor.Managers
         public void UpdateColorSelection()
         {
             var marker = CurrentMarker.Marker;
-            for (int i = 0; i < markerColors.Count; i++)
-                markerColors[i].SetActive(marker.color == i);
+            for (int i = 0; i < Dialog.Colors.Count; i++)
+                Dialog.Colors[i].SetActive(marker.color == i);
         }
 
         /// <summary>
@@ -341,19 +316,7 @@ namespace BetterLegacy.Editor.Managers
                 deleteText.text = "Delete Markers";
 
                 var deleteButton = deleteStorage.button;
-                deleteButton.onClick.NewListener(() =>
-                {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete ALL markers? (This is irreversible!)", () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Deleted {GameData.Current.data.markers.Count} markers!", 2f, EditorManager.NotificationType.Success);
-                        GameData.Current.data.markers.Clear();
-                        UpdateMarkerList();
-                        CreateMarkers();
-                        RTEditor.inst.HideWarningPopup();
-                        Dialog.Close();
-                        CheckpointEditor.inst.SetCurrentCheckpoint(0);
-                    }, RTEditor.inst.HideWarningPopup);
-                });
+                deleteButton.onClick.NewListener(ClearMarkers);
 
                 var hover = delete.GetComponent<HoverUI>();
                 if (hover)
@@ -371,7 +334,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             int num = 0;
-            foreach (var marker in Markers)
+            foreach (var marker in GameData.Current.data.markers)
             {
                 if (!RTString.SearchString(MarkerEditor.inst.sortedName, marker.name) && !RTString.SearchString(MarkerEditor.inst.sortedName, marker.desc))
                 {
@@ -426,10 +389,10 @@ namespace BetterLegacy.Editor.Managers
         public void CreateNewMarker(float time)
         {
             Marker marker;
-            if (!Markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f, out Marker baseMarker))
+            if (!GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f, out Marker baseMarker))
             {
                 marker = new Marker(string.Empty, string.Empty, Mathf.Clamp(EditorConfig.Instance.MarkerDefaultColor.Value, 0, MarkerEditor.inst.markerColors.Count - 1), time);
-                Markers.Add(marker);
+                GameData.Current.data.markers.Add(marker);
             }
             else
                 marker = baseMarker;
@@ -446,7 +409,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="index">Index of the marker to delete.</param>
         public void DeleteMarker(int index)
         {
-            Markers.RemoveAt(index);
+            GameData.Current.data.markers.RemoveAt(index);
             if (index - 1 >= 0)
                 SetCurrentMarker(timelineMarkers[index - 1]);
             else
@@ -510,21 +473,23 @@ namespace BetterLegacy.Editor.Managers
                     markerCopy = timelineMarker.Marker.Copy();
                     EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
                 }),
+                new ButtonFunction("Copy All", CopyAllMarkers),
                 new ButtonFunction("Paste", () =>
                 {
-                    if (markerCopy == null)
+                    if (!markerCopy)
                     {
                         EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
                         return;
                     }
 
                     var marker = markerCopy.Copy();
-                    marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+                    marker.time = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value && EditorConfig.Instance.BPMSnapsMarkers.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
                     GameData.Current.data.markers.Add(marker);
                     CreateMarker(GameData.Current.data.markers.Count - 1);
                     OrderMarkers();
                     EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
                 }),
+                new ButtonFunction("Paste All", PasteMarkers),
                 new ButtonFunction("Delete", () => DeleteMarker(timelineMarker.Index)),
                 new ButtonFunction(true),
                 new ButtonFunction("Start Marker Looping", () =>
@@ -614,7 +579,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="index">Index of the marker.</param>
         public void CreateMarker(int index)
         {
-            var timelineMarker = new TimelineMarker(Markers[index]);
+            var timelineMarker = new TimelineMarker(GameData.Current.data.markers[index]);
             timelineMarker.Init(index);
             timelineMarkers.Add(timelineMarker);
         }
@@ -683,7 +648,7 @@ namespace BetterLegacy.Editor.Managers
 
             OrderMarkers();
 
-            if (editorOpen && CurrentMarker)
+            if (Dialog.IsCurrent && CurrentMarker)
             {
                 RenderLabel(CurrentMarker);
                 UpdateMarkerList();
@@ -701,6 +666,56 @@ namespace BetterLegacy.Editor.Managers
             GameData.Current.data.markers = GameData.Current.data.markers.OrderBy(x => x.time).ToList();
 
             RenderMarkers();
+        }
+
+        /// <summary>
+        /// Clears all Markers from the current level.
+        /// </summary>
+        public void ClearMarkers() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete ALL markers? (This is irreversible!)", () =>
+        {
+            EditorManager.inst.DisplayNotification($"Deleted {GameData.Current.data.markers.Count} markers!", 2f, EditorManager.NotificationType.Success);
+            GameData.Current.data.markers.Clear();
+            UpdateMarkerList();
+            CreateMarkers();
+            RTEditor.inst.HideWarningPopup();
+            Dialog.Close();
+            CheckpointEditor.inst.SetCurrentCheckpoint(0);
+        }, RTEditor.inst.HideWarningPopup);
+
+        /// <summary>
+        /// Copies all Markers to the copied Markers list.
+        /// </summary>
+        public void CopyAllMarkers()
+        {
+            copiedMarkers.Clear();
+            copiedMarkers.AddRange(GameData.Current.data.markers.Select(x => x.Copy()));
+            EditorManager.inst.DisplayNotification("Copied Markers", 1.5f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Pastes all copied Markers to the level.
+        /// </summary>
+        public void PasteMarkers()
+        {
+            if (copiedMarkers.IsEmpty())
+            {
+                EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            GameData.Current.data.markers.AddRange(copiedMarkers.Select(x =>
+            {
+                var copy = x.Copy();
+
+                if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPasted.Value)
+                    copy.time = RTEditor.SnapToBPM(copy.time);
+
+                return copy;
+            }));
+
+            CreateMarkers();
+            OrderMarkers();
+            EditorManager.inst.DisplayNotification("Pasted Markers", 1.5f, EditorManager.NotificationType.Success);
         }
 
         #endregion

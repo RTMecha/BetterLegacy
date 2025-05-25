@@ -2637,7 +2637,11 @@ namespace BetterLegacy.Editor.Managers
                     {
                         EditorConfig.Instance.ShowMarkers.Value = false;
                         EditorManager.inst.DisplayNotification("Markers will now be hidden.", 1.5f, EditorManager.NotificationType.Success);
-                    })
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Clear Markers", RTMarkerEditor.inst.ClearMarkers),
+                    new ButtonFunction("Copy All Markers", RTMarkerEditor.inst.CopyAllMarkers),
+                    new ButtonFunction("Paste Markers", RTMarkerEditor.inst.PasteMarkers)
                     );
             };
 
