@@ -4850,7 +4850,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (EditorConfig.Instance.AutoPolygonRadius.Value)
                                 {
                                     beatmapObject.polygonShape.Radius = beatmapObject.polygonShape.GetAutoRadius();
-                                    RenderShape(beatmapObject);
+                                    radius.inputField.SetTextWithoutNotify(beatmapObject.polygonShape.Radius.ToString());
                                 }
                                 RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
                             }
