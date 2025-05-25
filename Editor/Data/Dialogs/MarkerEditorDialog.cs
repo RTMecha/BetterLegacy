@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
@@ -30,6 +32,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public FunctionButtonStorage ConvertToPlannerNoteButton { get; set; }
 
+        public RectTransform ColorsParent { get; set; }
+
+        public List<GameObject> Colors { get; set; } = new List<GameObject>();
+
         public override void Init()
         {
             if (init)
@@ -37,9 +43,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.Init();
             var dialog = GameObject.transform;
-
-            var activeState = dialog.gameObject.AddComponent<ActiveState>();
-            activeState.onStateChanged = active => RTMarkerEditor.inst.editorOpen = active;
 
             MarkerEditor.inst.dialog = dialog;
             MarkerEditor.inst.left = dialog.Find("data/left");
@@ -125,6 +128,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddGraphic(SnapBPMButton.label, ThemeGroup.Function_2_Text);
 
             EditorHelper.SetComplexity(snapToBPM, Complexity.Normal);
+
+            ColorsParent = MarkerEditor.inst.left.Find("color").AsRT();
 
             var prefab = MarkerEditor.inst.markerPrefab;
             var prefabCopy = prefab.Duplicate(RTMarkerEditor.inst.transform, prefab.name);
