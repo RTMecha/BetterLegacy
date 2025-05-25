@@ -61,6 +61,8 @@
 - Fixed Hidden objects unhiding automatically when their regular active state is changed.
 - Fixed Prefab references not being removed when a Prefab is deleted.
 - Fixed some issues relating to VG to LS conversion.
+- Fixed controlPress modifiers not working in some cases.
+- Fixed Prefab Type popup appearing in the wrong area.
 
 ------------------------------------------------------------------------------------------
 
