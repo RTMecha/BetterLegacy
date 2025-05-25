@@ -704,34 +704,33 @@ namespace BetterLegacy.Story
                 var storyLevel = storyChapter.GetLevel(level);
                 cutsceneIndex++;
 
-                // end of pre-cutscenes
-                if (cutsceneDestination == CutsceneDestination.Pre && cutsceneIndex >= storyLevel.preCutscenes.Count)
+                // find next cutscene
+                while (true)
                 {
-                    cutsceneDestination = CutsceneDestination.Post;
-                    cutsceneIndex = 0;
-                }
+                    // end of pre-cutscenes
+                    if (cutsceneDestination == CutsceneDestination.Pre && cutsceneIndex >= storyLevel.preCutscenes.Count)
+                    {
+                        cutsceneDestination = CutsceneDestination.Post;
+                        cutsceneIndex = 0;
+                    }
 
-                // end of post-cutscenes
-                if (cutsceneDestination == CutsceneDestination.Post && cutsceneIndex >= storyLevel.postCutscenes.Count)
-                {
-                    level++;
-                    cutsceneDestination = CutsceneDestination.Pre;
-                    cutsceneIndex = 0;
-                }
+                    // end of post-cutscenes
+                    if (cutsceneDestination == CutsceneDestination.Post && cutsceneIndex >= storyLevel.postCutscenes.Count)
+                    {
+                        level++;
+                        if (level >= storyChapter.Count + 1)
+                        {
+                            SceneHelper.LoadInterfaceScene();
+                            return;
+                        }
 
-                // no cutscenes
-                while (storyLevel.preCutscenes.IsEmpty() && storyLevel.postCutscenes.IsEmpty() && level < storyChapter.Count + 1)
-                {
-                    level++;
-                    storyLevel = storyChapter.GetLevel(level);
-                    cutsceneDestination = CutsceneDestination.Pre;
-                    cutsceneIndex = 0;
-                }
+                        storyLevel = storyChapter.GetLevel(level);
+                        cutsceneDestination = CutsceneDestination.Pre;
+                        cutsceneIndex = 0;
+                        continue;
+                    }
 
-                if (level >= storyChapter.Count + 1)
-                {
-                    SceneHelper.LoadInterfaceScene();
-                    return;
+                    break;
                 }
 
                 PlayCutsceneRecursive(chapter, level, cutsceneDestination, cutsceneIndex, bonus);
