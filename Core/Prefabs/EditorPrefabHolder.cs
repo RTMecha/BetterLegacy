@@ -391,4 +391,25 @@ namespace BetterLegacy.Core.Prefabs
         [SerializeField]
         public EventTrigger eventTrigger;
     }
+
+    public class MarkerStorage : MonoBehaviour
+    {
+        [SerializeField]
+        public Image handle;
+
+        [SerializeField]
+        public Image line;
+
+        [SerializeField]
+        public Text label;
+
+        [SerializeField]
+        public HoverTooltip hoverTooltip;
+
+        [SerializeField]
+        public Image flagStart;
+
+        [SerializeField]
+        public Image flagEnd;
+    }
 }
