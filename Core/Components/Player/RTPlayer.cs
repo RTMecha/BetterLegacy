@@ -375,11 +375,6 @@ namespace BetterLegacy.Core.Components.Player
         public static bool AssetsGlobal { get; set; }
 
         /// <summary>
-        /// If player does not take damage in editor.
-        /// </summary>
-        public static bool ZenModeInEditor { get; set; }
-
-        /// <summary>
         /// If zen mode in editor should also consider solid.
         /// </summary>
         public static bool ZenEditorIncludesSolid { get; set; }
@@ -436,7 +431,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanTakeDamage
         {
-            get => (CoreHelper.InEditor || CoreHelper.InStory || RTBeatmap.Current.challengeMode.Damageable) && !CoreHelper.Paused && !CoreHelper.IsEditing && (!CoreHelper.InEditor || !ZenModeInEditor) && canTakeDamage;
+            get => RTBeatmap.Current.challengeMode.Damageable && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage;
             set => canTakeDamage = value;
         }
 
@@ -2980,8 +2975,9 @@ namespace BetterLegacy.Core.Components.Player
 
             while (tailParts.Count > initialHealthCount)
             {
-                Destroy(tailParts[tailParts.Count - 1].gameObject);
+                CoreHelper.Delete(tailParts[tailParts.Count - 1].parent);
                 tailParts.RemoveAt(tailParts.Count - 1);
+                path.RemoveAt(path.Count - 2);
             }
 
             for (int i = 0; i < tailParts.Count; i++)
@@ -3018,7 +3014,7 @@ namespace BetterLegacy.Core.Components.Player
             UpdateCustomObjects();
 
             if (tailGrows)
-                GrowTail();
+                GrowTail(initialHealthCount);
 
             UpdateGUI();
 
@@ -3352,7 +3348,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Grows the players' tail.
         /// </summary>
-        public void GrowTail()
+        public void GrowTail(int initialHealthCount)
         {
             while (initialHealthCount > tailParts.Count)
             {
@@ -3413,8 +3409,8 @@ namespace BetterLegacy.Core.Components.Player
             {
                 initialHealthCount = health;
 
-                if (tailGrows)
-                    GrowTail();
+                if (tailGrows || tailParts.Count < 3)
+                    GrowTail(tailGrows ? initialHealthCount : 3);
             }
 
             for (int i = 0; i < tailParts.Count; i++)
