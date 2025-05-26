@@ -58,7 +58,6 @@ namespace BetterLegacy.Configs
         #region General
 
         public Setting<bool> Debug { get; set; }
-        public Setting<bool> EditorZenMode { get; set; }
         public Setting<bool> ResetHealthInEditor { get; set; }
         public Setting<bool> ApplyGameSettingsInPreviewMode { get; set; }
         public Setting<bool> DraggingPlaysSound { get; set; }
@@ -1369,7 +1368,6 @@ namespace BetterLegacy.Configs
             #region General
 
             Debug = Bind(this, GENERAL, "Debug", false, "If enabled, specific debugging functions for the editor will be enabled.");
-            EditorZenMode = Bind(this, GENERAL, "Editor Zen Mode", false, "If on, the player will not take damage in Preview Mode.");
             ResetHealthInEditor = Bind(this, GENERAL, "Reset Health In Editor View", true, "If on, the player's health will reset when the creator exits Preview Mode.");
             ApplyGameSettingsInPreviewMode = Bind(this, GENERAL, "Apply Game Settings In Preview Mode", true, "If game settings (such as challenge mode and game speed) should apply in preview mode.");
             DraggingPlaysSound = Bind(this, GENERAL, "Dragging Plays Sound", true, "If dragging an object plays a sound.");
@@ -3085,8 +3083,6 @@ namespace BetterLegacy.Configs
             SelectObjectRotator.RotatorRadius = ObjectDraggerRotatorRadius.Value;
             SelectObjectScaler.ScalerOffset = ObjectDraggerScalerOffset.Value;
             SelectObjectScaler.ScalerScale = ObjectDraggerScalerScale.Value;
-
-            RTPlayer.ZenModeInEditor = EditorZenMode.Value;
 
             if ((ObjectConverter.ShowEmpties != ShowEmpties.Value || ObjectConverter.ShowDamagable != OnlyShowDamagable.Value) && CoreHelper.InEditor)
                 RTLevel.Reinit();

@@ -87,7 +87,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// If the player is invincible.
         /// </summary>
-        public bool Invincible => CoreHelper.InEditor ? (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) : !challengeMode.Damageable;
+        public bool Invincible => CoreHelper.IsEditing || !challengeMode.Damageable;
 
         /// <summary>
         /// The current pitch setting.
