@@ -4,21 +4,19 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
-using UnityTextEditor = UnityEngine.TextEditor;
-using TextEditor = BetterLegacy.Editor.Managers.TextEditor;
-
 namespace BetterLegacy.Editor.Data.Dialogs
 {
     public class MarkerEditorDialog : EditorDialog
     {
         public MarkerEditorDialog() : base(MARKER_EDITOR) { }
+
+        #region UI
 
         public Text IndexText { get; set; }
 
@@ -35,6 +33,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public RectTransform ColorsParent { get; set; }
 
         public List<GameObject> Colors { get; set; } = new List<GameObject>();
+
+        #endregion
 
         public override void Init()
         {
@@ -156,7 +156,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             buttonStorage.image.sprite = EditorSprites.EditSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-            buttonStorage.button.onClick.NewListener(() => TextEditor.inst.SetInputField(DescriptionField));
+            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(DescriptionField));
             UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(171f, 51f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
             EditorHelper.SetComplexity(button, Complexity.Advanced);
         }

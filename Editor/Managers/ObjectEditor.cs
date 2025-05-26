@@ -2147,7 +2147,7 @@ namespace BetterLegacy.Editor.Managers
                     buttonStorage.image.sprite = EditorSprites.EditSprite;
                     EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                     EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-                    buttonStorage.button.onClick.NewListener(() => TextEditor.inst.SetInputField(textIF));
+                    buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                     UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
                     EditorHelper.SetComplexity(button, Complexity.Advanced);
                 }
@@ -4649,7 +4649,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
 
                             EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction($"Open Text Editor", () => TextEditor.inst.SetInputField(textIF)),
+                                new ButtonFunction($"Open Text Editor", () => RTTextEditor.inst.SetInputField(textIF)),
                                 new ButtonFunction(true),
                                 new ButtonFunction($"Insert a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text = font + textIF.text)),
                                 new ButtonFunction($"Add a Font", () => RTEditor.inst.ShowFontSelector(font => textIF.text += font)),

@@ -20,8 +20,6 @@ using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
-using TextEditor = BetterLegacy.Editor.Managers.TextEditor;
-
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
@@ -4115,7 +4113,7 @@ namespace BetterLegacy.Editor.Data
             buttonStorage.image.sprite = EditorSprites.EditSprite;
             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-            buttonStorage.button.onClick.NewListener(() => TextEditor.inst.SetInputField(pathInputField));
+            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(pathInputField));
             RectValues.Default.AnchoredPosition(154f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(buttonStorage.baseImage.rectTransform);
 
             return path;

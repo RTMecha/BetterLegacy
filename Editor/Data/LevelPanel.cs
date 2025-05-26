@@ -22,8 +22,6 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
-using TextEditor = BetterLegacy.Editor.Managers.TextEditor;
-
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
@@ -530,14 +528,14 @@ namespace BetterLegacy.Editor.Data
                                     return;
                                 }
 
-                                TextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
+                                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
                                 {
                                     var jn = JSON.Parse("{}");
-                                    jn["desc"] = TextEditor.inst.Text;
+                                    jn["desc"] = RTTextEditor.inst.Text;
                                     infoJN = jn;
                                     RTFile.WriteToFile(filePath, jn.ToString());
                                     RenderTooltip();
-                                    RTEditor.inst.TextEditorPopup.Close();
+                                    RTTextEditor.inst.Popup.Close();
 
                                     EditorManager.inst.DisplayNotification("Created info file!", 1.5f, EditorManager.NotificationType.Success);
                                 });
@@ -549,14 +547,14 @@ namespace BetterLegacy.Editor.Data
                                 if (!RTFile.FileExists(filePath))
                                     return;
 
-                                TextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
+                                RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Done", () =>
                                 {
                                     var jn = JSON.Parse("{}");
-                                    jn["desc"] = TextEditor.inst.Text;
+                                    jn["desc"] = RTTextEditor.inst.Text;
                                     infoJN = jn;
                                     RTFile.WriteToFile(filePath, jn.ToString());
                                     RenderTooltip();
-                                    RTEditor.inst.TextEditorPopup.Close();
+                                    RTTextEditor.inst.Popup.Close();
                                 });
                             }),
                             new ButtonFunction("Update Info", () =>

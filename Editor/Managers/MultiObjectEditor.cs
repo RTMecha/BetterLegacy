@@ -3193,8 +3193,7 @@ namespace BetterLegacy.Editor.Managers
                             buttonStorage.image.sprite = EditorSprites.EditSprite;
                             EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                             EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
-                            buttonStorage.button.onClick.ClearAll();
-                            buttonStorage.button.onClick.AddListener(() => TextEditor.inst.SetInputField(textIF));
+                            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                             UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
                             EditorHelper.SetComplexity(button, Complexity.Advanced);
                         }
@@ -3202,8 +3201,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var button = textIF.transform.Find("edit").gameObject;
                             var buttonStorage = button.GetComponent<DeleteButtonStorage>();
-                            buttonStorage.button.onClick.ClearAll();
-                            buttonStorage.button.onClick.AddListener(() => TextEditor.inst.SetInputField(textIF));
+                            buttonStorage.button.onClick.NewListener(() => RTTextEditor.inst.SetInputField(textIF));
                         }
 
                         break;

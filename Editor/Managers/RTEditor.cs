@@ -685,7 +685,7 @@ namespace BetterLegacy.Editor.Managers
             ObjectEditor.Init();
 
             MultiObjectEditor.Init();
-            TextEditor.Init();
+            RTTextEditor.Init();
             KeybindEditor.Init();
             PlayerEditor.Init();
             ModifiersEditor.Init();
@@ -1078,7 +1078,6 @@ namespace BetterLegacy.Editor.Managers
 
         public ContentPopup ThemesPopup { get; set; }
 
-        public EditorPopup TextEditorPopup { get; set; }
         public ContentPopup FontSelectorPopup { get; set; }
 
         public ContentPopup KeybindListPopup { get; set; }
