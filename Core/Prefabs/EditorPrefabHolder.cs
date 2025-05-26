@@ -123,6 +123,14 @@ namespace BetterLegacy.Core.Prefabs
 
         [SerializeField]
         public Text label;
+
+        public void Assign() => Assign(transform.GetChild(0));
+
+        public void Assign(Transform labelTransform)
+        {
+            button = GetComponent<Button>();
+            label = labelTransform.GetComponent<Text>();
+        }
     }
 
     public class SpriteFunctionButtonStorage : FunctionButtonStorage
