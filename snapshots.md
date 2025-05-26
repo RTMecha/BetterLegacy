@@ -47,6 +47,7 @@
 - Reorganized / reworked a ton of Editor UI.
 - Renamed Dynamic Homing's "Speed" value to "Delay" due to the behavior of this changing.
 - Image objects' selection area now changes to fit the image size.
+- Removed "Editor Zen Mode" setting, since all game modes are accessible in the editor now.
 
 ### Example Companion
 - Example's commands make him say something now.
