@@ -657,7 +657,7 @@ namespace BetterLegacy.Editor.Managers
             SetupTimelineTriggers();
             SetupSelectGUI();
             SetupCreateObjects();
-            SetupDropdowns();
+            SetupTitleBar();
             SetupDoggo();
             SetupPaths();
             SetupTimelinePreview();
@@ -1022,6 +1022,9 @@ namespace BetterLegacy.Editor.Managers
         /// The top panel of the editor with the dropdowns.
         /// </summary>
         public Transform titleBar;
+
+        public FunctionButtonStorage undoButton;
+        public FunctionButtonStorage redoButton;
 
         public InputField folderCreatorName;
         Text folderCreatorTitle;
@@ -2678,19 +2681,20 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Playtest", EditorManager.inst.ToggleEditor),
-                    new ButtonFunction("Playtest Zen", () =>
+                var buttonFunctions = new List<ButtonFunction>() { new ButtonFunction("Playtest", TogglePreview), };
+
+                var values = ChallengeMode.Zen.GetValues();
+                for (int i = 0; i < values.Length; i++)
+                {
+                    var value = values[i];
+                    buttonFunctions.Add(new ButtonFunction($"Playtest {value.DisplayName}", () =>
                     {
-                        EditorConfig.Instance.EditorZenMode.Value = true;
-                        EditorManager.inst.ToggleEditor();
-                    }),
-                    new ButtonFunction("Playtest Normal", () =>
-                    {
-                        EditorConfig.Instance.EditorZenMode.Value = false;
-                        EditorManager.inst.ToggleEditor();
-                    })
-                    );
+                        CoreConfig.Instance.ChallengeModeSetting.Value = value;
+                        TogglePreview();
+                    }));
+                }
+
+                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
             };
 
             var eventLayerContextMenu = eventLayerToggle.gameObject.AddComponent<ContextClickable>();
@@ -2956,7 +2960,7 @@ namespace BetterLegacy.Editor.Managers
             ObjectTemplatePopup = GeneratePopup(EditorPopup.OBJECT_TEMPLATES_POPUP, "Pick a template", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search for template...");
         }
 
-        void SetupDropdowns()
+        void SetupTitleBar()
         {
             var settingsButton = titleBar.Find("Settings").GetComponent<Button>();
             var settingsDropdown = titleBar.Find("Edit/Edit Dropdown").gameObject.Duplicate(settingsButton.transform, "Settings Dropdown");
@@ -3257,6 +3261,11 @@ namespace BetterLegacy.Editor.Managers
             var saveAsDropdown = titleBar.Find("File/File Dropdown/Save As").gameObject;
             saveAsDropdown.SetActive(true);
             EditorHelper.SetComplexity(saveAsDropdown, Complexity.Normal);
+
+            undoButton = EditorManager.inst.undoButton.AddComponent<FunctionButtonStorage>();
+            undoButton.Assign();
+            redoButton = EditorManager.inst.redoButton.AddComponent<FunctionButtonStorage>();
+            redoButton.Assign();
         }
 
         void SetupDoggo()
@@ -4563,7 +4572,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Refresh Popups / Dialogs
+        #region Render UI
 
         public List<EditorDialog> editorDialogs = new List<EditorDialog>();
 
@@ -4843,6 +4852,21 @@ namespace BetterLegacy.Editor.Managers
                     image.sprite = SpriteHelper.CreateSprite(texture2D);
                 }));
             }
+        }
+
+        /// <summary>
+        /// Renders the undo / redo edit buttons.
+        /// </summary>
+        public void RenderEditButtons()
+        {
+            var history = EditorManager.inst.history;
+            string undoName = ((history.commands.Count > 1 && history.lastExecuted > 0) ? history.commands[history.lastExecuted].CommandName : null);
+            undoButton.button.interactable = !string.IsNullOrEmpty(undoName);
+            undoButton.label.text = string.IsNullOrEmpty(undoName) ? "Undo" : "Undo " + LSText.ClampString(undoName, 14);
+
+            string redoName = ((history.commands.Count - 1 > history.lastExecuted) ? history.commands[history.lastExecuted + 1].CommandName : null);
+            redoButton.button.interactable = !string.IsNullOrEmpty(redoName);
+            redoButton.label.text = string.IsNullOrEmpty(redoName) ? "Redo" : "Redo " + LSText.ClampString(redoName, 14);
         }
 
         /// <summary>
@@ -5925,6 +5949,33 @@ namespace BetterLegacy.Editor.Managers
         #region Misc Functions
 
         /// <summary>
+        /// Toggles the editor preview.
+        /// </summary>
+        public void TogglePreview()
+        {
+            if (!EditorManager.inst.hasLoadedLevel)
+            {
+                EditorManager.inst.DisplayNotification("Can't preview level until a level has been loaded!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            EditorManager.inst.isEditing = !EditorManager.inst.isEditing;
+
+            if (EditorManager.inst.isEditing)
+            {
+                ExitPreview();
+                EditorManager.inst.UpdatePlayButton();
+            }
+            else
+                EnterPreview();
+
+            RTGameManager.inst.ResetCheckpoint();
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_PREVIEW_TOGGLE);
+            Example.Current?.model?.UpdateActive();
+        }
+
+        /// <summary>
         /// Starts the editor preview.
         /// </summary>
         public void EnterPreview()
@@ -5939,6 +5990,8 @@ namespace BetterLegacy.Editor.Managers
                 RTBeatmap.Current.challengeMode = ChallengeMode.Normal;
                 RTBeatmap.Current.gameSpeed = GameSpeed.X1_0;
             }
+
+            UpdatePlayers();
 
             GameManager.inst.playerGUI.SetActive(true);
             CursorManager.inst.HideCursor();
@@ -5972,13 +6025,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                if (InputDataManager.inst.players.Count > 0 && InputDataManager.inst.players.Any(x => x is CustomPlayer))
-                    foreach (var player in PlayerManager.Players)
-                    {
-                        if (player.PlayerModel && player.PlayerModel.basePart)
-                            player.Health = player.PlayerModel.basePart.health;
-                    }
-
+                UpdatePlayers(false);
                 if (RTGameManager.inst.ActiveCheckpoint)
                     PlayerManager.SpawnPlayers(RTGameManager.inst.ActiveCheckpoint);
                 else
@@ -5990,6 +6037,20 @@ namespace BetterLegacy.Editor.Managers
             }
 
             RTBeatmap.Current?.Reset();
+        }
+
+        /// <summary>
+        /// Updates the players health and other settings when switching previews.
+        /// </summary>
+        /// <param name="considerChallengeMode">If challenge mode should be accounted for.</param>
+        public void UpdatePlayers(bool considerChallengeMode = true)
+        {
+            if (!PlayerManager.NoPlayers)
+                foreach (var player in PlayerManager.Players)
+                {
+                    if (player.PlayerModel && player.PlayerModel.basePart)
+                        player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.PlayerModel.basePart.health;
+                }
         }
 
         public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));

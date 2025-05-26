@@ -1019,7 +1019,7 @@ namespace BetterLegacy.Editor.Managers
                 RTCode.Evaluate(keybind.DefaultCode + keybind.settings["Code"]);
         }
 
-        public static void ToggleEditor(Keybind keybind) => EditorManager.inst.ToggleEditor();
+        public static void ToggleEditor(Keybind keybind) => RTEditor.inst.TogglePreview();
 
         public static void UpdateEverything(Keybind keybind)
         {
@@ -1702,23 +1702,21 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ToggleZenMode(Keybind keybind)
         {
-            var config = EditorConfig.Instance.EditorZenMode;
-            config.Value = !config.Value;
-            EditorManager.inst.DisplayNotification($"Set Zen Mode {(config.Value ? "On" : "Off")}", 2f, EditorManager.NotificationType.Success);
+            CoreConfig.Instance.ChallengeModeSetting.Value = CoreConfig.Instance.ChallengeModeSetting.Value != ChallengeMode.Zen ? ChallengeMode.Zen : ChallengeMode.Normal;
+            EditorManager.inst.DisplayNotification($"Set Zen Mode {(CoreConfig.Instance.ChallengeModeSetting.Value == ChallengeMode.Zen ? "On" : "Off")}", 2f, EditorManager.NotificationType.Success);
         }
 
         public static void CycleGameMode(Keybind keybind)
         {
-            var num = DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1);
-            num++;
-            if (num > 4)
-                num = 0;
-            DataManager.inst.UpdateSettingEnum("ArcadeDifficulty", num);
+            var current = CoreConfig.Instance.ChallengeModeSetting.Value;
+            var values = current.GetValues();
+            var index = Array.IndexOf(values, current);
+            index++;
+            if (index >= values.Length)
+                index = 0;
+            CoreConfig.Instance.ChallengeModeSetting.Value = values[index];
 
-            string[] modes = new string[] { "Zen", "Normal", "1 Life", "1 Hit", "Practice", };
-
-            EditorManager.inst.DisplayNotification($"Set Game Mode to {modes[num]} Mode!", 2f, EditorManager.NotificationType.Success);
-            SaveManager.inst.UpdateSettingsFile(false);
+            EditorManager.inst.DisplayNotification($"Set Game Mode to {CoreConfig.Instance.ChallengeModeSetting.Value.DisplayName} Mode!", 2f, EditorManager.NotificationType.Success);
         }
 
         public static void TransformPosition(Keybind keybind)

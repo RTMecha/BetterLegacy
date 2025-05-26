@@ -348,6 +348,9 @@ namespace BetterLegacy.Patchers
                 CoreHelper.Log($"EDITOR START -> {nameof(EditorManager.ClearDialogs)}");
                 Instance.ClearDialogs();
 
+                CoreHelper.Log($"EDITOR START -> {nameof(RTEditor.ExitPreview)}");
+                RTEditor.inst.ExitPreview();
+
                 CoreHelper.Log($"EDITOR START -> Achievement");
                 AchievementManager.inst.UnlockAchievement("editor");
             }
@@ -370,22 +373,17 @@ namespace BetterLegacy.Patchers
 
             if (CoreHelper.Playing)
             {
-                if (Instance.canEdit)
+                if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !CoreHelper.IsUsingInputField || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)
+                    RTEditor.inst.TogglePreview();
+
+                if (Instance.isEditing)
                 {
-                    if (InputDataManager.inst.editorActions.ToggleEditor.WasPressed && !CoreHelper.IsUsingInputField || Input.GetKeyDown(KeyCode.Escape) && !Instance.isEditing)
-                        Instance.ToggleEditor();
-
-                    if (Instance.isEditing && !CoreHelper.IsUsingInputField)
+                    if (!CoreHelper.IsUsingInputField)
                         Instance.handleViewShortcuts();
-
-                    if (Instance.OpenedEditor)
-                        RTEditor.inst.ExitPreview();
-                    else if (Instance.ClosedEditor)
-                        RTEditor.inst.EnterPreview();
 
                     Instance.updatePointer();
                     Instance.UpdateTooltip();
-                    Instance.UpdateEditButtons();
+                    RTEditor.inst.RenderEditButtons();
 
                     if (RTEditor.inst.timelineTime)
                         RTEditor.inst.timelineTime.text = string.Format("{0:0}:{1:00}.{2:000}",
@@ -393,26 +391,15 @@ namespace BetterLegacy.Patchers
                             Mathf.Floor(Instance.CurrentAudioPos % 60f),
                             Mathf.Floor(AudioManager.inst.CurrentAudioSource.time * 1000f % 1000f));
 
-                    Instance.wasEditing = Instance.isEditing;
+                    if (RTEditor.inst.timeField && !RTEditor.inst.timeField.isFocused)
+                        RTEditor.inst.timeField.SetTextWithoutNotify(AudioManager.inst.CurrentAudioSource.time.ToString());
+
+                    if (RTEditor.inst.pitchField && !RTEditor.inst.pitchField.isFocused)
+                        RTEditor.inst.pitchField.SetTextWithoutNotify(RTLevel.Current && RTLevel.Current.eventEngine ?
+                            RTLevel.Current.eventEngine.pitchOffset.ToString() : AudioManager.inst.pitch.ToString());
                 }
-                else if (!Instance.canEdit && Instance.isEditing)
-                {
-                    Instance.GUI.SetActive(false);
-                    AudioManager.inst.SetPitch(1f);
-                    Instance.SetNormalRenderArea();
-                    Instance.isEditing = false;
-                }
-            }
 
-            if (Instance.GUI.activeSelf == true && Instance.isEditing == true)
-            {
-                if (RTEditor.inst.timeField && !RTEditor.inst.timeField.isFocused)
-                    RTEditor.inst.timeField.text = AudioManager.inst.CurrentAudioSource.time.ToString();
-
-                if (RTEditor.inst.pitchField && !RTEditor.inst.pitchField.isFocused)
-                    RTEditor.inst.pitchField.text = RTLevel.Current && RTLevel.Current.eventEngine ?
-                        RTLevel.Current.eventEngine.pitchOffset.ToString() : AudioManager.inst.pitch.ToString();
-
+                Instance.wasEditing = Instance.isEditing;
             }
 
             Instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
@@ -709,15 +696,11 @@ namespace BetterLegacy.Patchers
         }
 
         [HarmonyPatch(nameof(EditorManager.ToggleEditor))]
-        [HarmonyPostfix]
-        static void ToggleEditorPostfix()
+        [HarmonyPrefix]
+        static bool ToggleEditorPrefix()
         {
-            if (Instance.isEditing)
-                Instance.UpdatePlayButton();
-            RTGameManager.inst.ResetCheckpoint();
-
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_PREVIEW_TOGGLE);
-            Example.Current?.model?.UpdateActive();
+            RTEditor.inst.TogglePreview();
+            return false;
         }
 
         [HarmonyPatch(nameof(EditorManager.CloseOpenBeatmapPopup))]
