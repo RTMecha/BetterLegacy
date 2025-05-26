@@ -18,17 +18,11 @@ namespace BetterLegacy.Patchers
         static void ApplySettingsFilePostfix()
         {
             CoreConfig.Instance.prevFullscreen = CoreConfig.Instance.Fullscreen.Value;
-
             CoreConfig.Instance.prevResolution = CoreConfig.Instance.Resolution.Value;
-
             CoreConfig.Instance.prevMasterVol = CoreConfig.Instance.MasterVol.Value;
-
             CoreConfig.Instance.prevMusicVol = CoreConfig.Instance.MusicVol.Value;
-
             CoreConfig.Instance.prevSFXVol = CoreConfig.Instance.SFXVol.Value;
-
             CoreConfig.Instance.prevLanguage = CoreConfig.Instance.Language.Value;
-
             CoreConfig.Instance.prevControllerRumble = CoreConfig.Instance.ControllerRumble.Value;
 
             DataManager.inst.UpdateSettingBool("FullScreen", CoreConfig.Instance.Fullscreen.Value);
@@ -38,30 +32,6 @@ namespace BetterLegacy.Patchers
             DataManager.inst.UpdateSettingInt("EffectsVolume", CoreConfig.Instance.SFXVol.Value);
             DataManager.inst.UpdateSettingInt("Language_i", (int)CoreConfig.Instance.Language.Value);
             DataManager.inst.UpdateSettingBool("ControllerVibrate", CoreConfig.Instance.ControllerRumble.Value);
-
-            if (RTFile.FileExists(RTFile.ApplicationDirectory + "settings/functions.lss"))
-            {
-                string rawProfileJSON = RTFile.ReadFromFile(RTFile.ApplicationDirectory + "settings/functions.lss");
-
-                var jn = JSON.Parse(rawProfileJSON);
-
-                if (string.IsNullOrEmpty(jn["general"]["updated_speed"]))
-                {
-                    jn["general"]["updated_speed"] = "True";
-                    DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2) + 1);
-
-                    RTFile.WriteToFile(RTFile.ApplicationDirectory + "settings/functions.lss", jn.ToString(3));
-                }
-            }
-            else
-            {
-                var jn = JSON.Parse("{}");
-
-                jn["general"]["updated_speed"] = "True";
-                DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2) + 1);
-
-                RTFile.WriteToFile(RTFile.ApplicationDirectory + "settings/functions.lss", jn.ToString(3));
-            }
         }
 
         [HarmonyPatch(nameof(SaveManager.ApplyVideoSettings))]
