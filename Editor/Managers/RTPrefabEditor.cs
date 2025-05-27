@@ -2565,7 +2565,6 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabCreatorOffsetField();
 
             var offsetInputContextMenu = PrefabCreator.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
-            offsetInputContextMenu.onClick = null;
             offsetInputContextMenu.onClick = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -2576,10 +2575,16 @@ namespace BetterLegacy.Editor.Managers
                     {
                         PrefabEditor.inst.NewPrefabOffset -= (AudioManager.inst.CurrentAudioSource.time - EditorTimeline.inst.SelectedObjects.Min(x => x.Time) + PrefabEditor.inst.NewPrefabOffset);
                         RenderPrefabCreator();
-                    }));
+                    }),
+                    new ButtonFunction("Snap to BPM", () =>
+                    {
+                        var firstTime = EditorTimeline.inst.SelectedObjects.Min(x => x.Time);
+                        PrefabEditor.inst.NewPrefabOffset = firstTime - RTEditor.SnapToBPM(firstTime - PrefabEditor.inst.NewPrefabOffset);
+                        RenderPrefabCreator();
+                    })
+                    );
             };
             var offsetSliderContextMenu = PrefabCreator.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
-            offsetSliderContextMenu.onClick = null;
             offsetSliderContextMenu.onClick = offsetInputContextMenu.onClick;
 
             TriggerHelper.AddEventTriggers(PrefabCreator.OffsetField.gameObject, TriggerHelper.ScrollDelta(PrefabCreator.OffsetField));
