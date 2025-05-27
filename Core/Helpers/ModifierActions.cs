@@ -223,7 +223,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!loop)
                 CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
-            else if (modifier.reference is PAObjectID obj && !ModifiersManager.audioSources.ContainsKey(obj.id))
+            else if (modifier.reference is PAObjectBase obj && !ModifiersManager.audioSources.ContainsKey(obj.id))
                 ModifiersManager.audioSources.Add(obj.id, audioSource);
         }
 

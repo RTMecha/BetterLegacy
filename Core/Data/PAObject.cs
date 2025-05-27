@@ -1,8 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-using LSFunctions;
-
-using SimpleJSON;
+﻿using SimpleJSON;
 
 namespace BetterLegacy.Core.Data
 {
@@ -10,7 +6,7 @@ namespace BetterLegacy.Core.Data
     /// Base object used for PA Objects.
     /// </summary>
     /// <typeparam name="T">Type of the PA Object.</typeparam>
-    public abstract class PAObject<T> : PAObjectID where T : PAObject<T>, new()
+    public abstract class PAObject<T> : PAObjectBase where T : PAObject<T>, new()
     {
         public PAObject() : base() { }
 
@@ -55,29 +51,5 @@ namespace BetterLegacy.Core.Data
             obj.ReadJSON(jn);
             return obj;
         }
-
-        /// <summary>
-        /// Parses and applies object values from VG to formatted JSON.
-        /// </summary>
-        /// <param name="jn">VG JSON.</param>
-        public virtual void ReadJSONVG(JSONNode jn, Version version = default) { }
-
-        /// <summary>
-        /// Parses and applies object values from LS to formatted JSON.
-        /// </summary>
-        /// <param name="jn">LS JSON.</param>
-        public virtual void ReadJSON(JSONNode jn) { }
-
-        /// <summary>
-        /// Converts the current <typeparamref name="T"/> to the VG format.
-        /// </summary>
-        /// <returns>Returns a JSONNode.</returns>
-        public virtual JSONNode ToJSONVG() => Parser.NewJSONObject();
-
-        /// <summary>
-        /// Converts the current <typeparamref name="T"/> to the LS format.
-        /// </summary>
-        /// <returns>Returns a JSONNode.</returns>
-        public virtual JSONNode ToJSON() => Parser.NewJSONObject();
     }
 }
