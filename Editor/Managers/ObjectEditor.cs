@@ -5724,17 +5724,15 @@ namespace BetterLegacy.Editor.Managers
                 toggle.isOn = random == buttonTmp;
                 toggle.onValueChanged.AddListener(_val =>
                 {
-                    if (_val)
-                    {
-                        foreach (var keyframe in selected.Select(x => x.eventKeyframe))
-                            keyframe.random = buttonTmp;
+                    foreach (var keyframe in selected.Select(x => x.eventKeyframe))
+                        keyframe.random = buttonTmp;
 
-                        // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                        if (UpdateObjects)
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
-                    }
+                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                    if (UpdateObjects)
+                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
 
                     UpdateKeyframeRandomDialog(type, buttonTmp);
+                    KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
                 });
             }
 
