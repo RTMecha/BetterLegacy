@@ -4409,28 +4409,28 @@ namespace BetterLegacy.Editor.Managers
                 }),
                 new ButtonFunction("Top (Triangle)", () =>
                 {
-                    beatmapObject.origin.y = -0.575f;
+                    beatmapObject.origin.y = BeatmapObject.TRIANGLE_TOP_OFFSET;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonFunction("Bottom (Triangle)", () =>
                 {
-                    beatmapObject.origin.y = 0.2875f;
+                    beatmapObject.origin.y = BeatmapObject.TRIANGLE_BOTTOM_OFFSET;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonFunction("Left (Triangle)", () =>
                 {
-                    beatmapObject.origin.x = -0.497964993f;
+                    beatmapObject.origin.x = -BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);
                 }),
                 new ButtonFunction("Right (Triangle)", () =>
                 {
-                    beatmapObject.origin.x = 0.497964993f;
+                    beatmapObject.origin.x = BeatmapObject.TRIANGLE_HORIZONTAL_OFFSET;
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.VISUAL_OFFSET);
                     RenderOrigin(beatmapObject);

@@ -512,6 +512,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Camera parent ID.
         /// </summary>
         public const string CAMERA_PARENT = "CAMERA_PARENT";
+        public const float TRIANGLE_TOP_OFFSET = -0.575f;
+        public const float TRIANGLE_BOTTOM_OFFSET = 0.2875f;
+        public const float TRIANGLE_HORIZONTAL_OFFSET = 0.497964993f;
 
         #endregion
 
@@ -776,13 +779,44 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["csp"] != null)
             {
-                if (ShapeType != ShapeType.Arrow || shapeOption > 1)
-                    ShapeType = ShapeType.Polygon;
+                // why is custom polygon a part of EVERY shape type...
+
+                switch (ShapeType)
+                {
+                    case ShapeType.Triangle: {
+                            if (shapeOption == 4)
+                            {
+                                shapeOption = 0;
+                                origin.y = TRIANGLE_BOTTOM_OFFSET;
+                            }
+                            if (shapeOption == 5)
+                            {
+                                shapeOption = 0;
+                                origin.y = TRIANGLE_BOTTOM_OFFSET;
+                            }
+                            if (shapeOption == 6)
+                            {
+                                shapeOption = 0;
+                                origin.y = TRIANGLE_BOTTOM_OFFSET;
+                            }
+                            break;
+                        }
+                    case ShapeType.Arrow: {
+                            if (shapeOption > 1)
+                                ShapeType = ShapeType.Polygon;
+                            break;
+                        }
+                    case ShapeType.Text: {
+                            break;
+                        }
+                    default: {
+                            ShapeType = ShapeType.Polygon;
+                            break;
+                        }
+                }
+
                 polygonShape = PolygonShape.ParseVG(jn["csp"]);
             }
-            // why is custom polygon a part of EVERY shape type...
-            else if (shape < GameData.UnmoddedShapeOptions.Length && shapeOption >= GameData.UnmoddedShapeOptions[shape])
-                shapeOption = 0;
 
             autoTextAlign = ShapeType == ShapeType.Text;
 
