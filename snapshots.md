@@ -5,6 +5,7 @@
 - All cutscenes are now at a pre-polish state.
 - You can now view cutscenes of levels you've beaten.
 - Challenge mode and game settings can be used after you SS rank a level in the story mode.
+- Added some attacks to some levels.
 
 ### Core
 - Color hex modifiers now allow for overriding opacity if the hex code is 8 digits in length. (the last two digits representing opacity)
@@ -33,6 +34,7 @@
 - Moved Editor Level code to its own manager.
 - Added Apply Game Settings In Preview Mode to Config Manager > Editor > General.
 - Improved Marker looping usability by adding start & end flags to the Timeline Marker and added "Clear Marker Loop" to the Marker Context Menu.
+- Added Snap to BPM context menu for Prefab Creator offset.
 
 ### Internal
 - Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
@@ -64,6 +66,7 @@
 - Fixed some issues relating to VG to LS conversion.
 - Fixed controlPress modifiers not working in some cases.
 - Fixed Prefab Type popup appearing in the wrong area.
+- Fixed randomization breaking when updating the object.
 
 ------------------------------------------------------------------------------------------
 
