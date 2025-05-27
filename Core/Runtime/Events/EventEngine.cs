@@ -316,6 +316,8 @@ namespace BetterLegacy.Core.Runtime.Events
             };
 
             offsets = CreateOffsets();
+
+            SetupShake();
         }
 
         #region Updates
