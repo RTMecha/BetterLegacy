@@ -497,7 +497,10 @@ namespace BetterLegacy.Core.Runtime
         public void InitSeed(string seed)
         {
             RandomHelper.SetSeed(seed);
-            RecacheAllSequences();
+            //RecacheAllSequences();
+            // todo: figure out how randomization is handled for single object updating.
+            // should it not update randomization? If so, that means the object can properly be updated and will not affect other objects.
+            // if it should update randomization, that means parent objects also need to be updated. but also, how will randomization work if the ID is the same as before? is randomization based on something else?
         }
 
         /// <summary>
@@ -506,7 +509,7 @@ namespace BetterLegacy.Core.Runtime
         public void InitSeed()
         {
             RandomHelper.UpdateSeed();
-            RecacheAllSequences();
+            //RecacheAllSequences();
         }
 
         /// <summary>
@@ -517,16 +520,11 @@ namespace BetterLegacy.Core.Runtime
             if (!converter || !GameData.Current)
                 return;
 
+            // currently this desyncs all animations... idk why
             var beatmapObjects = GameData.Current.beatmapObjects;
             for (int i = 0; i < beatmapObjects.Count; i++)
-                UpdateCachedSequence(beatmapObjects[i]);
+                RecacheSequences(beatmapObjects[i], recursive: false);
         }
-
-        /// <summary>
-        /// Updates objects' cached sequences without reinitialization.
-        /// </summary>
-        /// <param name="beatmapObject">Object to update.</param>
-        public void UpdateCachedSequence(BeatmapObject beatmapObject) => converter.UpdateCachedSequence(beatmapObject, beatmapObject.cachedSequences);
 
         /// <summary>
         /// Removes or updates an objects' sequences.
@@ -981,8 +979,6 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="recursive">If the updating should be recursive.</param>
         public void ReinitObject(BeatmapObject beatmapObject, bool reinsert = true, bool recursive = true)
         {
-            string id = beatmapObject.id;
-
             beatmapObject.reactivePositionOffset = Vector3.zero;
             beatmapObject.reactiveScaleOffset = Vector3.zero;
             beatmapObject.reactiveRotationOffset = 0f;
@@ -997,7 +993,7 @@ namespace BetterLegacy.Core.Runtime
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
                     var bm = beatmapObjects[i];
-                    if (bm.Parent == id)
+                    if (bm.Parent == beatmapObject.id)
                         ReinitObject(bm, reinsert, recursive);
                 }
             }
