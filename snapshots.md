@@ -67,6 +67,7 @@
 - Fixed controlPress modifiers not working in some cases.
 - Fixed Prefab Type popup appearing in the wrong area.
 - Fixed randomization breaking when updating the object.
+- Fixed the keyframe random toggles not UI updating properly.
 
 ------------------------------------------------------------------------------------------
 
