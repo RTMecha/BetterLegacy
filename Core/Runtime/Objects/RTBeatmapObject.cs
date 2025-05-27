@@ -300,7 +300,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 // If last parent is scale parented, animate scale
                 if (animateScale)
                 {
-                    var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
+                    var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
                     var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (scaleOffset + scaleAddedOffset) : time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
                     var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.beatmapObject.scaleOffset.z);
                     parentObject.transform.localScale = scale;
