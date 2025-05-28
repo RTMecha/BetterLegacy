@@ -97,6 +97,7 @@
   Update: 1.8.0
 - Ignore opacity toggle for color modifiers.  
   Update: 1.7.0 - 1.8.0
+- setStartTime modifiers.
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)  
