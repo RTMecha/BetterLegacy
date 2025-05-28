@@ -3062,7 +3062,7 @@ namespace BetterLegacy.Editor.Data
                         if (isMulti)
                             valueIndex--;
 
-                        DropdownGenerator(modifier, "Search Prefab Using", valueIndex + 2, CoreHelper.StringToOptionData("Index", "ID", "Name"));
+                        DropdownGenerator(modifier, "Search Prefab Using", valueIndex + 2, CoreHelper.StringToOptionData("Index", "Name", "ID"));
                         StringGenerator(modifier, "Prefab Reference", 0);
 
                         SingleGenerator(modifier, "Position X", 1, 0f);
