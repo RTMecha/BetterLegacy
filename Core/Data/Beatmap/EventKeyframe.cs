@@ -132,6 +132,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (jn[raxis[i]] != null)
                     eventRandomValues.Add(jn[raxis[i]].AsFloat);
 
+            if (jn["str"] != null)
+            {
+                eventKeyframe.stringValues = new string[jn["str"].Count];
+                for (int i = 0; i < jn["str"].Count; i++)
+                    eventKeyframe.stringValues[i] = jn["str"][i];
+            }
+
             eventKeyframe.random = jn["r"].AsInt;
 
             eventKeyframe.relative = !string.IsNullOrEmpty(jn["rel"]) ? jn["rel"].AsBool : defaultRelative;
@@ -165,6 +172,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["r"] = random;
                 for (int i = 0; i < randomValues.Length; i++)
                     jn[raxis[i]] = randomValues[i];
+            }
+
+            if (stringValues != null)
+            {
+                for (int i = 0; i < stringValues.Length; i++)
+                    jn["str"][i] = stringValues[i];
             }
 
             if (relative != defaultRelative)
@@ -213,6 +226,16 @@ namespace BetterLegacy.Core.Data.Beatmap
                 randomValues[i] = vals[i];
         }
 
+        public void SetStringValues(params string[] vals)
+        {
+            if (vals == null)
+                return;
+
+            stringValues = new string[vals.Length];
+            for (int i = 0; i < vals.Length; i++)
+                stringValues[i] = vals[i];
+        }
+
         public void SetValue(int index, float val)
         {
             if (values.InRange(index))
@@ -225,11 +248,19 @@ namespace BetterLegacy.Core.Data.Beatmap
                 randomValues[index] = val;
         }
 
+        public void SetStringValue(int index, string val)
+        {
+            if (stringValues.InRange(index))
+                stringValues[index] = val;
+        }
+
         public float GetValue(int index, float defaultValue = 0f) => values.TryGetAt(index, out float result) ? result : defaultValue;
 
         public float GetRandomValue(int index, float defaultValue = 0f) => randomValues.TryGetAt(index, out float result) ? result : defaultValue;
 
-        public bool IsRandomHoming() => random == 5 || random == 6;
+        public string GetStringValue(int index, string defaultValue = null) => stringValues.TryGetAt(index, out string result) ? result : defaultValue;
+
+        public bool IsHoming() => random == 5 || random == 6;
 
         #endregion
 
