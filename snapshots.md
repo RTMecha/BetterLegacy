@@ -68,6 +68,7 @@
 - Fixed Prefab Type popup appearing in the wrong area.
 - Fixed randomization breaking when updating the object.
 - Fixed the keyframe random toggles not UI updating properly.
+- Fixed Background Objects from Prefab Objects getting saved to level.lsb and displaying in the BG editor list.
 
 ------------------------------------------------------------------------------------------
 
