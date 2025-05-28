@@ -3893,7 +3893,7 @@ namespace BetterLegacy.Editor.Managers
             chooseTemplateButton.onClick.ClearAll();
             chooseTemplateButton.onClick.AddListener(() =>
             {
-                LevelTemplateEditor.inst.RefreshNewLevelTemplates();
+                LevelTemplateEditor.inst.RenderLevelTemplates();
                 LevelTemplateEditor.inst.Dialog.Open();
             });
             chooseTemplate.transform.AsRT().sizeDelta = new Vector2(384f, 32f);

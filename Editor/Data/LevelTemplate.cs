@@ -91,7 +91,7 @@ namespace BetterLegacy.Editor.Data
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = LevelTemplateEditor.inst.newLevelTemplatePrefab.Duplicate(LevelTemplateEditor.inst.newLevelTemplateContent);
+            gameObject = LevelTemplateEditor.inst.newLevelTemplatePrefab.Duplicate(LevelTemplateEditor.inst.Dialog.Content);
             var previewBase = gameObject.transform.Find("Preview Base");
 
             GameObject = gameObject;
@@ -103,13 +103,12 @@ namespace BetterLegacy.Editor.Data
             DeleteButton.gameObject.SetActive(!isDefault);
             if (!isDefault)
             {
-                DeleteButton.button.onClick.ClearAll();
-                DeleteButton.button.onClick.AddListener(() =>
+                DeleteButton.button.onClick.NewListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this template? This is permanent!", () =>
                     {
                         RTFile.DeleteDirectory(Directory);
-                        LevelTemplateEditor.inst.RefreshNewLevelTemplates();
+                        LevelTemplateEditor.inst.RenderLevelTemplates();
                         EditorManager.inst.DisplayNotification("Successfully deleted the template.", 2f, EditorManager.NotificationType.Success);
                         RTEditor.inst.HideWarningPopup();
                     }, RTEditor.inst.HideWarningPopup);
@@ -117,8 +116,7 @@ namespace BetterLegacy.Editor.Data
             }
 
             var button = gameObject.GetComponent<Button>();
-            button.onClick.ClearAll();
-            button.onClick.AddListener(SelectTemplate);
+            button.onClick.NewListener(SelectTemplate);
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyGraphic(previewBase.GetComponent<Image>(), ThemeGroup.Null, true);
