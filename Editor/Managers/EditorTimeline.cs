@@ -594,6 +594,9 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
         public TimelineObject GetTimelineObject(BackgroundObject backgroundObject)
         {
+            if (backgroundObject.fromPrefab && timelineObjects.TryFind(x => x.isPrefabObject && x.ID == backgroundObject.prefabInstanceID, out TimelineObject timelineObject))
+                return timelineObject;
+
             if (!backgroundObject.timelineObject)
                 backgroundObject.timelineObject = new TimelineObject(backgroundObject);
 
@@ -638,7 +641,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
             {
                 var beatmapObject = GameData.Current.beatmapObjects[i];
-                if (!string.IsNullOrEmpty(beatmapObject.id) && !beatmapObject.fromPrefab)
+                if (!string.IsNullOrEmpty(beatmapObject.id) && !beatmapObject.FromPrefab)
                 {
                     var timelineObject = GetTimelineObject(beatmapObject);
                     timelineObject.AddToList(true);
@@ -649,7 +652,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < GameData.Current.backgroundObjects.Count; i++)
             {
                 var backgroundObject = GameData.Current.backgroundObjects[i];
-                if (!string.IsNullOrEmpty(backgroundObject.id) && !backgroundObject.fromPrefab)
+                if (!string.IsNullOrEmpty(backgroundObject.id) && !backgroundObject.FromPrefab)
                 {
                     var timelineObject = GetTimelineObject(backgroundObject);
                     timelineObject.AddToList(true);

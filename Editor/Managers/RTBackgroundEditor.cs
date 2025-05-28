@@ -1645,6 +1645,12 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
+                if (backgroundObject.FromPrefab)
+                {
+                    num++;
+                    continue;
+                }
+
                 int index = num;
                 var gameObject = BackgroundEditor.inst.backgroundButtonPrefab.Duplicate(Dialog.Content, $"BG {index}");
                 gameObject.transform.localScale = Vector3.one;

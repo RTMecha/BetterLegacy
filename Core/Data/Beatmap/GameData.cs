@@ -1590,29 +1590,20 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["checkpoints"][i] = data.checkpoints[i].ToJSON();
 
             CoreHelper.Log("Saving Beatmap Objects");
-            if (beatmapObjects != null)
-            {
-                var list = beatmapObjects.FindAll(x => !x.fromPrefab);
-                jn["beatmap_objects"] = new JSONArray();
-                for (int i = 0; i < list.Count; i++)
-                    jn["beatmap_objects"][i] = list[i].ToJSON();
-            }
-            else
-            {
-                CoreHelper.Log("skipping objects");
-                jn["beatmap_objects"] = new JSONArray();
-            }
+            var beatmapObjects = this.beatmapObjects.FindAll(x => !x.FromPrefab);
+            for (int i = 0; i < beatmapObjects.Count; i++)
+                jn["beatmap_objects"][i] = beatmapObjects[i].ToJSON();
 
             if (mainBackgroundLayer != 0)
-            {
                 jn["bg_data"]["main_layer"] = mainBackgroundLayer;
-            }
 
             CoreHelper.Log("Saving Background Layers");
+            var backgroundLayers = this.backgroundLayers.FindAll(x => !x.FromPrefab);
             for (int i = 0; i < backgroundLayers.Count; i++)
                 jn["bg_layers"][i] = backgroundLayers[i].ToJSON();
 
             CoreHelper.Log("Saving Background Objects");
+            var backgroundObjects = this.backgroundObjects.FindAll(x => !x.FromPrefab);
             for (int i = 0; i < backgroundObjects.Count; i++)
                 jn["bg_objects"][i] = backgroundObjects[i].ToJSON();
 

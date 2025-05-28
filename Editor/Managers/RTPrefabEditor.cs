@@ -1342,11 +1342,12 @@ namespace BetterLegacy.Editor.Managers
             var originalPrefab = GameData.Current.prefabs[index];
 
             var prefabObject =
-                GameData.Current.prefabObjects.TryFind(x => x.id == prefabInstanceID && x.expanded, out PrefabObject originalPrefabObject) ? originalPrefabObject :
-                new PrefabObject(originalPrefab.id);
+                GameData.Current.prefabObjects.TryFind(x => x.id == prefabInstanceID && x.expanded, out PrefabObject originalPrefabObject) ? originalPrefabObject : new PrefabObject(originalPrefab.id);
+
             prefabObject.StartTime = startTime - originalPrefab.offset;
             prefabObject.editorData.Bin = editorData.Bin;
             prefabObject.editorData.Layer = editorData.Layer;
+
             var newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, new List<PrefabObject>(), backgroundObjects: bgObjects);
 
             newPrefab.id = originalPrefab.id;
@@ -1355,16 +1356,10 @@ namespace BetterLegacy.Editor.Managers
             GameData.Current.prefabs[index] = newPrefab;
             EditorTimeline.inst.timelineObjects.ForLoopReverse((timelineObject, index) =>
             {
-                if (timelineObject.isPrefabObject ||
-                    timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().prefabInstanceID != prefabInstanceID ||
-                    timelineObject.isBackgroundObject && timelineObject.GetData<BackgroundObject>().prefabInstanceID != prefabInstanceID)
+                if (timelineObject.isPrefabObject || !timelineObject.TryGetPrefabable(out IPrefabable otherPrefabable) || otherPrefabable.PrefabInstanceID != prefabInstanceID)
                     return;
 
-                if (timelineObject.GameObject)
-                {
-                    timelineObject.GameObject.transform.SetParent(null);
-                    Destroy(timelineObject.GameObject);
-                }
+                CoreHelper.Delete(timelineObject.GameObject);
                 EditorTimeline.inst.timelineObjects.RemoveAt(index);
             });
 
