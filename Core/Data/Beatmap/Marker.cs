@@ -87,8 +87,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["ID"] = LSText.randomString(16);
 
-            jn["n"] = name;
-            jn["d"] = desc;
+            jn["n"] = name ?? string.Empty;
+            jn["d"] = desc ?? string.Empty;
             jn["c"] = color;
             jn["t"] = time;
 
