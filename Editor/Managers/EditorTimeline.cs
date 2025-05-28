@@ -936,6 +936,8 @@ namespace BetterLegacy.Editor.Managers
         public Image timelineImage;
         public Image timelineOverlayImage;
         public GridRenderer timelineGridRenderer;
+        Coroutine assignTimelineTextureCoroutine;
+        bool stopCoroutine;
 
         /// <summary>
         /// Updates the timelines' waveform texture.
@@ -955,12 +957,19 @@ namespace BetterLegacy.Editor.Managers
 
             SetTimelineSprite(null);
 
+            if (assignTimelineTextureCoroutine != null)
+            {
+                CoroutineHelper.StopCoroutine(assignTimelineTextureCoroutine);
+                stopCoroutine = true;
+                assignTimelineTextureCoroutine = null;
+            }
+
             if (forceReload || config.WaveformRerender.Value || (!EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.loadingLevel && !RTFile.FileExists(settingsPath) || !RTFile.FileExists(path)))
             {
                 int num = Mathf.Clamp((int)clip.length * 48, 100, 15000);
                 Texture2D waveform = null;
 
-                yield return config.WaveformMode.Value switch
+                assignTimelineTextureCoroutine = config.WaveformMode.Value switch
                 {
                     WaveformType.Split => CoroutineHelper.StartCoroutineAsync(Legacy(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, _tex => waveform = _tex)),
                     WaveformType.Centered => CoroutineHelper.StartCoroutineAsync(Beta(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, _tex => waveform = _tex)),
@@ -970,6 +979,13 @@ namespace BetterLegacy.Editor.Managers
                     WaveformType.BottomDetailed => CoroutineHelper.StartCoroutineAsync(ModernFast(clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, _tex => waveform = _tex)),
                     _ => null,
                 };
+                yield return assignTimelineTextureCoroutine;
+                assignTimelineTextureCoroutine = null;
+                if (stopCoroutine)
+                {
+                    stopCoroutine = false;
+                    yield break;
+                }    
 
                 SetTimelineSprite(Sprite.Create(waveform, new Rect(0f, 0f, num, 300f), new Vector2(0.5f, 0.5f), 100f));
 
@@ -978,9 +994,15 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.loadingLevel ?
-                settingsPath :
-                path), texture2D => SetTimelineSprite(SpriteHelper.CreateSprite(texture2D))));
+                assignTimelineTextureCoroutine = CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.loadingLevel ?
+                settingsPath : path), texture2D => SetTimelineSprite(SpriteHelper.CreateSprite(texture2D))));
+                yield return assignTimelineTextureCoroutine;
+                assignTimelineTextureCoroutine = null;
+                if (stopCoroutine)
+                {
+                    stopCoroutine = false;
+                    yield break;
+                }
             }
 
             SetTimelineGridSize();
