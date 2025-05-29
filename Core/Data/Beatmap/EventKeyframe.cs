@@ -132,6 +132,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (jn[raxis[i]] != null)
                     eventRandomValues.Add(jn[raxis[i]].AsFloat);
 
+            eventKeyframe.SetRandomValues(eventRandomValues.ToArray());
+
             if (jn["str"] != null)
             {
                 eventKeyframe.stringValues = new string[jn["str"].Count];
@@ -141,12 +143,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             eventKeyframe.random = jn["r"].AsInt;
 
-            eventKeyframe.relative = !string.IsNullOrEmpty(jn["rel"]) ? jn["rel"].AsBool : defaultRelative;
+            eventKeyframe.relative = jn["rel"] != null ? jn["rel"].AsBool : defaultRelative;
             eventKeyframe.flee = jn["flee"].AsBool;
 
-            eventKeyframe.locked = !string.IsNullOrEmpty(jn["l"]) && jn["l"].AsBool;
-
-            eventKeyframe.SetRandomValues(eventRandomValues.ToArray());
+            eventKeyframe.locked = jn["l"].AsBool;
 
             return eventKeyframe;
         }
