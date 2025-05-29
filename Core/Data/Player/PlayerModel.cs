@@ -222,6 +222,7 @@ namespace BetterLegacy.Core.Data.Player
                     devPlayer.basePart.id = DEV_ID;
                     devPlayer.basePart.name = "DevPlus";
                     devPlayer.tailBase.mode = TailBase.TailMode.DevPlus;
+                    devPlayer.basePart.moveSpeed = 22f;
                     devPlayer.basePart.boostCooldown = 0f;
                 }
 
