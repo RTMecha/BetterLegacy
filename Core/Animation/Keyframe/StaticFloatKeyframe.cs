@@ -1,28 +1,12 @@
 ﻿using UnityEngine;
 
-using BetterLegacy.Core.Managers;
-
 namespace BetterLegacy.Core.Animation.Keyframe
 {
     /// <summary>
-    /// A keyframe that animates a float value.
+    /// A keyframe that targets the player and animates a float value.
     /// </summary>
     public struct StaticFloatKeyframe : IKeyframe<float>, IHomingKeyframe, IHomingFloatKeyframe
     {
-        public bool Active { get; set; }
-
-        public float Time { get; set; }
-        public EaseFunction Ease { get; set; }
-        public float Value { get; set; }
-        public float TotalValue { get; set; }
-        public bool Relative { get; set; }
-
-        public Sequence<Vector3> PositionSequence { get; set; }
-
-        public Vector3 Target { get; set; }
-
-        public float Angle { get; set; }
-
         public StaticFloatKeyframe(float time, float value, EaseFunction ease, Sequence<Vector3> positionSequence, bool relative)
         {
             Time = time;
@@ -35,6 +19,22 @@ namespace BetterLegacy.Core.Animation.Keyframe
             TotalValue = 0f;
             Relative = relative;
         }
+
+        #region Values
+
+        public bool Active { get; set; }
+        public float Time { get; set; }
+        public EaseFunction Ease { get; set; }
+        public float Value { get; set; }
+        public float TotalValue { get; set; }
+        public bool Relative { get; set; }
+        public Sequence<Vector3> PositionSequence { get; set; }
+        public Vector3 Target { get; set; }
+        public float Angle { get; set; }
+
+        #endregion
+
+        #region Methods
 
         public void Start(IKeyframe<float> prev, float value, float time)
         {
@@ -60,5 +60,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public float GetValue() => Angle + Value + TotalValue;
 
         public float Interpolate(IKeyframe<float> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+
+        #endregion
     }
 }

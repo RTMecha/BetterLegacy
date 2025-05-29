@@ -1,29 +1,11 @@
 ﻿using UnityEngine;
 
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
-    public struct DynamicVector3Keyframe : IKeyframe<Vector3>, IHomingKeyframe, IDynamicHomingKeyframe
+    public struct DynamicVector3Keyframe : IKeyframe<Vector3>, IHomingKeyframe, IDynamicHomingKeyframe<Vector3>, IHomingVector3Keyframe
     {
-        public bool Active { get; set; }
-
-        public float Time { get; set; }
-        public EaseFunction Ease { get; set; }
-        public Vector3 Value { get; set; }
-        public Vector3 OriginalValue { get; set; }
-        public AxisMode Axis { get; set; }
-        public Vector3 TotalValue { get; set; }
-        public bool Relative { get; set; }
-
-        public float Delay { get; set; }
-        public float MinRange { get; set; }
-        public float MaxRange { get; set; }
-        public bool Flee { get; set; }
-
-        public Vector3 Target { get; set; }
-
         public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, AxisMode axisMode, bool relative)
         {
             Time = time;
@@ -41,10 +23,30 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Relative = relative;
         }
 
+        #region Values
+
+        public bool Active { get; set; }
+        public float Time { get; set; }
+        public EaseFunction Ease { get; set; }
+        public Vector3 Value { get; set; }
+        public Vector3 OriginalValue { get; set; }
+        public AxisMode Axis { get; set; }
+        public Vector3 TotalValue { get; set; }
+        public bool Relative { get; set; }
+        public float Delay { get; set; }
+        public float MinRange { get; set; }
+        public float MaxRange { get; set; }
+        public bool Flee { get; set; }
+        public Vector3 Target { get; set; }
+
+        #endregion
+
+        #region Methods
+
         public void Start(IKeyframe<Vector3> prev, Vector3 value, float time)
         {
             Active = true;
-            if (prev is not IDynamicHomingKeyframe)
+            if (prev is not IDynamicHomingKeyframe<Vector3>)
                 Value = OriginalValue;
         }
 
@@ -62,7 +64,13 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public Vector3 GetValue(float ease) => GetValue(null, ease);
 
-        public Vector3 GetValue(IDynamicHomingKeyframe dynamicHomingKeyframe, float ease)
+        /// <summary>
+        /// Gets the value of the dynamic homing keyframe. Interpolates only min & max range and delay.
+        /// </summary>
+        /// <param name="dynamicHomingKeyframe">Next dynamic homing keyframe. If is null, doesn't interpolate.</param>
+        /// <param name="ease">Eased time scale.</param>
+        /// <returns>Returns the dynamic homing value.</returns>
+        public Vector3 GetValue(IDynamicHomingKeyframe<Vector3> dynamicHomingKeyframe, float ease)
         {
             var player = this.GetPlayer();
             var vector = player?.localPosition ?? Vector3.zero;
@@ -103,7 +111,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public Vector3 Interpolate(IKeyframe<Vector3> other, float time)
         {
             var ease = other.Ease(time);
-            if (other is IDynamicHomingKeyframe dynamicHomingKeyframe)
+            if (other is IDynamicHomingKeyframe<Vector3> dynamicHomingKeyframe)
             {
                 var value = GetValue(dynamicHomingKeyframe, ease);
                 // set the value to the other dynamic homing keyframe so it doesn't snap to 0 when the keyframe starts interpolating.
@@ -113,5 +121,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
             return RTMath.Lerp(GetValue(ease), other.GetValue(), other.Ease(time));
         }
+
+        #endregion
     }
 }

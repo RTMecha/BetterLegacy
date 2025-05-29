@@ -7,14 +7,6 @@ namespace BetterLegacy.Core.Animation.Keyframe
     /// </summary>
     public struct Vector2Keyframe : IKeyframe<Vector2>
     {
-        public bool Active { get; set; }
-
-        public float Time { get; set; }
-        public EaseFunction Ease { get; set; }
-        public Vector2 Value { get; set; }
-        public Vector2 TotalValue { get; set; }
-        public bool Relative { get; set; }
-
         public Vector2Keyframe(float time, Vector2 value, EaseFunction ease, bool relative = false)
         {
             Time = time;
@@ -24,6 +16,19 @@ namespace BetterLegacy.Core.Animation.Keyframe
             TotalValue = Vector2.zero;
             Relative = relative;
         }
+
+        #region Values
+
+        public bool Active { get; set; }
+        public float Time { get; set; }
+        public EaseFunction Ease { get; set; }
+        public Vector2 Value { get; set; }
+        public Vector2 TotalValue { get; set; }
+        public bool Relative { get; set; }
+
+        #endregion
+
+        #region Methods
 
         public void Start(IKeyframe<Vector2> prev, Vector2 value, float time) => Active = true;
 
@@ -36,6 +41,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public Vector2 GetValue() => Value;
 
         public Vector2 Interpolate(IKeyframe<Vector2> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+
+        #endregion
     }
 }
 

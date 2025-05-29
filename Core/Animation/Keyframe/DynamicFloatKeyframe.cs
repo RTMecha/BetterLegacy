@@ -1,36 +1,11 @@
 ﻿using UnityEngine;
 
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
-    public struct DynamicFloatKeyframe : IKeyframe<float>, IHomingFloatKeyframe, IHomingKeyframe, IDynamicHomingKeyframe
+    public struct DynamicFloatKeyframe : IKeyframe<float>, IHomingKeyframe, IDynamicHomingKeyframe<float>, IHomingFloatKeyframe
     {
-        public bool Active { get; set; }
-
-        public float Time { get; set; }
-        public EaseFunction Ease { get; set; }
-        public float Value { get; set; }
-        public float OriginalValue { get; set; }
-        public float TotalValue { get; set; }
-        public bool Relative { get; set; }
-
-        public float Delay { get; set; }
-        public float MinRange { get; set; }
-        public float MaxRange { get; set; }
-        public bool Flee { get; set; }
-
-        public float Angle { get; set; }
-        public float Angle360 { get; set; }
-        public float AngleDegrees { get; set; }
-
-        public Vector3 Target { get; set; }
-
-        public Sequence<Vector3> PositionSequence { get; set; }
-        public Vector3 Position { get; set; }
-
         public DynamicFloatKeyframe(float time, float value, EaseFunction ease, float delay, float min, float max, bool flee, Sequence<Vector3> positionSequence, bool relative)
         {
             Time = time;
@@ -53,10 +28,70 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Relative = relative;
         }
 
+        #region Values
+
+        public bool Active { get; set; }
+        public float Time { get; set; }
+        public EaseFunction Ease { get; set; }
+        public float Value { get; set; }
+        public float OriginalValue { get; set; }
+        public float TotalValue { get; set; }
+        public bool Relative { get; set; }
+        public float Delay { get; set; }
+        public float MinRange { get; set; }
+        public float MaxRange { get; set; }
+        public bool Flee { get; set; }
+        public float Angle { get; set; }
+        public Vector3 Target { get; set; }
+        public Sequence<Vector3> PositionSequence { get; set; }
+
+        /// <summary>
+        /// 360 degree offset to rotate.
+        /// </summary>
+        public float Angle360 { get; set; }
+
+        /// <summary>
+        /// The current angle degrees.
+        /// </summary>
+        public float AngleDegrees { get; set; }
+
+        /// <summary>
+        /// The current position to target.
+        /// </summary>
+        public Vector3 Position { get; set; }
+
+        /// <summary>
+        /// Horizontal side the player is on relative to the object.
+        /// </summary>
+        public Side PlayerSide { get; set; }
+
+        /// <summary>
+        /// Horizontal side.
+        /// </summary>
+        public enum Side
+        {
+            /// <summary>
+            /// The side is undetermined.
+            /// </summary>
+            Undetermined,
+            /// <summary>
+            /// The player is to the left of the object.
+            /// </summary>
+            Left,
+            /// <summary>
+            /// The player is to the right of the object.
+            /// </summary>
+            Right,
+        }
+
+        #endregion
+
+        #region Methods
+
         public void Start(IKeyframe<float> prev, float value, float time)
         {
             Active = true;
-            if (prev is not IDynamicHomingKeyframe)
+            if (prev is not IDynamicHomingKeyframe<float>)
                 Value = OriginalValue;
             var player = this.GetPlayer(time);
             Target = player?.localPosition ?? Vector3.zero;
@@ -80,19 +115,9 @@ namespace BetterLegacy.Core.Animation.Keyframe
             //{
             //    PlayerSide = Side.Right;
             //}
-
         }
 
         public void Stop() => Active = false;
-
-        public Side PlayerSide { get; set; }
-
-        public enum Side
-        {
-            Undetermined,
-            Left,
-            Right
-        }
 
         public Vector3 GetPosition() => PositionSequence.Value;
 
@@ -106,13 +131,20 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public float GetValue(float ease) => GetValue(null, ease);
 
-        public float GetValue(IDynamicHomingKeyframe dynamicHomingKeyframe, float ease)
+        /// <summary>
+        /// Gets the value of the dynamic homing keyframe. Interpolates only min & max range and delay.
+        /// </summary>
+        /// <param name="dynamicHomingKeyframe">Next dynamic homing keyframe. If is null, doesn't interpolate.</param>
+        /// <param name="ease">Eased time scale.</param>
+        /// <returns>Returns the dynamic homing value.</returns>
+        public float GetValue(IDynamicHomingKeyframe<float> dynamicHomingKeyframe, float ease)
         {
             var player = this.GetPlayer();
             var vector = player?.localPosition ?? Vector3.zero;
             var angle = -RTMath.VectorAngle(PositionSequence.Value, Flee ? vector - PositionSequence.Value : vector);
 
             // Calculation for rotation looping so it doesn't flip around with a lower delay.
+            // This code was used in researching how to get the homing rotation to not flip. Sadly, couldn't figure it out fully.
 
             //if (Target.x < PositionSequence.Value.x && vector.y < PositionSequence.Value.y && PlayerSide != Side.Left)
             //{
@@ -202,12 +234,10 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         public float CalculateDelay() => 1f - Mathf.Pow(Delay, UnityEngine.Time.deltaTime * CoreHelper.ForwardPitch);
 
-        public float GetAngle() => Value;
-
         public float Interpolate(IKeyframe<float> other, float time)
         {
             var ease = other.Ease(time);
-            if (other is IDynamicHomingKeyframe dynamicHomingKeyframe)
+            if (other is IDynamicHomingKeyframe<float> dynamicHomingKeyframe)
             {
                 var value = GetValue(dynamicHomingKeyframe, ease);
                 // set the value to the other dynamic homing keyframe so it doesn't snap to 0 when the keyframe starts interpolating.
@@ -217,5 +247,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
             return RTMath.Lerp(GetValue(ease), other.GetValue(), ease);
         }
+
+        #endregion
     }
 }

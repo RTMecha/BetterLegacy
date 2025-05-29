@@ -11,30 +11,6 @@ namespace BetterLegacy.Core.Animation.Keyframe
     /// </summary>
     public struct CustomThemeKeyframe : IKeyframe<Color>
     {
-        public bool Active { get; set; }
-
-        public float Time { get; set; }
-        public EaseFunction Ease { get; set; }
-        public Color TotalValue { get; set; }
-        public bool Relative { get; set; }
-
-        public int colorSource;
-        public int colorSlot;
-        public float opacity;
-        public float hue;
-        public float saturation;
-        public float value;
-
-        public bool invertOpacity;
-
-        List<Color> Theme => colorSource switch
-        {
-            0 => CoreHelper.CurrentBeatmapTheme.objectColors,
-            1 => CoreHelper.CurrentBeatmapTheme.backgroundColors,
-            2 => CoreHelper.CurrentBeatmapTheme.effectColors,
-            _ => null,
-        };
-
         public CustomThemeKeyframe(float time, int colorSource, int colorSlot, float opacity, float hue, float saturation, float value, EaseFunction ease, bool invertOpacity)
         {
             Time = time;
@@ -47,6 +23,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Ease = ease;
             Active = false;
             this.invertOpacity = invertOpacity;
+            Value = Color.white;
             TotalValue = Color.white;
             Relative = false;
         }
@@ -54,7 +31,64 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public CustomThemeKeyframe(float time, int colorSlot, float opacity, float hue, float saturation, float value, EaseFunction ease, bool invertOpacity) : this(time, 0, colorSlot, opacity, hue, saturation, value, ease, invertOpacity) { }
 
         public CustomThemeKeyframe(float time, int colorSlot, float opacity, float hue, float saturation, float value, EaseFunction ease) : this(time, colorSlot, opacity, hue, saturation, value, ease, true) { }
-        
+
+        #region Values
+
+        public bool Active { get; set; }
+
+        public float Time { get; set; }
+        public EaseFunction Ease { get; set; }
+        public Color Value { get; set; }
+        public Color TotalValue { get; set; }
+        public bool Relative { get; set; }
+
+        /// <summary>
+        /// Source of the colors.
+        /// </summary>
+        public int colorSource;
+
+        /// <summary>
+        /// Slot index of the color to get from the current theme.
+        /// </summary>
+        public int colorSlot;
+
+        /// <summary>
+        /// Opacity of the returned color.
+        /// </summary>
+        public float opacity;
+
+        /// <summary>
+        /// Hue of HSV color.
+        /// </summary>
+        public float hue;
+
+        /// <summary>
+        /// Saturation of HSV color.
+        /// </summary>
+        public float saturation;
+
+        /// <summary>
+        /// Value of HSV color.
+        /// </summary>
+        public float value;
+
+        /// <summary>
+        /// If opacity should be inverted.
+        /// </summary>
+        public bool invertOpacity;
+
+        List<Color> Theme => colorSource switch
+        {
+            0 => CoreHelper.CurrentBeatmapTheme.objectColors,
+            1 => CoreHelper.CurrentBeatmapTheme.backgroundColors,
+            2 => CoreHelper.CurrentBeatmapTheme.effectColors,
+            _ => null,
+        };
+
+        #endregion
+
+        #region Methods
+
         public void Start(IKeyframe<Color> prev, Color value, float time) => Active = true;
 
         public void Stop() => Active = false;
@@ -80,5 +114,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
         }
 
         public Color Interpolate(IKeyframe<Color> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+
+        #endregion
     }
 }

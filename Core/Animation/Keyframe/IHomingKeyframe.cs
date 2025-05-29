@@ -2,10 +2,27 @@
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {
+    /// <summary>
+    /// Indicates a runtime keyframe is a homing keyframe, meaning a keyframe that can track the players' position.
+    /// </summary>
     public interface IHomingKeyframe
     {
-        public Vector3 GetPosition();
-        public Vector3 GetPosition(float time);
+        /// <summary>
+        /// Tracked player position the keyframe will home on.
+        /// </summary>
         public Vector3 Target { get; set; }
+
+        /// <summary>
+        /// Gets the position of the current object and uses it to target the closest player.
+        /// </summary>
+        /// <returns>Returns the position of the current object.</returns>
+        public Vector3 GetPosition();
+
+        /// <summary>
+        /// Interpolates the position of the current object and uses it to target the closest player.
+        /// </summary>
+        /// <param name="time">Time value to interpolate.</param>
+        /// <returns>Returns the interpolated position of the current object.</returns>
+        public Vector3 GetPosition(float time);
     }
 }

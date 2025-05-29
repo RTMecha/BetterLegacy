@@ -5,14 +5,6 @@
     /// </summary>
     public struct FloatKeyframe : IKeyframe<float>
     {
-        public bool Active { get; set; }
-
-        public float Time { get; set; }
-        public EaseFunction Ease { get; set; }
-        public float Value { get; set; }
-        public float TotalValue { get; set; }
-        public bool Relative { get; set; }
-
         public FloatKeyframe(float time, float value, EaseFunction ease, bool relative = false)
         {
             Time = time;
@@ -23,8 +15,23 @@
             Relative = relative;
         }
 
+        #region Values
+
+        public bool Active { get; set; }
+
+        public float Time { get; set; }
+        public EaseFunction Ease { get; set; }
+        public float Value { get; set; }
+        public float TotalValue { get; set; }
+        public bool Relative { get; set; }
+
+        #endregion
+
+        #region Methods
+
         public void Start(IKeyframe<float> prev, float value, float time)
         {
+            // get the relative value of the previous homing keyframe
             TotalValue = Relative ? prev is IHomingKeyframe ? prev.GetValue() : prev.TotalValue : 0f;
             Active = true;
         }
@@ -38,5 +45,7 @@
         public float GetValue() => Value + TotalValue;
 
         public float Interpolate(IKeyframe<float> other, float time) => RTMath.Lerp(GetValue(), other.GetValue(), other.Ease(time));
+
+        #endregion
     }
 }
