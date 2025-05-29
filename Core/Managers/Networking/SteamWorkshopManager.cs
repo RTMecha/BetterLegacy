@@ -230,9 +230,7 @@ namespace BetterLegacy.Core.Managers.Networking
                     continue;
 
                 level.id = publishedFileID.Value.ToString();
-                level.isSteamLevel = true;
                 level.steamItem = item;
-                level.steamLevelInit = exists;
 
                 LevelManager.AssignSaveData(level);
 

@@ -118,17 +118,12 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Steam Workshop item reference.
         /// </summary>
-        public SteamworksFacepunch.Ugc.Item steamItem;
+        public SteamworksFacepunch.Ugc.Item? steamItem;
 
         /// <summary>
         /// If level is from the Steam Workshop.
         /// </summary>
         public bool isSteamLevel;
-
-        /// <summary>
-        /// If steamItem was initialized.
-        /// </summary>
-        public bool steamLevelInit;
 
         /// <summary>
         /// The editor level wrapper.
