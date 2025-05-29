@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable<BeatmapObject>
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable<BeatmapObject>, IEditable
     {
         public BeatmapObject() : base() { }
 
@@ -53,11 +53,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             new List<EventKeyframe>(),
             new List<EventKeyframe>()
         };
-
-        /// <summary>
-        /// Data for the object in the editor.
-        /// </summary>
-        public ObjectEditorData editorData = new ObjectEditorData();
 
         #region Parent
 
@@ -450,7 +445,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region References
+        #region Runtime
 
         /// <summary>
         /// For object modifiers.
@@ -493,14 +488,27 @@ namespace BetterLegacy.Core.Data.Beatmap
         public RTModifiers<BeatmapObject> runtimeModifiers;
 
         /// <summary>
-        /// Used for editor.
-        /// </summary>
-        public TimelineObject timelineObject;
-
-        /// <summary>
         /// Use for object modifiers.
         /// </summary>
         public Detector detector;
+
+        #endregion
+
+        #region Editor
+
+        /// <summary>
+        /// Data for the object in the editor.
+        /// </summary>
+        public ObjectEditorData editorData = new ObjectEditorData();
+
+        public ObjectEditorData EditorData { get => editorData; set => editorData = value; }
+
+        /// <summary>
+        /// Timeline Object reference for the editor.
+        /// </summary>
+        public TimelineObject timelineObject;
+
+        public TimelineObject TimelineObject { get => timelineObject; set => timelineObject = value; }
 
         #endregion
 

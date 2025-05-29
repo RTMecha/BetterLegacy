@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable<BackgroundObject>
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable<BackgroundObject>, IEditable
     {
         public BackgroundObject() : base() { }
 
@@ -29,9 +29,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string name = "Background";
 
         public string layer = string.Empty;
-
-        // todo: change background objects to be in the main editor timeline and have the same start time system as beatmap objects.
-        public ObjectEditorData editorData = new ObjectEditorData();
 
         #region Timing
 
@@ -265,7 +262,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region References
+        #region Runtime
 
         public bool Enabled { get; set; } = true;
 
@@ -273,10 +270,23 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public RTModifiers<BackgroundObject> runtimeModifiers;
 
+        #endregion
+
+        #region Editor
+
         /// <summary>
-        /// Used for editor.
+        /// Data for the object in the editor.
+        /// </summary>
+        public ObjectEditorData editorData = new ObjectEditorData();
+
+        public ObjectEditorData EditorData { get => editorData; set => editorData = value; }
+
+        /// <summary>
+        /// Timeline Object reference for the editor.
         /// </summary>
         public TimelineObject timelineObject;
+
+        public TimelineObject TimelineObject { get => timelineObject; set => timelineObject = value; }
 
         #endregion
 

@@ -15,9 +15,9 @@ using BetterLegacy.Editor.Data;
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
-    /// An instance of a <see cref="Prefab"/>.
+    /// An instance of a <see cref="Prefab"/> that spawns all objects contained in the Prefab.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IModifyable<PrefabObject>
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IModifyable<PrefabObject>, IEditable
     {
         public PrefabObject() : base()
         {
@@ -38,20 +38,31 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
-        public string prefabID = "";
+        /// <summary>
+        /// <see cref="Prefab"/> reference ID.
+        /// </summary>
+        public string prefabID = string.Empty;
 
+        /// <summary>
+        /// If the Prefab Object was expanded.
+        /// </summary>
         public bool expanded;
 
+        /// <summary>
+        /// Transform offsets.
+        /// </summary>
         public List<EventKeyframe> events = new List<EventKeyframe>();
-
-        public ObjectEditorData editorData = new ObjectEditorData();
 
         #region Parent
 
+        /// <summary>
+        /// ID of the object to parent all spawned base objects to.
+        /// </summary>
         public string parent;
 
-        public string parentType = "111";
-
+        /// <summary>
+        /// Parent delay values.
+        /// </summary>
         public float[] parentOffsets = new float[3]
         {
             0f,
@@ -59,6 +70,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             0f
         };
 
+        /// <summary>
+        /// Parent toggle values.
+        /// </summary>
+        public string parentType = "111";
+
+        /// <summary>
+        /// Multiplies from the parents' position, allowing for parallaxing.
+        /// </summary>
         public float[] parentParallax = new float[3]
         {
             1f,
@@ -66,8 +85,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             1f
         };
 
+        /// <summary>
+        /// If parent chains should be accounted for when parent offset / delay is used.
+        /// </summary>
         public string parentAdditive = "000";
 
+        /// <summary>
+        /// If the object should stop following the parent chain after spawn.
+        /// </summary>
         public bool desync;
 
         #endregion
@@ -83,6 +108,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float StartTime { get => startTime; set => startTime = value; }
 
         int repeatCount;
+        /// <summary>
+        /// Amount of times to spawn the <see cref="Prefab"/>'s objects.
+        /// </summary>
         public int RepeatCount
         {
             get => repeatCount;
@@ -90,13 +118,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         float repeatOffsetTime;
+        /// <summary>
+        /// Time to offset for each spawned object.
+        /// </summary>
         public float RepeatOffsetTime
         {
             get => repeatOffsetTime;
             set => repeatOffsetTime = Mathf.Clamp(value, 0f, 60f);
         }
 
-        public float speed = 1f;
+        float speed = 1f;
+        /// <summary>
+        /// Speed to multiply the spawned objects to.
+        /// </summary>
         public float Speed
         {
             get => Mathf.Clamp(speed, 0.01f, MAX_PREFAB_OBJECT_SPEED);
@@ -199,17 +233,45 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
-        #region References
+        #region Runtime
 
+        /// <summary>
+        /// Cached transform.
+        /// </summary>
         public ObjectTransform? cachedTransform;
 
+        /// <summary>
+        /// If the Prefab Object was spawned from a modifier.
+        /// </summary>
         public bool fromModifier;
 
+        /// <summary>
+        /// Spawned objects from the <see cref="Prefab"/>.
+        /// </summary>
         public List<IPrefabable> expandedObjects = new List<IPrefabable>();
 
+        /// <summary>
+        /// Expanded Beatmap Objects.
+        /// </summary>
         public List<BeatmapObject> ExpandedObjects => GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == id);
 
+        #endregion
+
+        #region Editor
+
+        /// <summary>
+        /// Data for the object in the editor.
+        /// </summary>
+        public ObjectEditorData editorData = new ObjectEditorData();
+
+        public ObjectEditorData EditorData { get => editorData; set => editorData = value; }
+
+        /// <summary>
+        /// Timeline Object reference for the editor.
+        /// </summary>
         public TimelineObject timelineObject;
+
+        public TimelineObject TimelineObject { get => timelineObject; set => timelineObject = value; }
 
         #endregion
 
