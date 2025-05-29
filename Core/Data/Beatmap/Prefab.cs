@@ -9,6 +9,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
+    /// <summary>
+    /// Contains a package of <see cref="IPrefabable"/> objects.
+    /// </summary>
     public class Prefab : PAObject<Prefab>
     {
         public Prefab() : base() { }
@@ -17,7 +20,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             this.name = name;
             this.type = type;
-            typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : null;
+            typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
             this.offset = offset;
 
             this.beatmapObjects.AddRange(beatmapObjects.Select(x => x.Copy(false)));
@@ -44,31 +47,61 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
+        /// <summary>
+        /// Name of the Prefab.
+        /// </summary>
         public string name;
 
+        /// <summary>
+        /// Offset added to spawn / despawn times of all spawned objects.
+        /// </summary>
         public float offset;
 
+        /// <summary>
+        /// File path to the external Prefab.
+        /// </summary>
         public string filePath;
 
+        /// <summary>
+        /// Description of the Prefab.
+        /// </summary>
         public string description;
 
         /// <summary>
-        /// Only used for vanilla compatibility.
+        /// Vanilla Prefab Type index.
         /// </summary>
         public int type;
 
+        /// <summary>
+        /// ID of the Prefab Type.
+        /// </summary>
         public string typeID;
 
         #region Contents
 
+        /// <summary>
+        /// Assets of the Prefab.
+        /// </summary>
         public Assets assets = new Assets();
 
+        /// <summary>
+        /// Contained Beatmap Objects.
+        /// </summary>
         public List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
 
+        /// <summary>
+        /// Contained Prefab Objects.
+        /// </summary>
         public List<PrefabObject> prefabObjects = new List<PrefabObject>();
 
+        /// <summary>
+        /// Contained Background Layers.
+        /// </summary>
         public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
 
+        /// <summary>
+        /// Contained Background Objects.
+        /// </summary>
         public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
 
         #endregion
@@ -122,7 +155,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             offset = -jn["o"].AsFloat;
             prefabObjects = new List<PrefabObject>();
             description = jn["description"];
-            typeID = PrefabType.prefabTypeVGIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : "";
+            typeID = PrefabType.VGIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -153,7 +186,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             description = jn["desc"] ?? string.Empty;
 
             if (string.IsNullOrEmpty(typeID))
-                typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : "";
+                typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
 
             assets.Clear();
             if (jn["assets"] != null)
@@ -166,7 +199,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["n"] = name;
             if (id != null)
                 jn["id"] = id;
-            jn["type"] = PrefabType.prefabTypeVGIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0;
+            jn["type"] = PrefabType.VGIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0;
 
             jn["o"] = -offset;
 
@@ -183,7 +216,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = Parser.NewJSONObject();
             jn["name"] = name;
-            jn["type"] = (PrefabType.prefabTypeLSIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0).ToString();
+            jn["type"] = (PrefabType.LSIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0).ToString();
             jn["offset"] = offset;
 
             if (id != null)

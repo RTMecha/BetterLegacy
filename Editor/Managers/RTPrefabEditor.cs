@@ -1248,7 +1248,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 OpenPrefabTypePopup(prefab.typeID, id =>
                 {
-                    prefab.type = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                    prefab.type = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     prefab.typeID = id;
 
                     RenderPrefabObjectType(prefab);
@@ -1704,7 +1704,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {
-                    PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                    PrefabEditor.inst.NewPrefabType = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     NewPrefabTypeID = id;
                     RenderPrefabCreatorTypeSelector(id);
                 });
@@ -2199,7 +2199,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 OpenPrefabTypePopup(prefab.typeID, id =>
                 {
-                    prefab.type = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                    prefab.type = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     prefab.typeID = id;
 
                     var prefabType = prefab.GetPrefabType();
@@ -2589,7 +2589,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {
-                    PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                    PrefabEditor.inst.NewPrefabType = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     NewPrefabTypeID = id;
                     RenderPrefabCreatorTypeSelector(id);
                 });

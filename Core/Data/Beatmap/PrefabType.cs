@@ -11,7 +11,7 @@ using BetterLegacy.Core.Helpers;
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
-    /// Represents the type of a prefab.
+    /// A <see cref="Prefab"/> group. Displays an icon and color for the Prefab references.
     /// </summary>
     public class PrefabType : PAObject<PrefabType>
     {
@@ -50,7 +50,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Defaults
 
         static PrefabType invalidType;
-
         /// <summary>
         /// The invalid prefab type if no prefab types were found.
         /// </summary>
@@ -64,23 +63,29 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
+        /// <summary>
+        /// If the Prefab Type is a default one.
+        /// </summary>
         public bool isDefault;
 
-        public const string BOMBS = "7171177971767435";
-        public const string BULLETS = "7177271762800247";
-        public const string BEAMS = "9453916730542677";
-        public const string SPINNERS = "1644373336900132";
-        public const string PULSES = "4045878933744147";
-        public const string CHARACTERS = "4965490066612888";
-        public const string CHARACTER_PARTS = "9570474999546241";
-        public const string PROPS = "5992953518858497";
-        public const string STATIC = "0689518742909570";
-        public const string MISC_1 = "0236192376944164";
-        public const string MISC_2 = "8073495542187348";
-        public const string MISC_3 = "5347376169954072";
-        public const string MISC_4 = "4727401743041957";
+        const string BOMBS = "7171177971767435";
+        const string BULLETS = "7177271762800247";
+        const string BEAMS = "9453916730542677";
+        const string SPINNERS = "1644373336900132";
+        const string PULSES = "4045878933744147";
+        const string CHARACTERS = "4965490066612888";
+        const string CHARACTER_PARTS = "9570474999546241";
+        const string PROPS = "5992953518858497";
+        const string STATIC = "0689518742909570";
+        const string MISC_1 = "0236192376944164";
+        const string MISC_2 = "8073495542187348";
+        const string MISC_3 = "5347376169954072";
+        const string MISC_4 = "4727401743041957";
 
-        public static Dictionary<int, string> prefabTypeLSIndexToID = new Dictionary<int, string>()
+        /// <summary>
+        /// Converts LS Prefab Type Index to ID.
+        /// </summary>
+        public static Dictionary<int, string> LSIndexToID { get; } = new Dictionary<int, string>()
         {
             { 0, BOMBS }, // Bombs
             { 1, BULLETS }, // Bullets
@@ -94,7 +99,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             { 9, MISC_4 }, // Misc 4
         };
 
-        public static Dictionary<int, string> prefabTypeVGIndexToID = new Dictionary<int, string>()
+        /// <summary>
+        /// Converts VG Prefab Type Index to ID.
+        /// </summary>
+        public static Dictionary<int, string> VGIndexToID { get; } = new Dictionary<int, string>()
         {
             { 0, CHARACTERS }, // Characters
             { 1, CHARACTER_PARTS }, // Character Parts
@@ -110,7 +118,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             { 11, MISC_3 }, // Misc 3
         };
 
-        public static Dictionary<string, int> prefabTypeLSIDToIndex = new Dictionary<string, int>()
+        /// <summary>
+        /// Converts LS Prefab Type ID to Index.
+        /// </summary>
+        public static Dictionary<string, int> LSIDToIndex { get; } = new Dictionary<string, int>()
         {
             { BOMBS, 0 }, // Bombs
             { BULLETS, 1 }, // Bullets
@@ -124,7 +135,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             { MISC_4, 9 }, // Misc 4
         };
 
-        public static Dictionary<string, int> prefabTypeVGIDToIndex = new Dictionary<string, int>()
+        /// <summary>
+        /// Converts VG Prefab Type ID to Index.
+        /// </summary>
+        public static Dictionary<string, int> VGIDToIndex { get; } = new Dictionary<string, int>()
         {
             { CHARACTERS, 0 }, // Characters
             { CHARACTER_PARTS, 1 }, // Character Parts
@@ -144,7 +158,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public void AssignColor(string _val) => color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+        /// <summary>
+        /// Assigns the color of the Prefab Type.
+        /// </summary>
+        /// <param name="hex">Hex color to assign.</param>
+        public void AssignColor(string hex) => color = hex.Length == 8 ? LSColors.HexToColorAlpha(hex) : hex.Length == 6 ? LSColors.HexToColor(hex) : LSColors.pink500;
 
         public override void CopyData(PrefabType orig, bool newID = true)
         {
@@ -192,8 +210,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         #endregion
 
         #region Operators
-
-        public static implicit operator bool(PrefabType exists) => exists != null;
 
         public override string ToString() => name;
 
