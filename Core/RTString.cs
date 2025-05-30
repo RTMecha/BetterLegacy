@@ -286,7 +286,10 @@ namespace BetterLegacy.Core
                 {
                     try
                     {
-                        str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString(), beatmapObject.GetObjectVariables()).ToString());
+                        var numberVariables = beatmapObject.GetObjectVariables();
+                        ModifiersHelper.SetVariables(variables, numberVariables);
+
+                        str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString(), numberVariables, beatmapObject.GetObjectFunctions()).ToString());
                     }
                     catch
                     {
@@ -297,7 +300,10 @@ namespace BetterLegacy.Core
                 {
                     try
                     {
-                        str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString(), beatmapObject.GetObjectVariables()).ToString());
+                        var numberVariables = beatmapObject.GetObjectVariables();
+                        ModifiersHelper.SetVariables(variables, numberVariables);
+
+                        str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString(), numberVariables, beatmapObject.GetObjectFunctions()).ToString());
                     }
                     catch
                     {
