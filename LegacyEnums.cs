@@ -1230,6 +1230,9 @@ namespace BetterLegacy
         #endregion
     }
 
+    /// <summary>
+    /// Ranking award.
+    /// </summary>
     public class Rank : Exists, ICustomEnum<Rank>
     {
         public Rank() { }
@@ -1297,11 +1300,32 @@ namespace BetterLegacy
         public string Name { get; }
         public Lang DisplayName { get; }
 
+        /// <summary>
+        /// Color of the rank.
+        /// </summary>
         public Color Color { get; }
 
+        /// <summary>
+        /// Minimum hits to earn the rank.
+        /// </summary>
         public int MinHits { get; }
 
+        /// <summary>
+        /// Maximum hits to earn the rank.
+        /// </summary>
         public int MaxHits { get; }
+
+        /// <summary>
+        /// Formats a <see cref="Rank"/> to have the proper style and color.
+        /// </summary>
+        /// <param name="rank">Rank to format.</param>
+        /// <returns>Returns a formatted Rank string to display on text.</returns>
+        public string Format() => $"<#{RTColors.ColorToHex(Color)}><b>{DisplayName}</b></color>";
+
+        /// <summary>
+        /// Rank to use in the editor.
+        /// </summary>
+        public static Rank EditorRank => Configs.EditorConfig.Instance.EditorRank.Value;
 
         #region Implementation
 

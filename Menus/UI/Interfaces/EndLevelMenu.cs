@@ -122,9 +122,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     text = "<voffset=0.6em>" + text;
 
                     if (prevHits > RTBeatmap.Current.hits.Count && prevLevelRank != Rank.Null)
-                        text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(prevLevelRank)}<size=150%> <voffset=0.325em><b>-></b> <voffset=0em><size=300%>{RTString.FormatLevelRank(rank)}";
+                        text += $"       <voffset=0em><size=300%>{prevLevelRank.Format()}<size=150%> <voffset=0.325em><b>-></b> <voffset=0em><size=300%>{rank.Format()}";
                     else
-                        text += $"       <voffset=0em><size=300%>{RTString.FormatLevelRank(rank)}";
+                        text += $"       <voffset=0em><size=300%>{rank.Format()}";
                 }
 
                 if (line == 7)

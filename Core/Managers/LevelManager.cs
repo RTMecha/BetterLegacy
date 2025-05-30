@@ -728,11 +728,6 @@ namespace BetterLegacy.Core.Managers
         public static List<SaveData> Saves { get; set; } = new List<SaveData>();
 
         /// <summary>
-        /// Level rank to use in the editor.
-        /// </summary>
-        public static Rank EditorRank => EditorConfig.Instance.EditorRank.Value;
-
-        /// <summary>
         /// Finds and sets the levels' save data.
         /// </summary>
         /// <param name="level">Level to assign to.</param>
@@ -923,9 +918,9 @@ namespace BetterLegacy.Core.Managers
         public static Rank GetLevelRank(List<PlayerDataPoint> hits)
         {
             if (CoreHelper.InEditor)
-                return EditorRank;
+                return Rank.EditorRank;
 
-            if (!CoreHelper.InStory && (RTBeatmap.Current.challengeMode.Invincible))
+            if (!CoreHelper.InStory && RTBeatmap.Current.challengeMode.Invincible)
                 return Rank.Null;
 
             var hitsNormalized = GetHitsNormalized(hits);
@@ -939,7 +934,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="hits">Hit count.</param>
         /// <returns>A calculated rank from the amount of hits.</returns>
         public static Rank GetLevelRank(int hits)
-            => CoreHelper.InEditor ? EditorRank : Rank.Null.TryGetValue(x => hits >= x.MinHits && hits <= x.MaxHits, out Rank rankType) ? rankType : Rank.Null;
+            => CoreHelper.InEditor ? Rank.EditorRank : Rank.Null.TryGetValue(x => hits >= x.MinHits && hits <= x.MaxHits, out Rank rankType) ? rankType : Rank.Null;
 
         /// <summary>
         /// Gets a levels' rank.
