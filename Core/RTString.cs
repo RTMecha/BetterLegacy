@@ -266,13 +266,6 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Formats a <see cref="Rank"/> to have the proper style and color.
-        /// </summary>
-        /// <param name="rank">Rank to format.</param>
-        /// <returns>Returns a formatted Level Rank.</returns>
-        public static string FormatLevelRank(Rank rank) => $"<#{LSColors.ColorToHex(rank.Color)}><b>{rank.DisplayName}</b></color>";
-
-        /// <summary>
         /// Custom text formatting.
         /// </summary>
         /// <param name="beatmapObject"></param>
@@ -573,10 +566,10 @@ namespace BetterLegacy.Core
             {
                 var rank =
                     !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
-                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
+                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? Rank.EditorRank :
                         Rank.Null;
 
-                str = str.Replace("<levelRank>", FormatLevelRank(rank));
+                str = str.Replace("<levelRank>", rank.Format());
             }
 
             if (str.Contains("<levelRankName>"))
@@ -593,7 +586,7 @@ namespace BetterLegacy.Core
             {
                 var rank =
                     !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
-                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
+                        LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? Rank.EditorRank :
                         Rank.Null;
 
                 str = str.Replace("<levelRankColor>", $"<color=#{LSColors.ColorToHex(rank.Color)}>");
@@ -601,21 +594,21 @@ namespace BetterLegacy.Core
 
             if (str.Contains("<levelRankCurrent>"))
             {
-                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : LevelManager.EditorRank;
+                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
 
-                str = str.Replace("<levelRankCurrent>", FormatLevelRank(rank));
+                str = str.Replace("<levelRankCurrent>", rank.Format());
             }
 
             if (str.Contains("<levelRankCurrentName>"))
             {
-                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : LevelManager.EditorRank;
+                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
 
                 str = str.Replace("<levelRankCurrentName>", rank.DisplayName);
             }
 
             if (str.Contains("<levelRankCurrentColor>"))
             {
-                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : LevelManager.EditorRank;
+                var rank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(RTBeatmap.Current.hits) : Rank.EditorRank;
 
                 str = str.Replace("<levelRankCurrentColor>", $"<color=#{LSColors.ColorToHex(rank.Color)}>");
             }
@@ -629,9 +622,9 @@ namespace BetterLegacy.Core
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
                             rank = LevelManager.GetLevelRank(level);
                         else
-                            rank = CoreHelper.InEditor ? LevelManager.EditorRank : Rank.Null;
+                            rank = CoreHelper.InEditor ? Rank.EditorRank : Rank.Null;
 
-                        str = str.Replace(match.Groups[0].ToString(), FormatLevelRank(rank));
+                        str = str.Replace(match.Groups[0].ToString(), rank.Format());
                     });
 
                 if (str.Contains("levelRankOtherName"))
@@ -641,7 +634,7 @@ namespace BetterLegacy.Core
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
                             rank = LevelManager.GetLevelRank(level);
                         else
-                            rank = CoreHelper.InEditor ? LevelManager.EditorRank : Rank.Null;
+                            rank = CoreHelper.InEditor ? Rank.EditorRank : Rank.Null;
 
                         str = str.Replace(match.Groups[0].ToString(), rank.DisplayName);
                     });
@@ -653,7 +646,7 @@ namespace BetterLegacy.Core
                         if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
                             rank = LevelManager.GetLevelRank(level);
                         else
-                            rank = CoreHelper.InEditor ? LevelManager.EditorRank : Rank.Null;
+                            rank = CoreHelper.InEditor ? Rank.EditorRank : Rank.Null;
 
                         str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(rank.Color)}>");
                     });
@@ -701,21 +694,21 @@ namespace BetterLegacy.Core
                 Rank rank =
                     LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
                     CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
+                        Rank.EditorRank :
                         Rank.Null;
 
-                input = input.Replace(match.Groups[0].ToString(), FormatLevelRank(rank));
+                input = input.Replace(match.Groups[0].ToString(), rank.Format());
             });
 
             RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
             {
-                Rank rankType =
+                Rank rank =
                     StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out SaveData playerData) ? LevelManager.GetLevelRank(playerData) :
                     CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
+                        Rank.EditorRank :
                         Rank.Null;
 
-                input = input.Replace(match.Groups[0].ToString(), FormatLevelRank(rankType));
+                input = input.Replace(match.Groups[0].ToString(), rank.Format());
             });
 
             RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
@@ -838,22 +831,20 @@ namespace BetterLegacy.Core
                 var character = input[i];
                 if (AlphabetLowerIndex.TryGetValue(character, out int lowerIndex))
                 {
-                    lowerIndex++;
                     input = input.Remove(i, 1);
-                    input = input.Insert(i, lowerIndex.ToString() + seperator);
+                    input = input.Insert(i, (lowerIndex + 1).ToString() + seperator);
                 }
                 else if (AlphabetUpperIndex.TryGetValue(character, out int upperIndex))
                 {
-                    upperIndex++;
                     input = input.Remove(i, 1);
-                    input = input.Insert(i, upperIndex.ToString() + seperator);
+                    input = input.Insert(i, (upperIndex + 1).ToString() + seperator);
                 }
                 length = input.Length;
             }
             return input;
         }
 
-        public static string CaeserEncrypt(string input, int count)
+        public static string CaeserEncrypt(string input, int count = 3)
         {
             var array = input.ToCharArray();
             for (int i = 0; i < input.Length; i++)
@@ -876,9 +867,9 @@ namespace BetterLegacy.Core
             {
                 var character = input[i];
                 if (AlphabetLowerIndex.TryGetValue(character, out int lowerIndex))
-                    array[i] = alphabetLower[-lowerIndex];
+                    array[i] = alphabetLower[-lowerIndex + alphabetLower.Length - 1];
                 else if (AlphabetUpperIndex.TryGetValue(character, out int upperIndex))
-                    array[i] = alphabetUpper[-upperIndex];
+                    array[i] = alphabetUpper[-upperIndex + alphabetUpper.Length - 1];
                 else
                     array[i] = character;
             }
@@ -907,14 +898,8 @@ namespace BetterLegacy.Core
             }
         }
 
-        public static char[] alphabetLower = new char[]
-        {
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-        };
-        public static char[] alphabetUpper = new char[]
-        {
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-        };
+        public static char[] alphabetLower = new char[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', };
+        public static char[] alphabetUpper = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', };
 
         #endregion
     }
