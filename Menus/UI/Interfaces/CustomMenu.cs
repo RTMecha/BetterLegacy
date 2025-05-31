@@ -150,6 +150,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             });
                             customMenu.elements.AddRange(GenerateBottomBar(6, 0f));
 
+                            var defaultLength = 4f;
+                            var dateFormat = "{{Date=HH:mm:ss:tt}}";
+                            if (jn["defaults"] != null)
+                            {
+                                var jnDefaults = jn["defaults"];
+                                if (jnDefaults["length"] != null)
+                                    defaultLength = jnDefaults["length"].AsFloat;
+                                if (!string.IsNullOrEmpty(jnDefaults["date_format"]))
+                                    dateFormat = jnDefaults["date_format"];
+                            }
+
                             var forJN = Parser.NewJSONObject();
                             forJN["type"] = "For";
                             forJN["from"] = "JSON";
@@ -210,6 +221,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 {
                                     ["size"] = new JSONArray { [0] = "-64", [1] = "0" },
                                 },
+                                ["text"] = $"<align=right>{dateFormat} |",
                                 ["hide_bg"] = "True",
                                 ["text_col"] = "6",
                                 ["anim_length"] = "0",
@@ -228,7 +240,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 },
                                 ["hide_bg"] = "True",
                                 ["text_col"] = "6",
-                                ["anim_length"] = "4",
+                                ["anim_length"] = defaultLength,
                                 ["text_sound_repeat"] = "2",
                                 ["on_scroll_up_func"] = onScrollUpFuncJSON(),
                                 ["on_scroll_down_func"] = onScrollDownFuncJSON(),
@@ -256,11 +268,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     ["parent"] = id,
                                     ["text"] = $"| {character}",
                                 };
-                                forJN["to"][i]["3"] = new JSONObject
-                                {
-                                    ["parent"] = id,
-                                    ["text"] = "<align=right>{{Date=HH:mm:ss:tt}} |",
-                                };
+                                forJN["to"][i]["3"] = new JSONObject { ["parent"] = id, };
+                                if (jnDialogue["date_format"] != null)
+                                    forJN["to"][i]["3"]["text"] = $"<align=right>{jnDialogue["date_format"].Value} |";
+
                                 var jnText = new JSONObject
                                 {
                                     ["parent"] = id,
