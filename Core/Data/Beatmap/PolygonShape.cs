@@ -86,6 +86,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             set => thicknessScale = value;
         }
 
+        /// <summary>
+        /// Angle offset of the shape.
+        /// </summary>
+        public float Angle { get; set; }
+
         #endregion
 
         #region Fields
@@ -126,6 +131,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Slices = orig.Slices;
             ThicknessOffset = orig.ThicknessOffset;
             ThicknessScale = orig.ThicknessScale;
+            Angle = orig.Angle;
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -155,6 +161,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Slices = jn["sl"].AsInt;
             ThicknessOffset = Parser.TryParse(jn["tho"], Vector2.zero);
             ThicknessScale = Parser.TryParse(jn["ths"], Vector2.one);
+            Angle = jn["ang"].AsFloat;
         }
 
         public override JSONNode ToJSONVG()
@@ -180,6 +187,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["tho"] = thicknessOffset.ToJSONArray();
             if (thicknessScale.x != 1f || thicknessScale.y != 1f)
                 jn["ths"] = thicknessScale.ToJSONArray();
+            if (Angle != 0f)
+                jn["ang"] = Angle;
             return jn;
         }
 

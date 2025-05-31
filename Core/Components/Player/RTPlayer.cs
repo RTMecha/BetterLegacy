@@ -3178,8 +3178,9 @@ namespace BetterLegacy.Core.Components.Player
                             var slices = reference.polygonShape.Slices;
                             var thicknessOffset = reference.polygonShape.ThicknessOffset;
                             var thicknessScale = reference.polygonShape.ThicknessScale;
+                            var angle = reference.polygonShape.Angle;
 
-                            VGShapes.RoundedRingMesh(customObj.gameObject, 0.5f, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
+                            VGShapes.RoundedRingMesh(customObj.gameObject, 0.5f, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, angle);
 
                             break;
                         }

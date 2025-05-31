@@ -3997,6 +3997,7 @@ namespace BetterLegacy.Core.Helpers
             var slices = RTMath.Clamp(modifier.GetInt(4, 3, variables), 0, sides);
             var thicknessOffset = new Vector2(modifier.GetFloat(5, 0f, variables), modifier.GetFloat(6, 0f, variables));
             var thicknessScale = new Vector2(modifier.GetFloat(7, 1f, variables), modifier.GetFloat(8, 1f, variables));
+            var rotation = modifier.GetFloat(9, 0f, variables);
 
             var meshParams = new VGShapes.MeshParams
             {
@@ -4007,12 +4008,13 @@ namespace BetterLegacy.Core.Helpers
                 SliceCount = slices,
                 thicknessOffset = thicknessOffset,
                 thicknessScale = thicknessScale,
+                rotation = rotation,
             };
 
             if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
                 return;
 
-            polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
+            polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation);
             modifier.Result = meshParams;
         }
 
@@ -4025,6 +4027,7 @@ namespace BetterLegacy.Core.Helpers
             var slices = RTMath.Clamp(modifier.GetInt(5, 3, variables), 0, sides);
             var thicknessOffset = new Vector2(modifier.GetFloat(6, 0f, variables), modifier.GetFloat(7, 0f, variables));
             var thicknessScale = new Vector2(modifier.GetFloat(8, 1f, variables), modifier.GetFloat(9, 1f, variables));
+            var rotation = modifier.GetFloat(10, 0f, variables);
 
             var meshParams = new VGShapes.MeshParams
             {
@@ -4034,6 +4037,7 @@ namespace BetterLegacy.Core.Helpers
                 SliceCount = slices,
                 thicknessOffset = thicknessOffset,
                 thicknessScale = thicknessScale,
+                rotation = rotation,
             };
 
             if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
@@ -4045,7 +4049,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var beatmapObject = list[i];
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is PolygonObject polygonObject)
-                    polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale);
+                    polygonObject.UpdatePolygon(radius, sides, roundness, thickness, slices, thicknessOffset, thicknessScale, rotation);
             }
 
             modifier.Result = meshParams;

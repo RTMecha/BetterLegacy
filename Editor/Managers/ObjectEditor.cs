@@ -2135,6 +2135,30 @@ namespace BetterLegacy.Editor.Managers
                             slicesLabelLayout.minWidth = 100f;
 
                             #endregion
+
+                            #region Angle
+
+                            var rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(so, "rotation");
+                            var rotationStorage = rotation.GetComponent<InputFieldStorage>();
+
+                            Destroy(rotationStorage.addButton.gameObject);
+                            Destroy(rotationStorage.subButton.gameObject);
+                            Destroy(rotationStorage.leftGreaterButton.gameObject);
+                            Destroy(rotationStorage.middleButton.gameObject);
+                            Destroy(rotationStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.AddInputField(rotationStorage);
+
+                            var rotationLabel = EditorPrefabHolder.Instance.Labels.transform.GetChild(0).gameObject.Duplicate(rotation.transform, "label", 0);
+                            var rotationLabelText = rotationLabel.GetComponent<Text>();
+                            rotationLabelText.alignment = TextAnchor.MiddleLeft;
+                            rotationLabelText.text = "Angle";
+                            rotationLabelText.rectTransform.sizeDelta = new Vector2(100f, 32f);
+                            EditorThemeManager.AddLightText(rotationLabelText);
+                            var rotationLabelLayout = rotationLabel.AddComponent<LayoutElement>();
+                            rotationLabelLayout.minWidth = 100f;
+
+                            #endregion
                         }
                     }
                 }
@@ -4779,7 +4803,7 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case ShapeType.Polygon: {
-                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 244f);
+                        shapeSettings.AsRT().sizeDelta = new Vector2(351f, 276f);
 
                         var radius = shapeSettings.Find("10/radius").gameObject.GetComponent<InputFieldStorage>();
                         radius.inputField.onValueChanged.ClearAll();
@@ -4966,6 +4990,21 @@ namespace BetterLegacy.Editor.Managers
 
                         TriggerHelper.IncreaseDecreaseButtonsInt(slices, min: 1, max: 32);
                         TriggerHelper.AddEventTriggers(slices.inputField.gameObject, TriggerHelper.ScrollDeltaInt(slices.inputField, min: 1, max: 32));
+                        
+                        var rotation = shapeSettings.Find("10/rotation").gameObject.GetComponent<InputFieldStorage>();
+                        rotation.inputField.onValueChanged.ClearAll();
+                        rotation.inputField.text = beatmapObject.polygonShape.Angle.ToString();
+                        rotation.inputField.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                beatmapObject.polygonShape.Angle = num;
+                                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(rotation, 15f, 3f);
+                        TriggerHelper.AddEventTriggers(rotation.inputField.gameObject, TriggerHelper.ScrollDelta(rotation.inputField, 15f, 3f));
 
                         break;
                     }

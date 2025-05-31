@@ -2490,6 +2490,7 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Thick Scale X", 7);
                         SingleGenerator(modifier, "Thick Scale Y", 8);
                         IntegerGenerator(modifier, "Slices", 4, max: 32);
+                        SingleGenerator(modifier, "Angle", 9);
 
                         break;
                     }
@@ -2507,6 +2508,7 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Thick Scale X", 8);
                         SingleGenerator(modifier, "Thick Scale Y", 9);
                         IntegerGenerator(modifier, "Slices", 5, max: 32);
+                        SingleGenerator(modifier, "Angle", 10);
 
                         break;
                     }
