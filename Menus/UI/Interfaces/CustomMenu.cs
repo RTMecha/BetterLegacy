@@ -264,9 +264,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 var jnText = new JSONObject
                                 {
                                     ["parent"] = id,
-                                    ["text"] = text,
-                                    ["anim_length"] = jnDialogue["length"],
+                                    ["text"] = text
                                 };
+                                if (jnDialogue["length"] != null)
+                                    jnText["length"] = jnDialogue["length"];
                                 if (!string.IsNullOrEmpty(color))
                                     jnText["override_text_col"] = color;
                                 if (!string.IsNullOrEmpty(sound))
