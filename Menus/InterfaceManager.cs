@@ -683,6 +683,16 @@ namespace BetterLegacy.Menus
             string name = jn["name"];
             var not = jn["not"].AsBool; // If true, then check if the function is not true.
 
+            if (string.IsNullOrEmpty(name))
+                return false;
+
+            // parse ! operator
+            while (name.StartsWith("!"))
+            {
+                name = name.Substring(1, name.Length - 1);
+                not = !not;
+            }
+
             switch (name)
             {
                 case "True": return true;
@@ -741,6 +751,12 @@ namespace BetterLegacy.Menus
                             break;
 
                         var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == (parameters.IsArray ? parameters[0] : parameters["scene"]);
+                        return !not ? value : !value;
+                    }
+
+                case "CurrentInterfaceGenerating":
+                    {
+                        var value = CurrentInterface && CurrentInterface.generating;
                         return !not ? value : !value;
                     }
 
