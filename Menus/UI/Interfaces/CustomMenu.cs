@@ -65,6 +65,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             var returnInterface = jn["return_interface"];
                             var returnInterfacePath = jn["return_interface_path"];
                             var seen = jn["seen"];
+                            var dialogueCount = jn["dialogue"].Count;
 
                             System.Func<JSONArray> onScrollUpFuncJSON = () => new JSONArray
                             {
@@ -80,12 +81,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 },
                                 [1] = new JSONObject
                                 {
-                                    ["if_func"] = new JSONObject
+                                    ["if_func"] = new JSONArray
                                     {
-                                        ["name"] = "LayoutScrollYGreater",
-                                        ["params"] = new JSONArray { [0] = "chat_layout", [1] = "0" }
+                                        [0] = new JSONObject
+                                        {
+                                            ["name"] = "LayoutScrollYGreater",
+                                            ["params"] = new JSONArray { [0] = "chat_layout", [1] = "0" }
+                                        },
+                                        [1] = new JSONObject { ["name"] = "!CurrentInterfaceGenerating" }
                                     }
-                                        ["name"] = "PlaySound",
+                                    ["name"] = "PlaySound",
                                     ["params"] = new JSONArray { [0] = "Click" }
                                 },
                             };
@@ -93,6 +98,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             {
                                 [0] = new JSONObject
                                 {
+                                    ["if_func"] = new JSONObject { ["name"] = "!CurrentInterfaceGenerating" },
                                     ["name"] = "ScrollLayout",
                                     ["params"] = new JSONArray
                                     {
@@ -103,6 +109,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 },
                                 [1] = new JSONObject
                                 {
+                                    ["if_func"] = new JSONObject { ["name"] = "!CurrentInterfaceGenerating" },
                                     ["name"] = "PlaySound",
                                     ["params"] = new JSONArray { [0] = "Click" }
                                 },
@@ -123,7 +130,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 rect = RectValues.FullAnchored.AnchoredPosition(0f, -40f).SizeDelta(-256f, -470f),
                                 scrollable = true,
                                 minScroll = 0f,
-                                maxScroll = 10000f,
+                                maxScroll = (68f * dialogueCount) - 68f,
                                 mask = true,
                                 onScrollUpFuncJSON = onScrollUpFuncJSON(),
                                 onScrollDownFuncJSON = onScrollDownFuncJSON(),
@@ -242,6 +249,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 ["text_col"] = "6",
                                 ["anim_length"] = defaultLength,
                                 ["text_sound_repeat"] = "2",
+                                ["text_sound_pitch_vary"] = "0.1",
                                 ["on_scroll_up_func"] = onScrollUpFuncJSON(),
                                 ["on_scroll_down_func"] = onScrollDownFuncJSON(),
                             };
@@ -253,7 +261,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 ["anim_length"] = "1",
                             };
 
-                            for (int i = 0; i < jn["dialogue"].Count; i++)
+                            for (int i = 0; i < dialogueCount; i++)
                             {
                                 var id = LSText.randomNumString(16);
                                 var jnDialogue = jn["dialogue"][i];
@@ -293,18 +301,32 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     }
                                 }
 
-                                if (jnDialogue["text_sound_volume"] != null)
-                                    jnText["text_sound_volume"] = jnDialogue["text_sound_volume"];
-                                if (jnDialogue["text_sound_pitch"] != null)
-                                    jnText["text_sound_pitch"] = jnDialogue["text_sound_pitch"];
-                                if (jnDialogue["text_sound_pitch_vary"] != null)
-                                    jnText["text_sound_pitch_vary"] = jnDialogue["text_sound_pitch_vary"];
-                                if (jnDialogue["text_sound_repeat"] != null)
-                                    jnText["text_sound_repeat"] = jnDialogue["text_sound_repeat"];
+                                if (jnDialogue["sound_volume"] != null)
+                                    jnText["text_sound_volume"] = jnDialogue["sound_volume"];
+                                if (jnDialogue["sound_pitch"] != null)
+                                    jnText["text_sound_pitch"] = jnDialogue["sound_pitch"];
+                                if (jnDialogue["sound_pitch_vary"] != null)
+                                    jnText["text_sound_pitch_vary"] = jnDialogue["sound_pitch_vary"];
+                                if (jnDialogue["sound_repeat"] != null)
+                                    jnText["text_sound_repeat"] = jnDialogue["sound_repeat"];
 
                                 forJN["to"][i]["4"] = jnText;
 
                                 forJN["to"][i]["5"] = new JSONObject { ["anim_length"] = jnDialogue["wait"], };
+
+                                if (i > 8)
+                                {
+                                    forJN["to"][i]["1"]["spawn_func"] = new JSONObject
+                                    {
+                                        ["name"] = "ScrollLayout",
+                                        ["params"] = new JSONArray
+                                        {
+                                            [0] = "chat_layout",
+                                            [1] = "68",
+                                            [2] = "True",
+                                        },
+                                    };
+                                }
                             }
 
                             var elements = Parser.NewJSONArray();
@@ -318,6 +340,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 color = 6,
                                 opacity = 0.2f,
                                 rect = RectValues.Default.AnchoredPosition(870f, -38f).SizeDelta(64f, 608f),
+                                length = 0f,
+                                wait = false,
                                 onScrollUpFuncJSON = onScrollUpFuncJSON(),
                                 onScrollDownFuncJSON = onScrollDownFuncJSON(),
                             });
@@ -330,6 +354,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 color = 6,
                                 rect = RectValues.Default.AnchoredPosition(870f, 234f).SizeDelta(64f, 64f),
                                 iconRect = RectValues.Default.SizeDelta(64f, 64f),
+                                length = 0f,
+                                wait = false,
                                 funcJSON = onScrollUpFuncJSON(),
                                 onScrollUpFuncJSON = onScrollUpFuncJSON(),
                                 onScrollDownFuncJSON = onScrollDownFuncJSON(),
@@ -343,6 +369,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 color = 6,
                                 rect = RectValues.Default.AnchoredPosition(870f, -310f).SizeDelta(64f, 64f),
                                 iconRect = RectValues.Default.SizeDelta(64f, 64f),
+                                length = 0f,
+                                wait = false,
                                 funcJSON = onScrollDownFuncJSON(),
                                 onScrollUpFuncJSON = onScrollUpFuncJSON(),
                                 onScrollDownFuncJSON = onScrollDownFuncJSON(),
