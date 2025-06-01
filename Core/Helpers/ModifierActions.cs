@@ -4417,28 +4417,37 @@ namespace BetterLegacy.Core.Helpers
 
         public static void translateShape(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            var levelObject = modifier.reference.runtimeObject;
-            if (!levelObject || !levelObject.visualObject.gameObject)
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject.gameObject)
                 return;
+
+            var pos = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
+            var sca = new Vector2(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
+            var rot = modifier.GetFloat(5, 0f, variables);
 
             if (!modifier.HasResult())
             {
-                var meshFilter = levelObject.visualObject.gameObject.GetComponent<MeshFilter>();
+                var meshFilter = runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>();
+                var collider2D = runtimeObject.visualObject.collider as PolygonCollider2D;
                 var mesh = meshFilter.mesh;
 
-                modifier.Result = new KeyValuePair<MeshFilter, Vector3[]>(meshFilter, mesh.vertices);
+                modifier.Result = new TranslateShapeCache
+                {
+                    meshFilter = meshFilter,
+                    collider2D = collider2D,
+                    vertices = mesh?.vertices ?? null,
+                    points = collider2D?.points ?? null,
 
-                levelObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+                    pos = pos,
+                    sca = sca,
+                    rot = rot,
+                };
+
+                runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
             }
 
-            var posX = modifier.GetFloat(1, 0f, variables);
-            var posY = modifier.GetFloat(2, 0f, variables);
-            var scaX = modifier.GetFloat(3, 0f, variables);
-            var scaY = modifier.GetFloat(4, 0f, variables);
-            var rot = modifier.GetFloat(5, 0f, variables);
-
-            if (modifier.TryGetResult(out KeyValuePair<MeshFilter, Vector3[]> keyValuePair))
-                keyValuePair.Key.mesh.vertices = keyValuePair.Value.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, new Vector2(scaX, scaY)), rot), new Vector2(posX, posY))).ToArray();
+            if (modifier.TryGetResult(out TranslateShapeCache shapeCache))
+                shapeCache.Translate(pos, sca, rot);
         }
 
         #endregion

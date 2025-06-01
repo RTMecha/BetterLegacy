@@ -1357,7 +1357,7 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     case "enableObject": {
-                            if (modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                            if (modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
                                 levelObject.top.gameObject.SetActive(false);
 
                             break;
@@ -1365,7 +1365,7 @@ namespace BetterLegacy.Core.Helpers
                     case "enableObjectOther": {
                             var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0));
 
-                            if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                            if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
                             {
                                 foreach (var beatmapObject in list)
                                 {
@@ -1381,7 +1381,7 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.GetValue(0) == "0")
                                 modifier.SetValue(0, "False");
 
-                            if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], true))
+                            if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], false))
                             {
                                 modifier.Result = null;
                                 return;
@@ -2826,6 +2826,96 @@ namespace BetterLegacy.Core.Helpers
             if (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.RenderParent(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
         }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Cache struct for translate shape.
+    /// </summary>
+    public struct TranslateShapeCache
+    {
+        /// <summary>
+        /// Translates the mesh.
+        /// </summary>
+        /// <param name="pos">Position to translate to.</param>
+        /// <param name="sca">Scale to translate to.</param>
+        /// <param name="rot">Rotation to tranlsate to.</param>
+        public void Translate(Vector2 pos, Vector2 sca, float rot)
+        {
+            // don't translate if the cached values are the same as the parameters.
+            if (Is(pos, sca, rot))
+            {
+                Cache(pos, sca, rot);
+                return;
+            }
+
+            Cache(pos, sca, rot);
+
+            if (meshFilter && vertices != null)
+                meshFilter.mesh.vertices = vertices.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
+            if (collider2D && points != null)
+                collider2D.points = points.Select(x => (Vector2)RTMath.Move(RTMath.Rotate(RTMath.Scale(x, sca), rot), pos)).ToArray();
+        }
+
+        #region Cache
+
+        void Cache(Vector2 pos, Vector2 sca, float rot)
+        {
+            this.pos = pos;
+            this.sca = sca;
+            this.rot = rot;
+        }
+
+        /// <summary>
+        /// Cached mesh filter.
+        /// </summary>
+        public MeshFilter meshFilter;
+        /// <summary>
+        /// Cached polygon collider.
+        /// </summary>
+        public PolygonCollider2D collider2D;
+        /// <summary>
+        /// Original vertices to translate.
+        /// </summary>
+        public Vector3[] vertices;
+        /// <summary>
+        /// Original collider points.
+        /// </summary>
+        public Vector2[] points;
+
+        /// <summary>
+        /// Cached position.
+        /// </summary>
+        public Vector2 pos;
+        /// <summary>
+        /// Cached scale.
+        /// </summary>
+        public Vector2 sca;
+        /// <summary>
+        /// Cached rotation.
+        /// </summary>
+        public float rot;
+
+        #endregion
+
+        #region Operators
+
+        public override int GetHashCode() => CoreHelper.CombineHashCodes(pos.x, pos.y, sca.x, sca.y, rot);
+
+        public override bool Equals(object obj) => obj is TranslateShapeCache shapeCache && Is(shapeCache.pos, shapeCache.sca, shapeCache.rot);
+
+        /// <summary>
+        /// Checks if the cached values are equal to the parameters.
+        /// </summary>
+        /// <param name="pos">Position.</param>
+        /// <param name="sca">Scale.</param>
+        /// <param name="rot">Rotation.</param>
+        /// <returns>Returns true if the cached values are approximately the same as the passed parameters, otherwise returns false.</returns>
+        public bool Is(Vector2 pos, Vector2 sca, float rot) =>
+            Mathf.Approximately(pos.x, this.pos.x) && Mathf.Approximately(pos.y, this.pos.y) &&
+            Mathf.Approximately(sca.x, this.sca.x) && Mathf.Approximately(sca.y, this.sca.y) &&
+            Mathf.Approximately(rot, this.rot);
 
         #endregion
     }
