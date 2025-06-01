@@ -466,6 +466,126 @@ namespace BetterLegacy.Core.Runtime.Events
             previousAudioTime = time;
         }
 
+        public void UpdateNew(float time)
+        {
+            var events = GameData.Current.events;
+
+            // find colors first
+            FindColor(time, events, ref prevTheme, ref nextTheme, 4, 0);
+            FindColor(time, events, ref prevBloomColor, ref nextBloomColor, 6, 4);
+            FindColor(time, events, ref prevVignetteColor, ref nextVignetteColor, 7, 6);
+            FindColor(time, events, ref prevGradientColor1, ref nextGradientColor1, ref prevGradientColor2, ref nextGradientColor2, 15, 2, 3);
+            FindColor(time, events, ref prevBGColor, ref nextBGColor, 20, 0);
+            FindColor(time, events, ref prevTimelineColor, ref nextTimelineColor, 22, 6);
+            FindColor(time, events, ref prevDangerColor, ref nextDangerColor, 30, 2);
+
+            if (shakeSequence != null && shakeSequence.keyframes != null && shakeSequence.keyframes.Length > 0 && EventsConfig.Instance.ShakeEventMode.Value == ShakeType.Catalyst)
+            {
+                for (int i = 0; i < shakeSequence.keyframes.Length; i++)
+                    shakeSequence.keyframes[i].SetEase(ShakeEase);
+                var speed = shakeSpeed < 0.001f ? 1f : shakeSpeed;
+                shakeTime += (time - previousAudioTime) * speed;
+                shakeTime = Mathf.Clamp(shakeTime, 0f, !AudioManager.inst.CurrentAudioSource.clip ? 0f : AudioManager.inst.CurrentAudioSource.clip.length);
+                EventManager.inst.shakeVector = shakeSequence.Interpolate(shakeTime % shakeLength);
+            }
+
+            var eventFunctions = this.events;
+            for (int i = 0; i < eventFunctions.Length; i++)
+            {
+                for (int j = 0; j < eventFunctions[i].Length; j++)
+                {
+                    var total = 0f;
+                    for (int k = 0; k < events[i].Count - 1; k++)
+                    {
+                        if (events[i][k + 1].relative)
+                            total += events[i][k].values[j];
+                        else
+                            total = 0f;
+                    }
+
+                    bool isLerper = IsLerper(i, j);
+
+                    float offset = 0f;
+                    if (offsets.Count > i && offsets[i].Count > j && isLerper)
+                        offset = offsets[i][j];
+
+                    if (float.IsNaN(offset) || float.IsInfinity(offset))
+                        offset = 0f;
+
+                    var first = events[i][0];
+                    if (events[i].Count == 1 || time < first.time)
+                    {
+                        eventFunctions[i][j](first.values[j] + offset + total);
+                        continue;
+                    }
+
+                    var last = events[i][events.Count - 1];
+                    if (time >= last.time)
+                    {
+                        eventFunctions[i][j](last.values[j] + offset + total);
+                        continue;
+                    }
+
+                    int index = Search(events[i], time);
+                    var current = events[i][index];
+                    var next = events[i][index + 1];
+
+                    // handle active values from vg
+                    //var activeValue = true;
+                    //while (!activeValue)
+                    //{
+                    //    if (index <= 0)
+                    //        break;
+
+                    //    index--;
+                    //    current = events[i][index];
+                    //}
+
+                    var currentValue = current.values[j];
+                    var nextValue = next.values[j];
+
+                    if (float.IsNaN(currentValue) || !isLerper)
+                        currentValue = 0f;
+
+                    if (float.IsNaN(nextValue))
+                        nextValue = 0f;
+
+                    if (!isLerper)
+                        nextValue = 1f;
+
+                    var value = RTMath.Lerp(currentValue, nextValue, Ease.GetEaseFunction(next.curve)(RTMath.InverseLerp(current.time, next.time, time)));
+
+                    if (float.IsNaN(value))
+                        value = nextValue;
+
+                    eventFunctions[i][j](value + offset + total);
+                }
+            }
+
+            previousAudioTime = time;
+        }
+
+        int Search(List<EventKeyframe> events, float time)
+        {
+            int low = 0;
+            int high = events.Count - 1;
+
+            while (low <= high)
+            {
+                int mid = (low + high) / 2;
+                float midTime = events[mid].time;
+
+                if (time < midTime)
+                    high = mid - 1;
+                else if (time > midTime)
+                    low = mid + 1;
+                else
+                    return mid;
+            }
+
+            return low - 1;
+        }
+
         /// <summary>
         /// Interpolates through a specific event type and value index.
         /// </summary>
