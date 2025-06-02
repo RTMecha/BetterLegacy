@@ -5,6 +5,14 @@
 ### Core
 - Level collections.  
   Update: 1.8.0
+  Notes:
+  - Level collections in the editor are stored in a separate "collections" folder.
+  - Levels can be added to a collection via the context menu. The folder can be added directly to the level collection to make the level exclusive, or it can be just added to the list. (Requires the level to have already been uploaded)
+  - Level collections are shown in a different content popup.
+  - Non-editor levels can be added a more advanced way by filling out a level's info.
+  - Preview song. (done)
+  - Overall ranking (similar to regular ranking, except instead of hits it's the level ranks ordinal values)
+  - Level collections can be uploaded with only level folders or only references to levels, or a mixture of both.
 - Custom Achievement system.  
   Update: 1.8.0
 - Online multiplayer.  
@@ -98,6 +106,12 @@
 - Ignore opacity toggle for color modifiers.  
   Update: 1.7.0 - 1.8.0
 - setStartTime modifiers.
+- loadLevelCollection modifier.
+  Update: 1.8.0
+  Loads a specified level collection from the start level, hub level or default.
+- downloadLevelCollection modifier.
+  Update: 1.8.0
+  Same as downloadLevel except for level collections.
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)  
