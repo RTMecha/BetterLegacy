@@ -335,6 +335,13 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static void Init(JSONObject level)
         {
+            if (CoreHelper.InGame)
+            {
+                AudioManager.inst.CurrentAudioSource.Pause();
+                InputDataManager.inst.SetAllControllerRumble(0f);
+                GameManager.inst.gameState = GameManager.State.Paused;
+            }
+
             CurrentOnlineLevel = level;
             Current = new DownloadLevelMenu();
         }
