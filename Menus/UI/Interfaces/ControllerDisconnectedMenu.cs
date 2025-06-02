@@ -7,6 +7,7 @@ using LSFunctions;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Elements;
 
 namespace BetterLegacy.Menus.UI.Interfaces
@@ -17,9 +18,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public static void Init(int index)
         {
-            AudioManager.inst.CurrentAudioSource.Pause();
-            InputDataManager.inst.SetAllControllerRumble(0f);
-            GameManager.inst.gameState = GameManager.State.Paused;
+            RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
             Current = new ControllerDisconnectedMenu(index);
         }
@@ -115,8 +114,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             InterfaceManager.inst.CloseMenus();
             CursorManager.inst.HideCursor();
-            AudioManager.inst.CurrentAudioSource.UnPause();
-            GameManager.inst.gameState = GameManager.State.Playing;
+            RTBeatmap.Current?.Resume();
         }
     }
 }

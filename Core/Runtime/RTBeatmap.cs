@@ -76,6 +76,36 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public int CurrentMusicVolume { get; set; }
 
+        /// <summary>
+        /// Pauses the runtime.
+        /// </summary>
+        public void Pause()
+        {
+            if (!CoreHelper.InGame)
+                return;
+
+            AudioManager.inst.CurrentAudioSource.Pause();
+            InputDataManager.inst.SetAllControllerRumble(0f);
+            GameManager.inst.gameState = GameManager.State.Paused;
+
+            pausedTimer.Reset();
+        }
+
+        /// <summary>
+        /// Resumes the runtime.
+        /// </summary>
+        public void Resume()
+        {
+            if (!CoreHelper.InGame)
+                return;
+
+            AudioManager.inst.CurrentAudioSource.UnPause();
+            GameManager.inst.gameState = GameManager.State.Playing;
+
+            // remove time spent in pause menu from total timer
+            levelTimer.offset -= pausedTimer.time;
+        }
+
         #region End Level
 
         /// <summary>

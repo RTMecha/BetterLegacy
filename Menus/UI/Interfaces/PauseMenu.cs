@@ -342,8 +342,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             exitFunc = UnPause;
 
             InterfaceManager.inst.SetCurrentInterface(this);
-
-            RTBeatmap.Current.pausedTimer.Reset();
         }
 
         public override void UpdateTheme()
@@ -417,12 +415,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             InterfaceManager.inst.CloseMenus();
             CursorManager.inst.HideCursor();
-            AudioManager.inst.CurrentAudioSource.UnPause();
             onCooldownEnd?.Invoke();
-            GameManager.inst.gameState = GameManager.State.Playing;
-
-            // remove time spent in pause menu from total timer
-            RTBeatmap.Current.levelTimer.offset -= RTBeatmap.Current.pausedTimer.time;
+            RTBeatmap.Current?.Resume();
         }
 
         #endregion
@@ -435,9 +429,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!CoreHelper.Playing)
                 return;
 
-            AudioManager.inst.CurrentAudioSource.Pause();
-            InputDataManager.inst.SetAllControllerRumble(0f);
-            GameManager.inst.gameState = GameManager.State.Paused;
+            RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
             Current = new PauseMenu();
         }

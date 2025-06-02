@@ -12,6 +12,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -335,19 +336,14 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static void Init(JSONObject level)
         {
-            if (CoreHelper.InGame)
-            {
-                AudioManager.inst.CurrentAudioSource.Pause();
-                InputDataManager.inst.SetAllControllerRumble(0f);
-                GameManager.inst.gameState = GameManager.State.Paused;
-            }
-
+            RTBeatmap.Current?.Pause();
             CurrentOnlineLevel = level;
             Current = new DownloadLevelMenu();
         }
 
         public static void Close()
         {
+            RTBeatmap.Current?.Resume();
             CurrentOnlineLevel = null;
             InterfaceManager.inst.CloseMenus();
 

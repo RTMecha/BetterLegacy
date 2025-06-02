@@ -93,7 +93,7 @@ namespace BetterLegacy.Patchers
             if (!LevelManager.LevelEnded)
                 RTBeatmap.Current.levelTimer.Update();
 
-            if (PauseMenu.Current)
+            if (CoreHelper.Paused)
                 RTBeatmap.Current.pausedTimer.Update();
 
             if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && CoreHelper.Paused && !LevelManager.LevelEnded && PauseMenu.Current && !PauseMenu.Current.generating)
@@ -214,9 +214,7 @@ namespace BetterLegacy.Patchers
                 return false;
 
             Instance.menuUI.GetComponentInChildren<Image>().enabled = true;
-            AudioManager.inst.CurrentAudioSource.Pause();
-            InputDataManager.inst.SetAllControllerRumble(0f);
-            Instance.gameState = GameManager.State.Paused;
+            RTBeatmap.Current?.Pause();
             ArcadeHelper.endedLevel = false;
 
             return false;
@@ -231,8 +229,7 @@ namespace BetterLegacy.Patchers
             CursorManager.inst.HideCursor();
 
             Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
-            AudioManager.inst.CurrentAudioSource.UnPause();
-            Instance.gameState = GameManager.State.Playing;
+            RTBeatmap.Current?.Resume();
 
             return false;
         }

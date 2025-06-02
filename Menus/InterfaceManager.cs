@@ -20,6 +20,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
@@ -1472,12 +1473,10 @@ namespace BetterLegacy.Menus
                         CloseMenus();
                         StopMusic();
 
+                        RTBeatmap.Current?.Resume();
+
                         if (CoreHelper.InGame)
-                        {
-                            AudioManager.inst.CurrentAudioSource.UnPause();
-                            GameManager.inst.gameState = GameManager.State.Playing;
                             interfaces.RemoveAll(x => x.id == id);
-                        }
 
                         break;
                     }

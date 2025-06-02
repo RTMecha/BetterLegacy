@@ -315,9 +315,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             ArcadeHelper.RestartLevel();
             InterfaceManager.inst.CloseMenus();
-            AudioManager.inst.CurrentAudioSource.UnPause();
-            AudioManager.inst.CurrentAudioSource.Play();
-            GameManager.inst.gameState = GameManager.State.Playing;
+            RTBeatmap.Current?.Resume();
         }
     }
 }

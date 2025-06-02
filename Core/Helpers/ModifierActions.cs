@@ -6314,9 +6314,7 @@ namespace BetterLegacy.Core.Helpers
 
             InterfaceManager.inst.MainDirectory = RTFile.BasePath;
 
-            AudioManager.inst.CurrentAudioSource.Pause();
-            InputDataManager.inst.SetAllControllerRumble(0f);
-            GameManager.inst.gameState = GameManager.State.Paused;
+            RTBeatmap.Current.Pause();
             ArcadeHelper.endedLevel = false;
 
             if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
