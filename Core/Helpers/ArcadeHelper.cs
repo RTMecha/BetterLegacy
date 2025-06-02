@@ -11,7 +11,6 @@ using SimpleJSON;
 using InControl;
 
 using BetterLegacy.Arcade.Interfaces;
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
@@ -201,7 +200,7 @@ namespace BetterLegacy.Core.Helpers
             PlayerManager.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(0f);
-            RTGameManager.inst.ResetCheckpoint();
+            RTBeatmap.Current.ResetCheckpoint();
             endedLevel = false;
         }
 
@@ -256,167 +255,12 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
-        /// Runs the custom end level function.
-        /// </summary>
-        public static void EndOfLevel()
-        {
-            endedLevel = true;
-
-            try
-            {
-                if (endLevelUpdateProgress)
-                    LevelManager.UpdateCurrentLevelProgress();
-
-                switch (endLevelFunc)
-                {
-                    case EndLevelFunction.EndLevelMenu: {
-                            if (!EndLevelMenu.Current)
-                                EndLevelMenu.Init();
-
-                            break;
-                        }
-                    case EndLevelFunction.QuitToArcade: {
-                            QuitToArcade();
-
-                            break;
-                        }
-                    case EndLevelFunction.ReturnToHub: {
-                            LevelManager.Play(LevelManager.Hub);
-
-                            break;
-                        }
-                    case EndLevelFunction.ReturnToPrevious: {
-                            LevelManager.Play(LevelManager.PreviousLevel);
-
-                            break;
-                        }
-                    case EndLevelFunction.ContinueCollection: {
-                            var metadata = LevelManager.CurrentLevel.metadata;
-                            var nextLevel = LevelManager.NextLevelInCollection;
-                            if (LevelManager.CurrentLevelCollection && (metadata.song.DifficultyType == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !RTBeatmap.Current.challengeMode.Invincible || LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
-                            {
-                                if (nextLevel)
-                                    CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
-                                else
-                                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
-
-                                NextLevel();
-                                break;
-                            }
-
-                            QuitToArcade();
-
-                            break;
-                        }
-                    case EndLevelFunction.LoadLevel: {
-                            if (string.IsNullOrEmpty(endLevelData))
-                                break;
-
-                            if (LevelManager.Levels.TryFind(x => x.id == endLevelData, out Level level))
-                                LevelManager.Play(level);
-                            else if (SteamWorkshopManager.inst.Levels.TryFind(x => x.id == endLevelData, out Level steamLevel))
-                                LevelManager.Play(steamLevel);
-
-                            break;
-                        }
-                    case EndLevelFunction.LoadLevelInCollection: {
-                            if (string.IsNullOrEmpty(endLevelData) || !LevelManager.CurrentLevelCollection)
-                                break;
-
-                            if (LevelManager.CurrentLevelCollection.levels.TryFind(x => x.id == endLevelData, out Level level))
-                                LevelManager.Play(level);
-                            else if (LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.id == endLevelData, out LevelInfo levelInfo))
-                                LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo, LevelManager.Play);
-
-                            break;
-                        }
-                    case EndLevelFunction.ParseInterface: {
-                            if (CoreHelper.IsEditing) // don't want interfaces to load in editor
-                            {
-                                EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            var path = RTFile.CombinePaths(RTFile.BasePath, endLevelData + FileFormat.LSI.Dot());
-
-                            if (!RTFile.FileExists(path))
-                            {
-                                CoreHelper.LogError($"Interface with file name: \"{endLevelData}\" does not exist.");
-                                return;
-                            }
-
-                            var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
-
-                            menu.filePath = path;
-
-                            if (string.IsNullOrEmpty(menu.id) || menu.id == "0")
-                            {
-                                CoreHelper.LogError($"Menu ID cannot be empty nor 0.");
-                                return;
-                            }
-
-                            InterfaceManager.inst.MainDirectory = RTFile.BasePath;
-
-                            AudioManager.inst.CurrentAudioSource.Pause();
-                            InputDataManager.inst.SetAllControllerRumble(0f);
-
-                            if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
-                            {
-                                InterfaceManager.inst.SetCurrentInterface(otherMenu);
-                                menu = null;
-                                return;
-                            }
-
-                            InterfaceManager.inst.interfaces.Add(menu);
-                            InterfaceManager.inst.SetCurrentInterface(menu);
-
-                            break;
-                        }
-                    case EndLevelFunction.Loop: {
-                            GameManager.inst.gameState = GameManager.State.Playing;
-                            AudioManager.inst.SetMusicTime(0f);
-
-                            Time.timeScale = 1f;
-                            InputDataManager.inst.SetAllControllerRumble(0f);
-
-                            LevelManager.LevelEnded = false;
-                            break;
-                        }
-                    case EndLevelFunction.Restart: {
-                            GameManager.inst.gameState = GameManager.State.Playing;
-                            RestartLevel();
-                            AudioManager.inst.CurrentAudioSource.Play();
-                            break;
-                        }
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"End Level Func: {endLevelFunc}\nEnd Level String: {endLevelData}\nException: {ex}");
-                // boot to main menu if level ending issues occur.
-                SceneHelper.LoadScene(SceneName.Main_Menu);
-            }
-
-            ResetEndLevelVariables();
-        }
-
-        /// <summary>
         /// Resets the transition and level end states.
         /// </summary>
         public static void ResetModifiedStates()
         {
             LevelManager.ResetTransition();
-            ResetEndLevelVariables();
-        }
-
-        /// <summary>
-        /// Resets the end level function.
-        /// </summary>
-        public static void ResetEndLevelVariables()
-        {
-            endLevelFunc = 0;
-            endLevelData = null;
-            endLevelUpdateProgress = true;
+            RTBeatmap.Current?.ResetEndLevelVariables();
         }
 
         /// <summary>

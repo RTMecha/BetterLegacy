@@ -22,6 +22,7 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
@@ -2236,7 +2237,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public void StartQueue()
         {
             InterfaceManager.inst.CloseMenus();
-            LevelManager.Play(LevelManager.ArcadeQueue[0], ArcadeHelper.EndOfLevel);
+            LevelManager.Play(LevelManager.ArcadeQueue[0], RTBeatmap.Current.EndOfLevel);
         }
 
         public void ShuffleQueue(bool play)

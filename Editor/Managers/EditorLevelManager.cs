@@ -12,7 +12,6 @@ using LSFunctions;
 using CielaSpike;
 using SimpleJSON;
 
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -567,7 +566,7 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.InfoPopup.Close();
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
 
-            RTGameManager.inst.ResetCheckpoint();
+            RTBeatmap.Current.ResetCheckpoint();
             GameManager.inst.gameState = GameManager.State.Playing;
 
             EditorManager.inst.DisplayNotification($"{name} Level loaded", 2f, EditorManager.NotificationType.Success);

@@ -7,11 +7,11 @@ using HarmonyLib;
 
 using LSFunctions;
 
-using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers
@@ -234,7 +234,7 @@ namespace BetterLegacy.Patchers
 
             Instance.SetCurrentCheckpoint(GameData.Current.data.checkpoints.Count - 1);
             GameManager.inst.UpdateTimeline();
-            RTGameManager.inst.ResetCheckpoint(true);
+            RTBeatmap.Current.ResetCheckpoint(true);
             return false;
         }
 

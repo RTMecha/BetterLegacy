@@ -20,7 +20,6 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -499,7 +498,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadBaseLevelPrefix()
         {
-            RTGameManager.inst.ResetCheckpoint();
+            RTBeatmap.Current.ResetCheckpoint();
             if (!Seasons.IsAprilFools)
             {
                 AssignGameData();

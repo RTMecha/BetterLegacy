@@ -27,7 +27,6 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
-using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -5968,7 +5967,7 @@ namespace BetterLegacy.Editor.Managers
             else
                 EnterPreview();
 
-            RTGameManager.inst.ResetCheckpoint();
+            RTBeatmap.Current.ResetCheckpoint();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.EDITOR_PREVIEW_TOGGLE);
             Example.Current?.model?.UpdateActive();
@@ -5998,7 +5997,7 @@ namespace BetterLegacy.Editor.Managers
             AudioManager.inst.CurrentAudioSource.Play();
             EditorManager.inst.SetNormalRenderArea();
             GameManager.inst.UpdateTimeline();
-            RTGameManager.inst.ResetCheckpoint(true);
+            RTBeatmap.Current.ResetCheckpoint(true);
 
             EventSystem.current.SetSelectedGameObject(null);
         }
@@ -6025,8 +6024,8 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 UpdatePlayers(false);
-                if (RTGameManager.inst.ActiveCheckpoint)
-                    PlayerManager.SpawnPlayers(RTGameManager.inst.ActiveCheckpoint);
+                if (RTBeatmap.Current.ActiveCheckpoint)
+                    PlayerManager.SpawnPlayers(RTBeatmap.Current.ActiveCheckpoint);
                 else
                     PlayerManager.SpawnPlayers(EventManager.inst.cam.transform.position);
             }

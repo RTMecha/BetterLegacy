@@ -154,95 +154,7 @@ namespace BetterLegacy.Arcade.Managers
 
         #region Checkpoints
 
-        /// <summary>
-        /// The currently activated checkpoint.
-        /// </summary>
-        public Checkpoint ActiveCheckpoint { get; set; }
-
-        int nextCheckpointIndex;
-
         RTAnimation checkpointAnimation;
-
-        #region Methods
-
-        /// <summary>
-        /// Updates the checkpoint conditions.
-        /// </summary>
-        public void UpdateCheckpoints()
-        {
-            var checkpoints = GameData.Current?.data?.checkpoints;
-            if (checkpoints != null && checkpoints.InRange(nextCheckpointIndex) && AudioManager.inst.CurrentAudioSource.time > (double)checkpoints[nextCheckpointIndex].time && CoreHelper.InEditorPreview)
-                SetCheckpoint(nextCheckpointIndex);
-        }
-
-        /// <summary>
-        /// Creates a new checkpoint and sets it as the currently active checkpoint. Used for modifiers.
-        /// </summary>
-        /// <param name="time">Time of the checkpoint to rewind to when reversing to it.</param>
-        /// <param name="position">Position to spawn the players at.</param>
-        public void SetCheckpoint(float time, Vector2 position) => SetCheckpoint(new Checkpoint("Modifier Checkpoint", Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), position));
-
-        /// <summary>
-        /// Sets the currently active checkpoint based on an index.
-        /// </summary>
-        /// <param name="index">Index of the checkpoint.</param>
-        /// <param name="playAnimation">If the animation should play.</param>
-        /// <param name="spawnPlayers">If players should be respawned.</param>
-        public void SetCheckpoint(int index)
-        {
-            var checkpoints = GameData.Current?.data?.checkpoints;
-            if (checkpoints == null || !checkpoints.InRange(index))
-                return;
-
-            CoreHelper.Log($"Set checkpoint: {index}");
-            SetCheckpoint(checkpoints[index], index + 1);
-        }
-
-        /// <summary>
-        /// Sets the currently active checkpoint based on an index.
-        /// </summary>
-        /// <param name="checkpoint">Checkpoint to set active.</param>
-        /// <param name="nextIndex">Index of the next checkpoint to activate. If left at -1, it will not update the next index.</param>
-        /// <param name="playAnimation">If the animation should play.</param>
-        /// <param name="spawnPlayers">If players should be respawned.</param>
-        public void SetCheckpoint(Checkpoint checkpoint, int nextIndex = -1)
-        {
-            ActiveCheckpoint = checkpoint;
-            if (nextIndex >= 0)
-                nextCheckpointIndex = nextIndex;
-
-            if (checkpoint.heal)
-                PlayerManager.Players.ForLoop(customPlayer => customPlayer.ResetHealth());
-
-            if (checkpoint.respawn)
-                PlayerManager.SpawnPlayers(ActiveCheckpoint);
-
-            StartCoroutine(IPlayCheckpointAnimation());
-        }
-
-        /// <summary>
-        /// Resets the active checkpoint.
-        /// </summary>
-        /// <param name="baseOnTime">If true, reset to last checkpoint. Otherwise, reset to first.</param>
-        public void ResetCheckpoint(bool baseOnTime = false)
-        {
-            var checkpoints = GameData.Current?.data?.checkpoints;
-            if (checkpoints == null || (CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel))
-                return;
-
-            CoreHelper.Log($"Reset Checkpoints | Based on time: {baseOnTime}");
-            int index = 0;
-            if (baseOnTime)
-                index = GameData.Current.data.GetLastCheckpointIndex();
-
-            ActiveCheckpoint = checkpoints[index];
-            nextCheckpointIndex = index + 1;
-        }
-
-        /// <summary>
-        /// Reverses to the active checkpoint.
-        /// </summary>
-        public void ReverseToCheckpoint() => CoroutineHelper.StartCoroutine(IReverseToCheckpoint());
 
         /// <summary>
         /// Plays the checkpoint sound and animation.
@@ -256,68 +168,6 @@ namespace BetterLegacy.Arcade.Managers
                 GameManager.inst.playingCheckpointAnimation = true;
                 levelAnimationController.Play(checkpointAnimation);
             }
-
-            yield break;
-        }
-
-        IEnumerator IReverseToCheckpoint()
-        {
-            if (GameManager.inst.isReversing)
-                yield break;
-
-            GameManager.inst.isReversing = true;
-
-            var checkpoint = ActiveCheckpoint ?? GameData.Current.data.GetLastCheckpoint();
-
-            if (GameData.Current.data.level.reverse && checkpoint.reverse)
-            {
-                var animation = new RTAnimation("Reverse");
-                animation.animationHandlers = new List<AnimationHandlerBase>
-                {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
-                        new FloatKeyframe(1f, -1.5f, Ease.CircIn)
-                    }, x =>
-                    {
-                        if (AudioManager.inst.CurrentAudioSource.time > 1f)
-                            AudioManager.inst.SetPitch(x);
-                        else
-                            AudioManager.inst.SetMusicTime(1f);
-                    }),
-                };
-
-                animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
-
-                AnimationManager.inst.Play(animation);
-                SoundManager.inst.PlaySound(DefaultSounds.rewind);
-            }
-
-            yield return CoroutineHelper.Seconds(2f);
-
-            float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
-            if (!CoreHelper.InEditor && RTBeatmap.Current.challengeMode.Lives > 0)
-            {
-                time = 0.1f;
-                RTBeatmap.Current.lives = RTBeatmap.Current.challengeMode.Lives;
-            }
-
-            if (checkpoint.setTime)
-                AudioManager.inst.SetMusicTime(time);
-
-            GameManager.inst.gameState = GameManager.State.Playing;
-
-            AudioManager.inst.CurrentAudioSource.Play();
-            AudioManager.inst.SetPitch(RTBeatmap.Current.Pitch);
-
-            GameManager.inst.UpdateEventSequenceTime();
-            GameManager.inst.isReversing = false;
-
-            yield return CoroutineHelper.Seconds(0.1f);
-
-            PlayerManager.SpawnPlayers(checkpoint);
-
-            checkpoint = null;
 
             yield break;
         }
@@ -355,8 +205,6 @@ namespace BetterLegacy.Arcade.Managers
             image.color = ThemeManager.inst.Current.guiColor;
             image.rectTransform.sizeDelta = new Vector2(!vertical ? x : 0f, vertical ? x : 0f);
         }, interpolateOnComplete: true);
-
-        #endregion
 
         #endregion
 

@@ -12,6 +12,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Patchers
@@ -90,10 +91,10 @@ namespace BetterLegacy.Patchers
         static bool UpdatePrefix(GameManager __instance)
         {
             if (!LevelManager.LevelEnded)
-                Core.Runtime.RTBeatmap.Current.levelTimer.Update();
+                RTBeatmap.Current.levelTimer.Update();
 
             if (PauseMenu.Current)
-                Core.Runtime.RTBeatmap.Current.pausedTimer.Update();
+                RTBeatmap.Current.pausedTimer.Update();
 
             if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && CoreHelper.Paused && !LevelManager.LevelEnded && PauseMenu.Current && !PauseMenu.Current.generating)
                 PauseMenu.UnPause();
@@ -111,11 +112,11 @@ namespace BetterLegacy.Patchers
                         PauseMenu.Pause();
                 }
 
-                RTGameManager.inst.UpdateCheckpoints();
+                RTBeatmap.Current.UpdateCheckpoints();
             }
 
             if (CoreHelper.Reversing && !__instance.isReversing)
-                RTGameManager.inst.ReverseToCheckpoint();
+                RTBeatmap.Current.ReverseToCheckpoint();
             else if (CoreHelper.Playing)
                 CheckLevelEnd();
             else if (CoreHelper.Finished)
@@ -249,7 +250,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ResetCheckpointsPrefix(bool __0)
         {
-            RTGameManager.inst.ResetCheckpoint(__0);
+            RTBeatmap.Current.ResetCheckpoint(__0);
             return false;
         }
 

@@ -457,10 +457,10 @@ namespace BetterLegacy.Core.Helpers
 
             if (endLevelFunc > 0)
             {
-                ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
-                ArcadeHelper.endLevelData = modifier.GetValue(1, variables);
+                RTBeatmap.Current.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
+                RTBeatmap.Current.endLevelData = modifier.GetValue(1, variables);
             }
-            ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
+            RTBeatmap.Current.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
 
             LevelManager.EndLevel();
         }
@@ -478,10 +478,10 @@ namespace BetterLegacy.Core.Helpers
 
             if (endLevelFunc > 0)
             {
-                ArcadeHelper.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
-                ArcadeHelper.endLevelData = modifier.GetValue(1, variables);
+                RTBeatmap.Current.endLevelFunc = (EndLevelFunction)(endLevelFunc - 1);
+                RTBeatmap.Current.endLevelData = modifier.GetValue(1, variables);
             }
-            ArcadeHelper.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
+            RTBeatmap.Current.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
         }
 
         #endregion
@@ -6258,7 +6258,7 @@ namespace BetterLegacy.Core.Helpers
         public static void createCheckpoint<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             // if active checpoints matches the stored checkpoint, do not create a new checkpoint.
-            if (modifier.TryGetResult(out Checkpoint prevCheckpoint) && prevCheckpoint.id == RTGameManager.inst.ActiveCheckpoint.id)
+            if (modifier.TryGetResult(out Checkpoint prevCheckpoint) && prevCheckpoint.id == RTBeatmap.Current.ActiveCheckpoint.id)
                 return;
 
             var checkpoint = new Checkpoint();
@@ -6272,13 +6272,13 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 9; i < modifier.commands.Count; i += 2)
                 checkpoint.positions.Add(new Vector2(modifier.GetFloat(i, 0f, variables), modifier.GetFloat(i + 1, 0f, variables)));
 
-            RTGameManager.inst.SetCheckpoint(checkpoint);
+            RTBeatmap.Current.SetCheckpoint(checkpoint);
             modifier.Result = checkpoint;
         }
 
         public static void resetCheckpoint<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            RTGameManager.inst.ResetCheckpoint(modifier.GetBool(0, false, variables));
+            RTBeatmap.Current.ResetCheckpoint(modifier.GetBool(0, false, variables));
         }
 
         #endregion

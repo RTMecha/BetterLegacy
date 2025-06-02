@@ -391,7 +391,7 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Updating checkpoints...");
 
             GameManager.inst.UpdateTimeline();
-            RTGameManager.inst.ResetCheckpoint();
+            RTBeatmap.Current.ResetCheckpoint();
 
             #endregion
 
@@ -455,7 +455,7 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Loading level from {path}");
 
-            OnLevelEnd = ArcadeHelper.EndOfLevel;
+            OnLevelEnd = RTBeatmap.Current.EndOfLevel;
 
             if (path.EndsWith(FileFormat.ASSET.Dot()))
             {

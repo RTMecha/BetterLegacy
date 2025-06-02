@@ -332,7 +332,7 @@ namespace BetterLegacy.Core.Managers
 
                         if (RTBeatmap.Current.OutOfLives) // reset checkpoint and deaths when out of lives
                         {
-                            RTGameManager.inst.ResetCheckpoint();
+                            RTBeatmap.Current.ResetCheckpoint();
 
                             RTBeatmap.Current.hits.Clear();
                             RTBeatmap.Current.deaths.Clear();
@@ -476,7 +476,7 @@ namespace BetterLegacy.Core.Managers
         /// Respawns a specific player at the default spawn position.
         /// </summary>
         /// <param name="index">Index of the player to respawn.</param>
-        public static void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPositions(RTGameManager.inst.ActiveCheckpoint)[index]);
+        public static void RespawnPlayer(int index) => RespawnPlayer(index, GetSpawnPositions(RTBeatmap.Current.ActiveCheckpoint)[index]);
 
         /// <summary>
         /// Respawns a specific player at a set spawn position.

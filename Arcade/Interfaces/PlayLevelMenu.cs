@@ -10,6 +10,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -386,7 +387,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         return;
                     }
 
-                    LevelManager.Play(LevelManager.CurrentLevel, ArcadeHelper.EndOfLevel);
+                    LevelManager.Play(LevelManager.CurrentLevel, RTBeatmap.Current.EndOfLevel);
                 },
             });
 
