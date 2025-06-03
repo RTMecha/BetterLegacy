@@ -50,6 +50,16 @@
 - Game Timeline Editor. (skipping regions, custom images, etc)
 - Glow object that acts like bloom.
 - Ignore start time object spawn?
+- Arcade auto plays song config.
+- Prefab Object Modifiers & Tags.  
+  Notes:  
+  - This feature might require Prefab Objects to still be loaded in the GameData. Could be a config.
+  - Allows for changing the objects in a singular Prefab Object. (prefab group only is on by default)
+  - Runs before Object Modifiers.
+  - Objects can detect if their Prefab Object has a specific tag.
+- Active event keyframe value.
+  Notes:  
+  - Skips the next keyframe if it's value is off. Acts kinda like relative except if the value at a specific index was 0.
 
 ### Story
 - Chapter 1.  
@@ -83,10 +93,10 @@
 - List for pinned editor layers.  
   Update: 1.8.0
 - Add difficulty and artist name to the level creator popup.  
-  Update: 1.7.0 - 1.8.0
+  Update: 1.8.0
 - Prefab reference name in object editor.  
-  Update: 1.7.0 - 1.8.0
-- Level priority sort
+  Update: 1.8.0
+- Level priority sort  
   Update: 1.8.0
 
 ### Interfaces
@@ -104,14 +114,22 @@
 - particleSystemColored action modifier  
   Update: 1.8.0
 - Ignore opacity toggle for color modifiers.  
-  Update: 1.7.0 - 1.8.0
+  Update: 1.8.0
 - setStartTime modifiers.
-- loadLevelCollection modifier.
+- loadLevelCollection modifier.  
+  Update: 1.8.0  
+  Notes:  
+  - Loads a specified level collection from the start level, hub level or default.
+- downloadLevelCollection modifier.  
   Update: 1.8.0
-  Loads a specified level collection from the start level, hub level or default.
-- downloadLevelCollection modifier.
-  Update: 1.8.0
-  Same as downloadLevel except for level collections.
+  Notes:  
+  - Same as downloadLevel except for level collections.
+- registerFunc modifier.  
+  Update: 1.8.0+
+  Notes:  
+  - Registers all modifiers up until a return modifier to a function.
+  - This function can pass specific variables.
+  - Best used with level modifiers since they run before anything else.
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)  
@@ -126,6 +144,7 @@
 ### Core
 - Change how modifiers are saved for better consistency.
 - Merge all effect managers into single EffectsManager.
+- Rework controller shake to be properly toggleable and have a separate variable.
 - Summary and note as much as I can (or need to).
 
 ### Editor
@@ -133,7 +152,6 @@
   Update: 1.8.0
 - Multi language support.
 - Rework the level combiner into just a selection system.
-- Rework controller shake to be properly toggleable and have a separate variable.
 - Give Editor Documentation a cover image so people know what a specific document is talking about.  
   Update: 1.8.0
 - Undo / redo everything.  
@@ -151,6 +169,8 @@
   Update: 1.8.0
 - Update the file browser UI to include more info / functions.
 - Cleanup Player Editor code.
+- Overhaul the custom UI settings to be more extensive.
+- Rework object dragging to have a lot more control and settings. (take some inspiration from Modern + Blender + EditorManagement)
 
 
 ## Fixes
@@ -162,7 +182,13 @@
 - Sort Levels Menu?
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
-- Tags for Prefab Objects so you can change a prefab via modifiers.
+- Freeplay sandbox mode (editor)?
+  Notes:  
+  - No song is playing. Sequence time is entirely based on when the mode started. However, a custom song can play.
+  - Prefab Objects can be spawned + despawned.
+  - Player Models can be switched between and tested.
+  - GUI and keybinds for interacting with this mode (similar to the editor).
+- Some kind of marker layer priority system. Basically a way to sort and filter visible markers.
 
 
 ## Demos
