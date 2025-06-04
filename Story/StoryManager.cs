@@ -730,6 +730,22 @@ namespace BetterLegacy.Story
                         continue;
                     }
 
+                    // prevents playing cutscenes of levels that aren't complete. (e.g secret)
+                    if (!CurrentSave.LoadBool($"DOC{RTString.ToStoryNumber(chapter)}_{RTString.ToStoryNumber(level)}Complete", false))
+                    {
+                        level++;
+                        if (level >= storyChapter.Count + 1)
+                        {
+                            SceneHelper.LoadInterfaceScene();
+                            return;
+                        }
+
+                        storyLevel = storyChapter.GetLevel(level);
+                        cutsceneDestination = CutsceneDestination.Pre;
+                        cutsceneIndex = 0;
+                        continue;
+                    }
+
                     break;
                 }
 
@@ -1050,10 +1066,7 @@ namespace BetterLegacy.Story
             SoundManager.inst.PlaySound(DefaultSounds.loadsound);
             CoreHelper.InStory = false;
             LevelManager.OnLevelEnd = null;
-            if (loadCredits)
-                InterfaceManager.inst.Parse(RTFile.GetAsset("Story/Interfaces/story_credits.lsi"));
-            else
-                SceneHelper.LoadScene(SceneName.Main_Menu);
+            SceneHelper.LoadScene(SceneName.Main_Menu);
         }
 
         bool loadCredits = false;
