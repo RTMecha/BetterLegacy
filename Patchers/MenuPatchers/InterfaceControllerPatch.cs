@@ -8,11 +8,11 @@ using HarmonyLib;
 
 using InControl;
 
-using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Patchers
 {
