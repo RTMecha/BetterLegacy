@@ -8,7 +8,7 @@ using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Menus;
-using BetterLegacy.Arcade.Interfaces;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Helpers
 {
