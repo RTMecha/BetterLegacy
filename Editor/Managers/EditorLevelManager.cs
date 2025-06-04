@@ -1309,7 +1309,7 @@ namespace BetterLegacy.Editor.Managers
 
                 string cutsceneDestination = string.Empty;
                 if (editorInfo.cutsceneDestination != Story.CutsceneDestination.Level)
-                    cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower();
+                    cutsceneDestination = editorInfo.cutsceneDestination.ToString().ToLower() + "_cutscene";
                 int cutscene = 0;
                 if (editorInfo.cutscene >= 0)
                     cutscene = editorInfo.cutscene;
@@ -1323,7 +1323,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var path = RTFile.BasePath;
             var doc = $"doc{RTString.ToStoryNumber(chapter)}";
-            var saveTo = RTFile.CombinePaths(storyLevelsCompilerPath, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? "" : "_" + type + RTString.ToStoryNumber(cutscene))}");
+            var saveTo = RTFile.CombinePaths(storyLevelsCompilerPath, doc, $"{doc}_{RTString.ToStoryNumber(level)}{(string.IsNullOrEmpty(type) ? string.Empty : "_" + type + RTString.ToStoryNumber(cutscene))}");
 
             RTFile.CreateDirectory(saveTo);
             RTFile.CopyFile(RTFile.CombinePaths(path, Level.LEVEL_LSB), RTFile.CombinePaths(saveTo, $"level{FileFormat.JSON.Dot()}"));
