@@ -247,7 +247,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 id = "738347853",
                 name = "Info Text",
-                text = $"<align=right>Previous rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.Name}</color>",
+                text = $"<align=right>Previous rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color>",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,
@@ -261,7 +261,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 id = "248576321",
                 name = "Info Text",
-                text = $"<align=right>Current rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.Name}</color>",
+                text = $"<align=right>Current rank: <b><size=60><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color>",
                 rect = RectValues.Default.SizeDelta(300f, 32f),
                 hideBG = true,
                 textVal = 40f,

@@ -334,7 +334,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 id = "92595",
                 name = "Rank",
                 rect = RectValues.Default.AnchoredPosition(-250f, -90f).Rotation(-10f),
-                text = $"<size=140><b><align=center><#{LSColors.ColorToHex(rank.Color)}>{rank.Name}",
+                text = $"<size=140><b><align=center><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}",
                 hideBG = true,
                 textColor = 6,
             });

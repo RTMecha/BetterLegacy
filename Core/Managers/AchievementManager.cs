@@ -251,7 +251,7 @@ namespace BetterLegacy.Core.Managers
                 UnlockAchievement("complete_animation");
             if (metadata.song.difficulty != 6 && RTBeatmap.Current && RTBeatmap.Current.boosts.Count == 0)
                 UnlockAchievement("no_boost");
-            if (rank.Name == Rank.F)
+            if (rank == Rank.F)
                 UnlockAchievement("f_rank");
             if (metadata.song.difficulty == 4 && rank == Rank.SS)
                 UnlockAchievement("expert_plus_ss_rank");

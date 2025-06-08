@@ -51,7 +51,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     name = "Element Base",
                     parentLayout = "buttons",
                     rect = RectValues.Default.SizeDelta(400f, 64f),
-                    text = $" <b><#{LSColors.ColorToHex(rank.Color)}>{rank.Name}</color></b>  {save.LevelName} - ID: {save.ID}",
+                    text = $" <b><#{LSColors.ColorToHex(rank.Color)}>{rank.DisplayName}</color></b>  {save.LevelName} - ID: {save.ID}",
                     selectionPosition = new Vector2Int(0, index + 1),
                     opacity = 0.1f,
                     selectedOpacity = 1f,
