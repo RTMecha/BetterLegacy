@@ -1,8 +1,8 @@
-﻿# ???
+﻿# 1.7.0 [June 15, 2025]
 
 ## Features
 ### Story
-- All cutscenes are now at a pre-polish state.
+- Story is in a fully playable and enjoyable (possibly? hopefully?) state.
 - You can now view cutscenes of levels you've beaten.
 - Challenge mode and game settings can be used after you SS rank a level in the story mode.
 - Added some attacks to some levels.
@@ -35,6 +35,7 @@
 - Added Apply Game Settings In Preview Mode to Config Manager > Editor > General.
 - Improved Marker looping usability by adding start & end flags to the Timeline Marker and added "Clear Marker Loop" to the Marker Context Menu.
 - Added Snap to BPM context menu for Prefab Creator offset.
+- You can now double click a timeline object / timeline keyframe to go the time of the object / keyframe.
 
 ### Internal
 - Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
