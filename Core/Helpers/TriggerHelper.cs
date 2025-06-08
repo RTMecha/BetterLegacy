@@ -393,6 +393,13 @@ namespace BetterLegacy.Core.Helpers
             if (pointerEventData.button == PointerEventData.InputButton.Right)
                 return;
 
+            // double click
+            if (pointerEventData.clickCount > 1)
+            {
+                AudioManager.inst.SetMusicTime(timelineKeyframe.isObjectKeyframe && EditorTimeline.inst.CurrentSelection.isBeatmapObject ? EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().StartTime + timelineKeyframe.Time : timelineKeyframe.Time);
+                return;
+            }
+
             if (timelineKeyframe.isObjectKeyframe)
                 ObjectEditor.inst.SetCurrentKeyframe(timelineKeyframe.beatmapObject, timelineKeyframe.Type, timelineKeyframe.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
             else if (!EventEditor.inst.eventDrag)
@@ -677,6 +684,13 @@ namespace BetterLegacy.Core.Helpers
 
             if (pointerEventData.button == PointerEventData.InputButton.Right)
                 return;
+
+            // double click
+            if (pointerEventData.clickCount > 1)
+            {
+                AudioManager.inst.SetMusicTime(timelineObject.Time);
+                return;
+            }
 
             float timelineTime = EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjects.Value);
             ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
