@@ -2833,7 +2833,7 @@ namespace BetterLegacy.Core.Helpers
     /// <summary>
     /// Cache struct for translate shape.
     /// </summary>
-    public struct TranslateShapeCache
+    public class TranslateShapeCache
     {
         /// <summary>
         /// Translates the mesh.
@@ -2841,10 +2841,10 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="pos">Position to translate to.</param>
         /// <param name="sca">Scale to translate to.</param>
         /// <param name="rot">Rotation to tranlsate to.</param>
-        public void Translate(Vector2 pos, Vector2 sca, float rot)
+        public void Translate(Vector2 pos, Vector2 sca, float rot, bool forceTranslate = false)
         {
             // don't translate if the cached values are the same as the parameters.
-            if (Is(pos, sca, rot))
+            if (Is(pos, sca, rot) && !forceTranslate)
             {
                 Cache(pos, sca, rot);
                 return;

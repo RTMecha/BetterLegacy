@@ -4431,7 +4431,7 @@ namespace BetterLegacy.Core.Helpers
                 var collider2D = runtimeObject.visualObject.collider as PolygonCollider2D;
                 var mesh = meshFilter.mesh;
 
-                modifier.Result = new TranslateShapeCache
+                var translateShapeCache = new TranslateShapeCache
                 {
                     meshFilter = meshFilter,
                     collider2D = collider2D,
@@ -4442,8 +4442,12 @@ namespace BetterLegacy.Core.Helpers
                     sca = sca,
                     rot = rot,
                 };
+                modifier.Result = translateShapeCache;
+                // force translate for first frame
+                translateShapeCache.Translate(pos, sca, rot, true);
 
                 runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+                return;
             }
 
             if (modifier.TryGetResult(out TranslateShapeCache shapeCache))
