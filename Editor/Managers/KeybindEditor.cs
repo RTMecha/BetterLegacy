@@ -1800,12 +1800,22 @@ namespace BetterLegacy.Editor.Managers
                     EditorTimeline.inst.RenderTimelineObject(timelineObject);
                 }
 
-            if (ObjEditor.inst.ObjectView.activeInHierarchy && EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected).Count() > 0)
-            {
-                foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && RTEventEditor.inst.SelectedKeyframes.Count > 0 && EditorTimeline.inst.isOverMainTimeline)
+                foreach (var timelineKeyframe in RTEventEditor.inst.SelectedKeyframes)
                 {
-                    if (timelineObject.Index != 0)
-                        timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
+                    if (timelineKeyframe.Index != 0 && !timelineKeyframe.Locked)
+                        timelineKeyframe.Time = RTEditor.SnapToBPM(timelineKeyframe.Time);
+
+                    timelineKeyframe.RenderPos();
+                }
+
+            if (ObjEditor.inst.ObjectView.activeInHierarchy && EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected).Count() > 0 && !EditorTimeline.inst.isOverMainTimeline)
+            {
+                var startTime = EditorTimeline.inst.CurrentSelection.Time;
+                foreach (var timelineKeyframe in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+                {
+                    if (timelineKeyframe.Index != 0 && !timelineKeyframe.Locked)
+                        timelineKeyframe.Time = RTEditor.SnapToBPM(timelineKeyframe.Time + startTime) - startTime;
                 }
 
                 var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
@@ -1813,15 +1823,6 @@ namespace BetterLegacy.Editor.Managers
                 RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
                 ObjectEditor.inst.RenderKeyframes(bm);
             }
-
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && RTEventEditor.inst.SelectedKeyframes.Count > 0)
-                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                {
-                    if (timelineObject.Index != 0)
-                        timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
-
-                    timelineObject.RenderPos();
-                }
 
             if (RTEditor.DraggingPlaysSound)
             {
