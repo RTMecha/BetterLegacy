@@ -2403,11 +2403,6 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.dragOffset = timeOffset;
             }
 
-            if (!RTLevel.Current || !RTLevel.Current.objectEngine || !RTLevel.Current.objectEngine.spawner)
-                return;
-
-            var spawner = RTLevel.Current.objectEngine.spawner;
-
             foreach (var timelineObject in selectedObjects)
             {
                 if (timelineObject.Locked)
@@ -2497,25 +2492,23 @@ namespace BetterLegacy.Editor.Managers
             var selected = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
             var startTime = beatmapObject.StartTime;
 
+            float timeOffset = Mathf.Round(Mathf.Clamp(timelineCalc + ObjEditor.inst.mouseOffsetXForKeyframeDrag, 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
+            if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjectKeyframes.Value && !Input.GetKey(KeyCode.LeftAlt))
+                timeOffset = -(startTime - RTEditor.SnapToBPM(startTime + timeOffset));
+
             bool changed = false;
-            foreach (var timelineObject in selected)
+            foreach (var timelineKeyframe in selected)
             {
-                if (timelineObject.Index == 0 || timelineObject.Locked)
+                if (timelineKeyframe.Index == 0 || timelineKeyframe.Locked)
                     continue;
 
-                float calc = Mathf.Clamp(
-                    Mathf.Round(Mathf.Clamp(timelineCalc + timelineObject.timeOffset + ObjEditor.inst.mouseOffsetXForKeyframeDrag, 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f,
-                    0f, beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset));
+                float calc = Mathf.Clamp(timeOffset + timelineKeyframe.timeOffset, 0f, beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset));
 
-                float st = beatmapObject.StartTime;
+                timelineKeyframe.eventKeyframe.time = calc;
 
-                st = RTEditor.inst.editorInfo.bpmSnapActive && snap && !Input.GetKey(KeyCode.LeftAlt) ? -(st - RTEditor.SnapToBPM(st + calc)) : calc;
+                timelineKeyframe.GameObject.transform.AsRT().anchoredPosition = new Vector2(TimeTimelineCalc(startTime), 0f);
 
-                beatmapObject.events[timelineObject.Type][timelineObject.Index].time = st;
-
-                ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(TimeTimelineCalc(st), 0f);
-
-                timelineObject.Render();
+                timelineKeyframe.Render();
                 changed = true;
             }
 
