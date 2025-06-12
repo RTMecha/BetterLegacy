@@ -664,7 +664,7 @@ namespace BetterLegacy.Editor.Managers
             SetupGrid();
             SetupTimelineGrid();
             SetupNewFilePopup();
-            CreatePreviewCover();
+            CreatePreview();
             CreateObjectSearch();
             CreateDebug();
             CreateAutosavePopup();
@@ -1007,6 +1007,11 @@ namespace BetterLegacy.Editor.Managers
         /// Hides the preview area until a level is loaded.
         /// </summary>
         public EditorThemeManager.Element PreviewCover { get; set; }
+
+        /// <summary>
+        /// Helper component for object selection in preview.
+        /// </summary>
+        public SelectObjectHelper SelectObjectHelper { get; set; }
 
         /// <summary>
         /// Grid of the preview area.
@@ -3963,7 +3968,7 @@ namespace BetterLegacy.Editor.Managers
             LevelTemplateEditor.Init();
         }
 
-        void CreatePreviewCover()
+        void CreatePreview()
         {
             var gameObject = Creator.NewUIObject("Preview Cover", EditorManager.inst.dialogs.parent, 1);
 
@@ -3977,6 +3982,26 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddElement(PreviewCover);
 
             gameObject.SetActive(!Seasons.IsAprilFools);
+
+            var preview = Creator.NewUIObject("Preview", EditorManager.inst.dialogs.parent, 1);
+            preview.transform.AsRT().anchoredPosition = new Vector2(577.5f, 724.05f);
+            preview.transform.AsRT().anchorMax = Vector2.zero;
+            preview.transform.AsRT().anchorMin = Vector2.zero;
+
+            var previewObject = Creator.NewUIObject("Object", preview.transform);
+            previewObject.transform.AsRT().sizeDelta = new Vector2(16f, 16f);
+            var previewObjectImage = previewObject.AddComponent<Image>();
+            previewObjectImage.sprite = EditorSprites.CircleSprite;
+
+            SelectObjectHelper = previewObject.AddComponent<SelectObjectHelper>();
+            SelectObjectHelper.image = previewObjectImage;
+            previewObject.AddComponent<EventTrigger>().triggers = new List<EventTrigger.Entry>
+            {
+                TriggerHelper.CreateEntry(EventTriggerType.PointerDown, SelectObjectHelper.PointerDown),
+                TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, SelectObjectHelper.BeginDrag),
+                TriggerHelper.CreateEntry(EventTriggerType.Drag, SelectObjectHelper.Drag),
+                TriggerHelper.CreateEntry(EventTriggerType.EndDrag, SelectObjectHelper.EndDrag),
+            };
         }
 
         void CreateObjectSearch()
