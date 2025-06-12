@@ -1521,7 +1521,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
         }
 
-        public Vector3 GetFullPosition() => runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.position : InterpolateChainPosition();
+        public Vector3 GetFullPosition() => runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.parent.position : InterpolateChainPosition();
 
         public Vector3 GetFullScale()
         {
@@ -1641,7 +1641,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="valueIndex">Axis index to interpolate.</param>
         /// <param name="time">Time to interpolate to.</param>
         /// <returns>Returns a single value based on the event.</returns>
-        public float InterpolateChain(int type, int valueIndex, float time, MathOperation operation = MathOperation.Addition)
+        public float InterpolateChain(int type, int valueIndex, float time)
         {
             float result = 0f;
 
