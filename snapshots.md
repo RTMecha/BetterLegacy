@@ -36,6 +36,7 @@
 - Improved Marker looping usability by adding start & end flags to the Timeline Marker and added "Clear Marker Loop" to the Marker Context Menu.
 - Added Snap to BPM context menu for Prefab Creator offset.
 - You can now double click a timeline object / timeline keyframe to go the time of the object / keyframe.
+- Added Object Dragger Helper setting to Config manager > Editor > Preview. This displays the location of the current object (includes empty and excludes origin offset). Can be dragged and right clicked for a context menu.
 
 ### Internal
 - Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
