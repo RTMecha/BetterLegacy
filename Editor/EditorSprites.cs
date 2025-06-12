@@ -35,6 +35,8 @@ namespace BetterLegacy.Editor
 
                 FlagStartSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_start{FileFormat.PNG.Dot()}"));
                 FlagEndSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_end{FileFormat.PNG.Dot()}"));
+
+                CircleSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_circle{FileFormat.PNG.Dot()}"));
             }
             catch (Exception ex)
             {
@@ -71,6 +73,8 @@ namespace BetterLegacy.Editor
         public static Sprite FlagStartSprite { get; set; }
 
         public static Sprite FlagEndSprite { get; set; }
+
+        public static Sprite CircleSprite { get; set; }
 
         #endregion
     }
