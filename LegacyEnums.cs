@@ -1001,7 +1001,8 @@ namespace BetterLegacy
     {
         Position,
         Scale,
-        Rotation
+        Rotation,
+        Color
     }
 
     /// <summary>
