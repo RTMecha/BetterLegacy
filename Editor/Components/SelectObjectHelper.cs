@@ -39,117 +39,367 @@ namespace BetterLegacy.Editor.Components
 
         public void PointerDown(BaseEventData eventData)
         {
-            if (((PointerEventData)eventData).button != PointerEventData.InputButton.Right)
-                return;
+            switch (((PointerEventData)eventData).button)
+            {
+                case PointerEventData.InputButton.Right: {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Go to Timeline Object", () => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.CurrentSelection, true)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Hide", () =>
+                            {
+                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                {
+                                    timelineObject.Hidden = true;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
 
-            EditorContextMenu.inst.ShowContextMenu(
-                new ButtonFunction("Go to Timeline Object", () => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.CurrentSelection, true)),
-                new ButtonFunction(true),
-                new ButtonFunction("Hide", () =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                    {
-                        timelineObject.Hidden = true;
-                        switch (timelineObject.TimelineReference)
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+
+                                                break;
+                                            }
+                                    }
+                                }
+                            }),
+                            new ButtonFunction("Unhide", () =>
+                            {
+                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                {
+                                    timelineObject.Hidden = false;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+
+                                                break;
+                                            }
+                                    }
+                                }
+                            }),
+                            new ButtonFunction("Preview Selectable", () =>
+                            {
+                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                {
+                                    if (timelineObject.isBackgroundObject)
+                                        continue;
+
+                                    timelineObject.SelectableInPreview = true;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+
+                                                break;
+                                            }
+                                    }
+                                }
+                            }),
+                            new ButtonFunction("Preview Unselectable", () =>
+                            {
+                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                {
+                                    if (timelineObject.isBackgroundObject)
+                                        continue;
+
+                                    timelineObject.SelectableInPreview = false;
+                                    switch (timelineObject.TimelineReference)
+                                    {
+                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+
+                                                break;
+                                            }
+                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+
+                                                break;
+                                            }
+                                    }
+                                }
+                            })
+                            );
+                        break;
+                    }
+                case PointerEventData.InputButton.Middle: {
+                        var selectedKeyframe = EditorTimeline.inst.CurrentSelection.TimelineReference switch
+                        {
+                            TimelineObject.TimelineReferenceType.BeatmapObject => EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetOrCreateKeyframe((int)EditorConfig.Instance.ObjectDraggerHelperType.Value, EditorConfig.Instance.ObjectDraggerCreatesKeyframe.Value),
+                            TimelineObject.TimelineReferenceType.PrefabObject => EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events.GetAt((int)EditorConfig.Instance.ObjectDraggerHelperType.Value),
+                            _ => null,
+                        };
+
+                        break;
+                    }
+            }
+        }
+
+        public void Scroll(BaseEventData eventData)
+        {
+            var pointerEventData = eventData as PointerEventData;
+
+            var selectedKeyframe = EditorTimeline.inst.CurrentSelection.TimelineReference switch
+            {
+                TimelineObject.TimelineReferenceType.BeatmapObject => EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetOrCreateKeyframe((int)EditorConfig.Instance.ObjectDraggerHelperType.Value, EditorConfig.Instance.ObjectDraggerCreatesKeyframe.Value),
+                TimelineObject.TimelineReferenceType.PrefabObject => EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events.GetAt((int)EditorConfig.Instance.ObjectDraggerHelperType.Value),
+                _ => null,
+            };
+            var shift = Input.GetKey(KeyCode.LeftShift);
+
+            switch (EditorConfig.Instance.ObjectDraggerHelperType.Value)
+            {
+                case TransformType.Position: {
+                        switch (EditorTimeline.inst.CurrentSelection.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+
+                                    var val = selectedKeyframe.values[shift ? 1 : 0];
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 0.1f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 0.1f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    selectedKeyframe.values[shift ? 1 : 0] = val;
+
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                    var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
+
+                                    var val = selectedKeyframe.values[shift ? 1 : 0];
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 0.1f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 0.1f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    selectedKeyframe.values[shift ? 1 : 0] = val;
+
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                                    RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                    var backgroundObject = EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
+
+                                    var val = shift ? backgroundObject.pos.y : backgroundObject.pos.x;
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 0.1f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 0.1f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    if (shift)
+                                        backgroundObject.pos.y = val;
+                                    else
+                                        backgroundObject.pos.x = val;
+
+                                    RTBackgroundEditor.inst.RenderPosition(backgroundObject);
 
                                     break;
                                 }
                         }
+                        break;
                     }
-                }),
-                new ButtonFunction("Unhide", () =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                    {
-                        timelineObject.Hidden = false;
-                        switch (timelineObject.TimelineReference)
+                case TransformType.Scale: {
+                        switch (EditorTimeline.inst.CurrentSelection.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+
+                                    var val = selectedKeyframe.values[shift ? 1 : 0];
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 0.1f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 0.1f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    selectedKeyframe.values[shift ? 1 : 0] = val;
+
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                    var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
+
+                                    var val = selectedKeyframe.values[shift ? 1 : 0];
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 0.1f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 0.1f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    selectedKeyframe.values[shift ? 1 : 0] = val;
+
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                                    RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                    var backgroundObject = EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
+
+                                    var val = shift ? backgroundObject.scale.y : backgroundObject.scale.x;
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 0.1f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 0.1f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    if (shift)
+                                        backgroundObject.scale.y = val;
+                                    else
+                                        backgroundObject.scale.x = val;
+
+                                    RTBackgroundEditor.inst.RenderScale(backgroundObject);
 
                                     break;
                                 }
                         }
+                        break;
                     }
-                }),
-                new ButtonFunction("Preview Selectable", () =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                    {
-                        if (timelineObject.isBackgroundObject)
-                            continue;
-
-                        timelineObject.SelectableInPreview = true;
-                        switch (timelineObject.TimelineReference)
+                case TransformType.Rotation: {
+                        switch (EditorTimeline.inst.CurrentSelection.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+
+                                    var val = selectedKeyframe.values[shift ? 1 : 0];
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 5f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 5f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    selectedKeyframe.values[shift ? 1 : 0] = val;
+
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                    var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
+
+                                    var val = selectedKeyframe.values[shift ? 1 : 0];
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 5f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 5f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    selectedKeyframe.values[shift ? 1 : 0] = val;
+
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                                    RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
+
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
+
+                                    var val = backgroundObject.rot;
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 5f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 5f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    backgroundObject.rot = val;
+                                    RTBackgroundEditor.inst.RenderRotation(backgroundObject);
 
                                     break;
                                 }
                         }
+                        break;
                     }
-                }),
-                new ButtonFunction("Preview Unselectable", () =>
-                {
-                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                    {
-                        if (timelineObject.isBackgroundObject)
-                            continue;
-
-                        timelineObject.SelectableInPreview = false;
-                        switch (timelineObject.TimelineReference)
+                case TransformType.Color: {
+                        switch (EditorTimeline.inst.CurrentSelection.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                    var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+
+                                    var val = selectedKeyframe.values[shift ? 1 : 0];
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= !shift ? 1f : -0.1f;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += !shift ? 1f : -0.1f;
+
+                                    val = float.Parse(val.ToString("f2"));
+
+                                    selectedKeyframe.values[shift ? 1 : 0] = !shift ? Mathf.Clamp(val, 0, BeatmapTheme.OBJECT_COLORS_COUNT - 1) : Mathf.Clamp(val, 0f, 1f);
+
+                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
                                 }
-                            case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
+
+                                    var val = shift ? backgroundObject.fadeColor : backgroundObject.color;
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        val -= 1;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        val += 1;
+
+                                    if (shift)
+                                        backgroundObject.fadeColor = Mathf.Clamp(val, 0, BeatmapTheme.BACKGROUND_COLORS_COUNT - 1);
+                                    else
+                                        backgroundObject.color = Mathf.Clamp(val, 0, BeatmapTheme.BACKGROUND_COLORS_COUNT - 1);
 
                                     break;
                                 }
                         }
+                        break;
                     }
-                })
-                );
+            }
         }
 
         public void BeginDrag(BaseEventData eventData)
         {
             if (!CoreHelper.IsEditing)
                 return;
-
-            CoreHelper.Log($"START DRAGGING");
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
             var vector2 = Camera.main.ScreenToWorldPoint(vector);
@@ -158,11 +408,11 @@ namespace BetterLegacy.Editor.Components
             dragTime = 0.1f;
             selectedKeyframe = EditorTimeline.inst.CurrentSelection.TimelineReference switch
             {
-                TimelineObject.TimelineReferenceType.BeatmapObject => EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetOrCreateKeyframe(0, EditorConfig.Instance.ObjectDraggerCreatesKeyframe.Value),
-                TimelineObject.TimelineReferenceType.PrefabObject => EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events[0],
+                TimelineObject.TimelineReferenceType.BeatmapObject => EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetOrCreateKeyframe((int)EditorConfig.Instance.ObjectDraggerHelperType.Value, EditorConfig.Instance.ObjectDraggerCreatesKeyframe.Value),
+                TimelineObject.TimelineReferenceType.PrefabObject => EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events.GetAt((int)EditorConfig.Instance.ObjectDraggerHelperType.Value),
                 _ => null,
             };
-            dragKeyframeValues = EditorTimeline.inst.CurrentSelection.isBackgroundObject ? EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>().pos : new Vector2(selectedKeyframe.values[0], selectedKeyframe.values[1]);
+            dragKeyframeValues = EditorTimeline.inst.CurrentSelection.isBackgroundObject ? EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>().pos : new Vector2(selectedKeyframe.values[0], (int)EditorConfig.Instance.ObjectDraggerHelperType.Value < 2 ? selectedKeyframe.values[1] : 0f);
             dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
         }
 
@@ -215,22 +465,32 @@ namespace BetterLegacy.Editor.Components
 
                         var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
                         if (firstDirection == Axis.Static || firstDirection == Axis.PosX || firstDirection == Axis.NegX)
-                            selectedKeyframe.values[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
-                        if (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY)
-                            selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
+                        {
+                            var val = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
+                            if (EditorConfig.Instance.ObjectDraggerHelperType.Value == TransformType.Color)
+                                val = Mathf.Clamp(RTMath.RoundToNearestNumber(val, 1f), 0, BeatmapTheme.OBJECT_COLORS_COUNT - 1);
+
+                            selectedKeyframe.values[0] = val;
+                        }
+                        if ((int)EditorConfig.Instance.ObjectDraggerHelperType.Value < 2 && (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY))
+                        {
+                            var val = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
+
+                            selectedKeyframe.values[1] = val;
+                        }
 
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                         break;
                     }
                 case TimelineObject.TimelineReferenceType.PrefabObject: {
-                        if (selectedKeyframe == null)
+                        if (selectedKeyframe == null || (int)EditorConfig.Instance.ObjectDraggerHelperType.Value > 2)
                             return;
 
                         var prefabObject = EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>();
                         if (firstDirection == Axis.Static || firstDirection == Axis.PosX || firstDirection == Axis.NegX)
                             selectedKeyframe.values[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
-                        if (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY)
+                        if ((int)EditorConfig.Instance.ObjectDraggerHelperType.Value < 2 && (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY))
                             selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
@@ -238,13 +498,54 @@ namespace BetterLegacy.Editor.Components
                         break;
                     }
                 case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                        if ((int)EditorConfig.Instance.ObjectDraggerHelperType.Value > 2)
+                            return;
+
                         var backgroundObject = EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>();
                         if (firstDirection == Axis.Static || firstDirection == Axis.PosX || firstDirection == Axis.NegX)
-                            backgroundObject.pos.x = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
-                        if (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY)
-                            backgroundObject.pos.y = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
+                        {
+                            var val = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
+                            switch (EditorConfig.Instance.ObjectDraggerHelperType.Value)
+                            {
+                                case TransformType.Position: {
+                                        backgroundObject.pos.x = val;
+                                        break;
+                                    }
+                                case TransformType.Scale: {
+                                        backgroundObject.scale.x = val;
+                                        break;
+                                    }
+                                case TransformType.Rotation: {
+                                        backgroundObject.rot = val;
+                                        break;
+                                    }
+                                case TransformType.Color: {
+                                        backgroundObject.color = (int)RTMath.Clamp(RTMath.RoundToNearestNumber(val, 1f), 0, BeatmapTheme.OBJECT_COLORS_COUNT - 1);
+
+                                        break;
+                                    }
+                            }
+                        }
+                        if ((int)EditorConfig.Instance.ObjectDraggerHelperType.Value < 2 && (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY))
+                        {
+                            var val = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
+                            switch (EditorConfig.Instance.ObjectDraggerHelperType.Value)
+                            {
+                                case TransformType.Position: {
+                                        backgroundObject.pos.y = val;
+                                        break;
+                                    }
+                                case TransformType.Scale: {
+                                        backgroundObject.scale.y = val;
+                                        break;
+                                    }
+                            }
+                        }
 
                         RTBackgroundEditor.inst.RenderPosition(backgroundObject);
+                        RTBackgroundEditor.inst.RenderScale(backgroundObject);
+                        RTBackgroundEditor.inst.RenderRotation(backgroundObject);
+                        RTBackgroundEditor.inst.RenderColor(backgroundObject);
                         break;
                     }
             }

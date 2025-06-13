@@ -1328,6 +1328,7 @@ namespace BetterLegacy.Configs
         public Setting<Color> ObjectHighlightAmount { get; set; }
         public Setting<Color> ObjectHighlightDoubleAmount { get; set; }
         public Setting<bool> ObjectDraggerHelper { get; set; }
+        public Setting<TransformType> ObjectDraggerHelperType { get; set; }
         public Setting<bool> ObjectDraggerEnabled { get; set; }
         public Setting<bool> ObjectDraggerCreatesKeyframe { get; set; }
         public Setting<float> ObjectDraggerRotatorRadius { get; set; }
@@ -2638,6 +2639,7 @@ namespace BetterLegacy.Configs
             ObjectHighlightAmount = Bind(this, PREVIEW, "Object Highlight Amount", new Color(0.1f, 0.1f, 0.1f), "If an object is hovered, it adds this amount of color to the hovered object.");
             ObjectHighlightDoubleAmount = Bind(this, PREVIEW, "Object Highlight Double Amount", new Color(0.5f, 0.5f, 0.5f), "If an object is hovered and shift is held, it adds this amount of color to the hovered object.");
             ObjectDraggerHelper = Bind(this, PREVIEW, "Object Dragger Helper", true, "If the object dragger helper should be enabled. This displays empty objects, the true origin of an object and allows dragging other types of objects.");
+            ObjectDraggerHelperType = BindEnum(this, PREVIEW, "Drag Type", TransformType.Position, "Transform type to drag.");
             ObjectDraggerEnabled = Bind(this, PREVIEW, "Object Dragger Enabled", false, "If an object can be dragged around.");
             ObjectDraggerCreatesKeyframe = Bind(this, PREVIEW, "Object Dragger Creates Keyframe", false, "When an object is dragged, create a keyframe.");
             ObjectDraggerRotatorRadius = Bind(this, PREVIEW, "Object Dragger Rotator Radius", 22f, "The size of the Object Draggers' rotation ring.");

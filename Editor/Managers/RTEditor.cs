@@ -3998,6 +3998,7 @@ namespace BetterLegacy.Editor.Managers
             previewObject.AddComponent<EventTrigger>().triggers = new List<EventTrigger.Entry>
             {
                 TriggerHelper.CreateEntry(EventTriggerType.PointerDown, SelectObjectHelper.PointerDown),
+                TriggerHelper.CreateEntry(EventTriggerType.Scroll, SelectObjectHelper.Scroll),
                 TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, SelectObjectHelper.BeginDrag),
                 TriggerHelper.CreateEntry(EventTriggerType.Drag, SelectObjectHelper.Drag),
                 TriggerHelper.CreateEntry(EventTriggerType.EndDrag, SelectObjectHelper.EndDrag),
