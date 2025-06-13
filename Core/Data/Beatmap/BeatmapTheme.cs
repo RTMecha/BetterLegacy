@@ -53,6 +53,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public const string PLAYER_3_COLOR = "81C784";
         public const string PLAYER_4_COLOR = "FFB74D";
 
+        public const int PLAYER_COLORS_COUNT = 4;
+        public const int OBJECT_COLORS_COUNT = 18;
+        public const int BACKGROUND_COLORS_COUNT = 9;
+        public const int EFFECT_COLORS_COUNT = 18;
+
         #endregion
 
         #region Default Properties
