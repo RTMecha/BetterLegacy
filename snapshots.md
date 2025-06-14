@@ -73,6 +73,7 @@
 - Fixed the keyframe random toggles not UI updating properly.
 - Fixed Background Objects from Prefab Objects getting saved to level.lsb and displaying in the BG editor list.
 - Fixed Search Prefab value in spawnPrefab modifiers having the incorrect dropdown order.
+- Fixed all prefab references being removed when a prefab is deleted, even if the prefab reference was not the same as the deleted prefab.
 
 ------------------------------------------------------------------------------------------
 
