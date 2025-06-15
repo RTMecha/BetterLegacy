@@ -1,4 +1,473 @@
-﻿# 1.6.9 > [Sep 29, 2024]
+﻿# 1.7.0 [Unfractured Update]
+## Features
+### Story
+- Demo of Story Mode chapter 1. Go check it out in the STORY menu!
+- The Story Mode can be customized via the "story.json" file. Story levels accept both Unity asset bundles and regular .lsb levels (+ .vgd levels if you really want).
+- The story is heavily WIP and is subject to change. However this demo should represent a near final version. (When future chapters release, you may need to replay the previous chapter to experience it fully)
+- If you want, you can contribute to the story mode by getting in contact with me (RTMecha). (However not every contribution will be accepted)
+
+### Core
+- Added Configs:
+  - "Physics Update Match Framerate" in Config Manager > Core > Game. This setting forces physics to match your framerate, this includes player movement and collision.
+  - Removed the Modifiers tab and moved its settings to Config Manager > Editor > Modifiers.
+  - New "Cursor" sub-tab in Config Manager > Core. This has settings related to the cursors' visibility.
+  - "Bin Clamp Behavior" in Config Manager > Editor > Timeline. This changes how timeline object bin dragging is handled when the bin is dragged outside the normal bin range.
+  - "Show Background Objects" in Config Manager > Core > Level. Used for showing / hiding Background Objects. If off, there will be a significant FPS boost for levels that use Background Objects.
+  - "User Preference" in Config Manager > Editor > Editor GUI. This will automatically change specific settings to fit your style of editor.
+  - "Marker Show Context Menu" in Config Manager > Editor > Timeline. Changes marker right click behavior to show a context menu instead of deleting the marker.
+  - "Show Experimental Features" in Config Manager > Editor > Editor GUI. This will enable / disable features that are still heavily WIP.
+  - Moved some Player settings to other sub tabs. There's now "Controls" and "Sounds" sub tabs.
+  - "Play Spawn Sound" in Config Manager > Players > Sounds. This plays a sound when a player spawns or respawns.
+  - "Play Checkpoint Sound" and "Play Checkpoint Animation" Config Manager > Core > Level. For toggling the checkpoint sound / animation.
+  - Added Arcade Folder and Interfaces Folder to custom menu music options.
+  - Master, Music and SFX volumes now play a sound to demonstrate the current volume.
+  - "Play Pause Countdown" in Config Manager > Core > Game. With it off, it skips the unpause countdown sequence and brings you immediately to the level.
+  - "Paste Background Objects Overwrites" in Config Manager > Editor > Data. This removes the current list of BG objects and replaces it with the copied list.
+  - "Mouse Tooltip Requires Help" setting to Config Manager > Editor > Editor GUI. With it on, the mouse tooltip requires the help info box to be active in order to show. It's off by default.
+  - "Clamped Timeline Drag" setting to Config Manager > Editor > Timeline. With it off, objects can be moved to outside the song range.
+  - "Timestamp Updates Per Level" setting to Config Manager > Core > Discord. With this on, the Discord status timestamp updates every time you load a level.
+  - "Show Markers" setting to Config Manager > Editor > Markers.
+  - "Overwrite Imported Images" setting to Config Manager > Editor > Data. With it on, imported images overwrite existing image files.
+  - "Apply Game Settings In Preview Mode" to Config Manager > Editor > General.
+  - "Object Dragger Helper" to Config manager > Editor > Preview. This displays the location of the current object (includes empty and excludes origin offset). Can be dragged and right clicked for a context menu.
+- Custom configs can kinda be registered now.
+
+### Interfaces
+- Interface text typing can now be sped up by holding the left mouse button. You could already do this with space (keyboard) / A (xbox) X (ps).
+- Unpause sequence can now be sped up if the user is speeding up the interface by pressing left mouse button / Xbox controller A button / PS controller X button / keyboard space.
+- Input Select menu now has theme music.
+- Steam Workshop search sorting (with some extra toggles in Config Manager > Arcade > Sorting).
+- You can now view a level creator's levels by clicking the [ Creator ] button in the Play Level menu. Requires the level to have been uploaded after the release of this version, however.
+
+### Game
+- Order Matters toggle for modifiers! This makes it so trigger and action order works more like actual code-blocking.
+- Else if toggle for trigger modifiers allows different sections of triggers to run the same action modifier.
+- Added "Run Count" to modifiers. This acts similarly to constant, except the modifier can only run a set amount of times before stopping.
+- Added a "group alive" value to modifiers.
+- Ported most compatible modifiers to BG objects.
+- Started working on multi language support for stuff outside of tooltips.
+- Some secrets ;)
+- Mode value for Color Split, Ripples and Double Vision events.
+- spawnPrefab modifiers now have "Permanent", "Time Offset" and "Search Prefab" values.
+- Added Limit Player settings to the Global tab of the Player Editor. Limit Player is on by default, so if you made a level that has a custom player with specific speeds, please change this.
+- The default level intro text can now be disabled via turning "Show Intro" off in the MetaData editor.
+- textSequence modifier now has some more values that can be used to add some flavor to your dialogue.
+- Music time trigger modifiers now have a Start Time relative value.
+- endLevel modifier now has a customizable end level function.
+- "Spawn Players" toggle to the Player Editor. With this off, players will not spawn at the start of the level, allowing for cutscenes. If you want to respawn players, create a checkpoint or use the playerRespawn modifiers.
+- It now should be possible to parent custom player objects to other custom player objects using the Custom Parent value.
+- Added Replay End Level Off setting to the MetaData.
+- Ported the Polygon Shape from VG.
+- With the Polygon Shape fully implemented, new values were added to it: Thickness Offset, Thickness Scale and Angle.
+- Polygon Shape ported to Custom Player Objects.
+- Added Store / Clear Data to Player Image Objects. This now means images from Image Objects can be transfered between levels.
+- "Align Near Clip Plane" value has been added to the Camera Depth event keyframe. This prevents objects in the Background render type from clipping into the camera, but also stops the negative zoom bleeding from working.
+- Compatibility with Shake X & Y from VG.
+- Ported gradient scale & rotation from alpha.
+- Text Origin auto align to be compatible with how VG handles text object origin offset.
+- Parallax Objects from VG can now be converted to and from BG Objects. It's not 100% accurate yet, but at least it's something.
+- Player healing now plays a sound and an animation.
+- Custom player animations have been implemented internally.
+- Added default sounds:
+  - example_speak
+  - hal_speak
+  - anna_speak
+  - para_speak
+  - t_speak
+  - menuflip
+  - record_scratch
+  - HurtPlayer2
+  - HurtPlayer3
+  - HealPlayer
+  - shoot
+  - pop
+- Added modifiers:
+  - Added return modifier. This prevents the rest of the modifier loop from running if it runs.
+  - Added break trigger modifier. This modifier is always active, which creates a break in action trigger checking.
+  - Added forLoop and continue modifiers. These allow you to run the next set of modifiers up until a return modifier a certain amount of times.
+  - Added a ton of "get variable" action modifiers. These modifiers gets a specific variable and store it for other modifiers to use.
+  - Added localVariableEquals trigger modifiers. These modifiers compare local modifier variables.
+  - Added getSignaledVariables and signalLocalVariables modifiers. These send / recieve the current local variables.
+  - Added createCheckpoint and resetCheckpoint modifiers. These modify the active checkpoint.
+  - Added animateColorKF and animateColorKFHex modifiers. These allow you to animate both Beatmap Object and Background Object colors.
+  - Added setShape modifier. This does exactly what the name suggests.
+  - Added trailRendererHex modifier. Acts like the normal trailRenderer modifier, except it allows for hex codes for the colors.
+  - playerMoveToObject action modifiers. These lock the players' position & rotation to the object.
+  - controlPress trigger modifiers. These detect controller inputs.
+  - animateObjectMath action modifiers. These evaluate a math equation and use the result for the objects' transform offset values.
+  - mathEquals trigger modifiers. These evaluate a math equation and compare them to another math equation.
+  - spawnPrefab modifiers can now find a prefab via different ways: Index, ID and Name.
+  - spawnPrefabOffset action modifiers.
+  - spawnMultiPrefab action modifiers.
+  - clearSpawnedPrefabs modifier. This finds a group of objects and clears all prefabs spawned from their modifiers.
+  - objectAlive trigger modifier. This checks if an object from a group is alive.
+  - objectSpawned trigger modifier. This checks if an object from a group just spawned.
+  - applyAnimationFrom and applyAnimationTo action modifiers.
+  - levelExists and levelPathExists trigger modifiers. These check if a level exists, allowing you to check if players have downloaded a required level or not.
+  - doubleSided action modifier. This ensures both sides of an object are rendered for 3D rotation.
+  - playerRespawn action modifiers. Respawns the closest player or all players.
+  - clearHits, addHit and subHit action modifiers. Modifies the hit counter that is used with calculating a level rank.
+  - clearDeaths, addDeath, subDeath action modifiers. Modifies the death counter. (Currently the death counter is unused, but will never be considered for the level rank calculation)
+  - setAudioTransition action modifier. This sets the audio transition for the next loaded level.
+  - setIntroFade action modifier. This is if you don't want the intro fade to play for the next loaded level.
+  - setLevelEndFunc action modifier. Sets the function that occurs when the level ends.
+  - loadLevelInCollection action modifier. Loads a level in the current collection.
+  - downloadLevel action modifier. Prompts the user to download a level if they don't have it. If they do, opens the level.
+  - setMusicPlaying action modifier. This sets the playing state of the current song. This feature is more for sandboxing and less to be used in actual levels due to pause menu taking priority in playing state.
+  - pauseLevel action modifier. Pauses the game and opens the pause menu.
+  - setParent action modifier. This temporarily sets the parent of the beatmap object to another, until you update the object or reload the level. Can also remove the parent if you set the object group to empty.
+  - detachParent modifiers. This makes an object act as if they have "parent desync" on, except it desyncs from where the current song time is.
+  - Reworked setVariable modifiers to only set the variable of itself.
+  - Added setColorRGBA modifiers. This opperates similarly to setColorHex, except it has individual color channels.
+  - Added enableObjectGroup modifier. This allows you to select the active state of multiple groups.
+  - setPolygonShape and setPolygonShapeOther modifiers. These modify the values of the current polygon shape.
+  - Added isEditing trigger modifier. This checks if you're only in the editor. If you're in preview mode or in the regular game, this won't activate.
+  - Added copyEventOffset math evaluator function.
+  - Added getModifiedColor and getVisualColor modifiers.
+- Replaced math evaluator system with Reimnops' ILMath.
+- New math functions!
+  - sampleAudio(int sample, float intensity)
+  - copyEvent(int type, int valueIndex, float time)
+  - findOffset#object_group(int type, int valueIndex)
+  - findObject#object_group#Property() ("Property" can be StartTime, Depth and IntVariable)
+  - findInterpolateChain#object_group(float time, int type int axis, int includeDepth [0 = false 1 = true], int includeOffsets [0 = false 1 = true], int includeSelf [0 = false 1 = true]) (if type is not position aka type = 0, then don't have includeDepth in the parameters.
+  - vectorAngle(float firstX, float firstY, float firstZ, float secondX, float secondY, float secondZ)
+  - distance(float firstX, [optional] float firstY, [optional] float firstZ, float secondX, [optional] float secondY, [optional] float secondZ)
+  - mirrorNegative(float value)
+  - mirrorPositive(float value)
+  - worldToViewportPointX(float x, [optional] float y, [optional] float z)
+  - worldToViewportPointY(float x, [optional] float y, [optional] float z)
+  - worldToViewportPointZ(float x, [optional] float y, [optional] float z)
+- New math variables!
+  - forwardPitch
+  - player0Rot (0 can be other numbers to specify other players, in this case 0 is the first player)
+  - mousePosX and mousePosY
+  - screenWidth and screenHeight
+  - currentEpoch
+  - mouseScrollX and mouseScrollY
+  - musicLength
+  - playerCount
+  - activeCheckpointTime
+- Background Objects can now be prefabbed.
+- Implemented Prefab Object random transform.
+- Challenge Mode and Game Speed now exists as Config Manager settings. These only work in the Arcade (aka not Story & Editor) and only update when a level begins. They also have extended functionality, so a custom game speed / challenge mode can be registered.
+
+### Editor
+- Added timeline Bin Controls. This means you can add / remove bins from the timeline and scroll up and down. You can find some settings related to this in Config Manager > Editor > Timeline.
+- Timeline objects can have their "rendering layer" changed by shifting the index of the objects. What this means is you can customize if an object will appear above or below another object.
+- You can now click and hold the mouse scrollwheel to drag both the main timeline and the object keyframe timeline around. This also means you can see objects before the level starts.
+- Multiple levels can be selected by holding down the Shift key. This will be used for creating collections in 1.8.0 and combining levels.
+- Background Objects are viewable as timeline objects now.
+- To go with this feature, BG objects now have editor settings (layer, bin, index).
+- Editor Layer toggles now re-enable when Editor Complexity is set to "Simple".
+- View Uploaded dialog. Here you can view and download the levels you uploaded.
+- Add File to Level now allows for directly importing a Prefab file.
+- You can now edit the transform offsets of multiple prefabs in the Multi Object editor.
+- Ported old VG waveform type "Bottom".
+- Modifiers are now collapse-able.
+- Folders in the level, theme and prefab lists now have a "folder" icon. This can be customized by adding a "folder_icon.png" file to the folder or by using the context menu to set it. You can also give the folder a short description by creating a "folder_info.json" file.
+- Click the Upload Acknowledgements text link to show Upload a Level editor documentation.
+- Clear Modifier Prefabs in the Edit dropdown.
+- Timeline Objects' are now Unity Explorer (if it's installed) inspectable in the Object Editor.
+- Modifiers in the editor now now have a little bar that lights up when they are active.
+- Reload Level in the File dropdown.
+- Added Open Source link to the Help dropdown in the editor.
+- Project Planner TO DO items can now have their priority changed.
+- You can now delete level templates.
+- Simplified the level combining process by adding a PA type dropdown and shortening the default path so it looks less daunting.
+- Added a reload button to the Keybinds popup. This resets your keybinds to the default list.
+- Themes now display info about their colors.
+- You can now just click a theme to use it.
+- Prefab objects now display a line showing where their offset is at.
+- Easing Dropdown in the Multi Object Keyframe Editor now has an "Apply Curves" button.
+- Improved BPM Snap settings and added a BPM sub-tab to Config Manager > Editor.
+- Added Context Menus:
+  - Timeline bar elements context menus.
+  - Parent context menus.
+  - Some context menus now have a Convert to VG function.
+  - A few more functions for different file context menus.
+  - Object origin offset context menus.
+  - Keyframes context menus.
+  - Modifiers can be shifted up and down the modifier list via the modifier context menu. (Useful for the new "Order Matters" toggle) you can also use "Add / Paste Above" or "Add / Paste Below".
+  - "Copy Path" to the File Browser context menus.
+  - "Shuffle ID" to theme context menus.
+  - Added a Text Object context menu. Comes with a new Font Selector Popup list.
+  - Added Prefab context menus.
+  - Search field filters (default themes, used themes, used prefabs)
+  - Default prefab / theme paths for level
+  - Apply & Create New for the Apply Prefab button in the Object Editor.
+  - Edit for internal prefabs.
+  - Prefab offset context menus.
+  - Object keyframe value context menus.
+  - Image Object search
+  - Added "Pull Changes" to Upload Level context menu.
+  - Added a "Quick Prefab Target" that can be set via the Select Quick Prefab button context menu. (VG's PrefabOnObject mod port)
+  - Added context menus to edit the raw data of most modifier values.
+- You can now drag and drop files into the game, both in the editor and the arcade.
+  - Dragging a level into the arcade / editor will load it.
+  - Dragging a txt file into a loaded editor level will create a text object.
+  - Dragging an image into a loaded editor level will create an image object.
+  - Dragging a prefab into a loaded editor level will import it. If the mouse is over the timeline, it will place it.
+  - Dragging an audio file while the New Level Creator popup is open will set the audio path for the new level.
+  - Dragging an audio file into a loaded editor level will create an object with a playSound modifier.
+  - Dragging a MP4 file into a loaded editor level will set it as the video BG.
+- Internally, a custom "base path" can be set in the editor. This means you can have Project Arrhythmia open on one harddrive, while another harddrive has the beatmaps folder. There is no UI to set this yet.
+- Added Prefab Object inspect buttons if you have Unity Explorer installed.
+- Added an Index Editor to the Object Editor. This means you can now view and edit the index of an object. The index controls what it appears in front of in the timeline. It also includes a context menu for selecting the previous / next objects in index order.
+- Added Image Object editing to Multi Object Editor.
+- Added Hide Selection keybinds. These allow you to hide Beatmap Objects, Prefab Objects and Background Objects in the editor.
+- Selecting specific objects in the editor preview window can now be disabled, via either the Multi Object Editor or the Timeline Object context menu.
+- You can now copy & paste multiple modifiers.
+- Added a BG Object counter to Prefab Object Editor.
+- Added Background and Dialogue to the default Prefab Types.
+- Text & Image object selection in preview area can be customized via the new "Select Text Objects" and "Select Image Objects" settings found under Config Manager > Editor > Preview.
+- Due to the above feature, text objects can now be highlighted.
+- Moved Editor Level code to its own manager.
+- Improved Marker looping usability by adding start & end flags to the Timeline Marker and added "Clear Marker Loop" to the Marker Context Menu.
+- You can now double click a timeline object / timeline keyframe to go the time of the object / keyframe.
+
+## Changes
+### Core
+- Shortened file sizes by trimming quotation marks when necessary.
+- User's display name now defaults to the Steam username if it is still "Player".
+- Scene loading screen now uses the current interface theme instead of the old interface colors.
+- Added a label for the Config Manager UI page field.
+- Shapes are now loaded from a shapes.json file in the Assets folder.
+- Some JSON values have been changed. This means BetterLegacy is no longer compatible with vanilla Legacy. (why would you use that outdated version anyways)
+  - BeatmapObject [shape > s]
+  - BackgroundObject [depth > iter]
+  - BackgroundObject [layer > depth]
+  - BackgroundObject ["LOW" > "Bass"]
+  - BackgroundObject ["MID" > "Mids"]
+  - BackgroundObject ["HIGH" > "Treble"]
+  - BackgroundObject ["zposition" > "zpos"]
+  - BackgroundObject ["zscale" > "zsca"]
+  - BackgroundObject ["color" > "col"]
+  - BackgroundObject ["color_fade" > "fade_col"]
+- Optimizations:
+  - Modifiers in general. They now use the Catalyst spawn / despawn system.
+  - playerCollide modifier.
+  - enable/disableObject modifiers.
+  - Object updating.
+  - Objects with LDM on no longer run their modifiers if the LDM (Low Detail Mode) config is on.
+  - Follow Player event.
+  - Updating parent chains, object type and shapes.
+  - Hopefully optimized enableObject modifiers by preventing animation interpolation when it's inactive.
+  - setImageOther modifier now loads the sprite before iterating through the group.
+- Refractored a lot of Catalyst code to fit BetterLegacy's code style.
+  
+### Interfaces
+- Default Arcade Menu selection is now the "Local" tab.
+- Improved Interface Dark theme.
+- Added a custom menu flip sound for changing Arcade menu pages.
+- Changed the sound of the emoji in the main menu.
+- Added the progress menu to the Arcade server downloading.
+- Added an Open Workshop button to the online Steam level menu.
+- Added rank display to level buttons in the Arcade menus.
+- Changed Difficulty mode in the Pause menu to Challenge mode.
+- Moved the Profile menu and Tests menu to a new "Extras" menu on the main menu.
+- Reworked Input Select and Load Level menus to use the current interface system.
+- Entering the Arcade / Story with players already registered will now skip the Input Select menu.
+- Entering the Arcade no longer automatically loads the levels, meaning you can go straight from the main menu to the Arcade menu.
+- Increased changelog menu interpolate speed.
+
+### Game
+- Trigger modifiers now run their inactive function if they aren't triggered.
+- Reverted BG camera near clip plane not changing with the zoom. This means the negative zoom frame bleeding effect is back.
+- Changed the default image object sprite to the PA logo.
+- Got Checkpoint animation now properly updates its colors to the themes' GUI color.
+- Player shape type has been removed for the time being. Wasn't happy with how it worked. Might revisit it at some point when I feel I can do it.
+- The Game Timeline no longer overlaps when opacity is less than 1.
+- BG Object Modifiers no longer use the "Block" / "Page" system. This is to be consistent with other objects with modifiers.
+- Modifiers now run before everything else per-tick, but in some situations they run after.
+- Trigger modifiers with constant on should now behave as expected. (Only triggers once)
+- A ton of modifiers have been tweaked to fit with the new get variable modifiers.
+- formatText modifier now passes variables to the text formatting. You can place <var=VARIABLE_NAME> into a text object that has this modifier, with VARIABLE_NAME being one of the variables you registered. formatText has to be at the end of other modifiers.
+- showMouse modifier now has an Enabled toggle.
+- setImage and setImageOther modifiers now accept stored images.
+- animateObject modifiers now have a "Apply Delta Time" value. With this on and the modifier set to constant, the animation will calculate the distance between the previous frame and the current frame. This is for cases where the game has low FPS or lags, but can cause the object to jitter in some cases.
+- Removed some outdated modifiers. They still work, but will not appear in the modifiers list.
+- Renamed gameMode modifier to setGameMode.
+- Changed playerMove Y value from the 5th value to the 2nd value.
+- Reworked level modifier system internally to be more consistent with other modifiers. Due to this change, only the first Trigger and the first Action of a Trigger & Action set of modifiers will be converted to VG. (Level modifiers haven't been implemented yet)
+- Added X and Y values to playerBoost modifiers. This forces the player to boost in a specific direction. The values can be left empty to not force that value onto the boost.
+- Overhauled how homing keyframes work internally. They should now act a lot more consistent with other keyframes. This also means homing keyframes are no longer considered experimental.
+- Dynamic homing keyframes speed value now allows for above 1.
+- Added some values to the audioSource modifier to give it more control.
+- Started working on player boost damage mechanic.
+
+### Editor
+- Heavily updated Editor Documentation.
+- Hovering the mouse over a transparent object with highlight objects on now sets the object to opaque.
+- Duplicate themes now display in the theme list, but will not be useable.
+- Trying to rework how themes are loaded.
+- Some modifiers like blackHole, copyAxis (with visual on) and playerMove now allow for empty objects.
+- Renamed "Add File to Level Folder" to "Add File to Level".
+- Editor now informs editor freecam and Show GUI & Players being toggled.
+- Ending event keyframe dragging now updates the event editor.
+- Some marker editor values now update when dragging a marker.
+- Background Objects now update in the UpdateObject keybind action.
+- Fonts in the Text Object documentation now display their actual font.
+- Added a bunch of mouse tooltips.
+- Changed the layout of the Setting Editor so the color editors are side-by-side.
+- Setting Editor is now scrollable.
+- Shortened some of the color keyframe labels for gradient objects.
+- Cleaned up Multi Object Editor UI a little.
+- Render depth now uses the limited range if your Editor Complexity is not set to advanced.
+- Some more editor elements are considered for the Editor Complexity setting.
+- Made gradient objects work with editor highlighting and layer opacity.
+- Removed the "Show Levels Without Cover Notification" setting. This setting wasn't really useful.
+- Renamed Timeline Waveform type names to better describe what they are. This is done since what was the "Modern" waveform is no longer modern due to modern PA now using what was the "Beta" waveform.
+- Timeline grid now fades depending on timeline zoom. This was in last prerelease, just forgot to include it in the changelog.
+- SetSongTimeAutokill keybind function now includes Prefab Object autokill.
+- Replaced "Timeline Object Retains Bin On Drag" setting with "Bin Clamp Behavior" in Config Manager > Editor > Timeline. This changes how timeline object bin dragging is handled when the bin is dragged outside the normal bin range.
+- Overhauled a lot of Background Editor code.
+- There no longer needs to always be 1 Background Object in a level. Due to this, "Delete All Backgrounds" now actually does what it says. If there are no Backgrounds present, the editor UI will disable.
+- Removed the "Can't delete only object" warning. This means you can technically have an entirely empty level now.
+- Custom Background Object reactive values UI now disable if the reactive type is not custom.
+- Removed "Yield Type settings" for Expanding Prefabs and Pasting Objects. This isn't really needed anymore.
+- Cleaned up Copy, Paste and Delete functions.
+- Finally made the Settings button on the title bar consistent with other dropdown menus.
+- Shuffled some dropdown menu buttons around.
+- Changed MetaData Editor link buttons icons to a link icon to better represent what they are.
+- Default Image Object image selection path changed to "images" folder inside the level folder.
+- Renamed "Gamma X" "Gamma Y" "Gamma Z" "Gamma W" to "Red" "Green" "Blue" "Global"
+- Reworked timeline object deleting.
+- Order Matters Modifiers toggle is now on by default for new objects.
+- Renamed Image Objects' Set Data to Store Data.
+- Reworked default modifiers and tooltips to allow for modifier / tooltip categories.
+- All modifier editors now act the exact same, including BG Object Editor having a "Int Variable" displayer.
+- Improved some modifier Editor UI.
+- Reorganized / reworked a ton of Editor UI.
+- Image objects' selection area now changes to fit the image size.
+- Removed "Editor Zen Mode" setting, since all game modes are accessible in the editor now.
+- Made object keyframe BPM snap dragging consistent with other dragging.
+- ForceSnapBPM keybind function now properly snaps the intended selection.
+
+### Example Companion
+- Overhauled Example's code. His code was split into modules that handle different aspects of him.
+- Example's dance behavior is now configurable and depends on his happiness and boredom.
+- Example's dance speed is now randomized.
+- Renamed Example config tab to Companion.
+- Renamed a few config settings.
+- Example now considers the loading level screen a menu.
+- Example now only moves to the warning popup if he is far enough away from his spot. (Sometimes...)
+- Example can now notice a lot more things that happen, such as saving, autosaving, beating a level, etc.
+- Example now has eyelids for more expressions.
+- Started working on tutorials. These won't be implemented for a while, but at least the groundwork is there.
+- Example now has a low chance to leave by himself if he's bored.
+
+### Internal
+- Reworked beatmap data to not depend on base vanilla data as much. (so many nests and odd names wtf)
+- Cursor now behaves consistently across the entire game in terms of visibility.
+- Interfaces themes are better to utilize now.
+- Reworked some Project Planner code.
+- Arcade level player data now saves in a non-encrypted arcade_saves.lss file. Since BetterLegacy doesn't have leaderboards (and likely never will), the encryption wasn't necessary.
+- Made levels in the editor consistent with other editor data and also use the same level system as the arcade. This technically means you can load VG levels (alpha branch), though themes won't work.
+- Cleaned up a ton of Player code.
+- Level rank sayings are now customizable (kinda).
+- Reworked some editor timeline stuff.
+- Reworked a lot of timeline object, timeline marker and theme & prefab panel related code.
+- Reworked Editor Dialogs and Editor Popups.
+- Reworked the checkpoint system.
+- Created a custom enum system. (Only visual difference is the Resolution dropdown now displays the resolution name without the 'p')
+
+
+## Fixes
+### Config
+- Error log when Config Manager is opened to a specific tab.
+- Config Manager UI not having rounded corners on the right areas.
+
+### Interfaces
+- Online tab page buttons didn't switch pages unless you search.
+- Players being able to join outside of the input select screen.
+- Steam Workshop level subscribing progress not working.
+- SS rank shine not working in some cases.
+
+### Game
+- Colliders scaled to 0,0 crashing the game. This was fixed by disabling the collider (and renderer) if the objects' scale is 0,0.
+- Video Backgrounds freezing randomly while playing a level.
+- Player noclipping issue.
+- Player objects not properly checking invincibility.
+- Player spawn animation breaking.
+- Player moving when the camera rotates in 3D space. (still kinda happens but eh)
+- Player leaving the bounds of the camera if camera is moved too quickly.
+- Achievement no_volume considering the Audio event.
+- Object opacity defaulting to 1 if it's above 0.9. Though now, objects don't render both front and back faces due to this fix. Use the doubleSided modifier if you want this behavior.
+- Re-ordered player updates so tail updating occurs after player position is set, meaning there shouldn't be as much tail lag now.
+- audioSource modifier issues.
+- Modifiers activating due to smoothed time.
+- textSequence modifier having inconsistent behavior.
+- textSequence Play Sound toggle not actually doing anything.
+- ~~Prefab Group modifiers checking for both spawned and expanded objects from prefabs.~~ reverted this due to it being needed for individual expanded prefab groups.
+- Checkpoints not being removed from the game timeline.
+- Checkpoint animations and sounds not playing.
+- Players respawning instantly when restarting a level from the pause menu, sometimes causing the player to get hit.
+- Shake speed breaking the shake effect when it interpolates from one value to another. (E.G. going from speed 0.5 to speed 2).
+- Restarting the level doesn't reset the currently active checkpoint.
+- Song pitch not resetting when the user exits to main menu.
+- BG camera layer getting offset from the foreground.
+- Prefab Object autokill updating being broken.
+- animateObject modifiers and shot bullets being inconsistent with different framerates.
+- Hue values not loading correctly for Background Objects.
+- BG color delay.
+- Most parent settings in Prefab Objects not being read from the .lsb files.
+
+### Editor
+- Window event being used in editor mode.
+- VG to LS Converting being broken.
+- Objects rendering on the event layer when they shouldn't.
+- Objects not properly deleting in some cases.
+- spawnPrefab modifier editor being broken.
+- Prefabs spawned from modifiers being selectable in the preview area.
+- Prefab Group Only toggle not showing for modifier with object group fields in some cases.
+- Picker not working in some cases.
+- BPM Snap offset offsetting the time of objects further than it should.
+- Checkpoint dragging being broken.
+- variableOther trigger modifiers not using the prefab instance group toggle.
+- VG level conversion sharing the same file path with the destination, causing it to break. 
+- Selecting a single object after selecting multiple prevents rendering the keyframes correctly.
+- Warning Popup appearing behind some popups.
+- Objects highlighting and not unhighlighting when they disable and re-enable.
+- Some Prefab Object Editor stuff being broken.
+- Multi Object Keyframe Editor "Apply Curves" button re-rendering keyframes from previously selected objects.
+- Default keybinds for First and Last Keyframe selectors being incorrect.
+- Non-shape objects not updating their render type when the dropdown value is changed.
+- Parent Desync being broken. Due to this, it's no longer considered experimental and now displays by default with Editor Complexity set to Advanced.
+- Players not correctly validating in arcade / story levels.
+- Event Editor indexer not displaying "E" for end keyframes.
+- Object duplicating moving it to where the audio time is if the objects' start time is 0.
+- Both timeline's position being set a frame later.
+- Theme updating not updating the stored theme.
+- Modifier scroll view resetting when refreshing modifier list.
+- Clicking on a dropdown now requires left click. This is to fix context menus on dropdowns still interacting with the dropdown.
+- Save As not copying sub-directories in the level folder.
+- Objects in prefabs parented to the camera not updating properly.
+- Modifier editors not disabling when Editor Complexity is changed.
+- Fixed Prefab references not being removed when a Prefab is deleted.
+- Fixed some issues relating to VG to LS conversion.
+
+### Misc
+- Discord status timestamp being used incorrectly.
+- Discord status just being "In Main Menu" when you restart Discord.
+- Some cases where the "+=" key was set to the wrong key internally.
+
+
+## Up Next in 1.8.0
+- Level collections.
+- Seed-based random.
+- Custom achievements.
+- Player modifiers.
+- Profile Menu rework.
+- Interface Editor.
+- New Checkpoint features.
+- And probably more.  
+
+This probably wasn't everything, but either way this is the biggest update BetterLegacy has ever had. I hope you guys enjoy the update! :D
+
+------------------------------------------------------------------------------------------
+
+# 1.6.9 > [Sep 29, 2024]
 
 ## Fixes
 - Fixed player spawn issues.
