@@ -377,11 +377,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["id"] != null)
                 id = jn["id"];
 
-            if (jn["piid"] != null)
-                prefabInstanceID = jn["piid"];
-
-            if (jn["pid"] != null)
-                prefabID = jn["pid"];
+            this.ReadPrefabJSON(jn);
 
             if (jn["active"] != null)
                 active = jn["active"].AsBool;
@@ -594,11 +590,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             var jn = JSON.Parse("{}");
 
             jn["id"] = id;
-            if (!string.IsNullOrEmpty(prefabID))
-                jn["pid"] = prefabID;
 
-            if (!string.IsNullOrEmpty(prefabInstanceID))
-                jn["piid"] = prefabInstanceID;
+            this.WritePrefabJSON(jn);
 
             if (!active)
                 jn["active"] = active;

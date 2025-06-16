@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/> that spawns all objects contained in the Prefab.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IModifyable<PrefabObject>, IEditable
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable<PrefabObject>, IEditable
     {
         public PrefabObject() : base()
         {
@@ -60,6 +60,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string parent;
 
+        public string Parent { get => parent; set => parent = value; }
+
         /// <summary>
         /// Parent delay values.
         /// </summary>
@@ -70,10 +72,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             0f
         };
 
+        public float[] ParentOffsets { get => parentOffsets; set => parentOffsets = value; }
+
         /// <summary>
         /// Parent toggle values.
         /// </summary>
-        public string parentType = "111";
+        public string parentType = BeatmapObject.DEFAULT_PARENT_TYPE;
+
+        public string ParentType { get => parentType; set => parentType = value; }
 
         /// <summary>
         /// Multiplies from the parents' position, allowing for parallaxing.
@@ -85,15 +91,21 @@ namespace BetterLegacy.Core.Data.Beatmap
             1f
         };
 
+        public float[] ParentParallax { get => parentParallax; set => parentParallax = value; }
+
         /// <summary>
         /// If parent chains should be accounted for when parent offset / delay is used.
         /// </summary>
-        public string parentAdditive = "000";
+        public string parentAdditive = BeatmapObject.DEFAULT_PARENT_ADDITIVE;
+
+        public string ParentAdditive { get => parentAdditive; set => parentAdditive = value; }
 
         /// <summary>
         /// If the object should stop following the parent chain after spawn.
         /// </summary>
         public bool desync;
+
+        public bool ParentDesync { get => desync; set => desync = value; }
 
         #endregion
 
@@ -390,35 +402,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabID = jn["pid"];
             StartTime = jn["st"].AsFloat;
 
-            #region Parent
-
-            if (jn["p"] != null)
-                parent = jn["p"];
-
-            if (jn["desync"] != null && !string.IsNullOrEmpty(parent))
-                desync = jn["desync"].AsBool;
-
-            if (jn["pt"] != null)
-                parentType = jn["pt"];
-
-            if (jn["po"] != null)
-                for (int i = 0; i < parentOffsets.Length; i++)
-                    if (jn["po"].Count > i && jn["po"][i] != null)
-                        parentOffsets[i] = jn["po"][i].AsFloat;
-
-            if (jn["ps"] != null)
-            {
-                for (int i = 0; i < parentParallax.Length; i++)
-                {
-                    if (jn["ps"].Count > i && jn["ps"][i] != null)
-                        parentParallax[i] = jn["ps"][i].AsFloat;
-                }
-            }
-
-            if (jn["pa"] != null)
-                parentAdditive = jn["pa"];
-
-            #endregion
+            this.ReadParentJSON(jn);
 
             if (jn["rc"] != null)
                 RepeatCount = jn["rc"].AsInt;
@@ -541,29 +525,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (Speed != 1f)
                 jn["sp"] = Speed;
 
-            #region Parent
-
-            if (!string.IsNullOrEmpty(parent))
-                jn["p"] = parent;
-
-            if (desync && !string.IsNullOrEmpty(parent))
-                jn["desync"] = desync;
-
-            if (parentType != "101")
-                jn["pt"] = parentType;
-
-            if (parentOffsets.Any(x => x != 0f))
-                for (int i = 0; i < parentOffsets.Length; i++)
-                    jn["po"][i] = parentOffsets[i];
-
-            if (parentAdditive != "000")
-                jn["pa"] = parentAdditive;
-
-            if (parentParallax.Any(x => x != 1f))
-                for (int i = 0; i < parentParallax.Length; i++)
-                    jn["ps"][i] = parentParallax[i];
-
-            #endregion
+            this.WriteParentJSON(jn);
 
             if (autoKillType != PrefabAutoKillType.Regular)
             {

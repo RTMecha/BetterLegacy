@@ -1517,6 +1517,101 @@ namespace BetterLegacy.Core
                 jn["ata"] = shapeable.AutoTextAlign;
         }
 
+        /// <summary>
+        /// Reads <see cref="IParentable"/> data from JSON.
+        /// </summary>
+        /// <param name="parentable">Parentable object reference.</param>
+        /// <param name="jn">JSON to read from.</param>
+        public static void ReadParentJSON(this IParentable parentable, JSONNode jn)
+        {
+            if (jn["p"] != null)
+                parentable.Parent = jn["p"];
+
+            if (jn["pd"] != null && !string.IsNullOrEmpty(parentable.Parent))
+                parentable.ParentDesync = jn["pd"].AsBool;
+
+            if (jn["desync"] != null && !string.IsNullOrEmpty(parentable.Parent))
+                parentable.ParentDesync = jn["desync"].AsBool;
+
+            if (jn["pt"] != null)
+                parentable.ParentType = jn["pt"];
+
+            if (jn["po"] != null)
+                for (int i = 0; i < parentable.ParentOffsets.Length; i++)
+                    if (jn["po"].Count > i && jn["po"][i] != null)
+                        parentable.ParentOffsets[i] = jn["po"][i].AsFloat;
+
+            if (jn["ps"] != null)
+            {
+                for (int i = 0; i < parentable.ParentParallax.Length; i++)
+                {
+                    if (jn["ps"].Count > i && jn["ps"][i] != null)
+                        parentable.ParentParallax[i] = jn["ps"][i].AsFloat;
+                }
+            }
+
+            if (jn["pa"] != null)
+                parentable.ParentAdditive = jn["pa"];
+        }
+
+        /// <summary>
+        /// Writes <see cref="IParentable"/> data to JSON.
+        /// </summary>
+        /// <param name="parentable">Parentable object reference.</param>
+        /// <param name="jn">JSON to write to.</param>
+        public static void WriteParentJSON(this IParentable parentable, JSONNode jn)
+        {
+            if (!string.IsNullOrEmpty(parentable.Parent))
+                jn["p"] = parentable.Parent;
+
+            if (parentable.ParentDesync && !string.IsNullOrEmpty(parentable.Parent))
+                jn["pd"] = parentable.ParentDesync;
+
+            if (parentable.ParentType != BeatmapObject.DEFAULT_PARENT_TYPE)
+                jn["pt"] = parentable.ParentType;
+
+            if (parentable.ParentOffsets.Any(x => x != 0f))
+                for (int i = 0; i < parentable.ParentOffsets.Length; i++)
+                    jn["po"][i] = parentable.ParentOffsets[i];
+
+            if (parentable.ParentAdditive != BeatmapObject.DEFAULT_PARENT_ADDITIVE)
+                jn["pa"] = parentable.ParentAdditive;
+
+            if (parentable.ParentParallax.Any(x => x != 1f))
+                for (int i = 0; i < parentable.ParentParallax.Length; i++)
+                    jn["ps"][i] = parentable.ParentParallax[i];
+        }
+
+        /// <summary>
+        /// Reads <see cref="IPrefabable"/> data from JSON.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <param name="jn">JSON to read from.</param>
+        public static void ReadPrefabJSON(this IPrefabable prefabable, JSONNode jn)
+        {
+            if (jn["piid"] != null)
+                prefabable.PrefabInstanceID = jn["piid"];
+
+            if (jn["pid"] != null)
+                prefabable.PrefabID = jn["pid"];
+        }
+
+        /// <summary>
+        /// Writes <see cref="IPrefabable"/> data to JSON.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object reference.</param>
+        /// <param name="jn">JSON to write to.</param>
+        public static void WritePrefabJSON(this IPrefabable prefabable, JSONNode jn)
+        {
+            var prefabID = prefabable.PrefabID;
+            if (!string.IsNullOrEmpty(prefabID))
+                jn["pid"] = prefabID;
+
+            var prefabInstanceID = prefabable.PrefabInstanceID;
+            if (!string.IsNullOrEmpty(prefabInstanceID))
+                jn["piid"] = prefabInstanceID;
+        }
+
         #endregion
 
         #region Misc
