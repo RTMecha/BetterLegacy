@@ -540,15 +540,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (RepeatOffsetTime > 0f)
                 jn["ro"] = RepeatOffsetTime;
 
-            if (editorData.locked)
-                jn["ed"]["locked"] = editorData.locked;
-            if (editorData.collapse)
-                jn["ed"]["shrink"] = editorData.collapse;
-
-            if (editorData.Layer != 0)
-                jn["ed"]["layer"] = editorData.Layer;
-            if (editorData.Bin != 0)
-                jn["ed"]["bin"] = editorData.Bin;
+            if (editorData.ShouldSerialize)
+                jn["ed"] = editorData.ToJSON();
 
             if (expanded)
                 jn["exp"] = expanded;
