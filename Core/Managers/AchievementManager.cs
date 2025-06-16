@@ -100,7 +100,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("youve_been_trolled", "You've Been Trolled", "Play a meme / joke level.", 3, "youve_been_trolled");
             CreateGlobalAchievement("no_fps", "No FPS?", "Play a high detail level.", 4, "no_fps");
             CreateGlobalAchievement("ten_levels", "That's some data.", "Complete 10 levels.", 2, "ten_levels");
-            CreateGlobalAchievement("fifty_levels", "B", "That's more data!", 3, "fifty_levels");
+            CreateGlobalAchievement("fifty_levels", "That's more data!", "Complete 50 levels.", 3, "fifty_levels");
             CreateGlobalAchievement("one_hundred_levels", "That's a lot of data!", "Complete 100 levels.", 4, "one_hundred_levels");
             CreateGlobalAchievement("hackerman", "Hackerman", "Open UnityExplorer in the editor.", 0, "hackerman");
             CreateGlobalAchievement("death_hd", "Death HD", "Die in the editor.", 3, "death_hd");
