@@ -1,4 +1,4 @@
-﻿# 1.7.1
+﻿# 1.7.1 [Jun 17, 2025]
 ## Features
 ### Core
 - Added getTag action modifier and containsTag trigger modifier. getTag gets a tag at an index from the object. containsTag checks if the object has a tag.
@@ -15,7 +15,7 @@
 - Fixed fifty_levels achievement displaying the wrong name.
 - Hopefully fixed custom player models being usable in the story. Since this story requires specific players, this is necessary.
 
-# 1.7.0 [Unfractured Update]
+# 1.7.0 Unfractured Update [Jun 15, 2025]
 ## Features
 ### Story
 - Demo of Story Mode chapter 1. Go check it out in the STORY menu!
