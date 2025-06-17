@@ -1,4 +1,8 @@
-﻿# 1.7.1 [Jun 17, 2025]
+﻿# 1.7.2 [Jun 17, 2025]
+## Fixed
+- Fixed cutscene select being bugged.
+
+# 1.7.1 [Jun 17, 2025]
 ## Features
 ### Core
 - Added getTag action modifier and containsTag trigger modifier. getTag gets a tag at an index from the object. containsTag checks if the object has a tag.
