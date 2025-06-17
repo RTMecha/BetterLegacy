@@ -1,4 +1,21 @@
-﻿# 1.7.0 [Unfractured Update]
+﻿# 1.7.1
+## Features
+### Core
+- Added getTag action modifier and containsTag trigger modifier. getTag gets a tag at an index from the object. containsTag checks if the object has a tag.
+
+## Changes
+### Core
+- Renamed parent desync JSON name from "desync" to "pd".
+
+## Fixes
+- Fixed certain interfaces lacking a name.
+- Fixed wrong level metadata names.
+- Fixed Prefab Object parent type toggles default value not being correct, resulting in the values not being saved.
+- Fixed hidden object editor data not being saved to Prefab Objects.
+- Fixed fifty_levels achievement displaying the wrong name.
+- Hopefully fixed custom player models being usable in the story. Since this story requires specific players, this is necessary.
+
+# 1.7.0 [Unfractured Update]
 ## Features
 ### Story
 - Demo of Story Mode chapter 1. Go check it out in the STORY menu!
