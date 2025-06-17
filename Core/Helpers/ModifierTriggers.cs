@@ -1280,6 +1280,8 @@ namespace BetterLegacy.Core.Helpers
             return time > modifier.GetFloat(0, 0f, variables);
         }
 
+        public static bool containsTag<T>(Modifier<T> modifier, Dictionary<string, string> variables) => modifier.reference is IModifyable<T> modifyable && modifyable.Tags.Contains(modifier.GetValue(0, variables));
+
         public static bool inEditor<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CoreHelper.InEditor;
         
         public static bool isEditing<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CoreHelper.IsEditing;

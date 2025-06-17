@@ -1421,6 +1421,12 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.getTag): {
+                        StringGenerator(modifier, "Variable Name", 0);
+                        IntegerGenerator(modifier, "Index", 1, 0);
+
+                        break;
+                    }
 
                 case nameof(ModifierActions.getAxis): {
                         StringGenerator(modifier, "Variable Name", 0);
@@ -3694,6 +3700,11 @@ namespace BetterLegacy.Editor.Data
 
                 #region Misc
 
+                case nameof(ModifierTriggers.containsTag): {
+                        StringGenerator(modifier, "Tag", 0);
+
+                        break;
+                    }
                 case nameof(ModifierTriggers.objectAlive):
                 case nameof(ModifierTriggers.objectSpawned): {
                         PrefabGroupOnly(modifier);

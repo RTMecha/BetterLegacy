@@ -777,6 +777,7 @@ namespace BetterLegacy.Core.Helpers
 
             #region Misc
 
+            nameof(ModifierTriggers.containsTag) => ModifierTriggers.containsTag,
             nameof(ModifierTriggers.inEditor) => ModifierTriggers.inEditor,
             nameof(ModifierTriggers.isEditing) => ModifierTriggers.isEditing,
             nameof(ModifierTriggers.requireSignal) => ModifierTriggers.requireSignal,
@@ -971,6 +972,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.getStringUpper) => ModifierActions.getStringUpper,
             nameof(ModifierActions.getColor) => ModifierActions.getColor,
             nameof(ModifierActions.getEnum) => ModifierActions.getEnum,
+            nameof(ModifierActions.getTag) => ModifierActions.getTag,
             nameof(ModifierActions.getPitch) => ModifierActions.getPitch,
             nameof(ModifierActions.getMusicTime) => ModifierActions.getMusicTime,
             nameof(ModifierActions.getAxis) => ModifierActions.getAxis,
@@ -1888,6 +1890,7 @@ namespace BetterLegacy.Core.Helpers
 
             #region Misc
 
+            nameof(ModifierTriggers.containsTag) => ModifierTriggers.containsTag,
             nameof(ModifierTriggers.inEditor) => ModifierTriggers.inEditor,
             nameof(ModifierTriggers.isEditing) => ModifierTriggers.isEditing,
             nameof(ModifierTriggers.requireSignal) => ModifierTriggers.requireSignal,
@@ -2084,6 +2087,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.getStringUpper) => ModifierActions.getStringUpper,
             nameof(ModifierActions.getColor) => ModifierActions.getColor,
             nameof(ModifierActions.getEnum) => ModifierActions.getEnum,
+            nameof(ModifierActions.getTag) => ModifierActions.getTag,
             nameof(ModifierActions.getPitch) => ModifierActions.getPitch,
             nameof(ModifierActions.getMusicTime) => ModifierActions.getMusicTime,
             //nameof(ModifierActions.getAxis) => ModifierActions.getAxis,

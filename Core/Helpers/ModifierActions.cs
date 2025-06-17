@@ -2226,6 +2226,11 @@ namespace BetterLegacy.Core.Helpers
                 variables[modifier.GetValue(0)] = modifier.GetValue(index, variables).ToString();
         }
 
+        public static void getTag<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = modifier.reference is IModifyable<T> modifyable && modifyable.Tags.TryGetAt(modifier.GetInt(1, 0, variables), out string tag) ? tag : string.Empty;
+        }
+
         public static void getPitch<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             variables[modifier.GetValue(0)] = AudioManager.inst.CurrentAudioSource.pitch.ToString();
