@@ -1025,6 +1025,25 @@ namespace BetterLegacy.Editor.Managers
         {
             RandomHelper.UpdateSeed();
             RTLevel.Reinit();
+
+            // reset modifiers
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
+            {
+                beatmapObject.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = default;
+                });
+            }
+
+            foreach (var backgroundObject in GameData.Current.backgroundObjects)
+            {
+                backgroundObject.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = default;
+                });
+            }
         }
 
         public static void UpdateObject(Keybind keybind)
@@ -1040,10 +1059,17 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.customShape = -1;
                             beatmapObject.customShapeOption = -1;
                             RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
+                            beatmapObject.modifiers.ForEach(modifier =>
+                            {
+                                modifier.Inactive?.Invoke(modifier, null);
+                                modifier.Result = default;
+                            });
+
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                             RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), recalculate: false);
+
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
@@ -1051,6 +1077,12 @@ namespace BetterLegacy.Editor.Managers
                             backgroundObject.customShape = -1;
                             backgroundObject.customShapeOption = -1;
                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                            backgroundObject.modifiers.ForEach(modifier =>
+                            {
+                                modifier.Inactive?.Invoke(modifier, null);
+                                modifier.Result = default;
+                            });
+
                             break;
                         }
                 }
