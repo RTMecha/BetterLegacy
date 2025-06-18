@@ -2559,6 +2559,18 @@ namespace BetterLegacy.Core.Helpers
 
         #region Internal Functions
 
+        public static bool IsGroupModifier(string name) =>
+            name == nameof(ModifierActions.updateObject) ||
+            name == nameof(ModifierActions.setParent) ||
+            name == nameof(ModifierTriggers.objectCollide) ||
+            name == nameof(ModifierActions.getAxis) ||
+            name == nameof(ModifierActions.activateModifier) ||
+            name == nameof(ModifierActions.legacyTail) ||
+            name.ToLower().Contains("signal") ||
+            name.Contains("Other") ||
+            name.Contains("copy") && name != nameof(ModifierActions.copyPlayerAxis) ||
+            name.Contains("applyAnimation");
+
         public static void SetVariables(Dictionary<string, string> variables, Dictionary<string, float> numberVariables)
         {
             if (variables == null)
