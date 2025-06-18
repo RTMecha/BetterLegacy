@@ -1,4 +1,14 @@
-﻿# 1.7.2 [Jun 17, 2025]
+﻿# 1.7.3 [Jun 18, 2025]
+## Features
+### Example Companion
+- Added Toggle Modifiers Prefab Group Only command. This iterates through all selected objects and turns the Prefab Group Only option on for all group modifiers.
+
+## Changes
+### Editor
+- Updated the Example prefab model to include better controls.
+- UpdateObject and UpdateEverything keybind actions now updates all modifiers in an object.
+
+# 1.7.2 [Jun 17, 2025]
 ## Fixed
 - Fixed cutscene select being bugged.
 
