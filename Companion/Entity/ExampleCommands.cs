@@ -333,6 +333,16 @@ namespace BetterLegacy.Companion.Entity
                     new ExampleCommand.Phrase("Give a (.*?) idea", true),
                     new ExampleCommand.Phrase("give a (.*?) idea", true),
                 }));
+            commands.Add(new ExampleCommand("Toggle Modifiers Prefab Group Only", "Turns all selected objects' modifiers Prefab Group Only value on / off.", true,
+                response =>
+                {
+                    var attribute = GetAttribute("PREFAB_GROUP_ONLY", 0.0, 0.0, 1.0);
+                    var value = attribute.Value == 1.0;
+                    attribute.Value = value ? 0.0 : 1.0;
+                    EditorHelper.SetSelectedObjectPrefabGroupOnly(!value);
+
+                    reference?.chatBubble?.Say($"Set all selected objects' modiifers Prefab Group Only {(!value ? "on" : "off")}");
+                }));
         }
 
         /// <summary>

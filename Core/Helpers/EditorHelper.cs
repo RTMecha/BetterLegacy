@@ -514,6 +514,39 @@ namespace BetterLegacy.Core.Helpers
             EditorTimeline.inst.UpdateTransformIndex();
         }
 
+        public static bool SetSelectedObjectPrefabGroupOnly(bool enabled)
+        {
+            if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            timelineObject.GetData<BeatmapObject>().modifiers.ForLoop(modifier =>
+                            {
+                                var name = modifier.Name;
+                                if (ModifiersHelper.IsGroupModifier(name))
+                                    modifier.prefabInstanceOnly = enabled;
+                            });
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            timelineObject.GetData<BackgroundObject>().modifiers.ForLoop(modifier =>
+                            {
+                                var name = modifier.Name;
+                                if (name == nameof(ModifierActions.updateObjects)|| name == nameof(ModifierTriggers.objectCollide) || name.Contains("Other") || name.Contains("copy"))
+                                    modifier.prefabInstanceOnly = true;
+                            });
+                            break;
+                        }
+                }
+            }
+
+            return true;
+        }
+
         public static void SaveDefaultPrefabTypes()
         {
             var jn = Parser.NewJSONObject();
