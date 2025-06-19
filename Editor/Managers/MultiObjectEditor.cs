@@ -1957,8 +1957,10 @@ namespace BetterLegacy.Editor.Managers
                 {
                     SyncObjectData("Shape", eventData, (timelineObject, beatmapObject) =>
                     {
-                        timelineObject.GetData<BeatmapObject>().Shape = beatmapObject.Shape;
-                        timelineObject.GetData<BeatmapObject>().ShapeOption = beatmapObject.ShapeOption;
+                        var syncTo = timelineObject.GetData<BeatmapObject>();
+                        syncTo.Shape = beatmapObject.Shape;
+                        syncTo.ShapeOption = beatmapObject.ShapeOption;
+                        syncTo.Polygon.CopyData(beatmapObject.Polygon);
                     }, false, true, "Shape");
                 })); // Shape
                 GenerateButton(syncLayout.transform, new ButtonFunction("T", eventData =>
