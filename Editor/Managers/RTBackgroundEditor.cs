@@ -64,6 +64,7 @@ namespace BetterLegacy.Editor.Managers
                 color = 1,
                 StartTime = AudioManager.inst.CurrentAudioSource.time,
             };
+            backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
 
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
@@ -100,7 +101,11 @@ namespace BetterLegacy.Editor.Managers
             }
 
             for (int i = 0; i < copiedBackgroundObjects.Count; i++)
-                GameData.Current.backgroundObjects.Add(copiedBackgroundObjects[i].Copy());
+            {
+                var backgroundObject = copiedBackgroundObjects[i].Copy();
+                backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
+                GameData.Current.backgroundObjects.Add(backgroundObject);
+            }
 
             SetCurrentBackground(GameData.Current.backgroundObjects.Count > 0 ? GameData.Current.backgroundObjects[0] : null);
 
@@ -117,6 +122,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var backgroundObject = backgroundObjCopy.Copy();
+            backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
             RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
@@ -179,6 +185,7 @@ namespace BetterLegacy.Editor.Managers
                 backgroundObject.shape = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D.Count);
                 backgroundObject.shapeOption = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D[backgroundObject.shape].Count);
 
+                backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
                 backgroundObject.editorData.Bin = EditorTimeline.inst.CalculateMaxBin(i);
 
                 GameData.Current.backgroundObjects.Add(backgroundObject);
@@ -294,7 +301,11 @@ namespace BetterLegacy.Editor.Managers
         {
             Dialog.NameField.onValueChanged.ClearAll();
             Dialog.NameField.text = backgroundObject.name;
-            Dialog.NameField.onValueChanged.AddListener(_val => backgroundObject.name = _val);
+            Dialog.NameField.onValueChanged.AddListener(_val =>
+            {
+                backgroundObject.name = _val;
+                backgroundObject.timelineObject?.RenderText(_val);
+            });
 
             TriggerHelper.InversableField(Dialog.NameField, InputFieldSwapper.Type.String);
         }
