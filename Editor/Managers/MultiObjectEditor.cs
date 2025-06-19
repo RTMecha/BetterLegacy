@@ -1259,10 +1259,12 @@ namespace BetterLegacy.Editor.Managers
                         if (selected.Count < 0)
                             return;
 
-                        var first = selected[0].TimelineReference switch
+                        var firstSelected = selected.Find(x => !x.isPrefabObject);
+
+                        var first = !firstSelected ? string.Empty : firstSelected.TimelineReference switch
                         {
-                            TimelineObject.TimelineReferenceType.BeatmapObject => selected[0].GetData<BeatmapObject>().prefabInstanceID,
-                            TimelineObject.TimelineReferenceType.BackgroundObject => selected[0].GetData<BackgroundObject>().prefabInstanceID,
+                            TimelineObject.TimelineReferenceType.BeatmapObject => firstSelected.GetData<BeatmapObject>().prefabInstanceID,
+                            TimelineObject.TimelineReferenceType.BackgroundObject => firstSelected.GetData<BackgroundObject>().prefabInstanceID,
                             _ => string.Empty,
                         };
 
@@ -1270,14 +1272,12 @@ namespace BetterLegacy.Editor.Managers
                         if (selected.Any(x => x.isPrefabObject || x.isBeatmapObject && x.GetData<BeatmapObject>().prefabInstanceID != first || x.isBackgroundObject && x.GetData<BackgroundObject>().prefabInstanceID != first))
                             return;
 
-                        var prefabInstanceID = LSText.randomString(16);
+                        var prefabInstanceID = PAObjectBase.GetStringID();
 
                         selected.ForLoop(timelineObject =>
                         {
-                            if (timelineObject.isBeatmapObject)
-                                timelineObject.GetData<BeatmapObject>().prefabInstanceID = prefabInstanceID;
-                            if (timelineObject.isBackgroundObject)
-                                timelineObject.GetData<BackgroundObject>().prefabInstanceID = prefabInstanceID;
+                            if (timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                                prefabable.PrefabInstanceID = prefabInstanceID;
                         });
                         RTEditor.inst.HideWarningPopup();
                         EditorManager.inst.DisplayNotification("Successfully created a new instance ID.", 2f, EditorManager.NotificationType.Success);
