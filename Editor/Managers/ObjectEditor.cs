@@ -3057,6 +3057,7 @@ namespace BetterLegacy.Editor.Managers
             action?.Invoke(timelineObject);
             RTLevel.Current?.UpdateObject(bm, recalculate: recalculate);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
 
             if (openDialog)
                 OpenDialog(bm);
@@ -3083,6 +3084,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -3112,6 +3114,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -3141,6 +3144,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -3179,6 +3183,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
 
             if (!Seasons.IsAprilFools)
                 OpenDialog(bm);
@@ -3210,6 +3215,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -3240,6 +3246,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -3269,6 +3276,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -3298,6 +3306,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
@@ -3326,6 +3335,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.UpdateObject(bm);
             EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            EditorTimeline.inst.UpdateTransformIndex();
             OpenDialog(bm);
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.NEW_OBJECT, new BeatmapObjectNoticeParameters(bm));
