@@ -514,6 +514,50 @@ namespace BetterLegacy.Core.Helpers
             EditorTimeline.inst.UpdateTransformIndex();
         }
 
+        public static void ReverseSelectedObjectIndexes()
+        {
+            var selected = EditorTimeline.inst.SelectedBeatmapObjects.Order(x => x.Index, false);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                var index = GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.id);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.beatmapObjects.Move(index, Mathf.Clamp(index - selected.Count, 0, GameData.Current.beatmapObjects.Count - 1));
+            }
+
+            selected = EditorTimeline.inst.SelectedPrefabObjects.Order(x => x.Index, false);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                var index = GameData.Current.prefabObjects.FindIndex(x => x.id == prefabObject.id);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.prefabObjects.Move(index, Mathf.Clamp(index - selected.Count, 0, GameData.Current.prefabObjects.Count - 1));
+            }
+
+            selected = EditorTimeline.inst.SelectedBackgroundObjects.Order(x => x.Index, false);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                var index = GameData.Current.backgroundObjects.FindIndex(x => x.id == backgroundObject.id);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.backgroundObjects.Move(index, Mathf.Clamp(index - selected.Count, 0, GameData.Current.backgroundObjects.Count - 1));
+            }
+
+            EditorTimeline.inst.UpdateTransformIndex();
+        }
+
         public static bool SetSelectedObjectPrefabGroupOnly(bool enabled)
         {
             if (!GameData.Current || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)

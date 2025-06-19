@@ -511,7 +511,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Timeline Object Index
             {
-                GenerateLabels(parent, 32f, "Set Group Index");
+                var labels1 = GenerateLabels(parent, 32f, "Set Group Index");
 
                 var inputFieldStorage = GenerateInputField(parent, "indexer", "1", "Enter index...", true, true, true);
                 inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
@@ -534,7 +534,12 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.rightGreaterButton.onClick.NewListener(() => EditorHelper.SetSelectedObjectIndexes(EditorTimeline.inst.timelineObjects.Count));
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
 
+                var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Reverse Indexes", EditorHelper.ReverseSelectedObjectIndexes));
+
+                EditorHelper.SetComplexity(labels1, Complexity.Normal);
                 EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Advanced);
+                EditorHelper.SetComplexity(inputFieldStorage.gameObject, Complexity.Normal);
+                EditorHelper.SetComplexity(buttons1, Complexity.Normal);
             }
 
             GeneratePad(parent);
