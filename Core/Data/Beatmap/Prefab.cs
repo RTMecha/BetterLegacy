@@ -125,6 +125,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             type = orig.type;
             typeID = orig.typeID;
 
+            prefabs = new List<Prefab>();
+            if (!orig.prefabs.IsEmpty())
+                prefabs.AddRange(orig.prefabs.Select(x => x.Copy(false)));
+
             beatmapObjects = new List<BeatmapObject>();
             if (!orig.beatmapObjects.IsEmpty())
                 beatmapObjects.AddRange(orig.beatmapObjects.Select(x => x.Copy(false)));
@@ -165,13 +169,18 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
+            prefabs.Clear();
+            if (jn["prefabs"] != null)
+                for (int i = 0; i < jn["prefabs"].Count; i++)
+                    prefabs.Add(Parse(jn["prefabs"][i]));
+
             beatmapObjects.Clear();
-            for (int j = 0; j < jn["objects"].Count; j++)
-                beatmapObjects.Add(BeatmapObject.Parse(jn["objects"][j]));
+            for (int i = 0; i < jn["objects"].Count; i++)
+                beatmapObjects.Add(BeatmapObject.Parse(jn["objects"][i]));
 
             prefabObjects.Clear();
-            for (int k = 0; k < jn["prefab_objects"].Count; k++)
-                prefabObjects.Add(PrefabObject.Parse(jn["prefab_objects"][k]));
+            for (int i = 0; i < jn["prefab_objects"].Count; i++)
+                prefabObjects.Add(PrefabObject.Parse(jn["prefab_objects"][i]));
 
             backgroundLayers.Clear();
             if (jn["bg_layers"] != null)
@@ -232,6 +241,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (!string.IsNullOrEmpty(description))
                 jn["desc"] = description;
+
+            for (int i = 0; i < prefabs.Count; i++)
+                jn["prefabs"][i] = prefabs[i].ToJSON();
 
             for (int i = 0; i < beatmapObjects.Count; i++)
                 jn["objects"][i] = beatmapObjects[i].ToJSON();
