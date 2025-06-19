@@ -809,6 +809,7 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Force Y", 13, 0f);
                         BoolGenerator(modifier, "Emit Trail", 14, false);
                         SingleGenerator(modifier, "Angle", 15, 0f);
+                        IntegerGenerator(modifier, "Burst Count", 16, 0);
 
                         break;
                     }

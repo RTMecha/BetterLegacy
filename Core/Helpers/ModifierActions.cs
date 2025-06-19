@@ -656,7 +656,7 @@ namespace BetterLegacy.Core.Helpers
 
             var gameObject = runtimeObject.visualObject.gameObject;
 
-            if (!modifier.HasResult() || modifier.Result is KeyValuePair<ParticleSystem, ParticleSystemRenderer> keyValuePair && (!keyValuePair.Key || !keyValuePair.Value))
+            if (modifier.Result is not ParticleSystem a || !a)
             {
                 var ps = gameObject.GetOrAddComponent<ParticleSystem>();
                 var psr = gameObject.GetComponent<ParticleSystemRenderer>();
@@ -688,28 +688,23 @@ namespace BetterLegacy.Core.Helpers
                 forceOverLifetime.enabled = true;
                 forceOverLifetime.space = ParticleSystemSimulationSpace.World;
 
-                modifier.Result = new KeyValuePair<ParticleSystem, ParticleSystemRenderer>(ps, psr);
+                modifier.Result = ps;
                 gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
             }
 
-            if (modifier.Result is KeyValuePair<ParticleSystem, ParticleSystemRenderer> particleSystems && particleSystems.Key && particleSystems.Value)
+            if (modifier.Result is ParticleSystem particleSystem && particleSystem)
             {
-                var ps = particleSystems.Key;
+                var ps = particleSystem;
 
                 var psMain = ps.main;
                 var psEmission = ps.emission;
 
                 psMain.startSpeed = modifier.GetFloat(9, 5f, variables);
 
-                if (modifier.constant)
-                    ps.emissionRate = modifier.GetFloat(10, 1f, variables);
-                else
-                {
-                    ps.emissionRate = 0f;
-                    psMain.loop = false;
-                    psEmission.burstCount = modifier.GetInt(10, 1, variables);
-                    psMain.duration = modifier.GetFloat(11, 1f, variables);
-                }
+                psMain.loop = modifier.constant;
+                ps.emissionRate = modifier.GetFloat(10, 1f, variables);
+                //psEmission.burstCount = modifier.GetInt(16, 1, variables);
+                psMain.duration = modifier.GetFloat(11, 1f, variables);
 
                 var rotationOverLifetime = ps.rotationOverLifetime;
                 rotationOverLifetime.zMultiplier = modifier.GetFloat(8, 0f, variables);
@@ -753,11 +748,11 @@ namespace BetterLegacy.Core.Helpers
 
                 psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(modifier.GetInt(3, 0, variables));
 
-                if (!modifier.constant)
-                    ps.Play();
-
                 var shape = ps.shape;
                 shape.angle = modifier.GetFloat(15, 90f, variables);
+
+                if (!modifier.constant)
+                    RTLevel.Current.postTick.Enqueue(() => ps.Emit(modifier.GetInt(16, 1, variables)));
             }
         }
         
