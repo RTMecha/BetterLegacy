@@ -534,14 +534,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var renderer = runtimeObject.visualObject.renderer;
 
-                if (!modifier.HasResult())
-                {
-                    var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
-                    onDestroy.Modifier = modifier;
-                    modifier.Result = runtimeObject.visualObject.gameObject;
+                if (renderer.material != LegacyResources.blur)
                     renderer.material = LegacyResources.blur;
-                }
-
                 renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             }
         }
@@ -589,14 +583,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var renderer = runtimeObject.visualObject.renderer;
 
-                if (!modifier.HasResult())
-                {
-                    var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
-                    onDestroy.Modifier = modifier;
-                    modifier.Result = runtimeObject.visualObject.gameObject;
+                if (renderer.material != LegacyResources.blur)
                     renderer.material = LegacyResources.blur;
-                }
-
                 renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
             }
         }
@@ -647,14 +635,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var renderer = runtimeObject.visualObject.renderer;
 
-                if (!modifier.HasResult())
-                {
-                    var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
-                    onDestroy.Modifier = modifier;
-                    modifier.Result = runtimeObject.visualObject.gameObject;
+                if (renderer.material != LegacyResources.blurColored)
                     renderer.material.shader = LegacyResources.blurColored;
-                }
-
                 renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             }
         }
