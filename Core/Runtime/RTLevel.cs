@@ -115,7 +115,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// Fixed level time.
         /// </summary>
-        public float FixedTime => AudioManager.inst.CurrentAudioSource.time;
+        public static float FixedTime => AudioManager.inst.CurrentAudioSource.time;
 
         /// <summary>
         /// The current room to render. If the room number is 0, all objects are active regardless of room number.

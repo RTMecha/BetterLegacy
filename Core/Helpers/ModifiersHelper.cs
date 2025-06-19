@@ -481,12 +481,12 @@ namespace BetterLegacy.Core.Helpers
         {
             "time" => (modifier, variables) =>
             {
-                var time = RTLevel.Current.FixedTime;
+                var time = RTLevel.FixedTime;
                 return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
             },
             "timeInRange" => (modifier, variables) =>
             {
-                var time = RTLevel.Current.FixedTime;
+                var time = RTLevel.FixedTime;
                 return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
             },
             "playerHit" => (modifier, variables) => PlayerManager.Players.Any(x => x.Player && x.Player.isTakingHit),

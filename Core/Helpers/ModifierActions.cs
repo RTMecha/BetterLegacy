@@ -6271,7 +6271,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var checkpoint = new Checkpoint();
-            checkpoint.time = modifier.GetBool(1, true, variables) ? RTLevel.Current.FixedTime + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
+            checkpoint.time = modifier.GetBool(1, true, variables) ? RTLevel.FixedTime + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
             checkpoint.pos = new Vector2(modifier.GetFloat(2, 0f, variables), modifier.GetFloat(3, 0f, variables));
             checkpoint.heal = modifier.GetBool(4, false, variables);
             checkpoint.respawn = modifier.GetBool(5, true, variables);

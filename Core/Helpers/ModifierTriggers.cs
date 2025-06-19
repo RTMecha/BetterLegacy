@@ -1275,7 +1275,7 @@ namespace BetterLegacy.Core.Helpers
                 time = timer.time;
             }
             else
-                time = RTLevel.Current.FixedTime;
+                time = RTLevel.FixedTime;
 
             return time > modifier.GetFloat(0, 0f, variables);
         }
