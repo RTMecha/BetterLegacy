@@ -232,7 +232,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TooltipHelper.AssignTooltip(gameObject, "Add Modifier");
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.NewListener(() => ModifiersEditor.inst.OpenDefaultModifiersList(ModifierReferenceType.BeatmapObject, modifyable));
+                button.onClick.NewListener(() => ModifiersEditor.inst.OpenDefaultModifiersList(ModifierBase.GetReferenceType<T>(), modifyable));
 
                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(gameObject.transform.GetChild(0).GetComponent<Text>());
