@@ -95,6 +95,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<PrefabObject> prefabObjects = new List<PrefabObject>();
 
         /// <summary>
+        /// Contained Prefabs (recursive).
+        /// </summary>
+        public List<Prefab> prefabs = new List<Prefab>();
+
+        /// <summary>
         /// Contained Background Layers.
         /// </summary>
         public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
