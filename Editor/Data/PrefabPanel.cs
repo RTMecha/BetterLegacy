@@ -491,26 +491,29 @@ namespace BetterLegacy.Editor.Data
                         {
                             if (RTEditor.inst.prefabPickerEnabled)
                             {
-                                var prefabInstanceID = LSText.randomString(16);
+                                var prefabInstanceID = PAObjectBase.GetStringID();
                                 if (RTEditor.inst.selectingMultiple)
                                 {
-                                    foreach (var otherTimelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                                     {
-                                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+                                        if (!timelineObject.TryGetPrefabable(out IPrefabable prefabable))
+                                            return;
 
-                                        otherBeatmapObject.prefabID = prefab.id;
-                                        otherBeatmapObject.prefabInstanceID = prefabInstanceID;
-                                        EditorTimeline.inst.RenderTimelineObject(otherTimelineObject);
+                                        prefabable.PrefabID = prefab.id;
+                                        prefabable.PrefabInstanceID = prefabInstanceID;
+                                        EditorTimeline.inst.RenderTimelineObject(timelineObject);
                                     }
                                 }
-                                else if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                else if (EditorTimeline.inst.CurrentSelection.TryGetPrefabable(out IPrefabable singlePrefabable))
                                 {
-                                    var currentBeatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-
-                                    currentBeatmapObject.prefabID = prefab.id;
-                                    currentBeatmapObject.prefabInstanceID = prefabInstanceID;
+                                    singlePrefabable.PrefabID = prefab.id;
+                                    singlePrefabable.PrefabInstanceID = prefabInstanceID;
                                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
-                                    ObjectEditor.inst.OpenDialog(currentBeatmapObject);
+
+                                    if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                                        ObjectEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                                    if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
+                                        RTBackgroundEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
                                 }
 
                                 RTEditor.inst.prefabPickerEnabled = false;
