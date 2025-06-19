@@ -107,6 +107,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool ParentDesync { get => desync; set => desync = value; }
 
+        public float ParentDesyncOffset { get; set; }
+
         #endregion
 
         #region Timing

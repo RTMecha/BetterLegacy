@@ -36,6 +36,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         public Transform transform;
         public string id;
         public bool desync;
+        public float desyncOffset;
         public bool spawned;
 
         public BeatmapObject beatmapObject;

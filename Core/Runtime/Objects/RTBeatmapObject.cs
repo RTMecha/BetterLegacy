@@ -333,7 +333,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     continue;
 
                 desync = parentObject.desync || parentObject.beatmapObject.detatched;
-                syncOffset = parentObject.timeOffset;
+                syncOffset = parentObject.timeOffset + parentObject.desyncOffset;
             }
 
             currentScale = totalScale;

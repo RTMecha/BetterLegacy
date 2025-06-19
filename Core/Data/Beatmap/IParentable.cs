@@ -40,5 +40,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// If the object should stop following the parent chain after spawn.
         /// </summary>
         public bool ParentDesync { get; set; }
+
+        /// <summary>
+        /// Offset to animate the desync at.
+        /// </summary>
+        public float ParentDesyncOffset { get; set; }
     }
 }

@@ -120,6 +120,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool ParentDesync { get => desync; set => desync = value; }
 
+        public float ParentDesyncOffset { get; set; }
+
         /// <summary>
         /// Temporary detatches the parent (similar to <see cref="desync"/>).
         /// </summary>
