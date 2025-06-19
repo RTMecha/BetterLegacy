@@ -1310,15 +1310,13 @@ namespace BetterLegacy.Core.Helpers
                     case "blur":
                     case "blurOther":
                     case "blurVariableOther": {
-                            if (modifier.Result != null && modifier.reference &&
+                            if (modifier.reference &&
                                 modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
                                 modifier.reference.runtimeObject is RTBeatmapObject levelObject &&
                                 levelObject.visualObject.renderer && levelObject.visualObject is SolidObject &&
                                 modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
                             {
-                                modifier.Result = null;
-
-                                levelObject.visualObject.renderer.material = ObjectManager.inst.norm;
+                                levelObject.visualObject.renderer.material = LegacyResources.objectMaterial;
 
                                 ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.renderer.material;
                             }
@@ -1326,15 +1324,13 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "blurVariable": {
-                            if (modifier.Result != null && modifier.reference &&
+                            if (modifier.reference &&
                                 modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
                                 modifier.reference.runtimeObject is RTBeatmapObject levelObject &&
                                 levelObject.visualObject.renderer && levelObject.visualObject is SolidObject &&
                                 modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool setNormal) && setNormal)
                             {
-                                modifier.Result = null;
-
-                                levelObject.visualObject.renderer.material = ObjectManager.inst.norm;
+                                levelObject.visualObject.renderer.material = LegacyResources.objectMaterial;
 
                                 ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.renderer.material;
                             }
