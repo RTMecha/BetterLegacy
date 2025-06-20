@@ -1235,7 +1235,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(backgroundObject, backgroundObject.editorData)),
-                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.CollapseNew(backgroundObject, backgroundObject.editorData))
+                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.Collapse(backgroundObject, backgroundObject.editorData, true))
                     );
             };
 

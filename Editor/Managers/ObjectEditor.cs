@@ -3658,13 +3658,11 @@ namespace BetterLegacy.Editor.Managers
             Dialog.LDMLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
             Dialog.LDMToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
 
-            Dialog.LDMToggle.onValueChanged.ClearAll();
-
             if (!RTEditor.ShowModdedUI)
                 return;
 
-            Dialog.LDMToggle.isOn = beatmapObject.LDM;
-            Dialog.LDMToggle.onValueChanged.AddListener(_val =>
+            Dialog.LDMToggle.SetIsOnWithoutNotify(beatmapObject.LDM);
+            Dialog.LDMToggle.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.LDM = _val;
                 RTLevel.Current?.UpdateObject(beatmapObject);
@@ -3681,9 +3679,8 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.InversableField(Dialog.NameField, InputFieldSwapper.Type.String);
             EditorHelper.AddInputFieldContextMenu(Dialog.NameField);
 
-            Dialog.NameField.onValueChanged.ClearAll();
-            Dialog.NameField.text = beatmapObject.name;
-            Dialog.NameField.onValueChanged.AddListener(_val =>
+            Dialog.NameField.SetTextWithoutNotify(beatmapObject.name);
+            Dialog.NameField.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.name = _val;
 
@@ -3714,9 +3711,8 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
                 gameObject.transform.localScale = Vector3.one;
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.onValueChanged.ClearAll();
-                input.text = tag;
-                input.onValueChanged.AddListener(_val => beatmapObject.tags[index] = _val);
+                input.SetTextWithoutNotify(tag);
+                input.onValueChanged.NewListener(_val => beatmapObject.tags[index] = _val);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.button.onClick.NewListener(() =>
@@ -3763,9 +3759,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorConfig.Instance.EditorComplexity.Value == Complexity.Advanced ?
                     CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty", "Solid") :
                     CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty"); // don't show solid object type 
-            Dialog.ObjectTypeDropdown.onValueChanged.ClearAll();
-            Dialog.ObjectTypeDropdown.value = Mathf.Clamp((int)beatmapObject.objectType, 0, Dialog.ObjectTypeDropdown.options.Count - 1);
-            Dialog.ObjectTypeDropdown.onValueChanged.AddListener(_val =>
+
+            Dialog.ObjectTypeDropdown.SetValueWithoutNotify(Mathf.Clamp((int)beatmapObject.objectType, 0, Dialog.ObjectTypeDropdown.options.Count - 1));
+            Dialog.ObjectTypeDropdown.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.objectType = (BeatmapObject.ObjectType)_val;
                 RenderGameObjectInspector(beatmapObject);
@@ -3786,9 +3782,8 @@ namespace BetterLegacy.Editor.Managers
         {
             var startTimeField = Dialog.StartTimeField;
 
-            startTimeField.lockToggle.onValueChanged.ClearAll();
-            startTimeField.lockToggle.isOn = beatmapObject.editorData.locked;
-            startTimeField.lockToggle.onValueChanged.AddListener(_val =>
+            startTimeField.lockToggle.SetIsOnWithoutNotify(beatmapObject.editorData.locked);
+            startTimeField.lockToggle.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.editorData.locked = _val;
 
@@ -3796,9 +3791,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
             });
 
-            startTimeField.inputField.onValueChanged.ClearAll();
-            startTimeField.inputField.text = beatmapObject.StartTime.ToString();
-            startTimeField.inputField.onValueChanged.AddListener(_val =>
+            startTimeField.inputField.SetTextWithoutNotify(beatmapObject.StartTime.ToString());
+            startTimeField.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -3811,14 +3805,19 @@ namespace BetterLegacy.Editor.Managers
                     if (UpdateObjects)
                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME);
 
+                    beatmapObject.modifiers.ForEach(modifier =>
+                    {
+                        modifier.Inactive?.Invoke(modifier, null);
+                        modifier.Result = default;
+                    });
+
                     ResizeKeyframeTimeline(beatmapObject);
                     RenderMarkers(beatmapObject);
                 }
             });
 
-            TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+            TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(startTimeField.inputField));
 
-            startTimeField.leftGreaterButton.interactable = (beatmapObject.StartTime > 0f);
             startTimeField.leftGreaterButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime - 1f;
@@ -3830,11 +3829,15 @@ namespace BetterLegacy.Editor.Managers
                 if (UpdateObjects)
                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME);
 
+                beatmapObject.modifiers.ForEach(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = default;
+                });
+
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderMarkers(beatmapObject);
             });
-
-            startTimeField.leftButton.interactable = (beatmapObject.StartTime > 0f);
             startTimeField.leftButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime - 0.1f;
@@ -3846,10 +3849,15 @@ namespace BetterLegacy.Editor.Managers
                 if (UpdateObjects)
                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME);
 
+                beatmapObject.modifiers.ForEach(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = default;
+                });
+
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderMarkers(beatmapObject);
             });
-
             startTimeField.middleButton.onClick.NewListener(() =>
             {
                 startTimeField.inputField.text = EditorManager.inst.CurrentAudioPos.ToString();
@@ -3859,11 +3867,15 @@ namespace BetterLegacy.Editor.Managers
                 if (UpdateObjects)
                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME);
 
+                beatmapObject.modifiers.ForEach(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = default;
+                });
+
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderMarkers(beatmapObject);
             });
-
-            startTimeField.rightButton.onClick.ClearAll();
             startTimeField.rightButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 0.1f;
@@ -3875,10 +3887,15 @@ namespace BetterLegacy.Editor.Managers
                 if (UpdateObjects)
                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME);
 
+                beatmapObject.modifiers.ForEach(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = default;
+                });
+
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderMarkers(beatmapObject);
             });
-
             startTimeField.rightGreaterButton.onClick.NewListener(() =>
             {
                 float moveTime = beatmapObject.StartTime + 1f;
@@ -3889,6 +3906,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
                     RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME);
+
+                beatmapObject.modifiers.ForEach(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Result = default;
+                });
 
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderMarkers(beatmapObject);
@@ -3901,9 +3924,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderAutokill(BeatmapObject beatmapObject)
         {
-            Dialog.AutokillDropdown.onValueChanged.ClearAll();
-            Dialog.AutokillDropdown.value = (int)beatmapObject.autoKillType;
-            Dialog.AutokillDropdown.onValueChanged.AddListener(_val =>
+            Dialog.AutokillDropdown.SetValueWithoutNotify((int)beatmapObject.autoKillType);
+            Dialog.AutokillDropdown.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.autoKillType = (AutoKillType)_val;
                 // AutoKillType affects both physical object and timeline object.
@@ -3921,9 +3943,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog.AutokillField.gameObject.SetActive(true);
 
-                Dialog.AutokillField.onValueChanged.ClearAll();
-                Dialog.AutokillField.text = beatmapObject.autoKillOffset.ToString();
-                Dialog.AutokillField.onValueChanged.AddListener(_val =>
+                Dialog.AutokillField.SetTextWithoutNotify(beatmapObject.autoKillOffset.ToString());
+                Dialog.AutokillField.onValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -3943,6 +3964,12 @@ namespace BetterLegacy.Editor.Managers
                         EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                         if (UpdateObjects)
                             RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+
+                        beatmapObject.modifiers.ForEach(modifier =>
+                        {
+                            modifier.Inactive?.Invoke(modifier, null);
+                            modifier.Result = default;
+                        });
 
                         ResizeKeyframeTimeline(beatmapObject);
                         RenderMarkers(beatmapObject);
@@ -3975,9 +4002,8 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.AutokillSetButton.onClick.ClearAll();
             }
 
-            Dialog.CollapseToggle.onValueChanged.ClearAll();
-            Dialog.CollapseToggle.isOn = beatmapObject.editorData.collapse;
-            Dialog.CollapseToggle.onValueChanged.AddListener(_val =>
+            Dialog.CollapseToggle.SetIsOnWithoutNotify(beatmapObject.editorData.collapse);
+            Dialog.CollapseToggle.onValueChanged.NewListener(_val =>
             {
                 beatmapObject.editorData.collapse = _val;
 
@@ -3996,11 +4022,10 @@ namespace BetterLegacy.Editor.Managers
             
             Dialog.ParentButton.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
 
-            Dialog.ParentSearchButton.onClick.ClearAll();
             Dialog.ParentClearButton.onClick.ClearAll();
             Dialog.ParentPickerButton.onClick.ClearAll();
 
-            Dialog.ParentSearchButton.onClick.AddListener(ShowParentSearch);
+            Dialog.ParentSearchButton.onClick.NewListener(ShowParentSearch);
             var parentSearchContextMenu = Dialog.ParentSearchButton.gameObject.GetOrAddComponent<ContextClickable>();
             parentSearchContextMenu.onClick = eventData =>
             {
@@ -5502,7 +5527,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData)),
-                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.CollapseNew(beatmapObject, beatmapObject.editorData))
+                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData, true))
                     );
             };
 

@@ -764,16 +764,9 @@ namespace BetterLegacy.Core.Helpers
 
             var gameObject = runtimeObject.visualObject.gameObject;
 
-            if (!modifier.reference.trailRenderer && !gameObject.GetComponent<TrailRenderer>())
+            if (!modifier.reference.trailRenderer)
             {
-                modifier.reference.trailRenderer = gameObject.AddComponent<TrailRenderer>();
-
-                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                modifier.reference.trailRenderer.material.color = Color.white;
-            }
-            else if (!modifier.reference.trailRenderer)
-            {
-                modifier.reference.trailRenderer = gameObject.GetComponent<TrailRenderer>();
+                modifier.reference.trailRenderer = gameObject.GetOrAddComponent<TrailRenderer>();
 
                 modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
                 modifier.reference.trailRenderer.material.color = Color.white;
@@ -804,16 +797,9 @@ namespace BetterLegacy.Core.Helpers
 
             var gameObject = runtimeObject.visualObject.gameObject;
 
-            if (!modifier.reference.trailRenderer && !gameObject.GetComponent<TrailRenderer>())
+            if (!modifier.reference.trailRenderer)
             {
-                modifier.reference.trailRenderer = gameObject.AddComponent<TrailRenderer>();
-
-                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                modifier.reference.trailRenderer.material.color = Color.white;
-            }
-            else if (!modifier.reference.trailRenderer)
-            {
-                modifier.reference.trailRenderer = gameObject.GetComponent<TrailRenderer>();
+                modifier.reference.trailRenderer = gameObject.GetOrAddComponent<TrailRenderer>();
 
                 modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
                 modifier.reference.trailRenderer.material.color = Color.white;
