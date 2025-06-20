@@ -346,12 +346,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             reactiveZIntensity = orig.reactiveZIntensity;
             reactiveZSample = orig.reactiveZSample;
 
-            tags = orig.tags.Clone();
-            ignoreLifespan = orig.ignoreLifespan;
-            orderModifiers = orig.orderModifiers;
-            modifiers.Clear();
-            for (int i = 0; i < orig.modifiers.Count; i++)
-                modifiers.Add(orig.modifiers[i].Copy(this));
+            this.CopyModifyableData(orig);
 
             editorData = ObjectEditorData.DeepCopy(orig.editorData);
         }
@@ -513,54 +508,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
 
-            tags.Clear();
-            if (jn["tags"] != null)
-                for (int i = 0; i < jn["tags"].Count; i++)
-                    tags.Add(jn["tags"][i]);
-
-            if (jn["iglif"] != null)
-                ignoreLifespan = jn["iglif"].AsBool;
-
-            if (jn["ordmod"] != null)
-                orderModifiers = jn["ordmod"].AsBool;
-
-            modifiers.Clear();
-            var modifiersCount = jn["modifiers"].Count;
-            for (int i = 0; i < modifiersCount; i++)
-            {
-                var modifierJN = jn["modifiers"][i];
-
-                // this is for backwards compatibility due to BG modifiers having multiple lists previously.
-                if (modifierJN.IsArray)
-                {
-                    //var wasOrderModifiers = orderModifiers;
-
-                    orderModifiers = true;
-                    var list = new List<Modifier<BackgroundObject>>();
-                    for (int j = 0; j < jn["modifiers"][i].Count; j++)
-                    {
-                        var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], this);
-                        if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
-                            list.Add(modifier);
-                    }
-
-                    //if (!wasOrderModifiers)
-                        list.Sort((a, b) => a.type.CompareTo(b.type));
-                    //else if (i != modifiersCount - 1 && ModifiersManager.defaultBackgroundObjectModifiers.TryFind(x => x.Name == "break", out ModifierBase breakModifierBase) && breakModifierBase is Modifier<BackgroundObject> breakModifier)
-                    //    list.Add(breakModifier.Copy(this));
-
-                    modifiers.AddRange(list);
-                }
-                else
-                {
-                    var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i], this);
-                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBackgroundObjectModifiers))
-                        modifiers.Add(modifier);
-                }
-            }
-
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
+
+            this.ReadModifiersJSON(jn, ModifiersManager.defaultBackgroundObjectModifiers, true);
         }
 
         public override JSONNode ToJSONVG()
@@ -589,7 +540,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
 
@@ -717,16 +668,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
 
-            if (ignoreLifespan)
-                jn["iglif"] = ignoreLifespan;
-            if (orderModifiers)
-                jn["ordmod"] = orderModifiers;
-
-            for (int i = 0; i < modifiers.Count; i++)
-                jn["modifiers"][i] = modifiers[i].ToJSON();
-
             if (editorData.ShouldSerialize)
                 jn["ed"] = editorData.ToJSON();
+
+            this.WriteModifiersJSON(jn);
 
             return jn;
         }

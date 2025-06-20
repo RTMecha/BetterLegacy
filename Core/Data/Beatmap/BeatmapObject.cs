@@ -548,7 +548,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void CopyData(BeatmapObject orig, bool newID = true)
         {
             id = newID ? LSText.randomString(16) : orig.id;
-            parent = orig.parent;
             name = orig.name;
             StartTime = orig.StartTime;
             autoKillOffset = orig.autoKillOffset;
@@ -570,21 +569,17 @@ namespace BetterLegacy.Core.Data.Beatmap
             autoTextAlign = orig.autoTextAlign;
             text = orig.text;
             LDM = orig.LDM;
-            parentType = orig.parentType;
-            parentOffsets = orig.parentOffsets.Copy();
-            parentAdditive = orig.parentAdditive;
-            parallaxSettings = orig.parallaxSettings.Copy();
+
+            this.CopyParentData(orig);
+            Parent = orig.parent;
+
             renderLayerType = orig.renderLayerType;
             opacityCollision = orig.opacityCollision;
-            desync = orig.desync;
 
             for (int i = 0; i < events.Count; i++)
                 events[i].AddRange(orig.events[i].Select(x => x.Copy()));
 
-            tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>();
-            ignoreLifespan = orig.ignoreLifespan;
-            orderModifiers = orig.orderModifiers;
-            modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => x.Copy(this)).ToList() : new List<Modifier<BeatmapObject>>();
+            this.CopyModifyableData(orig);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -1041,12 +1036,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["opcol"] != null)
                 opacityCollision = jn["opcol"].AsBool;
 
-            if (jn["iglif"] != null)
-                ignoreLifespan = jn["iglif"].AsBool;
-
-            if (jn["ordmod"] != null)
-                orderModifiers = jn["ordmod"].AsBool;
-
             if (jn["empty"] != null)
                 objectType = jn["empty"].AsBool ? ObjectType.Empty : ObjectType.Normal;
             else if (jn["h"] != null)
@@ -1061,11 +1050,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 startTime = jn["st"].AsFloat;
 
             if (jn["name"] != null)
-                name = ((string)jn["name"]).Replace("{{colon}}", ":");
-
-            if (jn["tags"] != null)
-                for (int i = 0; i < jn["tags"].Count; i++)
-                    tags.Add(((string)jn["tags"][i]).Replace("{{colon}}", ":"));
+                name = jn["name"];
 
             this.ReadShapeJSON(jn);
 
@@ -1092,17 +1077,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
 
-            for (int i = 0; i < jn["modifiers"].Count; i++)
-            {
-                var modifier = Modifier<BeatmapObject>.Parse(jn["modifiers"][i], this);
-                if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultBeatmapObjectModifiers))
-                    modifiers.Add(modifier);
-            }
+            this.ReadModifiersJSON(jn, ModifiersManager.defaultBeatmapObjectModifiers);
         }
 
         public override JSONNode ToJSONVG()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
             if (!string.IsNullOrEmpty(prefabID))
@@ -1248,13 +1228,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
-
-            if (tags != null && !tags.IsEmpty())
-                for (int i = 0; i < tags.Count; i++)
-                    jn["tags"][i] = tags[i];
 
             this.WritePrefabJSON(jn);
             this.WriteParentJSON(jn);
@@ -1304,12 +1280,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < events[3].Count; i++)
                 jn["events"]["col"][i] = events[3][i].ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
 
-            if (ignoreLifespan)
-                jn["iglif"] = ignoreLifespan;
-            if (orderModifiers)
-                jn["ordmod"] = orderModifiers;
-            for (int i = 0; i < modifiers.Count; i++)
-                jn["modifiers"][i] = modifiers[i].ToJSON();
+            this.WriteModifiersJSON(jn);
 
             return jn;
         }

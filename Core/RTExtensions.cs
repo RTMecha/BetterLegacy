@@ -1437,6 +1437,27 @@ namespace BetterLegacy.Core
         public static PrefabObject GetPrefabObject(this IPrefabable instance) => GameData.Current.prefabObjects.Find(x => x.id == instance.PrefabInstanceID);
 
         /// <summary>
+        /// Checks if a prefabable object is from the same Prefab.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <returns>Returns true if the Prefab is the same.</returns>
+        public static bool SamePrefab(this IPrefabable instance, IPrefabable prefabable) => instance.PrefabID == prefabable.PrefabID;
+
+        /// <summary>
+        /// Checks if a prefabable object is from the same Prefab and same Prefab instance.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <returns>Returns true if the Prefab instance is the same.</returns>
+        public static bool SamePrefabInstance(this IPrefabable instance, IPrefabable prefabable) => instance.SamePrefab(prefabable) && instance.PrefabInstanceID == prefabable.PrefabInstanceID;
+
+        /// <summary>
+        /// Checks if a prefabable object is from the same Prefab and same spawned Prefab instance.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <returns>Returns true if the spawned Prefab instance is the same.</returns>
+        public static bool SamePrefabInstanceSpawned(this IPrefabable instance, IPrefabable prefabable) => instance.SamePrefabInstance(prefabable) && instance.FromPrefab == prefabable.FromPrefab;
+
+        /// <summary>
         /// Gets variables from the evaluatable object.
         /// </summary>
         /// <returns>Returns a dictionary containing variables from the evaluatable object.</returns>
@@ -1525,6 +1546,38 @@ namespace BetterLegacy.Core
             stringBuilder[index] = val ? '1' : '0';
             parentable.ParentAdditive = stringBuilder.ToString();
             CoreHelper.Log($"Set Parent Additive: {parentable.ParentAdditive}");
+        }
+
+        /// <summary>
+        /// Copies parent data from another parentable object.
+        /// </summary>
+        /// <param name="orig">Parentable object to copy and apply from.</param>
+        public static void CopyParentData(this IParentable parentable, IParentable orig)
+        {
+            parentable.Parent = orig.Parent;
+            parentable.ParentType = orig.ParentType;
+            parentable.ParentOffsets = orig.ParentOffsets.Copy();
+            parentable.ParentAdditive = orig.ParentAdditive;
+            parentable.ParentParallax = orig.ParentParallax.Copy();
+            parentable.ParentDesync = orig.ParentDesync;
+            parentable.ParentDesyncOffset = orig.ParentDesyncOffset;
+        }
+
+        /// <summary>
+        /// Copies parent data from another modifyable object.
+        /// </summary>
+        /// <typeparam name="T">Type of the modifyable.</typeparam>
+        /// <param name="orig">Modifyable object to copy and apply from.</param>
+        public static void CopyModifyableData<T>(this IModifyable<T> modifyable, IModifyable<T> orig)
+        {
+            modifyable.Tags = !orig.Tags.IsEmpty() ? orig.Tags.Clone() : new List<string>();
+            modifyable.IgnoreLifespan = orig.IgnoreLifespan;
+            modifyable.OrderModifiers = orig.OrderModifiers;
+
+            var reference = (T)modifyable;
+            modifyable.Modifiers.Clear();
+            for (int i = 0; i < orig.Modifiers.Count; i++)
+                modifyable.Modifiers.Add(orig.Modifiers[i].Copy(reference));
         }
 
         /// <summary>
@@ -1669,6 +1722,96 @@ namespace BetterLegacy.Core
             var prefabInstanceID = prefabable.PrefabInstanceID;
             if (!string.IsNullOrEmpty(prefabInstanceID))
                 jn["piid"] = prefabInstanceID;
+        }
+
+        /// <summary>
+        /// Reads <see cref="IModifyable{T}"/> data from JSON.
+        /// </summary>
+        /// <typeparam name="T">Type of the modifyable.</typeparam>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <param name="jn">JSON to read from.</param>
+        /// <param name="defaultModifiers">Default modifiers list to validate from.</param>
+        public static void ReadModifiersJSON<T>(this IModifyable<T> modifyable, JSONNode jn, List<ModifierBase> defaultModifiers, bool handleOutdatedPageModifiers = false)
+        {
+            modifyable.Tags.Clear();
+            if (jn["tags"] != null)
+                for (int i = 0; i < jn["tags"].Count; i++)
+                    modifyable.Tags.Add(jn["tags"][i]);
+
+            if (jn["iglif"] != null)
+                modifyable.IgnoreLifespan = jn["iglif"].AsBool;
+
+            if (jn["ordmod"] != null)
+                modifyable.OrderModifiers = jn["ordmod"].AsBool;
+
+            var reference = (T)modifyable;
+
+            modifyable.Modifiers.Clear();
+            if (handleOutdatedPageModifiers)
+            {
+                var modifiersCount = jn["modifiers"].Count;
+                for (int i = 0; i < modifiersCount; i++)
+                {
+                    var modifierJN = jn["modifiers"][i];
+
+                    // this is for backwards compatibility due to BG modifiers having multiple lists previously.
+                    if (modifierJN.IsArray)
+                    {
+                        //var wasOrderModifiers = orderModifiers;
+
+                        modifyable.OrderModifiers = true;
+                        var list = new List<Modifier<T>>();
+                        for (int j = 0; j < jn["modifiers"][i].Count; j++)
+                        {
+                            var modifier = Modifier<T>.Parse(jn["modifiers"][i][j], reference);
+                            if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
+                                list.Add(modifier);
+                        }
+
+                        //if (!wasOrderModifiers)
+                        list.Sort((a, b) => a.type.CompareTo(b.type));
+                        //else if (i != modifiersCount - 1 && ModifiersManager.defaultBackgroundObjectModifiers.TryFind(x => x.Name == "break", out ModifierBase breakModifierBase) && breakModifierBase is Modifier<BackgroundObject> breakModifier)
+                        //    list.Add(breakModifier.Copy(this));
+
+                        modifyable.Modifiers.AddRange(list);
+                    }
+                    else
+                    {
+                        var modifier = Modifier<T>.Parse(jn["modifiers"][i], reference);
+                        if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
+                            modifyable.Modifiers.Add(modifier);
+                    }
+                }
+
+                return;
+            }
+
+            for (int i = 0; i < jn["modifiers"].Count; i++)
+            {
+                var modifier = Modifier<T>.Parse(jn["modifiers"][i], reference);
+                if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
+                    modifyable.Modifiers.Add(modifier);
+            }
+        }
+
+        /// <summary>
+        /// Writes <see cref="IModifyable{T}"/> data to JSON.
+        /// </summary>
+        /// <typeparam name="T">Type of the modifyable.</typeparam>
+        /// <param name="modifyable">Modifyable object reference.</param>
+        /// <param name="jn">JSON to write to.</param>
+        public static void WriteModifiersJSON<T>(this IModifyable<T> modifyable, JSONNode jn)
+        {
+            if (modifyable.Tags != null)
+                for (int i = 0; i < modifyable.Tags.Count; i++)
+                    jn["tags"][i] = modifyable.Tags[i];
+
+            if (modifyable.IgnoreLifespan)
+                jn["iglif"] = modifyable.IgnoreLifespan;
+            if (modifyable.OrderModifiers)
+                jn["ordmod"] = modifyable.OrderModifiers;
+            for (int i = 0; i < modifyable.Modifiers.Count; i++)
+                jn["modifiers"][i] = modifyable.Modifiers[i].ToJSON();
         }
 
         #endregion
