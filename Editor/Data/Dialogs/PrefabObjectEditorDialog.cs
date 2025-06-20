@@ -33,6 +33,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
+        #region Instance Data
+
+        public FunctionButtonStorage CopyInstanceDataButton { get; set; }
+        public FunctionButtonStorage PasteInstanceDataButton { get; set; }
+        public FunctionButtonStorage RemoveInstanceDataButton { get; set; }
+
+        #endregion
+
         #region Editor
 
         public RectTransform EditorSettingsParent { get; set; }
@@ -475,6 +483,36 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.Delete(SpeedField.rightGreaterButton.gameObject);
 
             EditorThemeManager.AddInputField(SpeedField);
+
+            #endregion
+
+            #region Instance Data
+
+            RTEditor.GenerateLabels("copy label", LeftContent, new Label("Instance Data"));
+
+            var copyInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "copy instance data");
+            copyInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
+            CopyInstanceDataButton = copyInstanceData.GetComponent<FunctionButtonStorage>();
+            CopyInstanceDataButton.label.text = "Copy Data";
+            EditorThemeManager.AddGraphic(CopyInstanceDataButton.button.image, ThemeGroup.Copy, true);
+            EditorThemeManager.AddGraphic(CopyInstanceDataButton.label, ThemeGroup.Copy_Text);
+            TooltipHelper.AssignTooltip(copyInstanceData, "Copy Prefab Instance Data");
+            
+            var pasteInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "paste instance data");
+            pasteInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
+            PasteInstanceDataButton = pasteInstanceData.GetComponent<FunctionButtonStorage>();
+            PasteInstanceDataButton.label.text = "Paste Data";
+            EditorThemeManager.AddGraphic(PasteInstanceDataButton.button.image, ThemeGroup.Paste, true);
+            EditorThemeManager.AddGraphic(PasteInstanceDataButton.label, ThemeGroup.Paste_Text);
+            TooltipHelper.AssignTooltip(pasteInstanceData, "Paste Prefab Instance Data");
+
+            var removeInstanceData = EditorPrefabHolder.Instance.Function1Button.Duplicate(LeftContent, "remove instance data");
+            removeInstanceData.transform.AsRT().sizeDelta = new Vector2(356f, 32f);
+            RemoveInstanceDataButton = removeInstanceData.GetComponent<FunctionButtonStorage>();
+            RemoveInstanceDataButton.label.text = "Remove Copied Data";
+            EditorThemeManager.AddGraphic(RemoveInstanceDataButton.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.AddGraphic(RemoveInstanceDataButton.label, ThemeGroup.Delete_Text);
+            TooltipHelper.AssignTooltip(removeInstanceData, "Remove Prefab Instance Data");
 
             #endregion
 

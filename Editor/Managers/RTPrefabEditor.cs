@@ -303,6 +303,8 @@ namespace BetterLegacy.Editor.Managers
 
         public bool advancedParent;
 
+        public PrefabObject copiedInstanceData;
+
         public void UpdateOffsets(PrefabObject currentPrefab)
         {
             var prefabObjects = GameData.Current.prefabObjects.FindAll(x => x.prefabID == currentPrefab.prefabID);
@@ -356,6 +358,8 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabObjectTransforms(prefabObject);
             RenderPrefabObjectRepeat(prefabObject);
             RenderPrefabObjectSpeed(prefabObject);
+
+            RenderPrefabObjectInstanceData(prefabObject);
 
             RenderPrefabObjectLayer(prefabObject);
             RenderPrefabObjectBin(prefabObject);
@@ -887,6 +891,35 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(PrefabObjectEditor.SpeedField.inputField.gameObject, TriggerHelper.ScrollDelta(PrefabObjectEditor.SpeedField.inputField, min: 0.1f, max: PrefabObject.MAX_PREFAB_OBJECT_SPEED));
         }
         
+        public void RenderPrefabObjectInstanceData(PrefabObject prefabObject)
+        {
+            PrefabObjectEditor.CopyInstanceDataButton.button.onClick.NewListener(() =>
+            {
+                copiedInstanceData = prefabObject.Copy();
+                EditorManager.inst.DisplayNotification($"Copied Prefab instance data.", 2f, EditorManager.NotificationType.Success);
+                RenderPrefabObjectInstanceData(prefabObject);
+            });
+            PrefabObjectEditor.PasteInstanceDataButton.button.onClick.NewListener(() =>
+            {
+                if (!copiedInstanceData)
+                {
+                    EditorManager.inst.DisplayNotification($"No copied data.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                PasteInstanceData(prefabObject);
+
+                EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
+            });
+            PrefabObjectEditor.RemoveInstanceDataButton.gameObject.SetActive(copiedInstanceData);
+            PrefabObjectEditor.RemoveInstanceDataButton.button.onClick.NewListener(() =>
+            {
+                copiedInstanceData = null;
+                EditorManager.inst.DisplayNotification($"Removed copied Prefab instance data.", 2f, EditorManager.NotificationType.Success);
+                RenderPrefabObjectInstanceData(prefabObject);
+            });
+        }
+
         public void RenderPrefabObjectLayer(PrefabObject prefabObject)
         {
             PrefabObjectEditor.EditorLayerField.gameObject.SetActive(RTEditor.NotSimple);
@@ -1174,10 +1207,8 @@ namespace BetterLegacy.Editor.Managers
             if (!RTEditor.ShowModdedUI)
                 return;
 
-            PrefabObjectEditor.InspectPrefabObject.button.onClick.ClearAll();
-            PrefabObjectEditor.InspectPrefabObject.button.onClick.AddListener(() => ModCompatibility.Inspect(prefabObject));
-            PrefabObjectEditor.InspectTimelineObject.button.onClick.ClearAll();
-            PrefabObjectEditor.InspectTimelineObject.button.onClick.AddListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(prefabObject)));
+            PrefabObjectEditor.InspectPrefabObject.button.onClick.NewListener(() => ModCompatibility.Inspect(prefabObject));
+            PrefabObjectEditor.InspectTimelineObject.button.onClick.NewListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(prefabObject)));
         }
         
         public void RenderPrefabObjectOffset(PrefabObject prefabObject, Prefab prefab)
@@ -1267,9 +1298,12 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public void CollapseCurrentPrefab()
+        /// <summary>
+        /// Collapses all objects related to the currently selected prefabable object into a Prefab instance.
+        /// </summary>
+        public void CollapseCurrentPrefab(bool createNew = false)
         {
-            if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject || !EditorTimeline.inst.CurrentSelection.isBackgroundObject)
+            if (!EditorTimeline.inst.CurrentSelection.TryGetData(out IPrefabable prefabable))
             {
                 EditorManager.inst.DisplayNotification("Can't collapse non-object.", 2f, EditorManager.NotificationType.Error);
                 return;
@@ -1279,22 +1313,19 @@ namespace BetterLegacy.Editor.Managers
             {
                 RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", () =>
                 {
-                    if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                        Collapse(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().editorData);
-                    if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
-                        Collapse(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>(), EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>().editorData);
+                    Collapse(prefabable, (prefabable as IEditable)?.EditorData, createNew);
                     RTEditor.inst.HideWarningPopup();
                 }, RTEditor.inst.HideWarningPopup);
 
                 return;
             }
 
-            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                Collapse(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().editorData);
-            if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
-                Collapse(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>(), EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>().editorData);
+            Collapse(prefabable, (prefabable as IEditable)?.EditorData, createNew);
         }
 
+        /// <summary>
+        /// Expands the contents of the currently selected Prefab instance.
+        /// </summary>
         public void ExpandCurrentPrefab()
         {
             if (!EditorTimeline.inst.CurrentSelection.isPrefabObject)
@@ -1306,7 +1337,13 @@ namespace BetterLegacy.Editor.Managers
             Expand(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
-        public void Collapse(IPrefabable prefabable, ObjectEditorData editorData)
+        /// <summary>
+        /// Collapses all objects related to a prefabable object into a Prefab instance.
+        /// </summary>
+        /// <param name="prefabable">Prefabable object.</param>
+        /// <param name="editorData">Object editor data to apply to the new Prefab instance.</param>
+        /// <param name="createNew">If a new Prefab should be created.</param>
+        public void Collapse(IPrefabable prefabable, ObjectEditorData editorData, bool createNew = false)
         {
             var prefabID = prefabable.PrefabID;
             var prefabInstanceID = prefabable.PrefabInstanceID;
@@ -1317,43 +1354,62 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var objects = GameData.Current.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
-            var bgObjects = GameData.Current.backgroundObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
+            var prefabables = GameData.Current.GetPrefabables().FindAll(x => x.SamePrefabInstance(prefabable));
 
-            if (objects.IsEmpty() && bgObjects.IsEmpty())
+            var objects = GameData.Current.beatmapObjects.FindAll(x => x.SamePrefabInstance(prefabable));
+            var bgObjects = GameData.Current.backgroundObjects.FindAll(x => x.SamePrefabInstance(prefabable));
+
+            if (prefabables.IsEmpty())
             {
                 EditorManager.inst.DisplayNotification("No objects were found for the prefab to collapse.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
-            float startTime = float.MaxValue;
+            float startTime = 0f;
 
-            if (!objects.IsEmpty())
-                startTime = objects.Min(x => x.StartTime);
-
-            if (!bgObjects.IsEmpty())
-            {
-                var t = bgObjects.Min(x => x.StartTime);
-                if (t < startTime)
-                    startTime = t;
-            }
+            if (!prefabables.IsEmpty())
+                startTime = prefabables.Min(x => x.StartTime);
 
             int index = GameData.Current.prefabs.FindIndex(x => x.id == prefabID);
             var originalPrefab = GameData.Current.prefabs[index];
+            PrefabObject prefabObject;
 
-            var prefabObject =
-                GameData.Current.prefabObjects.TryFind(x => x.id == prefabInstanceID && x.expanded, out PrefabObject originalPrefabObject) ? originalPrefabObject : new PrefabObject(originalPrefab.id);
+            if (createNew)
+            {
+                var newPrefab = originalPrefab.Copy();
 
-            prefabObject.StartTime = startTime - originalPrefab.offset;
-            prefabObject.editorData.Bin = editorData.Bin;
-            prefabObject.editorData.Layer = editorData.Layer;
+                prefabObject = new PrefabObject(newPrefab.id, startTime - newPrefab.offset);
 
-            var newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, new List<PrefabObject>(), backgroundObjects: bgObjects);
+                newPrefab.typeID = originalPrefab.typeID;
 
-            newPrefab.id = originalPrefab.id;
-            newPrefab.typeID = originalPrefab.typeID;
+                int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.name, "( +\\[\\d+])", string.Empty) == newPrefab.name).Count;
+                if (num > 0)
+                    newPrefab.name = $"{newPrefab.name} [{num}]";
 
-            GameData.Current.prefabs[index] = newPrefab;
+                GameData.Current.prefabs.Add(newPrefab);
+            }
+            else
+            {
+                prefabObject = GameData.Current.prefabObjects.TryFind(x => x.id == prefabInstanceID && x.expanded, out PrefabObject originalPrefabObject) ? originalPrefabObject : new PrefabObject(originalPrefab.id);
+
+                prefabObject.StartTime = startTime - originalPrefab.offset;
+
+                var newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, new List<PrefabObject>(), backgroundObjects: bgObjects);
+
+                newPrefab.id = originalPrefab.id;
+                newPrefab.typeID = originalPrefab.typeID;
+
+                GameData.Current.prefabs[index] = newPrefab;
+            }
+
+            if (editorData)
+            {
+                prefabObject.editorData.Bin = editorData.Bin;
+                prefabObject.editorData.Layer = editorData.Layer;
+            }
+
+            GameData.Current.prefabObjects.Add(prefabObject);
+
             EditorTimeline.inst.timelineObjects.ForLoopReverse((timelineObject, index) =>
             {
                 if (timelineObject.isPrefabObject || !timelineObject.TryGetPrefabable(out IPrefabable otherPrefabable) || otherPrefabable.PrefabInstanceID != prefabInstanceID)
@@ -1363,7 +1419,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.timelineObjects.RemoveAt(index);
             });
 
-            GameData.Current.prefabObjects.Add(prefabObject);
             GameData.Current.beatmapObjects.ForLoopReverse((beatmapObject, index) =>
             {
                 if (beatmapObject.prefabInstanceID != prefabInstanceID || beatmapObject.fromPrefab)
@@ -1394,98 +1449,10 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Replaced all instances of Prefab!", 2f, EditorManager.NotificationType.Success);
         }
 
-        public void CollapseNew(IPrefabable prefabable, ObjectEditorData editorData)
-        {
-            var prefabID = prefabable.PrefabID;
-            var prefabInstanceID = prefabable.PrefabInstanceID;
-
-            if (string.IsNullOrEmpty(prefabInstanceID))
-            {
-                EditorManager.inst.DisplayNotification("Beatmap Object does not have a Prefab Object reference.", 2f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            var objects = GameData.Current.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
-            var bgObjects = GameData.Current.backgroundObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID);
-
-            if (objects.IsEmpty() && bgObjects.IsEmpty())
-            {
-                EditorManager.inst.DisplayNotification("No objects were found for the prefab to collapse.", 2f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            float startTime = float.MaxValue;
-
-            if (!objects.IsEmpty())
-                startTime = objects.Min(x => x.StartTime);
-
-            if (!bgObjects.IsEmpty())
-            {
-                var t = bgObjects.Min(x => x.StartTime);
-                if (t < startTime)
-                    startTime = t;
-            }
-
-            int index = GameData.Current.prefabs.FindIndex(x => x.id == prefabID);
-            var originalPrefab = GameData.Current.prefabs[index];
-            var newPrefab = originalPrefab.Copy();
-
-            var prefabObject = new PrefabObject(newPrefab.id, startTime - newPrefab.offset);
-            prefabObject.editorData.Bin = editorData.Bin;
-            prefabObject.editorData.Layer = editorData.Layer;
-
-            newPrefab.typeID = originalPrefab.typeID;
-
-            int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.name, "( +\\[\\d+])", string.Empty) == newPrefab.name).Count;
-            if (num > 0)
-                newPrefab.name = $"{newPrefab.name} [{num}]";
-
-            GameData.Current.prefabs.Add(newPrefab);
-
-            EditorTimeline.inst.timelineObjects.ForLoopReverse((timelineObject, index) =>
-            {
-                if (timelineObject.isPrefabObject ||
-                    timelineObject.isBeatmapObject && timelineObject.GetData<BeatmapObject>().prefabInstanceID != prefabInstanceID ||
-                    timelineObject.isBackgroundObject && timelineObject.GetData<BackgroundObject>().prefabInstanceID != prefabInstanceID)
-                    return;
-
-                if (timelineObject.GameObject)
-                {
-                    timelineObject.GameObject.transform.SetParent(null);
-                    Destroy(timelineObject.GameObject);
-                }
-                EditorTimeline.inst.timelineObjects.RemoveAt(index);
-            });
-
-            GameData.Current.prefabObjects.Add(prefabObject);
-            GameData.Current.beatmapObjects.ForLoopReverse((beatmapObject, index) =>
-            {
-                if (beatmapObject.prefabInstanceID != prefabInstanceID || beatmapObject.fromPrefab)
-                    return;
-
-                if (quickPrefabTarget && quickPrefabTarget.id == beatmapObject.id)
-                    quickPrefabTarget = null;
-
-                RTLevel.Current?.UpdateObject(beatmapObject, reinsert: false, recalculate: false);
-                GameData.Current.beatmapObjects.RemoveAt(index);
-            });
-            GameData.Current.backgroundObjects.ForLoopReverse((backgroundObject, index) =>
-            {
-                if (backgroundObject.prefabInstanceID != prefabInstanceID || backgroundObject.fromPrefab)
-                    return;
-
-                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, reinsert: false, recalculate: false);
-                GameData.Current.backgroundObjects.RemoveAt(index);
-            });
-
-            RTLevel.Current?.AddPrefabToLevel(prefabObject, recalculate: false);
-            RTLevel.Current?.RecalculateObjectStates();
-
-            EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
-
-            EditorManager.inst.DisplayNotification("Created new Prefab!", 2f, EditorManager.NotificationType.Success);
-        }
-
+        /// <summary>
+        /// Expands the contents of a Prefab instance.
+        /// </summary>
+        /// <param name="prefabObject">Prefab instance.</param>
         public void Expand(PrefabObject prefabObject)
         {
             string id = prefabObject.id;
@@ -1508,7 +1475,12 @@ namespace BetterLegacy.Editor.Managers
             prefabObject = null;
         }
 
-        public void AddPrefabObjectToLevel(Prefab prefab, BeatmapObject target = null)
+        /// <summary>
+        /// Creates an instance of a Prefab and imports it to the level.
+        /// </summary>
+        /// <param name="prefab">Prefab to import.</param>
+        /// <param name="target">Object to target.</param>
+        public void AddPrefabObjectToLevel(Prefab prefab, ObjectTransform? target = null)
         {
             var prefabObject = new PrefabObject
             {
@@ -1533,9 +1505,39 @@ namespace BetterLegacy.Editor.Managers
             prefabObject.events[1].values[0] = 1f;
             prefabObject.events[1].values[1] = 1f;
 
-            if (target)
+            if (copiedInstanceData)
             {
-                var anim = target.InterpolateChain();
+                prefabObject.autoKillOffset = copiedInstanceData.autoKillOffset;
+                prefabObject.autoKillType = copiedInstanceData.autoKillType;
+
+                for (int i = 0; i < prefabObject.events.Count; i++)
+                {
+                    if (!copiedInstanceData.events.InRange(i))
+                        return;
+
+                    var copy = copiedInstanceData.events[i];
+                    for (int j = 0; j < prefabObject.events[i].values.Length; j++)
+                    {
+                        if (copy.values.TryGetAt(j, out float val))
+                            prefabObject.events[i].values[j] = val;
+                    }
+                    for (int j = 0; j < prefabObject.events[i].randomValues.Length; j++)
+                    {
+                        if (copy.randomValues.TryGetAt(j, out float val))
+                            prefabObject.events[i].randomValues[j] = val;
+                    }
+                    prefabObject.events[i].random = copy.random;
+                }
+
+                prefabObject.CopyModifyableData(copiedInstanceData);
+                prefabObject.CopyParentData(copiedInstanceData);
+                prefabObject.RepeatCount = copiedInstanceData.RepeatCount;
+                prefabObject.RepeatOffsetTime = copiedInstanceData.RepeatOffsetTime;
+            }
+
+            if (target.HasValue)
+            {
+                var anim = target.Value;
                 prefabObject.events[0].values[0] = anim.position.x;
                 prefabObject.events[0].values[1] = anim.position.y;
                 prefabObject.events[1].values[0] = anim.scale.x;
@@ -1551,6 +1553,43 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(prefab, prefabObject));
+        }
+
+        /// <summary>
+        /// Pastes the copied Prefab instance data to a Prefab Object.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object to paste data to.</param>
+        public void PasteInstanceData(PrefabObject prefabObject)
+        {
+            prefabObject.autoKillOffset = copiedInstanceData.autoKillOffset;
+            prefabObject.autoKillType = copiedInstanceData.autoKillType;
+
+            for (int i = 0; i < prefabObject.events.Count; i++)
+            {
+                if (!copiedInstanceData.events.InRange(i))
+                    return;
+
+                var copy = copiedInstanceData.events[i];
+                for (int j = 0; j < prefabObject.events[i].values.Length; j++)
+                {
+                    if (copy.values.TryGetAt(j, out float val))
+                        prefabObject.events[i].values[j] = val;
+                }
+                for (int j = 0; j < prefabObject.events[i].randomValues.Length; j++)
+                {
+                    if (copy.randomValues.TryGetAt(j, out float val))
+                        prefabObject.events[i].randomValues[j] = val;
+                }
+                prefabObject.events[i].random = copy.random;
+            }
+
+            prefabObject.CopyModifyableData(copiedInstanceData);
+            prefabObject.CopyParentData(copiedInstanceData);
+            prefabObject.RepeatCount = copiedInstanceData.RepeatCount;
+            prefabObject.RepeatOffsetTime = copiedInstanceData.RepeatOffsetTime;
+
+            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+            RTLevel.Current.UpdatePrefab(prefabObject);
         }
 
         #endregion
