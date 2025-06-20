@@ -918,26 +918,6 @@ namespace BetterLegacy.Core.Runtime.Objects
                 return;
 
             objectModifiersEngine?.Update(RTLevel.FixedTime);
-
-            foreach (var audioSource in ModifiersManager.audioSources)
-            {
-                try
-                {
-                    if (GameData.Current.beatmapObjects.Find(x => x.id == audioSource.Key) == null || !GameData.Current.beatmapObjects.Find(x => x.id == audioSource.Key).Alive)
-                        ModifiersManager.queuedAudioToDelete.Add(audioSource);
-                }
-                catch
-                {
-
-                }
-            }
-
-            if (ModifiersManager.queuedAudioToDelete.IsEmpty())
-                return;
-
-            foreach (var audio in ModifiersManager.queuedAudioToDelete)
-                ModifiersManager.DeleteKey(audio.Key, audio.Value);
-            ModifiersManager.queuedAudioToDelete.Clear();
         }
 
         #endregion
@@ -1480,7 +1460,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                         if (!string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
                             beatmapObjectCopy.Parent = idPair.newID;
                         else if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObject.Parent != "CAMERA_PARENT")
-                            beatmapObjectCopy.Parent = "";
+                            beatmapObjectCopy.Parent = string.Empty;
                     }
                     catch (Exception ex)
                     {
@@ -1530,7 +1510,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
                     prefabObject.expandedObjects.Add(beatmapObjectCopy);
 
-                    if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
+                    if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.Has(x => x.id == beatmapObjectCopy.Parent)) // prevent updating of parented objects since updating is recursive.
                         notParented.Add(beatmapObjectCopy);
 
                     num++;
@@ -1570,10 +1550,10 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 var transform = prefabObject.GetTransformOffset();
 
-                foreach (var beatmapObject in notParented.Count > 0 ? notParented : prefabObject.expandedObjects.Where(x => x is BeatmapObject).Select(x => x as BeatmapObject))
-                    UpdateObject(beatmapObject, recalculate: recalculate);
+                foreach (var beatmapObject in !notParented.IsEmpty() ? notParented : prefabObject.expandedObjects.Where(x => x is BeatmapObject).Select(x => x as BeatmapObject))
+                    UpdateObject(beatmapObject, recalculate: false);
                 foreach (var backgroundObject in prefabObject.expandedObjects.Where(x => x is BackgroundObject).Select(x => x as BackgroundObject))
-                    UpdateBackgroundObject(backgroundObject, recalculate: recalculate);
+                    UpdateBackgroundObject(backgroundObject, recalculate: false);
 
                 foreach (var prefabable in prefabObject.expandedObjects)
                 {
@@ -1584,6 +1564,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                         prefabOffset.PrefabOffsetRotation = new Vector3(0f, 0f, transform.rotation);
                     }
                 }
+
+                RecalculateObjectStates();
             }
 
             notParented.Clear();

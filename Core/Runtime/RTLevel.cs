@@ -1521,24 +1521,18 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="reinsert">If the object should be updated or removed.</param>
         public void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true)
         {
-            var gameData = GameData.Current;
+            for (int i = 0; i < prefabObject.expandedObjects.Count; i++)
+            {
+                var prefabable = prefabObject.expandedObjects[i];
 
-            for (int i = 0; i < gameData.beatmapObjects.Count; i++)
-            {
-                var beatmapObject = gameData.beatmapObjects[i];
-                if ((string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObject.Parent == BeatmapObject.CAMERA_PARENT) && beatmapObject.prefabInstanceID == prefabObject.id)
-                    UpdateObject(beatmapObject, reinsert: false, recalculate: recalculate);
-            }
-            
-            for (int i = 0; i < gameData.backgroundObjects.Count; i++)
-            {
-                var backgroundObject = gameData.backgroundObjects[i];
-                if (backgroundObject.prefabInstanceID == prefabObject.id)
-                    UpdateBackgroundObject(backgroundObject, reinsert: false, recalculate: recalculate);
+                if (prefabable is BeatmapObject beatmapObject)
+                    UpdateObject(beatmapObject, reinsert: false, recursive: false, recalculate: false);
+                else if (prefabable is BackgroundObject backgroundObject)
+                    UpdateBackgroundObject(backgroundObject, false, false);
             }
 
-            gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.id);
-            gameData.backgroundObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.id);
+            GameData.Current.beatmapObjects.RemoveAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id);
+            GameData.Current.backgroundObjects.RemoveAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id);
 
             if (reinsert)
                 AddPrefabToLevel(prefabObject, recalculate: recalculate);
@@ -1840,7 +1834,7 @@ namespace BetterLegacy.Core.Runtime
                     GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
                     prefabObject.expandedObjects.Add(beatmapObjectCopy);
 
-                    if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
+                    if (string.IsNullOrEmpty(beatmapObjectCopy.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.Has(x => x.id == beatmapObjectCopy.Parent)) // prevent updating of parented objects since updating is recursive.
                         notParented.Add(beatmapObjectCopy);
 
                     num++;
@@ -1880,10 +1874,10 @@ namespace BetterLegacy.Core.Runtime
             {
                 var transform = prefabObject.GetTransformOffset();
 
-                foreach (var beatmapObject in notParented.Count > 0 ? notParented : prefabObject.expandedObjects.Where(x => x is BeatmapObject).Select(x => x as BeatmapObject))
-                    UpdateObject(beatmapObject, recalculate: recalculate);
+                foreach (var beatmapObject in !notParented.IsEmpty() ? notParented : prefabObject.expandedObjects.Where(x => x is BeatmapObject).Select(x => x as BeatmapObject))
+                    UpdateObject(beatmapObject, recalculate: false);
                 foreach (var backgroundObject in prefabObject.expandedObjects.Where(x => x is BackgroundObject).Select(x => x as BackgroundObject))
-                    UpdateBackgroundObject(backgroundObject, recalculate: recalculate);
+                    UpdateBackgroundObject(backgroundObject, recalculate: false);
 
                 foreach (var prefabable in prefabObject.expandedObjects)
                 {
@@ -1894,6 +1888,9 @@ namespace BetterLegacy.Core.Runtime
                         prefabOffset.PrefabOffsetRotation = new Vector3(0f, 0f, transform.rotation);
                     }
                 }
+
+                if (recalculate)
+                    RecalculateObjectStates();
             }
 
             notParented.Clear();
