@@ -261,7 +261,7 @@ namespace BetterLegacy.Editor.Data
                 else
                     prefabObjectCopy.StartTime += offsetToCurrentTime ? audioTime + prefab.offset : offset;
 
-                if (offset != 0.0)
+                if (addBin)
                     ++prefabObjectCopy.editorData.Bin;
 
                 prefabObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
