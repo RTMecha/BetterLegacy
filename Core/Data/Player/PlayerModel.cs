@@ -1846,6 +1846,8 @@ namespace BetterLegacy.Core.Data.Player
 
         public List<CustomObject> customObjects = new List<CustomObject>();
 
+        public ModifierReferenceType ReferenceType => ModifierReferenceType.CustomPlayer;
+
         public List<string> Tags { get; set; }
 
         public List<Modifier<CustomPlayer>> modifiers = new List<Modifier<CustomPlayer>>();

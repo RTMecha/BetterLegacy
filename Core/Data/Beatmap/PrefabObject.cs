@@ -167,6 +167,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Modifiers
 
+        public ModifierReferenceType ReferenceType => ModifierReferenceType.PrefabObject;
+
         /// <summary>
         /// The tags used to identify a group of objects or object properties.
         /// </summary>
@@ -590,29 +592,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Gets the prefab reference.
         /// </summary>
         public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
-
-        public void SetParentAdditive(int index, bool additive)
-        {
-            var stringBuilder = new StringBuilder(parentAdditive);
-            stringBuilder[index] = additive ? '1' : '0';
-            parentAdditive = stringBuilder.ToString();
-            CoreHelper.Log($"Set parent additive: {parentAdditive}");
-        }
-
-        public bool GetParentType(int index) => parentType[index] == '1';
-
-        public void SetParentType(int index, bool active)
-        {
-            var stringBuilder = new StringBuilder(parentType);
-            stringBuilder[index] = active ? '1' : '0';
-            parentType = stringBuilder.ToString();
-            Debug.Log("Set Parent Type: " + parentType);
-        }
-        public void SetParentOffset(int index, float value)
-        {
-            if (index >= 0 && index < parentOffsets.Length)
-                parentOffsets[index] = value;
-        }
 
         public float GetObjectLifeLength(float offset = 0.0f, bool noAutokill = false, bool collapse = false)
         {

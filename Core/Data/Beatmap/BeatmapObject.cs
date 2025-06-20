@@ -340,6 +340,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Modifiers
 
+        public ModifierReferenceType ReferenceType => ModifierReferenceType.BeatmapObject;
+
         /// <summary>
         /// The tags used to identify a group of objects or object properties.
         /// </summary>
@@ -2034,64 +2036,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             return canParent;
-        }
-
-        /// <summary>
-        /// Gets the parent toggle value depending on the index.
-        /// </summary>
-        /// <param name="index">Index of the parent toggle to get.</param>
-        /// <returns>Returns a parent toggle value.</returns>
-        public bool GetParentType(int index) => parentType[index] == '1';
-
-        /// <summary>
-        /// Sets the parent toggle value depending on the index.
-        /// </summary>
-        /// <param name="index">Index to assign to.</param>
-        /// <param name="val">The new value to set.</param>
-        public void SetParentType(int index, bool val)
-        {
-            var stringBuilder = new StringBuilder(parentType);
-            stringBuilder[index] = (val ? '1' : '0');
-            parentType = stringBuilder.ToString();
-            CoreHelper.Log($"Set Parent Type: {parentType}");
-        }
-
-        /// <summary>
-        /// Gets the parent delay value depending on the index.
-        /// </summary>
-        /// <param name="index">Index of the parent delay to get.</param>
-        /// <returns>Returns a parent delay value.</returns>
-        public float GetParentOffset(int index) => parentOffsets.InRange(index) ? parentOffsets[index] : 0f;
-
-        /// <summary>
-        /// Sets the parent delay value depending on the index.
-        /// </summary>
-        /// <param name="index">Index to assign to.</param>
-        /// <param name="val">the new value to set.</param>
-        public void SetParentOffset(int index, float val)
-        {
-            if (parentOffsets.InRange(index))
-                parentOffsets[index] = val;
-        }
-
-        /// <summary>
-        /// Gets the parent additive value depending on the index.
-        /// </summary>
-        /// <param name="index">Index of the parent additive to get.</param>
-        /// <returns>Returns a parent additive value.</returns>
-        public bool GetParentAdditive(int index) => parentAdditive[index] == '1';
-
-        /// <summary>
-        /// Sets the parent additive value depending on the index.
-        /// </summary>
-        /// <param name="index">Index to assign to.</param>
-        /// <param name="val">The new value to set.</param>
-        public void SetParentAdditive(int index, bool val)
-        {
-            var stringBuilder = new StringBuilder(parentAdditive);
-            stringBuilder[index] = val ? '1' : '0';
-            parentAdditive = stringBuilder.ToString();
-            CoreHelper.Log($"Set Parent Additive: {parentAdditive}");
         }
 
         #endregion

@@ -184,6 +184,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Modifiers
 
+        public ModifierReferenceType ReferenceType => ModifierReferenceType.BackgroundObject;
+
         public List<string> tags = new List<string>();
 
         public List<string> Tags { get => tags; set => tags = value; }

@@ -15,6 +15,11 @@ namespace BetterLegacy.Core.Data
     public interface IModifyable<T>
     {
         /// <summary>
+        /// The reference type of the modifyable.
+        /// </summary>
+        public ModifierReferenceType ReferenceType { get; }
+
+        /// <summary>
         /// The tags used to identify a group of objects or object properties.
         /// </summary>
         public List<string> Tags { get; set; }
