@@ -300,31 +300,20 @@ namespace BetterLegacy.Core.Data.Beatmap
             id = newID ? LSText.randomString(16) : orig.id;
             prefabID = orig.prefabID;
             startTime = orig.StartTime;
-            repeatCount = orig.repeatCount;
-            repeatOffsetTime = orig.repeatOffsetTime;
-            editorData = ObjectEditorData.DeepCopy(orig.editorData);
-            speed = orig.Speed;
+
             autoKillOffset = orig.autoKillOffset;
             autoKillType = orig.autoKillType;
-            parent = orig.parent;
-            parentAdditive = orig.parentAdditive;
-            parentOffsets = orig.parentOffsets.Copy();
-            parentParallax = orig.parentParallax.Copy();
-            parentType = orig.parentType;
-            desync = orig.desync;
 
-            if (events == null)
-                events = new List<EventKeyframe>();
-            events.Clear();
+            repeatCount = orig.repeatCount;
+            repeatOffsetTime = orig.repeatOffsetTime;
+            speed = orig.Speed;
 
-            if (orig.events != null)
-                foreach (var eventKeyframe in orig.events)
-                    events.Add(eventKeyframe.Copy(newID));
+            editorData = ObjectEditorData.DeepCopy(orig.editorData);
 
-            tags = !orig.tags.IsEmpty() ? orig.tags.Clone() : new List<string>();
-            ignoreLifespan = orig.ignoreLifespan;
-            orderModifiers = orig.orderModifiers;
-            modifiers = !orig.modifiers.IsEmpty() ? orig.modifiers.Select(x => x.Copy(this)).ToList() : new List<Modifier<PrefabObject>>();
+            CopyTransformData(orig);
+
+            this.CopyParentData(orig);
+            this.CopyModifyableData(orig);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -479,23 +468,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                 };
             }
 
-            if (jn["iglif"] != null)
-                ignoreLifespan = jn["iglif"].AsBool;
-
-            if (jn["ordmod"] != null)
-                orderModifiers = jn["ordmod"].AsBool;
-
-            for (int i = 0; i < jn["modifiers"].Count; i++)
-            {
-                var modifier = Modifier<PrefabObject>.Parse(jn["modifiers"][i], this);
-                if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultPrefabObjectModifiers))
-                    modifiers.Add(modifier);
-            }
+            this.ReadModifiersJSON(jn, ModifiersManager.defaultPrefabObjectModifiers);
         }
 
         public override JSONNode ToJSONVG()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
             jn["pid"] = prefabID;
@@ -520,7 +498,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
             jn["pid"] = prefabID;
@@ -578,12 +556,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["e"]["rot"]["rz"] = events[2].randomValues[2];
             }
 
-            if (ignoreLifespan)
-                jn["iglif"] = ignoreLifespan;
-            if (orderModifiers)
-                jn["ordmod"] = orderModifiers;
-            for (int i = 0; i < modifiers.Count; i++)
-                jn["modifiers"][i] = modifiers[i].ToJSON();
+            this.WriteModifiersJSON(jn);
 
             return jn;
         }
@@ -730,6 +703,21 @@ namespace BetterLegacy.Core.Data.Beatmap
             cachedTransform = transform;
 
             return transform;
+        }
+
+        /// <summary>
+        /// Copies transform data from another Prefab Object.
+        /// </summary>
+        /// <param name="orig">Original Prefab Object to copy transform data from.</param>
+        public void CopyTransformData(PrefabObject orig)
+        {
+            if (events == null)
+                events = new List<EventKeyframe>();
+            events.Clear();
+
+            if (orig.events != null)
+                foreach (var eventKeyframe in orig.events)
+                    events.Add(eventKeyframe.Copy());
         }
 
         #endregion
