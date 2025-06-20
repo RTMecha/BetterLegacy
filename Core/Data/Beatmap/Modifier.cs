@@ -161,6 +161,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         Null,
         BeatmapObject,
         BackgroundObject,
+        PrefabObject,
         CustomPlayer,
         GameData,
     }
