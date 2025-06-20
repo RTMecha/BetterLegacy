@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using UnityEngine;
@@ -1466,6 +1467,64 @@ namespace BetterLegacy.Core
             var functions = new Dictionary<string, MathFunction>();
             variableContainer.SetObjectFunctions(functions);
             return functions;
+        }
+
+        /// <summary>
+        /// Gets the parent toggle value depending on the index.
+        /// </summary>
+        /// <param name="index">Index of the parent toggle to get.</param>
+        /// <returns>Returns a parent toggle value.</returns>
+        public static bool GetParentType(this IParentable parentable, int index) => parentable.ParentType[index] == '1';
+
+        /// <summary>
+        /// Sets the parent toggle value depending on the index.
+        /// </summary>
+        /// <param name="index">Index to assign to.</param>
+        /// <param name="val">The new value to set.</param>
+        public static void SetParentType(this IParentable parentable, int index, bool val)
+        {
+            var stringBuilder = new StringBuilder(parentable.ParentType);
+            stringBuilder[index] = (val ? '1' : '0');
+            parentable.ParentType = stringBuilder.ToString();
+            CoreHelper.Log($"Set Parent Type: {parentable.ParentType}");
+        }
+
+        /// <summary>
+        /// Gets the parent delay value depending on the index.
+        /// </summary>
+        /// <param name="index">Index of the parent delay to get.</param>
+        /// <returns>Returns a parent delay value.</returns>
+        public static float GetParentOffset(this IParentable parentable, int index) => parentable.ParentOffsets.TryGetAt(index, out float offset) ? offset : 0f;
+
+        /// <summary>
+        /// Sets the parent delay value depending on the index.
+        /// </summary>
+        /// <param name="index">Index to assign to.</param>
+        /// <param name="val">the new value to set.</param>
+        public static void SetParentOffset(this IParentable parentable, int index, float val)
+        {
+            if (parentable.ParentOffsets.InRange(index))
+                parentable.ParentOffsets[index] = val;
+        }
+
+        /// <summary>
+        /// Gets the parent additive value depending on the index.
+        /// </summary>
+        /// <param name="index">Index of the parent additive to get.</param>
+        /// <returns>Returns a parent additive value.</returns>
+        public static bool GetParentAdditive(this IParentable parentable, int index) => parentable.ParentAdditive[index] == '1';
+
+        /// <summary>
+        /// Sets the parent additive value depending on the index.
+        /// </summary>
+        /// <param name="index">Index to assign to.</param>
+        /// <param name="val">The new value to set.</param>
+        public static void SetParentAdditive(this IParentable parentable, int index, bool val)
+        {
+            var stringBuilder = new StringBuilder(parentable.ParentAdditive);
+            stringBuilder[index] = val ? '1' : '0';
+            parentable.ParentAdditive = stringBuilder.ToString();
+            CoreHelper.Log($"Set Parent Additive: {parentable.ParentAdditive}");
         }
 
         /// <summary>
