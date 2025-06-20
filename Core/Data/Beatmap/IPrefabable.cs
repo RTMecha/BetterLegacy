@@ -28,6 +28,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool FromPrefab { get; set; }
 
         /// <summary>
+        /// Object spawn time.
+        /// </summary>
+        public float StartTime { get; set; }
+
+        /// <summary>
         /// Gets the runtime object for the prefabbed object.
         /// </summary>
         /// <returns>Returns the runtime object of the object.</returns>
