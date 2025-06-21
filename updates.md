@@ -1,4 +1,26 @@
-﻿# 1.7.3 [Jun 18, 2025]
+﻿# 1.7.4 [Jun 21, 2025]
+## Features
+### Core
+- Added Burst Count value to the particleSystem modifier.
+
+### Editor
+- Added Reverse Indexes button to the Multi Object Editor. This reverses the index order of all selected objects (objects that appear above others).
+- Multi Object Editor shape sync now syncs polygon shape values.
+- New Background Objects now align with the current editor layer.
+- Added Instance Data section to the Prefab Object Editor. This has buttons for copying & pasting Prefab Object instance data from & to objects.
+
+## Changes
+### Editor
+- Changed some of the colors in the Multi Object Editor to make it more readable.
+
+## Fixes
+- Fixed wrong artist credit for a certain story cutscene.
+- Fixed blurOther modifiers only applying to one object.
+- Fixed modifiers search not working with Background Objects.
+- Fixed duplicating Prefab Objects at start time 0 not having their bin added to.
+- Fixed updating prefabs creating duplicates.
+
+# 1.7.3 [Jun 18, 2025]
 ## Features
 ### Example Companion
 - Added Toggle Modifiers Prefab Group Only command. This iterates through all selected objects and turns the Prefab Group Only option on for all group modifiers.
