@@ -564,8 +564,7 @@ namespace BetterLegacy.Editor.Managers
 
                              RTEditor.inst.HideWarningPopup();
                          }, RTEditor.inst.HideWarningPopup);
-                     })
-                     { FontSize = 16 },
+                     }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text) { FontSize = 16 },
                      new ButtonFunction("Clear anims", () =>
                      {
                          RTEditor.inst.ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
@@ -595,7 +594,7 @@ namespace BetterLegacy.Editor.Managers
 
                              RTEditor.inst.HideWarningPopup();
                          }, RTEditor.inst.HideWarningPopup);
-                     }) { FontSize = 16 },
+                     }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text) { FontSize = 16 },
                      new ButtonFunction("Clear modifiers", () =>
                      {
                          RTEditor.inst.ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
@@ -619,7 +618,7 @@ namespace BetterLegacy.Editor.Managers
 
                              RTEditor.inst.HideWarningPopup();
                          }, RTEditor.inst.HideWarningPopup);
-                     }) { FontSize = 16 });
+                     }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text) { FontSize = 16 });
 
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
@@ -842,7 +841,7 @@ namespace BetterLegacy.Editor.Managers
 
                             RTEditor.inst.HideWarningPopup();
                         }, RTEditor.inst.HideWarningPopup);
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
             }
 
             // Parent Desync
@@ -858,7 +857,7 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                         }
-                    }),
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
                     new ButtonFunction("Off", () =>
                     {
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
@@ -867,7 +866,7 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                         }
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
                 var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.FindAll(x => x.isBeatmapObject))
@@ -1190,7 +1189,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.IMAGE);
                         }
                         RTEditor.inst.HideWarningPopup();
-                    }, RTEditor.inst.HideWarningPopup)));
+                    }, RTEditor.inst.HideWarningPopup), buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
 
                 EditorHelper.SetComplexity(labels, Complexity.Advanced);
             }
@@ -1248,7 +1247,7 @@ namespace BetterLegacy.Editor.Managers
                             timelineObject.GetData<BeatmapObject>().RemovePrefabReference();
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                         }
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
 
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
@@ -1257,7 +1256,7 @@ namespace BetterLegacy.Editor.Managers
             // New Prefab Instance
             {
                 var labels = GenerateLabels(parent, 32f, "New Prefab Instance");
-                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Add, ThemeGroup.Add_Text,
                     new ButtonFunction("New Instance", () => RTEditor.inst.ShowWarningPopup("This will change the instance ID of all selected beatmap objects, assuming they all have the same ID. Are you sure you want to do this?", () =>
                     {
                         var selected = EditorTimeline.inst.timelineObjects.Where(x => x.Selected).ToList();
@@ -1287,6 +1286,18 @@ namespace BetterLegacy.Editor.Managers
                         RTEditor.inst.HideWarningPopup();
                         EditorManager.inst.DisplayNotification("Successfully created a new instance ID.", 2f, EditorManager.NotificationType.Success);
                     }, RTEditor.inst.HideWarningPopup)));
+
+                EditorHelper.SetComplexity(labels, Complexity.Normal);
+                EditorHelper.SetComplexity(buttons1, Complexity.Normal);
+            }
+
+            // Collapse
+            {
+                var labels = GenerateLabels(parent, 32f, "Collapse Prefab");
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Collapse", () => RTPrefabEditor.inst.CollapseCurrentPrefab()),
+                    new ButtonFunction("Collapse New", () => RTPrefabEditor.inst.CollapseCurrentPrefab(true))
+                    );
 
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
@@ -1501,6 +1512,31 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
             }
 
+            // Instance Data
+            {
+                var labels = GenerateLabels(parent, 32f, "Instance Data");
+                var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
+                    new ButtonFunction("Paste Data", () =>
+                    {
+                        if (!RTPrefabEditor.inst.copiedInstanceData)
+                        {
+                            EditorManager.inst.DisplayNotification($"No copied data.", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        var timelineObjects = EditorTimeline.inst.SelectedPrefabObjects;
+                        foreach (var timelineObject in timelineObjects)
+                            RTPrefabEditor.inst.PasteInstanceData(timelineObject.GetData<PrefabObject>());
+
+                        if (!timelineObjects.IsEmpty())
+                            EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
+                    })
+                    );
+
+                EditorHelper.SetComplexity(labels, Complexity.Normal);
+                EditorHelper.SetComplexity(buttons1, Complexity.Normal);
+            }
+
             GeneratePad(parent);
             GenerateLabels(parent, 32f, new Label("- Toggles -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
@@ -1517,7 +1553,7 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                         }
-                    }),
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
                     new ButtonFunction("Off", () =>
                     {
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1526,7 +1562,7 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                         }
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
                 GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1551,7 +1587,7 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                         }
-                    }),
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
                     new ButtonFunction("Off", () =>
                     {
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1560,7 +1596,7 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
                         }
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
                 GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1601,7 +1637,7 @@ namespace BetterLegacy.Editor.Managers
                                     }
                             }
                         }
-                    }),
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
                     new ButtonFunction("Off", () =>
                     {
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1626,7 +1662,7 @@ namespace BetterLegacy.Editor.Managers
                                     }
                             }
                         }
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
                 GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1681,7 +1717,7 @@ namespace BetterLegacy.Editor.Managers
                                     }
                             }
                         }
-                    }),
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
                     new ButtonFunction("Off", () =>
                     {
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1704,7 +1740,7 @@ namespace BetterLegacy.Editor.Managers
                                     }
                             }
                         }
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
                 GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1742,7 +1778,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.LDM = true;
                             RTLevel.Current?.UpdateObject(beatmapObject);
                         }
-                    }),
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
                     new ButtonFunction("Off", () =>
                     {
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -1750,7 +1786,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.LDM = false;
                             RTLevel.Current?.UpdateObject(beatmapObject);
                         }
-                    }));
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
                 var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -1771,7 +1807,7 @@ namespace BetterLegacy.Editor.Managers
             // Paste Modifier
             {
                 var labels = GenerateLabels(parent, 32f, "Paste Modifiers to Selected");
-                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
                     new ButtonFunction("Paste", () =>
                     {
                         bool pasted = false;
@@ -1829,7 +1865,7 @@ namespace BetterLegacy.Editor.Managers
             // Paste Keyframes
             {
                 var labels = GenerateLabels(parent, 32f, "Paste Keyframes to Selected");
-                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
                     new ButtonFunction("Paste", EditorHelper.PasteKeyframes));
 
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
@@ -1847,8 +1883,8 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.IncreaseDecreaseButtons(repeatOffsetTimeInputField);
                 TriggerHelper.AddEventTriggers(repeatOffsetTimeInputField.inputField.gameObject, TriggerHelper.ScrollDelta(repeatOffsetTimeInputField.inputField));
 
-                var buttons1 = GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("Paste", () => { EditorHelper.RepeatPasteKeyframes(Parser.TryParse(repeatCountInputField.inputField.text, 0), Parser.TryParse(repeatOffsetTimeInputField.inputField.text, 1f)); }));
+                var buttons1 = GenerateButtons(parent, 32f, 8f, ThemeGroup.Paste, ThemeGroup.Paste_Text,
+                    new ButtonFunction("Paste", () => EditorHelper.RepeatPasteKeyframes(Parser.TryParse(repeatCountInputField.inputField.text, 0), Parser.TryParse(repeatOffsetTimeInputField.inputField.text, 1f))));
 
                 EditorHelper.SetComplexity(repeatCountInputField.gameObject, Complexity.Advanced);
                 EditorHelper.SetComplexity(repeatOffsetTimeInputField.gameObject, Complexity.Advanced);
@@ -2533,7 +2569,7 @@ namespace BetterLegacy.Editor.Managers
                 // Create Color Keyframe
                 {
                     var labels = GenerateLabels(parent, 32f, "Create Color Keyframe");
-                    var buttons1 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Create", () =>
+                    var buttons1 = GenerateButtons(parent, 32f, 0f, ThemeGroup.Add, ThemeGroup.Add_Text, new ButtonFunction("Create", () =>
                     {
                         foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                         {
@@ -3956,25 +3992,44 @@ namespace BetterLegacy.Editor.Managers
             return p;
         }
 
-        public GameObject GenerateButton(Transform parent, ButtonFunction buttonFunction)
+        /// <summary>
+        /// Generates a horizontal group of buttons.
+        /// </summary>
+        /// <param name="parent">The transform to parent the buttons group to.</param>
+        /// <param name="sizeY">The Y size of the base. Default is 32 or 48.</param>
+        /// <param name="spacing">Spacing for the layout group. Default is 8.</param>
+        /// <param name="buttons">Array of buttons to generate.</param>
+        public GameObject GenerateButtons(Transform parent, float sizeY, float spacing, ThemeGroup buttonGroup, ThemeGroup labelGroup, params ButtonFunction[] buttons)
+        {
+            var p = Creator.NewUIObject("buttons", parent);
+            p.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
+            var pHLG = p.AddComponent<HorizontalLayoutGroup>();
+            pHLG.spacing = spacing;
+
+            for (int i = 0; i < buttons.Length; i++)
+                GenerateButton(p.transform, buttons[i], buttonGroup, labelGroup);
+
+            return p;
+        }
+
+        public GameObject GenerateButton(Transform parent, ButtonFunction buttonFunction, ThemeGroup buttonGroup = ThemeGroup.Function_1, ThemeGroup labelGroup = ThemeGroup.Function_1_Text)
         {
             var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, buttonFunction.Name);
             var buttonStorage = button.GetComponent<FunctionButtonStorage>();
+
             if (buttonFunction.OnClick != null)
             {
                 var clickable = button.AddComponent<ContextClickable>();
                 clickable.onClick = buttonFunction.OnClick;
             }
             else
-            {
-                buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(() => { buttonFunction.Action?.Invoke(); });
-            }
+                buttonStorage.button.onClick.NewListener(() => buttonFunction.Action?.Invoke());
+
             buttonStorage.label.fontSize = buttonFunction.FontSize;
             buttonStorage.label.text = buttonFunction.Name;
 
-            EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(buttonStorage.label, ThemeGroup.Function_1_Text);
+            EditorThemeManager.AddGraphic(buttonStorage.button.image, buttonFunction.ButtonThemeGroup ?? buttonGroup, true);
+            EditorThemeManager.AddGraphic(buttonStorage.label, buttonFunction.LabelThemeGroup ?? labelGroup);
 
             return button;
         }
