@@ -309,6 +309,7 @@ namespace BetterLegacy.Editor.Data
             }
 
             sw = null;
+            EditorTimeline.inst.UpdateTransformIndex();
 
             if (!select)
                 yield break;
