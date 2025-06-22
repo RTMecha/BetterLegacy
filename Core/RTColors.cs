@@ -20,6 +20,9 @@ namespace BetterLegacy.Core
         /// </summary>
         public const string X2 = "X2";
 
+        public const string WHITE_HEX_CODE = "FFFFFF";
+        public const string BLACK_HEX_CODE = "000000";
+
         public static Color defaultBloomColor = Color.white;
         public static Color defaultVignetteColor = Color.black;
         public static Color defaultGradientColor1 = new Color(0f, 0.8f, 0.56f, 0.5f);
