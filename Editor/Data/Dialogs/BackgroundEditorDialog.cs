@@ -756,6 +756,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var autokill = ObjectEditor.inst.Dialog.AutokillDropdown.transform.parent.gameObject.Duplicate(LeftContent, "autokill", 7);
 
                 AutokillDropdown = autokill.transform.Find("tod-dropdown").GetComponent<Dropdown>();
+                TooltipHelper.AssignTooltip(AutokillDropdown.gameObject, "Autokill Type");
                 AutokillField = autokill.transform.Find("tod-value").GetComponent<InputField>();
                 AutokillSetButton = autokill.transform.Find("|").GetComponent<Button>();
                 CollapseToggle = autokill.transform.Find("collapse").GetComponent<Toggle>();
@@ -811,8 +812,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     var indexer = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "indexer", 38);
                     EditorIndexField = indexer.GetComponent<InputFieldStorage>();
-                    if (EditorIndexField.middleButton)
-                        CoreHelper.Delete(EditorIndexField.middleButton.gameObject);
+                    CoreHelper.Delete(EditorIndexField.middleButton);
                     EditorThemeManager.AddInputField(EditorIndexField);
                 }
                 catch (Exception ex)
