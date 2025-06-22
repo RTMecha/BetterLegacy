@@ -248,6 +248,16 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
+        /// Deletes a <see cref="Component"/> by removing it from its parent and destroying it.
+        /// </summary>
+        /// <param name="component">Component to destroy.</param>
+        public static void Delete(Component component)
+        {
+            if (component)
+                Delete(component.gameObject);
+        }
+
+        /// <summary>
         /// Deletes several <see cref="GameObject"/>s by removing it from its parent and destroying it.
         /// </summary>
         /// <param name="objects">GameObjects to destroy.</param>
