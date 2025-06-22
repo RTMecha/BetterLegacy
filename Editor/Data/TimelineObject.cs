@@ -8,6 +8,7 @@ using LSFunctions;
 
 using TMPro;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -274,6 +275,11 @@ namespace BetterLegacy.Editor.Data
                     GetData<BackgroundObject>().editorData.selectable = value;
             }
         }
+
+        /// <summary>
+        /// Gets the objects' editor data.
+        /// </summary>
+        public ObjectEditorData EditorData => data is IEditable editable ? editable.EditorData : null;
 
         /// <summary>
         /// If the timeline object is on the currently viewed editor layer.
@@ -583,7 +589,9 @@ namespace BetterLegacy.Editor.Data
                                 beatmapObject.RemovePrefabReference();
                         }
 
-                        var color = selected ? ObjEditor.inst.SelectedColor : prefab ? prefab.GetPrefabType().color : ObjEditor.inst.NormalColor;
+                        var color = selected ? GetSelectedColor() : GetColor();
+                        if (!selected && prefab && EditorConfig.Instance.PrioritzePrefabTypeColor.Value)
+                            color = prefab.GetPrefabType().color;
 
                         if (Image.color != color)
                             Image.color = color;
@@ -602,9 +610,7 @@ namespace BetterLegacy.Editor.Data
                         if (!isCurrentLayer)
                             return;
 
-                        var prefabObject = GetData<PrefabObject>();
-
-                        var color = selected ? ObjEditor.inst.SelectedColor : prefabObject.GetPrefab().GetPrefabType().color;
+                        var color = selected ? GetSelectedColor() : GetColor();
 
                         if (Image.color != color)
                             Image.color = color;
@@ -632,7 +638,7 @@ namespace BetterLegacy.Editor.Data
                                 backgroundObject.RemovePrefabReference();
                         }
 
-                        var color = selected ? ObjEditor.inst.SelectedColor : prefab ? prefab.GetPrefabType().color : ObjEditor.inst.NormalColor;
+                        var color = selected ? GetSelectedColor() : prefab ? prefab.GetPrefabType().color : GetColor();
 
                         if (Image.color != color)
                             Image.color = color;
@@ -652,8 +658,8 @@ namespace BetterLegacy.Editor.Data
             if (!textMeshNoob)
                 return;
 
-            textMeshNoob.text = !string.IsNullOrEmpty(name) ? string.Format("<mark=#000000aa>{0}</mark>", name) : string.Empty;
-            textMeshNoob.color = LSColors.white;
+            textMeshNoob.text = !string.IsNullOrEmpty(name) ? $"<mark=#{GetMarkColor()}>{name}</mark>" : string.Empty;
+            textMeshNoob.color = GetTextColor();
         }
 
         /// <summary>
@@ -1038,6 +1044,30 @@ namespace BetterLegacy.Editor.Data
                     }
                 })
                 );
+        }
+
+        public Color GetColor()
+        {
+            var editorData = EditorData;
+            return !editorData || string.IsNullOrEmpty(editorData.color) ? isPrefabObject ? GetData<PrefabObject>().GetPrefab().GetPrefabType().color : EditorConfig.Instance.TimelineObjectBaseColor.Value : RTColors.HexToColor(editorData.color);
+        }
+
+        public Color GetSelectedColor()
+        {
+            var editorData = EditorData;
+            return !editorData || string.IsNullOrEmpty(editorData.selectedColor) ? ObjEditor.inst.SelectedColor : RTColors.HexToColor(editorData.selectedColor);
+        }
+
+        public Color GetTextColor()
+        {
+            var editorData = EditorData;
+            return !editorData || string.IsNullOrEmpty(editorData.textColor) ? EditorConfig.Instance.TimelineObjectTextColor.Value : RTColors.HexToColor(editorData.textColor);
+        }
+
+        public string GetMarkColor()
+        {
+            var editorData = EditorData;
+            return !editorData || string.IsNullOrEmpty(editorData.markColor) ? RTColors.ColorToHex(EditorConfig.Instance.TimelineObjectMarkColor.Value) : editorData.markColor;
         }
 
         #endregion

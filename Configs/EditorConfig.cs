@@ -89,6 +89,10 @@ namespace BetterLegacy.Configs
         public Setting<Color> TimelineCursorColor { get; set; }
         public Setting<Color> KeyframeCursorColor { get; set; }
         public Setting<Color> ObjectSelectionColor { get; set; }
+        public Setting<Color> TimelineObjectBaseColor { get; set; }
+        public Setting<Color> TimelineObjectTextColor { get; set; }
+        public Setting<Color> TimelineObjectMarkColor { get; set; }
+        public Setting<bool> PrioritzePrefabTypeColor { get; set; }
         public Setting<Vector2> MainZoomBounds { get; set; }
         public Setting<Vector2> KeyframeZoomBounds { get; set; }
         public Setting<float> MainZoomAmount { get; set; }
@@ -1401,6 +1405,10 @@ namespace BetterLegacy.Configs
             TimelineCursorColor = Bind(this, TIMELINE, "Timeline Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the main timeline cursor.");
             KeyframeCursorColor = Bind(this, TIMELINE, "Keyframe Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the object timeline cursor.");
             ObjectSelectionColor = Bind(this, TIMELINE, "Object Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected objects.");
+            TimelineObjectBaseColor = Bind(this, TIMELINE, "Timeline Object Base Color", RTColors.HexToColor("F5F5F5"), "Color of the base of timeline objects.");
+            TimelineObjectTextColor = Bind(this, TIMELINE, "Timeline Object Text Color", RTColors.HexToColor("FFFFFF"), "Color of the text of timeline objects.");
+            TimelineObjectMarkColor = Bind(this, TIMELINE, "Timeline Object Mark Color", RTColors.HexToColor("000000aa"), "Color of the mark (text BG) of timeline objects.");
+            PrioritzePrefabTypeColor = Bind(this, TIMELINE, "Prioritize Prefab Type Color", true, "If the objects' Prefab Type reference color should be prioritized over other colors.");
             MainZoomBounds = Bind(this, TIMELINE, "Main Zoom Bounds", new Vector2(16f, 512f), "The limits of the main timeline zoom.");
             KeyframeZoomBounds = Bind(this, TIMELINE, "Keyframe Zoom Bounds", new Vector2(1f, 512f), "The limits of the keyframe timeline zoom.");
             MainZoomAmount = Bind(this, TIMELINE, "Main Zoom Amount", 0.05f, "Sets the zoom in & out amount for the main timeline.");
