@@ -701,9 +701,8 @@ namespace BetterLegacy.Editor.Managers
                 var inputFieldX = PrefabObjectEditor.TransformFields[index][0];
                 var r_inputFieldX = PrefabObjectEditor.RandomTransformFields[index][0];
 
-                inputFieldX.inputField.onValueChanged.ClearAll();
-                inputFieldX.inputField.text = currentKeyframe.values[0].ToString();
-                inputFieldX.inputField.onValueChanged.AddListener(_val =>
+                inputFieldX.inputField.SetTextWithoutNotify(currentKeyframe.values[0].ToString());
+                inputFieldX.inputField.onValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -711,18 +710,37 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
+                inputFieldX.inputField.onEndEdit.NewListener(_val =>
+                {
+                    var variables = new Dictionary<string, float>
+                    {
+                        { "currentValue", currentKeyframe.values[0] }
+                    };
+
+                    if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[0], variables, out float calc))
+                        inputFieldX.inputField.text = calc.ToString();
+                });
 
                 var r_type = "r_" + types[index];
 
-                r_inputFieldX.inputField.onValueChanged.ClearAll();
-                r_inputFieldX.inputField.text = currentKeyframe.randomValues[0].ToString();
-                r_inputFieldX.inputField.onValueChanged.AddListener(_val =>
+                r_inputFieldX.inputField.SetTextWithoutNotify(currentKeyframe.randomValues[0].ToString());
+                r_inputFieldX.inputField.onValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         currentKeyframe.randomValues[0] = num;
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
                     }
+                });
+                r_inputFieldX.inputField.onEndEdit.NewListener(_val =>
+                {
+                    var variables = new Dictionary<string, float>
+                    {
+                        { "currentValue", currentKeyframe.values[0] }
+                    };
+
+                    if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[0], variables, out float calc))
+                        r_inputFieldX.inputField.text = calc.ToString();
                 });
 
                 var toggles = index switch
@@ -738,9 +756,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var toggle = toggles[j];
                         var randomIndex = j >= 2 ? j + 1 : j;
-                        toggle.onValueChanged.ClearAll();
-                        toggle.isOn = currentKeyframe.random == randomIndex;
-                        toggle.onValueChanged.AddListener(_val =>
+                        toggle.SetIsOnWithoutNotify(currentKeyframe.random == randomIndex);
+                        toggle.onValueChanged.NewListener(_val =>
                         {
                             currentKeyframe.random = randomIndex;
                             RenderPrefabObjectTransforms(prefabObject);
@@ -757,15 +774,24 @@ namespace BetterLegacy.Editor.Managers
                     var inputFieldY = PrefabObjectEditor.TransformFields[index][1];
                     var r_inputFieldY = PrefabObjectEditor.RandomTransformFields[index][1];
 
-                    inputFieldY.inputField.onValueChanged.ClearAll();
-                    inputFieldY.inputField.text = currentKeyframe.values[1].ToString();
-                    inputFieldY.inputField.onValueChanged.AddListener(_val =>
+                    inputFieldY.inputField.SetTextWithoutNotify(currentKeyframe.values[1].ToString());
+                    inputFieldY.inputField.onValueChanged.NewListener(_val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             currentKeyframe.values[1] = num;
                             RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
                         }
+                    });
+                    inputFieldY.inputField.onEndEdit.NewListener(_val =>
+                    {
+                        var variables = new Dictionary<string, float>
+                        {
+                            { "currentValue", currentKeyframe.values[1] }
+                        };
+
+                        if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.values[1], variables, out float calc))
+                            inputFieldY.inputField.text = calc.ToString();
                     });
 
                     TriggerHelper.IncreaseDecreaseButtons(inputFieldX);
@@ -778,15 +804,24 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.ScrollDelta(inputFieldY.inputField, multi: true),
                         TriggerHelper.ScrollDeltaVector2(inputFieldX.inputField, inputFieldY.inputField, 0.1f, 10f));
 
-                    r_inputFieldY.inputField.onValueChanged.ClearAll();
-                    r_inputFieldY.inputField.text = currentKeyframe.randomValues[1].ToString();
-                    r_inputFieldY.inputField.onValueChanged.AddListener(_val =>
+                    r_inputFieldY.inputField.SetTextWithoutNotify(currentKeyframe.randomValues[1].ToString());
+                    r_inputFieldY.inputField.onValueChanged.NewListener(_val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
                             currentKeyframe.randomValues[1] = num;
                             RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
                         }
+                    });
+                    r_inputFieldY.inputField.onEndEdit.NewListener(_val =>
+                    {
+                        var variables = new Dictionary<string, float>
+                        {
+                            { "currentValue", currentKeyframe.randomValues[1] }
+                        };
+
+                        if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.randomValues[1], variables, out float calc))
+                            r_inputFieldY.inputField.text = calc.ToString();
                     });
 
                     TriggerHelper.IncreaseDecreaseButtons(r_inputFieldX);
@@ -815,7 +850,8 @@ namespace BetterLegacy.Editor.Managers
                 if (!randomIntervalActive)
                     continue;
 
-                randomIntervalField.NewValueChangedListener((currentKeyframe.randomValues.Length > 2 ? currentKeyframe.randomValues[2] : 0f).ToString(), _val =>
+                randomIntervalField.SetTextWithoutNotify((currentKeyframe.randomValues.Length > 2 ? currentKeyframe.randomValues[2] : 0f).ToString());
+                randomIntervalField.onValueChanged.NewListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -908,6 +944,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 PasteInstanceData(prefabObject);
+                RenderPrefabObjectDialog(prefabObject);
 
                 EditorManager.inst.DisplayNotification($"Pasted Prefab instance data.", 2f, EditorManager.NotificationType.Success);
             });
@@ -1551,6 +1588,7 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current?.RecalculateObjectStates();
 
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+            EditorTimeline.inst.UpdateTransformIndex();
 
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(prefab, prefabObject));
         }
