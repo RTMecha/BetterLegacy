@@ -197,6 +197,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var autoKillType = EditorPrefabHolder.Instance.Dropdown.Duplicate(autoKillParent.transform, "tod-dropdown");
             AutokillDropdown = autoKillType.GetComponent<Dropdown>();
             AutokillDropdown.options = CoreHelper.StringToOptionData("Regular", "Start Time", "Song Time");
+            TooltipHelper.AssignTooltip(AutokillDropdown.gameObject, "Prefab Object Autokill Type");
 
             EditorThemeManager.AddDropdown(AutokillDropdown);
 
