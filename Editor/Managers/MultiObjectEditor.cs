@@ -1383,8 +1383,8 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
-                TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorageX.inputField));
-                TriggerHelper.AddEventTriggers(inputFieldStorageY.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorageY.inputField));
+                TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageX.inputField));
+                TriggerHelper.AddEventTriggers(inputFieldStorageY.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageY.inputField));
             }
             
             // Scale Prefabs
@@ -1467,8 +1467,8 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
-                TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorageX.inputField));
-                TriggerHelper.AddEventTriggers(inputFieldStorageY.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorageY.inputField));
+                TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageX.inputField));
+                TriggerHelper.AddEventTriggers(inputFieldStorageY.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageY.inputField));
             }
             
             // Rotate Prefabs
@@ -1509,7 +1509,7 @@ namespace BetterLegacy.Editor.Managers
                         RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
                     }
                 });
-                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
             }
 
             // Instance Data
