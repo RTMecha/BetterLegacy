@@ -127,8 +127,8 @@ namespace BetterLegacy.Patchers
         public static IEnumerator UpdateTimelineScrollRect(float _delay, float _val)
         {
             yield return CoroutineHelper.Seconds(_delay);
-            if (ObjectEditor.inst.timelinePosScrollbar)
-                ObjectEditor.inst.timelinePosScrollbar.value = _val;
+            if (ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.TimelinePosScrollbar)
+                ObjectEditor.inst.Dialog.TimelinePosScrollbar.value = _val;
 
             yield break;
         }
