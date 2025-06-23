@@ -2,6 +2,7 @@
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 
@@ -71,10 +72,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 func = cancel,
             });
 
+            exitFunc = cancel;
+
             InterfaceManager.inst.SetCurrentInterface(this);
         }
 
-        public static void Init(string currentMessage, Action confirm, Action cancel) => new ConfirmMenu(currentMessage, confirm, cancel);
+        public static void Init(string currentMessage, Action confirm, Action cancel)
+        {
+            if (CoreHelper.InGame)
+                RTBeatmap.Current?.Pause();
+            new ConfirmMenu(currentMessage, confirm, cancel);
+        }
 
         public override void UpdateTheme()
         {
