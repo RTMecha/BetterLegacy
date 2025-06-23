@@ -7,10 +7,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class LevelBeatmapData : Exists
     {
-        public LevelBeatmapData()
-        {
-
-        }
+        public LevelBeatmapData() { }
 
         public static LevelBeatmapData ParseVG(JSONNode jn)
         {
@@ -26,6 +23,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             
             for (int i = 0; i < jn["checkpoints"].Count; i++)
                 beatmapData.checkpoints.Add(Checkpoint.ParseVG(jn["checkpoints"][i]));
+            if (beatmapData.checkpoints.IsEmpty())
+                beatmapData.checkpoints.Add(Checkpoint.Default);
 
             beatmapData.markers = beatmapData.markers.OrderBy(x => x.time).ToList();
             beatmapData.checkpoints = beatmapData.checkpoints.OrderBy(x => x.time).ToList();
@@ -47,6 +46,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             for (int i = 0; i < jn["checkpoints"].Count; i++)
                 beatmapData.checkpoints.Add(Checkpoint.Parse(jn["checkpoints"][i]));
+            if (beatmapData.checkpoints.IsEmpty())
+                beatmapData.checkpoints.Add(Checkpoint.Default);
 
             beatmapData.markers = beatmapData.markers.OrderBy(x => x.time).ToList();
             beatmapData.checkpoints = beatmapData.checkpoints.OrderBy(x => x.time).ToList();
