@@ -2267,8 +2267,121 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setColorHex): {
-                        StringGenerator(modifier, "Hex Code", 0);
-                        StringGenerator(modifier, "Hex Gradient Color", 1);
+                        var primaryHexCode = StringGenerator(modifier, "Primary Hex Code", 0);
+                        var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
+                        primaryHexCodeContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            var inputField = primaryHexCode.transform.Find("Input").GetComponent<InputField>();
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Edit Color", () =>
+                                {
+                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
+                                        (col, hex) =>
+                                        {
+                                            inputField.SetTextWithoutNotify(hex);
+                                        },
+                                        (col, hex) =>
+                                        {
+                                            CoreHelper.Log($"Set timeline object color: {hex}");
+                                            // set the input field's text empty so it notices there was a change
+                                            inputField.SetTextWithoutNotify(string.Empty);
+                                            inputField.text = hex;
+                                        }, () =>
+                                        {
+                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
+                                        });
+                                }),
+                                new ButtonFunction("Clear", () =>
+                                {
+                                    inputField.text = string.Empty;
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("VG Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED;
+                                }),
+                                new ButtonFunction("VG Red Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_GREEN;
+                                }),
+                                new ButtonFunction("VG Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN;
+                                }),
+                                new ButtonFunction("VG Green Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN_BLUE;
+                                }),
+                                new ButtonFunction("VG Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.BLUE;
+                                }),
+                                new ButtonFunction("VG Blue Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_BLUE;
+                                }));
+                        };
+
+                        var secondaryHexCode = StringGenerator(modifier, "Secondary Hex Code", 1);
+                        var secondaryHexCodeContextMenu = secondaryHexCode.AddComponent<ContextClickable>();
+                        secondaryHexCodeContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            var inputField = secondaryHexCode.transform.Find("Input").GetComponent<InputField>();
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Edit Color", () =>
+                                {
+                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
+                                        (col, hex) =>
+                                        {
+                                            inputField.SetTextWithoutNotify(hex);
+                                        },
+                                        (col, hex) =>
+                                        {
+                                            CoreHelper.Log($"Set timeline object color: {hex}");
+                                            // set the input field's text empty so it notices there was a change
+                                            inputField.SetTextWithoutNotify(string.Empty);
+                                            inputField.text = hex;
+                                        }, () =>
+                                        {
+                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
+                                        });
+                                }),
+                                new ButtonFunction("Clear", () =>
+                                {
+                                    inputField.text = string.Empty;
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("VG Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED;
+                                }),
+                                new ButtonFunction("VG Red Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_GREEN;
+                                }),
+                                new ButtonFunction("VG Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN;
+                                }),
+                                new ButtonFunction("VG Green Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN_BLUE;
+                                }),
+                                new ButtonFunction("VG Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.BLUE;
+                                }),
+                                new ButtonFunction("VG Blue Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_BLUE;
+                                }));
+                        };
                         break;
                     }
                 case nameof(ModifierActions.setColorHexOther): {
@@ -2276,8 +2389,122 @@ namespace BetterLegacy.Editor.Data
                         var str = StringGenerator(modifier, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        StringGenerator(modifier, "Hex Code", 0);
-                        StringGenerator(modifier, "Hex Gradient Color", 2);
+                        var primaryHexCode = StringGenerator(modifier, "Primary Hex Code", 0);
+                        var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
+                        primaryHexCodeContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            var inputField = primaryHexCode.transform.Find("Input").GetComponent<InputField>();
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Edit Color", () =>
+                                {
+                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
+                                        (col, hex) =>
+                                        {
+                                            inputField.SetTextWithoutNotify(hex);
+                                        },
+                                        (col, hex) =>
+                                        {
+                                            CoreHelper.Log($"Set timeline object color: {hex}");
+                                            // set the input field's text empty so it notices there was a change
+                                            inputField.SetTextWithoutNotify(string.Empty);
+                                            inputField.text = hex;
+                                        }, () =>
+                                        {
+                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
+                                        });
+                                }),
+                                new ButtonFunction("Clear", () =>
+                                {
+                                    inputField.text = string.Empty;
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("VG Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED;
+                                }),
+                                new ButtonFunction("VG Red Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_GREEN;
+                                }),
+                                new ButtonFunction("VG Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN;
+                                }),
+                                new ButtonFunction("VG Green Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN_BLUE;
+                                }),
+                                new ButtonFunction("VG Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.BLUE;
+                                }),
+                                new ButtonFunction("VG Blue Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_BLUE;
+                                }));
+                        };
+
+                        var secondaryHexCode = StringGenerator(modifier, "Secondary Hex Code", 2);
+                        var secondaryHexCodeContextMenu = secondaryHexCode.AddComponent<ContextClickable>();
+                        secondaryHexCodeContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            var inputField = secondaryHexCode.transform.Find("Input").GetComponent<InputField>();
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Edit Color", () =>
+                                {
+                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
+                                        (col, hex) =>
+                                        {
+                                            inputField.SetTextWithoutNotify(hex);
+                                        },
+                                        (col, hex) =>
+                                        {
+                                            CoreHelper.Log($"Set timeline object color: {hex}");
+                                            // set the input field's text empty so it notices there was a change
+                                            inputField.SetTextWithoutNotify(string.Empty);
+                                            inputField.text = hex;
+                                        }, () =>
+                                        {
+                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
+                                        });
+                                }),
+                                new ButtonFunction("Clear", () =>
+                                {
+                                    inputField.text = string.Empty;
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("VG Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED;
+                                }),
+                                new ButtonFunction("VG Red Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_GREEN;
+                                }),
+                                new ButtonFunction("VG Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN;
+                                }),
+                                new ButtonFunction("VG Green Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN_BLUE;
+                                }),
+                                new ButtonFunction("VG Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.BLUE;
+                                }),
+                                new ButtonFunction("VG Blue Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_BLUE;
+                                }));
+                        };
+
                         break;
                     }
                 case nameof(ModifierActions.setColorRGBA): {
