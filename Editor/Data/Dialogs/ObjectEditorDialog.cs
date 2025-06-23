@@ -1921,6 +1921,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var prefabName = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "prefab name", siblingIndex - 1);
             PrefabName = prefabName;
             PrefabNameText = prefabName.transform.GetChild(0).GetComponent<Text>();
+            EditorThemeManager.AddLightText(PrefabNameText);
 
             var applyPrefabText = applyPrefab.transform.GetChild(0).GetComponent<Text>();
 
