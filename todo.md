@@ -148,8 +148,6 @@
 - Summary and note as much as I can (or need to).
 
 ### Editor
-- Color picker rework.  
-  Update: 1.8.0
 - Multi language support.
 - Rework the level combiner into just a selection system.
 - Give Editor Documentation a cover image so people know what a specific document is talking about.  
