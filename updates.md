@@ -12,6 +12,9 @@
 ### Editor
 - Tweaked the sizing of the Object Type dropdown so you can see the full Decoration word.
 
+## Fixes
+- Fixed the confirm menu not pausing the game.
+
 # 1.7.4 [Jun 21, 2025]
 ## Features
 ### Core
