@@ -180,6 +180,24 @@ namespace BetterLegacy.Editor.Managers
                 AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
         }
 
+        public static void ApplyInputField(InputFieldStorage inputFieldStorage)
+        {
+            if (inputFieldStorage.inputField)
+                ApplyInputField(inputFieldStorage.inputField);
+            if (inputFieldStorage.addButton)
+                ApplySelectable(inputFieldStorage.addButton, ThemeGroup.Function_2, false);
+            if (inputFieldStorage.leftGreaterButton)
+                ApplySelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+            if (inputFieldStorage.leftButton)
+                ApplySelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+            if (inputFieldStorage.middleButton)
+                ApplySelectable(inputFieldStorage.middleButton, ThemeGroup.Function_2, false);
+            if (inputFieldStorage.rightButton)
+                ApplySelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+            if (inputFieldStorage.rightGreaterButton)
+                ApplySelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+        }
+
         public static void AddInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             inputField.image.fillCenter = true;
