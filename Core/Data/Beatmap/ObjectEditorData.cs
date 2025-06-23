@@ -92,17 +92,17 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Constants
 
-        const string RED_GREEN = "FFE904";
+        public const string RED_GREEN = "FFE904";
 
-        const string RED_BLUE = "952BFF";
+        public const string RED_BLUE = "952BFF";
 
-        const string GREEN_BLUE = "34E7FF";
+        public const string GREEN_BLUE = "34E7FF";
 
-        const string RED = "EE153F";
+        public const string RED = "EE153F";
 
-        const string GREEN = "00D36E";
+        public const string GREEN = "00D36E";
 
-        const string BLUE = "265AEE";
+        public const string BLUE = "265AEE";
 
         #endregion
 
