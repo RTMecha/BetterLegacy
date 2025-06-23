@@ -590,7 +590,7 @@ namespace BetterLegacy.Editor.Data
                         }
 
                         var color = selected ? GetSelectedColor() : GetColor();
-                        if (!selected && prefab && EditorConfig.Instance.PrioritzePrefabTypeColor.Value)
+                        if (!selected && prefab && (EditorConfig.Instance.PrioritzePrefabTypeColor.Value || string.IsNullOrEmpty(EditorData.color)))
                             color = prefab.GetPrefabType().color;
 
                         if (Image.color != color)
