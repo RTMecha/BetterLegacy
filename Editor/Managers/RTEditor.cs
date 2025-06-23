@@ -3243,6 +3243,18 @@ namespace BetterLegacy.Editor.Managers
             
             EditorHelper.AddEditorDropdown("Show Config Manager", "", EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
 
+            EditorHelper.AddEditorDropdown("Open Color Picker", "", EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
+            {
+                RTColorPicker.inst.Show(Color.white,
+                    (col, hex) =>
+                    {
+                    },
+                    (col, hex) =>
+                    {
+                        LSText.CopyToClipboard(hex);
+                    });
+            });
+
             titleBar.Find("Steam/Text").GetComponent<Text>().text = "Upload";
             var steamLayoutElement = titleBar.Find("Steam").GetComponent<LayoutElement>();
             steamLayoutElement.minWidth = 95f;
