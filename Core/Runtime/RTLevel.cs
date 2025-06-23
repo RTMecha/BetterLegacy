@@ -1172,9 +1172,9 @@ namespace BetterLegacy.Core.Runtime
                     obj.SetObject(beatmapObject);
                     beatmapObject.selector = obj;
                 }
-
-                UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
             }
+
+            UnityObject.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
 
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
