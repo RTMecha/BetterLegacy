@@ -542,6 +542,46 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
             }
 
+            // Editor Colors
+            {
+                SetupEditorColorSetter(parent, "base color", "Set Base Color", "Set Base Color...", "Set", inputField =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        var editorData = timelineObject.EditorData;
+                        editorData.color = inputField.text;
+                        timelineObject.Render();
+                    }
+                });
+                SetupEditorColorSetter(parent, "select color", "Set Select Color", "Set Select Color...", "Set", inputField =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        var editorData = timelineObject.EditorData;
+                        editorData.selectedColor = inputField.text;
+                        timelineObject.Render();
+                    }
+                });
+                SetupEditorColorSetter(parent, "text color", "Set Text Color", "Set Text Color...", "Set", inputField =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        var editorData = timelineObject.EditorData;
+                        editorData.textColor = inputField.text;
+                        timelineObject.Render();
+                    }
+                });
+                SetupEditorColorSetter(parent, "mark color", "Set Mark Color", "Set Mark Color...", "Set", inputField =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        var editorData = timelineObject.EditorData;
+                        editorData.markColor = inputField.text;
+                        timelineObject.Render();
+                    }
+                });
+            }
+
             GeneratePad(parent);
             GenerateLabels(parent, 32f, new Label("- Actions -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
@@ -3554,6 +3594,109 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
             }
+        }
+
+        void SetupEditorColorSetter(Transform parent, string name, string label, string placeholder, string buttonLabel, Action<InputField> setColor)
+        {
+            var labels = GenerateLabels(parent, 32f, label);
+
+            var replaceName = Creator.NewUIObject(name.ToLower(), parent);
+            replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
+            var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
+            multiSyncGLG.spacing = new Vector2(8f, 8f);
+            multiSyncGLG.cellSize = new Vector2(124f, 32f);
+
+            var oldName = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(replaceName.transform, name.ToLower());
+
+            Destroy(oldName.GetComponent<EventTrigger>());
+            var inputField = oldName.GetComponent<InputField>();
+            inputField.characterValidation = InputField.CharacterValidation.None;
+            inputField.textComponent.alignment = TextAnchor.MiddleLeft;
+            inputField.textComponent.fontSize = 16;
+            inputField.text = string.Empty;
+            inputField.GetPlaceholderText().text = placeholder;
+            inputField.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+            inputField.GetPlaceholderText().fontSize = 16;
+            inputField.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+
+            inputField.onValueChanged.ClearAll();
+
+            var contextClickable = oldName.AddComponent<ContextClickable>();
+            contextClickable.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                var currentHexColor = inputField.text;
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Edit Color", () =>
+                    {
+                        RTColorPicker.inst.Show(RTColors.HexToColor(inputField.text),
+                            (col, hex) =>
+                            {
+                                inputField.SetTextWithoutNotify(hex);
+                            },
+                            (col, hex) =>
+                            {
+                                CoreHelper.Log($"Set timeline object color: {hex}");
+                                    // set the input field's text empty so it notices there was a change
+                                    inputField.SetTextWithoutNotify(string.Empty);
+                                inputField.text = hex;
+                            }, () =>
+                            {
+                                inputField.SetTextWithoutNotify(currentHexColor);
+                            });
+                    }),
+                    new ButtonFunction("Clear", () =>
+                    {
+                        inputField.text = string.Empty;
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("VG Red", () =>
+                    {
+                        inputField.text = ObjectEditorData.RED;
+                    }),
+                    new ButtonFunction("VG Red Green", () =>
+                    {
+                        inputField.text = ObjectEditorData.RED_GREEN;
+                    }),
+                    new ButtonFunction("VG Green", () =>
+                    {
+                        inputField.text = ObjectEditorData.GREEN;
+                    }),
+                    new ButtonFunction("VG Green Blue", () =>
+                    {
+                        inputField.text = ObjectEditorData.GREEN_BLUE;
+                    }),
+                    new ButtonFunction("VG Blue", () =>
+                    {
+                        inputField.text = ObjectEditorData.BLUE;
+                    }),
+                    new ButtonFunction("VG Blue Red", () =>
+                    {
+                        inputField.text = ObjectEditorData.RED_BLUE;
+                    }));
+            };
+
+            EditorHelper.AddInputFieldContextMenu(inputField);
+            TriggerHelper.InversableField(inputField, InputFieldSwapper.Type.String);
+
+            EditorThemeManager.AddInputField(inputField);
+
+            var setColorButton = EditorPrefabHolder.Instance.Function1Button.Duplicate(replaceName.transform, "set color");
+            var setColorButtonStorage = setColorButton.GetComponent<FunctionButtonStorage>();
+            setColorButton.transform.localScale = Vector3.one;
+            setColorButton.transform.AsRT().sizeDelta = new Vector2(66f, 32f);
+            setColorButton.GetComponent<LayoutElement>().minWidth = 32f;
+
+            setColorButtonStorage.label.text = buttonLabel;
+            setColorButtonStorage.button.onClick.NewListener(() => setColor?.Invoke(inputField));
+
+            EditorThemeManager.AddGraphic(setColorButtonStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.AddGraphic(setColorButtonStorage.label, ThemeGroup.Function_1_Text);
+
+            EditorHelper.SetComplexity(labels, Complexity.Normal);
+            EditorHelper.SetComplexity(replaceName, Complexity.Normal);
         }
 
         void SetupReplaceStrings(Transform parent, string name, string oldNameStr, string oldNamePlaceholder, string newNameStr, string newNamePlaceholder, Action<InputField, InputField> replacer)
