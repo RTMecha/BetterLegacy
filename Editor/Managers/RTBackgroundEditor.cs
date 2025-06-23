@@ -1494,26 +1494,20 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(Dialog.ReactiveColorsParent);
             ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.reactiveCol, index, Dialog.ReactiveColorsParent, SetReactiveColor));
 
-            Dialog.ReactiveColorSampleField.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveColorSampleField.inputField.text = backgroundObject.reactiveColSample.ToString();
-            Dialog.ReactiveColorSampleField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveColorSampleField.inputField.SetTextWithoutNotify(backgroundObject.reactiveColSample.ToString());
+            Dialog.ReactiveColorSampleField.inputField.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
-                {
                     backgroundObject.reactiveColSample = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(Dialog.ReactiveColorSampleField, max: 255);
 
-            Dialog.ReactiveColorIntensityField.inputField.onValueChanged.ClearAll();
-            Dialog.ReactiveColorIntensityField.inputField.text = backgroundObject.reactiveColIntensity.ToString();
-            Dialog.ReactiveColorIntensityField.inputField.onValueChanged.AddListener(_val =>
+            Dialog.ReactiveColorIntensityField.inputField.SetTextWithoutNotify(backgroundObject.reactiveColIntensity.ToString());
+            Dialog.ReactiveColorIntensityField.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.reactiveColIntensity = num;
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.ReactiveColorIntensityField);
@@ -1558,34 +1552,34 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(Dialog.ColorsParent);
             ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
 
-            Dialog.HueSatVal.x.inputField.onValueChanged.ClearAll();
-            Dialog.HueSatVal.x.inputField.text = backgroundObject.hue.ToString();
-            Dialog.HueSatVal.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.HueSatVal.x.inputField.SetTextWithoutNotify(backgroundObject.hue.ToString());
+            Dialog.HueSatVal.x.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.hue = num;
-                }
+
+                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
             });
 
-            Dialog.HueSatVal.y.inputField.onValueChanged.ClearAll();
-            Dialog.HueSatVal.y.inputField.text = backgroundObject.saturation.ToString();
-            Dialog.HueSatVal.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.HueSatVal.y.inputField.SetTextWithoutNotify(backgroundObject.saturation.ToString());
+            Dialog.HueSatVal.y.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.saturation = num;
-                }
+
+                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
             });
 
-            Dialog.HueSatVal.z.inputField.onValueChanged.ClearAll();
-            Dialog.HueSatVal.z.inputField.text = backgroundObject.value.ToString();
-            Dialog.HueSatVal.z.inputField.onValueChanged.AddListener(_val =>
+            Dialog.HueSatVal.z.inputField.SetTextWithoutNotify(backgroundObject.value.ToString());
+            Dialog.HueSatVal.z.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.value = num;
-                }
+
+                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.color, index, Dialog.ColorsParent, SetColor));
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.HueSatVal.x);
@@ -1604,34 +1598,34 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(Dialog.FadeColorsParent);
             ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
 
-            Dialog.FadeHueSatVal.x.inputField.onValueChanged.ClearAll();
-            Dialog.FadeHueSatVal.x.inputField.text = backgroundObject.fadeHue.ToString();
-            Dialog.FadeHueSatVal.x.inputField.onValueChanged.AddListener(_val =>
+            Dialog.FadeHueSatVal.x.inputField.SetTextWithoutNotify(backgroundObject.fadeHue.ToString());
+            Dialog.FadeHueSatVal.x.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.fadeHue = num;
-                }
+
+                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
-            Dialog.FadeHueSatVal.y.inputField.onValueChanged.ClearAll();
-            Dialog.FadeHueSatVal.y.inputField.text = backgroundObject.fadeSaturation.ToString();
-            Dialog.FadeHueSatVal.y.inputField.onValueChanged.AddListener(_val =>
+            Dialog.FadeHueSatVal.y.inputField.SetTextWithoutNotify(backgroundObject.fadeSaturation.ToString());
+            Dialog.FadeHueSatVal.y.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.fadeSaturation = num;
-                }
+
+                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
-            Dialog.FadeHueSatVal.z.inputField.onValueChanged.ClearAll();
-            Dialog.FadeHueSatVal.z.inputField.text = backgroundObject.fadeValue.ToString();
-            Dialog.FadeHueSatVal.z.inputField.onValueChanged.AddListener(_val =>
+            Dialog.FadeHueSatVal.z.inputField.SetTextWithoutNotify(backgroundObject.fadeValue.ToString());
+            Dialog.FadeHueSatVal.z.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     backgroundObject.fadeValue = num;
-                }
+
+                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
             TriggerHelper.IncreaseDecreaseButtons(Dialog.FadeHueSatVal.x);

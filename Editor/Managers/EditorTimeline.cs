@@ -1545,9 +1545,8 @@ namespace BetterLegacy.Editor.Managers
             timelineOverlayImage.color = GetLayerColor(layer);
             RTEditor.inst.editorLayerImage.color = GetLayerColor(layer);
 
-            RTEditor.inst.editorLayerField.onValueChanged.ClearAll();
-            RTEditor.inst.editorLayerField.text = GetLayerString(layer);
-            RTEditor.inst.editorLayerField.onValueChanged.AddListener(_val =>
+            RTEditor.inst.editorLayerField.SetTextWithoutNotify(GetLayerString(layer));
+            RTEditor.inst.editorLayerField.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                     SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
@@ -1565,9 +1564,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            RTEditor.inst.eventLayerToggle.onValueChanged.ClearAll();
-            RTEditor.inst.eventLayerToggle.isOn = layerType == LayerType.Events;
-            RTEditor.inst.eventLayerToggle.onValueChanged.AddListener(_val => SetLayer(_val ? LayerType.Events : LayerType.Objects));
+            RTEditor.inst.eventLayerToggle.SetIsOnWithoutNotify(layerType == LayerType.Events);
+            RTEditor.inst.eventLayerToggle.onValueChanged.NewListener(_val => SetLayer(_val ? LayerType.Events : LayerType.Objects));
 
             RTEventEditor.inst.SetEventActive(layerType == LayerType.Events);
 
