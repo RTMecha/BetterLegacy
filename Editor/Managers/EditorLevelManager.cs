@@ -929,7 +929,7 @@ namespace BetterLegacy.Editor.Managers
                 limitPlayer = false,
             };
             gameData.data.editor = new LevelEditorData();
-            gameData.data.checkpoints.Add(new Checkpoint(Checkpoint.BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
+            gameData.data.checkpoints.Add(Checkpoint.Default);
 
             if (gameData.events == null)
                 gameData.events = new List<List<EventKeyframe>>();

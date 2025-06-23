@@ -77,6 +77,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 		public const string DEFAULT_CHECKPOINT_NAME = "Checkpoint";
 
 		/// <summary>
+		/// The default checkpoint.
+		/// </summary>
+		public static Checkpoint Default => new Checkpoint(BASE_CHECKPOINT_NAME, 0f, Vector2.zero);
+
+		/// <summary>
 		/// Represents what checkpoint a player spawns at.
 		/// </summary>
 		public enum SpawnPositionType
