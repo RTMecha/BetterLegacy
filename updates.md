@@ -1,4 +1,18 @@
-﻿# 1.7.4 [Jun 21, 2025]
+﻿# 1.7.5 [Jun 23, 2025]
+## Features
+### Editor
+- Finally modified the Color Picker. That feature has been untouched the entire time during BetterLegacy's development.
+  - The Color Picker can now be dragged around.
+  - It can be used for stuff other than themes now.
+- Colors per-timeline object can now be changed. This includes: Base color, Selected color, Text color and Mark color. This also comes with some new config settings under Config Manager > Editor > Timeline.
+- Continuing work on math parsers for editor input fields.
+- Added tooltips to the Autokill Type and Object Type dropdowns.
+
+## Changes
+### Editor
+- Tweaked the sizing of the Object Type dropdown so you can see the full Decoration word.
+
+# 1.7.4 [Jun 21, 2025]
 ## Features
 ### Core
 - Added Burst Count value to the particleSystem modifier.
