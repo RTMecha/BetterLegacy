@@ -1275,7 +1275,7 @@ namespace BetterLegacy.Core.Components.Player
                 boost.trailRenderer.endWidth = Model.boostPart.Trail.endWidth * v.magnitude / 1.414213f;
             }
 
-            if (!Alive && !isDead && CustomPlayer && RTBeatmap.Current.challengeMode.Damageable)
+            if (!Alive && !isDead && CustomPlayer && !RTBeatmap.Current.challengeMode.Invincible)
                 StartCoroutine(IKill());
         }
 
@@ -2238,7 +2238,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!CustomPlayer)
                 return;
 
-            if (RTBeatmap.Current.challengeMode.Damageable)
+            if (!RTBeatmap.Current.challengeMode.Invincible)
                 CustomPlayer.Health -= damage;
             playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
         }
@@ -2262,7 +2262,7 @@ namespace BetterLegacy.Core.Components.Player
             if (!CustomPlayer)
                 return;
 
-            if (RTBeatmap.Current.challengeMode.Damageable)
+            if (!RTBeatmap.Current.challengeMode.Invincible)
                 CustomPlayer.Health--;
             playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
         }
