@@ -1205,6 +1205,61 @@ namespace BetterLegacy.Editor.Managers
             };
         }
 
+        public void RenderEditorColors(BackgroundObject backgroundObject)
+        {
+            Dialog.BaseColorField.SetTextWithoutNotify(backgroundObject.editorData.color);
+            Dialog.BaseColorField.onValueChanged.NewListener(_val =>
+            {
+                backgroundObject.editorData.color = _val;
+                backgroundObject.timelineObject?.RenderVisibleState(false);
+            });
+            var baseColorContextMenu = Dialog.BaseColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            baseColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    backgroundObject.timelineObject?.ShowColorContextMenu(Dialog.BaseColorField, backgroundObject.editorData.color);
+            };
+
+            Dialog.SelectColorField.SetTextWithoutNotify(backgroundObject.editorData.selectedColor);
+            Dialog.SelectColorField.onValueChanged.NewListener(_val =>
+            {
+                backgroundObject.editorData.selectedColor = _val;
+                backgroundObject.timelineObject?.RenderVisibleState(false);
+            });
+            var selectColorContextMenu = Dialog.SelectColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            selectColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    backgroundObject.timelineObject?.ShowColorContextMenu(Dialog.SelectColorField, backgroundObject.editorData.selectedColor);
+            };
+
+            Dialog.TextColorField.SetTextWithoutNotify(backgroundObject.editorData.textColor);
+            Dialog.TextColorField.onValueChanged.NewListener(_val =>
+            {
+                backgroundObject.editorData.textColor = _val;
+                backgroundObject.timelineObject?.RenderText(backgroundObject.name);
+            });
+            var textColorContextMenu = Dialog.TextColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            textColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    backgroundObject.timelineObject?.ShowColorContextMenu(Dialog.TextColorField, backgroundObject.editorData.textColor);
+            };
+
+            Dialog.MarkColorField.SetTextWithoutNotify(backgroundObject.editorData.markColor);
+            Dialog.MarkColorField.onValueChanged.NewListener(_val =>
+            {
+                backgroundObject.editorData.markColor = _val;
+                backgroundObject.timelineObject?.RenderText(backgroundObject.name);
+            });
+            var markColorContextMenu = Dialog.MarkColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            markColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    backgroundObject.timelineObject?.ShowColorContextMenu(Dialog.MarkColorField, backgroundObject.editorData.markColor);
+            };
+        }
+
         public void RenderPrefabReference(BackgroundObject backgroundObject)
         {
             bool fromPrefab = !string.IsNullOrEmpty(backgroundObject.prefabID);

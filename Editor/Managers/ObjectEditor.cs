@@ -1582,6 +1582,8 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             }
 
+            RenderEditorColors(beatmapObject);
+
             RenderGameObjectInspector(beatmapObject);
             RenderPrefabReference(beatmapObject);
 
@@ -3459,6 +3461,65 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject)
                             EditorTimeline.inst.SetCurrentObject(timelineObject, EditorConfig.Instance.BringToSelection.Value);
                     }));
+            };
+        }
+
+        /// <summary>
+        /// Renders the Editor Colors.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
+        public void RenderEditorColors(BeatmapObject beatmapObject)
+        {
+            Dialog.BaseColorField.SetTextWithoutNotify(beatmapObject.editorData.color);
+            Dialog.BaseColorField.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.editorData.color = _val;
+                beatmapObject.timelineObject?.RenderVisibleState(false);
+            });
+            var baseColorContextMenu = Dialog.BaseColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            baseColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    beatmapObject.timelineObject?.ShowColorContextMenu(Dialog.BaseColorField, beatmapObject.editorData.color);
+            };
+
+            Dialog.SelectColorField.SetTextWithoutNotify(beatmapObject.editorData.selectedColor);
+            Dialog.SelectColorField.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.editorData.selectedColor = _val;
+                beatmapObject.timelineObject?.RenderVisibleState(false);
+            });
+            var selectColorContextMenu = Dialog.SelectColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            selectColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    beatmapObject.timelineObject?.ShowColorContextMenu(Dialog.SelectColorField, beatmapObject.editorData.selectedColor);
+            };
+
+            Dialog.TextColorField.SetTextWithoutNotify(beatmapObject.editorData.textColor);
+            Dialog.TextColorField.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.editorData.textColor = _val;
+                beatmapObject.timelineObject?.RenderText(beatmapObject.name);
+            });
+            var textColorContextMenu = Dialog.TextColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            textColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    beatmapObject.timelineObject?.ShowColorContextMenu(Dialog.TextColorField, beatmapObject.editorData.textColor);
+            };
+
+            Dialog.MarkColorField.SetTextWithoutNotify(beatmapObject.editorData.markColor);
+            Dialog.MarkColorField.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.editorData.markColor = _val;
+                beatmapObject.timelineObject?.RenderText(beatmapObject.name);
+            });
+            var markColorContextMenu = Dialog.MarkColorField.gameObject.GetOrAddComponent<ContextClickable>();
+            markColorContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    beatmapObject.timelineObject?.ShowColorContextMenu(Dialog.MarkColorField, beatmapObject.editorData.markColor);
             };
         }
 

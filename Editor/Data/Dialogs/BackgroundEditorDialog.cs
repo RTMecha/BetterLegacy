@@ -91,6 +91,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public InputFieldStorage EditorIndexField { get; set; }
 
+        public InputField BaseColorField { get; set; }
+        public InputField SelectColorField { get; set; }
+        public InputField TextColorField { get; set; }
+        public InputField MarkColorField { get; set; }
+
         #endregion
 
         #region Prefab
@@ -814,6 +819,63 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorIndexField = indexer.GetComponent<InputFieldStorage>();
                     CoreHelper.Delete(EditorIndexField.middleButton);
                     EditorThemeManager.AddInputField(EditorIndexField);
+
+                    var baseColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "base color", 39);
+                    baseColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+                    var baseColorLabel = baseColorParent.transform.GetChild(0).GetComponent<Text>();
+                    baseColorLabel.alignment = TextAnchor.MiddleLeft;
+                    baseColorLabel.text = "Editor Base Color";
+                    baseColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+                    EditorThemeManager.AddLightText(baseColorLabel);
+                    var baseColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(baseColorParent.transform, "hex");
+                    BaseColorField = baseColor.GetComponent<InputField>();
+                    BaseColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+                    BaseColorField.GetPlaceholderText().text = "Enter Color";
+                    BaseColorField.GetPlaceholderText().fontSize = 15;
+                    EditorThemeManager.AddInputField(BaseColorField);
+
+                    var selectColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "select color", 40);
+                    selectColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+                    var selectColorLabel = selectColorParent.transform.GetChild(0).GetComponent<Text>();
+                    selectColorLabel.alignment = TextAnchor.MiddleLeft;
+                    selectColorLabel.text = "Editor Select Color";
+                    selectColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+                    EditorThemeManager.AddLightText(selectColorLabel);
+                    var selectColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(selectColorParent.transform, "hex");
+                    SelectColorField = selectColor.GetComponent<InputField>();
+                    SelectColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+                    SelectColorField.GetPlaceholderText().text = "Enter Color";
+                    SelectColorField.GetPlaceholderText().fontSize = 15;
+                    EditorThemeManager.AddInputField(SelectColorField);
+
+                    var textColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "text color", 41);
+                    textColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+                    var textColorLabel = textColorParent.transform.GetChild(0).GetComponent<Text>();
+                    textColorLabel.alignment = TextAnchor.MiddleLeft;
+                    textColorLabel.text = "Editor Text Color";
+                    textColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+                    EditorThemeManager.AddLightText(textColorLabel);
+                    var textColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(textColorParent.transform, "hex");
+                    TextColorField = textColor.GetComponent<InputField>();
+                    TextColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+                    TextColorField.GetPlaceholderText().text = "Enter Color";
+                    TextColorField.GetPlaceholderText().fontSize = 15;
+                    EditorThemeManager.AddInputField(TextColorField);
+
+                    var markColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "mark color", 42);
+                    markColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+                    var markColorLabel = markColorParent.transform.GetChild(0).GetComponent<Text>();
+                    markColorLabel.alignment = TextAnchor.MiddleLeft;
+                    markColorLabel.text = "Editor Mark Color";
+                    markColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+                    EditorThemeManager.AddLightText(markColorLabel);
+                    var markColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(markColorParent.transform, "hex");
+                    MarkColorField = markColor.GetComponent<InputField>();
+                    MarkColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+                    MarkColorField.GetPlaceholderText().text = "Enter Color";
+                    MarkColorField.GetPlaceholderText().fontSize = 15;
+                    EditorThemeManager.AddInputField(MarkColorField);
+
                 }
                 catch (Exception ex)
                 {
@@ -823,7 +885,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Prefab Reference
             {
-                CollapsePrefabLabel = RTEditor.GenerateLabels("collapselabel", LeftContent, 39, false,
+                CollapsePrefabLabel = RTEditor.GenerateLabels("collapselabel", LeftContent, 43, false,
                     new Label("Prefab Collapse / Apply to All") { horizontalWrap = HorizontalWrapMode.Overflow });
 
                 var collapsePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "applyprefab", 40);
@@ -833,17 +895,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddSelectable(CollapsePrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(CollapsePrefabButton.label, ThemeGroup.Function_2_Text);
 
-                AssignPrefabLabel = RTEditor.GenerateLabels("assignlabel", LeftContent, 41, false,
+                AssignPrefabLabel = RTEditor.GenerateLabels("assignlabel", LeftContent, 44, false,
                     new Label("Assign Object to Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
 
-                var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "assignprefab", 42);
+                var assignPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "assignprefab", 45);
                 AssignPrefabButton = assignPrefab.GetComponent<FunctionButtonStorage>();
                 AssignPrefabButton.label.text = "Assign";
 
                 EditorThemeManager.AddSelectable(AssignPrefabButton.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(AssignPrefabButton.label, ThemeGroup.Function_2_Text);
 
-                var removePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "removeprefab", 43);
+                var removePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "removeprefab", 46);
                 RemovePrefabButton = removePrefab.GetComponent<FunctionButtonStorage>();
                 RemovePrefabButton.label.text = "Remove";
 

@@ -50,6 +50,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public InputFieldStorage EditorIndexField { get; set; }
 
+        public InputField BaseColorField { get; set; }
+        public InputField SelectColorField { get; set; }
+        public InputField TextColorField { get; set; }
+        public InputField MarkColorField { get; set; }
+
         #endregion
 
         #region Transforms
@@ -578,6 +583,62 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (EditorIndexField.middleButton)
                 CoreHelper.Delete(EditorIndexField.middleButton.gameObject);
             EditorThemeManager.AddInputField(EditorIndexField);
+
+            var baseColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "base color");
+            baseColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+            var baseColorLabel = baseColorParent.transform.GetChild(0).GetComponent<Text>();
+            baseColorLabel.alignment = TextAnchor.MiddleLeft;
+            baseColorLabel.text = "Editor Base Color";
+            baseColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+            EditorThemeManager.AddLightText(baseColorLabel);
+            var baseColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(baseColorParent.transform, "hex");
+            BaseColorField = baseColor.GetComponent<InputField>();
+            BaseColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+            BaseColorField.GetPlaceholderText().text = "Enter Color";
+            BaseColorField.GetPlaceholderText().fontSize = 15;
+            EditorThemeManager.AddInputField(BaseColorField);
+
+            var selectColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "select color");
+            selectColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+            var selectColorLabel = selectColorParent.transform.GetChild(0).GetComponent<Text>();
+            selectColorLabel.alignment = TextAnchor.MiddleLeft;
+            selectColorLabel.text = "Editor Select Color";
+            selectColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+            EditorThemeManager.AddLightText(selectColorLabel);
+            var selectColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(selectColorParent.transform, "hex");
+            SelectColorField = selectColor.GetComponent<InputField>();
+            SelectColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+            SelectColorField.GetPlaceholderText().text = "Enter Color";
+            SelectColorField.GetPlaceholderText().fontSize = 15;
+            EditorThemeManager.AddInputField(SelectColorField);
+
+            var textColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "text color");
+            textColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+            var textColorLabel = textColorParent.transform.GetChild(0).GetComponent<Text>();
+            textColorLabel.alignment = TextAnchor.MiddleLeft;
+            textColorLabel.text = "Editor Text Color";
+            textColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+            EditorThemeManager.AddLightText(textColorLabel);
+            var textColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(textColorParent.transform, "hex");
+            TextColorField = textColor.GetComponent<InputField>();
+            TextColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+            TextColorField.GetPlaceholderText().text = "Enter Color";
+            TextColorField.GetPlaceholderText().fontSize = 15;
+            EditorThemeManager.AddInputField(TextColorField);
+
+            var markColorParent = EditorPrefabHolder.Instance.Labels.Duplicate(LeftContent, "mark color");
+            markColorParent.transform.AsRT().sizeDelta = new Vector2(351f, 32f);
+            var markColorLabel = markColorParent.transform.GetChild(0).GetComponent<Text>();
+            markColorLabel.alignment = TextAnchor.MiddleLeft;
+            markColorLabel.text = "Editor Mark Color";
+            markColorLabel.rectTransform.sizeDelta = new Vector2(232f, 32f);
+            EditorThemeManager.AddLightText(markColorLabel);
+            var markColor = EditorPrefabHolder.Instance.StringInputField.Duplicate(markColorParent.transform, "hex");
+            MarkColorField = markColor.GetComponent<InputField>();
+            MarkColorField.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+            MarkColorField.GetPlaceholderText().text = "Enter Color";
+            MarkColorField.GetPlaceholderText().fontSize = 15;
+            EditorThemeManager.AddInputField(MarkColorField);
 
             #endregion
 

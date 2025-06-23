@@ -1046,6 +1046,58 @@ namespace BetterLegacy.Editor.Data
                 );
         }
 
+        public void ShowColorContextMenu(InputField inputField, string currentHexColor)
+        {
+            EditorContextMenu.inst.ShowContextMenu(
+                new ButtonFunction("Edit Color", () =>
+                {
+                    RTColorPicker.inst.Show(RTColors.HexToColor(currentHexColor),
+                        (col, hex) =>
+                        {
+                            inputField.SetTextWithoutNotify(hex);
+                        },
+                        (col, hex) =>
+                        {
+                            CoreHelper.Log($"Set timeline object color: {hex}");
+                            // set the input field's text empty so it notices there was a change
+                            inputField.SetTextWithoutNotify(string.Empty);
+                            inputField.text = hex;
+                        }, () =>
+                        {
+                            inputField.SetTextWithoutNotify(currentHexColor);
+                        });
+                }),
+                new ButtonFunction("Clear", () =>
+                {
+                    inputField.text = string.Empty;
+                }),
+                new ButtonFunction(true),
+                new ButtonFunction("VG Red", () =>
+                {
+                    inputField.text = ObjectEditorData.RED;
+                }),
+                new ButtonFunction("VG Red Green", () =>
+                {
+                    inputField.text = ObjectEditorData.RED_GREEN;
+                }),
+                new ButtonFunction("VG Green", () =>
+                {
+                    inputField.text = ObjectEditorData.GREEN;
+                }),
+                new ButtonFunction("VG Green Blue", () =>
+                {
+                    inputField.text = ObjectEditorData.GREEN_BLUE;
+                }),
+                new ButtonFunction("VG Blue", () =>
+                {
+                    inputField.text = ObjectEditorData.BLUE;
+                }),
+                new ButtonFunction("VG Blue Red", () =>
+                {
+                    inputField.text = ObjectEditorData.RED_BLUE;
+                }));
+        }
+
         public Color GetColor()
         {
             var editorData = EditorData;
