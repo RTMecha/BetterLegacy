@@ -675,6 +675,8 @@ namespace BetterLegacy.Editor.Managers
         // 6 - initialize editors
         void InitEditors()
         {
+            RTColorPicker.Init();
+
             RTSettingEditor.Init();
             RTMarkerEditor.Init();
             RTMetaDataEditor.Init();

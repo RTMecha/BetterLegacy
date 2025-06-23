@@ -701,36 +701,33 @@ namespace BetterLegacy.Core.Helpers
 
         #region Themes
 
-        public static EventTrigger.Entry CreatePreviewClickTrigger(Image _preview, Image _dropper, InputField _hex, Color _col, string popupName = "") => CreateEntry(EventTriggerType.PointerClick, eventData =>
+        public static EventTrigger.Entry CreatePreviewClickTrigger(Image preview, Image dropper, InputField hexField, Color currentColor, string popupName = "") => CreateEntry(EventTriggerType.PointerClick, eventData =>
         {
-            RTEditor.inst.ShowDialog("Color Picker");
-            if (!string.IsNullOrEmpty(popupName))
-                RTEditor.inst.HideDialog(popupName);
-
-            var colorPickerTF = EditorManager.inst.GetDialog("Color Picker").Dialog.Find("content/Color Picker");
-            var colorPicker = colorPickerTF.GetComponent<ColorPicker>();
-
-            colorPicker.SwitchCurrentColor(_col);
-
-            var save = colorPickerTF.Find("info/hex/save").GetComponent<Button>();
-
-            save.onClick.ClearAll();
-            save.onClick.AddListener(() =>
+            RTColorPicker.inst.Show(currentColor, (col, hex) =>
             {
-                EditorManager.inst.ClearPopups();
+                hexField.SetTextWithoutNotify(hex);
+                preview.color = col;
+
+                if (dropper)
+                    dropper.color = RTColors.InvertColor(col);
+            }, (col, hex) =>
+            {
                 if (!string.IsNullOrEmpty(popupName))
                     RTEditor.inst.ShowDialog(popupName);
 
-                double saturation;
-                double num;
-                LSColors.ColorToHSV(colorPicker.currentColor, out double _, out saturation, out num);
-                _hex.text = colorPicker.currentHex;
-                _preview.color = colorPicker.currentColor;
+                hexField.SetTextWithoutNotify(string.Empty);
+                hexField.text = hex;
+                preview.color = col;
 
-                if (!_dropper)
-                    return;
+                if (dropper)
+                    dropper.color = RTColors.InvertColor(col);
+            }, () =>
+            {
+                hexField.SetTextWithoutNotify(RTColors.ColorToHex(currentColor));
+                preview.color = currentColor;
 
-                _dropper.color = RTColors.InvertColorHue(RTColors.InvertColorValue(colorPicker.currentColor));
+                if (dropper)
+                    dropper.color = RTColors.InvertColor(currentColor);
             });
         });
 

@@ -398,6 +398,7 @@ namespace BetterLegacy.Patchers
             __result = text;
             return false;
         }
+
         [HarmonyPatch(nameof(DiscordRpc.RichPresence.FreeMem))]
         [HarmonyPrefix]
         static bool FreeMemPrefix(DiscordRpc.RichPresence __instance)
@@ -417,5 +418,13 @@ namespace BetterLegacy.Patchers
             }
             return false;
         }
+    }
+
+    [HarmonyPatch(typeof(ColorPicker))]
+    public class ColorPickerPatch
+    {
+        [HarmonyPatch(nameof(ColorPicker.Start))]
+        [HarmonyPrefix]
+        static bool StartPrefix() => false;
     }
 }
