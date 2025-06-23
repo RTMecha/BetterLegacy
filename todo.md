@@ -186,7 +186,6 @@
   - Prefab Objects can be spawned + despawned.
   - Player Models can be switched between and tested.
   - GUI and keybinds for interacting with this mode (similar to the editor).
-- Some kind of marker layer priority system. Basically a way to sort and filter visible markers.
 
 
 ## Demos
