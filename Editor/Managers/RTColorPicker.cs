@@ -55,7 +55,6 @@ namespace BetterLegacy.Editor.Managers
 			hueSlider = baseColorPicker.hueSlider.GetComponent<Slider>();
 			hueSlider.onValueChanged.AddListener(_val =>
 			{
-				Debug.Log("VALUE CHANGED");
 				RenderPanel(_val);
 				LSColors.ColorToHSV(currentColor, out double hue, out double sat, out double val);
 				RenderEditor(LSColors.ColorFromHSV(_val * 359f, sat, val));
