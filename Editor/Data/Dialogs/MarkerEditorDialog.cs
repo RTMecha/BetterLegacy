@@ -34,6 +34,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public List<GameObject> Colors { get; set; } = new List<GameObject>();
 
+        public RectTransform LayersContent { get; set; }
+
         #endregion
 
         public override void Init()
@@ -109,7 +111,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 return;
             }
 
-            var makeNote = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "convert to note", 8);
+            var makeNote = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "convert to note", 7);
             ConvertToPlannerNoteButton = makeNote.GetComponent<FunctionButtonStorage>();
             ConvertToPlannerNoteButton.label.text = "Convert to Planner Note";
             ConvertToPlannerNoteButton.button.onClick.ClearAll();
@@ -130,6 +132,46 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(snapToBPM, Complexity.Normal);
 
             ColorsParent = MarkerEditor.inst.left.Find("color").AsRT();
+
+            var layersParent = Creator.NewUIObject("layers", MarkerEditor.inst.left);
+
+            var label = EditorPrefabHolder.Instance.Labels.Duplicate(MarkerEditor.inst.left, "layers_label");
+
+            label.transform.GetChild(0).GetComponent<Text>().text = "Layers to appear on";
+
+            var tagScrollView = Creator.NewUIObject("Layers Scroll View", MarkerEditor.inst.left);
+
+            tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 40f);
+            var scroll = tagScrollView.AddComponent<ScrollRect>();
+
+            scroll.horizontal = true;
+            scroll.vertical = false;
+
+            var image = tagScrollView.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.01f);
+
+            var mask = tagScrollView.AddComponent<Mask>();
+
+            var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+            RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
+
+            var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
+
+            var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
+            tagContentGLG.cellSize = new Vector2(200f, 32f);
+            tagContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            tagContentGLG.constraintCount = 1;
+            tagContentGLG.childAlignment = TextAnchor.MiddleLeft;
+            tagContentGLG.spacing = new Vector2(8f, 0f);
+
+            var tagContentCSF = tagContent.AddComponent<ContentSizeFitter>();
+            tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+            scroll.viewport = tagViewport.transform.AsRT();
+            scroll.content = tagContent.transform.AsRT();
+
+            LayersContent = scroll.content;
 
             var prefab = MarkerEditor.inst.markerPrefab;
             var prefabCopy = prefab.Duplicate(RTMarkerEditor.inst.transform, prefab.name);

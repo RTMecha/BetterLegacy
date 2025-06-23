@@ -1574,6 +1574,9 @@ namespace BetterLegacy.Editor.Managers
             if (prevLayer != layer || prevLayerType != layerType)
             {
                 UpdateTimelineObjects();
+                foreach (var timelineMarker in RTMarkerEditor.inst.timelineMarkers)
+                    timelineMarker.Render();
+
                 switch (layerType)
                 {
                     case LayerType.Objects: {

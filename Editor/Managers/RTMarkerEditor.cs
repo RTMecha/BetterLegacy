@@ -143,6 +143,7 @@ namespace BetterLegacy.Editor.Managers
 
             RenderLabel(timelineMarker);
             RenderColors(marker);
+            RenderLayers(marker);
             RenderNameEditor(marker);
             RenderDescriptionEditor(marker);
             RenderTime(marker);
@@ -273,6 +274,83 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Updates the visible editor layers.
+        /// </summary>
+        public void RenderLayers(Marker marker)
+        {
+            LSHelpers.DeleteChildren(Dialog.LayersContent);
+            int num = 0;
+            foreach (var layer in marker.layers)
+            {
+                int index = num;
+                var numberField = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Dialog.LayersContent);
+                var numberFieldStorage = numberField.GetComponent<InputFieldStorage>();
+                //CoreHelper.Destroy(numberField.GetComponent<EventTrigger>());
+                CoreHelper.Destroy(numberFieldStorage.eventTrigger);
+
+                numberFieldStorage.inputField.SetTextWithoutNotify(layer.ToString());
+                numberFieldStorage.inputField.onValueChanged.NewListener(_val =>
+                {
+                    if (int.TryParse(_val, out int num))
+                        marker.layers[index] = RTMath.Clamp(num, 0, int.MaxValue);
+
+                    marker.timelineMarker?.Render();
+                });
+                numberFieldStorage.inputField.onEndEdit.NewListener(_val =>
+                {
+                    if (RTMath.TryParse(_val, 0f, out float num))
+                        marker.layers[index] = RTMath.Clamp((int)num, 0, int.MaxValue);
+
+                    marker.timelineMarker?.Render();
+                });
+
+                numberFieldStorage.middleButton.onClick.NewListener(() =>
+                {
+                    numberFieldStorage.inputField.text = EditorTimeline.inst.Layer.ToString();
+                });
+
+                TriggerHelper.IncreaseDecreaseButtonsInt(numberFieldStorage);
+                TriggerHelper.AddEventTriggers(numberFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(numberFieldStorage.inputField, max: int.MaxValue));
+
+                EditorThemeManager.ApplyInputField(numberFieldStorage);
+
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(numberField.transform, "delete");
+                var deleteButtonStorage = delete.GetComponent<DeleteButtonStorage>();
+                delete.GetComponent<LayoutElement>().ignoreLayout = false;
+
+                deleteButtonStorage.button.onClick.NewListener(() =>
+                {
+                    marker.layers.RemoveAt(index);
+                    RenderLayers(marker);
+                });
+
+                EditorThemeManager.ApplyGraphic(deleteButtonStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteButtonStorage.image, ThemeGroup.Delete_Text);
+
+                var layout = numberField.GetComponent<HorizontalLayoutGroup>();
+                layout.spacing = 4f;
+
+                var image = numberField.AddComponent<Image>();
+                EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_3, true);
+                num++;
+            }
+
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.LayersContent, "Add");
+            add.transform.localScale = Vector3.one;
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Add Layer";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.NewListener(() =>
+            {
+                marker.layers.Add(0);
+                RenderLayers(marker);
+            });
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
+        }
+
+        /// <summary>
         /// Checks the description of a marker, running specific functions.
         /// </summary>
         /// <param name="marker">Marker to check.</param>
@@ -389,13 +467,13 @@ namespace BetterLegacy.Editor.Managers
         public void CreateNewMarker(float time)
         {
             Marker marker;
-            if (!GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f, out Marker baseMarker))
+            if (GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f && (x.layers.IsEmpty() || x.layers.Contains(EditorTimeline.inst.Layer)), out Marker baseMarker))
+                marker = baseMarker;
+            else
             {
                 marker = new Marker(string.Empty, string.Empty, Mathf.Clamp(EditorConfig.Instance.MarkerDefaultColor.Value, 0, MarkerEditor.inst.markerColors.Count - 1), time);
                 GameData.Current.data.markers.Add(marker);
             }
-            else
-                marker = baseMarker;
 
             OrderMarkers();
 

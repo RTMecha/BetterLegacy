@@ -1,4 +1,6 @@
-﻿using LSFunctions;
+﻿using System.Collections.Generic;
+
+using LSFunctions;
 
 using SimpleJSON;
 
@@ -42,9 +44,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float time;
 
         /// <summary>
-        /// Marker group layer that should currently appear.
+        /// Layers that the marker should display on.
         /// </summary>
-        public int layer;
+        public List<int> layers = new List<int>();
 
         /// <summary>
         /// Timeline Marker reference.
@@ -60,7 +62,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             desc = orig.desc;
             color = orig.color;
             time = orig.time;
-            layer = orig.layer;
+            layers.Clear();
+            layers.AddRange(orig.layers);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -78,7 +81,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             desc = jn["desc"] ?? string.Empty;
             color = jn["col"].AsInt;
             time = jn["t"].AsFloat;
-            layer = jn["l"].AsInt;
+
+            layers.Clear();
+            for (int i = 0; i < jn["ls"].Count; i++)
+                layers.Add(jn["ls"][i].AsInt);
         }
 
         public override JSONNode ToJSONVG()
@@ -109,8 +115,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["t"] = time;
 
-            if (layer != 0)
-                jn["l"] = layer;
+            for (int i = 0; i < layers.Count; i++)
+                jn["ls"][i] = layers[i];
 
             return jn;
         }

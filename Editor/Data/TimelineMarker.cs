@@ -116,7 +116,7 @@ namespace BetterLegacy.Editor.Data
 
             var marker = Marker;
             gameObject = MarkerEditor.inst.markerPrefab.Duplicate(EditorManager.inst.markerTimeline.transform, $"Marker {index + 1}");
-            gameObject.SetActive(true);
+            gameObject.SetActive(marker.layers.IsEmpty() || marker.layers.Contains(EditorTimeline.inst.Layer));
             gameObject.transform.localScale = Vector3.one;
             var markerStorage = gameObject.GetComponent<MarkerStorage>();
 
@@ -184,7 +184,7 @@ namespace BetterLegacy.Editor.Data
         {
             var markerColor = Color;
 
-            GameObject.SetActive(true);
+            GameObject.SetActive(Marker.layers.IsEmpty() || Marker.layers.Contains(EditorTimeline.inst.Layer));
             RenderPosition();
             RenderTooltip(markerColor);
             RenderName();
