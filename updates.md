@@ -1,4 +1,23 @@
-﻿# 1.7.5 [Jun 23, 2025]
+﻿# 1.7.6 [Jun 24, 2025]
+## Features
+### Editor
+- Implemented a layers system for markers. With this, markers can be set to only appear on specific layers.
+- You can now directly access the Color Picker via the View dropdown.
+- Added Timeline Object color editing to the Mutli Object Editor.
+
+## Changes
+### Editor
+- Color keyframe toggles now update automatically when the HSV values are changed.
+- Color Picker now has animations.
+
+## Fixes
+- Fixed opacity collision not working in the arcade due to a vanilla component getting in the way.
+- Fixed Practice mode subtracting the health.
+- Fixed the Color Picker not working in resolutions outside of 1080p.
+
+------------------------------------------------------------------------------------------
+
+# 1.7.5 [Jun 23, 2025]
 ## Features
 ### Editor
 - Finally modified the Color Picker. That feature has been untouched the entire time during BetterLegacy's development.
@@ -14,6 +33,8 @@
 
 ## Fixes
 - Fixed the confirm menu not pausing the game.
+
+------------------------------------------------------------------------------------------
 
 # 1.7.4 [Jun 21, 2025]
 ## Features
@@ -37,6 +58,8 @@
 - Fixed duplicating Prefab Objects at start time 0 not having their bin added to.
 - Fixed updating prefabs creating duplicates.
 
+------------------------------------------------------------------------------------------
+
 # 1.7.3 [Jun 18, 2025]
 ## Features
 ### Example Companion
@@ -47,9 +70,13 @@
 - Updated the Example prefab model to include better controls.
 - UpdateObject and UpdateEverything keybind actions now updates all modifiers in an object.
 
+------------------------------------------------------------------------------------------
+
 # 1.7.2 [Jun 17, 2025]
 ## Fixed
 - Fixed cutscene select being bugged.
+
+------------------------------------------------------------------------------------------
 
 # 1.7.1 [Jun 17, 2025]
 ## Features
@@ -67,6 +94,8 @@
 - Fixed hidden object editor data not being saved to Prefab Objects.
 - Fixed fifty_levels achievement displaying the wrong name.
 - Hopefully fixed custom player models being usable in the story. Since this story requires specific players, this is necessary.
+
+------------------------------------------------------------------------------------------
 
 # 1.7.0 Unfractured Update [Jun 15, 2025]
 ## Features
