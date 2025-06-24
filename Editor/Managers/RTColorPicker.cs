@@ -162,24 +162,24 @@ namespace BetterLegacy.Editor.Managers
 		{
 			var rect2 = LSMath.RectTransformToScreenSpace2(baseColorPicker.brightnessPanel.transform.AsRT());
 			var offset = baseColorPicker.transform.position;
-			offset.y -= 100f;
+			offset.y -= 100f * CoreHelper.ScreenScale;
+			var mousePosition = Input.mousePosition;
 
-			if (!new Rect(offset.x * EditorManager.inst.ScreenScale, offset.y * EditorManager.inst.ScreenScale, rect2.width, rect2.height).Contains(Input.mousePosition))
-				return;
+			var pos = new Vector2((mousePosition.x - offset.x) * CoreHelper.ScreenScale, (mousePosition.y - offset.y) * CoreHelper.ScreenScale);
+			pos.x /= rect2.width * CoreHelper.ScreenScale;
+			pos.y /= rect2.height * CoreHelper.ScreenScale;
 
-			float num = Input.mousePosition.x - offset.x * EditorManager.inst.ScreenScale;
-			num /= rect2.width;
-			float num2 = Input.mousePosition.y - offset.y * EditorManager.inst.ScreenScale;
-			num2 /= rect2.height;
-			var color = LSColors.ColorFromHSV(hueSlider.value * 359f, num, num2);
-			UpdateSlider(num, num2, rect2);
+			pos = RTMath.Clamp(pos, Vector2.zero, Vector2.one);
+
+			var color = LSColors.ColorFromHSV(hueSlider.value * 359f, pos.x, pos.y);
+			UpdateSlider(pos.x, pos.y, rect2);
 			RenderEditor(color);
 		}
 
 		void UpdateSlider(float saturation, float value, Rect panelScreenRect)
 		{
 			baseColorPicker.brightnessPanelSlider.GetComponent<Image>().color = ((value <= 0.5) ? LSColors.white : LSColors.black);
-			baseColorPicker.brightnessPanelSlider.transform.AsRT().anchoredPosition = new Vector3(saturation * panelScreenRect.width - 2.5f, value * panelScreenRect.height - 2.5f) * EditorManager.inst.ScreenScaleInverse;
+			baseColorPicker.brightnessPanelSlider.transform.AsRT().anchoredPosition = new Vector3(saturation * panelScreenRect.width - 2.5f, value * panelScreenRect.height - 2.5f) * CoreHelper.ScreenScaleInverse;
 		}
 
 		void RenderEditor(Color color)
