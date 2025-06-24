@@ -5787,6 +5787,38 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.FontSelectorPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.FontSelectorPopupRotCloseEase,
             },
+            new EditorAnimation(EditorPopup.COLOR_PICKER)
+            {
+                ActiveConfig = EditorConfig.Instance.ColorPickerPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.ColorPickerPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.ColorPickerPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.ColorPickerPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.ColorPickerPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.ColorPickerPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.ColorPickerPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.ColorPickerPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.ColorPickerPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.ColorPickerPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.ColorPickerPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.ColorPickerPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.ColorPickerPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.ColorPickerPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.ColorPickerPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.ColorPickerPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.ColorPickerPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.ColorPickerPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.ColorPickerPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.ColorPickerPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.ColorPickerPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.ColorPickerPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.ColorPickerPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.ColorPickerPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.ColorPickerPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.ColorPickerPopupRotCloseEase,
+            },
 
             new EditorAnimation("File Dropdown")
             {

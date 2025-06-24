@@ -1116,6 +1116,40 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Color Picker Popup
+
+        public Setting<bool> ColorPickerPopupActive { get; set; }
+
+        public Setting<bool> ColorPickerPopupPosActive { get; set; }
+        public Setting<Vector2> ColorPickerPopupPosOpen { get; set; }
+        public Setting<Vector2> ColorPickerPopupPosClose { get; set; }
+        public Setting<Vector2> ColorPickerPopupPosOpenDuration { get; set; }
+        public Setting<Vector2> ColorPickerPopupPosCloseDuration { get; set; }
+        public Setting<Easing> ColorPickerPopupPosXOpenEase { get; set; }
+        public Setting<Easing> ColorPickerPopupPosXCloseEase { get; set; }
+        public Setting<Easing> ColorPickerPopupPosYOpenEase { get; set; }
+        public Setting<Easing> ColorPickerPopupPosYCloseEase { get; set; }
+
+        public Setting<bool> ColorPickerPopupScaActive { get; set; }
+        public Setting<Vector2> ColorPickerPopupScaOpen { get; set; }
+        public Setting<Vector2> ColorPickerPopupScaClose { get; set; }
+        public Setting<Vector2> ColorPickerPopupScaOpenDuration { get; set; }
+        public Setting<Vector2> ColorPickerPopupScaCloseDuration { get; set; }
+        public Setting<Easing> ColorPickerPopupScaXOpenEase { get; set; }
+        public Setting<Easing> ColorPickerPopupScaXCloseEase { get; set; }
+        public Setting<Easing> ColorPickerPopupScaYOpenEase { get; set; }
+        public Setting<Easing> ColorPickerPopupScaYCloseEase { get; set; }
+
+        public Setting<bool> ColorPickerPopupRotActive { get; set; }
+        public Setting<float> ColorPickerPopupRotOpen { get; set; }
+        public Setting<float> ColorPickerPopupRotClose { get; set; }
+        public Setting<float> ColorPickerPopupRotOpenDuration { get; set; }
+        public Setting<float> ColorPickerPopupRotCloseDuration { get; set; }
+        public Setting<Easing> ColorPickerPopupRotOpenEase { get; set; }
+        public Setting<Easing> ColorPickerPopupRotCloseEase { get; set; }
+
+        #endregion
+
         #region File Dropdown
 
         public Setting<bool> FileDropdownActive { get; set; }
@@ -2428,6 +2462,40 @@ namespace BetterLegacy.Configs
             FontSelectorPopupRotCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
             FontSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
             FontSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Color Picker Popup
+
+            ColorPickerPopupActive = Bind(this, ANIMATIONS, "Color Picker Popup Active", true, "If the popup animation should play.");
+
+            ColorPickerPopupPosActive = Bind(this, ANIMATIONS, "Color Picker Popup Animate Position", false, "If position should be animated.");
+            ColorPickerPopupPosOpen = Bind(this, ANIMATIONS, "Color Picker Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ColorPickerPopupPosClose = Bind(this, ANIMATIONS, "Color Picker Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ColorPickerPopupPosOpenDuration = Bind(this, ANIMATIONS, "Color Picker Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            ColorPickerPopupPosCloseDuration = Bind(this, ANIMATIONS, "Color Picker Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            ColorPickerPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            ColorPickerPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            ColorPickerPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            ColorPickerPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
+
+            ColorPickerPopupScaActive = Bind(this, ANIMATIONS, "Color Picker Popup Animate Scale", true, "If scale should be animated.");
+            ColorPickerPopupScaOpen = Bind(this, ANIMATIONS, "Color Picker Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ColorPickerPopupScaClose = Bind(this, ANIMATIONS, "Color Picker Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ColorPickerPopupScaOpenDuration = Bind(this, ANIMATIONS, "Color Picker Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            ColorPickerPopupScaCloseDuration = Bind(this, ANIMATIONS, "Color Picker Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            ColorPickerPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            ColorPickerPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            ColorPickerPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            ColorPickerPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
+
+            ColorPickerPopupRotActive = Bind(this, ANIMATIONS, "Color Picker Popup Animate Rotation", false, "If rotation should be animated.");
+            ColorPickerPopupRotOpen = Bind(this, ANIMATIONS, "Color Picker Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            ColorPickerPopupRotClose = Bind(this, ANIMATIONS, "Color Picker Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            ColorPickerPopupRotOpenDuration = Bind(this, ANIMATIONS, "Color Picker Popup Open Rotation Duration", 0f, "The duration of opening.");
+            ColorPickerPopupRotCloseDuration = Bind(this, ANIMATIONS, "Color Picker Popup Close Rotation Duration", 0f, "The duration of closing.");
+            ColorPickerPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            ColorPickerPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
