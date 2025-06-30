@@ -60,6 +60,9 @@
 - Active event keyframe value.
   Notes:  
   - Skips the next keyframe if it's value is off. Acts kinda like relative except if the value at a specific index was 0.
+- Prefab Parenting child option.
+  Notes:  
+  - The Prefab Object itself will be considered the child of the parent, rather than base parents spawned from the Prefab Object being considered the child.
 
 ### Story
 - Chapter 1.  
