@@ -119,20 +119,9 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
         
-        public static bool playerAlive(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool playerAlive<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            var levelObject = modifier.reference.runtimeObject;
-            if (int.TryParse(modifier.value, out int index) && levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
-            {
-                if (PlayerManager.Players.Count > index)
-                {
-                    var closest = PlayerManager.Players[index];
-
-                    return closest.Player && closest.Player.Alive;
-                }
-            }
-
-            return false;
+            return PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.Alive;
         }
         
         public static bool playerDeathsEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)

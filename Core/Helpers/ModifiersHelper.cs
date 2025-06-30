@@ -1645,7 +1645,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierTriggers.playerHealthGreater) => ModifierTriggers.playerHealthGreater,
             nameof(ModifierTriggers.playerMoving) => ModifierTriggers.playerMoving,
             //nameof(ModifierTriggers.playerBoosting) => ModifierTriggers.playerBoosting,
-            //nameof(ModifierTriggers.playerAlive) => ModifierTriggers.playerAlive,
+            nameof(ModifierTriggers.playerAlive) => ModifierTriggers.playerAlive,
             nameof(ModifierTriggers.playerDeathsEquals) => ModifierTriggers.playerDeathsEquals,
             nameof(ModifierTriggers.playerDeathsLesserEquals) => ModifierTriggers.playerDeathsLesserEquals,
             nameof(ModifierTriggers.playerDeathsGreaterEquals) => ModifierTriggers.playerDeathsGreaterEquals,
