@@ -123,24 +123,7 @@ namespace BetterLegacy.Story
                 return;
 
             for (int i = 0; i < secretSequences.Count; i++)
-            {
-                var sequence = secretSequences[i];
-
-                KeyCode keyCompare = KeyCode.None;
-                if (sequence.counter < sequence.keys.Count)
-                    keyCompare = sequence.keys[sequence.counter];
-
-                if (key == keyCompare)
-                    sequence.counter++;
-                else
-                    sequence.counter = 0;
-
-                if (sequence.counter == sequence.keys.Count)
-                {
-                    sequence.onSequenceEnd?.Invoke();
-                    sequence.counter = 0;
-                }
-            }
+                secretSequences[i].Tick(key);
         }
 
         List<SecretSequence> secretSequences = new List<SecretSequence>()
@@ -198,7 +181,7 @@ namespace BetterLegacy.Story
             }), // load old demo
         };
 
-        public class SecretSequence
+        class SecretSequence
         {
             public SecretSequence(List<KeyCode> keys, Action onSequenceEnd)
             {
@@ -206,9 +189,44 @@ namespace BetterLegacy.Story
                 this.onSequenceEnd = onSequenceEnd;
             }
 
-            public int counter;
+            int counter;
+
+            /// <summary>
+            /// Current sequence count.
+            /// </summary>
+            public int Counter => counter;
+
+            /// <summary>
+            /// Sequence of keys to type to run the function.
+            /// </summary>
             public List<KeyCode> keys;
+
+            /// <summary>
+            /// Function to run when the typing sequence is done.
+            /// </summary>
             public Action onSequenceEnd;
+
+            /// <summary>
+            /// Ticks the sequence.
+            /// </summary>
+            /// <param name="key">Input key.</param>
+            public void Tick(KeyCode key)
+            {
+                KeyCode keyCompare = KeyCode.None;
+                if (counter < keys.Count)
+                    keyCompare = keys[counter];
+
+                if (key == keyCompare)
+                    counter++;
+                else
+                    counter = 0;
+
+                if (counter == keys.Count)
+                {
+                    onSequenceEnd?.Invoke();
+                    counter = 0;
+                }
+            }
         }
 
         public static void LoadResourceLevel(int type)
