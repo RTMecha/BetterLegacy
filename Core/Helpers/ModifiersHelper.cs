@@ -2559,6 +2559,11 @@ namespace BetterLegacy.Core.Helpers
             name == nameof(ModifierActions.updateObject) ||
             name == nameof(ModifierActions.setParent) ||
             name == nameof(ModifierTriggers.objectCollide) ||
+            name == nameof(ModifierTriggers.axisEquals) ||
+            name == nameof(ModifierTriggers.axisGreater) ||
+            name == nameof(ModifierTriggers.axisGreaterEquals) ||
+            name == nameof(ModifierTriggers.axisLesser) ||
+            name == nameof(ModifierTriggers.axisLesserEquals) ||
             name == nameof(ModifierActions.getAxis) ||
             name == nameof(ModifierActions.activateModifier) ||
             name == nameof(ModifierActions.legacyTail) ||
