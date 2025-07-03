@@ -63,6 +63,13 @@
 - Prefab Parenting child option.
   Notes:  
   - The Prefab Object itself will be considered the child of the parent, rather than base parents spawned from the Prefab Object being considered the child.
+- Homing targetting
+  - Closest
+  - Furthest
+  - Index
+  - Highest Health
+  - Lowest Health
+  - Random
 
 ### Story
 - Chapter 1.  
