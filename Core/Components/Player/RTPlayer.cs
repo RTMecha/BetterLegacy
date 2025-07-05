@@ -463,6 +463,11 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         /// <summary>
+        /// If boosting can be cancelled.
+        /// </summary>
+        public bool CanCancelBoosting => isBoosting && !isBoostCancelled;
+
+        /// <summary>
         /// If the player is alive.
         /// </summary>
         public bool Alive => CustomPlayer && CustomPlayer.Health > 0 && !isDead;
@@ -1507,8 +1512,8 @@ namespace BetterLegacy.Core.Components.Player
                     return;
                 }
 
-                if (isBoosting && !isBoostCancelled && (Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
-                    InitMidBoost(true);
+                if (CanCancelBoosting && (Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
+                    StopBoosting();
             }
 
             if (Alive && FaceController != null && Model.bulletPart.active && (Model.bulletPart.constant ? FaceController.Shoot.IsPressed : FaceController.Shoot.WasPressed) && canShoot)
@@ -2318,12 +2323,8 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void StopBoosting()
         {
-            if (boostCoroutine != null)
-                StopCoroutine(boostCoroutine);
-
-            isBoosting = false;
-            CanMove = true;
-            CanBoost = true;
+            float num = Time.time - startBoostTime;
+            StartCoroutine(BoostCancel((num < minBoostTime) ? (minBoostTime - num) : 0f));
         }
 
         /// <summary>
@@ -2743,19 +2744,6 @@ namespace BetterLegacy.Core.Components.Player
             CanBoost = false;
             isBoosting = true;
             CanTakeDamage = false;
-        }
-
-        void InitMidBoost(bool _forceToNormal = false)
-        {
-            if (_forceToNormal)
-            {
-                float num = Time.time - startBoostTime;
-                StartCoroutine(BoostCancel((num < minBoostTime) ? (minBoostTime - num) : 0f));
-                return;
-            }
-            SetTriggerCollision(false);
-            isBoosting = false;
-            CanTakeDamage = true;
         }
 
         IEnumerator BoostCancel(float offset)
