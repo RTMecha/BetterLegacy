@@ -173,7 +173,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool getPitch(ref float __result)
         {
-            __result = Core.Runtime.RTBeatmap.Current.Pitch;
+            __result = RTBeatmap.Current.Pitch;
             return false;
         }
 
