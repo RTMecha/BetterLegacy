@@ -1869,6 +1869,37 @@ namespace BetterLegacy.Core.Helpers
             }
         }
         
+        public static void playerCancelBoost(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.constant || !modifier.reference)
+                return;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = modifier.reference.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player && player.Player.CanCancelBoosting)
+                    player.Player.StopBoosting();
+            });
+        }
+
+        public static void playerCancelBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player && player.Player.CanCancelBoosting)
+                player.Player.StopBoosting();
+        }
+
+        public static void playerCancelBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player && player.Player && player.Player.CanCancelBoosting)
+                    player.Player.StopBoosting();
+            }
+        }
+
         public static void playerDisableBoost(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
             if (!modifier.reference)
@@ -1887,8 +1918,8 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerDisableBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.CanBoost = false;
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player)
+                player.Player.CanBoost = false;
         }
         
         public static void playerDisableBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -1919,8 +1950,8 @@ namespace BetterLegacy.Core.Helpers
         {
             var enabled = modifier.GetBool(1, true, variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.CanBoost = enabled;
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player)
+                player.Player.CanBoost = enabled;
         }
         
         public static void playerEnableBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -1937,6 +1968,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var enabled = modifier.GetBool(0, true, variables);
+            var rotate = modifier.GetBool(1, true, variables);
 
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
@@ -1944,25 +1976,39 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.CanMove = enabled;
+                if (!player || !player.Player)
+                    return;
+
+                player.Player.CanMove = enabled;
+                player.Player.CanRotate = rotate;
             });
         }
 
         public static void playerEnableMoveIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var enabled = modifier.GetBool(1, true, variables);
+            var rotate = modifier.GetBool(2, true, variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.CanMove = enabled;
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) || !player.Player)
+                return;
+
+            player.Player.CanMove = enabled;
+            player.Player.CanRotate = rotate;
         }
 
         public static void playerEnableMoveAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var enabled = modifier.GetBool(0, true, variables);
+            var rotate = modifier.GetBool(1, true, variables);
 
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            foreach (var player in PlayerManager.Players)
+            {
+                if (!player.Player)
+                    continue;
+
                 player.Player.CanMove = enabled;
+                player.Player.CanRotate = rotate;
+            }
         }
 
         public static void playerSpeed<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f, variables);

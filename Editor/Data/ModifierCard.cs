@@ -1154,6 +1154,20 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                    
+                //case nameof(ModifierActions.playerCancelBoost): {
+
+                //        break;
+                //    }
+                case nameof(ModifierActions.playerCancelBoostIndex): {
+                        IntegerGenerator(modifier, "Player Index", 0, 0);
+
+                        break;
+                    }
+                //case nameof(ModifierActions.playerCancelBoostAll): {
+
+                //        break;
+                //    }
 
                 //case "playerDisableBoost): {
                 //        break;
@@ -1184,18 +1198,21 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.playerEnableMove): {
-                        BoolGenerator(modifier, "Enabled", 0, true);
+                        BoolGenerator(modifier, "Can Move", 0, true);
+                        BoolGenerator(modifier, "Can Rotate", 1, true);
 
                         break;
                     }
                 case nameof(ModifierActions.playerEnableMoveIndex): {
                         IntegerGenerator(modifier, "Player Index", 0, 0);
-                        BoolGenerator(modifier, "Enabled", 1, true);
+                        BoolGenerator(modifier, "Can Move", 1, true);
+                        BoolGenerator(modifier, "Can Rotate", 2, true);
 
                         break;
                     }
                 case nameof(ModifierActions.playerEnableMoveAll): {
-                        BoolGenerator(modifier, "Enabled", 0, true);
+                        BoolGenerator(modifier, "Can Move", 0, true);
+                        BoolGenerator(modifier, "Can Rotate", 1, true);
 
                         break;
                     }
