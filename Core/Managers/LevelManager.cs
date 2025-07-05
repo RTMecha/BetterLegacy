@@ -359,7 +359,6 @@ namespace BetterLegacy.Core.Managers
                 yield return null;
 
             AudioManager.inst.PlayMusic(null, level.music, true, songFadeTransition, false);
-            AudioManager.inst.SetPitch(RTBeatmap.Current.Pitch);
             GameManager.inst.songLength = level.music.length;
 
             // preload audio clips

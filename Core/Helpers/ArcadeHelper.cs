@@ -198,6 +198,7 @@ namespace BetterLegacy.Core.Helpers
             PlayerManager.SpawnPlayersOnStart();
 
             AudioManager.inst.SetMusicTime(0f);
+            AudioManager.inst.SetPitch(1f);
             RTBeatmap.Current.ResetCheckpoint();
             endedLevel = false;
         }

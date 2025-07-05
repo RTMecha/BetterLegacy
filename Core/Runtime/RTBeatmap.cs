@@ -412,7 +412,7 @@ namespace BetterLegacy.Core.Runtime
             GameManager.inst.gameState = GameManager.State.Playing;
 
             AudioManager.inst.CurrentAudioSource.Play();
-            AudioManager.inst.SetPitch(Pitch);
+            AudioManager.inst.SetPitch(1f); // resets the pitch offset
 
             GameManager.inst.UpdateEventSequenceTime();
             GameManager.inst.isReversing = false;
