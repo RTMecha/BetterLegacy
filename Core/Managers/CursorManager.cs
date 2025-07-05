@@ -4,6 +4,7 @@ using UnityEngine;
 using LSFunctions;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus;
 
@@ -30,7 +31,11 @@ namespace BetterLegacy.Core.Managers
 
         void Update()
         {
-            time = Time.time - timeOffset;
+            cursorTimer.Update();
+
+            var cursorPosition = CursorPosition;
+            CursorVelocity = cursorPosition - prevCursorVelocityPos;
+            prevCursorVelocityPos = cursorPosition;
 
             if (CoreHelper.IsEditing && CoreConfig.Instance.EditorCursorAlwaysVisible.Value) // cursor should always be visible in the editor
             {
@@ -47,19 +52,19 @@ namespace BetterLegacy.Core.Managers
             if (!Enabled)
                 return;
 
-            var cursorMoved = cursorPosition != CursorPosition;
+            var cursorMoved = this.cursorPosition != cursorPosition;
             if (!initCursorPosition || cursorMoved)
             {
                 if (initCursorPosition)
                     ShowCursor();
 
                 initCursorPosition = true;
-                cursorPosition = CursorPosition;
+                this.cursorPosition = cursorPosition;
 
                 try
                 {
                     if (cursorMoved)
-                        onCursorMoved?.Invoke(CursorPosition);
+                        onCursorMoved?.Invoke(cursorPosition);
                 }
                 catch (Exception ex)
                 {
@@ -67,7 +72,7 @@ namespace BetterLegacy.Core.Managers
                 }
             }
 
-            if (cursorEnabled && onScreenTime < time)
+            if (cursorEnabled && onScreenTime < cursorTimer.time)
                 HideCursor();
         }
 
@@ -84,6 +89,11 @@ namespace BetterLegacy.Core.Managers
         /// Position of the cursor.
         /// </summary>
         public static Vector2 CursorPosition => new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+
+        /// <summary>
+        /// Velocity of the cursor.
+        /// </summary>
+        public static Vector2 CursorVelocity { get; private set; }
 
         #endregion
 
@@ -104,12 +114,16 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static float onScreenTime = 1f;
 
+        /// <summary>
+        /// Cursor moved timer.
+        /// </summary>
+        public RTTimer cursorTimer;
+
         #region Internal
 
         bool cursorEnabled;
         bool initCursorPosition;
-        float time;
-        float timeOffset;
+        Vector2 prevCursorVelocityPos;
 
         #endregion
 
@@ -122,8 +136,9 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public void ShowCursor()
         {
+            Enabled = true;
             LSHelpers.ShowCursor();
-            timeOffset = Time.time;
+            cursorTimer.Reset();
             cursorEnabled = true;
         }
 
@@ -142,6 +157,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public void HideCursor()
         {
+            Enabled = true;
             LSHelpers.HideCursor();
             cursorEnabled = false;
         }
