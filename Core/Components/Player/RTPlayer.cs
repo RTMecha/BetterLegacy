@@ -1511,10 +1511,10 @@ namespace BetterLegacy.Core.Components.Player
                     Boost();
                     return;
                 }
-
-                if (CanCancelBoosting && (Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
-                    StopBoosting();
             }
+
+            if (CanCancelBoosting && (Actions != null && Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
+                StopBoosting();
 
             if (Alive && FaceController != null && Model.bulletPart.active && (Model.bulletPart.constant ? FaceController.Shoot.IsPressed : FaceController.Shoot.WasPressed) && canShoot)
                 Shoot();
