@@ -1183,6 +1183,22 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.playerEnableMove): {
+                        BoolGenerator(modifier, "Enabled", 0, true);
+
+                        break;
+                    }
+                case nameof(ModifierActions.playerEnableMoveIndex): {
+                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        BoolGenerator(modifier, "Enabled", 1, true);
+
+                        break;
+                    }
+                case nameof(ModifierActions.playerEnableMoveAll): {
+                        BoolGenerator(modifier, "Enabled", 0, true);
+
+                        break;
+                    }
 
                 case nameof(ModifierActions.playerSpeed): {
                         SingleGenerator(modifier, "Global Speed", 0, 1f);

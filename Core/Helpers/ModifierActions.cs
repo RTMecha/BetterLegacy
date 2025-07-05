@@ -1931,6 +1931,40 @@ namespace BetterLegacy.Core.Helpers
                 player.Player.CanBoost = enabled;
         }
         
+        public static void playerEnableMove(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (!modifier.reference)
+                return;
+
+            var enabled = modifier.GetBool(0, true, variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = modifier.reference.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.Player)
+                    player.Player.CanMove = enabled;
+            });
+        }
+
+        public static void playerEnableMoveIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var enabled = modifier.GetBool(1, true, variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
+                customPlayer.Player.CanMove = enabled;
+        }
+
+        public static void playerEnableMoveAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var enabled = modifier.GetBool(0, true, variables);
+
+            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                player.Player.CanMove = enabled;
+        }
+
         public static void playerSpeed<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.SpeedMultiplier = modifier.GetFloat(0, 1f, variables);
 
         public static void playerVelocity(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)

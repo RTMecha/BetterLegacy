@@ -938,6 +938,9 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.playerEnableBoost) => ModifierActions.playerEnableBoost,
             nameof(ModifierActions.playerEnableBoostIndex) => ModifierActions.playerEnableBoostIndex,
             nameof(ModifierActions.playerEnableBoostAll) => ModifierActions.playerEnableBoostAll,
+            nameof(ModifierActions.playerEnableMove) => ModifierActions.playerEnableMove,
+            nameof(ModifierActions.playerEnableMoveIndex) => ModifierActions.playerEnableMoveIndex,
+            nameof(ModifierActions.playerEnableMoveAll) => ModifierActions.playerEnableMoveAll,
 
             // speed
             nameof(ModifierActions.playerSpeed) => ModifierActions.playerSpeed,
@@ -2049,6 +2052,9 @@ namespace BetterLegacy.Core.Helpers
             //nameof(ModifierActions.playerEnableBoost) => ModifierActions.playerEnableBoost,
             nameof(ModifierActions.playerEnableBoostIndex) => ModifierActions.playerEnableBoostIndex,
             nameof(ModifierActions.playerEnableBoostAll) => ModifierActions.playerEnableBoostAll,
+            //nameof(ModifierActions.playerEnableMove) => ModifierActions.playerEnableMove,
+            nameof(ModifierActions.playerEnableMoveIndex) => ModifierActions.playerEnableMoveIndex,
+            nameof(ModifierActions.playerEnableMoveAll) => ModifierActions.playerEnableMoveAll,
 
             // speed
             nameof(ModifierActions.playerSpeed) => ModifierActions.playerSpeed,
