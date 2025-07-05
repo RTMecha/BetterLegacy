@@ -1,4 +1,17 @@
-﻿# 1.7.6 [Jun 24, 2025]
+﻿# 1.7.7 [Jul 6, 2025]
+## Features
+### Core
+- Added playerEnableMove action modifiers. These work like the "Moveable" value of the Player event keyframe.
+- Added playerCancelBoost action modifiers. These stop the player from boosting, if they were.
+
+## Fixes
+- Fixed axisEquals trigger modifiers not being counted for the Toggle Prefab Group Only command.
+- Fixed playerAlive trigger modifier not using the variable system and requiring the object to be empty. (This also meant the modifier wasn't compatible with BG objects. It is now)
+- Fixed game speed setting multiplying on death.
+
+------------------------------------------------------------------------------------------
+
+# 1.7.6 [Jun 24, 2025]
 ## Features
 ### Editor
 - Implemented a layers system for markers. With this, markers can be set to only appear on specific layers.
