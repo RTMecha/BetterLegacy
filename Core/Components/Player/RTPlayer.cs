@@ -440,7 +440,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanMove
         {
-            get => canMove;
+            get => RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersCanMove && canMove;
             set => canMove = value;
         }
 
@@ -449,7 +449,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanRotate
         {
-            get => canRotate;
+            get => RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersCanMove && canRotate;
             set => canRotate = value;
         }
 

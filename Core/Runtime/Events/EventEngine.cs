@@ -899,13 +899,13 @@ namespace BetterLegacy.Core.Runtime.Events
                 WindowController.ResetResolution(false);
             }
 
-            foreach (var customPlayer in PlayerManager.Players)
+            if (!playersCanMove)
             {
-                if (customPlayer.Player && customPlayer.Player.rb)
+                foreach (var customPlayer in PlayerManager.Players)
                 {
-                    var player = customPlayer.Player.rb.transform;
-                    if (!playersCanMove)
+                    if (customPlayer.Player && customPlayer.Player.rb)
                     {
+                        var player = customPlayer.Player.rb.transform;
                         player.localPosition = new Vector3(playerPositionX, playerPositionY, 0f);
                         player.localRotation = Quaternion.Euler(0f, 0f, playerRotation);
                     }
@@ -1525,18 +1525,7 @@ namespace BetterLegacy.Core.Runtime.Events
         }
 
         // 23 - 1
-        void UpdatePlayerMoveable(float x)
-        {
-            playersCanMove = (int)x == 0;
-            foreach (var customPlayer in PlayerManager.Players)
-            {
-                if (customPlayer.Player)
-                {
-                    customPlayer.Player.CanMove = playersCanMove;
-                    customPlayer.Player.CanRotate = playersCanMove;
-                }
-            }
-        }
+        void UpdatePlayerMoveable(float x) => playersCanMove = (int)x == 0;
 
         // 23 - 2
         void UpdatePlayerPositionX(float x) => playerPositionX = x;
