@@ -880,7 +880,7 @@ namespace BetterLegacy.Patchers
                 if (EditorLevelManager.inst)
                     EditorLevelManager.inst.LevelPanels.Clear();
                 GameData.Current = null;
-                CoreHelper.UpdateDiscordStatus("", "", CoreHelper.discordIcon);
+                CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
                 Debug.Log($"{Instance.className}Quit to Main Menu");
                 SceneHelper.LoadScene(SceneName.Main_Menu);
             }, RTEditor.inst.HideWarningPopup);
@@ -906,9 +906,19 @@ namespace BetterLegacy.Patchers
                     return;
                 }
 
-                CoreHelper.UpdateDiscordStatus("", "", CoreHelper.discordIcon);
-                Debug.Log($"{Instance.className}Quit Game");
-                Application.Quit();
+                if (EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading)
+                    GameData.Current?.SaveData(RTFile.CombinePaths(RTFile.BasePath, "level-quit-backup.lsb"), () =>
+                    {
+                        CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
+                        Debug.Log($"{Instance.className}Quit Game");
+                        Application.Quit();
+                    });
+                else
+                {
+                    CoreHelper.UpdateDiscordStatus(string.Empty, string.Empty, CoreHelper.discordIcon);
+                    Debug.Log($"{Instance.className}Quit Game");
+                    Application.Quit();
+                }
             }, RTEditor.inst.HideWarningPopup);
 
             return false;

@@ -192,19 +192,6 @@ namespace BetterLegacy
 
             try
             {
-                Application.quitting += () =>
-                {
-                    if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading)
-                        GameData.Current?.SaveData(RTFile.CombinePaths(RTFile.BasePath, "level-quit-backup.lsb"));
-                };
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"On Exit methods failed to set.{ex}");
-            } // Quit saves backup
-
-            try
-            {
                 if (AccessTools.TypeByName("EditorOnStartup.Plugin") != null)
                 {
                     ModCompatibility.EditorOnStartupInstalled = true;

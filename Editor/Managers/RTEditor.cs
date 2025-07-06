@@ -3246,9 +3246,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorDropdown("Open Color Picker", "", EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
             {
                 RTColorPicker.inst.Show(Color.white,
-                    (col, hex) =>
-                    {
-                    },
+                    (col, hex) => { },
                     (col, hex) =>
                     {
                         LSText.CopyToClipboard(hex);
