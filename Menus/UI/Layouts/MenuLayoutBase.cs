@@ -33,5 +33,20 @@ namespace BetterLegacy.Menus.UI.Layouts
 
         public Action onScrollUpFunc;
         public Action onScrollDownFunc;
+
+        public virtual void Read(JSONNode jn)
+        {
+            name = jn["name"];
+            childAlignment = (TextAnchor)jn["align"].AsInt;
+
+            rect = RectValues.TryParse(jn["rect"], RectValues.Default);
+            mask = jn["mask"].AsBool;
+            regenerate = jn["regenerate"] == null || jn["regenerate"].AsBool;
+
+            scrollable = jn["scrollable"].AsBool;
+
+            onScrollUpFuncJSON = jn["on_scroll_up_func"];
+            onScrollDownFuncJSON = jn["on_scroll_down_func"];
+        }
     }
 }
