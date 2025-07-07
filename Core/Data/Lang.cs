@@ -64,6 +64,18 @@ namespace BetterLegacy.Core.Data
         public string GetText(Language language) => GetText(language, Language.English);
 
         /// <summary>
+        /// Tries to parse a language dictionary.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <param name="lang">Result language.</param>
+        /// <returns>Returns true if the lang parsed successfully, otherwise returns false.</returns>
+        public static bool TryParse(JSONNode jn, out Lang lang)
+        {
+            lang = Parse(jn);
+            return !lang.languages.IsEmpty();
+        }
+
+        /// <summary>
         /// Parses a language dictionary.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
