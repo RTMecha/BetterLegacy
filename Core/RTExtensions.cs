@@ -1000,7 +1000,16 @@ namespace BetterLegacy.Core
         /// <param name="index">Index to get if JSON is an array.</param>
         /// <param name="key">Key to get if the JSON is an object.</param>
         /// <returns>Returns a JSON node.</returns>
-        public static JSONNode Get(this JSONNode jn, int index, string key) => jn.IsArray ? jn[index] : jn[key];
+        public static JSONNode Get(this JSONNode jn, int index, string key) => jn.IsArray ? index >= 0 && index < jn.Count ? jn[index] : null : jn[key];
+
+        /// <summary>
+        /// If the JSON is an array, gets the JSON node at the index, otherwise gets the JSON node with the key.
+        /// </summary>
+        /// <param name="index">Index to get if JSON is an array.</param>
+        /// <param name="key">Key to get if the JSON is an object.</param>
+        /// <param name="defaultJN">Default JSON node to return if no items are found.</param>
+        /// <returns>Returns a JSON node.</returns>
+        public static JSONNode GetOrDefault(this JSONNode jn, int index, string key, JSONNode defaultJN) => jn.IsArray ? index >= 0 && index < jn.Count ? jn[index] ?? defaultJN : defaultJN : jn[key] ?? defaultJN;
 
         public static JSONNode ToJSONArray(this Vector2Int vector2)
         {
