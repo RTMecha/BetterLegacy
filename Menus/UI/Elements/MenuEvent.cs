@@ -57,9 +57,9 @@ namespace BetterLegacy.Menus.UI.Elements
             #region Anim
 
             if (jnElement["wait"] != null)
-                wait = jnElement["wait"].AsBool;
+                wait = InterfaceManager.inst.ParseVarFunction(jnElement["wait"], this).AsBool;
             if (jnElement["anim_length"] != null)
-                length = jnElement["anim_length"].AsFloat;
+                length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"], this).AsFloat;
             else if (!parsed)
                 length = 0f;
 
@@ -68,13 +68,15 @@ namespace BetterLegacy.Menus.UI.Elements
             #region Func
 
             if (jnElement["play_blip_sound"] != null)
-                playBlipSound = jnElement["play_blip_sound"].AsBool;
+                playBlipSound = InterfaceManager.inst.ParseVarFunction(jnElement["play_blip_sound"], this).AsBool;
             if (jnElement["func"] != null)
-                funcJSON = jnElement["func"]; // function to run when the element is clicked.
+                funcJSON = InterfaceManager.inst.ParseVarFunction(jnElement["func"], this); // function to run when the element is clicked.
             if (jnElement["spawn_func"] != null)
-                spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
+                spawnFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_func"], this); // function to run when the element spawns.
+            if (jnElement["on_wait_end_func"] != null)
+                onWaitEndFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_wait_end_func"], this);
             if (jnElement["tick_func"] != null)
-                tickFuncJSON = jnElement["tick_func"];
+                tickFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["tick_func"], this);
 
             #endregion
         }

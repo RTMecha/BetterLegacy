@@ -394,20 +394,20 @@ namespace BetterLegacy.Menus.UI.Elements
             if (string.IsNullOrEmpty(id))
                 id = LSText.randomNumString(16);
             if (!string.IsNullOrEmpty(jnElement["name"]))
-                name = jnElement["name"];
+                name = InterfaceManager.inst.ParseVarFunction(jnElement["name"], this);
             if (!string.IsNullOrEmpty(jnElement["parent_layout"]))
-                parentLayout = jnElement["parent_layout"];
+                parentLayout = InterfaceManager.inst.ParseVarFunction(jnElement["parent_layout"], this);
             if (!string.IsNullOrEmpty(jnElement["parent"]))
-                parent = jnElement["parent"];
+                parent = InterfaceManager.inst.ParseVarFunction(jnElement["parent"], this);
             if (jnElement["sibling_index"] != null)
-                siblingIndex = jnElement["sibling_index"].AsInt;
+                siblingIndex = InterfaceManager.inst.ParseVarFunction(jnElement["sibling_index"], this).AsInt;
 
             #endregion
 
             #region Spawning
 
             if (jnElement["regen"] != null)
-                regenerate = jnElement["regen"].AsBool;
+                regenerate = InterfaceManager.inst.ParseVarFunction(jnElement["regen"], this).AsBool;
             fromLoop = j > 0; // if element has been spawned from the loop or if its the first / only of its kind.
             this.loop = loop;
 
@@ -416,46 +416,49 @@ namespace BetterLegacy.Menus.UI.Elements
             #region UI
 
             if (!string.IsNullOrEmpty(jnElement["icon"]))
-                icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
+            {
+                var jnIcon = InterfaceManager.inst.ParseVarFunction(jnElement["icon"], this);
+                icon = jnIcon != null ? spriteAssets != null && spriteAssets.TryGetValue(jnIcon, out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnIcon) : null;
+            }
             if (!string.IsNullOrEmpty(jnElement["icon_path"]))
-                iconPath = RTFile.ParsePaths(jnElement["icon_path"]);
+                iconPath = InterfaceManager.inst.ParseVarFunction(jnElement["icon_path"], this);
             if (jnElement["rect"] != null)
-                rect = RectValues.TryParse(jnElement["rect"], RectValues.Default);
+                rect = RectValues.TryParse(InterfaceManager.inst.ParseVarFunction(jnElement["rect"], this), RectValues.Default);
             if (jnElement["rounded"] != null)
-                rounded = jnElement["rounded"].AsInt; // roundness can be prevented by setting rounded to 0.
+                rounded = InterfaceManager.inst.ParseVarFunction(jnElement["rounded"], this).AsInt; // roundness can be prevented by setting rounded to 0.
             if (jnElement["rounded_side"] != null)
-                roundedSide = (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt; // default side should be Whole.
+                roundedSide = (SpriteHelper.RoundedSide)InterfaceManager.inst.ParseVarFunction(jnElement["rounded_side"], this).AsInt; // default side should be Whole.
             if (jnElement["mask"] != null)
-                mask = jnElement["mask"].AsBool;
+                mask = InterfaceManager.inst.ParseVarFunction(jnElement["mask"], this).AsBool;
             if (jnElement["reactive"] != null)
-                reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j);
+                reactiveSetting = ReactiveSetting.Parse(InterfaceManager.inst.ParseVarFunction(jnElement["reactive"], this), j);
 
             #endregion
 
             #region Color
 
             if (jnElement["col"] != null)
-                color = jnElement["col"].AsInt;
+                color = InterfaceManager.inst.ParseVarFunction(jnElement["col"], this).AsInt;
             if (jnElement["opacity"] != null)
-                opacity = jnElement["opacity"].AsFloat;
+                opacity = InterfaceManager.inst.ParseVarFunction(jnElement["opacity"], this).AsFloat;
             if (jnElement["hue"] != null)
-                hue = jnElement["hue"].AsFloat;
+                hue = InterfaceManager.inst.ParseVarFunction(jnElement["hue"], this).AsFloat;
             if (jnElement["sat"] != null)
-                sat = jnElement["sat"].AsFloat;
+                sat = InterfaceManager.inst.ParseVarFunction(jnElement["sat"], this).AsFloat;
             if (jnElement["val"] != null)
-                val = jnElement["val"].AsFloat;
-            if (jnElement["override_col"] != null)
-                overrideColor = LSColors.HexToColorAlpha(jnElement["override_col"]);
+                val = InterfaceManager.inst.ParseVarFunction(jnElement["val"], this).AsFloat;
             useOverrideColor = jnElement["override_col"] != null;
+            if (useOverrideColor)
+                overrideColor = LSColors.HexToColorAlpha(InterfaceManager.inst.ParseVarFunction(jnElement["override_col"], this));
 
             #endregion
 
             #region Anim
 
             if (jnElement["wait"] != null)
-                wait = jnElement["wait"].AsBool;
+                wait = InterfaceManager.inst.ParseVarFunction(jnElement["wait"], this).AsBool;
             if (jnElement["anim_length"] != null)
-                length = jnElement["anim_length"].AsFloat;
+                length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"], this).AsFloat;
             else if (!parsed)
                 length = 0f;
 
@@ -464,21 +467,21 @@ namespace BetterLegacy.Menus.UI.Elements
             #region Func
 
             if (jnElement["play_blip_sound"] != null)
-                playBlipSound = jnElement["play_blip_sound"].AsBool;
+                playBlipSound = InterfaceManager.inst.ParseVarFunction(jnElement["play_blip_sound"], this).AsBool;
             if (jnElement["selectable"] != null)
-                selectable = jnElement["selectable"].AsBool;
+                selectable = InterfaceManager.inst.ParseVarFunction(jnElement["selectable"], this).AsBool;
             if (jnElement["func"] != null)
-                funcJSON = jnElement["func"]; // function to run when the element is clicked.
+                funcJSON = InterfaceManager.inst.ParseVarFunction(jnElement["func"], this); // function to run when the element is clicked.
             if (jnElement["on_scroll_up_func"] != null)
-                onScrollUpFuncJSON = jnElement["on_scroll_up_func"]; // function to run when the element is scrolled on.
+                onScrollUpFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_scroll_up_func"], this); // function to run when the element is scrolled on.
             if (jnElement["on_scroll_down_func"] != null)
-                onScrollDownFuncJSON = jnElement["on_scroll_down_func"]; // function to run when the element is scrolled on.
+                onScrollDownFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_scroll_down_func"], this); // function to run when the element is scrolled on.
             if (jnElement["spawn_func"] != null)
-                spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
+                spawnFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_func"], this); // function to run when the element spawns.
             if (jnElement["on_wait_end_func"] != null)
-                onWaitEndFuncJSON = jnElement["on_wait_end_func"];
+                onWaitEndFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_wait_end_func"], this);
             if (jnElement["tick_func"] != null)
-                tickFuncJSON = jnElement["tick_func"];
+                tickFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["tick_func"], this);
 
             #endregion
         }

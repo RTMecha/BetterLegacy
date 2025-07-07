@@ -696,58 +696,53 @@ namespace BetterLegacy.Menus
 
             switch (name)
             {
+                #region Main
+
                 case "True": return true;
                 case "False": return false;
-                case "GetSettingBool":
-                    {
+                case "GetSettingBool": {
                         if (parameters == null)
                             break;
 
                         var value = DataManager.inst.GetSettingBool(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsBool : parameters["default"].AsBool);
                         return !not ? value : !value;
                     }
-                case "GetSettingIntEquals":
-                    {
+                case "GetSettingIntEquals": {
                         if (parameters == null)
                             break;
 
                         var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) == (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
                         return !not ? value : !value;
                     }
-                case "GetSettingIntLesserEquals":
-                    {
+                case "GetSettingIntLesserEquals": {
                         if (parameters == null)
                             break;
 
                         var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) <= (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
                         return !not ? value : !value;
                     }
-                case "GetSettingIntGreaterEquals":
-                    {
+                case "GetSettingIntGreaterEquals": {
                         if (parameters == null)
                             break;
 
                         var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) >= (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
                         return !not ? value : !value;
                     }
-                case "GetSettingIntLesser":
-                    {
+                case "GetSettingIntLesser": {
                         if (parameters == null)
                             break;
 
                         var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) < (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
                         return !not ? value : !value;
                     }
-                case "GetSettingIntGreater":
-                    {
+                case "GetSettingIntGreater": {
                         if (parameters == null)
                             break;
 
                         var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) > (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
                         return !not ? value : !value;
                     }
-                case "IsScene":
-                    {
+                case "IsScene": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["scene"] == null)
                             break;
 
@@ -755,48 +750,44 @@ namespace BetterLegacy.Menus
                         return !not ? value : !value;
                     }
 
-                case "CurrentInterfaceGenerating":
-                    {
+                case "CurrentInterfaceGenerating": {
                         var value = CurrentInterface && CurrentInterface.generating;
                         return !not ? value : !value;
                     }
 
+                #endregion
+
                 #region Player
 
-                case "PlayerCountEquals":
-                    {
+                case "PlayerCountEquals": {
                         if (parameters == null)
                             break;
 
                         var value = InputDataManager.inst.players.Count == (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
-                case "PlayerCountLesserEquals":
-                    {
+                case "PlayerCountLesserEquals": {
                         if (parameters == null)
                             break;
 
                         var value = InputDataManager.inst.players.Count <= (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
-                case "PlayerCountGreaterEquals":
-                    {
+                case "PlayerCountGreaterEquals": {
                         if (parameters == null)
                             break;
 
                         var value = InputDataManager.inst.players.Count >= (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
-                case "PlayerCountLesser":
-                    {
+                case "PlayerCountLesser": {
                         if (parameters == null)
                             break;
 
                         var value = InputDataManager.inst.players.Count < (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
-                case "PlayerCountGreater":
-                    {
+                case "PlayerCountGreater": {
                         if (parameters == null)
                             break;
 
@@ -808,101 +799,88 @@ namespace BetterLegacy.Menus
 
                 #region Story Chapter
 
-                case "StoryChapterEquals":
-                    {
+                case "StoryChapterEquals": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) == (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
-                case "StoryChapterLesserEquals":
-                    {
+                case "StoryChapterLesserEquals": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) <= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
-                case "StoryChapterGreaterEquals":
-                    {
+                case "StoryChapterGreaterEquals": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) >= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
-                case "StoryChapterLesser":
-                    {
+                case "StoryChapterLesser": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) < (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
-                case "StoryChapterGreater":
-                    {
+                case "StoryChapterGreater": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) > (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
                         return !not ? value : !value;
                     }
-                case "DisplayNameEquals":
-                    {
+                case "DisplayNameEquals": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["user"] == null)
                             break;
 
                         var value = CoreConfig.Instance.DisplayName.Value == (parameters.IsArray ? parameters[0].Value : parameters["user"].Value);
                         return !not ? value : !value;
                     }
-                case "StoryInstalled":
-                    {
+                case "StoryInstalled": {
                         var value = StoryManager.inst && RTFile.DirectoryExists(StoryManager.StoryAssetsPath);
                         return !not ? value : !value;
                     }
-                case "StoryLoadIntEquals":
-                    {
+                case "StoryLoadIntEquals": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) == Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
-                case "StoryLoadIntLesserEquals":
-                    {
+                case "StoryLoadIntLesserEquals": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) <= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
-                case "StoryLoadIntGreaterEquals":
-                    {
+                case "StoryLoadIntGreaterEquals": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) >= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
-                case "StoryLoadIntLesser":
-                    {
+                case "StoryLoadIntLesser": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) < Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
-                case "StoryLoadIntGreater":
-                    {
+                case "StoryLoadIntGreater": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
                             break;
 
                         var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) > Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
                         return !not ? value : !value;
                     }
-                case "StoryLoadBool":
-                    {
+                case "StoryLoadBool": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["load"] == null)
                             break;
 
@@ -1210,7 +1188,7 @@ namespace BetterLegacy.Menus
 
             switch (name)
             {
-                #region Main Functions
+                #region Main
 
                 #region LoadScene
 
@@ -1246,19 +1224,21 @@ namespace BetterLegacy.Menus
                 //   "show_loading": "True",
                 //   "is_arcade": "False" < if is_arcade is null or is false, load story mode after Input Select.
                 // }
-                case "LoadScene":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["scene"] == null)
+                case "LoadScene": {
+                        if (parameters == null)
                             break;
 
-                        var isArcade = parameters.IsArray && parameters.Count >= 3 ? parameters[2].AsBool : parameters.IsObject ? parameters["is_arcade"].AsBool : false;
+                        var sceneName = ParseVarFunction(parameters.Get(0, "scene"), thisElement);
+                        if (sceneName == null || !sceneName.IsString)
+                            break;
 
-                        LevelManager.IsArcade = isArcade;
+                        LevelManager.IsArcade = ParseVarFunction(parameters.Get(2, "is_arcade"), thisElement);
+                        var showLoading = ParseVarFunction(parameters.Get(1, "show_loading"), thisElement);
 
-                        if (parameters.IsArray && parameters.Count >= 2 || parameters.IsObject && parameters["show_loading"] != null)
-                            SceneManager.inst.LoadScene(parameters.IsArray ? parameters[0] : parameters["scene"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["show_loading"], true));
+                        if (showLoading != null)
+                            SceneManager.inst.LoadScene(sceneName, Parser.TryParse(showLoading, true));
                         else
-                            SceneManager.inst.LoadScene(parameters.IsArray ? parameters[0] : parameters["scene"]);
+                            SceneManager.inst.LoadScene(sceneName);
 
                         break;
                     }
@@ -1291,8 +1271,7 @@ namespace BetterLegacy.Menus
                 //   "value": "True",
                 //   "relative": "False"
                 // }
-                case "UpdateSettingBool":
-                    {
+                case "UpdateSettingBool": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["setting"] == null || parameters["value"] == null))
                             break;
 
@@ -1332,8 +1311,7 @@ namespace BetterLegacy.Menus
                 //   "value": "True",
                 //   "relative": "False"
                 // }
-                case "UpdateSettingInt":
-                    {
+                case "UpdateSettingInt": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["setting"] == null || parameters["value"] == null))
                             break;
 
@@ -1381,14 +1359,17 @@ namespace BetterLegacy.Menus
                 //     }
                 //   }
                 // }
-                case "Wait":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["t"] == null || parameters["func"] == null))
+                case "Wait": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        var t = isArray ? parameters[0].AsFloat : parameters["t"].AsFloat;
-                        JSONNode func = isArray ? parameters[1] : parameters["func"];
+                        var t = ParseVarFunction(parameters.Get(0, "t"), thisElement);
+                        if (t == null)
+                            break;
+
+                        var func = ParseVarFunction(parameters.Get(1, "func"), thisElement);
+                        if (func == null)
+                            break;
 
                         CoroutineHelper.PerformActionAfterSeconds(t, () =>
                         {
@@ -1396,9 +1377,9 @@ namespace BetterLegacy.Menus
                             {
                                 ParseFunction(func);
                             }
-                            catch
+                            catch (Exception ex)
                             {
-
+                                CoreHelper.LogError($"Had an exception with Wait function.\nException: {ex}");
                             }
                         });
 
@@ -1425,10 +1406,15 @@ namespace BetterLegacy.Menus
                 // {
                 //   "msg": "Hello world!"
                 // }
-                case "Log":
-                    {
-                        if (parameters != null && (parameters.IsArray && parameters.Count >= 1 || parameters.IsObject && parameters["msg"]))
-                            CoreHelper.Log(parameters.IsArray ? parameters[0] : parameters["msg"]);
+                case "Log": {
+                        if (parameters == null)
+                            break;
+
+                        var msg = ParseVarFunction(parameters.Get(0, "msg"), thisElement);
+                        if (msg == null)
+                            break;
+                        
+                        CoreHelper.Log(msg);
 
                         break;
                     }
@@ -1439,8 +1425,7 @@ namespace BetterLegacy.Menus
 
                 // Exits the game.
                 // Function has no parameters.
-                case "ExitGame":
-                    {
+                case "ExitGame": {
                         Application.Quit();
                         break;
                     }
@@ -1451,8 +1436,7 @@ namespace BetterLegacy.Menus
 
                 // Opens the Config Manager UI.
                 // Function has no parameters.
-                case "Config":
-                    {
+                case "Config": {
                         ConfigManager.inst.Show();
                         break;
                     }
@@ -1467,8 +1451,7 @@ namespace BetterLegacy.Menus
 
                 // Closes the interface and returns to the game (if user is in the Game scene).
                 // Function has no parameters.
-                case "Close":
-                    {
+                case "Close": {
                         string id = CurrentInterface?.id;
                         CloseMenus();
                         StopMusic();
@@ -1501,14 +1484,16 @@ namespace BetterLegacy.Menus
                 // {
                 //   "id": "0"
                 // }
-                case "SetCurrentInterface":
-                    {
-                        if (parameters != null && (parameters.IsArray && parameters.Count >= 1 || parameters.IsObject && parameters["id"] != null) &&
-                                interfaces.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuBase menu))
-                        {
-                            SetCurrentInterface(menu);
-                            PlayMusic();
-                        }
+                case "SetCurrentInterface": {
+                        if (parameters == null)
+                            break;
+
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        if (id == null || !interfaces.TryFind(x => x.id == id, out MenuBase menu))
+                            break;
+
+                        SetCurrentInterface(menu);
+                        PlayMusic();
 
                         break;
                     }
@@ -1519,8 +1504,7 @@ namespace BetterLegacy.Menus
 
                 // Reloads the interface and sets it to the main menu. Only recommended if you want to return to the main menu and unload every other interface.
                 // Function has no parameters.
-                case "Reload":
-                    {
+                case "Reload": {
                         var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
                         if (RTFile.FileExists(splashTextPath))
                         {
@@ -1563,22 +1547,26 @@ namespace BetterLegacy.Menus
                 //   "load": "False",
                 //   "path": "beatmaps/interfaces" < doesn't need to exist
                 // }
-                case "Parse":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["file"] == null)
+                case "Parse": {
+                        if (parameters == null)
                             break;
 
-                        if (parameters.IsArray && parameters.Count > 2 || parameters.IsObject && parameters["path"] != null)
-                            MainDirectory = ParseText(parameters.IsArray ? parameters[2] : parameters["path"]);
+                        var file = ParseVarFunction(parameters.Get(0, "file"), thisElement);
+                        if (file == null)
+                            break;
+
+                        var mainDirectory = ParseVarFunction(parameters.Get(2, "path"));
+                        if (mainDirectory != null)
+                            MainDirectory = mainDirectory;
 
                         if (!MainDirectory.Contains(RTFile.ApplicationDirectory))
                             MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, MainDirectory);
 
-                        var path = RTFile.CombinePaths(MainDirectory, $"{(parameters.IsArray ? parameters[0].Value : parameters["file"].Value)}{FileFormat.LSI.Dot()}");
+                        var path = RTFile.CombinePaths(MainDirectory, file + FileFormat.LSI.Dot());
 
                         if (!RTFile.FileExists(path))
                         {
-                            CoreHelper.LogError($"Interface {(parameters.IsArray ? parameters[0] : parameters["file"])} does not exist!");
+                            CoreHelper.LogError($"Interface {file} does not exist!");
 
                             break;
                         }
@@ -1588,7 +1576,7 @@ namespace BetterLegacy.Menus
                         var menu = CustomMenu.Parse(interfaceJN);
                         menu.filePath = path;
 
-                        var load = parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true);
+                        var load = ParseVarFunction(parameters.Get(1, "load"), thisElement);
 
                         if (interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
                         {
@@ -1618,8 +1606,7 @@ namespace BetterLegacy.Menus
 
                 // Clears all interfaces from the interfaces list.
                 // Function has no parameters.
-                case "ClearInterfaces":
-                    {
+                case "ClearInterfaces": {
                         interfaces.Clear();
                         break;
                     }
@@ -1644,12 +1631,15 @@ namespace BetterLegacy.Menus
                 // {
                 //   "path": "{{BepInExAssetsDirectory}}Interfaces" < doesn't always need to end in a slash. A {{AppDirectory}} variable exists, but not recommended to use here since it's automatically applied to the start of the path.
                 // }
-                case "SetCurrentPath":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["path"] == null)
-                            return;
+                case "SetCurrentPath": {
+                        if (parameters)
+                            break;
 
-                        MainDirectory = RTFile.ParsePaths(parameters.IsArray ? parameters[0] : parameters["path"]);
+                        var path = ParseVarFunction(parameters.Get(0, "path"), thisElement);
+                        if (path == null)
+                            break;
+
+                        MainDirectory = path;
 
                         if (!MainDirectory.Contains(RTFile.ApplicationDirectory))
                             MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, MainDirectory);
@@ -1670,27 +1660,46 @@ namespace BetterLegacy.Menus
                 //
                 // - JSON Array Structure -
                 // 0 = sound
+                // 1 = volume
+                // 2 = pitch
                 // Example:
                 // [
                 //   "blip" < plays the blip sound.
+                //   "0.3" < sound is quiet.
+                //   "2" < sound is fast.
                 // ]
                 //
                 // - JSON Object Structure -
                 // "sound"
+                // "vol"
+                // "pitch"
                 // Example:
                 // {
                 //   "sound": "some kind of sound.ogg" < since this sound does not exist in the SoundLibrary, search for a file with the name. If it exists, play the sound.
+                //   "vol": "1" < default
+                //   "pitch": "0.5" < slow
                 // }
-                case "PlaySound":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || !CurrentInterface)
+                case "PlaySound": {
+                        if (parameters == null || !CurrentInterface)
                             break;
 
-                        string sound = parameters.IsArray ? parameters[0] : parameters["sound"];
+                        string sound = ParseVarFunction(parameters.Get(0, "sound"));
+                        if (string.IsNullOrEmpty(sound))
+                            return;
+
+                        float volume = 1f;
+                        var volumeJN = ParseVarFunction(parameters.Get(1, "vol"));
+                        if (volumeJN != null)
+                            volume = volumeJN;
+                        
+                        float pitch = 1f;
+                        var pitchJN = ParseVarFunction(parameters.Get(1, "pitch"));
+                        if (pitchJN != null)
+                            pitch = pitchJN;
 
                         if (SoundManager.inst.TryGetSound(sound, out AudioClip audioClip))
                         {
-                            AudioManager.inst.PlaySound(audioClip);
+                            SoundManager.inst.PlaySound(audioClip, volume, pitch);
                             break;
                         }
 
@@ -1700,9 +1709,9 @@ namespace BetterLegacy.Menus
 
                         var audioType = RTFile.GetAudioType(filePath);
                         if (audioType == AudioType.MPEG)
-                            AudioManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath));
+                            SoundManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath), volume, pitch);
                         else
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, AudioManager.inst.PlaySound));
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => SoundManager.inst.PlaySound(audioClip, volume, pitch)));
 
                         break;
                     }
@@ -1731,24 +1740,24 @@ namespace BetterLegacy.Menus
                 // {
                 //   "sound": "some kind of song.ogg" < since this song does not exist in the SoundLibrary, search for a file with the name. If it exists, play the song.
                 // }
-                case "PlayMusic":
-                    {
-                        if (parameters == null || parameters.IsArray && (parameters.Count < 1 || parameters[0].Value.ToLower() == "default") || parameters.IsObject && (parameters["name"] == null || parameters["name"].Value.ToLower() == "default"))
+                case "PlayMusic": {
+                        if (parameters == null)
                         {
                             PlayMusic();
                             break;
                         }
 
-                        var isArray = parameters.IsArray;
-                        var isObject = parameters.IsObject;
-                        string music = isArray ? parameters[0] : parameters["name"];
-                        var fadeDuration = 0.5f;
-                        if (isArray && parameters.Count > 1 || isObject && parameters["fade_duration"] != null)
-                            fadeDuration = isArray ? parameters[1].AsFloat : parameters["fade_duration"].AsFloat;
+                        string music = ParseVarFunction(parameters.Get(0, "name"), thisElement);
 
-                        var loop = true;
-                        if (isArray && parameters.Count > 2 || isObject && parameters["loop"] != null)
-                            loop = isArray ? parameters[2].AsBool : parameters["loop"].AsBool;
+                        if (string.IsNullOrEmpty(music) || music.ToLower() == "default")
+                        {
+                            PlayMusic();
+                            break;
+                        }
+
+                        var fadeDuration = ParseVarFunction(parameters.GetOrDefault(1, "fade_duration", 0.5f), thisElement);
+
+                        var loop = ParseVarFunction(parameters.GetOrDefault(2, "loop", true), thisElement);
 
                         var filePath = $"{Path.GetDirectoryName(CurrentInterface.filePath)}{music}";
                         if (!RTFile.FileExists(filePath))
@@ -1772,8 +1781,7 @@ namespace BetterLegacy.Menus
 
                 // Stops the currently playing music. Can be good for moments where we want silence.
                 // Function has no parameters.
-                case "StopMusic":
-                    {
+                case "StopMusic": {
                         StopMusic();
                         break;
                     }
@@ -1783,8 +1791,7 @@ namespace BetterLegacy.Menus
                 #region PauseMusic
 
                 // Pauses the current music if it's currently playing.
-                case "PauseMusic":
-                    {
+                case "PauseMusic": {
                         if (CoreHelper.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
                             CurrentAudioSource.Pause();
                         else
@@ -1798,8 +1805,7 @@ namespace BetterLegacy.Menus
                 #region ResumeMusic
 
                 // Resumes the current music if it was paused.
-                case "ResumeMusic":
-                    {
+                case "ResumeMusic": {
                         if (CoreHelper.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
                             CurrentAudioSource.UnPause();
                         else
@@ -1816,13 +1822,12 @@ namespace BetterLegacy.Menus
 
                 #region Move
 
-                case "Move":
-                    {
+                case "Move": {
                         if (!gameObject || parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["x"] == null || parameters["y"] == null))
                             break;
 
-                        JSONNode jnX = parameters.IsArray ? parameters[0] : parameters["x"];
-                        JSONNode jnY = parameters.IsArray ? parameters[1] : parameters["y"];
+                        var jnX = ParseVarFunction(parameters.Get(0, "x"), thisElement);
+                        var jnY = ParseVarFunction(parameters.Get(1, "y"), thisElement);
 
                         var variables = new Dictionary<string, float>
                         {
@@ -1862,16 +1867,18 @@ namespace BetterLegacy.Menus
                 //   "id": "525778246",
                 //   "active": "True" < sets the element active
                 // }
-                case "SetElementActive":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || !CurrentInterface)
-                            return;
+                case "SetElementActive": {
+                        if (parameters == null || !CurrentInterface)
+                            break;
 
-                        if (CurrentInterface.elements.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuImage menuImage) &&
-                            menuImage.gameObject && bool.TryParse(parameters.IsArray ? parameters[1] : parameters["active"], out bool active))
-                        {
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        if (id == null)
+                            break;
+
+                        var active = ParseVarFunction(parameters.Get(1, "active"), thisElement);
+
+                        if (CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage.gameObject)
                             menuImage.gameObject.SetActive(active);
-                        }
 
                         break;
                     }
@@ -1900,13 +1907,17 @@ namespace BetterLegacy.Menus
                 //   "id": "layout_name",
                 //   "active": "True" < sets the layout active
                 // }
-                case "SetLayoutActive":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["name"] == null || !CurrentInterface)
-                            return;
+                case "SetLayoutActive": {
+                        if (parameters == null || !CurrentInterface)
+                            break;
 
-                        if (CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["name"], out MenuLayoutBase layout) &&
-                            layout.gameObject && bool.TryParse(parameters.IsArray ? parameters[1] : parameters["active"], out bool active))
+                        var layoutName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        if (layoutName == null)
+                            break;
+
+                        var active = ParseVarFunction(parameters.Get(1, "active"), thisElement);
+
+                        if (CurrentInterface.layouts.TryGetValue(layoutName, out MenuLayoutBase layout) && layout.gameObject)
                             layout.gameObject.SetActive(active);
 
                         break;
@@ -2000,8 +2011,7 @@ namespace BetterLegacy.Menus
                 //   "done_func": { < function code here
                 //   }
                 // }
-                case "AnimateID":
-                    {
+                case "AnimateID": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null || !thisElement)
                             return;
 
@@ -2124,10 +2134,9 @@ namespace BetterLegacy.Menus
 
                 #region AnimateName
 
-                // Same as animate ID, except instead of searching for an elements' ID, you search for a name.
+                // Same as animate ID, except instead of searching for an elements' ID, you search for a name. In case you'd rather find an objects' name instead of ID.
                 // No example needed.
-                case "AnimateName": // in case you'd rather find an objects' name instead of ID.
-                    {
+                case "AnimateName": {
                         if (parameters == null || parameters.Count < 1 || !thisElement)
                             break;
 
@@ -2251,8 +2260,7 @@ namespace BetterLegacy.Menus
                 //   "id": "0", < tries to find an element with the matching ID.
                 //   "name": "355367" < checks if the animations' name contains this. If it does, then stop the animation. (name is based on the element ID it animates)
                 // }
-                case "StopAnimations":
-                    {
+                case "StopAnimations": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["run_done_func"] == null || !thisElement)
                             return;
 
@@ -2301,8 +2309,7 @@ namespace BetterLegacy.Menus
                 // {
                 //   "col": "17" < uses Beatmap Theme object color slots, so max should be 17 (including 0).
                 // }
-                case "SetColor":
-                    {
+                case "SetColor": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["col"] == null || !thisElement)
                             break;
 
@@ -2335,8 +2342,7 @@ namespace BetterLegacy.Menus
                 //   "id": "100",
                 //   "text": "This is a text example!"
                 // }
-                case "SetText":
-                    {
+                case "SetText": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || !CurrentInterface)
                             return;
 
@@ -2374,8 +2380,7 @@ namespace BetterLegacy.Menus
                 // {
                 //   "id": "85298259"
                 // }
-                case "RemoveElement":
-                    {
+                case "RemoveElement": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
                             break;
 
@@ -2419,8 +2424,7 @@ namespace BetterLegacy.Menus
                 //     "824788",
                 //   ]
                 // }
-                case "RemoveMultipleElements":
-                    {
+                case "RemoveMultipleElements": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["ids"] == null)
                             break;
 
@@ -2481,8 +2485,7 @@ namespace BetterLegacy.Menus
                 //     }
                 //   }
                 // }
-                case "AddElement":
-                    {
+                case "AddElement": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["elements"] == null)
                             break;
 
@@ -2498,21 +2501,22 @@ namespace BetterLegacy.Menus
 
                 #region ScrollLayout
 
-                case "ScrollLayout":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                case "ScrollLayout": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
+                        var layoutName = ParseVarFunction(parameters.Get(0, "layout"), thisElement);
+                        if (layoutName == null || !layoutName.IsString)
+                            return;
+
+                        if (!CurrentInterface.layouts.TryGetValue(layoutName, out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
 
                         if (menuLayout is MenuGridLayout menuGridLayout)
-                            menuGridLayout.Scroll(isArray ? parameters[1].AsFloat : parameters["x"].AsFloat, isArray ? parameters[2].AsFloat : parameters["y"], isArray ? parameters[3].AsBool : parameters["x_additive"].AsBool, isArray ? parameters[4].AsBool : parameters["y_additive"].AsBool);
+                            menuGridLayout.Scroll(ParseVarFunction(parameters.Get(1, "x"), thisElement), ParseVarFunction(parameters.Get(2, "y"), thisElement), ParseVarFunction(parameters.Get(3, "x_additive"), thisElement), ParseVarFunction(parameters.Get(4, "y_additive"), thisElement));
 
-                        if (menuLayout is MenuHorizontalLayout menuHorizontalLayout)
-                            menuHorizontalLayout.Scroll(isArray ? parameters[1].AsFloat : parameters["value"].AsFloat, isArray ? parameters[2].AsBool : parameters["additive"].AsBool);
-
-                        if (menuLayout is MenuVerticalLayout menuVerticalLayout)
-                            menuVerticalLayout.Scroll(isArray ? parameters[1].AsFloat : parameters["value"].AsFloat, isArray ? parameters[2].AsBool : parameters["additive"].AsBool);
+                        if (menuLayout is MenuHorizontalOrVerticalLayout menuHorizontalLayout)
+                            menuHorizontalLayout.Scroll(ParseVarFunction(parameters.Get(1, "value"), thisElement), ParseVarFunction(parameters.Get(2, "additive"), thisElement));
 
                         break;
                     }
@@ -2541,16 +2545,18 @@ namespace BetterLegacy.Menus
                 //   "id": "525778246",
                 //   "selectable": "True" < sets the element as selectable.
                 // }
-                case "SetElementSelectable":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || !CurrentInterface)
-                            return;
+                case "SetElementSelectable": {
+                        if (parameters == null || !CurrentInterface)
+                            break;
 
-                        if (CurrentInterface.elements.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuImage menuImage) &&
-                            bool.TryParse(parameters.IsArray ? parameters[1] : parameters["selectable"], out bool selectable))
-                        {
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        if (id == null)
+                            break;
+
+                        var selectable = ParseVarFunction(parameters.Get(1, "selectable"), thisElement);
+
+                        if (CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
                             menuImage.selectable = selectable;
-                        }
 
                         break;
                     }
@@ -2563,8 +2569,7 @@ namespace BetterLegacy.Menus
 
                 #region SetDefaultEvents
 
-                case "SetDefaultEvents":
-                    {
+                case "SetDefaultEvents": {
                         if (CoreHelper.InGame || !MenuEffectsManager.inst)
                             break;
 
@@ -2633,8 +2638,7 @@ namespace BetterLegacy.Menus
                 //     ]
                 //   }
                 // }
-                case "AnimateEvent":
-                    {
+                case "AnimateEvent": {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null || !thisElement)
                             return;
 
@@ -2651,8 +2655,7 @@ namespace BetterLegacy.Menus
 
                         switch (type.Value)
                         {
-                            case "MoveCamera":
-                                {
+                            case "MoveCamera": {
                                     JSONNode lastX = null;
                                     float x = 0f;
                                     if (events["x"] != null)
@@ -2711,8 +2714,7 @@ namespace BetterLegacy.Menus
 
                                     break;
                                 }
-                            case "ZoomCamera":
-                                {
+                            case "ZoomCamera": {
                                     JSONNode lastX = null;
                                     float x = 0f;
                                     if (events["x"] != null)
@@ -2752,8 +2754,7 @@ namespace BetterLegacy.Menus
 
                                     break;
                                 }
-                            case "RotateCamera":
-                                {
+                            case "RotateCamera": {
                                     JSONNode lastX = null;
                                     float x = 0f;
                                     if (events["x"] != null)
@@ -2794,8 +2795,7 @@ namespace BetterLegacy.Menus
                                     break;
                                 }
                             case "Chroma":
-                            case "Chromatic":
-                                {
+                            case "Chromatic": {
                                     JSONNode lastX = null;
                                     float x = 0f;
                                     if (events["x"] != null)
@@ -2835,8 +2835,7 @@ namespace BetterLegacy.Menus
 
                                     break;
                                 }
-                            case "Bloom":
-                                {
+                            case "Bloom": {
                                     JSONNode lastX = null;
                                     float x = 0f;
                                     if (events["x"] != null)
@@ -2934,8 +2933,7 @@ namespace BetterLegacy.Menus
                                     break;
                                 }
                             case "Lens":
-                            case "LensDistort":
-                                {
+                            case "LensDistort": {
                                     JSONNode lastX = null;
                                     float x = 0f;
                                     if (events["x"] != null)
@@ -3082,12 +3080,15 @@ namespace BetterLegacy.Menus
 
                 #region UpdateEvent
 
-                case "UpdateEvent":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["effect"] == null || !MenuEffectsManager.inst || !MenuEffectsManager.inst.functions.TryGetValue(parameters.IsArray ? parameters[0] : parameters["effect"], out Action<float> action))
+                case "UpdateEvent": {
+                        if (parameters == null)
                             break;
 
-                        action?.Invoke(parameters.IsArray ? parameters[1].AsFloat : parameters["amount"].AsFloat);
+                        var effect = ParseVarFunction(parameters.Get(0, "effect"), thisElement);
+                        if (effect == null || !effect.IsString || !MenuEffectsManager.inst || !MenuEffectsManager.inst.functions.TryGetValue(effect, out Action<float> action))
+                            break;
+
+                        action?.Invoke(ParseVarFunction(parameters.Get(1, "amount").AsFloat, thisElement));
 
                         break;
                     }
@@ -3096,201 +3097,161 @@ namespace BetterLegacy.Menus
 
                 #region SetEvent
 
-                case "SetEvent":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null)
+                case "SetEvent": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        var type = isArray ? parameters[0] : parameters["type"];
+                        var type = parameters.Get(0, "type");
 
-                        if (type.IsNumber)
+                        if (type == null || !type.IsString)
                             break;
 
-                        var values = isArray ? parameters[1] : parameters["values"];
+                        var values = parameters.Get(1, "values");
 
                         switch (type.Value)
                         {
-                            case "MoveCamera":
-                                {
-                                    if (values["x"] != null)
-                                    {
-                                        MenuEffectsManager.inst.MoveCameraX(values["x"].AsFloat);
-                                    }
+                            case "MoveCamera": {
+                                    var x = ParseVarFunction(values["x"], thisElement);
+                                    if (x != null)
+                                        MenuEffectsManager.inst.MoveCameraX(x.AsFloat);
 
-                                    if (values["y"] != null)
-                                    {
-                                        MenuEffectsManager.inst.MoveCameraX(values["y"].AsFloat);
-                                    }
+                                    var y = ParseVarFunction(values["x"], thisElement);
+                                    if (y != null)
+                                        MenuEffectsManager.inst.MoveCameraX(y.AsFloat);
 
                                     break;
                                 }
-                            case "ZoomCamera":
-                                {
-                                    if (values["amount"] != null)
-                                    {
-                                        MenuEffectsManager.inst.ZoomCamera(values["amount"].AsFloat);
-                                    }
+                            case "ZoomCamera": {
+                                    var amount = ParseVarFunction(values["amount"], thisElement);
+                                    if (amount != null)
+                                        MenuEffectsManager.inst.ZoomCamera(amount.AsFloat);
 
                                     break;
                                 }
-                            case "RotateCamera":
-                                {
-                                    if (values["amount"] != null)
-                                    {
-                                        MenuEffectsManager.inst.RotateCamera(values["amount"].AsFloat);
-                                    }
+                            case "RotateCamera": {
+                                    var amount = ParseVarFunction(values["amount"], thisElement);
+                                    if (amount != null)
+                                        MenuEffectsManager.inst.RotateCamera(amount.AsFloat);
 
                                     break;
                                 }
                             case "Chroma":
-                            case "Chromatic":
-                                {
-                                    if (values["intensity"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateChroma(values["intensity"].AsFloat);
-                                    }
+                            case "Chromatic": {
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    if (intensity != null)
+                                        MenuEffectsManager.inst.UpdateChroma(intensity.AsFloat);
 
                                     break;
                                 }
-                            case "Bloom":
-                                {
-                                    if (values["intensity"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateBloomIntensity(values["intensity"].AsFloat);
-                                    }
+                            case "Bloom": {
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    if (intensity != null)
+                                        MenuEffectsManager.inst.UpdateBloomIntensity(intensity.AsFloat);
 
-                                    if (values["diffusion"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateBloomDiffusion(values["diffusion"].AsFloat);
-                                    }
+                                    var diffusion = ParseVarFunction(values["diffusion"], thisElement);
+                                    if (diffusion != null)
+                                        MenuEffectsManager.inst.UpdateBloomDiffusion(diffusion.AsFloat);
 
-                                    if (values["threshold"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateBloomThreshold(values["threshold"].AsFloat);
-                                    }
+                                    var threshold = ParseVarFunction(values["threshold"], thisElement);
+                                    if (threshold != null)
+                                        MenuEffectsManager.inst.UpdateBloomThreshold(threshold.AsFloat);
 
-                                    if (values["anamorphic_ratio"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(values["anamorphic_ratio"].AsFloat);
-                                    }
+                                    var anamorphicRatio = ParseVarFunction(values["anamorphic_ratio"], thisElement);
+                                    if (anamorphicRatio != null)
+                                        MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(anamorphicRatio.AsFloat);
 
-                                    if (values["col"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateBloomColor(CurrentInterface.Theme.GetFXColor(values["col"].AsInt));
-                                    }
+                                    var col = ParseVarFunction(values["col"], thisElement);
+                                    if (col != null)
+                                        MenuEffectsManager.inst.UpdateBloomColor(col.IsString ? RTColors.HexToColor(col) : CurrentInterface.Theme.GetFXColor(col.AsInt));
 
                                     break;
                                 }
                             case "Lens":
-                            case "LensDistort":
-                                {
-                                    if (values["intensity"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateLensDistortIntensity(values["intensity"].AsFloat);
-                                    }
+                            case "LensDistort": {
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    if (intensity != null)
+                                        MenuEffectsManager.inst.UpdateLensDistortIntensity(intensity.AsFloat);
 
-                                    if (values["center_x"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateLensDistortCenterX(values["center_x"].AsFloat);
-                                    }
+                                    var centerX = ParseVarFunction(values["center_x"], thisElement);
+                                    if (centerX != null)
+                                        MenuEffectsManager.inst.UpdateLensDistortCenterX(centerX.AsFloat);
 
-                                    if (values["center_y"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateLensDistortCenterY(values["center_y"].AsFloat);
-                                    }
+                                    var centerY = ParseVarFunction(values["center_y"], thisElement);
+                                    if (centerY != null)
+                                        MenuEffectsManager.inst.UpdateLensDistortCenterY(centerY.AsFloat);
 
-                                    if (values["intensity_x"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateLensDistortIntensityX(values["intensity_x"].AsFloat);
-                                    }
+                                    var intensityX = ParseVarFunction(values["intensity_x"], thisElement);
+                                    if (intensityX != null)
+                                        MenuEffectsManager.inst.UpdateLensDistortIntensityX(intensityX.AsFloat);
 
-                                    if (values["intensity_y"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateLensDistortIntensityY(values["intensity_y"].AsFloat);
-                                    }
+                                    var intensityY = ParseVarFunction(values["intensity_x"], thisElement);
+                                    if (intensityY != null)
+                                        MenuEffectsManager.inst.UpdateLensDistortIntensityY(intensityY.AsFloat);
 
-                                    if (values["scale"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateLensDistortScale(values["scale"].AsFloat);
-                                    }
+                                    var scale = ParseVarFunction(values["scale"], thisElement);
+                                    if (scale != null)
+                                        MenuEffectsManager.inst.UpdateLensDistortScale(scale.AsFloat);
 
                                     break;
                                 }
-                            case "Vignette":
-                                {
-                                    if (values["intensity"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateVignetteIntensity(values["intensity"].AsFloat);
-                                    }
+                            case "Vignette": {
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    if (intensity != null)
+                                        MenuEffectsManager.inst.UpdateVignetteIntensity(intensity.AsFloat);
 
-                                    if (values["center_x"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateVignetteCenterX(values["center_x"].AsFloat);
-                                    }
+                                    var centerX = ParseVarFunction(values["center_x"], thisElement);
+                                    if (centerX != null)
+                                        MenuEffectsManager.inst.UpdateVignetteCenterX(centerX.AsFloat);
 
-                                    if (values["center_y"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateVignetteCenterY(values["center_y"].AsFloat);
-                                    }
+                                    var centerY = ParseVarFunction(values["center_y"], thisElement);
+                                    if (centerY != null)
+                                        MenuEffectsManager.inst.UpdateVignetteCenterY(centerY.AsFloat);
 
-                                    if (values["smoothness"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateVignetteSmoothness(values["smoothness"].AsFloat);
-                                    }
+                                    var smoothness = ParseVarFunction(values["smoothness"], thisElement);
+                                    if (smoothness != null)
+                                        MenuEffectsManager.inst.UpdateVignetteSmoothness(smoothness.AsFloat);
 
-                                    if (values["roundness"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateVignetteRoundness(values["roundness"].AsFloat);
-                                    }
+                                    var roundness = ParseVarFunction(values["roundness"], thisElement);
+                                    if (roundness != null)
+                                        MenuEffectsManager.inst.UpdateVignetteRoundness(roundness.AsFloat);
 
-                                    if (values["rounded"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateVignetteRounded(values["rounded"].AsBool);
-                                    }
+                                    var rounded = ParseVarFunction(values["rounded"], thisElement);
+                                    if (rounded != null)
+                                        MenuEffectsManager.inst.UpdateVignetteRounded(rounded.AsBool);
 
-                                    if (values["col"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateVignetteColor(CurrentInterface.Theme.GetFXColor(values["col"].AsInt));
-                                    }
+                                    var col = ParseVarFunction(values["col"], thisElement);
+                                    if (col != null)
+                                        MenuEffectsManager.inst.UpdateVignetteColor(col.IsString ? RTColors.HexToColor(col) : CurrentInterface.Theme.GetFXColor(col.AsInt));
 
                                     break;
                                 }
-                            case "AnalogGlitch":
-                                {
-                                    if (values["enabled"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateAnalogGlitchEnabled(values["enabled"].AsBool);
-                                    }
+                            case "AnalogGlitch": {
+                                    var enabled = ParseVarFunction(values["enabled"], thisElement);
+                                    if (enabled != null)
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchEnabled(enabled.AsBool);
 
-                                    if (values["scan_line_jitter"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateAnalogGlitchScanLineJitter(values["scan_line_jitter"].AsFloat);
-                                    }
+                                    var scanLineJitter = ParseVarFunction(values["scan_line_jitter"], thisElement);
+                                    if (scanLineJitter != null)
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchScanLineJitter(scanLineJitter.AsFloat);
 
-                                    if (values["vertical_jump"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateAnalogGlitchVerticalJump(values["vertical_jump"].AsFloat);
-                                    }
+                                    var verticalJump = ParseVarFunction(values["vertical_jump"], thisElement);
+                                    if (verticalJump != null)
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchVerticalJump(verticalJump.AsFloat);
 
-                                    if (values["horizontal_shake"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateAnalogGlitchHorizontalShake(values["horizontal_shake"].AsFloat);
-                                    }
+                                    var horizontalShake = ParseVarFunction(values["horizontal_shake"], thisElement);
+                                    if (horizontalShake != null)
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchHorizontalShake(horizontalShake.AsFloat);
 
-                                    if (values["color_drift"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateAnalogGlitchColorDrift(values["color_drift"].AsFloat);
-                                    }
+                                    var colorDrift = ParseVarFunction(values["color_drift"], thisElement);
+                                    if (colorDrift != null)
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchColorDrift(colorDrift.AsFloat);
 
                                     break;
                                 }
-                            case "DigitalGlitch":
-                                {
-                                    if (values["intensity"] != null)
-                                    {
-                                        MenuEffectsManager.inst.UpdateDigitalGlitch(values["intensity"].AsFloat);
-                                    }
+                            case "DigitalGlitch": {
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    if (intensity != null)
+                                        MenuEffectsManager.inst.UpdateDigitalGlitch(intensity.AsFloat);
 
                                     break;
                                 }
@@ -3323,12 +3284,15 @@ namespace BetterLegacy.Menus
                 // {
                 //   "id": "6365672"
                 // }
-                case "LoadLevel":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
+                case "LoadLevel": {
+                        if (parameters == null)
                             break;
 
-                        if (LevelManager.Levels.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out Level level))
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        if (id == null || !id.IsString)
+                            break;
+
+                        if (LevelManager.Levels.TryFind(x => x.id == id, out Level level))
                             LevelManager.Play(level);
 
                         break;
@@ -3354,11 +3318,16 @@ namespace BetterLegacy.Menus
                 // {
                 //   "directory": "" < if left empty, will use the interfaces' directory.
                 // }
-                case "InitLevelMenu":
-                    {
+                case "InitLevelMenu": {
                         var directory = MainDirectory;
-                        if (parameters != null && (parameters.IsArray && parameters.Count > 0 || parameters["directory"] != null))
-                            directory = parameters.IsArray ? parameters[1] : parameters["directory"];
+
+                        if (parameters != null)
+                        {
+                            var directoryJN = parameters.Get(0, "directory");
+                            if (directoryJN != null)
+                                directory = directoryJN;
+                        }
+
                         if (string.IsNullOrEmpty(directory))
                             directory = MainDirectory;
 
@@ -3402,22 +3371,15 @@ namespace BetterLegacy.Menus
                 //   "icon": "play"
                 //   // if art is null, then the default art will be pa_logo_white.
                 // }
-                case "SetDiscordStatus":
-                    {
+                case "SetDiscordStatus": {
                         if (parameters == null)
-                            return;
+                            break;
 
-                        if (parameters.IsObject)
-                        {
-                            CoreHelper.UpdateDiscordStatus(parameters["state"], parameters["details"], parameters["icon"], parameters["art"] != null ? parameters["art"] : "pa_logo_white");
-
-                            return;
-                        }
-
-                        if (parameters.IsArray && parameters.Count < 1)
-                            return;
-
-                        CoreHelper.UpdateDiscordStatus(parameters[0], parameters[1], parameters[2], parameters.Count > 3 ? parameters[3] : "pa_logo_white");
+                        CoreHelper.UpdateDiscordStatus(
+                            parameters.Get(0, "state"),
+                            parameters.Get(1, "details"),
+                            parameters.Get(2, "icon"),
+                            parameters.GetOrDefault(3, "art", "pa_logo_white"));
 
                         break;
                     }
@@ -3426,33 +3388,48 @@ namespace BetterLegacy.Menus
 
                 #region OpenLink
 
-                case "OpenLink":
-                    {
-                        var linkType = Parser.TryParse(parameters.IsArray ? parameters[0] : parameters["link_type"], URLSource.Artist);
+                case "OpenLink": {
+                        var linkType = Parser.TryParse(ParseVarFunction(parameters.Get(0, "link_type"), thisElement), URLSource.Artist);
+                        var site = ParseVarFunction(parameters.Get(1, "site"), thisElement);
+                        var link = ParseVarFunction(parameters.Get(2, "link"), thisElement);
 
-                        var url = AlephNetwork.GetURL(linkType, parameters.IsArray ? parameters[1].AsInt : parameters["site"], parameters.IsArray ? parameters[2] : parameters["link"]);
-
+                        var url = AlephNetwork.GetURL(linkType, site, link);
+                        CoreHelper.Log($"Opening URL: {url}");
                         Application.OpenURL(url);
 
                         break;
                     }
 
                 #endregion
+                    
+                #region ModderDiscord
+
+                // Opens the System Error Discord server link.
+                // Function has no parameters.
+                case "ModderDiscord": {
+                        Application.OpenURL(AlephNetwork.MOD_DISCORD_URL);
+
+                        break;
+                    }
+
+                    #endregion
 
                 #endregion
 
-                #region Specific Functions
+                #region Specific
 
-                case "OpenChangelog":
-                    {
+                #region OpenChangelog
+
+                case "OpenChangelog": {
                         OpenChangelog();
                         break;
                     }
 
+                #endregion
+
                 #region LoadLevels
 
-                case "LoadLevels":
-                    {
+                case "LoadLevels": {
                         LoadLevelsMenu.Init(() =>
                         {
                             if (parameters["on_loading_end"] != null)
@@ -3465,8 +3442,7 @@ namespace BetterLegacy.Menus
 
                 #region OnInputsSelected
 
-                case "OnInputsSelected":
-                    {
+                case "OnInputsSelected": {
                         InputSelectMenu.OnInputsSelected = () =>
                         {
                             if (parameters["continue"] != null)
@@ -3479,8 +3455,7 @@ namespace BetterLegacy.Menus
 
                 #region Profile
 
-                case "Profile":
-                    {
+                case "Profile": {
                         CloseMenus();
                         var profileMenu = new ProfileMenu();
                         CurrentInterface = profileMenu;
@@ -3494,8 +3469,7 @@ namespace BetterLegacy.Menus
 
                 // Begins the BetterLegacy story mode.
                 // Function has no parameters.
-                case "BeginStoryMode":
-                    {
+                case "BeginStoryMode": {
                         LevelManager.IsArcade = false;
                         SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
 
@@ -3506,42 +3480,51 @@ namespace BetterLegacy.Menus
 
                 #region LoadStoryLevel
 
-                case "LoadStoryLevel":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && (parameters["chapter"] == null || parameters["level"] == null))
-                            return;
+                case "LoadStoryLevel": {
+                        if (parameters == null)
+                            break;
 
-                        var isArray = parameters.IsArray;
-                        var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
-                        var level = isArray ? parameters[1].AsInt : parameters["level"].AsInt;
-                        var cutsceneIndex = isArray ? parameters[2].AsInt : parameters["cutscene_index"].AsInt;
-                        var bonus = isArray && parameters.Count > 4 ? parameters[4].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
-                        var skipCutscenes = isArray && parameters.Count > 5 ? parameters[5].AsBool : parameters["skip_cutscenes"] != null ? parameters["skip_cutscenes"].AsBool : true;
+                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement);
+                        if (chapter == null)
+                            break;
 
-                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 3 && parameters[3].AsBool || parameters.IsObject && parameters["continue"].AsBool;
+                        var level = ParseVarFunction(parameters.Get(1, "level"), thisElement);
+                        if (level == null)
+                            break;
+
+                        var cutsceneIndex = ParseVarFunction(parameters.Get(2, "cutscene_index"), thisElement).AsInt;
+                        var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement).AsBool;
+                        var skipCutscenes = ParseVarFunction(parameters.GetOrDefault(5, "skip_cutscenes", true), thisElement).AsBool;
+
+                        StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(3, "continue"), thisElement).AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
-                        StoryManager.inst.Play(chapter, level, cutsceneIndex, bonus, skipCutscenes);
+                        StoryManager.inst.Play(chapter.AsInt, level.AsInt, cutsceneIndex, bonus, skipCutscenes);
 
                         break;
                     }
 
                 #endregion
-                    
+
                 #region LoadStoryCutscene
 
-                case "LoadStoryCutscene":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && (parameters["chapter"] == null || parameters["level"] == null))
-                            return;
+                case "LoadStoryCutscene": {
+                        if (parameters == null)
+                            break;
+
+                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement);
+                        if (chapter == null)
+                            break;
+
+                        var level = ParseVarFunction(parameters.Get(1, "level"), thisElement);
+                        if (level == null)
+                            break;
 
                         var isArray = parameters.IsArray;
-                        var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
-                        var level = isArray ? parameters[1].AsInt : parameters["level"].AsInt;
-                        var cutsceneDestinationJN = isArray ? parameters[2] : parameters["cutscene_destination"];
+                        var cutsceneDestinationJN = ParseVarFunction(parameters.Get(2, "cutscene_destination"), thisElement);
                         var cutsceneDestination = Parser.TryParse(cutsceneDestinationJN, CutsceneDestination.Pre);
-                        var cutsceneIndex = isArray ? parameters[3].AsInt : parameters["cutscene_index"].AsInt;
-                        var bonus = isArray && parameters.Count > 4 ? parameters[4].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
+                        var cutsceneIndex = ParseVarFunction(parameters.Get(3, "cutscene_index"), thisElement).AsInt;
+                        var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement).AsBool;
 
                         StoryManager.inst.ContinueStory = false;
 
@@ -3555,16 +3538,15 @@ namespace BetterLegacy.Menus
 
                 #region PlayAllCutscenes
 
-                case "PlayAllCutscenes":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
+                case "PlayAllCutscenes": {
+                        if (parameters == null)
                             return;
 
-                        var isArray = parameters.IsArray;
-                        var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
-                        var bonus = isArray && parameters.Count > 1 ? parameters[1].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
+                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement);
+                        if (chapter == null)
+                            break;
 
-                        StoryManager.inst.PlayAllCutscenes(chapter, bonus);
+                        StoryManager.inst.PlayAllCutscenes(chapter, ParseVarFunction(parameters.Get(1, "bonus"), thisElement).AsBool);
 
                         break;
                     }
@@ -3573,16 +3555,17 @@ namespace BetterLegacy.Menus
 
                 #region LoadStoryLevelPath
 
-                case "LoadStoryLevelPath":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && (parameters["chapter"] == null || parameters["level"] == null))
+                case "LoadStoryLevelPath": {
+                        if (parameters == null)
                             return;
 
-                        var isArray = parameters.IsArray;
-                        var path = isArray ? parameters[0] : parameters["path"];
-                        var songName = isArray ? parameters[1] : parameters["song"];
+                        var path = ParseVarFunction(parameters.Get(0, "path"), thisElement);
+                        if (path == null || !path.IsString)
+                            break;
 
-                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 2 && parameters[2].AsBool || parameters.IsObject && parameters["continue"].AsBool;
+                        var songName = ParseVarFunction(parameters.Get(1, "song"), thisElement);
+
+                        StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(2, "continue"), thisElement).AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
                         StoryManager.inst.Play(path, songName);
@@ -3594,8 +3577,7 @@ namespace BetterLegacy.Menus
 
                 #region LoadNextStoryLevel
 
-                case "LoadNextStoryLevel":
-                    {
+                case "LoadNextStoryLevel": {
                         var isArray = parameters.IsArray;
 
                         StoryManager.inst.ContinueStory = true;
@@ -3610,8 +3592,7 @@ namespace BetterLegacy.Menus
 
                 #region LoadCurrentStoryInterface
 
-                case "LoadCurrentStoryInterface":
-                    {
+                case "LoadCurrentStoryInterface": {
                         StartupStoryInterface();
 
                         break;
@@ -3621,9 +3602,8 @@ namespace BetterLegacy.Menus
 
                 #region LoadStoryInterface
 
-                case "LoadStoryInterface":
-                    {
-                        StartupStoryInterface(parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt, parameters.IsArray ? parameters[1].AsInt : parameters["level"].AsInt);
+                case "LoadStoryInterface": {
+                        StartupStoryInterface(ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt, ParseVarFunction(parameters.Get(1, "level"), thisElement).AsInt);
 
                         break;
                     }
@@ -3632,8 +3612,7 @@ namespace BetterLegacy.Menus
 
                 #region LoadChapterTransition
 
-                case "LoadChapterTransition":
-                    {
+                case "LoadChapterTransition": {
                         var isArray = parameters.IsArray;
 
                         StoryManager.inst.ContinueStory = true;
@@ -3648,18 +3627,20 @@ namespace BetterLegacy.Menus
 
                 #region StorySaveBool
 
-                case "StorySaveBool":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                case "StorySaveBool": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        string saveName = isArray ? parameters[0] : parameters["name"];
-                        var value = isArray ? parameters[1].AsBool : parameters["value"].AsBool;
-                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["toggle"] != null && parameters["toggle"].AsBool)
-                            value = !StoryManager.inst.CurrentSave.LoadBool(saveName, value);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        if (saveName == null || !saveName.IsString)
+                            break;
 
-                        StoryManager.inst.CurrentSave.SaveBool(saveName, value);
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+
+                        if (ParseVarFunction(parameters.Get(2, "toggle"), thisElement).AsBool)
+                            value = !StoryManager.inst.CurrentSave.LoadBool(saveName, false);
+
+                        StoryManager.inst.CurrentSave.SaveBool(saveName, value.AsBool);
 
                         break;
                     }
@@ -3668,18 +3649,20 @@ namespace BetterLegacy.Menus
 
                 #region StorySaveInt
 
-                case "StorySaveInt":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                case "StorySaveInt": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        string saveName = isArray ? parameters[0] : parameters["name"];
-                        var value = isArray ? parameters[1].AsInt : parameters["value"].AsInt;
-                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
-                            value += StoryManager.inst.CurrentSave.LoadInt(saveName, value);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        if (saveName == null || !saveName.IsString)
+                            break;
 
-                        StoryManager.inst.CurrentSave.SaveInt(saveName, value);
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+                        
+                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement).AsBool)
+                            value += StoryManager.inst.CurrentSave.LoadInt(saveName, 0);
+
+                        StoryManager.inst.CurrentSave.SaveInt(saveName, value.AsInt);
 
                         break;
                     }
@@ -3688,18 +3671,20 @@ namespace BetterLegacy.Menus
 
                 #region StorySaveFloat
 
-                case "StorySaveFloat":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                case "StorySaveFloat": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        string saveName = isArray ? parameters[0] : parameters["name"];
-                        var value = isArray ? parameters[1].AsFloat : parameters["value"].AsFloat;
-                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
-                            value += StoryManager.inst.CurrentSave.LoadFloat(saveName, value);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        if (saveName == null || !saveName.IsString)
+                            break;
 
-                        StoryManager.inst.CurrentSave.SaveFloat(saveName, value);
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+                        
+                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement).AsBool)
+                            value += StoryManager.inst.CurrentSave.LoadFloat(saveName, 0);
+
+                        StoryManager.inst.CurrentSave.SaveFloat(saveName, value.AsFloat);
 
                         break;
                     }
@@ -3708,16 +3693,17 @@ namespace BetterLegacy.Menus
 
                 #region StorySaveString
 
-                case "StorySaveString":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                case "StorySaveString": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        string saveName = isArray ? parameters[0] : parameters["name"];
-                        var value = isArray ? parameters[1].Value : parameters["value"].Value;
-                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
-                            value += StoryManager.inst.CurrentSave.LoadString(saveName, value);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        if (saveName == null || !saveName.IsString)
+                            break;
+
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement).AsBool)
+                            value += StoryManager.inst.CurrentSave.LoadString(saveName, string.Empty);
 
                         StoryManager.inst.CurrentSave.SaveString(saveName, value);
 
@@ -3728,14 +3714,15 @@ namespace BetterLegacy.Menus
 
                 #region StorySaveJSON
 
-                case "StorySaveJSON":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                case "StorySaveJSON": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        string saveName = isArray ? parameters[0] : parameters["name"];
-                        var value = isArray ? parameters[1] : parameters["value"];
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        if (saveName == null || !saveName.IsString)
+                            break;
+
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
 
                         StoryManager.inst.CurrentSave.SaveNode(saveName, value);
 
@@ -3746,15 +3733,15 @@ namespace BetterLegacy.Menus
 
                 #region LoadStorySaveJSONText
 
-                case "LoadStorySaveStringText":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null) || !thisElement)
+                case "LoadStorySaveStringText": {
+                        if (parameters == null)
                             break;
 
-                        var isArray = parameters.IsArray;
-                        string saveName = isArray ? parameters[0] : parameters["name"];
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        if (saveName == null || !saveName.IsString)
+                            break;
 
-                        var text = StoryManager.inst.CurrentSave.LoadString(saveName, "");
+                        var text = StoryManager.inst.CurrentSave.LoadString(saveName, string.Empty);
 
                         if (thisElement is MenuText menuText)
                             menuText.text = text;
@@ -3764,21 +3751,406 @@ namespace BetterLegacy.Menus
 
                 #endregion
 
-                #region ModderDiscord
+                #endregion
+            }
+        }
 
-                // Opens the System Error Discord server link.
-                // Function has no parameters.
-                case "ModderDiscord":
-                    {
-                        Application.OpenURL(AlephNetwork.MOD_DISCORD_URL);
+        public JSONNode ParseVarFunction(JSONNode jn, MenuImage thisElement = null)
+        {
+            // if json is null or it's an array, just return itself.
+            if (jn == null || jn.IsArray)
+                return jn;
+
+            // item is a singular string
+            if (jn.IsString)
+                return ParseText(jn);
+
+            var parameters = jn["params"];
+            string name = jn["name"];
+
+            // item is lang (need to make sure it actually IS a lang by checking for language names)
+            if (Lang.TryParse(jn, out Lang lang))
+                return ParseText(lang);
+
+            switch (name)
+            {
+                #region Switch
+
+                // Parses a variable from a switch argument.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = integer variable.
+                // 1 = default item.
+                // 2 = array of items to return based on the integer variable provided.
+                // Example:
+                // [
+                //   2,
+                //   "This is the default item!",
+                //   [
+                //     "Item 0",
+                //     "Item 1",
+                //     "Item 2", < since the integer variable is "2", this item will be returned.
+                //     "Item 3"
+                //   ]
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "var"
+                // "default"
+                // "case"
+                // Example:
+                // {
+                //   "var": "-1",
+                //   "default": "i AM DEFAULT, no SPEAK TO me", < since "var" is out of the range of the case, it returns this default item.
+                //   "case": [
+                //     "Some kind of item.",
+                //     "Another item...",
+                //     {
+                //       "value": "The item is an object?!" < items can be objects.
+                //     }
+                //   ]
+                // }
+                case "Switch": {
+                        if (parameters == null)
+                            break;
+
+                        var variable = ParseVarFunction(parameters.Get(0, "var"), thisElement);
+                        var defaultItem = ParseVarFunction(parameters.Get(1, "default"));
+                        var caseParam = ParseVarFunction(parameters.Get(2, "case"));
+
+                        if (caseParam.IsArray && (!variable.IsNumber || variable < 0 || variable >= caseParam.Count))
+                            return defaultItem;
+                        if (caseParam.IsObject && (!variable.IsString || caseParam[variable.Value] == null))
+                            return defaultItem;
+
+                        return ParseVarFunction(variable.IsNumber ? caseParam[variable.AsInt] : caseParam[variable.Value], thisElement);
+                    }
+
+                #endregion
+
+                #region If
+
+                // Parses a variable from an if argument.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // The item itself is an array, so these values represent items' values in the array.
+                // "if" = check function.
+                // "return" = returns a specified item.
+                // "else" = if this item should be returned instead if the previous result is false. This value is optional.
+                // Example:
+                // [
+                //   {
+                //     "if": "True",
+                //     "return": "I have a place."
+                //   },
+                //   {
+                //     "if": "False", < because this is false and "else" is true, the return value of this item is returned.
+                //     "else": True,
+                //     "return": "I no longer have a place."
+                //   },
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "if"
+                // "return"
+                // Example:
+                // {
+                //   "if": "True",
+                //   "return": {
+                //     "value": "i AM value!!!"
+                //   }
+                // }
+                case "If": {
+                        if (parameters == null)
+                            break;
+
+                        if (parameters.IsArray)
+                        {
+                            JSONNode variable = null;
+                            var result = false;
+                            for (int i = 0; i < parameters.Count; i++)
+                            {
+                                var check = parameters[i];
+                                var elseCheck = check["else"].AsBool;
+                                if (result && !elseCheck)
+                                    continue;
+
+                                result = ParseIfFunction(check["if"], thisElement);
+                                if (result)
+                                    variable = check["return"];
+                            }
+
+                            return variable;
+                        }
+
+                        if (parameters["if"] != null && parameters["return"] != null && ParseIfFunction(parameters["if"], thisElement))
+                            return parameters["return"];
 
                         break;
                     }
 
-                    #endregion
+                #endregion
+                    
+                #region StoryLoadBool
+
+                // Parses a variable from the current story save.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = variable name to load from the story save.
+                // 1 = default value if there is no value.
+                // Example:
+                // [
+                //   "DOC02WATER",
+                //   "False"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "load"
+                // "default"
+                // Example:
+                // {
+                //   "load": "NULL",
+                //   "default": "False" < returns this value since NULL does not exist.
+                // }
+                case "StoryLoadBool": {
+                        return StoryManager.inst.CurrentSave.LoadBool(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                    }
 
                 #endregion
+
+                #region StoryLoadInt
+
+                // Parses a variable from the current story save.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = variable name to load from the story save.
+                // 1 = default value if there is no value.
+                // Example:
+                // [
+                //   "DOC02WATER",
+                //   "0"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "load"
+                // "default"
+                // Example:
+                // {
+                //   "load": "NULL",
+                //   "default": "0" < returns this value since NULL does not exist.
+                // }
+                case "StoryLoadInt": {
+                        return StoryManager.inst.CurrentSave.LoadInt(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                    }
+
+                #endregion
+
+                #region StoryLoadFloat
+
+                // Parses a variable from the current story save.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = variable name to load from the story save.
+                // 1 = default value if there is no value.
+                // Example:
+                // [
+                //   "DOC02WATER",
+                //   "0"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "load"
+                // "default"
+                // Example:
+                // {
+                //   "load": "NULL",
+                //   "default": "0" < returns this value since NULL does not exist.
+                // }
+                case "StoryLoadFloat": {
+                        return StoryManager.inst.CurrentSave.LoadFloat(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                    }
+
+                #endregion
+
+                #region StoryLoadString
+
+                // Parses a variable from the current story save.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = variable name to load from the story save.
+                // 1 = default value if there is no value.
+                // Example:
+                // [
+                //   "DOC02WATER",
+                //   "False"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "load"
+                // "default"
+                // Example:
+                // {
+                //   "load": "NULL",
+                //   "default": "False" < returns this value since NULL does not exist.
+                // }
+                case "StoryLoadString": {
+                        return StoryManager.inst.CurrentSave.LoadString(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                    }
+
+                #endregion
+
+                #region StoryLoadJSON
+
+                // Parses a variable from the current story save.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = variable name to load from the story save.
+                // 1 = default value if there is no value.
+                // Example:
+                // [
+                //   "DOC02WATER",
+                //   "False"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "load"
+                // "default"
+                // Example:
+                // {
+                //   "load": "NULL",
+                //   "default": "False" < returns this value since NULL does not exist.
+                // }
+                case "StoryLoadJSON": {
+                        return StoryManager.inst.CurrentSave.LoadJSON(parameters.Get(0, "load")).ToString();
+                    }
+
+                #endregion
+
+                #region FormatString
+
+                // Parses a variable from a formatted string.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = string to format.
+                // 1 = array of values to format to the string.
+                // Example:
+                // [
+                //   "Format {0}!", < returns "Format this!".
+                //   [
+                //     "this"
+                //   ]
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "format"
+                // "args"
+                // Example:
+                // {
+                //   "format": "Noo don't {0}!",
+                //   "args": [
+                //     {
+                //       "name": "Switch",
+                //       "params": {
+                //         "var": "0",
+                //         "default": "format default",
+                //         "case": [
+                //           "format me",
+                //           "format yourself"
+                //         ]
+                //       }
+                //     }
+                //   ]
+                // }
+                case "FormatString": {
+                        if (parameters == null)
+                            break;
+
+                        var str = ParseVarFunction(parameters.Get(0, "format"), thisElement);
+                        var args = ParseVarFunction(parameters.Get(1, "args"), thisElement);
+                        if (args == null || !args.IsArray)
+                            return str;
+
+                        var strArgs = new object[args.Count];
+                        for (int i = 0; i < strArgs.Length; i++)
+                            strArgs[i] = args[i].Value;
+
+                        return string.Format(str, strArgs);
+                    }
+
+                #endregion
+
+                #region ParseMath
+
+                // Parses a variable from a math evaluation.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = math evaluation.
+                // 1 = variables array.
+                // Example:
+                // [
+                //   "1 + 1", < returns 2
+                //   [ ] < variables can be left empty
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "evaluate"
+                // "vars"
+                // Example:
+                // {
+                //   "evaluate": "10 + VAR1 + VAR2", < returns 20
+                //   "vars": [ < can include multiple variables
+                //     {
+                //       "n": "VAR1",
+                //       "v": "5" < variable is just 5
+                //     },
+                //     {
+                //       "n": "VAR2",
+                //       "v": { < variable can be a parse function
+                //         "name": "ParseMath",
+                //         "params": [
+                //           "1 * 5"
+                //         ]
+                //       }
+                //     }
+                //   ]
+                // }
+                case "ParseMath": {
+                        if (parameters == null)
+                            break;
+
+                        Dictionary<string, float> vars = null;
+
+                        if (jn["vars"] != null)
+                        {
+                            vars = new Dictionary<string, float>();
+                            for (int i = 0; i < jn["vars"].Count; i++)
+                            {
+                                var item = jn["vars"][i];
+                                if (string.IsNullOrEmpty(item["n"]))
+                                    continue;
+                                var val = ParseVarFunction(item["v"], thisElement);
+                                if (!val.IsNumber)
+                                    continue;
+                                vars[name] = val;
+                            }
+                        }
+
+                        return RTMath.Parse(parameters.Get(0, "evaluate"), vars).ToString();
+                    }
+
+                    #endregion
             }
+
+            return jn;
         }
 
         #endregion
