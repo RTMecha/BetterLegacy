@@ -695,6 +695,9 @@ namespace BetterLegacy.Core
 
         public static string ParseText(string input)
         {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
             RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
             {
                 Rank rank =
