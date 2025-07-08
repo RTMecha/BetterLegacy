@@ -66,17 +66,10 @@ namespace BetterLegacy.Menus.UI.Layouts
             childForceExpandWidth = jn["force_expand_width"].AsBool;
             childScaleHeight = jn["scale_height"].AsBool;
             childScaleWidth = jn["scale_width"].AsBool;
-            childAlignment = (TextAnchor)jn["align"].AsInt;
             spacing = jn["spacing"].AsFloat;
 
-            rect = RectValues.TryParse(jn["rect"], RectValues.Default);
-            mask = jn["mask"].AsBool;
-            regenerate = jn["regenerate"] == null || jn["regenerate"].AsBool;
-
-            scrollable = jn["scrollable"].AsBool;
-
-            onScrollUpFuncJSON = jn["on_scroll_up_func"];
-            onScrollDownFuncJSON = jn["on_scroll_down_func"];
+            minScroll = jn["min_scroll"] == null ? -100f : jn["min_scroll"].AsFloat;
+            maxScroll = jn["max_scroll"] == null ? 100f : jn["max_scroll"].AsFloat;
         }
 
         /// <summary>
