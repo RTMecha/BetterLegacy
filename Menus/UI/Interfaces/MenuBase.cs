@@ -1307,6 +1307,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
+        public override string ToString() => $"{id} - {name}";
+
         #endregion
 
         #region Properties
