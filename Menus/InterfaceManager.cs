@@ -682,7 +682,7 @@ namespace BetterLegacy.Menus
         public bool ParseIfFunctionSingle(JSONNode jn, MenuImage thisElement = null)
         {
             var parameters = jn["params"];
-            string name = jn["name"];
+            string name = jn.IsString ? jn : jn["name"];
             var not = jn["not"].AsBool; // If true, then check if the function is not true.
 
             if (string.IsNullOrEmpty(name))
@@ -1162,7 +1162,7 @@ namespace BetterLegacy.Menus
             }
 
             var parameters = jn["params"];
-            string name = jn["name"];
+            string name = jn.IsString ? jn : jn["name"];
 
             switch (name)
             {
