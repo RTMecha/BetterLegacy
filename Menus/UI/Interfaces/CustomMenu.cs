@@ -53,19 +53,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
             var customMenu = new CustomMenu();
 
             customMenu.id = jn["id"];
-            customMenu.name = jn["name"];
-            customMenu.musicName = string.IsNullOrEmpty(jn["music_name"]) ? InterfaceManager.RANDOM_MUSIC_NAME : jn["music_name"];
-            customMenu.allowCustomMusic = jn["allow_custom_music"] != null ? jn["allow_custom_music"].AsBool : true;
+            customMenu.name = InterfaceManager.inst.ParseVarFunction(jn["name"]);
+            customMenu.musicName = InterfaceManager.inst.ParseVarFunction(jn["music_name"]) ?? InterfaceManager.RANDOM_MUSIC_NAME;
+            var allowCustomMusic = InterfaceManager.inst.ParseVarFunction(jn["allow_custom_music"]);
+            if (allowCustomMusic != null)
+                customMenu.allowCustomMusic = allowCustomMusic.AsBool;
 
-            if (jn["type"] != null)
+            var type = InterfaceManager.inst.ParseVarFunction(jn["type"]);
+            if (type != null)
             {
-                switch (jn["type"].Value.ToLower())
+                switch (type.Value.ToLower())
                 {
                     case "chat": {
-                            var returnInterface = jn["return_interface"];
-                            var returnInterfacePath = jn["return_interface_path"];
-                            var seen = jn["seen"];
-                            var dialogueCount = jn["dialogue"].Count;
+                            var returnInterface = InterfaceManager.inst.ParseVarFunction(jn["return_interface"]);
+                            var returnInterfacePath = InterfaceManager.inst.ParseVarFunction(jn["return_interface_path"]);
+                            var seen = InterfaceManager.inst.ParseVarFunction(jn["seen"]);
+                            var dialogue = InterfaceManager.inst.ParseVarFunction(jn["dialogue"]);
+                            var dialogueCount = dialogue.Count;
 
                             System.Func<JSONArray> onScrollUpFuncJSON = () => new JSONArray
                             {
@@ -159,13 +163,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                             var defaultLength = 4f;
                             var dateFormat = "{{Date=HH:mm:ss:tt}}";
-                            if (jn["defaults"] != null)
+                            var jnDefaults = InterfaceManager.inst.ParseVarFunction(jn["defaults"]);
+                            if (jnDefaults != null)
                             {
-                                var jnDefaults = jn["defaults"];
-                                if (jnDefaults["length"] != null)
-                                    defaultLength = jnDefaults["length"].AsFloat;
-                                if (!string.IsNullOrEmpty(jnDefaults["date_format"]))
-                                    dateFormat = jnDefaults["date_format"];
+                                var jnDefaultLength = InterfaceManager.inst.ParseVarFunction(jnDefaults["length"]);
+                                if (jnDefaultLength != null)
+                                    defaultLength = jnDefaultLength.AsFloat;
+
+                                var jnDefaultDateFormat = InterfaceManager.inst.ParseVarFunction(jnDefaults["date_format"]);
+                                if (!string.IsNullOrEmpty(jnDefaultDateFormat))
+                                    dateFormat = jnDefaultDateFormat;
                             }
 
                             var forJN = Parser.NewJSONObject();
@@ -263,12 +270,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                             for (int i = 0; i < dialogueCount; i++)
                             {
+                                var jnDialogue = InterfaceManager.inst.ParseVarFunction(dialogue[i]);
+                                if (jnDialogue == null)
+                                    continue;
+
                                 var id = LSText.randomNumString(16);
-                                var jnDialogue = jn["dialogue"][i];
-                                string character = jnDialogue["character"];
-                                string text = jnDialogue["text"];
-                                string color = jnDialogue["color"];
-                                string sound = jnDialogue["sound"];
+                                string character = InterfaceManager.inst.ParseVarFunction(jnDialogue["character"]);
+                                string text = InterfaceManager.inst.ParseVarFunction(jnDialogue["text"]);
+                                string color = InterfaceManager.inst.ParseVarFunction(jnDialogue["color"]);
+                                string sound = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound"]);
 
                                 forJN["to"][i]["1"] = new JSONObject { ["id"] = id, };
                                 forJN["to"][i]["2"] = new JSONObject
@@ -277,38 +287,57 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     ["text"] = $"| {character}",
                                 };
                                 forJN["to"][i]["3"] = new JSONObject { ["parent"] = id, };
-                                if (jnDialogue["date_format"] != null)
-                                    forJN["to"][i]["3"]["text"] = $"<align=right>{jnDialogue["date_format"].Value} |";
+                                var jnDateFormat = InterfaceManager.inst.ParseVarFunction(jnDialogue["date_format"]);
+                                if (jnDateFormat != null)
+                                    forJN["to"][i]["3"]["text"] = $"<align=right>{jnDateFormat.Value} |";
 
                                 var jnText = new JSONObject
                                 {
                                     ["parent"] = id,
                                     ["text"] = text
                                 };
-                                if (jnDialogue["length"] != null)
-                                    jnText["length"] = jnDialogue["length"];
+                                var jnLength = InterfaceManager.inst.ParseVarFunction(jnDialogue["length"]);
+                                if (jnLength != null)
+                                    jnText["length"] = jnLength;
                                 if (!string.IsNullOrEmpty(color))
                                     jnText["override_text_col"] = color;
                                 if (!string.IsNullOrEmpty(sound))
                                     jnText["text_sound"] = sound;
 
-                                if (jnDialogue["speeds"] != null)
+                                var speeds = InterfaceManager.inst.ParseVarFunction(jnDialogue["speeds"]);
+                                if (speeds != null)
                                 {
-                                    for (int j = 0; j < jnDialogue["speeds"].Count; j++)
+                                    for (int j = 0; j < speeds.Count; j++)
                                     {
-                                        jnText["speeds"][j]["position"] = jnDialogue["speeds"][j]["position"];
-                                        jnText["speeds"][j]["speed"] = jnDialogue["speeds"][j]["speed"];
+                                        var speed = InterfaceManager.inst.ParseVarFunction(speeds[j]);
+                                        if (speed == null)
+                                            continue;
+
+                                        var position = InterfaceManager.inst.ParseVarFunction(speed["position"]);
+                                        var speedValue = InterfaceManager.inst.ParseVarFunction(speed["speed"]);
+                                        if (position == null || speedValue == null)
+                                            continue;
+
+                                        jnText["speeds"][j]["position"] = position;
+                                        jnText["speeds"][j]["speed"] = speedValue;
                                     }
                                 }
 
-                                if (jnDialogue["sound_volume"] != null)
-                                    jnText["text_sound_volume"] = jnDialogue["sound_volume"];
-                                if (jnDialogue["sound_pitch"] != null)
-                                    jnText["text_sound_pitch"] = jnDialogue["sound_pitch"];
-                                if (jnDialogue["sound_pitch_vary"] != null)
-                                    jnText["text_sound_pitch_vary"] = jnDialogue["sound_pitch_vary"];
-                                if (jnDialogue["sound_repeat"] != null)
-                                    jnText["text_sound_repeat"] = jnDialogue["sound_repeat"];
+                                var soundVolume = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_volume"]);
+                                if (soundVolume != null)
+                                    jnText["text_sound_volume"] = soundVolume;
+
+                                var soundPitch = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_pitch"]);
+                                if (soundPitch != null)
+                                    jnText["text_sound_pitch"] = soundPitch;
+
+                                var soundPitchVary = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_pitch_vary"]);
+                                if (soundPitchVary != null)
+                                    jnText["text_sound_pitch_vary"] = soundPitchVary;
+
+                                var soundRepeat = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_repeat"]);
+                                if (soundRepeat != null)
+                                    jnText["text_sound_repeat"] = soundRepeat;
 
                                 forJN["to"][i]["4"] = jnText;
 
@@ -434,38 +463,48 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
 
-            customMenu.defaultSelection = Parser.TryParse(jn["default_select"], Vector2Int.zero);
-            customMenu.forceInterfaceSpeed = jn["force_speed"].AsBool;
-            if (jn["layer"] != null)
-                customMenu.layer = jn["layer"].AsInt;
-            if (jn["pause_game"] != null)
-                customMenu.pauseGame = jn["pause_game"].AsBool;
+            customMenu.defaultSelection = Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jn["default_select"]), Vector2Int.zero);
+            customMenu.forceInterfaceSpeed = InterfaceManager.inst.ParseVarFunction(jn["force_speed"]).AsBool;
+
+            var layer = InterfaceManager.inst.ParseVarFunction(jn["layer"]);
+            if (layer != null)
+                customMenu.layer = layer.AsInt;
+
+            var pauseGame = InterfaceManager.inst.ParseVarFunction(jn["pause_game"]);
+            if (pauseGame != null)
+                customMenu.pauseGame = pauseGame.AsBool;
             else
                 customMenu.pauseGame = true;
 
-            if (jn["sprites"] != null)
+            var sprites = InterfaceManager.inst.ParseVarFunction(jn["sprites"]);
+            if (sprites != null)
             {
-                foreach (var keyValuePair in jn["sprites"].Linq)
+                foreach (var keyValuePair in sprites.Linq)
                 {
                     if (customMenu.spriteAssets.ContainsKey(keyValuePair.Key))
                         continue;
 
-                    customMenu.spriteAssets.Add(keyValuePair.Key, SpriteHelper.StringToSprite(keyValuePair.Value));
+                    var value = InterfaceManager.inst.ParseVarFunction(keyValuePair.Value);
+                    if (value == null)
+                        continue;
+
+                    customMenu.spriteAssets.Add(keyValuePair.Key, SpriteHelper.StringToSprite(value));
                 }
             }
 
-            customMenu.prefabs.AddRange(ParsePrefabs(jn["prefabs"]));
-            ParseLayouts(customMenu.layouts, jn["layouts"]);
-            customMenu.elements.AddRange(ParseElements(jn["elements"], customMenu.prefabs, customMenu.spriteAssets));
+            customMenu.prefabs.AddRange(ParsePrefabs(InterfaceManager.inst.ParseVarFunction(jn["prefabs"])));
+            ParseLayouts(customMenu.layouts, InterfaceManager.inst.ParseVarFunction(jn["layouts"]));
+            customMenu.elements.AddRange(ParseElements(InterfaceManager.inst.ParseVarFunction(jn["elements"]), customMenu.prefabs, customMenu.spriteAssets));
 
+            var theme = InterfaceManager.inst.ParseVarFunction(jn["theme"]);
             if (jn["theme"] != null)
-                customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
-            customMenu.useGameTheme = jn["game_theme"].AsBool;
+                customMenu.loadedTheme = BeatmapTheme.Parse(theme);
+            customMenu.useGameTheme = InterfaceManager.inst.ParseVarFunction(jn["game_theme"]).AsBool;
 
             if (CoreHelper.InGame)
                 customMenu.exitFunc = InterfaceManager.inst.CloseMenus;
 
-            customMenu.exitFuncJSON = jn["exit_func"];
+            customMenu.exitFuncJSON = InterfaceManager.inst.ParseVarFunction(jn["exit_func"]);
 
             return customMenu;
         }
@@ -476,47 +515,78 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 yield break;
 
             for (int i = 0; i < jn.Count; i++)
-                yield return MenuPrefab.Parse(jn[i]);
+            {
+                var elementPrefab = InterfaceManager.inst.ParseVarFunction(jn[i]);
+                if (elementPrefab.IsArray)
+                {
+                    var prefabs = ParsePrefabs(elementPrefab);
+                    foreach (var prefab in prefabs)
+                        yield return prefab;
+
+                    continue;
+                }
+                yield return MenuPrefab.Parse(elementPrefab);
+            }
         }
 
         public static void ParseLayouts(Dictionary<string, MenuLayoutBase> layouts, JSONNode jn)
         {
-            if (jn == null || !jn.IsObject)
+            if (jn == null)
                 return;
 
-            foreach (var keyValuePair in jn.Linq)
+            if (jn.IsObject)
             {
-                if (layouts.ContainsKey(keyValuePair.Key))
-                    continue;
-
-                var jnLayout = keyValuePair.Value;
-                string layoutType = jnLayout["type"];
-                switch (layoutType.ToLower())
-                {
-                    case "grid": {
-                            var gridLayout = MenuGridLayout.Parse(jnLayout);
-                            gridLayout.name = keyValuePair.Key;
-                            layouts.Add(keyValuePair.Key, gridLayout);
-
-                            break;
-                        }
-                    case "horizontal": {
-                            var horizontalLayout = MenuHorizontalLayout.Parse(jnLayout);
-                            horizontalLayout.name = keyValuePair.Key;
-                            layouts.Add(keyValuePair.Key, horizontalLayout);
-
-                            break;
-                        }
-                    case "vertical": {
-                            var verticalLayout = MenuVerticalLayout.Parse(jnLayout);
-                            verticalLayout.name = keyValuePair.Key;
-                            layouts.Add(keyValuePair.Key, verticalLayout);
-
-                            break;
-                        }
-                }
+                foreach (var keyValuePair in jn.Linq)
+                    ParseLayout(layouts, keyValuePair.Key, InterfaceManager.inst.ParseVarFunction(keyValuePair.Value));
             }
 
+            if (jn.IsArray)
+            {
+                for (int i = 0; i < jn.Count; i++)
+                {
+                    var jnLayout = InterfaceManager.inst.ParseVarFunction(jn[i]);
+                    if (jnLayout.IsArray)
+                    {
+                        ParseLayouts(layouts, jnLayout);
+                        continue;
+                    }
+
+                    var key = InterfaceManager.inst.ParseVarFunction(jnLayout["name"]);
+                    ParseLayout(layouts, key, jnLayout);
+                }
+            }
+        }
+
+        public static void ParseLayout(Dictionary<string, MenuLayoutBase> layouts, string key, JSONNode jnLayout)
+        {
+            if (string.IsNullOrEmpty(key) || layouts.ContainsKey(key) || jnLayout == null)
+                return;
+
+            string layoutType = jnLayout["type"];
+            switch (layoutType.ToLower())
+            {
+                case "grid": {
+                        var gridLayout = MenuGridLayout.Parse(jnLayout);
+                        gridLayout.name = key;
+                        layouts.Add(key, gridLayout);
+
+                        break;
+                    }
+                case "horizontal": {
+                        var horizontalLayout = MenuHorizontalLayout.Parse(jnLayout);
+                        horizontalLayout.name = key;
+                        layouts.Add(key, horizontalLayout);
+
+                        break;
+                    }
+                case "vertical": {
+                        var verticalLayout = MenuVerticalLayout.Parse(jnLayout);
+                        verticalLayout.name = key;
+                        layouts.Add(key, verticalLayout);
+
+                        break;
+                    }
+            }
         }
 
         public static IEnumerable<MenuImage> ParseElements(JSONNode jn, List<MenuPrefab> prefabs = null, Dictionary<string, Sprite> spriteAssets = null)
@@ -526,33 +596,55 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             for (int i = 0; i < jn.Count; i++)
             {
-                var jnElement = jn[i];
-                string elementType = jnElement["type"];
+                var jnElement = InterfaceManager.inst.ParseVarFunction(jn[i]);
+                if (jnElement == null)
+                    continue;
+
+                // handle grouped elements recursively
+                if (jnElement.IsArray)
+                {
+                    var elements = ParseElements(jnElement, prefabs, spriteAssets);
+                    foreach (var element in elements)
+                        yield return element;
+
+                    continue;
+                }
+
+                var elementType = InterfaceManager.inst.ParseVarFunction(jnElement["type"]);
+                if (elementType == null)
+                    continue;
 
                 // loop function
                 int loop = 1;
-                if (jnElement["loop"] != null)
-                    loop = jnElement["loop"].AsInt;
+                var jnLoop = InterfaceManager.inst.ParseVarFunction(jnElement["loop"]);
+                if (jnLoop != null)
+                    loop = jnLoop.AsInt;
                 if (loop < 1)
                     loop = 1;
 
-                for (int j = 0; j < loop; j++)
-                    switch (elementType.ToLower())
+                for (int loopIndex = 0; loopIndex < loop; loopIndex++)
+                    switch (elementType.Value.ToLower())
                     {
                         case "auto": {
-                                if (jnElement["name"] == null)
+                                var name = InterfaceManager.inst.ParseVarFunction(jnElement["name"]);
+                                if (name == null)
                                     break;
 
-                                string name = jnElement["name"];
                                 IEnumerable<MenuImage> collection = null;
-                                switch (name)
+                                switch (name.Value)
                                 {
                                     case "TopBar": {
-                                            collection = GenerateTopBar(jnElement["title"] == null ? "Custom Menu" : Lang.Parse(jnElement["title"]), jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
+                                            var title = InterfaceManager.inst.ParseVarFunction(jnElement["title"]);
+                                            collection = GenerateTopBar(
+                                                title == null ? "Custom Menu" : Lang.Parse(title),
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_col"]).AsInt,
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_val"]).AsFloat);
                                             break;
                                         }
                                     case "BottomBar": {
-                                            collection = GenerateBottomBar(jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
+                                            collection = GenerateBottomBar(
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_col"]).AsInt,
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_val"]).AsFloat);
                                             break;
                                         }
                                 }
@@ -566,35 +658,49 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 break;
                             }
                         case "prefab": {
-                                if (prefabs == null || jnElement["id"] == null || !prefabs.TryFind(x => x.id == jnElement["id"], out MenuPrefab prefab))
+                                var id = jnElement["id"];
+                                if (prefabs == null || id == null || !prefabs.TryFind(x => x.id == id, out MenuPrefab prefab))
                                     break;
 
-                                if (jnElement["from"] != null)
+                                var from = InterfaceManager.inst.ParseVarFunction(jnElement["from"]);
+                                if (from != null)
                                 {
-                                    var from = jnElement["from"];
-                                    switch (from["type"].Value.ToLower())
+                                    var type = InterfaceManager.inst.ParseVarFunction(from["type"]);
+                                    if (type == null)
+                                        break;
+
+                                    switch (type.Value.ToLower())
                                     {
                                         case "json": {
-                                                if (from["array"] == null)
+                                                var array = InterfaceManager.inst.ParseVarFunction(from["array"]);
+                                                if (array == null)
                                                     break;
 
-                                                for (int k = 0; k < from["array"].Count; k++)
+                                                for (int k = 0; k < array.Count; k++)
                                                 {
                                                     var prefabObject = new MenuPrefabObject
                                                     {
-                                                        prefabID = jnElement["pid"],
+                                                        prefabID = InterfaceManager.inst.ParseVarFunction(jnElement["pid"]),
                                                         prefab = prefab,
-                                                        id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
-                                                        name = jnElement["name"],
-                                                        length = jnElement["anim_length"].AsFloat,
-                                                        fromLoop = j > 0,
+                                                        id = InterfaceManager.inst.ParseVarFunction(jnElement["id"]) ?? LSText.randomNumString(16),
+                                                        name = InterfaceManager.inst.ParseVarFunction(jnElement["name"]),
+                                                        length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"]).AsFloat,
+                                                        fromLoop = loopIndex > 0,
                                                         loop = loop,
                                                     };
 
-                                                    if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], prefabObject))
+                                                    var elementSpawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], prefabObject);
+                                                    if (elementSpawnFunc == null || InterfaceManager.inst.ParseIfFunction(elementSpawnFunc, prefabObject))
                                                     {
-                                                        foreach (var array in from["array"][k]["elements"])
-                                                            prefabObject.elementSettings[array.Key] = array.Value;
+                                                        var arrayElements = InterfaceManager.inst.ParseVarFunction(array[k]["elements"], prefabObject);
+                                                        foreach (var arrayElement in arrayElements)
+                                                        {
+                                                            var arrayElementJN = InterfaceManager.inst.ParseVarFunction(arrayElement.Value, prefabObject);
+                                                            if (arrayElementJN == null)
+                                                                continue;
+
+                                                            prefabObject.elementSettings[arrayElement.Key] = arrayElementJN;
+                                                        }
 
                                                         yield return prefabObject;
                                                     }
@@ -609,62 +715,61 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 var element = new MenuPrefabObject
                                 {
-                                    prefabID = jnElement["pid"],
+                                    prefabID = InterfaceManager.inst.ParseVarFunction(jnElement["pid"]),
                                     prefab = prefab,
-                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
-                                    name = jnElement["name"],
-                                    length = jnElement["anim_length"].AsFloat, // how long the UI pauses for when this element spawns.
-                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
+                                    id = InterfaceManager.inst.ParseVarFunction(jnElement["id"]) ?? LSText.randomNumString(16),
+                                    name = InterfaceManager.inst.ParseVarFunction(jnElement["name"]),
+                                    length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"]).AsFloat, // how long the UI pauses for when this element spawns.
+                                    fromLoop = loopIndex > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
                                 };
 
-                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
-
-                                //for (int k = 0; k < prefab.elements.Count; k++)
-                                //{
-                                //    var element = prefab.elements[k];
-                                //    if (element is MenuEvent menuEvent)
-                                //    {
-                                //        yield return MenuEvent.DeepCopy(menuEvent, false);
-                                //        continue;
-                                //    }
-                                //    if (element is MenuText menuText)
-                                //    {
-                                //        yield return MenuText.DeepCopy(menuText, false);
-                                //        continue;
-                                //    }
-                                //    if (element is MenuButton menuButton)
-                                //    {
-                                //        yield return MenuButton.DeepCopy(menuButton, false);
-                                //        continue;
-                                //    }
-
-                                //    yield return MenuImage.DeepCopy(element, false);
-                                //}
 
                                 break;
                             }
                         case "for": {
-                                string from = jnElement["from"];
-                                switch (from.ToLower().Replace(" ", "").Replace("_", ""))
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"]);
+                                if (spawnFunc != null && !InterfaceManager.inst.ParseIfFunction(spawnFunc))
+                                    break;
+
+                                var from = InterfaceManager.inst.ParseVarFunction(jnElement["from"]);
+                                if (from == null || !from.IsString)
+                                    break;
+
+                                switch (from.Value.ToLower().Replace(" ", "").Replace("_", ""))
                                 {
                                     case "json": {
-                                            var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
+                                            var jnElements = InterfaceManager.inst.ParseVarFunction(jnElement["element_prefabs"]);
+                                            if (jnElements == null)
+                                                break;
 
-                                            for (int k = 0; k < jnElement["to"].Count; k++)
+                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"]);
+                                            if (to == null)
+                                                break;
+
+                                            var elements = ParseElements(jnElements, prefabs, spriteAssets);
+
+                                            for (int k = 0; k < to.Count; k++)
                                             {
-                                                foreach (var toElement in jnElement["to"][k])
+                                                foreach (var toElement in to[k])
                                                 {
                                                     foreach (var element in elements)
                                                     {
                                                         if (element.id != toElement.Key)
                                                             continue;
 
-                                                        if (toElement.Value["spawn_if_func"] != null && !InterfaceManager.inst.ParseIfFunction(toElement.Value["spawn_if_func"], element))
+                                                        var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element);
+                                                        if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element))
                                                             continue;
 
-                                                        element.Read(toElement.Value, j, loop, spriteAssets);
+                                                        var jnToElement = InterfaceManager.inst.ParseVarFunction(toElement.Value, element);
+                                                        if (jnToElement == null)
+                                                            continue;
+
+                                                        element.Read(jnToElement, loopIndex, loop, spriteAssets);
                                                         yield return element;
                                                     }
                                                 }
@@ -673,22 +778,31 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                             break;
                                         }
                                     case "storyjson": {
-                                            var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
+                                            var jnElements = InterfaceManager.inst.ParseVarFunction(jnElement["element_prefabs"]);
+                                            if (jnElements == null)
+                                                break;
 
-                                            var storyJN = Story.StoryManager.inst.CurrentSave.LoadJSON(jnElement["to"]);
-                                            for (int k = 0; k < storyJN["to"].Count; k++)
+                                            var elements = ParseElements(jnElements, prefabs, spriteAssets);
+
+                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"]);
+                                            if (to == null)
+                                                break;
+
+                                            var storyJN = Story.StoryManager.inst.CurrentSave.LoadJSON(to);
+                                            for (int k = 0; k < to.Count; k++)
                                             {
-                                                foreach (var toElement in storyJN["to"][k])
+                                                foreach (var toElement in to[k])
                                                 {
                                                     foreach (var element in elements)
                                                     {
                                                         if (element.id != toElement.Key)
                                                             continue;
 
-                                                        if (toElement.Value["spawn_if_func"] != null && !InterfaceManager.inst.ParseIfFunction(toElement.Value["spawn_if_func"], element))
+                                                        var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element);
+                                                        if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element))
                                                             continue;
 
-                                                        element.Read(toElement.Value, j, loop, spriteAssets);
+                                                        element.Read(toElement.Value, loopIndex, loop, spriteAssets);
                                                         yield return element;
                                                     }
                                                 }
@@ -697,12 +811,20 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                             break;
                                         }
                                     case "text": {
-                                            var element = MenuText.Parse(jnElement["default"], j, loop, spriteAssets);
+                                            var jnDefault = InterfaceManager.inst.ParseVarFunction(jnElement["default"]);
+                                            if (jnDefault == null)
+                                                break;
 
-                                            for (int k = 0; k < jnElement["to"].Count; k++)
+                                            var element = MenuText.Parse(jnDefault, loopIndex, loop, spriteAssets);
+
+                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"]);
+                                            if (to == null)
+                                                break;
+
+                                            for (int k = 0; k < to.Count; k++)
                                             {
                                                 var copy = MenuText.DeepCopy(element);
-                                                copy.text = jnElement["to"][k];
+                                                copy.text = to[k];
                                                 yield return copy;
                                             }
                                             break;
@@ -712,32 +834,37 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 break;
                             }
                         case "event": {
-                                var element = MenuEvent.Parse(jnElement, j, loop, spriteAssets);
+                                var element = MenuEvent.Parse(jnElement, loopIndex, loop, spriteAssets);
 
-                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;
                             }
                         case "image": {
-                                var element = MenuImage.Parse(jnElement, j, loop, spriteAssets);
+                                var element = MenuImage.Parse(jnElement, loopIndex, loop, spriteAssets);
 
-                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;
                             }
                         case "text": {
-                                var element = MenuText.Parse(jnElement, j, loop, spriteAssets);
-                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
+                                var element = MenuText.Parse(jnElement, loopIndex, loop, spriteAssets);
+
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;
                             }
                         case "button": {
-                                var element = MenuButton.Parse(jnElement, j, loop, spriteAssets);
+                                var element = MenuButton.Parse(jnElement, loopIndex, loop, spriteAssets);
 
-                                if (jnElement["spawn_if_func"] == null || InterfaceManager.inst.ParseIfFunction(jnElement["spawn_if_func"], element))
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;

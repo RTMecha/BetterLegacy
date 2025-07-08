@@ -626,15 +626,16 @@ namespace BetterLegacy.Menus
         /// <param name="jn">JSON to parse.</param>
         public void ParseFunction(JSONNode jn, MenuImage thisElement = null)
         {
+            // allow multiple functions to occur.
             if (jn.IsArray)
             {
                 for (int i = 0; i < jn.Count; i++)
-                    ParseFunctionSingle(jn[i], thisElement: thisElement);
+                    ParseFunction(ParseVarFunction(jn[i], thisElement), thisElement);
 
                 return;
-            } // Allow multiple functions to occur.
+            }
 
-            ParseFunctionSingle(jn, thisElement: thisElement);
+            ParseFunctionSingle(jn, thisElement);
         }
 
         /// <summary>
@@ -694,478 +695,454 @@ namespace BetterLegacy.Menus
                 not = !not;
             }
 
-            switch (name)
+            try
             {
-                #region Main
+                switch (name)
+                {
+                    #region Main
+
+                    case "True": return true;
+                    case "False": return false;
+                    case "GetSettingBool": {
+                            if (parameters == null)
+                                break;
+
+                            var value = DataManager.inst.GetSettingBool(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsBool);
+                            return !not ? value : !value;
+                        }
+                    case "GetSettingIntEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) == ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "GetSettingIntLesserEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) <= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "GetSettingIntGreaterEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) >= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "GetSettingIntLesser": {
+                            if (parameters == null)
+                                break;
+
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) < ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "GetSettingIntGreater": {
+                            if (parameters == null)
+                                break;
+
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) > ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "IsScene": {
+                            if (parameters == null)
+                                break;
+
+                            var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == ParseVarFunction(parameters.Get(0, "scene"), thisElement);
+                            return !not ? value : !value;
+                        }
+
+                    case "CurrentInterfaceGenerating": {
+                            var value = CurrentInterface && CurrentInterface.generating;
+                            return !not ? value : !value;
+                        }
 
-                case "True": return true;
-                case "False": return false;
-                case "GetSettingBool": {
-                        if (parameters == null)
-                            break;
-
-                        var value = DataManager.inst.GetSettingBool(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsBool : parameters["default"].AsBool);
-                        return !not ? value : !value;
-                    }
-                case "GetSettingIntEquals": {
-                        if (parameters == null)
-                            break;
-
-                        var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) == (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "GetSettingIntLesserEquals": {
-                        if (parameters == null)
-                            break;
-
-                        var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) <= (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "GetSettingIntGreaterEquals": {
-                        if (parameters == null)
-                            break;
-
-                        var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) >= (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "GetSettingIntLesser": {
-                        if (parameters == null)
-                            break;
-
-                        var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) < (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "GetSettingIntGreater": {
-                        if (parameters == null)
-                            break;
-
-                        var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) > (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "IsScene": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["scene"] == null)
-                            break;
-
-                        var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == (parameters.IsArray ? parameters[0] : parameters["scene"]);
-                        return !not ? value : !value;
-                    }
-
-                case "CurrentInterfaceGenerating": {
-                        var value = CurrentInterface && CurrentInterface.generating;
-                        return !not ? value : !value;
-                    }
-
-                #endregion
-
-                #region Player
-
-                case "PlayerCountEquals": {
-                        if (parameters == null)
-                            break;
-
-                        var value = InputDataManager.inst.players.Count == (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "PlayerCountLesserEquals": {
-                        if (parameters == null)
-                            break;
-
-                        var value = InputDataManager.inst.players.Count <= (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "PlayerCountGreaterEquals": {
-                        if (parameters == null)
-                            break;
-
-                        var value = InputDataManager.inst.players.Count >= (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "PlayerCountLesser": {
-                        if (parameters == null)
-                            break;
-
-                        var value = InputDataManager.inst.players.Count < (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "PlayerCountGreater": {
-                        if (parameters == null)
-                            break;
-
-                        var value = InputDataManager.inst.players.Count > (parameters.IsArray ? parameters[0].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-
-                #endregion
-
-                #region Story Chapter
-
-                case "StoryChapterEquals": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) == (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryChapterLesserEquals": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) <= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryChapterGreaterEquals": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) >= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryChapterLesser": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) < (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryChapterGreater": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) > (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "DisplayNameEquals": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["user"] == null)
-                            break;
-
-                        var value = CoreConfig.Instance.DisplayName.Value == (parameters.IsArray ? parameters[0].Value : parameters["user"].Value);
-                        return !not ? value : !value;
-                    }
-                case "StoryInstalled": {
-                        var value = StoryManager.inst && RTFile.DirectoryExists(StoryManager.StoryAssetsPath);
-                        return !not ? value : !value;
-                    }
-                case "StoryLoadIntEquals": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) == Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
-                        return !not ? value : !value;
-                    }
-                case "StoryLoadIntLesserEquals": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) <= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
-                        return !not ? value : !value;
-                    }
-                case "StoryLoadIntGreaterEquals": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) >= Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
-                        return !not ? value : !value;
-                    }
-                case "StoryLoadIntLesser": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) < Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
-                        return !not ? value : !value;
-                    }
-                case "StoryLoadIntGreater": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadInt(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], 0)) > Parser.TryParse(parameters.IsArray ? parameters[2] : parameters["value"], 0);
-                        return !not ? value : !value;
-                    }
-                case "StoryLoadBool": {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["load"] == null)
-                            break;
-
-                        var value = StoryManager.inst.CurrentSave.LoadBool(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], false));
-                        return !not ? value : !value;
-                    }
-
-                #endregion
-
-                #region Layout
-
-                case "LayoutChildCountEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.childCount == (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LayoutChildCountLesserEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.childCount <= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LayoutChildCountGreaterEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.childCount >= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LayoutChildCountLesser":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.childCount < (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LayoutChildCountGreater":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.childCount > (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
-                        return !not ? value : !value;
-                    }
-
-                case "LayoutScrollXEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.x == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollXLesserEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.x <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollXGreaterEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.x >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollXLesser":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.x < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollXGreater":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.x > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-
-                case "LayoutScrollYEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.y == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollYLesserEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.y <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollYGreaterEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.y >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollYLesser":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.y < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-                case "LayoutScrollYGreater":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
-                            break;
-
-                        var isArray = parameters.IsArray;
-
-                        var value = menuLayout.content.anchoredPosition.y > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
-                        return !not ? value : !value;
-                    }
-
-                #endregion
-
-                #region LevelRanks
-
-                case "ChapterFullyRanked":
-                    {
-                        var isArray = parameters.IsArray;
-                        var chapter = Parser.TryParse(isArray ? parameters[0] : parameters["chapter"], 0);
-                        var minRank = (isArray ? parameters.Count < 2 : parameters["min_rank"] == null) ? StoryManager.CHAPTER_RANK_REQUIREMENT :
-                                    Parser.TryParse(isArray ? parameters[1] : parameters["min_rank"], 0);
-                        var maxRank = (isArray ? parameters.Count < 3 : parameters["max_rank"] == null) ? 1 :
-                                    Parser.TryParse(isArray ? parameters[2] : parameters["max_rank"], 0);
-                        var bonus = (isArray ? parameters.Count < 4 : parameters["bonus"] == null) ? false :
-                                    Parser.TryParse(isArray ? parameters[3] : parameters["bonus"], false);
-
-                        var levelIDs = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
-
-                        var value =
-                            chapter < levelIDs.Count &&
-                            levelIDs[chapter].levels.All(x => x.bonus ||
-                                            StoryManager.inst.CurrentSave.Saves.TryFind(y => y.ID == x.id, out SaveData playerData) &&
-                                            LevelManager.GetLevelRank(playerData) >= maxRank && LevelManager.GetLevelRank(playerData) <= minRank);
-
-                        return !not ? value : !value;
-                    }
-                case "LevelRankEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
-                            break;
-
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LevelRankLesserEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
-                            break;
-
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LevelRankGreaterEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
-                            break;
-
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LevelRankLesser":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
-                            break;
-
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "LevelRankGreater":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
-                            break;
-
-                        var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryLevelRankEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
-                            break;
-
-                        var isArray = parameters.IsArray;
-                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
-
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryLevelRankLesserEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
-                            break;
-
-                        var isArray = parameters.IsArray;
-                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
-
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryLevelRankGreaterEquals":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
-                            break;
-
-                        var isArray = parameters.IsArray;
-                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
-
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryLevelRankLesser":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
-                            break;
-
-                        var isArray = parameters.IsArray;
-                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
-
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
-                case "StoryLevelRankGreater":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
-                            break;
-
-                        var isArray = parameters.IsArray;
-                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
-
-                        var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
-                        return !not ? value : !value;
-                    }
                     #endregion
+
+                    #region Player
+
+                    case "PlayerCountEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = InputDataManager.inst.players.Count == ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "PlayerCountLesserEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = InputDataManager.inst.players.Count <= ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "PlayerCountGreaterEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = InputDataManager.inst.players.Count >= ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "PlayerCountLesser": {
+                            if (parameters == null)
+                                break;
+
+                            var value = InputDataManager.inst.players.Count < ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "PlayerCountGreater": {
+                            if (parameters == null)
+                                break;
+
+                            var value = InputDataManager.inst.players.Count > ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+
+                    #endregion
+
+                    #region Story Chapter
+
+                    case "StoryChapterEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) == ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryChapterLesserEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) <= ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryChapterGreaterEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) >= ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryChapterLesser": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) < ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryChapterGreater": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) > ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "DisplayNameEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = CoreConfig.Instance.DisplayName.Value == ParseVarFunction(parameters.Get(0, "user"), thisElement).Value;
+                            return !not ? value : !value;
+                        }
+                    case "StoryInstalled": {
+                            var value = StoryManager.inst && RTFile.DirectoryExists(StoryManager.StoryAssetsPath);
+                            return !not ? value : !value;
+                        }
+                    case "StoryLoadIntEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) == ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLoadIntLesserEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) <= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLoadIntGreaterEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) >= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLoadIntLesser": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) < ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLoadIntGreater": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) > ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLoadBool": {
+                            if (parameters == null)
+                                break;
+
+                            var value = StoryManager.inst.CurrentSave.LoadBool(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsBool);
+                            return !not ? value : !value;
+                        }
+
+                    #endregion
+
+                    #region Layout
+
+                    case "LayoutChildCountEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.childCount == (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutChildCountLesserEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.childCount <= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutChildCountGreaterEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.childCount >= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutChildCountLesser": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.childCount < (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutChildCountGreater": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.childCount > (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
+                            return !not ? value : !value;
+                        }
+
+                    case "LayoutScrollXEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.x == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollXLesserEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.x <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollXGreaterEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.x >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollXLesser": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.x < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollXGreater": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.x > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+
+                    case "LayoutScrollYEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.y == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollYLesserEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.y <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollYGreaterEquals": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.y >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollYLesser": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.y < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+                    case "LayoutScrollYGreater": {
+                            if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !CurrentInterface.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                                break;
+
+                            var isArray = parameters.IsArray;
+
+                            var value = menuLayout.content.anchoredPosition.y > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
+                            return !not ? value : !value;
+                        }
+
+                    #endregion
+
+                    #region LevelRanks
+
+                    case "ChapterFullyRanked": {
+                            if (parameters == null)
+                                break;
+
+                            var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            var minRank = ParseVarFunction(parameters.GetOrDefault(1, "min_rank", StoryManager.CHAPTER_RANK_REQUIREMENT)).AsInt;
+                            var maxRank = ParseVarFunction(parameters.GetOrDefault(2, "max_rank", 1)).AsInt;
+                            var bonus = ParseVarFunction(parameters.Get(3, "bonus"), thisElement).AsBool;
+
+                            var levelIDs = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
+
+                            var value =
+                                chapter < levelIDs.Count &&
+                                levelIDs[chapter].levels.All(x => x.bonus ||
+                                                StoryManager.inst.CurrentSave.Saves.TryFind(y => y.ID == x.id, out SaveData playerData) &&
+                                                LevelManager.GetLevelRank(playerData) >= maxRank && LevelManager.GetLevelRank(playerData) <= minRank);
+
+                            return !not ? value : !value;
+                        }
+                    case "LevelRankEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "LevelRankLesserEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "LevelRankGreaterEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "LevelRankLesser": {
+                            if (parameters == null)
+                                break;
+
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "LevelRankGreater": {
+                            if (parameters == null)
+                                break;
+
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLevelRankEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLevelRankLesserEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLevelRankGreaterEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLevelRankLesser": {
+                            if (parameters == null)
+                                break;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "StoryLevelRankGreater": {
+                            if (parameters == null)
+                                break;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            return !not ? value : !value;
+                        }
+
+                     #endregion
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error with parsing {jn}!\nException: {ex}");
             }
 
             return false;
@@ -1175,11 +1152,12 @@ namespace BetterLegacy.Menus
         /// Parses a singular "func" JSON and performs an action based on the name and parameters.
         /// </summary>
         /// <param name="jn">The func JSON. Must have a name and a params array. If it has a "if_func", then it will parse and check if it's true.</param>
-        public void ParseFunctionSingle(JSONNode jn, bool allowIfFunc = true, MenuImage thisElement = null)
+        public void ParseFunctionSingle(JSONNode jn, MenuImage thisElement = null)
         {
-            if (jn["if_func"] != null && allowIfFunc)
+            var jnIfFunc = ParseVarFunction(jn["if_func"], thisElement);
+            if (jnIfFunc != null)
             {
-                if (!ParseIfFunction(jn["if_func"], thisElement))
+                if (!ParseIfFunction(jnIfFunc, thisElement))
                     return;
             }
 
@@ -1643,6 +1621,108 @@ namespace BetterLegacy.Menus
 
                         if (!MainDirectory.Contains(RTFile.ApplicationDirectory))
                             MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, MainDirectory);
+
+                        break;
+                    }
+
+                #endregion
+
+                #region Confirm
+
+                // Opens the Confirmation interface, which allows the player to choose whether to do something or not.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = message
+                // 1 = confirm function
+                // 2 = cancel function
+                // Example:
+                // [
+                //   "Are you sure you want to CONFIRM?",
+                //   {
+                //     "name": "Log",
+                //     "params": [ "YES!" ]
+                //   },
+                //   {
+                //     "name": "Log",
+                //     "params": [ "No..." ]
+                //   }
+                // ]
+                //
+                // - JSON Object Structure -
+                // "msg"
+                // "confirm_func"
+                // "cancel_func"
+                // Example:
+                // {
+                //   "msg": "Are you sure you want to CONFIRM?",
+                //   "confirm_func": {
+                //     "name": "Log",
+                //     "params": [ "Yes..." ]
+                //   },
+                //   "cancel_func": {
+                //     "name": "Log",
+                //     "params": [ "NO!" ]
+                //   }
+                // }
+                case "Confirm": {
+                        if (parameters == null)
+                            break;
+
+                        var currentMessage = ParseVarFunction(parameters.Get(0, "msg"), thisElement);
+                        if (currentMessage == null)
+                            break;
+
+                        var confirmFunc = ParseVarFunction(parameters.Get(1, "confirm_func"), thisElement);
+                        if (confirmFunc == null)
+                            break;
+
+                        var cancelFunc = ParseVarFunction(parameters.Get(2, "cancel_func"), thisElement);
+                        if (cancelFunc == null)
+                            break;
+
+                        ConfirmMenu.Init(currentMessage, () => ParseFunction(confirmFunc, thisElement), () => ParseFunction(cancelFunc, thisElement));
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetTheme
+
+                // Sets the current interface theme.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = theme JSON.
+                // 1 = game theme override.
+                // Example:
+                // [
+                //   { ... }, < Beatmap Theme JSON.
+                //   true < use the current game theme
+                // ]
+                //
+                // - JSON Object Structure -
+                // "theme"
+                // Example:
+                // {
+                //   "theme": { ... } < Beatmap Theme JSON.
+                //   "game_theme": false < "theme" overrides the interface theme in-game
+                // }
+                case "SetTheme": {
+                        if (parameters == null)
+                            break;
+
+                        if (CurrentInterface is not CustomMenu customMenu)
+                            break;
+
+                        customMenu.useGameTheme = parameters.Get(1, "game_theme");
+
+                        var theme = ParseVarFunction(parameters.Get(0, "theme"), thisElement);
+                        if (theme == null)
+                            break;
+
+                        customMenu.loadedTheme = BeatmapTheme.Parse(theme);
 
                         break;
                     }
@@ -2557,6 +2637,55 @@ namespace BetterLegacy.Menus
 
                         if (CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
                             menuImage.selectable = selectable;
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetInputFieldText
+
+                // Sets an input field elements' text.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = id
+                // 1 = text
+                // 2 = trigger (optional)
+                // Example:
+                // [
+                //   "525778246", < finds an element with this ID.
+                //   "Text!" < sets the text
+                //   "True" < triggers the input field value changed function
+                // ]
+                //
+                // - JSON Object Structure -
+                // "id"
+                // "text"
+                // "trigger" (optional)
+                // Example:
+                // {
+                //   "id": "525778246",
+                //   "text": "What" < sets the text
+                //   "trigger": "False" < only sets the display text, does not trigger the input field value changed function
+                // }
+                case "SetInputFieldText": {
+                        if (parameters == null || !CurrentInterface)
+                            break;
+
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        if (id == null)
+                            break;
+
+                        var text = ParseVarFunction(parameters.Get(1, "text"), thisElement);
+
+                        if (CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage is MenuInputField menuInputField && menuInputField.inputField)
+                        {
+                            if (ParseVarFunction(parameters.GetOrDefault(2, "trigger", true), thisElement).AsBool)
+                                menuInputField.inputField.text = text;
+                            else
+                                menuInputField.inputField.SetTextWithoutNotify(text);
+                        }
 
                         break;
                     }
@@ -3761,16 +3890,16 @@ namespace BetterLegacy.Menus
             if (jn == null || jn.IsArray)
                 return jn;
 
+            // item is lang (need to make sure it actually IS a lang by checking for language names)
+            if (Lang.TryParse(jn, out Lang lang))
+                return ParseText(lang);
+
             // item is a singular string
             if (jn.IsString)
                 return ParseText(jn);
 
             var parameters = jn["params"];
             string name = jn["name"];
-
-            // item is lang (need to make sure it actually IS a lang by checking for language names)
-            if (Lang.TryParse(jn, out Lang lang))
-                return ParseText(lang);
 
             switch (name)
             {
@@ -3849,7 +3978,7 @@ namespace BetterLegacy.Menus
                 //     "if": "False", < because this is false and "else" is true, the return value of this item is returned.
                 //     "else": True,
                 //     "return": "I no longer have a place."
-                //   },
+                //   }
                 // ]
                 // 
                 // - JSON Object Structure -
@@ -3873,11 +4002,16 @@ namespace BetterLegacy.Menus
                             for (int i = 0; i < parameters.Count; i++)
                             {
                                 var check = parameters[i];
+                                var ifCheck = check["if"];
+
+                                if (ifCheck == null && !result)
+                                    return check["return"];
+
                                 var elseCheck = check["else"].AsBool;
                                 if (result && !elseCheck)
                                     continue;
 
-                                result = ParseIfFunction(check["if"], thisElement);
+                                result = ParseIfFunction(ifCheck, thisElement);
                                 if (result)
                                     variable = check["return"];
                             }
@@ -3892,7 +4026,58 @@ namespace BetterLegacy.Menus
                     }
 
                 #endregion
-                    
+
+                #region Bool
+
+                // Parses a true or false variable from an if argument.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // The item itself is an array, so these values represent items' values in the array.
+                // "if" = check function.
+                // "else" = if this item should be returned instead if the previous result is false. This value is optional.
+                // Example:
+                // [
+                //   {
+                //     "if": "True"
+                //   },
+                //   {
+                //     "if": "False", < because this is false and "else" is true, the return value of this item is returned.
+                //     "else": True
+                //   }
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "if"
+                // Example:
+                // {
+                //   "if": "True" < "True" is returned because the boolean function is true
+                // }
+                case "Bool": {
+                        if (parameters == null)
+                            break;
+
+                        if (parameters.IsArray)
+                        {
+                            var result = false;
+                            for (int i = 0; i < parameters.Count; i++)
+                            {
+                                var check = parameters[i];
+                                var elseCheck = check["else"].AsBool;
+                                if (result && !elseCheck)
+                                    continue;
+
+                                result = ParseIfFunction(check["if"], thisElement);
+                            }
+
+                            return result.ToString();
+                        }
+
+                        return (parameters["if"] != null && parameters["return"] != null && ParseIfFunction(parameters["if"], thisElement)).ToString();
+                    }
+
+                #endregion
+
                 #region StoryLoadBool
 
                 // Parses a variable from the current story save.

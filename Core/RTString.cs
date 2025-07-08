@@ -730,6 +730,12 @@ namespace BetterLegacy.Core
                 input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
             });
 
+            RegexMatches(input, new Regex("{{ParseVariable=\"(.*?)\"}}"), match =>
+            {
+                var jn = SimpleJSON.JSON.Parse(match.Groups[1].ToString());
+                input = input.Replace(match.Groups[0].ToString(), InterfaceManager.inst.ParseVarFunction(jn));
+            });
+
             input = RTFile.ParsePaths(input);
 
             if (InterfaceManager.inst.CurrentInterface || CoreHelper.InStory)

@@ -40,15 +40,17 @@ namespace BetterLegacy.Menus.UI.Elements
                 id = jnElement["id"];
             if (string.IsNullOrEmpty(id))
                 id = LSText.randomNumString(16);
-            if (!string.IsNullOrEmpty(jnElement["name"]))
-                name = jnElement["name"];
+            var jnName = InterfaceManager.inst.ParseVarFunction(jnElement["name"], this);
+            if (jnName != null && jnName.IsString)
+                name = jnName;
 
             #endregion
 
             #region Spawning
 
-            if (jnElement["regen"] != null)
-                regenerate = jnElement["regen"].AsBool;
+            var jnRegen = InterfaceManager.inst.ParseVarFunction(jnElement["regen"], this);
+            if (jnRegen != null)
+                regenerate = jnRegen.AsBool;
             fromLoop = j > 0; // if element has been spawned from the loop or if its the first / only of its kind.
             this.loop = loop;
 
@@ -56,10 +58,12 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region Anim
 
-            if (jnElement["wait"] != null)
-                wait = InterfaceManager.inst.ParseVarFunction(jnElement["wait"], this).AsBool;
-            if (jnElement["anim_length"] != null)
-                length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"], this).AsFloat;
+            var jnWait = InterfaceManager.inst.ParseVarFunction(jnElement["wait"], this);
+            if (jnWait != null)
+                wait = jnWait.AsBool;
+            var jnAnimLength = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"], this);
+            if (jnAnimLength != null)
+                length = jnAnimLength.AsFloat;
             else if (!parsed)
                 length = 0f;
 
@@ -67,16 +71,21 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region Func
 
-            if (jnElement["play_blip_sound"] != null)
-                playBlipSound = InterfaceManager.inst.ParseVarFunction(jnElement["play_blip_sound"], this).AsBool;
-            if (jnElement["func"] != null)
-                funcJSON = InterfaceManager.inst.ParseVarFunction(jnElement["func"], this); // function to run when the element is clicked.
-            if (jnElement["spawn_func"] != null)
-                spawnFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_func"], this); // function to run when the element spawns.
-            if (jnElement["on_wait_end_func"] != null)
-                onWaitEndFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_wait_end_func"], this);
-            if (jnElement["tick_func"] != null)
-                tickFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["tick_func"], this);
+            var jnPlayBlipSound = InterfaceManager.inst.ParseVarFunction(jnElement["play_blip_sound"], this);
+            if (jnPlayBlipSound != null)
+                playBlipSound = jnPlayBlipSound.AsBool;
+            var jnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["func"], this);
+            if (jnFunc != null)
+                funcJSON = jnFunc; // function to run when the element is clicked.
+            var jnSpawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_func"], this);
+            if (jnSpawnFunc != null)
+                spawnFuncJSON = jnSpawnFunc; // function to run when the element spawns.
+            var jnOnWaitEndFunc = InterfaceManager.inst.ParseVarFunction(jnElement["on_wait_end_func"], this);
+            if (jnOnWaitEndFunc != null)
+                onWaitEndFuncJSON = jnOnWaitEndFunc;
+            var jnTickFunc = InterfaceManager.inst.ParseVarFunction(jnElement["tick_func"], this);
+            if (jnTickFunc != null)
+                tickFuncJSON = jnTickFunc;
 
             #endregion
         }

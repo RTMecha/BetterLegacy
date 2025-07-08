@@ -250,199 +250,67 @@ namespace BetterLegacy.Menus.UI.Elements
 
         public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets)
         {
-            #region Base
-
-            if (!string.IsNullOrEmpty(jnElement["id"]))
-                id = jnElement["id"];
-            if (string.IsNullOrEmpty(id))
-                id = LSText.randomNumString(16);
-            if (!string.IsNullOrEmpty(jnElement["name"]))
-                name = InterfaceManager.inst.ParseVarFunction(jnElement["name"], this);
-            if (!string.IsNullOrEmpty(jnElement["parent_layout"]))
-                parentLayout = InterfaceManager.inst.ParseVarFunction(jnElement["parent_layout"], this);
-            if (!string.IsNullOrEmpty(jnElement["parent"]))
-                parent = InterfaceManager.inst.ParseVarFunction(jnElement["parent"], this);
-            if (jnElement["sibling_index"] != null)
-                siblingIndex = InterfaceManager.inst.ParseVarFunction(jnElement["sibling_index"], this).AsInt;
-
-            #endregion
-
-            #region Spawning
-
-            if (jnElement["regen"] != null)
-                regenerate = InterfaceManager.inst.ParseVarFunction(jnElement["regen"], this).AsBool;
-            fromLoop = j > 0; // if element has been spawned from the loop or if its the first / only of its kind.
-            this.loop = loop;
-
-            #endregion
-
-            #region UI
-
-            if (jnElement["speeds"] != null)
-            {
-                var jnSpeeds = InterfaceManager.inst.ParseVarFunction(jnElement["speeds"], this);
-                textSpeeds = new List<Speed>();
-                for (int i = 0; i < jnSpeeds.Count; i++)
-                {
-                    var jnSpeed = InterfaceManager.inst.ParseVarFunction(jnSpeeds[i], this);
-
-                    textSpeeds.Add(new Speed(InterfaceManager.inst.ParseVarFunction(jnSpeed["position"], this).AsInt, InterfaceManager.inst.ParseVarFunction(jnSpeed["speed"], this).AsFloat));
-                }
-            }
-
-            if (jnElement["text"] != null)
-                text = InterfaceManager.inst.ParseVarFunction(jnElement["text"], this);
-            if (!string.IsNullOrEmpty(jnElement["icon"]))
-            {
-                var jnIcon = InterfaceManager.inst.ParseVarFunction(jnElement["icon"], this);
-                icon = jnIcon != null ? spriteAssets != null && spriteAssets.TryGetValue(jnIcon, out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnIcon) : null;
-            }
-            if (!string.IsNullOrEmpty(jnElement["icon_path"]))
-                iconPath = InterfaceManager.inst.ParseVarFunction(jnElement["icon_path"], this);
-            if (jnElement["rect"] != null)
-                rect = RectValues.TryParse(InterfaceManager.inst.ParseVarFunction(jnElement["rect"], this), RectValues.Default);
-            if (jnElement["text_rect"] != null)
-                textRect = RectValues.TryParse(InterfaceManager.inst.ParseVarFunction(jnElement["text_rect"], this), RectValues.FullAnchored);
-            if (jnElement["icon_rect"] != null)
-                iconRect = RectValues.TryParse(InterfaceManager.inst.ParseVarFunction(jnElement["icon_rect"]), RectValues.Default);
-            if (jnElement["rounded"] != null)
-                rounded = InterfaceManager.inst.ParseVarFunction(jnElement["rounded"], this).AsInt; // roundness can be prevented by setting rounded to 0.
-            if (jnElement["rounded_side"] != null)
-                roundedSide = (SpriteHelper.RoundedSide)InterfaceManager.inst.ParseVarFunction(jnElement["rounded_side"], this).AsInt; // default side should be Whole.
-            if (jnElement["mask"] != null)
-                mask = InterfaceManager.inst.ParseVarFunction(jnElement["mask"], this).AsBool;
-            if (jnElement["reactive"] != null)
-                reactiveSetting = ReactiveSetting.Parse(InterfaceManager.inst.ParseVarFunction(jnElement["reactive"], this), j);
-            if (jnElement["alignment"] != null)
-                alignment = Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jnElement["alignment"], this), TextAlignmentOptions.Left);
-            if (jnElement["word_wrap"] != null)
-                enableWordWrapping = InterfaceManager.inst.ParseVarFunction(jnElement["word_wrap"]).AsBool;
-            if (jnElement["overflow_mode"] != null)
-                overflowMode = Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jnElement["overflow_mode"], this), TextOverflowModes.Masking);
-            if (jnElement["update_text"] != null)
-                updateTextOnTick = InterfaceManager.inst.ParseVarFunction(jnElement["update_text"], this).AsBool;
-            if (jnElement["run_animations_end"] != null)
-                runAnimationsOnEnd = InterfaceManager.inst.ParseVarFunction(jnElement["run_animations_end"], this).AsBool;
-
-            #endregion
+            base.Read(jnElement, j, loop, spriteAssets);
 
             #region Color
 
-            if (jnElement["hide_bg"] != null)
-                hideBG = InterfaceManager.inst.ParseVarFunction(jnElement["hide_bg"], this).AsBool;
-            if (jnElement["col"] != null)
-                color = InterfaceManager.inst.ParseVarFunction(jnElement["col"], this).AsInt;
-            if (jnElement["opacity"] != null)
-                opacity = InterfaceManager.inst.ParseVarFunction(jnElement["opacity"], this).AsFloat;
-            if (jnElement["hue"] != null)
-                hue = InterfaceManager.inst.ParseVarFunction(jnElement["hue"], this).AsFloat;
-            if (jnElement["sat"] != null)
-                sat = InterfaceManager.inst.ParseVarFunction(jnElement["sat"], this).AsFloat;
-            if (jnElement["val"] != null)
-                val = InterfaceManager.inst.ParseVarFunction(jnElement["val"], this).AsFloat;
-            if (jnElement["text_col"] != null)
-                textColor = InterfaceManager.inst.ParseVarFunction(jnElement["text_col"], this).AsInt;
-            if (jnElement["text_hue"] != null)
-                textHue = InterfaceManager.inst.ParseVarFunction(jnElement["text_hue"], this).AsFloat;
-            if (jnElement["text_sat"] != null)
-                textSat = InterfaceManager.inst.ParseVarFunction(jnElement["text_sat"], this).AsFloat;
-            if (jnElement["text_val"] != null)
-                textVal = InterfaceManager.inst.ParseVarFunction(jnElement["text_val"], this).AsFloat;
-            
-            if (jnElement["sel_col"] != null)
-                selectedColor = InterfaceManager.inst.ParseVarFunction(jnElement["sel_col"], this).AsInt;
-            if (jnElement["sel_opacity"] != null)
-                selectedOpacity = InterfaceManager.inst.ParseVarFunction(jnElement["sel_opacity"], this).AsFloat;
-            if (jnElement["sel_hue"] != null)
-                selectedHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_hue"], this).AsFloat;
-            if (jnElement["sel_sat"] != null)
-                selectedSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_sat"], this).AsFloat;
-            if (jnElement["sel_val"] != null)
-                selectedVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_val"], this).AsFloat;
-            if (jnElement["sel_text_col"] != null)
-                selectedTextColor = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_col"], this).AsInt;
-            if (jnElement["sel_text_hue"] != null)
-                selectedTextHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_hue"], this).AsFloat;
-            if (jnElement["sel_text_sat"] != null)
-                selectedTextSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_sat"], this).AsFloat;
-            if (jnElement["sel_text_val"] != null)
-                selectedTextVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_val"], this).AsFloat;
+            var jnSelCol = InterfaceManager.inst.ParseVarFunction(jnElement["sel_col"], this);
+            if (jnSelCol != null)
+                selectedColor = jnSelCol.AsInt;
+            var jnSelOpacity = InterfaceManager.inst.ParseVarFunction(jnElement["sel_opacity"], this);
+            if (jnSelOpacity != null)
+                selectedOpacity = jnSelOpacity.AsFloat;
+            var selHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_hue"], this);
+            if (selHue != null)
+                selectedHue = selHue.AsFloat;
+            var selSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_sat"], this);
+            if (selSat != null)
+                selectedSat = selSat.AsFloat;
+            var selVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_val"], this);
+            if (selVal != null)
+                selectedVal = selVal.AsFloat;
+            var selTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_col"], this);
+            if (selTextCol != null)
+                selectedTextColor = selTextCol.AsInt;
+            var selTextHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_hue"], this);
+            if (selTextHue != null)
+                selectedTextHue = selTextHue.AsFloat;
+            var selTextSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_sat"], this);
+            if (selTextSat != null)
+                selectedTextSat = selTextSat.AsFloat;
+            var selTextVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_val"], this);
+            if (selTextVal != null)
+                selectedTextVal = selTextVal.AsFloat;
 
-            useOverrideColor = jnElement["override_col"] != null;
-            useOverrideTextColor = jnElement["override_text_col"] != null;
-            useOverrideSelectedColor = jnElement["override_sel_col"] != null;
-            useOverrideSelectedTextColor = jnElement["override_sel_text_col"] != null;
-            if (useOverrideColor)
-                overrideColor = LSColors.HexToColorAlpha(InterfaceManager.inst.ParseVarFunction(jnElement["override_col"], this));
-            if (useOverrideTextColor)
-                overrideTextColor = LSColors.HexToColorAlpha(InterfaceManager.inst.ParseVarFunction(jnElement["override_text_col"], this));
+            var jnOverrideSelCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_col"], this);
+            var jnOverrideSelTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_text_col"], this);
+            useOverrideSelectedColor = jnOverrideSelCol != null;
+            useOverrideSelectedTextColor = jnOverrideSelTextCol != null;
             if (useOverrideSelectedColor)
-                overrideSelectedColor = LSColors.HexToColorAlpha(InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_col"], this));
+                overrideSelectedColor = RTColors.HexToColor(jnOverrideSelCol);
             if (useOverrideSelectedTextColor)
-                overrideSelectedTextColor = LSColors.HexToColorAlpha(InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_text_col"], this));
-
-            #endregion
-
-            #region Anim
-
-            if (jnElement["wait"] != null)
-                wait = InterfaceManager.inst.ParseVarFunction(jnElement["wait"], this).AsBool;
-            if (jnElement["anim_length"] != null)
-                length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"], this).AsFloat;
-            else if (!parsed)
-                length = 0f;
-            if (jnElement["play_sound"] != null)
-                playSound = InterfaceManager.inst.ParseVarFunction(jnElement["play_sound"], this).AsBool;
-            if (jnElement["text_sound"] != null)
-                textSound = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound"], this);
-            if (jnElement["text_sound_volume"] != null)
-                textSoundVolume = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_volume"], this).AsFloat;
-            if (jnElement["text_sound_pitch"] != null)
-                textSoundPitch = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_pitch"], this).AsFloat;
-            if (jnElement["text_sound_pitch_vary"] != null)
-                textSoundPitchVary = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_pitch_vary"], this).AsFloat;
-            if (jnElement["text_sound_repeat"] != null)
-                textSoundRepeat = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_repeat"], this).AsInt;
-            if (jnElement["text_sound_ranges"] != null)
-            {
-                var jnTextSoundRanges = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_ranges"], this);
-                textSoundRanges = new List<Vector2Int>();
-                for (int i = 0; i < jnTextSoundRanges.Count; i++)
-                    textSoundRanges.Add(Parser.TryParse(jnTextSoundRanges[i], Vector2Int.zero));
-            }
+                overrideSelectedTextColor = RTColors.HexToColor(jnOverrideSelTextCol);
 
             #endregion
 
             #region Func
 
-            if (jnElement["select"] != null)
-                selectionPosition = Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jnElement["select"], this), Vector2Int.zero);
+            var jnSelect = InterfaceManager.inst.ParseVarFunction(jnElement["select"], this);
+            if (jnSelect != null)
+                selectionPosition = Parser.TryParse(jnSelect, Vector2Int.zero);
+            var jnAlignSelect = InterfaceManager.inst.ParseVarFunction(jnElement["align_select"], this);
             if (jnElement["align_select"] != null)
-                autoAlignSelectionPosition = InterfaceManager.inst.ParseVarFunction(jnElement["align_select"], this).AsBool;
+                autoAlignSelectionPosition = jnAlignSelect.AsBool;
 
-            if (jnElement["play_blip_sound"] != null)
-                playBlipSound = InterfaceManager.inst.ParseVarFunction(jnElement["play_blip_sound"], this).AsBool;
-            if (jnElement["selectable"] != null)
-                selectable = InterfaceManager.inst.ParseVarFunction(jnElement["selectable"], this).AsBool;
-            if (jnElement["func"] != null)
-                funcJSON = InterfaceManager.inst.ParseVarFunction(jnElement["func"], this); // function to run when the element is clicked.
-            if (jnElement["on_scroll_up_func"] != null)
-                onScrollUpFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_scroll_up_func"], this); // function to run when the element is scrolled on.
-            if (jnElement["on_scroll_down_func"] != null)
-                onScrollDownFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_scroll_down_func"], this); // function to run when the element is scrolled on.
-            if (jnElement["spawn_func"] != null)
-                spawnFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_func"], this); // function to run when the element spawns.
-            if (jnElement["on_wait_end_func"] != null)
-                onWaitEndFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["on_wait_end_func"], this);
-            if (jnElement["tick_func"] != null)
-                tickFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["tick_func"], this);
-
-            if (jnElement["enter_func"] != null)
-                enterFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["enter_func"], this); // function to run when the element is hovered over.
-            if (jnElement["exit_func"] != null)
-                exitFuncJSON = InterfaceManager.inst.ParseVarFunction(jnElement["exit_func"], this); // function to run when the element is hovered over.
-            if (jnElement["allow_original_hover_func"] != null)
-                allowOriginalHoverMethods = InterfaceManager.inst.ParseVarFunction(jnElement["allow_original_hover_func"], this).AsBool;
+            var jnEnterFunc = InterfaceManager.inst.ParseVarFunction(jnElement["enter_func"], this);
+            if (jnEnterFunc != null)
+                enterFuncJSON = jnEnterFunc; // function to run when the element is hovered over.
+            var jnExitFunc = InterfaceManager.inst.ParseVarFunction(jnElement["exit_func"], this);
+            if (jnExitFunc != null)
+                exitFuncJSON = jnExitFunc; // function to run when the element is hovered over.
+            var jnAllowOriginalHoverFunc = InterfaceManager.inst.ParseVarFunction(jnElement["allow_original_hover_func"], this);
+            if (jnAllowOriginalHoverFunc != null)
+                allowOriginalHoverMethods = jnAllowOriginalHoverFunc.AsBool;
             else if (!parsed)
                 allowOriginalHoverMethods = true;
 
