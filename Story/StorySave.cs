@@ -203,6 +203,16 @@ namespace BetterLegacy.Story
             Save();
         }
 
+        /// <summary>
+        /// Removes the value from the story save.
+        /// </summary>
+        /// <param name="name">Name of the value to remove.</param>
+        public void Remove(string name)
+        {
+            storySavesJSON["saves"].Remove(name);
+            Save();
+        }
+
         #endregion
 
         #region Loading
