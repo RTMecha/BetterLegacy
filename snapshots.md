@@ -1,4 +1,17 @@
-﻿# 1.7.0 [June 15, 2025]
+﻿
+# snapshot-2025.?.? - (pre-1.8.0) [???]
+
+## Features
+### Core
+- Interface now has a dynamic variable system that allows for specific variables to affect anything in the interface.
+
+## Changes
+### Core
+- Player stop boost function no longer depends on the moveable state of the player.
+
+------------------------------------------------------------------------------------------
+
+# 1.7.0 [June 15, 2025]
 
 ## Features
 ### Story
