@@ -150,7 +150,46 @@ namespace BetterLegacy.Editor.Managers
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Replace song", () =>
                             {
-                                EditorManager.inst.DisplayNotification("Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
+                                if (!EditorManager.inst.hasLoadedLevel)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Load a level before trying to replace the song!", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                var audioFormat = RTFile.GetFileFormat(dropInfo.filePath);
+                                var level = EditorLevelManager.inst.CurrentLevel;
+                                var waveforms = Enum.GetNames(typeof(WaveformType));
+                                for (int i = 0; i < waveforms.Length; i++)
+                                    RTFile.DeleteFile(RTFile.CombinePaths(RTFile.BasePath, $"waveform-{waveforms[i].ToLower()}{FileFormat.PNG.Dot()}"));
+
+                                RTFile.CopyFile(dropInfo.filePath, RTFile.CombinePaths(RTFile.BasePath, $"level{audioFormat.Dot()}"));
+                                var previousAudio = level.music;
+                                var previousTime = RTLevel.FixedTime;
+                                var previousPlayState = SoundManager.inst.Playing;
+                                level.music = null;
+                                CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
+                                {
+                                    EditorLevelManager.inst.SetCurrentAudio(level.music);
+                                    AudioManager.inst.SetMusicTime(previousTime);
+                                    SoundManager.inst.SetPlaying(previousPlayState);
+
+                                    if (EditorConfig.Instance.WaveformGenerate.Value)
+                                    {
+                                        CoreHelper.Log("Assigning waveform textures...");
+                                        StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(level.music));
+                                    }
+                                    else
+                                    {
+                                        CoreHelper.Log("Skipping waveform textures...");
+                                        EditorTimeline.inst.SetTimelineSprite(null);
+                                    }
+
+                                    EditorTimeline.inst.UpdateTimelineSizes();
+                                    GameManager.inst.UpdateTimeline();
+
+                                    TriggerHelper.AddEventTriggers(timeField.gameObject, TriggerHelper.ScrollDelta(timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                                    CoreHelper.Destroy(previousAudio);
+                                }));
                             }),
                             new ButtonFunction("Create audio object", () =>
                             {
