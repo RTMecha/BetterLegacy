@@ -350,6 +350,14 @@ namespace BetterLegacy.Core
         #region Data
 
         /// <summary>
+        /// Splits a string into an array.
+        /// </summary>
+        /// <param name="input">Input value.</param>
+        /// <param name="split">Strings to split by.</param>
+        /// <returns>Returns an array of strings split from the input based on provided strings.</returns>
+        public static string[] Split(this string input, params string[] split) => input.Split(split, StringSplitOptions.RemoveEmptyEntries);
+
+        /// <summary>
         /// Removes a specified string from the input string.
         /// </summary>
         /// <param name="remove">String to remove.</param>
@@ -1000,7 +1008,7 @@ namespace BetterLegacy.Core
         /// <param name="index">Index to get if JSON is an array.</param>
         /// <param name="key">Key to get if the JSON is an object.</param>
         /// <returns>Returns a JSON node.</returns>
-        public static JSONNode Get(this JSONNode jn, int index, string key) => jn.IsArray ? index >= 0 && index < jn.Count ? jn[index] : null : jn[key];
+        public static JSONNode Get(this JSONNode jn, int index, string key) => jn.IsArray ? index >= 0 && index < jn.Count ? jn[index] : new JSONNull() : jn[key];
 
         /// <summary>
         /// If the JSON is an array, gets the JSON node at the index, otherwise gets the JSON node with the key.
@@ -1010,6 +1018,24 @@ namespace BetterLegacy.Core
         /// <param name="defaultJN">Default JSON node to return if no items are found.</param>
         /// <returns>Returns a JSON node.</returns>
         public static JSONNode GetOrDefault(this JSONNode jn, int index, string key, JSONNode defaultJN) => jn.IsArray ? index >= 0 && index < jn.Count ? jn[index] ?? defaultJN : defaultJN : jn[key] ?? defaultJN;
+
+        public static bool TryGet(this JSONNode jn, int index, string key, out JSONNode result)
+        {
+            if (jn.IsArray && index >= 0 && index < jn.Count)
+            {
+                result = jn[index];
+                return true;
+            }
+
+            if (jn.IsObject && jn[key] != null)
+            {
+                result = jn[key];
+                return true;
+            }
+
+            result = new JSONNull();
+            return false;
+        }
 
         public static JSONNode ToJSONArray(this Vector2Int vector2)
         {
