@@ -102,12 +102,6 @@ namespace BetterLegacy.Core.Data
             }
             else if (jn.IsObject) // parses an object. example: { "english": "a", "spanish": "b" }
             {
-                if (jn["text"] != null)
-                {
-                    this[Language.English] = jn["text"];
-                    return;
-                }
-
                 foreach (var pair in jn.Linq)
                     if (Enum.TryParse(pair.Key, true, out Language language))
                         this[language] = pair.Value;
