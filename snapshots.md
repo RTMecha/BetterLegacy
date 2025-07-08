@@ -1,11 +1,16 @@
-﻿
-# snapshot-2025.?.? - (pre-1.8.0) [???]
+﻿# snapshot-2025.?.? - (pre-1.8.0) [???]
 
 ## Features
 ### Core
 - Interface now has a dynamic variable system that allows for specific variables to affect anything in the interface.
 
+### Editor
+- You can now replace the current loaded levels' song by dragging a song file onto the PA window.
+
 ## Changes
+### Story
+- The end of chapter 1 now has a confirmation interface, giving you a chance to do anything else before you're locked out of progressing the chapter.
+
 ### Core
 - Player stop boost function no longer depends on the moveable state of the player.
 
