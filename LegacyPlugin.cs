@@ -163,23 +163,8 @@ namespace BetterLegacy
             {
                 CoreHelper.LogError($"Failed to load auth. {ex}");
             } // auth
-            
-            try
-            {
-                var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
-                if (RTFile.FileExists(splashTextPath))
-                {
-                    var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
-                    var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
-                    SplashText = Lang.Parse(splashes[splashIndex].StartsWith("{") && splashes[splashIndex].EndsWith("}") ? JSON.Parse(splashes[splashIndex]) : splashes[splashIndex]);
-                }
-                else
-                    SplashText = string.Empty;
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to load splash text. {ex}");
-            } // Splash text
+
+            LoadSplashText();
 
             try
             {
@@ -204,7 +189,7 @@ namespace BetterLegacy
                 CoreHelper.LogError($"Failed to update Current Scene. {ex}");
             }
 
-            BetterLegacy.Core.Threading.TickRunner.Main = new Core.Threading.TickRunner();
+            Core.Threading.TickRunner.Main = new Core.Threading.TickRunner();
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
         }
@@ -271,11 +256,32 @@ namespace BetterLegacy
             configs.Add(new ExampleConfig());
         }
 
+        public static void LoadSplashText()
+        {
+            try
+            {
+                var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
+                if (RTFile.FileExists(splashTextPath))
+                {
+                    var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
+                    var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
+                    var spashText = splashes[splashIndex];
+                    SplashText = spashText.StartsWith("{") && spashText.EndsWith("}") ? Lang.Parse(JSON.Parse(spashText)) : spashText;
+                }
+                else
+                    SplashText = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to load splash text. {ex}");
+            } // Splash text
+        }
+
         #region Profile
 
         public static void SaveProfile()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["user_data"]["name"] = player.sprName;
             jn["user_data"]["spr-id"] = player.sprID;
@@ -285,6 +291,9 @@ namespace BetterLegacy
                 jn["internal_achievements"][i]["id"] = AchievementManager.globalAchievements[i].id;
                 jn["internal_achievements"][i]["unlocked"] = AchievementManager.globalAchievements[i].unlocked;
             }
+
+            if (player.memory != null)
+                jn["memory"] = player.memory;
 
             var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
             RTFile.CreateDirectory(path);
@@ -323,6 +332,11 @@ namespace BetterLegacy
             {
                 CoreHelper.LogError($"Exception: {ex}");
             }
+
+            if (jn["memory"] != null)
+                player.memory = jn["memory"];
+            else
+                player.memory = Parser.NewJSONObject();
         }
 
         public static List<Universe> universes = new List<Universe>
@@ -332,7 +346,7 @@ namespace BetterLegacy
 
         public static User player = new User("Player", UnityEngine.Random.Range(0, ulong.MaxValue).ToString(), new Universe(Universe.UniDes.MUS));
 
-        public class User
+        public class User : Exists
         {
             public User(string sprName, string sprID, Universe universe)
             {
@@ -344,9 +358,11 @@ namespace BetterLegacy
             public string sprName = "Null";
             public string sprID = "0";
             public Universe universe;
+
+            public JSONNode memory;
         }
 
-        public class Universe
+        public class Universe : Exists
         {
             public Universe()
             {
