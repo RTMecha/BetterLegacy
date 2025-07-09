@@ -25,7 +25,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
     /// <summary>
     /// Base menu class to be used for interfaces. Includes a custom selection system and UI system.
     /// </summary>
-    public abstract class MenuBase
+    public abstract class MenuBase : Exists
     {
         public MenuBase() { }
 
@@ -477,7 +477,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuEvent.onWaitEndFuncJSON != null)
-                        InterfaceManager.inst.ParseFunction(menuEvent.onWaitEndFuncJSON, menuEvent);
+                        InterfaceManager.inst.ParseFunction(menuEvent.onWaitEndFuncJSON, menuEvent, menuEvent.cachedVariables);
                     menuEvent.onWaitEndFunc?.Invoke();
 
                     continue;
@@ -509,7 +509,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuButton.onWaitEndFuncJSON != null)
-                        InterfaceManager.inst.ParseFunction(menuButton.onWaitEndFuncJSON, menuButton);
+                        InterfaceManager.inst.ParseFunction(menuButton.onWaitEndFuncJSON, menuButton, menuButton.cachedVariables);
                     menuButton.onWaitEndFunc?.Invoke();
 
                     if (menuButton.clickable)
@@ -527,7 +527,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 SoundManager.inst.PlaySound(DefaultSounds.blip);
 
                             if (menuButton.funcJSON != null)
-                                InterfaceManager.inst.ParseFunction(menuButton.funcJSON, menuButton);
+                                InterfaceManager.inst.ParseFunction(menuButton.funcJSON, menuButton, menuButton.cachedVariables);
                             menuButton.func?.Invoke();
                         };
 
@@ -540,13 +540,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             if (pointerData.scrollDelta.y > 0f)
                             {
                                 if (menuButton.onScrollUpFuncJSON != null)
-                                    InterfaceManager.inst.ParseFunction(menuButton.onScrollUpFuncJSON, menuButton);
+                                    InterfaceManager.inst.ParseFunction(menuButton.onScrollUpFuncJSON, menuButton, menuButton.cachedVariables);
                                 menuButton.onScrollUpFunc?.Invoke();
                             }
                             if (pointerData.scrollDelta.y < 0f)
                             {
                                 if (menuButton.onScrollDownFuncJSON != null)
-                                    InterfaceManager.inst.ParseFunction(menuButton.onScrollDownFuncJSON, menuButton);
+                                    InterfaceManager.inst.ParseFunction(menuButton.onScrollDownFuncJSON, menuButton, menuButton.cachedVariables);
                                 menuButton.onScrollDownFunc?.Invoke();
                             }
                         }));
@@ -566,7 +566,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuInputField.onWaitEndFuncJSON != null)
-                        InterfaceManager.inst.ParseFunction(menuInputField.onWaitEndFuncJSON, menuInputField);
+                        InterfaceManager.inst.ParseFunction(menuInputField.onWaitEndFuncJSON, menuInputField, menuInputField.cachedVariables);
                     menuInputField.onWaitEndFunc?.Invoke();
 
                     continue;
@@ -582,7 +582,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (menuText.onWaitEndFuncJSON != null)
-                        InterfaceManager.inst.ParseFunction(menuText.onWaitEndFuncJSON, menuText);
+                        InterfaceManager.inst.ParseFunction(menuText.onWaitEndFuncJSON, menuText, menuText.cachedVariables);
                     menuText.onWaitEndFunc?.Invoke();
                 }
                 else
@@ -595,7 +595,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             yield return null;
 
                     if (element.onWaitEndFuncJSON != null)
-                        InterfaceManager.inst.ParseFunction(element.onWaitEndFuncJSON, element);
+                        InterfaceManager.inst.ParseFunction(element.onWaitEndFuncJSON, element, element.cachedVariables);
                     element.onWaitEndFunc?.Invoke();
                 }
 
@@ -613,7 +613,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         if (element.playBlipSound)
                             SoundManager.inst.PlaySound(DefaultSounds.blip);
                         if (element.funcJSON != null)
-                            InterfaceManager.inst.ParseFunction(element.funcJSON, element);
+                            InterfaceManager.inst.ParseFunction(element.funcJSON, element, element.cachedVariables);
                         element.func?.Invoke();
                     };
 
@@ -626,13 +626,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         if (pointerData.scrollDelta.y > 0f)
                         {
                             if (element.onScrollUpFuncJSON != null)
-                                InterfaceManager.inst.ParseFunction(element.onScrollUpFuncJSON, element);
+                                InterfaceManager.inst.ParseFunction(element.onScrollUpFuncJSON, element, element.cachedVariables);
                             element.onScrollUpFunc?.Invoke();
                         }
                         if (pointerData.scrollDelta.y < 0f)
                         {
                             if (element.onScrollDownFuncJSON != null)
-                                InterfaceManager.inst.ParseFunction(element.onScrollDownFuncJSON, element);
+                                InterfaceManager.inst.ParseFunction(element.onScrollDownFuncJSON, element, element.cachedVariables);
                             element.onScrollDownFunc?.Invoke();
                         }
                     }));
@@ -854,7 +854,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuImage.gameObject.AddComponent<Mask>();
 
             if (menuImage.spawnFuncJSON != null)
-                InterfaceManager.inst.ParseFunction(menuImage.spawnFuncJSON, menuImage);
+                InterfaceManager.inst.ParseFunction(menuImage.spawnFuncJSON, menuImage, menuImage.cachedVariables);
             menuImage.spawnFunc?.Invoke();
 
             menuImage.Spawn();
@@ -925,7 +925,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuText.gameObject.AddComponent<Mask>();
 
             if (menuText.spawnFuncJSON != null)
-                InterfaceManager.inst.ParseFunction(menuText.spawnFuncJSON, menuText);
+                InterfaceManager.inst.ParseFunction(menuText.spawnFuncJSON, menuText, menuText.cachedVariables);
             menuText.spawnFunc?.Invoke();
 
             menuText.Spawn();
@@ -1003,7 +1003,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuButton.gameObject.AddComponent<Mask>();
 
             if (menuButton.spawnFuncJSON != null)
-                InterfaceManager.inst.ParseFunction(menuButton.spawnFuncJSON, menuButton);
+                InterfaceManager.inst.ParseFunction(menuButton.spawnFuncJSON, menuButton, menuButton.cachedVariables);
             menuButton.spawnFunc?.Invoke();
 
             menuButton.Spawn();
@@ -1059,7 +1059,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuInputField.gameObject.AddComponent<Mask>();
 
             if (menuInputField.spawnFuncJSON != null)
-                InterfaceManager.inst.ParseFunction(menuInputField.spawnFuncJSON, menuInputField);
+                InterfaceManager.inst.ParseFunction(menuInputField.spawnFuncJSON, menuInputField, menuInputField.cachedVariables);
             menuInputField.spawnFunc?.Invoke();
 
             menuInputField.Spawn();
@@ -1319,7 +1319,5 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public BeatmapTheme Theme { get; set; }
 
         #endregion
-
-        public static implicit operator bool(MenuBase menu) => menu != null;
     }
 }

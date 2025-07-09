@@ -246,6 +246,8 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public bool selectable = true;
 
+        public Dictionary<string, JSONNode> cachedVariables;
+
         #endregion
 
         #region Private Fields
@@ -405,6 +407,8 @@ namespace BetterLegacy.Menus.UI.Elements
             var jnSiblingIndex = InterfaceManager.inst.ParseVarFunction(jnElement["sibling_index"], this, customVariables);
             if (jnSiblingIndex != null)
                 siblingIndex = jnSiblingIndex.AsInt;
+
+            cachedVariables = customVariables;
 
             #endregion
 

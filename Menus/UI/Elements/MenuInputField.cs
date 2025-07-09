@@ -164,6 +164,8 @@ namespace BetterLegacy.Menus.UI.Elements
             if (jnElement["sibling_index"] != null)
                 siblingIndex = InterfaceManager.inst.ParseVarFunction(jnElement["sibling_index"], this, customVariables).AsInt;
 
+            cachedVariables = customVariables;
+
             #endregion
 
             #region Spawning

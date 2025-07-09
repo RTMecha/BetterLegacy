@@ -20,7 +20,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             func?.Invoke();
             if (funcJSON != null)
-                InterfaceManager.inst.ParseFunction(funcJSON, this);
+                InterfaceManager.inst.ParseFunction(funcJSON, this, cachedVariables);
             Spawn();
         }
 
@@ -43,6 +43,8 @@ namespace BetterLegacy.Menus.UI.Elements
             var jnName = InterfaceManager.inst.ParseVarFunction(jnElement["name"], this, customVariables);
             if (jnName != null && jnName.IsString)
                 name = jnName;
+
+            cachedVariables = customVariables;
 
             #endregion
 

@@ -53,22 +53,65 @@ namespace BetterLegacy.Menus.UI.Interfaces
             var customMenu = new CustomMenu();
 
             customMenu.id = jn["id"];
-            customMenu.name = InterfaceManager.inst.ParseVarFunction(jn["name"]);
-            customMenu.musicName = InterfaceManager.inst.ParseVarFunction(jn["music_name"]) ?? InterfaceManager.RANDOM_MUSIC_NAME;
-            var allowCustomMusic = InterfaceManager.inst.ParseVarFunction(jn["allow_custom_music"]);
+            Dictionary<string, JSONNode> customVariables = null;
+            var variables = InterfaceManager.inst.ParseVarFunction(jn["variables"]);
+            if (jn["variables"] != null)
+            {
+                if (variables.IsObject)
+                {
+                    foreach (var keyValuePair in variables.Linq)
+                    {
+                        var value = InterfaceManager.inst.ParseVarFunction(keyValuePair.Value, customVariables: customVariables);
+                        if (value == null)
+                            continue;
+
+                        if (customVariables == null)
+                            customVariables = new Dictionary<string, JSONNode>();
+
+                        customVariables[keyValuePair.Key] = value;
+                    }
+                }
+
+                if (variables.IsArray)
+                {
+                    for (int i = 0; i < variables.Count; i++)
+                    {
+                        var variable = variables[i];
+                        var name = variable["name"];
+                        if (name == null || !name.IsString)
+                            continue;
+
+                        if (customVariables == null)
+                            customVariables = new Dictionary<string, JSONNode>();
+
+                        var value = InterfaceManager.inst.ParseVarFunction(variable["value"], customVariables: customVariables);
+                        if (value == null)
+                            continue;
+
+                        if (customVariables == null)
+                            customVariables = new Dictionary<string, JSONNode>();
+
+                        customVariables[name] = value;
+                    }
+                }
+            }
+
+            customMenu.name = InterfaceManager.inst.ParseVarFunction(jn["name"], customVariables: customVariables);
+            customMenu.musicName = InterfaceManager.inst.ParseVarFunction(jn["music_name"], customVariables: customVariables) ?? InterfaceManager.RANDOM_MUSIC_NAME;
+            var allowCustomMusic = InterfaceManager.inst.ParseVarFunction(jn["allow_custom_music"], customVariables: customVariables);
             if (allowCustomMusic != null)
                 customMenu.allowCustomMusic = allowCustomMusic.AsBool;
 
-            var type = InterfaceManager.inst.ParseVarFunction(jn["type"]);
+            var type = InterfaceManager.inst.ParseVarFunction(jn["type"], customVariables: customVariables);
             if (type != null)
             {
                 switch (type.Value.ToLower())
                 {
                     case "chat": {
-                            var returnInterface = InterfaceManager.inst.ParseVarFunction(jn["return_interface"]);
-                            var returnInterfacePath = InterfaceManager.inst.ParseVarFunction(jn["return_interface_path"]);
-                            var seen = InterfaceManager.inst.ParseVarFunction(jn["seen"]);
-                            var dialogue = InterfaceManager.inst.ParseVarFunction(jn["dialogue"]);
+                            var returnInterface = InterfaceManager.inst.ParseVarFunction(jn["return_interface"], customVariables: customVariables);
+                            var returnInterfacePath = InterfaceManager.inst.ParseVarFunction(jn["return_interface_path"], customVariables: customVariables);
+                            var seen = InterfaceManager.inst.ParseVarFunction(jn["seen"], customVariables: customVariables);
+                            var dialogue = InterfaceManager.inst.ParseVarFunction(jn["dialogue"], customVariables: customVariables);
                             var dialogueCount = dialogue.Count;
 
                             System.Func<JSONArray> onScrollUpFuncJSON = () => new JSONArray
@@ -275,10 +318,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     continue;
 
                                 var id = LSText.randomNumString(16);
-                                string character = InterfaceManager.inst.ParseVarFunction(jnDialogue["character"]);
-                                string text = InterfaceManager.inst.ParseVarFunction(jnDialogue["text"]);
-                                string color = InterfaceManager.inst.ParseVarFunction(jnDialogue["color"]);
-                                string sound = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound"]);
+                                string character = InterfaceManager.inst.ParseVarFunction(jnDialogue["character"], customVariables: customVariables);
+                                string text = InterfaceManager.inst.ParseVarFunction(jnDialogue["text"], customVariables: customVariables);
+                                string color = InterfaceManager.inst.ParseVarFunction(jnDialogue["color"], customVariables: customVariables);
+                                string sound = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound"], customVariables: customVariables);
 
                                 forJN["to"][i]["1"] = new JSONObject { ["id"] = id, };
                                 forJN["to"][i]["2"] = new JSONObject
@@ -287,7 +330,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     ["text"] = $"| {character}",
                                 };
                                 forJN["to"][i]["3"] = new JSONObject { ["parent"] = id, };
-                                var jnDateFormat = InterfaceManager.inst.ParseVarFunction(jnDialogue["date_format"]);
+                                var jnDateFormat = InterfaceManager.inst.ParseVarFunction(jnDialogue["date_format"], customVariables: customVariables);
                                 if (jnDateFormat != null)
                                     forJN["to"][i]["3"]["text"] = $"<align=right>{jnDateFormat.Value} |";
 
@@ -296,7 +339,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     ["parent"] = id,
                                     ["text"] = text
                                 };
-                                var jnLength = InterfaceManager.inst.ParseVarFunction(jnDialogue["length"]);
+                                var jnLength = InterfaceManager.inst.ParseVarFunction(jnDialogue["length"], customVariables: customVariables);
                                 if (jnLength != null)
                                     jnText["length"] = jnLength;
                                 if (!string.IsNullOrEmpty(color))
@@ -304,17 +347,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 if (!string.IsNullOrEmpty(sound))
                                     jnText["text_sound"] = sound;
 
-                                var speeds = InterfaceManager.inst.ParseVarFunction(jnDialogue["speeds"]);
+                                var speeds = InterfaceManager.inst.ParseVarFunction(jnDialogue["speeds"], customVariables: customVariables);
                                 if (speeds != null)
                                 {
                                     for (int j = 0; j < speeds.Count; j++)
                                     {
-                                        var speed = InterfaceManager.inst.ParseVarFunction(speeds[j]);
+                                        var speed = InterfaceManager.inst.ParseVarFunction(speeds[j], customVariables: customVariables);
                                         if (speed == null)
                                             continue;
 
-                                        var position = InterfaceManager.inst.ParseVarFunction(speed["position"]);
-                                        var speedValue = InterfaceManager.inst.ParseVarFunction(speed["speed"]);
+                                        var position = InterfaceManager.inst.ParseVarFunction(speed["position"], customVariables: customVariables);
+                                        var speedValue = InterfaceManager.inst.ParseVarFunction(speed["speed"], customVariables: customVariables);
                                         if (position == null || speedValue == null)
                                             continue;
 
@@ -323,19 +366,19 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     }
                                 }
 
-                                var soundVolume = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_volume"]);
+                                var soundVolume = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_volume"], customVariables: customVariables);
                                 if (soundVolume != null)
                                     jnText["text_sound_volume"] = soundVolume;
 
-                                var soundPitch = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_pitch"]);
+                                var soundPitch = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_pitch"], customVariables: customVariables);
                                 if (soundPitch != null)
                                     jnText["text_sound_pitch"] = soundPitch;
 
-                                var soundPitchVary = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_pitch_vary"]);
+                                var soundPitchVary = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_pitch_vary"], customVariables: customVariables);
                                 if (soundPitchVary != null)
                                     jnText["text_sound_pitch_vary"] = soundPitchVary;
 
-                                var soundRepeat = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_repeat"]);
+                                var soundRepeat = InterfaceManager.inst.ParseVarFunction(jnDialogue["sound_repeat"], customVariables: customVariables);
                                 if (soundRepeat != null)
                                     jnText["text_sound_repeat"] = soundRepeat;
 
@@ -463,20 +506,20 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
 
-            customMenu.defaultSelection = Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jn["default_select"]), Vector2Int.zero);
-            customMenu.forceInterfaceSpeed = InterfaceManager.inst.ParseVarFunction(jn["force_speed"]).AsBool;
+            customMenu.defaultSelection = Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jn["default_select"], customVariables: customVariables), Vector2Int.zero);
+            customMenu.forceInterfaceSpeed = InterfaceManager.inst.ParseVarFunction(jn["force_speed"], customVariables: customVariables).AsBool;
 
-            var layer = InterfaceManager.inst.ParseVarFunction(jn["layer"]);
+            var layer = InterfaceManager.inst.ParseVarFunction(jn["layer"], customVariables: customVariables);
             if (layer != null)
                 customMenu.layer = layer.AsInt;
 
-            var pauseGame = InterfaceManager.inst.ParseVarFunction(jn["pause_game"]);
+            var pauseGame = InterfaceManager.inst.ParseVarFunction(jn["pause_game"], customVariables: customVariables);
             if (pauseGame != null)
                 customMenu.pauseGame = pauseGame.AsBool;
             else
                 customMenu.pauseGame = true;
 
-            var sprites = InterfaceManager.inst.ParseVarFunction(jn["sprites"]);
+            var sprites = InterfaceManager.inst.ParseVarFunction(jn["sprites"], customVariables: customVariables);
             if (sprites != null)
             {
                 foreach (var keyValuePair in sprites.Linq)
@@ -484,7 +527,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (customMenu.spriteAssets.ContainsKey(keyValuePair.Key))
                         continue;
 
-                    var value = InterfaceManager.inst.ParseVarFunction(keyValuePair.Value);
+                    var value = InterfaceManager.inst.ParseVarFunction(keyValuePair.Value, customVariables: customVariables);
                     if (value == null)
                         continue;
 
@@ -492,19 +535,19 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
 
-            customMenu.prefabs.AddRange(ParsePrefabs(InterfaceManager.inst.ParseVarFunction(jn["prefabs"])));
+            customMenu.prefabs.AddRange(ParsePrefabs(InterfaceManager.inst.ParseVarFunction(jn["prefabs"], customVariables: customVariables)));
             ParseLayouts(customMenu.layouts, InterfaceManager.inst.ParseVarFunction(jn["layouts"]));
-            customMenu.elements.AddRange(ParseElements(InterfaceManager.inst.ParseVarFunction(jn["elements"]), customMenu.prefabs, customMenu.spriteAssets));
+            customMenu.elements.AddRange(ParseElements(InterfaceManager.inst.ParseVarFunction(jn["elements"], customVariables: customVariables), customMenu.prefabs, customMenu.spriteAssets, customVariables));
 
-            var theme = InterfaceManager.inst.ParseVarFunction(jn["theme"]);
+            var theme = InterfaceManager.inst.ParseVarFunction(jn["theme"], customVariables: customVariables);
             if (jn["theme"] != null)
                 customMenu.loadedTheme = BeatmapTheme.Parse(theme);
-            customMenu.useGameTheme = InterfaceManager.inst.ParseVarFunction(jn["game_theme"]).AsBool;
+            customMenu.useGameTheme = InterfaceManager.inst.ParseVarFunction(jn["game_theme"], customVariables: customVariables).AsBool;
 
-            if (CoreHelper.InGame)
+            customMenu.exitFuncJSON = InterfaceManager.inst.ParseVarFunction(jn["exit_func"], customVariables: customVariables);
+
+            if (CoreHelper.InGame && customMenu.exitFuncJSON == null)
                 customMenu.exitFunc = InterfaceManager.inst.CloseMenus;
-
-            customMenu.exitFuncJSON = InterfaceManager.inst.ParseVarFunction(jn["exit_func"]);
 
             return customMenu;
         }
@@ -725,14 +768,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 };
 
                                 var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
-                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element, customVariables))
                                     yield return element;
 
                                 break;
                             }
                         case "for": {
                                 var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], customVariables: customVariables);
-                                if (spawnFunc != null && !InterfaceManager.inst.ParseIfFunction(spawnFunc))
+                                if (spawnFunc != null && !InterfaceManager.inst.ParseIfFunction(spawnFunc, customVariables: customVariables))
                                     break;
 
                                 var from = InterfaceManager.inst.ParseVarFunction(jnElement["from"], customVariables: customVariables);
@@ -762,7 +805,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                             continue;
 
                                                         var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element, customVariables);
-                                                        if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element))
+                                                        if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element, customVariables))
                                                             continue;
 
                                                         var jnToElement = InterfaceManager.inst.ParseVarFunction(toElement.Value, element, customVariables);
@@ -799,7 +842,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                             continue;
 
                                                         var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element, customVariables);
-                                                        if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element))
+                                                        if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element, customVariables))
                                                             continue;
 
                                                         element.Read(toElement.Value, loopIndex, loop, spriteAssets);
@@ -842,15 +885,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                             index = RTMath.Clamp(index, 0, count - 1);
 
-                                            var loopVar = new Dictionary<string, JSONNode>();
-                                            if (customVariables != null)
-                                            {
-                                                foreach (var keyValuePair in customVariables)
-                                                    loopVar[keyValuePair.Key] = keyValuePair.Value;
-                                            }
-
                                             for (int j = index; j < count; j++)
                                             {
+                                                var loopVar = new Dictionary<string, JSONNode>();
+                                                if (customVariables != null)
+                                                {
+                                                    foreach (var keyValuePair in customVariables)
+                                                        loopVar[keyValuePair.Key] = keyValuePair.Value;
+                                                }
+
                                                 loopVar[varName.Value] = j;
                                                 var elements = ParseElements(to, prefabs, spriteAssets, loopVar);
                                                 foreach (var element in elements)
@@ -863,11 +906,26 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 break;
                             }
+                        case "cache": {
+                                var name = InterfaceManager.inst.ParseVarFunction(jnElement["name"], customVariables: customVariables);
+                                if (name == null || !name.IsString)
+                                    break;
+
+                                var element = InterfaceManager.inst.ParseVarFunction(jnElement["value"], customVariables: customVariables);
+                                if (element == null)
+                                    break;
+
+                                if (customVariables == null)
+                                    customVariables = new Dictionary<string, JSONNode>();
+                                customVariables[name.Value] = element;
+
+                                break;
+                            }
                         case "event": {
                                 var element = MenuEvent.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
                                 var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
-                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element, customVariables))
                                     yield return element;
 
                                 break;
@@ -876,7 +934,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 var element = MenuImage.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
                                 var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
-                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element, customVariables))
                                     yield return element;
 
                                 break;
@@ -885,7 +943,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 var element = MenuText.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
                                 var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
-                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element, customVariables))
                                     yield return element;
 
                                 break;
@@ -894,7 +952,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 var element = MenuButton.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
                                 var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
-                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
+                                if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element, customVariables))
                                     yield return element;
 
                                 break;
