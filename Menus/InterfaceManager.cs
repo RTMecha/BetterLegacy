@@ -642,7 +642,7 @@ namespace BetterLegacy.Menus
             return input.Replace("{{AudioTime}}", AudioManager.inst.CurrentAudioSource.time.ToString());
         }
 
-        public string ParseText(string input) => RTString.ParseText(input);
+        public string ParseText(string input, Dictionary<string, JSONNode> customVariables = null) => RTString.ParseText(input, customVariables);
 
         /// <summary>
         /// Parses an entire func JSON. Supports both JSON Object and JSON Array.
@@ -4013,19 +4013,19 @@ namespace BetterLegacy.Menus
             }
         }
 
-        public JSONNode ParseVarFunction(JSONNode jn, MenuImage thisElement = null)
+        public JSONNode ParseVarFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
             // if json is null or it's an array, just return itself.
             if (jn == null || jn.IsArray)
                 return jn;
 
-            // item is lang (need to make sure it actually IS a lang by checking for language names)
-            if (Lang.TryParse(jn, out Lang lang))
-                return ParseText(lang);
-
             // item is a singular string
             if (jn.IsString)
-                return ParseText(jn);
+                return customVariables != null && customVariables.TryGetValue(jn.Value, out JSONNode customVariable) ? ParseVarFunction(customVariable, thisElement, customVariables) : ParseText(jn, customVariables);
+
+            // item is lang (need to make sure it actually IS a lang by checking for language names)
+            if (Lang.TryParse(jn, out Lang lang))
+                return ParseText(lang, customVariables);
 
             var parameters = jn["params"];
             string name = jn["name"];
@@ -4073,16 +4073,16 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var variable = ParseVarFunction(parameters.Get(0, "var"), thisElement);
-                        var defaultItem = ParseVarFunction(parameters.Get(1, "default"));
-                        var caseParam = ParseVarFunction(parameters.Get(2, "case"));
+                        var variable = ParseVarFunction(parameters.Get(0, "var"), thisElement, customVariables);
+                        var defaultItem = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables);
+                        var caseParam = ParseVarFunction(parameters.Get(2, "case"), thisElement, customVariables);
 
                         if (caseParam.IsArray && (!variable.IsNumber || variable < 0 || variable >= caseParam.Count))
                             return defaultItem;
                         if (caseParam.IsObject && (!variable.IsString || caseParam[variable.Value] == null))
                             return defaultItem;
 
-                        return ParseVarFunction(variable.IsNumber ? caseParam[variable.AsInt] : caseParam[variable.Value], thisElement);
+                        return ParseVarFunction(variable.IsNumber ? caseParam[variable.AsInt] : caseParam[variable.Value], thisElement, customVariables);
                     }
 
                 #endregion
@@ -4387,14 +4387,14 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var str = ParseVarFunction(parameters.Get(0, "format"), thisElement);
-                        var args = ParseVarFunction(parameters.Get(1, "args"), thisElement);
+                        var str = ParseVarFunction(parameters.Get(0, "format"), thisElement, customVariables);
+                        var args = ParseVarFunction(parameters.Get(1, "args"), thisElement, customVariables);
                         if (args == null || !args.IsArray)
                             return str;
 
                         var strArgs = new object[args.Count];
                         for (int i = 0; i < strArgs.Length; i++)
-                            strArgs[i] = args[i].Value;
+                            strArgs[i] = ParseVarFunction(args[i], thisElement, customVariables).Value;
 
                         return string.Format(str, strArgs);
                     }
@@ -4423,8 +4423,8 @@ namespace BetterLegacy.Menus
                 //   "source": "bg" < index is optional
                 // }
                 case "ColorSource": {
-                        var source = ParseVarFunction(parameters.Get(0, "source"), thisElement).Value;
-                        var index = ParseVarFunction(parameters.Get(1, "index"), thisElement);
+                        var source = ParseVarFunction(parameters.Get(0, "source"), thisElement, customVariables).Value;
+                        var index = ParseVarFunction(parameters.Get(1, "index"), thisElement, customVariables);
                         return (source switch
                         {
                             "gui_accent" => CurrentTheme.guiAccentColor,
@@ -4435,6 +4435,21 @@ namespace BetterLegacy.Menus
                             "fx" => CurrentTheme.effectColors.GetAt(index.AsInt),
                             _ => CurrentTheme.guiColor,
                         }).ToString();
+                    }
+
+                #endregion
+
+                #region ToStoryNumber
+
+                case "ToStoryNumber": {
+                        if (parameters == null)
+                            break;
+
+                        var number = ParseVarFunction(parameters.Get(0, "num"), thisElement, customVariables);
+                        if (number == null || !number.IsNumber)
+                            break;
+
+                        return RTString.ToStoryNumber(number.AsInt);
                     }
 
                 #endregion
@@ -4489,14 +4504,14 @@ namespace BetterLegacy.Menus
                                 var item = jn["vars"][i];
                                 if (string.IsNullOrEmpty(item["n"]))
                                     continue;
-                                var val = ParseVarFunction(item["v"], thisElement);
+                                var val = ParseVarFunction(item["v"], thisElement, customVariables);
                                 if (!val.IsNumber)
                                     continue;
                                 vars[name] = val;
                             }
                         }
 
-                        return RTMath.Parse(parameters.Get(0, "evaluate"), vars).ToString();
+                        return RTMath.Parse(ParseVarFunction(parameters.Get(0, "evaluate"), thisElement, customVariables), vars).ToString();
                     }
 
                     #endregion

@@ -287,33 +287,33 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #region JSON
 
-        public static new MenuText Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets)
+        public static new MenuText Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
             var element = new MenuText();
-            element.Read(jnElement, j, loop, spriteAssets);
+            element.Read(jnElement, j, loop, spriteAssets, customVariables);
             element.parsed = true;
             return element;
         }
 
-        public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets)
+        public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
-            base.Read(jnElement, j, loop, spriteAssets);
+            base.Read(jnElement, j, loop, spriteAssets, customVariables);
 
             #region UI
 
-            var jnSpeeds = InterfaceManager.inst.ParseVarFunction(jnElement["speeds"], this);
+            var jnSpeeds = InterfaceManager.inst.ParseVarFunction(jnElement["speeds"], this, customVariables);
             if (jnSpeeds != null)
             {
                 textSpeeds = new List<Speed>();
                 for (int i = 0; i < jnSpeeds.Count; i++)
                 {
-                    var jnSpeed = InterfaceManager.inst.ParseVarFunction(jnSpeeds[i], this);
+                    var jnSpeed = InterfaceManager.inst.ParseVarFunction(jnSpeeds[i], this, customVariables);
 
                     if (jnSpeed == null)
                         continue;
 
-                    var position = InterfaceManager.inst.ParseVarFunction(jnSpeed["position"], this);
-                    var speedValue = InterfaceManager.inst.ParseVarFunction(jnSpeed["speed"], this);
+                    var position = InterfaceManager.inst.ParseVarFunction(jnSpeed["position"], this, customVariables);
+                    var speedValue = InterfaceManager.inst.ParseVarFunction(jnSpeed["speed"], this, customVariables);
                     if (position == null || speedValue == null)
                         continue;
 
@@ -321,28 +321,28 @@ namespace BetterLegacy.Menus.UI.Elements
                 }
             }
 
-            var jnText = InterfaceManager.inst.ParseVarFunction(jnElement["text"], this);
+            var jnText = InterfaceManager.inst.ParseVarFunction(jnElement["text"], this, customVariables);
             if (jnText != null)
                 text = jnText;
-            var jnTextRect = InterfaceManager.inst.ParseVarFunction(jnElement["text_rect"], this);
+            var jnTextRect = InterfaceManager.inst.ParseVarFunction(jnElement["text_rect"], this, customVariables);
             if (jnTextRect != null)
                 textRect = RectValues.TryParse(jnTextRect, RectValues.FullAnchored);
             var jnIconRect = InterfaceManager.inst.ParseVarFunction(jnElement["icon_rect"]);
             if (jnIconRect != null)
                 iconRect = RectValues.TryParse(jnIconRect, RectValues.Default);
-            var jnAlignment = InterfaceManager.inst.ParseVarFunction(jnElement["alignment"], this);
+            var jnAlignment = InterfaceManager.inst.ParseVarFunction(jnElement["alignment"], this, customVariables);
             if (jnAlignment != null)
                 alignment = Parser.TryParse(jnAlignment, TextAlignmentOptions.Left);
             var jnWordWrap = InterfaceManager.inst.ParseVarFunction(jnElement["word_wrap"]);
             if (jnWordWrap != null)
                 enableWordWrapping = jnWordWrap.AsBool;
-            var jnOverflowMode = InterfaceManager.inst.ParseVarFunction(jnElement["overflow_mode"], this);
+            var jnOverflowMode = InterfaceManager.inst.ParseVarFunction(jnElement["overflow_mode"], this, customVariables);
             if (jnOverflowMode != null)
                 overflowMode = Parser.TryParse(jnOverflowMode, TextOverflowModes.Masking);
-            var jnUpdateText = InterfaceManager.inst.ParseVarFunction(jnElement["update_text"], this);
+            var jnUpdateText = InterfaceManager.inst.ParseVarFunction(jnElement["update_text"], this, customVariables);
             if (jnUpdateText != null)
                 updateTextOnTick = jnUpdateText.AsBool;
-            var jnRunAnimationsEnd = InterfaceManager.inst.ParseVarFunction(jnElement["run_animations_end"], this);
+            var jnRunAnimationsEnd = InterfaceManager.inst.ParseVarFunction(jnElement["run_animations_end"], this, customVariables);
             if (jnRunAnimationsEnd != null)
                 runAnimationsOnEnd = jnRunAnimationsEnd.AsBool;
 
@@ -350,22 +350,22 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region Color
 
-            var jnHideBG = InterfaceManager.inst.ParseVarFunction(jnElement["hide_bg"], this);
+            var jnHideBG = InterfaceManager.inst.ParseVarFunction(jnElement["hide_bg"], this, customVariables);
             if (jnHideBG != null)
                 hideBG = jnHideBG.AsBool;
-            var jnTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["text_col"], this);
+            var jnTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["text_col"], this, customVariables);
             if (jnTextCol != null)
                 textColor = jnTextCol.AsInt;
-            var jnTextHue = InterfaceManager.inst.ParseVarFunction(jnElement["text_hue"], this);
+            var jnTextHue = InterfaceManager.inst.ParseVarFunction(jnElement["text_hue"], this, customVariables);
             if (jnTextHue != null)
                 textHue = jnTextHue.AsFloat;
-            var jnTextSat = InterfaceManager.inst.ParseVarFunction(jnElement["text_sat"], this);
+            var jnTextSat = InterfaceManager.inst.ParseVarFunction(jnElement["text_sat"], this, customVariables);
             if (jnTextSat != null)
                 textSat = jnTextSat.AsFloat;
-            var jnTextVal = InterfaceManager.inst.ParseVarFunction(jnElement["text_val"], this);
+            var jnTextVal = InterfaceManager.inst.ParseVarFunction(jnElement["text_val"], this, customVariables);
             if (jnTextVal != null)
                 textVal = jnTextVal.AsFloat;
-            var jnOverrideTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_text_col"], this);
+            var jnOverrideTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_text_col"], this, customVariables);
             useOverrideTextColor = jnOverrideTextCol != null;
             if (useOverrideTextColor)
                 overrideTextColor = RTColors.HexToColor(jnOverrideTextCol);
@@ -374,30 +374,30 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region Anim
 
-            var jnPlaySound = InterfaceManager.inst.ParseVarFunction(jnElement["play_sound"], this);
+            var jnPlaySound = InterfaceManager.inst.ParseVarFunction(jnElement["play_sound"], this, customVariables);
             if (jnPlaySound != null)
                 playSound = jnPlaySound.AsBool;
-            var jnTextSound = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound"], this);
+            var jnTextSound = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound"], this, customVariables);
             if (jnTextSound != null)
                 textSound = jnTextSound;
-            var jnTextSoundVolume = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_volume"], this);
+            var jnTextSoundVolume = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_volume"], this, customVariables);
             if (jnTextSoundVolume != null)
                 textSoundVolume = jnTextSoundVolume.AsFloat;
-            var jnTextSoundPitch = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_pitch"], this);
+            var jnTextSoundPitch = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_pitch"], this, customVariables);
             if (jnTextSoundPitch != null)
                 textSoundPitch = jnTextSoundPitch.AsFloat;
-            var jnTextSoundPitchVary = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_pitch_vary"], this);
+            var jnTextSoundPitchVary = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_pitch_vary"], this, customVariables);
             if (jnTextSoundPitchVary != null)
                 textSoundPitchVary = jnTextSoundPitchVary.AsFloat;
-            var jnTextSoundRepeat = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_repeat"], this);
+            var jnTextSoundRepeat = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_repeat"], this, customVariables);
             if (jnTextSoundRepeat != null)
                 textSoundRepeat = jnTextSoundRepeat.AsInt;
-            var jnTextSoundRanges = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_ranges"], this);
+            var jnTextSoundRanges = InterfaceManager.inst.ParseVarFunction(jnElement["text_sound_ranges"], this, customVariables);
             if (jnTextSoundRanges != null)
             {
                 textSoundRanges = new List<Vector2Int>();
                 for (int i = 0; i < jnTextSoundRanges.Count; i++)
-                    textSoundRanges.Add(Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jnTextSoundRanges[i], this), Vector2Int.zero));
+                    textSoundRanges.Add(Parser.TryParse(InterfaceManager.inst.ParseVarFunction(jnTextSoundRanges[i], this, customVariables), Vector2Int.zero));
             }
 
             #endregion

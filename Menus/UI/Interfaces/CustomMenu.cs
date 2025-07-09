@@ -589,34 +589,34 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
-        public static IEnumerable<MenuImage> ParseElements(JSONNode jn, List<MenuPrefab> prefabs = null, Dictionary<string, Sprite> spriteAssets = null)
+        public static IEnumerable<MenuImage> ParseElements(JSONNode jn, List<MenuPrefab> prefabs = null, Dictionary<string, Sprite> spriteAssets = null, Dictionary<string, JSONNode> customVariables = null)
         {
             if (jn == null || !jn.IsArray)
                 yield break;
 
             for (int i = 0; i < jn.Count; i++)
             {
-                var jnElement = InterfaceManager.inst.ParseVarFunction(jn[i]);
+                var jnElement = InterfaceManager.inst.ParseVarFunction(jn[i], customVariables: customVariables);
                 if (jnElement == null)
                     continue;
 
                 // handle grouped elements recursively
                 if (jnElement.IsArray)
                 {
-                    var elements = ParseElements(jnElement, prefabs, spriteAssets);
+                    var elements = ParseElements(jnElement, prefabs, spriteAssets, customVariables);
                     foreach (var element in elements)
                         yield return element;
 
                     continue;
                 }
 
-                var elementType = InterfaceManager.inst.ParseVarFunction(jnElement["type"]);
+                var elementType = InterfaceManager.inst.ParseVarFunction(jnElement["type"], customVariables: customVariables);
                 if (elementType == null)
                     continue;
 
                 // loop function
                 int loop = 1;
-                var jnLoop = InterfaceManager.inst.ParseVarFunction(jnElement["loop"]);
+                var jnLoop = InterfaceManager.inst.ParseVarFunction(jnElement["loop"], customVariables: customVariables);
                 if (jnLoop != null)
                     loop = jnLoop.AsInt;
                 if (loop < 1)
@@ -626,7 +626,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     switch (elementType.Value.ToLower())
                     {
                         case "auto": {
-                                var name = InterfaceManager.inst.ParseVarFunction(jnElement["name"]);
+                                var name = InterfaceManager.inst.ParseVarFunction(jnElement["name"], customVariables: customVariables);
                                 if (name == null)
                                     break;
 
@@ -634,17 +634,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 switch (name.Value)
                                 {
                                     case "TopBar": {
-                                            var title = InterfaceManager.inst.ParseVarFunction(jnElement["title"]);
+                                            var title = InterfaceManager.inst.ParseVarFunction(jnElement["title"], customVariables: customVariables);
                                             collection = GenerateTopBar(
                                                 title == null ? "Custom Menu" : Lang.Parse(title),
-                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_col"]).AsInt,
-                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_val"]).AsFloat);
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_col"], customVariables: customVariables).AsInt,
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_val"], customVariables: customVariables).AsFloat);
                                             break;
                                         }
                                     case "BottomBar": {
                                             collection = GenerateBottomBar(
-                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_col"]).AsInt,
-                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_val"]).AsFloat);
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_col"], customVariables: customVariables).AsInt,
+                                                InterfaceManager.inst.ParseVarFunction(jnElement["text_val"], customVariables: customVariables).AsFloat);
                                             break;
                                         }
                                 }
@@ -662,17 +662,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 if (prefabs == null || id == null || !prefabs.TryFind(x => x.id == id, out MenuPrefab prefab))
                                     break;
 
-                                var from = InterfaceManager.inst.ParseVarFunction(jnElement["from"]);
+                                var from = InterfaceManager.inst.ParseVarFunction(jnElement["from"], customVariables: customVariables);
                                 if (from != null)
                                 {
-                                    var type = InterfaceManager.inst.ParseVarFunction(from["type"]);
+                                    var type = InterfaceManager.inst.ParseVarFunction(from["type"], customVariables: customVariables);
                                     if (type == null)
                                         break;
 
                                     switch (type.Value.ToLower())
                                     {
                                         case "json": {
-                                                var array = InterfaceManager.inst.ParseVarFunction(from["array"]);
+                                                var array = InterfaceManager.inst.ParseVarFunction(from["array"], customVariables: customVariables);
                                                 if (array == null)
                                                     break;
 
@@ -680,22 +680,22 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                 {
                                                     var prefabObject = new MenuPrefabObject
                                                     {
-                                                        prefabID = InterfaceManager.inst.ParseVarFunction(jnElement["pid"]),
+                                                        prefabID = InterfaceManager.inst.ParseVarFunction(jnElement["pid"], customVariables: customVariables),
                                                         prefab = prefab,
-                                                        id = InterfaceManager.inst.ParseVarFunction(jnElement["id"]) ?? LSText.randomNumString(16),
-                                                        name = InterfaceManager.inst.ParseVarFunction(jnElement["name"]),
-                                                        length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"]).AsFloat,
+                                                        id = InterfaceManager.inst.ParseVarFunction(jnElement["id"], customVariables: customVariables) ?? LSText.randomNumString(16),
+                                                        name = InterfaceManager.inst.ParseVarFunction(jnElement["name"], customVariables: customVariables),
+                                                        length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"], customVariables: customVariables).AsFloat,
                                                         fromLoop = loopIndex > 0,
                                                         loop = loop,
                                                     };
 
-                                                    var elementSpawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], prefabObject);
+                                                    var elementSpawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], prefabObject, customVariables);
                                                     if (elementSpawnFunc == null || InterfaceManager.inst.ParseIfFunction(elementSpawnFunc, prefabObject))
                                                     {
-                                                        var arrayElements = InterfaceManager.inst.ParseVarFunction(array[k]["elements"], prefabObject);
+                                                        var arrayElements = InterfaceManager.inst.ParseVarFunction(array[k]["elements"], prefabObject, customVariables);
                                                         foreach (var arrayElement in arrayElements)
                                                         {
-                                                            var arrayElementJN = InterfaceManager.inst.ParseVarFunction(arrayElement.Value, prefabObject);
+                                                            var arrayElementJN = InterfaceManager.inst.ParseVarFunction(arrayElement.Value, prefabObject, customVariables);
                                                             if (arrayElementJN == null)
                                                                 continue;
 
@@ -715,42 +715,42 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 var element = new MenuPrefabObject
                                 {
-                                    prefabID = InterfaceManager.inst.ParseVarFunction(jnElement["pid"]),
+                                    prefabID = InterfaceManager.inst.ParseVarFunction(jnElement["pid"], customVariables: customVariables),
                                     prefab = prefab,
-                                    id = InterfaceManager.inst.ParseVarFunction(jnElement["id"]) ?? LSText.randomNumString(16),
-                                    name = InterfaceManager.inst.ParseVarFunction(jnElement["name"]),
-                                    length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"]).AsFloat, // how long the UI pauses for when this element spawns.
+                                    id = InterfaceManager.inst.ParseVarFunction(jnElement["id"], customVariables: customVariables) ?? LSText.randomNumString(16),
+                                    name = InterfaceManager.inst.ParseVarFunction(jnElement["name"], customVariables: customVariables),
+                                    length = InterfaceManager.inst.ParseVarFunction(jnElement["anim_length"], customVariables: customVariables).AsFloat, // how long the UI pauses for when this element spawns.
                                     fromLoop = loopIndex > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
                                 };
 
-                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
                                 if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;
                             }
                         case "for": {
-                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"]);
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], customVariables: customVariables);
                                 if (spawnFunc != null && !InterfaceManager.inst.ParseIfFunction(spawnFunc))
                                     break;
 
-                                var from = InterfaceManager.inst.ParseVarFunction(jnElement["from"]);
+                                var from = InterfaceManager.inst.ParseVarFunction(jnElement["from"], customVariables: customVariables);
                                 if (from == null || !from.IsString)
                                     break;
 
                                 switch (from.Value.ToLower().Replace(" ", "").Replace("_", ""))
                                 {
                                     case "json": {
-                                            var jnElements = InterfaceManager.inst.ParseVarFunction(jnElement["element_prefabs"]);
+                                            var jnElements = InterfaceManager.inst.ParseVarFunction(jnElement["element_prefabs"], customVariables: customVariables);
                                             if (jnElements == null)
                                                 break;
 
-                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"]);
+                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"], customVariables: customVariables);
                                             if (to == null)
                                                 break;
 
-                                            var elements = ParseElements(jnElements, prefabs, spriteAssets);
+                                            var elements = ParseElements(jnElements, prefabs, spriteAssets, customVariables);
 
                                             for (int k = 0; k < to.Count; k++)
                                             {
@@ -761,15 +761,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                         if (element.id != toElement.Key)
                                                             continue;
 
-                                                        var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element);
+                                                        var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element, customVariables);
                                                         if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element))
                                                             continue;
 
-                                                        var jnToElement = InterfaceManager.inst.ParseVarFunction(toElement.Value, element);
+                                                        var jnToElement = InterfaceManager.inst.ParseVarFunction(toElement.Value, element, customVariables);
                                                         if (jnToElement == null)
                                                             continue;
 
-                                                        element.Read(jnToElement, loopIndex, loop, spriteAssets);
+                                                        element.Read(jnToElement, loopIndex, loop, spriteAssets, customVariables);
                                                         yield return element;
                                                     }
                                                 }
@@ -778,13 +778,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                             break;
                                         }
                                     case "storyjson": {
-                                            var jnElements = InterfaceManager.inst.ParseVarFunction(jnElement["element_prefabs"]);
+                                            var jnElements = InterfaceManager.inst.ParseVarFunction(jnElement["element_prefabs"], customVariables: customVariables);
                                             if (jnElements == null)
                                                 break;
 
                                             var elements = ParseElements(jnElements, prefabs, spriteAssets);
 
-                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"]);
+                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"], customVariables: customVariables);
                                             if (to == null)
                                                 break;
 
@@ -798,7 +798,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                         if (element.id != toElement.Key)
                                                             continue;
 
-                                                        var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element);
+                                                        var toSpawnFunc = InterfaceManager.inst.ParseVarFunction(toElement.Value["spawn_if_func"], element, customVariables);
                                                         if (toSpawnFunc != null && !InterfaceManager.inst.ParseIfFunction(toSpawnFunc, element))
                                                             continue;
 
@@ -811,13 +811,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                             break;
                                         }
                                     case "text": {
-                                            var jnDefault = InterfaceManager.inst.ParseVarFunction(jnElement["default"]);
+                                            var jnDefault = InterfaceManager.inst.ParseVarFunction(jnElement["default"], customVariables: customVariables);
                                             if (jnDefault == null)
                                                 break;
 
-                                            var element = MenuText.Parse(jnDefault, loopIndex, loop, spriteAssets);
+                                            var element = MenuText.Parse(jnDefault, loopIndex, loop, spriteAssets, customVariables);
 
-                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"]);
+                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"], customVariables: customVariables);
                                             if (to == null)
                                                 break;
 
@@ -829,41 +829,71 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                             }
                                             break;
                                         }
+                                    case "loop": {
+                                            var to = InterfaceManager.inst.ParseVarFunction(jnElement["to"], customVariables: customVariables);
+                                            if (to == null)
+                                                break;
+
+                                            var varName = InterfaceManager.inst.ParseVarFunction(jnElement["var_name"], customVariables: customVariables);
+                                            if (varName == null || !varName.IsString || varName == string.Empty)
+                                                varName = "index";
+                                            var index = InterfaceManager.inst.ParseVarFunction(jnElement["index"], customVariables: customVariables).AsInt;
+                                            var count = InterfaceManager.inst.ParseVarFunction(jnElement["count"], customVariables: customVariables).AsInt;
+
+                                            index = RTMath.Clamp(index, 0, count - 1);
+
+                                            var loopVar = new Dictionary<string, JSONNode>();
+                                            if (customVariables != null)
+                                            {
+                                                foreach (var keyValuePair in customVariables)
+                                                    loopVar[keyValuePair.Key] = keyValuePair.Value;
+                                            }
+
+                                            for (int j = index; j < count; j++)
+                                            {
+                                                loopVar[varName.Value] = j;
+                                                var elements = ParseElements(to, prefabs, spriteAssets, loopVar);
+                                                foreach (var element in elements)
+                                                    yield return element;
+                                            }
+
+                                            break;
+                                        }
                                 }
 
                                 break;
                             }
                         case "event": {
-                                var element = MenuEvent.Parse(jnElement, loopIndex, loop, spriteAssets);
+                                var element = MenuEvent.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
-                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
                                 if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;
                             }
                         case "image": {
-                                var element = MenuImage.Parse(jnElement, loopIndex, loop, spriteAssets);
+                                var element = MenuImage.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
-                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
                                 if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;
                             }
                         case "text": {
-                                var element = MenuText.Parse(jnElement, loopIndex, loop, spriteAssets);
+                                var element = MenuText.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
-                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
                                 if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 
                                 break;
                             }
                         case "button": {
-                                var element = MenuButton.Parse(jnElement, loopIndex, loop, spriteAssets);
+                                var element = MenuButton.Parse(jnElement, loopIndex, loop, spriteAssets, customVariables);
 
-                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element);
+                                var spawnFunc = InterfaceManager.inst.ParseVarFunction(jnElement["spawn_if_func"], element, customVariables);
                                 if (spawnFunc == null || InterfaceManager.inst.ParseIfFunction(spawnFunc, element))
                                     yield return element;
 

@@ -240,50 +240,50 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #region JSON
 
-        public static new MenuButton Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets)
+        public static new MenuButton Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
             var element = new MenuButton();
-            element.Read(jnElement, j, loop, spriteAssets);
+            element.Read(jnElement, j, loop, spriteAssets, customVariables);
             element.parsed = true;
             return element;
         }
 
-        public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets)
+        public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
-            base.Read(jnElement, j, loop, spriteAssets);
+            base.Read(jnElement, j, loop, spriteAssets, customVariables);
 
             #region Color
 
-            var jnSelCol = InterfaceManager.inst.ParseVarFunction(jnElement["sel_col"], this);
+            var jnSelCol = InterfaceManager.inst.ParseVarFunction(jnElement["sel_col"], this, customVariables);
             if (jnSelCol != null)
                 selectedColor = jnSelCol.AsInt;
-            var jnSelOpacity = InterfaceManager.inst.ParseVarFunction(jnElement["sel_opacity"], this);
+            var jnSelOpacity = InterfaceManager.inst.ParseVarFunction(jnElement["sel_opacity"], this, customVariables);
             if (jnSelOpacity != null)
                 selectedOpacity = jnSelOpacity.AsFloat;
-            var selHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_hue"], this);
+            var selHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_hue"], this, customVariables);
             if (selHue != null)
                 selectedHue = selHue.AsFloat;
-            var selSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_sat"], this);
+            var selSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_sat"], this, customVariables);
             if (selSat != null)
                 selectedSat = selSat.AsFloat;
-            var selVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_val"], this);
+            var selVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_val"], this, customVariables);
             if (selVal != null)
                 selectedVal = selVal.AsFloat;
-            var selTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_col"], this);
+            var selTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_col"], this, customVariables);
             if (selTextCol != null)
                 selectedTextColor = selTextCol.AsInt;
-            var selTextHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_hue"], this);
+            var selTextHue = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_hue"], this, customVariables);
             if (selTextHue != null)
                 selectedTextHue = selTextHue.AsFloat;
-            var selTextSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_sat"], this);
+            var selTextSat = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_sat"], this, customVariables);
             if (selTextSat != null)
                 selectedTextSat = selTextSat.AsFloat;
-            var selTextVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_val"], this);
+            var selTextVal = InterfaceManager.inst.ParseVarFunction(jnElement["sel_text_val"], this, customVariables);
             if (selTextVal != null)
                 selectedTextVal = selTextVal.AsFloat;
 
-            var jnOverrideSelCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_col"], this);
-            var jnOverrideSelTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_text_col"], this);
+            var jnOverrideSelCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_col"], this, customVariables);
+            var jnOverrideSelTextCol = InterfaceManager.inst.ParseVarFunction(jnElement["override_sel_text_col"], this, customVariables);
             useOverrideSelectedColor = jnOverrideSelCol != null;
             useOverrideSelectedTextColor = jnOverrideSelTextCol != null;
             if (useOverrideSelectedColor)
@@ -295,20 +295,20 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region Func
 
-            var jnSelect = InterfaceManager.inst.ParseVarFunction(jnElement["select"], this);
+            var jnSelect = InterfaceManager.inst.ParseVarFunction(jnElement["select"], this, customVariables);
             if (jnSelect != null)
                 selectionPosition = Parser.TryParse(jnSelect, Vector2Int.zero);
-            var jnAlignSelect = InterfaceManager.inst.ParseVarFunction(jnElement["align_select"], this);
+            var jnAlignSelect = InterfaceManager.inst.ParseVarFunction(jnElement["align_select"], this, customVariables);
             if (jnElement["align_select"] != null)
                 autoAlignSelectionPosition = jnAlignSelect.AsBool;
 
-            var jnEnterFunc = InterfaceManager.inst.ParseVarFunction(jnElement["enter_func"], this);
+            var jnEnterFunc = InterfaceManager.inst.ParseVarFunction(jnElement["enter_func"], this, customVariables);
             if (jnEnterFunc != null)
                 enterFuncJSON = jnEnterFunc; // function to run when the element is hovered over.
-            var jnExitFunc = InterfaceManager.inst.ParseVarFunction(jnElement["exit_func"], this);
+            var jnExitFunc = InterfaceManager.inst.ParseVarFunction(jnElement["exit_func"], this, customVariables);
             if (jnExitFunc != null)
                 exitFuncJSON = jnExitFunc; // function to run when the element is hovered over.
-            var jnAllowOriginalHoverFunc = InterfaceManager.inst.ParseVarFunction(jnElement["allow_original_hover_func"], this);
+            var jnAllowOriginalHoverFunc = InterfaceManager.inst.ParseVarFunction(jnElement["allow_original_hover_func"], this, customVariables);
             if (jnAllowOriginalHoverFunc != null)
                 allowOriginalHoverMethods = jnAllowOriginalHoverFunc.AsBool;
             else if (!parsed)
