@@ -6354,30 +6354,12 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
-
-            menu.filePath = path;
-
-            if (string.IsNullOrEmpty(menu.id) || menu.id == "0")
-            {
-                CoreHelper.LogError($"Menu ID cannot be empty nor 0.");
-                return;
-            }
+            InterfaceManager.inst.ParseInterface(path);
 
             InterfaceManager.inst.MainDirectory = RTFile.BasePath;
 
             RTBeatmap.Current.Pause();
             ArcadeHelper.endedLevel = false;
-
-            if (InterfaceManager.inst.interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
-            {
-                InterfaceManager.inst.SetCurrentInterface(otherMenu);
-                menu = null;
-                return;
-            }
-
-            InterfaceManager.inst.interfaces.Add(menu);
-            InterfaceManager.inst.SetCurrentInterface(menu);
         }
 
         public static void pauseLevel<T>(Modifier<T> modifier, Dictionary<string, string> variables)

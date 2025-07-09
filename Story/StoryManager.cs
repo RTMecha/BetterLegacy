@@ -1066,7 +1066,7 @@ namespace BetterLegacy.Story
 
             CoreHelper.InStory = true;
             LevelManager.OnLevelEnd = null;
-            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.Parse(level.returnInterface);
+            InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.ParseInterface(level.returnInterface);
             SceneHelper.LoadInterfaceScene();
         }
 
