@@ -423,7 +423,7 @@ namespace BetterLegacy.Menus
         /// Parses an interface from a path, adds it to the interfaces list and opens it.
         /// </summary>
         /// <param name="path">Path to an interface.</param>
-        public void ParseInterface(string path, bool load = true)
+        public void ParseInterface(string path, bool load = true, string openInterfaceID = null, List<string> branchChain = null)
         {
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
@@ -432,8 +432,7 @@ namespace BetterLegacy.Menus
                 if (!load)
                     return;
 
-                CurrentInterfaceList = CustomMenuList.Parse(jn);
-                PlayMusic();
+                CurrentInterfaceList = CustomMenuList.Parse(jn, openInterfaceID: openInterfaceID, branchChain: branchChain);
                 return;
             }
 
@@ -648,18 +647,18 @@ namespace BetterLegacy.Menus
         /// Parses an entire func JSON. Supports both JSON Object and JSON Array.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
-        public void ParseFunction(JSONNode jn, MenuImage thisElement = null)
+        public void ParseFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
             // allow multiple functions to occur.
             if (jn.IsArray)
             {
                 for (int i = 0; i < jn.Count; i++)
-                    ParseFunction(ParseVarFunction(jn[i], thisElement), thisElement);
+                    ParseFunction(ParseVarFunction(jn[i], thisElement, customVariables), thisElement, customVariables);
 
                 return;
             }
 
-            ParseFunctionSingle(jn, thisElement);
+            ParseFunctionSingle(jn, thisElement, customVariables);
         }
 
         /// <summary>
@@ -667,13 +666,13 @@ namespace BetterLegacy.Menus
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns true if the passed JSON functions is true, otherwise false.</returns>
-        public bool ParseIfFunction(JSONNode jn, MenuImage thisElement = null)
+        public bool ParseIfFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
             if (jn == null)
                 return true;
 
             if (jn.IsObject)
-                return ParseIfFunctionSingle(jn, thisElement);
+                return ParseIfFunctionSingle(jn, thisElement, customVariables);
 
             bool result = true;
 
@@ -682,7 +681,7 @@ namespace BetterLegacy.Menus
                 for (int i = 0; i < jn.Count; i++)
                 {
                     var checkJN = jn[i];
-                    var value = ParseIfFunction(checkJN, thisElement);
+                    var value = ParseIfFunction(checkJN, thisElement, customVariables);
 
                     // if json is array then count it as an else if statement
                     var elseIf = checkJN.IsArray || checkJN["otherwise"].AsBool;
@@ -703,7 +702,7 @@ namespace BetterLegacy.Menus
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns true if the passed JSON function is true, otherwise false.</returns>
-        public bool ParseIfFunctionSingle(JSONNode jn, MenuImage thisElement = null)
+        public bool ParseIfFunctionSingle(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
             var parameters = jn["params"];
             string name = jn.IsString ? jn : jn["name"];
@@ -731,49 +730,49 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 break;
 
-                            var value = DataManager.inst.GetSettingBool(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsBool);
+                            var value = DataManager.inst.GetSettingBool(ParseVarFunction(parameters.Get(0, "setting"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsBool);
                             return !not ? value : !value;
                         }
                     case "GetSettingIntEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) == ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsInt) == ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "GetSettingIntLesserEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) <= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsInt) <= ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "GetSettingIntGreaterEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) >= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsInt) >= ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "GetSettingIntLesser": {
                             if (parameters == null)
                                 break;
 
-                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) < ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsInt) < ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "GetSettingIntGreater": {
                             if (parameters == null)
                                 break;
 
-                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsInt) > ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = DataManager.inst.GetSettingInt(ParseVarFunction(parameters.Get(0, "setting"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsInt) > ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "IsScene": {
                             if (parameters == null)
                                 break;
 
-                            var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == ParseVarFunction(parameters.Get(0, "scene"), thisElement);
+                            var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == ParseVarFunction(parameters.Get(0, "scene"), thisElement, customVariables);
                             return !not ? value : !value;
                         }
 
@@ -790,7 +789,7 @@ namespace BetterLegacy.Menus
                             if (!CurrentInterfaceList || parameters == null)
                                 break;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                             if (id == null)
                                 break;
 
@@ -806,35 +805,130 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count == ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            var value = InputDataManager.inst.players.Count == ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountLesserEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count <= ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            var value = InputDataManager.inst.players.Count <= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountGreaterEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count >= ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            var value = InputDataManager.inst.players.Count >= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountLesser": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count < ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            var value = InputDataManager.inst.players.Count < ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountGreater": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count > ParseVarFunction(parameters.Get(0, "count"), thisElement).AsInt;
+                            var value = InputDataManager.inst.players.Count > ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+                            return !not ? value : !value;
+                        }
+
+                    #endregion
+
+                    #region Profile
+                        
+                    case "DisplayNameEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var value = CoreConfig.Instance.DisplayName.Value == ParseVarFunction(parameters.Get(0, "user"), thisElement, customVariables).Value;
+                            return !not ? value : !value;
+                        }
+                        
+                    case "ProfileLoadIntEquals": {
+                            if (parameters == null || !LegacyPlugin.player || LegacyPlugin.player.memory == null)
+                                break;
+
+                            var varName = ParseVarFunction(parameters.Get(0, "var_name"));
+                            if (varName == null || !varName.IsString)
+                                break;
+
+                            var profileValue = LegacyPlugin.player.memory[ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables).Value];
+                            if (profileValue == null)
+                                profileValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables);
+
+                            var value = profileValue.AsInt == ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "ProfileLoadIntLesserEquals": {
+                            if (parameters == null || !LegacyPlugin.player || LegacyPlugin.player.memory == null)
+                                break;
+
+                            var varName = ParseVarFunction(parameters.Get(0, "var_name"));
+                            if (varName == null || !varName.IsString)
+                                break;
+
+                            var profileValue = LegacyPlugin.player.memory[ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables).Value];
+                            if (profileValue == null)
+                                profileValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables);
+
+                            var value = profileValue.AsInt <= ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "ProfileLoadIntGreaterEquals": {
+                            if (parameters == null || !LegacyPlugin.player || LegacyPlugin.player.memory == null)
+                                break;
+
+                            var varName = ParseVarFunction(parameters.Get(0, "var_name"));
+                            if (varName == null || !varName.IsString)
+                                break;
+
+                            var profileValue = LegacyPlugin.player.memory[ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables).Value];
+                            if (profileValue == null)
+                                profileValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables);
+
+                            var value = profileValue.AsInt >= ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "ProfileLoadIntLesser": {
+                            if (parameters == null || !LegacyPlugin.player || LegacyPlugin.player.memory == null)
+                                break;
+
+                            var varName = ParseVarFunction(parameters.Get(0, "var_name"));
+                            if (varName == null || !varName.IsString)
+                                break;
+
+                            var profileValue = LegacyPlugin.player.memory[ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables).Value];
+                            if (profileValue == null)
+                                profileValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables);
+
+                            var value = profileValue.AsInt < ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "ProfileLoadIntGreater": {
+                            if (parameters == null || !LegacyPlugin.player || LegacyPlugin.player.memory == null)
+                                break;
+
+                            var varName = ParseVarFunction(parameters.Get(0, "var_name"));
+                            if (varName == null || !varName.IsString)
+                                break;
+
+                            var profileValue = LegacyPlugin.player.memory[ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables).Value];
+                            if (profileValue == null)
+                                profileValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables);
+
+                            var value = profileValue.AsInt > ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
+                            return !not ? value : !value;
+                        }
+                    case "ProfileLoadBool": {
+                            if (parameters == null)
+                                break;
+
+                            var value = LegacyPlugin.player && LegacyPlugin.player.memory != null && LegacyPlugin.player.memory[ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables).Value].AsBool;
                             return !not ? value : !value;
                         }
 
@@ -846,42 +940,35 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) == ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) == ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryChapterLesserEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) <= ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) <= ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryChapterGreaterEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) >= ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) >= ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryChapterLesser": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) < ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) < ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryChapterGreater": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) > ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
-                            return !not ? value : !value;
-                        }
-                    case "DisplayNameEquals": {
-                            if (parameters == null)
-                                break;
-
-                            var value = CoreConfig.Instance.DisplayName.Value == ParseVarFunction(parameters.Get(0, "user"), thisElement).Value;
+                            var value = StoryManager.inst.CurrentSave.LoadInt("Chapter", 0) > ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryInstalled": {
@@ -892,42 +979,42 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) == ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default")).AsInt) == ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLoadIntLesserEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) <= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default")).AsInt) <= ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLoadIntGreaterEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) >= ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default")).AsInt) >= ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLoadIntLesser": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) < ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default")).AsInt) < ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLoadIntGreater": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default")).AsInt) > ParseVarFunction(parameters.Get(2, "value"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default")).AsInt) > ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLoadBool": {
                             if (parameters == null)
                                 break;
 
-                            var value = StoryManager.inst.CurrentSave.LoadBool(ParseVarFunction(parameters.Get(0, "load"), thisElement), ParseVarFunction(parameters.Get(1, "default"), thisElement).AsBool);
+                            var value = StoryManager.inst.CurrentSave.LoadBool(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsBool);
                             return !not ? value : !value;
                         }
 
@@ -1081,10 +1168,10 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 break;
 
-                            var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt;
+                            var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt;
                             var minRank = ParseVarFunction(parameters.GetOrDefault(1, "min_rank", StoryManager.CHAPTER_RANK_REQUIREMENT)).AsInt;
                             var maxRank = ParseVarFunction(parameters.GetOrDefault(2, "max_rank", 1)).AsInt;
-                            var bonus = ParseVarFunction(parameters.Get(3, "bonus"), thisElement).AsBool;
+                            var bonus = ParseVarFunction(parameters.Get(3, "bonus"), thisElement, customVariables).AsBool;
 
                             var levelIDs = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
 
@@ -1100,80 +1187,80 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 break;
 
-                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == ParseVarFunction(parameters.Get(0, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "LevelRankLesserEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= ParseVarFunction(parameters.Get(0, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "LevelRankGreaterEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= ParseVarFunction(parameters.Get(0, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "LevelRankLesser": {
                             if (parameters == null)
                                 break;
 
-                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < ParseVarFunction(parameters.Get(0, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "LevelRankGreater": {
                             if (parameters == null)
                                 break;
 
-                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > ParseVarFunction(parameters.Get(0, "rank"), thisElement).AsInt;
+                            var value = LevelManager.CurrentLevel.saveData && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > ParseVarFunction(parameters.Get(0, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLevelRankEquals": {
                             if (parameters == null)
                                 break;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables).Value;
 
-                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) == ParseVarFunction(parameters.Get(1, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLevelRankLesserEquals": {
                             if (parameters == null)
                                 break;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables).Value;
 
-                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) <= ParseVarFunction(parameters.Get(1, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLevelRankGreaterEquals": {
                             if (parameters == null)
                                 break;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables).Value;
 
-                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) >= ParseVarFunction(parameters.Get(1, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLevelRankLesser": {
                             if (parameters == null)
                                 break;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables).Value;
 
-                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) < ParseVarFunction(parameters.Get(1, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "StoryLevelRankGreater": {
                             if (parameters == null)
                                 break;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement).Value;
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables).Value;
 
-                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > ParseVarFunction(parameters.Get(1, "rank"), thisElement).AsInt;
+                            var value = StoryManager.inst.CurrentSave.Saves.TryFind(x => x.ID == id, out SaveData playerData) && LevelManager.GetLevelRank(LevelManager.CurrentLevel) > ParseVarFunction(parameters.Get(1, "rank"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
 
@@ -1192,12 +1279,12 @@ namespace BetterLegacy.Menus
         /// Parses a singular "func" JSON and performs an action based on the name and parameters.
         /// </summary>
         /// <param name="jn">The func JSON. Must have a name and a params array. If it has a "if_func", then it will parse and check if it's true.</param>
-        public void ParseFunctionSingle(JSONNode jn, MenuImage thisElement = null)
+        public void ParseFunctionSingle(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
-            var jnIfFunc = ParseVarFunction(jn["if_func"], thisElement);
+            var jnIfFunc = ParseVarFunction(jn["if_func"], thisElement, customVariables);
             if (jnIfFunc != null)
             {
-                if (!ParseIfFunction(jnIfFunc, thisElement))
+                if (!ParseIfFunction(jnIfFunc, thisElement, customVariables))
                     return;
             }
 
@@ -1246,12 +1333,12 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var sceneName = ParseVarFunction(parameters.Get(0, "scene"), thisElement);
+                        var sceneName = ParseVarFunction(parameters.Get(0, "scene"), thisElement, customVariables);
                         if (sceneName == null || !sceneName.IsString)
                             break;
 
-                        LevelManager.IsArcade = ParseVarFunction(parameters.Get(2, "is_arcade"), thisElement);
-                        var showLoading = ParseVarFunction(parameters.Get(1, "show_loading"), thisElement);
+                        LevelManager.IsArcade = ParseVarFunction(parameters.Get(2, "is_arcade"), thisElement, customVariables);
+                        var showLoading = ParseVarFunction(parameters.Get(1, "show_loading"), thisElement, customVariables);
 
                         if (showLoading != null)
                             SceneManager.inst.LoadScene(sceneName, Parser.TryParse(showLoading, true));
@@ -1381,11 +1468,11 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var t = ParseVarFunction(parameters.Get(0, "t"), thisElement);
+                        var t = ParseVarFunction(parameters.Get(0, "t"), thisElement, customVariables);
                         if (t == null)
                             break;
 
-                        var func = ParseVarFunction(parameters.Get(1, "func"), thisElement);
+                        var func = ParseVarFunction(parameters.Get(1, "func"), thisElement, customVariables);
                         if (func == null)
                             break;
 
@@ -1428,7 +1515,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var msg = ParseVarFunction(parameters.Get(0, "msg"), thisElement);
+                        var msg = ParseVarFunction(parameters.Get(0, "msg"), thisElement, customVariables);
                         if (msg == null)
                             break;
                         
@@ -1468,16 +1555,16 @@ namespace BetterLegacy.Menus
                             break;
 
                         var color = CurrentTheme.guiColor;
-                        var jnColor = ParseVarFunction(parameters.Get(1, "col"), thisElement);
+                        var jnColor = ParseVarFunction(parameters.Get(1, "col"), thisElement, customVariables);
                         if (jnColor != null)
                             color = RTColors.HexToColor(jnColor);
 
                         var fontSize = 30;
-                        var jnFontSize = ParseVarFunction(parameters.Get(2, "size"), thisElement);
+                        var jnFontSize = ParseVarFunction(parameters.Get(2, "size"), thisElement, customVariables);
                         if (jnFontSize != null)
                             fontSize = jnFontSize.AsInt;
 
-                        CoreHelper.Notify(ParseVarFunction(parameters.Get(0, "msg"), thisElement), color, fontSize);
+                        CoreHelper.Notify(ParseVarFunction(parameters.Get(0, "msg"), thisElement, customVariables), color, fontSize);
                         break;
                     }
 
@@ -1500,6 +1587,42 @@ namespace BetterLegacy.Menus
                 // Function has no parameters.
                 case "Config": {
                         ConfigManager.inst.Show();
+                        break;
+                    }
+
+                #endregion
+
+                #region ForLoop
+
+                case "ForLoop": {
+                        if (parameters == null)
+                            break;
+
+                        var varName = ParseVarFunction(parameters.Get(3, "var_name"), thisElement, customVariables);
+                        if (varName == null || !varName.IsString || varName == string.Empty)
+                            varName = "index";
+                        var index = ParseVarFunction(parameters.Get(0, "index"), thisElement, customVariables).AsInt;
+                        var count = ParseVarFunction(parameters.Get(1, "count"), thisElement, customVariables).AsInt;
+                        var func = ParseVarFunction(parameters.Get(2, "func"), thisElement, customVariables);
+                        if (func == null)
+                            break;
+
+                        index = RTMath.Clamp(index, 0, count - 1);
+
+                        for (int j = index; j < count; j++)
+                        {
+                            var loopVar = new Dictionary<string, JSONNode>();
+                            if (customVariables != null)
+                            {
+                                foreach (var keyValuePair in customVariables)
+                                    loopVar[keyValuePair.Key] = keyValuePair.Value;
+                            }
+
+                            loopVar[varName.Value] = j;
+
+                            ParseFunction(func, thisElement, loopVar);
+                        }
+
                         break;
                     }
 
@@ -1550,7 +1673,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                         if (id == null || !interfaces.TryFind(x => x.id == id, out MenuBase menu))
                             break;
 
@@ -1567,13 +1690,8 @@ namespace BetterLegacy.Menus
                 // Reloads the interface and sets it to the main menu. Only recommended if you want to return to the main menu and unload every other interface.
                 // Function has no parameters.
                 case "Reload": {
-                        var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
-                        if (RTFile.FileExists(splashTextPath))
-                        {
-                            var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
-                            var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
-                            LegacyPlugin.SplashText = splashes[splashIndex];
-                        }
+                        LegacyPlugin.ParseProfile();
+                        LegacyPlugin.LoadSplashText();
                         ChangeLogMenu.Seen = false;
                         randomIndex = -1;
                         StartupInterface();
@@ -1592,28 +1710,32 @@ namespace BetterLegacy.Menus
                 // 0 = file name without extension (files' extension must be lsi).
                 // 1 = if interface should be opened.
                 // 2 = set main directory.
+                // 3 = branch ID to load if the interface that's being loaded is a list type
                 // Example:
                 // [
                 //   "story_mode",
                 //   "True",
-                //   "{{BepInExAssetsDirectory}}Interfaces"
+                //   "{{BepInExAssetsDirectory}}Interfaces",
+                //   "643284542742"
                 // ]
                 //
                 // - JSON Object Structure -
                 // "file"
                 // "load"
                 // "path"
+                // "id"
                 // Example:
                 // {
                 //   "file": "some_interface",
                 //   "load": "False",
-                //   "path": "beatmaps/interfaces" < doesn't need to exist
+                //   "path": "beatmaps/interfaces", < (optional)
+                //   "id": "5325263" < ID of the interface to open if the file is a list
                 // }
                 case "Parse": {
                         if (parameters == null)
                             break;
 
-                        var file = ParseVarFunction(parameters.Get(0, "file"), thisElement);
+                        var file = ParseVarFunction(parameters.Get(0, "file"), thisElement, customVariables);
                         if (file == null)
                             break;
 
@@ -1633,7 +1755,19 @@ namespace BetterLegacy.Menus
                             break;
                         }
 
-                        ParseInterface(path, ParseVarFunction(parameters.Get(1, "load"), thisElement));
+                        var branchChain = new List<string>();
+                        var jnBranchChain = ParseVarFunction(parameters.Get(4, "chain"), thisElement, customVariables);
+                        if (jnBranchChain != null && jnBranchChain.IsArray)
+                        {
+                            for (int i = 0; i < jnBranchChain.Count; i++)
+                            {
+                                var branch = ParseVarFunction(jnBranchChain[i], thisElement, customVariables);
+                                if (branch != null && branch.IsString)
+                                    branchChain.Add(ParseVarFunction(jnBranchChain[i], thisElement, customVariables).Value);
+                            }
+                        }
+
+                        ParseInterface(path, ParseVarFunction(parameters.Get(1, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "id"), thisElement, customVariables), branchChain);
 
                         break;
                     }
@@ -1673,7 +1807,7 @@ namespace BetterLegacy.Menus
                         if (parameters)
                             break;
 
-                        var path = ParseVarFunction(parameters.Get(0, "path"), thisElement);
+                        var path = ParseVarFunction(parameters.Get(0, "path"), thisElement, customVariables);
                         if (path == null)
                             break;
 
@@ -1729,19 +1863,19 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var currentMessage = ParseVarFunction(parameters.Get(0, "msg"), thisElement);
+                        var currentMessage = ParseVarFunction(parameters.Get(0, "msg"), thisElement, customVariables);
                         if (currentMessage == null)
                             break;
 
-                        var confirmFunc = ParseVarFunction(parameters.Get(1, "confirm_func"), thisElement);
+                        var confirmFunc = ParseVarFunction(parameters.Get(1, "confirm_func"), thisElement, customVariables);
                         if (confirmFunc == null)
                             break;
 
-                        var cancelFunc = ParseVarFunction(parameters.Get(2, "cancel_func"), thisElement);
+                        var cancelFunc = ParseVarFunction(parameters.Get(2, "cancel_func"), thisElement, customVariables);
                         if (cancelFunc == null)
                             break;
 
-                        ConfirmMenu.Init(currentMessage, () => ParseFunction(confirmFunc, thisElement), () => ParseFunction(cancelFunc, thisElement));
+                        ConfirmMenu.Init(currentMessage, () => ParseFunction(confirmFunc, thisElement, customVariables), () => ParseFunction(cancelFunc, thisElement, customVariables));
 
                         break;
                     }
@@ -1778,7 +1912,7 @@ namespace BetterLegacy.Menus
 
                         customMenu.useGameTheme = parameters.Get(1, "game_theme");
 
-                        var theme = ParseVarFunction(parameters.Get(0, "theme"), thisElement);
+                        var theme = ParseVarFunction(parameters.Get(0, "theme"), thisElement, customVariables);
                         if (theme == null)
                             break;
 
@@ -1805,7 +1939,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                         if (id == null)
                             break;
 
@@ -1816,8 +1950,8 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var interfaces = ParseVarFunction(parameters.Get(0, "interfaces"), thisElement);
-                        var openID = ParseVarFunction(parameters.Get(1, "open_id"), thisElement);
+                        var interfaces = ParseVarFunction(parameters.Get(0, "interfaces"), thisElement, customVariables);
+                        var openID = ParseVarFunction(parameters.Get(1, "open_id"), thisElement, customVariables);
                         CurrentInterfaceList?.LoadInterfaces(interfaces);
                         CurrentInterfaceList?.SetCurrentInterface(openID);
                         break;
@@ -1826,7 +1960,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                         if (id == null)
                             break;
 
@@ -1944,7 +2078,7 @@ namespace BetterLegacy.Menus
                             break;
                         }
 
-                        string music = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        string music = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
 
                         if (string.IsNullOrEmpty(music) || music.ToLower() == "default")
                         {
@@ -1952,9 +2086,9 @@ namespace BetterLegacy.Menus
                             break;
                         }
 
-                        var fadeDuration = ParseVarFunction(parameters.GetOrDefault(1, "fade_duration", 0.5f), thisElement);
+                        var fadeDuration = ParseVarFunction(parameters.GetOrDefault(1, "fade_duration", 0.5f), thisElement, customVariables);
 
-                        var loop = ParseVarFunction(parameters.GetOrDefault(2, "loop", true), thisElement);
+                        var loop = ParseVarFunction(parameters.GetOrDefault(2, "loop", true), thisElement, customVariables);
 
                         var filePath = $"{Path.GetDirectoryName(CurrentInterface.filePath)}{music}";
                         if (!RTFile.FileExists(filePath))
@@ -2023,8 +2157,8 @@ namespace BetterLegacy.Menus
                         if (!gameObject || parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["x"] == null || parameters["y"] == null))
                             break;
 
-                        var jnX = ParseVarFunction(parameters.Get(0, "x"), thisElement);
-                        var jnY = ParseVarFunction(parameters.Get(1, "y"), thisElement);
+                        var jnX = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables);
+                        var jnY = ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables);
 
                         var variables = new Dictionary<string, float>
                         {
@@ -2068,11 +2202,11 @@ namespace BetterLegacy.Menus
                         if (parameters == null || !CurrentInterface)
                             break;
 
-                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                         if (id == null)
                             break;
 
-                        var active = ParseVarFunction(parameters.Get(1, "active"), thisElement);
+                        var active = ParseVarFunction(parameters.Get(1, "active"), thisElement, customVariables);
 
                         if (CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage.gameObject)
                             menuImage.gameObject.SetActive(active);
@@ -2108,11 +2242,11 @@ namespace BetterLegacy.Menus
                         if (parameters == null || !CurrentInterface)
                             break;
 
-                        var layoutName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        var layoutName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
                         if (layoutName == null)
                             break;
 
-                        var active = ParseVarFunction(parameters.Get(1, "active"), thisElement);
+                        var active = ParseVarFunction(parameters.Get(1, "active"), thisElement, customVariables);
 
                         if (CurrentInterface.layouts.TryGetValue(layoutName, out MenuLayoutBase layout) && layout.gameObject)
                             layout.gameObject.SetActive(active);
@@ -2702,7 +2836,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var layoutName = ParseVarFunction(parameters.Get(0, "layout"), thisElement);
+                        var layoutName = ParseVarFunction(parameters.Get(0, "layout"), thisElement, customVariables);
                         if (layoutName == null || !layoutName.IsString)
                             return;
 
@@ -2710,10 +2844,10 @@ namespace BetterLegacy.Menus
                             break;
 
                         if (menuLayout is MenuGridLayout menuGridLayout)
-                            menuGridLayout.Scroll(ParseVarFunction(parameters.Get(1, "x"), thisElement), ParseVarFunction(parameters.Get(2, "y"), thisElement), ParseVarFunction(parameters.Get(3, "x_additive"), thisElement), ParseVarFunction(parameters.Get(4, "y_additive"), thisElement));
+                            menuGridLayout.Scroll(ParseVarFunction(parameters.Get(1, "x"), thisElement, customVariables), ParseVarFunction(parameters.Get(2, "y"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "x_additive"), thisElement, customVariables), ParseVarFunction(parameters.Get(4, "y_additive"), thisElement, customVariables));
 
                         if (menuLayout is MenuHorizontalOrVerticalLayout menuHorizontalLayout)
-                            menuHorizontalLayout.Scroll(ParseVarFunction(parameters.Get(1, "value"), thisElement), ParseVarFunction(parameters.Get(2, "additive"), thisElement));
+                            menuHorizontalLayout.Scroll(ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables), ParseVarFunction(parameters.Get(2, "additive"), thisElement, customVariables));
 
                         break;
                     }
@@ -2746,11 +2880,11 @@ namespace BetterLegacy.Menus
                         if (parameters == null || !CurrentInterface)
                             break;
 
-                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                         if (id == null)
                             break;
 
-                        var selectable = ParseVarFunction(parameters.Get(1, "selectable"), thisElement);
+                        var selectable = ParseVarFunction(parameters.Get(1, "selectable"), thisElement, customVariables);
 
                         if (CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage))
                             menuImage.selectable = selectable;
@@ -2790,15 +2924,15 @@ namespace BetterLegacy.Menus
                         if (parameters == null || !CurrentInterface)
                             break;
 
-                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                         if (id == null)
                             break;
 
-                        var text = ParseVarFunction(parameters.Get(1, "text"), thisElement);
+                        var text = ParseVarFunction(parameters.Get(1, "text"), thisElement, customVariables);
 
                         if (CurrentInterface.elements.TryFind(x => x.id == id, out MenuImage menuImage) && menuImage is MenuInputField menuInputField && menuInputField.inputField)
                         {
-                            if (ParseVarFunction(parameters.GetOrDefault(2, "trigger", true), thisElement).AsBool)
+                            if (ParseVarFunction(parameters.GetOrDefault(2, "trigger", true), thisElement, customVariables).AsBool)
                                 menuInputField.inputField.text = text;
                             else
                                 menuInputField.inputField.SetTextWithoutNotify(text);
@@ -3330,11 +3464,11 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var effect = ParseVarFunction(parameters.Get(0, "effect"), thisElement);
+                        var effect = ParseVarFunction(parameters.Get(0, "effect"), thisElement, customVariables);
                         if (effect == null || !effect.IsString || !MenuEffectsManager.inst || !MenuEffectsManager.inst.functions.TryGetValue(effect, out Action<float> action))
                             break;
 
-                        action?.Invoke(ParseVarFunction(parameters.Get(1, "amount").AsFloat, thisElement));
+                        action?.Invoke(ParseVarFunction(parameters.Get(1, "amount").AsFloat, thisElement, customVariables));
 
                         break;
                     }
@@ -3357,25 +3491,25 @@ namespace BetterLegacy.Menus
                         switch (type.Value)
                         {
                             case "MoveCamera": {
-                                    var x = ParseVarFunction(values["x"], thisElement);
+                                    var x = ParseVarFunction(values["x"], thisElement, customVariables);
                                     if (x != null)
                                         MenuEffectsManager.inst.MoveCameraX(x.AsFloat);
 
-                                    var y = ParseVarFunction(values["x"], thisElement);
+                                    var y = ParseVarFunction(values["x"], thisElement, customVariables);
                                     if (y != null)
                                         MenuEffectsManager.inst.MoveCameraX(y.AsFloat);
 
                                     break;
                                 }
                             case "ZoomCamera": {
-                                    var amount = ParseVarFunction(values["amount"], thisElement);
+                                    var amount = ParseVarFunction(values["amount"], thisElement, customVariables);
                                     if (amount != null)
                                         MenuEffectsManager.inst.ZoomCamera(amount.AsFloat);
 
                                     break;
                                 }
                             case "RotateCamera": {
-                                    var amount = ParseVarFunction(values["amount"], thisElement);
+                                    var amount = ParseVarFunction(values["amount"], thisElement, customVariables);
                                     if (amount != null)
                                         MenuEffectsManager.inst.RotateCamera(amount.AsFloat);
 
@@ -3383,30 +3517,30 @@ namespace BetterLegacy.Menus
                                 }
                             case "Chroma":
                             case "Chromatic": {
-                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
                                     if (intensity != null)
                                         MenuEffectsManager.inst.UpdateChroma(intensity.AsFloat);
 
                                     break;
                                 }
                             case "Bloom": {
-                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
                                     if (intensity != null)
                                         MenuEffectsManager.inst.UpdateBloomIntensity(intensity.AsFloat);
 
-                                    var diffusion = ParseVarFunction(values["diffusion"], thisElement);
+                                    var diffusion = ParseVarFunction(values["diffusion"], thisElement, customVariables);
                                     if (diffusion != null)
                                         MenuEffectsManager.inst.UpdateBloomDiffusion(diffusion.AsFloat);
 
-                                    var threshold = ParseVarFunction(values["threshold"], thisElement);
+                                    var threshold = ParseVarFunction(values["threshold"], thisElement, customVariables);
                                     if (threshold != null)
                                         MenuEffectsManager.inst.UpdateBloomThreshold(threshold.AsFloat);
 
-                                    var anamorphicRatio = ParseVarFunction(values["anamorphic_ratio"], thisElement);
+                                    var anamorphicRatio = ParseVarFunction(values["anamorphic_ratio"], thisElement, customVariables);
                                     if (anamorphicRatio != null)
                                         MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(anamorphicRatio.AsFloat);
 
-                                    var col = ParseVarFunction(values["col"], thisElement);
+                                    var col = ParseVarFunction(values["col"], thisElement, customVariables);
                                     if (col != null)
                                         MenuEffectsManager.inst.UpdateBloomColor(col.IsString ? RTColors.HexToColor(col) : CurrentInterface.Theme.GetFXColor(col.AsInt));
 
@@ -3414,88 +3548,88 @@ namespace BetterLegacy.Menus
                                 }
                             case "Lens":
                             case "LensDistort": {
-                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
                                     if (intensity != null)
                                         MenuEffectsManager.inst.UpdateLensDistortIntensity(intensity.AsFloat);
 
-                                    var centerX = ParseVarFunction(values["center_x"], thisElement);
+                                    var centerX = ParseVarFunction(values["center_x"], thisElement, customVariables);
                                     if (centerX != null)
                                         MenuEffectsManager.inst.UpdateLensDistortCenterX(centerX.AsFloat);
 
-                                    var centerY = ParseVarFunction(values["center_y"], thisElement);
+                                    var centerY = ParseVarFunction(values["center_y"], thisElement, customVariables);
                                     if (centerY != null)
                                         MenuEffectsManager.inst.UpdateLensDistortCenterY(centerY.AsFloat);
 
-                                    var intensityX = ParseVarFunction(values["intensity_x"], thisElement);
+                                    var intensityX = ParseVarFunction(values["intensity_x"], thisElement, customVariables);
                                     if (intensityX != null)
                                         MenuEffectsManager.inst.UpdateLensDistortIntensityX(intensityX.AsFloat);
 
-                                    var intensityY = ParseVarFunction(values["intensity_x"], thisElement);
+                                    var intensityY = ParseVarFunction(values["intensity_x"], thisElement, customVariables);
                                     if (intensityY != null)
                                         MenuEffectsManager.inst.UpdateLensDistortIntensityY(intensityY.AsFloat);
 
-                                    var scale = ParseVarFunction(values["scale"], thisElement);
+                                    var scale = ParseVarFunction(values["scale"], thisElement, customVariables);
                                     if (scale != null)
                                         MenuEffectsManager.inst.UpdateLensDistortScale(scale.AsFloat);
 
                                     break;
                                 }
                             case "Vignette": {
-                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
                                     if (intensity != null)
                                         MenuEffectsManager.inst.UpdateVignetteIntensity(intensity.AsFloat);
 
-                                    var centerX = ParseVarFunction(values["center_x"], thisElement);
+                                    var centerX = ParseVarFunction(values["center_x"], thisElement, customVariables);
                                     if (centerX != null)
                                         MenuEffectsManager.inst.UpdateVignetteCenterX(centerX.AsFloat);
 
-                                    var centerY = ParseVarFunction(values["center_y"], thisElement);
+                                    var centerY = ParseVarFunction(values["center_y"], thisElement, customVariables);
                                     if (centerY != null)
                                         MenuEffectsManager.inst.UpdateVignetteCenterY(centerY.AsFloat);
 
-                                    var smoothness = ParseVarFunction(values["smoothness"], thisElement);
+                                    var smoothness = ParseVarFunction(values["smoothness"], thisElement, customVariables);
                                     if (smoothness != null)
                                         MenuEffectsManager.inst.UpdateVignetteSmoothness(smoothness.AsFloat);
 
-                                    var roundness = ParseVarFunction(values["roundness"], thisElement);
+                                    var roundness = ParseVarFunction(values["roundness"], thisElement, customVariables);
                                     if (roundness != null)
                                         MenuEffectsManager.inst.UpdateVignetteRoundness(roundness.AsFloat);
 
-                                    var rounded = ParseVarFunction(values["rounded"], thisElement);
+                                    var rounded = ParseVarFunction(values["rounded"], thisElement, customVariables);
                                     if (rounded != null)
                                         MenuEffectsManager.inst.UpdateVignetteRounded(rounded.AsBool);
 
-                                    var col = ParseVarFunction(values["col"], thisElement);
+                                    var col = ParseVarFunction(values["col"], thisElement, customVariables);
                                     if (col != null)
                                         MenuEffectsManager.inst.UpdateVignetteColor(col.IsString ? RTColors.HexToColor(col) : CurrentInterface.Theme.GetFXColor(col.AsInt));
 
                                     break;
                                 }
                             case "AnalogGlitch": {
-                                    var enabled = ParseVarFunction(values["enabled"], thisElement);
+                                    var enabled = ParseVarFunction(values["enabled"], thisElement, customVariables);
                                     if (enabled != null)
                                         MenuEffectsManager.inst.UpdateAnalogGlitchEnabled(enabled.AsBool);
 
-                                    var scanLineJitter = ParseVarFunction(values["scan_line_jitter"], thisElement);
+                                    var scanLineJitter = ParseVarFunction(values["scan_line_jitter"], thisElement, customVariables);
                                     if (scanLineJitter != null)
                                         MenuEffectsManager.inst.UpdateAnalogGlitchScanLineJitter(scanLineJitter.AsFloat);
 
-                                    var verticalJump = ParseVarFunction(values["vertical_jump"], thisElement);
+                                    var verticalJump = ParseVarFunction(values["vertical_jump"], thisElement, customVariables);
                                     if (verticalJump != null)
                                         MenuEffectsManager.inst.UpdateAnalogGlitchVerticalJump(verticalJump.AsFloat);
 
-                                    var horizontalShake = ParseVarFunction(values["horizontal_shake"], thisElement);
+                                    var horizontalShake = ParseVarFunction(values["horizontal_shake"], thisElement, customVariables);
                                     if (horizontalShake != null)
                                         MenuEffectsManager.inst.UpdateAnalogGlitchHorizontalShake(horizontalShake.AsFloat);
 
-                                    var colorDrift = ParseVarFunction(values["color_drift"], thisElement);
+                                    var colorDrift = ParseVarFunction(values["color_drift"], thisElement, customVariables);
                                     if (colorDrift != null)
                                         MenuEffectsManager.inst.UpdateAnalogGlitchColorDrift(colorDrift.AsFloat);
 
                                     break;
                                 }
                             case "DigitalGlitch": {
-                                    var intensity = ParseVarFunction(values["intensity"], thisElement);
+                                    var intensity = ParseVarFunction(values["intensity"], thisElement, customVariables);
                                     if (intensity != null)
                                         MenuEffectsManager.inst.UpdateDigitalGlitch(intensity.AsFloat);
 
@@ -3534,7 +3668,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
                         if (id == null || !id.IsString)
                             break;
 
@@ -3635,9 +3769,9 @@ namespace BetterLegacy.Menus
                 #region OpenLink
 
                 case "OpenLink": {
-                        var linkType = Parser.TryParse(ParseVarFunction(parameters.Get(0, "link_type"), thisElement), URLSource.Artist);
-                        var site = ParseVarFunction(parameters.Get(1, "site"), thisElement);
-                        var link = ParseVarFunction(parameters.Get(2, "link"), thisElement);
+                        var linkType = Parser.TryParse(ParseVarFunction(parameters.Get(0, "link_type"), thisElement, customVariables), URLSource.Artist);
+                        var site = ParseVarFunction(parameters.Get(1, "site"), thisElement, customVariables);
+                        var link = ParseVarFunction(parameters.Get(2, "link"), thisElement, customVariables);
 
                         var url = AlephNetwork.GetURL(linkType, site, link);
                         CoreHelper.Log($"Opening URL: {url}");
@@ -3691,7 +3825,7 @@ namespace BetterLegacy.Menus
                         LoadLevelsMenu.Init(() =>
                         {
                             if (parameters["on_loading_end"] != null)
-                                ParseFunction(parameters["on_loading_end"], thisElement);
+                                ParseFunction(parameters["on_loading_end"], thisElement, customVariables);
                         });
                         break;
                     }
@@ -3704,7 +3838,7 @@ namespace BetterLegacy.Menus
                         InputSelectMenu.OnInputsSelected = () =>
                         {
                             if (parameters["continue"] != null)
-                                ParseFunction(parameters["continue"], thisElement);
+                                ParseFunction(parameters["continue"], thisElement, customVariables);
                         };
                         break;
                     }
@@ -3742,19 +3876,19 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement);
+                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables);
                         if (chapter == null)
                             break;
 
-                        var level = ParseVarFunction(parameters.Get(1, "level"), thisElement);
+                        var level = ParseVarFunction(parameters.Get(1, "level"), thisElement, customVariables);
                         if (level == null)
                             break;
 
-                        var cutsceneIndex = ParseVarFunction(parameters.Get(2, "cutscene_index"), thisElement).AsInt;
-                        var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement).AsBool;
-                        var skipCutscenes = ParseVarFunction(parameters.GetOrDefault(5, "skip_cutscenes", true), thisElement).AsBool;
+                        var cutsceneIndex = ParseVarFunction(parameters.Get(2, "cutscene_index"), thisElement, customVariables).AsInt;
+                        var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement, customVariables).AsBool;
+                        var skipCutscenes = ParseVarFunction(parameters.GetOrDefault(5, "skip_cutscenes", true), thisElement, customVariables).AsBool;
 
-                        StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(3, "continue"), thisElement).AsBool;
+                        StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(3, "continue"), thisElement, customVariables).AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
                         StoryManager.inst.Play(chapter.AsInt, level.AsInt, cutsceneIndex, bonus, skipCutscenes);
@@ -3770,19 +3904,19 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement);
+                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables);
                         if (chapter == null)
                             break;
 
-                        var level = ParseVarFunction(parameters.Get(1, "level"), thisElement);
+                        var level = ParseVarFunction(parameters.Get(1, "level"), thisElement, customVariables);
                         if (level == null)
                             break;
 
                         var isArray = parameters.IsArray;
-                        var cutsceneDestinationJN = ParseVarFunction(parameters.Get(2, "cutscene_destination"), thisElement);
+                        var cutsceneDestinationJN = ParseVarFunction(parameters.Get(2, "cutscene_destination"), thisElement, customVariables);
                         var cutsceneDestination = Parser.TryParse(cutsceneDestinationJN, CutsceneDestination.Pre);
-                        var cutsceneIndex = ParseVarFunction(parameters.Get(3, "cutscene_index"), thisElement).AsInt;
-                        var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement).AsBool;
+                        var cutsceneIndex = ParseVarFunction(parameters.Get(3, "cutscene_index"), thisElement, customVariables).AsInt;
+                        var bonus = ParseVarFunction(parameters.Get(4, "bonus"), thisElement, customVariables).AsBool;
 
                         StoryManager.inst.ContinueStory = false;
 
@@ -3800,11 +3934,11 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             return;
 
-                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement);
+                        var chapter = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables);
                         if (chapter == null)
                             break;
 
-                        StoryManager.inst.PlayAllCutscenes(chapter, ParseVarFunction(parameters.Get(1, "bonus"), thisElement).AsBool);
+                        StoryManager.inst.PlayAllCutscenes(chapter, ParseVarFunction(parameters.Get(1, "bonus"), thisElement, customVariables).AsBool);
 
                         break;
                     }
@@ -3817,13 +3951,13 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             return;
 
-                        var path = ParseVarFunction(parameters.Get(0, "path"), thisElement);
+                        var path = ParseVarFunction(parameters.Get(0, "path"), thisElement, customVariables);
                         if (path == null || !path.IsString)
                             break;
 
-                        var songName = ParseVarFunction(parameters.Get(1, "song"), thisElement);
+                        var songName = ParseVarFunction(parameters.Get(1, "song"), thisElement, customVariables);
 
-                        StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(2, "continue"), thisElement).AsBool;
+                        StoryManager.inst.ContinueStory = ParseVarFunction(parameters.Get(2, "continue"), thisElement, customVariables).AsBool;
 
                         ArcadeHelper.ResetModifiedStates();
                         StoryManager.inst.Play(path, songName);
@@ -3861,7 +3995,7 @@ namespace BetterLegacy.Menus
                 #region LoadStoryInterface
 
                 case "LoadStoryInterface": {
-                        StartupStoryInterface(ParseVarFunction(parameters.Get(0, "chapter"), thisElement).AsInt, ParseVarFunction(parameters.Get(1, "level"), thisElement).AsInt);
+                        StartupStoryInterface(ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables).AsInt, ParseVarFunction(parameters.Get(1, "level"), thisElement, customVariables).AsInt);
 
                         break;
                     }
@@ -3883,19 +4017,41 @@ namespace BetterLegacy.Menus
 
                 #endregion
 
+                #region SaveProfileValue
+
+                case "SaveProfileValue": {
+                        if (parameters == null || !LegacyPlugin.player || LegacyPlugin.player.memory == null)
+                            break;
+
+                        var varName = ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables);
+                        if (varName == null || !varName.IsString)
+                            break;
+                        
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
+                        if (value == null)
+                            break;
+
+                        LegacyPlugin.player.memory[varName.Value] = value;
+                        LegacyPlugin.SaveProfile();
+
+                        break;
+                    }
+
+                #endregion
+
                 #region StorySaveBool
 
                 case "StorySaveBool": {
                         if (parameters == null)
                             break;
 
-                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
                         if (saveName == null || !saveName.IsString)
                             break;
 
-                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
 
-                        if (ParseVarFunction(parameters.Get(2, "toggle"), thisElement).AsBool)
+                        if (ParseVarFunction(parameters.Get(2, "toggle"), thisElement, customVariables).AsBool)
                             value = !StoryManager.inst.CurrentSave.LoadBool(saveName, false);
 
                         StoryManager.inst.CurrentSave.SaveBool(saveName, value.AsBool);
@@ -3911,13 +4067,13 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
                         if (saveName == null || !saveName.IsString)
                             break;
 
-                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
                         
-                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement).AsBool)
+                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement, customVariables).AsBool)
                             value += StoryManager.inst.CurrentSave.LoadInt(saveName, 0);
 
                         StoryManager.inst.CurrentSave.SaveInt(saveName, value.AsInt);
@@ -3933,13 +4089,13 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
                         if (saveName == null || !saveName.IsString)
                             break;
 
-                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
                         
-                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement).AsBool)
+                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement, customVariables).AsBool)
                             value += StoryManager.inst.CurrentSave.LoadFloat(saveName, 0);
 
                         StoryManager.inst.CurrentSave.SaveFloat(saveName, value.AsFloat);
@@ -3955,12 +4111,12 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
                         if (saveName == null || !saveName.IsString)
                             break;
 
-                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
-                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement).AsBool)
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
+                        if (ParseVarFunction(parameters.Get(2, "relative"), thisElement, customVariables).AsBool)
                             value += StoryManager.inst.CurrentSave.LoadString(saveName, string.Empty);
 
                         StoryManager.inst.CurrentSave.SaveString(saveName, value);
@@ -3976,11 +4132,11 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
                         if (saveName == null || !saveName.IsString)
                             break;
 
-                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement);
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
 
                         StoryManager.inst.CurrentSave.SaveNode(saveName, value);
 
@@ -3995,7 +4151,7 @@ namespace BetterLegacy.Menus
                         if (parameters == null)
                             break;
 
-                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement);
+                        var saveName = ParseVarFunction(parameters.Get(0, "name"), thisElement, customVariables);
                         if (saveName == null || !saveName.IsString)
                             break;
 
@@ -4450,6 +4606,20 @@ namespace BetterLegacy.Menus
                             break;
 
                         return RTString.ToStoryNumber(number.AsInt);
+                    }
+
+                #endregion
+
+                #region LoadProfileValue
+
+                case "LoadProfileValue": {
+                        if (parameters == null || !LegacyPlugin.player || LegacyPlugin.player.memory == null)
+                            break;
+
+                        var varName = ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables);
+                        if (varName == null || !varName.IsString)
+                            break;
+                        return LegacyPlugin.player.memory[varName.Value];
                     }
 
                 #endregion
