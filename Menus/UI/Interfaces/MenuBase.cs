@@ -46,7 +46,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// The name to be used if <see cref="music"/> is not loaded.
         /// </summary>
-        public string musicName = "menu";
+        public string musicName = InterfaceManager.RANDOM_MUSIC_NAME;
 
         /// <summary>
         /// If true, the user is allowed to have their own music play. Otherwise, prevent custom music.
