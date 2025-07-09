@@ -17,7 +17,8 @@
 ### Interfaces
 - Introducing a new variable system. Most JSON values in custom interfaces can be set to a variable or function.
 - Implemented interface list. This allows for easier interface branching and interface loading.
-- Due to the interface list feature, some interfaces have been combined into one file.
+- Due to the interface list feature, some interfaces have been combined into one file and there's also some new tests to demonstrate the capabilities of the interface now.
+- Updated the splash text.
 
 ------------------------------------------------------------------------------------------
 
