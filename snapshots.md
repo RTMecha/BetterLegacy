@@ -14,6 +14,11 @@
 ### Core
 - Player stop boost function no longer depends on the moveable state of the player.
 
+### Interfaces
+- Introducing a new variable system. Most JSON values in custom interfaces can be set to a variable or function.
+- Implemented interface list. This allows for easier interface branching and interface loading.
+- Due to the interface list feature, some interfaces have been combined into one file.
+
 ------------------------------------------------------------------------------------------
 
 # 1.7.0 [June 15, 2025]
