@@ -5,11 +5,12 @@ using System.Linq;
 using SimpleJSON;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
-    public class CustomMenuList
+    public class CustomMenuList : Exists
     {
         public CustomMenuList() { }
 
@@ -32,7 +33,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// All loaded interfaces.
         /// </summary>
-        public List<MenuBase> interfaces;
+        public List<MenuBase> interfaces = new List<MenuBase>();
 
         /// <summary>
         /// The default interface to load.
@@ -70,7 +71,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Interfaces that have been opened.
         /// </summary>
-        public List<MenuBase> interfaceChain;
+        public List<MenuBase> interfaceChain = new List<MenuBase>();
 
         /// <summary>
         /// Checks if there are any interfaces that are opened.
@@ -92,7 +93,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="menu">Interface to open.</param>
         public void SetCurrentInterface(MenuBase menu)
         {
-            CloseMenus();
+            InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentInterface = menu;
             interfaceChain.Add(menu);
             menu.StartGeneration();
@@ -113,15 +114,35 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public void ExitInterface()
         {
-            if (HasChain)
-            {
-                CloseMenus();
-                interfaceChain.RemoveAt(interfaceChain.Count - 1);
-                if (!HasChain)
-                    return;
+            // prevent exiting if the interface chain only contains 1 interface
+            if (interfaceChain.Count <= 1)
+                return;
 
-                SetCurrentInterface(interfaceChain.Last());
+            InterfaceManager.inst.CloseMenus();
+            interfaceChain.RemoveAt(interfaceChain.Count - 1);
+            if (!HasChain)
+                return;
+
+            SetCurrentInterface(interfaceChain.Last());
+        }
+
+        /// <summary>
+        /// Clears the open interface chain.
+        /// </summary>
+        public void ClearChain()
+        {
+            for (int i = 0; i < interfaceChain.Count; i++)
+            {
+                try
+                {
+                    interfaceChain[i].Clear();
+                }
+                catch
+                {
+
+                }
             }
+            interfaceChain.Clear();
         }
 
         /// <summary>
@@ -131,8 +152,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             onClear?.Invoke(this);
             onClear = null;
-
-            InterfaceManager.inst.CloseMenus();
         }
 
         /// <summary>
@@ -154,8 +173,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
             interfaces.Clear();
-
-            InterfaceManager.inst.Clear(clearThemes, stopGenerating);
         }
 
         /// <summary>
@@ -178,7 +195,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             interfaces.Remove(menu);
             if (close && menu.id == InterfaceManager.inst.CurrentInterface.id)
-                CloseMenus();
+                InterfaceManager.inst.CloseMenus();
         }
 
         /// <summary>
@@ -228,13 +245,19 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public static CustomMenuList Parse(JSONNode jn, bool open = true)
         {
             var customMenuList = new CustomMenuList(jn["name"]);
-            customMenuList.LoadInterfaces(jn["branches"]);
+            var branches = InterfaceManager.inst.ParseVarFunction(jn["branches"]);
+            if (branches != null)
+                customMenuList.LoadInterfaces(branches);
 
-            if (!string.IsNullOrEmpty(jn["default_branch"]))
+            var defaultBranch = InterfaceManager.inst.ParseVarFunction(jn["default_branch"]);
+            if (defaultBranch != null && defaultBranch.IsString)
             {
-                customMenuList.defaultInterfaceID = jn["default_branch"];
+                customMenuList.defaultInterfaceID = defaultBranch;
                 if (open)
+                {
                     customMenuList.SetCurrentInterface(customMenuList.defaultInterfaceID);
+                    InterfaceManager.inst.PlayMusic();
+                }
             }
 
             return customMenuList;
@@ -253,22 +276,36 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <returns>Returns an IEnumerable of <see cref="MenuBase"/>.</returns>
         public IEnumerable<MenuBase> ParseInterfaces(JSONNode jn)
         {
-            if (!jn.IsArray)
+            if (jn == null || !jn.IsArray)
                 yield break;
 
             for (int i = 0; i < jn.Count; i++)
             {
-                var jnChild = jn[i];
+                var jnChild = InterfaceManager.inst.ParseVarFunction(jn[i]);
 
-                if (jnChild["file"] != null)
+                if (jnChild == null)
+                    continue;
+
+                if (jnChild.IsArray)
                 {
-                    if (jnChild["path"] != null)
-                        InterfaceManager.inst.MainDirectory = InterfaceManager.inst.ParseText(jnChild["path"]);
+                    var interfaces = ParseInterfaces(jnChild);
+                    foreach (var menu in interfaces)
+                        yield return menu;
+
+                    continue;
+                }
+
+                var file = InterfaceManager.inst.ParseVarFunction(jnChild["file"]);
+                if (file != null)
+                {
+                    var jnPath = InterfaceManager.inst.ParseVarFunction(jnChild["path"]);
+                    if (jnPath != null)
+                        InterfaceManager.inst.MainDirectory = InterfaceManager.inst.ParseText(jnPath);
 
                     if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
                         InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
 
-                    var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, $"{jnChild["file"].Value}{FileFormat.LSI.Dot()}");
+                    var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, file + FileFormat.LSI.Dot());
 
                     if (!RTFile.FileExists(path))
                     {
@@ -277,9 +314,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         continue;
                     }
 
-                    var interfaceJN = JSON.Parse(RTFile.ReadFromFile(path));
-
-                    var menu = CustomMenu.Parse(interfaceJN);
+                    var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
                     menu.filePath = path;
 
                     Add(menu);
@@ -291,83 +326,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
-        /// <summary>
-        /// Parses a global interface bool function.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        public bool ParseIfFunctionSingle(JSONNode jn)
-        {
-            var parameters = jn["params"];
-            string name = jn["name"];
-
-            switch (name)
-            {
-                case "LIST_ContainsInterface":
-                    {
-                        Contains(parameters.Get(0, "id"));
-                        break;
-                    }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Parses a global interface function.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        public void ParseFunctionSingle(JSONNode jn)
-        {
-            var parameters = jn["params"];
-            string name = jn["name"];
-
-            switch (name)
-            {
-                case "LIST_OpenDefaultInterface":
-                    {
-                        OpenDefaultInterface();
-                        break;
-                    }
-                case "LIST_ExitInterface":
-                    {
-                        ExitInterface();
-                        break;
-                    }
-                case "LIST_SetCurrentInterface":
-                    {
-                        var id = parameters.Get(0, "id");
-                        if (id == null)
-                            break;
-
-                        SetCurrentInterface(id);
-                        break;
-                    }
-                case "LIST_AddInterface":
-                    {
-                        LoadInterfaces(parameters.Get(0, "interfaces"));
-                        SetCurrentInterface(parameters.Get(1, "open_id"));
-                        break;
-                    }
-                case "LIST_RemoveInterface":
-                    {
-                        Remove(parameters.Get(0, "id"));
-                        break;
-                    }
-                case "LIST_ClearInterfaces":
-                    {
-                        Clear();
-                        break;
-                    }
-                case "LIST_CloseInterfaces":
-                    {
-                        CloseMenus();
-                        break;
-                    }
-            }
-        }
-
         #endregion
-
-        public static implicit operator bool(CustomMenuList menuList) => menuList != null;
     }
 }

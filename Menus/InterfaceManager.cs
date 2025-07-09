@@ -274,10 +274,16 @@ namespace BetterLegacy.Menus
         /// The currently open interface.
         /// </summary>
         public MenuBase CurrentInterface { get; set; }
+
         /// <summary>
         /// The current interface generation sequence.
         /// </summary>
         public Coroutine CurrentGenerateUICoroutine { get; set; }
+
+        /// <summary>
+        /// The currently open interface list.
+        /// </summary>
+        public CustomMenuList CurrentInterfaceList { get; set; }
 
         /// <summary>
         /// All loaded interfaces.
@@ -336,6 +342,8 @@ namespace BetterLegacy.Menus
             ControllerDisconnectedMenu.Current = null;
 
             StopGenerating();
+
+            CurrentInterfaceList?.CloseMenus();
         }
 
         /// <summary>
@@ -345,11 +353,11 @@ namespace BetterLegacy.Menus
         /// <param name="stopGenerating">If the current interface should stop generating.</param>
         public void Clear(bool clearThemes = true, bool stopGenerating = true)
         {
-            if (CurrentInterface)
-            {
-                CurrentInterface.Clear();
-                CurrentInterface = null;
-            }
+            CurrentInterface?.Clear();
+            CurrentInterface = null;
+
+            CurrentInterfaceList?.Clear(clearThemes, stopGenerating);
+            CurrentInterfaceList = null;
 
             for (int i = 0; i < interfaces.Count; i++)
             {
@@ -408,22 +416,38 @@ namespace BetterLegacy.Menus
 
             var path = storyStarted ? chapter.interfacePath : StoryMode.Instance.entryInterfacePath;
 
-            Parse(path);
+            ParseInterface(path);
         }
 
         /// <summary>
         /// Parses an interface from a path, adds it to the interfaces list and opens it.
         /// </summary>
         /// <param name="path">Path to an interface.</param>
-        public void Parse(string path)
+        public void ParseInterface(string path, bool load = true)
         {
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
-            var menu = CustomMenu.Parse(jn);
-            menu.filePath = path;
-            interfaces.Add(menu);
+            if (!string.IsNullOrEmpty(jn["type"]) && jn["type"].Value.ToLower() == "list")
+            {
+                if (!load)
+                    return;
 
-            SetCurrentInterface(menu.id);
+                CurrentInterfaceList = CustomMenuList.Parse(jn);
+                PlayMusic();
+                return;
+            }
+
+            MenuBase menu = CustomMenu.Parse(jn);
+            menu.filePath = path;
+            if (interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
+                menu = otherMenu;
+            else
+                interfaces.Add(menu);
+
+            if (!load)
+                return;
+
+            SetCurrentInterface(menu);
             PlayMusic();
         }
 
@@ -447,7 +471,7 @@ namespace BetterLegacy.Menus
 
             Companion.Entity.Example.Current?.model?.SetActive(true); // if Example was disabled
 
-            Parse(RTFile.GetAsset($"Interfaces/main_menu{FileFormat.LSI.Dot()}"));
+            ParseInterface(RTFile.GetAsset($"Interfaces/main_menu{FileFormat.LSI.Dot()}"));
 
             interfaces.Add(new StoryMenu());
 
@@ -756,6 +780,22 @@ namespace BetterLegacy.Menus
                     case "CurrentInterfaceGenerating": {
                             var value = CurrentInterface && CurrentInterface.generating;
                             return !not ? value : !value;
+                        }
+
+                    #endregion
+
+                    #region Interface List
+
+                    case "LIST_ContainsInterface": {
+                            if (!CurrentInterfaceList || parameters == null)
+                                break;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                            if (id == null)
+                                break;
+
+                            CurrentInterfaceList.Contains(id);
+                            break;
                         }
 
                     #endregion
@@ -1399,6 +1439,50 @@ namespace BetterLegacy.Menus
 
                 #endregion
 
+                #region Notify
+
+                // Sends a notification.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = message
+                // Example:
+                // [
+                //   "Hello world!",
+                //   "FFFFFF",
+                //   "20"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "msg"
+                // "col"
+                // "size"
+                // Example:
+                // {
+                //   "msg": "Hello world!",
+                //   "col": "000000",
+                //   "size": "40"
+                // }
+                case "Notify": {
+                        if (parameters == null)
+                            break;
+
+                        var color = CurrentTheme.guiColor;
+                        var jnColor = ParseVarFunction(parameters.Get(1, "col"), thisElement);
+                        if (jnColor != null)
+                            color = RTColors.HexToColor(jnColor);
+
+                        var fontSize = 30;
+                        var jnFontSize = ParseVarFunction(parameters.Get(2, "size"), thisElement);
+                        if (jnFontSize != null)
+                            fontSize = jnFontSize.AsInt;
+
+                        CoreHelper.Notify(ParseVarFunction(parameters.Get(0, "msg"), thisElement), color, fontSize);
+                        break;
+                    }
+
+                #endregion
+
                 #region ExitGame
 
                 // Exits the game.
@@ -1549,31 +1633,7 @@ namespace BetterLegacy.Menus
                             break;
                         }
 
-                        var interfaceJN = JSON.Parse(RTFile.ReadFromFile(path));
-
-                        var menu = CustomMenu.Parse(interfaceJN);
-                        menu.filePath = path;
-
-                        var load = ParseVarFunction(parameters.Get(1, "load"), thisElement);
-
-                        if (interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
-                        {
-                            if (load)
-                            {
-                                SetCurrentInterface(otherMenu);
-                                PlayMusic();
-                            }
-
-                            break;
-                        }
-
-                        interfaces.Add(menu);
-
-                        if (load)
-                        {
-                            SetCurrentInterface(menu);
-                            PlayMusic();
-                        }
+                        ParseInterface(path, ParseVarFunction(parameters.Get(1, "load"), thisElement));
 
                         break;
                     }
@@ -1728,6 +1788,63 @@ namespace BetterLegacy.Menus
                     }
 
                 #endregion
+
+                #endregion
+
+                #region Interface List
+
+                case "LIST_OpenDefaultInterface": {
+                        CurrentInterfaceList?.OpenDefaultInterface();
+                        break;
+                    }
+                case "LIST_ExitInterface": {
+                        CurrentInterfaceList?.ExitInterface();
+                        break;
+                    }
+                case "LIST_SetCurrentInterface": {
+                        if (parameters == null)
+                            break;
+
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        if (id == null)
+                            break;
+
+                        CurrentInterfaceList?.SetCurrentInterface(id);
+                        break;
+                    }
+                case "LIST_AddInterface": {
+                        if (parameters == null)
+                            break;
+
+                        var interfaces = ParseVarFunction(parameters.Get(0, "interfaces"), thisElement);
+                        var openID = ParseVarFunction(parameters.Get(1, "open_id"), thisElement);
+                        CurrentInterfaceList?.LoadInterfaces(interfaces);
+                        CurrentInterfaceList?.SetCurrentInterface(openID);
+                        break;
+                    }
+                case "LIST_RemoveInterface": {
+                        if (parameters == null)
+                            break;
+
+                        var id = ParseVarFunction(parameters.Get(0, "id"), thisElement);
+                        if (id == null)
+                            break;
+
+                        CurrentInterfaceList?.Remove(id);
+                        break;
+                    }
+                case "LIST_ClearInterfaces": {
+                        CurrentInterfaceList?.Clear();
+                        break;
+                    }
+                case "LIST_CloseInterfaces": {
+                        CurrentInterfaceList?.CloseMenus();
+                        break;
+                    }
+                case "LIST_ClearChain": {
+                        CurrentInterfaceList?.ClearChain();
+                        break;
+                    }
 
                 #endregion
 
@@ -3541,7 +3658,19 @@ namespace BetterLegacy.Menus
                         break;
                     }
 
-                    #endregion
+                #endregion
+
+                #region SourceCode
+
+                // Opens the GitHub Source Code link.
+                // Function has no parameters.
+                case "SourceCode": {
+                        Application.OpenURL(AlephNetwork.OPEN_SOURCE_URL);
+
+                        break;
+                    }
+
+                #endregion
 
                 #endregion
 
@@ -4268,6 +4397,44 @@ namespace BetterLegacy.Menus
                             strArgs[i] = args[i].Value;
 
                         return string.Format(str, strArgs);
+                    }
+
+                #endregion
+
+                #region ColorSource
+
+                // Parses a variable from a color source.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = color source.
+                // 1 = index of the color slot. (optional)
+                // Example:
+                // [
+                //   "obj",
+                //   "2" < returns the object color slot at index 2
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "source"
+                // "index" (optional)
+                // Example:
+                // {
+                //   "source": "bg" < index is optional
+                // }
+                case "ColorSource": {
+                        var source = ParseVarFunction(parameters.Get(0, "source"), thisElement).Value;
+                        var index = ParseVarFunction(parameters.Get(1, "index"), thisElement);
+                        return (source switch
+                        {
+                            "gui_accent" => CurrentTheme.guiAccentColor,
+                            "bg" => CurrentTheme.backgroundColor,
+                            "player" => CurrentTheme.playerColors.GetAt(index.AsInt),
+                            "obj" => CurrentTheme.objectColors.GetAt(index.AsInt),
+                            "bgs" => CurrentTheme.backgroundColors.GetAt(index.AsInt),
+                            "fx" => CurrentTheme.effectColors.GetAt(index.AsInt),
+                            _ => CurrentTheme.guiColor,
+                        }).ToString();
                     }
 
                 #endregion
