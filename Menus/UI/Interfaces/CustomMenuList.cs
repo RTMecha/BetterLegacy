@@ -21,6 +21,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         #region Values
 
         /// <summary>
+        /// Identification of the interface list.
+        /// </summary>
+        public string id;
+
+        /// <summary>
         /// Name of the interface list.
         /// </summary>
         public string name;
@@ -91,11 +96,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// Closes all interfaces and opens an interface.
         /// </summary>
         /// <param name="menu">Interface to open.</param>
-        public void SetCurrentInterface(MenuBase menu)
+        public void SetCurrentInterface(MenuBase menu, bool addToChain = true)
         {
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentInterface = menu;
-            interfaceChain.Add(menu);
+            if (addToChain)
+                interfaceChain.Add(menu);
             menu.StartGeneration();
         }
 
@@ -123,7 +129,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!HasChain)
                 return;
 
-            SetCurrentInterface(interfaceChain.Last());
+            SetCurrentInterface(interfaceChain.Last(), false);
         }
 
         /// <summary>
@@ -242,7 +248,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="jn">JSON to parse.</param>
         /// <param name="open">If the default interface should open.</param>
         /// <returns>Returns a parsed custom menu list.</returns>
-        public static CustomMenuList Parse(JSONNode jn, bool open = true)
+        public static CustomMenuList Parse(JSONNode jn, bool open = true, string openInterfaceID = null, List<string> branchChain = null)
         {
             var customMenuList = new CustomMenuList(jn["name"]);
             var branches = InterfaceManager.inst.ParseVarFunction(jn["branches"]);
@@ -255,7 +261,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 customMenuList.defaultInterfaceID = defaultBranch;
                 if (open)
                 {
-                    customMenuList.SetCurrentInterface(customMenuList.defaultInterfaceID);
+                    if (branchChain != null)
+                    {
+                        foreach (var id in branchChain)
+                        {
+                            if (customMenuList.TryFind(id, out MenuBase menu))
+                                customMenuList.interfaceChain.Add(menu);
+                        }
+                    }
+
+                    customMenuList.SetCurrentInterface(!string.IsNullOrEmpty(openInterfaceID) ? openInterfaceID : customMenuList.defaultInterfaceID);
                     InterfaceManager.inst.PlayMusic();
                 }
             }
@@ -325,6 +340,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 yield return CustomMenu.Parse(jnChild);
             }
         }
+
+        public override string ToString() => string.IsNullOrEmpty(id) ? name : $"{id} - {name}";
 
         #endregion
     }
