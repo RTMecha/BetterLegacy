@@ -541,6 +541,39 @@ namespace BetterLegacy.Core.Helpers
 
         public static void LogSeparator() => Debug.Log("---------------------------------------------------------------------");
 
+        public static void LogArray<T>(T[] array)
+        {
+            if (array == null)
+                return;
+
+            var sb = new System.Text.StringBuilder(LegacyPlugin.className);
+            foreach (var item in array)
+                sb.AppendLine(item.ToString());
+            Debug.Log(sb.ToString());
+        }
+        
+        public static void LogList<T>(List<T> list)
+        {
+            if (list == null)
+                return;
+
+            var sb = new System.Text.StringBuilder(LegacyPlugin.className);
+            foreach (var item in list)
+                sb.AppendLine(item.ToString());
+            Debug.Log(sb.ToString());
+        }
+
+        public static void LogDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+        {
+            if (dictionary == null)
+                return;
+
+            var sb = new System.Text.StringBuilder(LegacyPlugin.className);
+            foreach (var item in dictionary)
+                sb.AppendLine(item.ToString());
+            Debug.Log(sb.ToString());
+        }
+
         #region Stopwatch
 
         public static System.Diagnostics.Stopwatch StartNewStopwatch() => System.Diagnostics.Stopwatch.StartNew();
