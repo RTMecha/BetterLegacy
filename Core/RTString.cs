@@ -693,7 +693,7 @@ namespace BetterLegacy.Core
             return str;
         }
 
-        public static string ParseText(string input)
+        public static string ParseText(string input, Dictionary<string, SimpleJSON.JSONNode> customVariables = null)
         {
             if (string.IsNullOrEmpty(input))
                 return input;
@@ -729,11 +729,16 @@ namespace BetterLegacy.Core
             {
                 input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
             });
+            
+            RegexMatches(input, new Regex(@"{{ToStoryNumber=([0-9]+)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), ToStoryNumber(Parser.TryParse(match.Groups[1].ToString(), 0)));
+            });
 
             RegexMatches(input, new Regex("{{ParseVariable=\"(.*?)\"}}"), match =>
             {
                 var jn = SimpleJSON.JSON.Parse(match.Groups[1].ToString());
-                input = input.Replace(match.Groups[0].ToString(), InterfaceManager.inst.ParseVarFunction(jn));
+                input = input.Replace(match.Groups[0].ToString(), InterfaceManager.inst.ParseVarFunction(jn, customVariables: customVariables));
             });
 
             input = RTFile.ParsePaths(input);
