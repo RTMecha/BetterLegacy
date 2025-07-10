@@ -298,11 +298,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
 
-            var branches = InterfaceManager.inst.ParseVarFunction(jn["branches"]);
+            var branches = InterfaceManager.inst.ParseVarFunction(jn["branches"], customVariables: customVariables);
             if (branches != null)
                 customMenuList.LoadInterfaces(branches, customVariables);
 
-            var defaultBranch = InterfaceManager.inst.ParseVarFunction(jn["default_branch"]);
+            var defaultBranch = InterfaceManager.inst.ParseVarFunction(jn["default_branch"], customVariables: customVariables);
             if (defaultBranch != null && defaultBranch.IsString)
             {
                 customMenuList.defaultInterfaceID = defaultBranch;
@@ -396,7 +396,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             var file = InterfaceManager.inst.ParseVarFunction(jn["file"], customVariables: customVariables);
             if (file == null)
-                return CustomMenu.Parse(jn);
+                return CustomMenu.Parse(jn, customVariables);
 
             var jnPath = InterfaceManager.inst.ParseVarFunction(jn["path"], customVariables: customVariables);
             if (jnPath != null)
