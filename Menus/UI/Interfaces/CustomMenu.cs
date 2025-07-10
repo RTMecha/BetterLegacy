@@ -22,17 +22,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public CustomMenu() : base() { }
         
-        public override void UpdateTheme()
-        {
-            if (useGameTheme && CoreHelper.InGame)
-                Theme = CoreHelper.CurrentBeatmapTheme;
-            else if (loadedTheme != null)
-                Theme = loadedTheme;
-            else if (Parser.TryParse(currentTheme, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == currentTheme, out BeatmapTheme current))
-                Theme = current;
-
-            base.UpdateTheme();
-        }
+        #region Values
 
         /// <summary>
         /// If the current game Beatmap Theme (<see cref="Core.Managers.ThemeManager.Current"/>) should be used.
@@ -48,6 +38,22 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// The theme loaded from the file.
         /// </summary>
         public BeatmapTheme loadedTheme;
+
+        #endregion
+
+        #region Methods
+
+        public override void UpdateTheme()
+        {
+            if (useGameTheme && CoreHelper.InGame)
+                Theme = CoreHelper.CurrentBeatmapTheme;
+            else if (loadedTheme != null)
+                Theme = loadedTheme;
+            else if (Parser.TryParse(currentTheme, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == currentTheme, out BeatmapTheme current))
+                Theme = current;
+
+            base.UpdateTheme();
+        }
 
         /// <summary>
         /// Parses a Custom Menu from JSON.
@@ -998,5 +1004,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     }
             }
         }
+
+        #endregion
     }
 }
