@@ -2,7 +2,13 @@
 
 ## Features
 ### Core
+- Added "Pause Level" and "Pass Variables" values to the loadInterface modifier.
+- Added exitInterface modifier. Used for cases where you want to exit the currently open interface under specific circumstances. (Does not work on the pause menu / end level menu. It's just for the loadInterface modifier)
+- Added setRenderType setRenderTypeOther modifiers. These can Set the render type of the object. Don't know why these weren't in there earlier.
+
+### Interfaces
 - Interface now has a dynamic variable system that allows for specific variables to affect anything in the interface.
+- Implemented interface list. This allows for easier interface branching and interface loading.
 
 ### Editor
 - You can now replace the current loaded levels' song by dragging a song file onto the PA window.
@@ -15,8 +21,6 @@
 - Player stop boost function no longer depends on the moveable state of the player.
 
 ### Interfaces
-- Introducing a new variable system. Most JSON values in custom interfaces can be set to a variable or function.
-- Implemented interface list. This allows for easier interface branching and interface loading.
 - Due to the interface list feature, some interfaces have been combined into one file and there's also some new tests to demonstrate the capabilities of the interface now.
 - Updated the splash text.
 
