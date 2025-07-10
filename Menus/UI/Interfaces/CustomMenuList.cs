@@ -10,6 +10,9 @@ using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
+    /// <summary>
+    /// Custom list of interfaces that contain branches of interfaces.
+    /// </summary>
     public class CustomMenuList : Exists
     {
         public CustomMenuList() { }
@@ -251,9 +254,53 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public static CustomMenuList Parse(JSONNode jn, bool open = true, string openInterfaceID = null, List<string> branchChain = null)
         {
             var customMenuList = new CustomMenuList(jn["name"]);
+
+            Dictionary<string, JSONNode> customVariables = null;
+            var variables = InterfaceManager.inst.ParseVarFunction(jn["variables"]);
+            if (jn["variables"] != null)
+            {
+                if (variables.IsObject)
+                {
+                    foreach (var keyValuePair in variables.Linq)
+                    {
+                        var value = InterfaceManager.inst.ParseVarFunction(keyValuePair.Value, customVariables: customVariables);
+                        if (value == null)
+                            continue;
+
+                        if (customVariables == null)
+                            customVariables = new Dictionary<string, JSONNode>();
+
+                        customVariables[keyValuePair.Key] = value;
+                    }
+                }
+
+                if (variables.IsArray)
+                {
+                    for (int i = 0; i < variables.Count; i++)
+                    {
+                        var variable = variables[i];
+                        var name = variable["name"];
+                        if (name == null || !name.IsString)
+                            continue;
+
+                        if (customVariables == null)
+                            customVariables = new Dictionary<string, JSONNode>();
+
+                        var value = InterfaceManager.inst.ParseVarFunction(variable["value"], customVariables: customVariables);
+                        if (value == null)
+                            continue;
+
+                        if (customVariables == null)
+                            customVariables = new Dictionary<string, JSONNode>();
+
+                        customVariables[name] = value;
+                    }
+                }
+            }
+
             var branches = InterfaceManager.inst.ParseVarFunction(jn["branches"]);
             if (branches != null)
-                customMenuList.LoadInterfaces(branches);
+                customMenuList.LoadInterfaces(branches, customVariables);
 
             var defaultBranch = InterfaceManager.inst.ParseVarFunction(jn["default_branch"]);
             if (defaultBranch != null && defaultBranch.IsString)
@@ -282,63 +329,95 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// Loads a range of interfaces.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
-        public void LoadInterfaces(JSONNode jn) => interfaces.AddRange(ParseInterfaces(jn));
+        public void LoadInterfaces(JSONNode jn, Dictionary<string, JSONNode> customVariables = null) => interfaces.AddRange(ParseInterfaces(jn, customVariables));
 
         /// <summary>
-        /// Parses a range of interfaces.
+        /// Parses a collection of interfaces from JSON. JSON can be an object or an array. If the JSON is an object, the key of each interface will replace the ID of the interface.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns an IEnumerable of <see cref="MenuBase"/>.</returns>
-        public IEnumerable<MenuBase> ParseInterfaces(JSONNode jn)
+        /// <returns>Returns a parsed collection of <see cref="MenuBase"/>.</returns>
+        public static IEnumerable<MenuBase> ParseInterfaces(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
         {
-            if (jn == null || !jn.IsArray)
+            if (jn == null)
                 yield break;
 
-            for (int i = 0; i < jn.Count; i++)
+            if (jn.IsObject)
             {
-                var jnChild = InterfaceManager.inst.ParseVarFunction(jn[i]);
-
-                if (jnChild == null)
-                    continue;
-
-                if (jnChild.IsArray)
+                foreach (var keyValuePair in jn.Linq)
                 {
-                    var interfaces = ParseInterfaces(jnChild);
-                    foreach (var menu in interfaces)
-                        yield return menu;
+                    var key = keyValuePair.Key;
+                    var jnChild = InterfaceManager.inst.ParseVarFunction(keyValuePair.Value, customVariables: customVariables);
+                    if (jnChild == null)
+                        continue;
 
-                    continue;
-                }
-
-                var file = InterfaceManager.inst.ParseVarFunction(jnChild["file"]);
-                if (file != null)
-                {
-                    var jnPath = InterfaceManager.inst.ParseVarFunction(jnChild["path"]);
-                    if (jnPath != null)
-                        InterfaceManager.inst.MainDirectory = InterfaceManager.inst.ParseText(jnPath);
-
-                    if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
-                        InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
-
-                    var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, file + FileFormat.LSI.Dot());
-
-                    if (!RTFile.FileExists(path))
+                    if (jnChild.IsArray)
                     {
-                        CoreHelper.LogError($"Interface {jnChild["file"]} does not exist!");
+                        var interfaces = ParseInterfaces(jnChild, customVariables);
+                        foreach (var innerMenu in interfaces)
+                            yield return innerMenu;
 
                         continue;
                     }
 
-                    var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
-                    menu.filePath = path;
-
-                    Add(menu);
-
-                    continue;
+                    var menu = ParseInterface(jnChild, customVariables);
+                    menu.id = key;
+                    yield return menu;
                 }
-
-                yield return CustomMenu.Parse(jnChild);
             }
+
+            if (jn.IsArray)
+            {
+                for (int i = 0; i < jn.Count; i++)
+                {
+                    var jnChild = InterfaceManager.inst.ParseVarFunction(jn[i], customVariables: customVariables);
+                    if (jnChild == null)
+                        continue;
+
+                    if (jnChild.IsArray)
+                    {
+                        var interfaces = ParseInterfaces(jnChild, customVariables);
+                        foreach (var menu in interfaces)
+                            yield return menu;
+
+                        continue;
+                    }
+
+                    yield return ParseInterface(jnChild, customVariables);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parses an interface from JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed <see cref="MenuBase"/>.</returns>
+        public static MenuBase ParseInterface(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
+        {
+            var file = InterfaceManager.inst.ParseVarFunction(jn["file"], customVariables: customVariables);
+            if (file == null)
+                return CustomMenu.Parse(jn);
+
+            var jnPath = InterfaceManager.inst.ParseVarFunction(jn["path"], customVariables: customVariables);
+            if (jnPath != null)
+                InterfaceManager.inst.MainDirectory = InterfaceManager.inst.ParseText(jnPath, customVariables);
+
+            if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
+                InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
+
+            var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, file + FileFormat.LSI.Dot());
+
+            if (!RTFile.FileExists(path))
+            {
+                CoreHelper.LogError($"Interface {jn["file"]} does not exist!");
+
+                return null;
+            }
+
+            var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)), customVariables);
+            menu.filePath = path;
+
+            return menu;
         }
 
         public override string ToString() => string.IsNullOrEmpty(id) ? name : $"{id} - {name}";
