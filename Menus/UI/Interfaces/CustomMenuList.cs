@@ -251,11 +251,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="jn">JSON to parse.</param>
         /// <param name="open">If the default interface should open.</param>
         /// <returns>Returns a parsed custom menu list.</returns>
-        public static CustomMenuList Parse(JSONNode jn, bool open = true, string openInterfaceID = null, List<string> branchChain = null)
+        public static CustomMenuList Parse(JSONNode jn, bool open = true, string openInterfaceID = null, List<string> branchChain = null, Dictionary<string, JSONNode> customVariables = null)
         {
             var customMenuList = new CustomMenuList(jn["name"]);
 
-            Dictionary<string, JSONNode> customVariables = null;
             var variables = InterfaceManager.inst.ParseVarFunction(jn["variables"]);
             if (jn["variables"] != null)
             {

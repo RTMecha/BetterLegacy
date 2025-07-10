@@ -441,7 +441,7 @@ namespace BetterLegacy.Menus
         /// Parses an interface from a path, adds it to the interfaces list and opens it.
         /// </summary>
         /// <param name="path">Path to an interface.</param>
-        public void ParseInterface(string path, bool load = true, string openInterfaceID = null, List<string> branchChain = null)
+        public void ParseInterface(string path, bool load = true, string openInterfaceID = null, List<string> branchChain = null, Dictionary<string, JSONNode> customVariables = null)
         {
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
@@ -450,11 +450,11 @@ namespace BetterLegacy.Menus
                 if (!load)
                     return;
 
-                CurrentInterfaceList = CustomMenuList.Parse(jn, openInterfaceID: openInterfaceID, branchChain: branchChain);
+                CurrentInterfaceList = CustomMenuList.Parse(jn, openInterfaceID: openInterfaceID, branchChain: branchChain, customVariables: customVariables);
                 return;
             }
 
-            MenuBase menu = CustomMenu.Parse(jn);
+            MenuBase menu = CustomMenu.Parse(jn, customVariables);
             menu.filePath = path;
             if (interfaces.TryFind(x => x.id == menu.id, out MenuBase otherMenu))
                 menu = otherMenu;
