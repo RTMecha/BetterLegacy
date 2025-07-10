@@ -24,6 +24,15 @@ namespace BetterLegacy.Menus.UI.Elements
             Spawn();
         }
 
+        /// <summary>
+        /// Parses a <see cref="MenuEvent"/> interface element from JSON.
+        /// </summary>
+        /// <param name="jnElement">JSON to parse.</param>
+        /// <param name="j">Loop index.</param>
+        /// <param name="loop">How many times the element is set to loop.</param>
+        /// <param name="spriteAssets">Sprite assets.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
+        /// <returns>Returns a parsed interface element.</returns>
         public static new MenuEvent Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
             var element = new MenuEvent();
@@ -32,6 +41,14 @@ namespace BetterLegacy.Menus.UI.Elements
             return element;
         }
 
+        /// <summary>
+        /// Reads interface element data from JSON.
+        /// </summary>
+        /// <param name="jnElement">JSON to read.</param>
+        /// <param name="j">Loop index.</param>
+        /// <param name="loop">How many times the element is set to loop.</param>
+        /// <param name="spriteAssets">Sprite assets.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
         public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
             #region Base

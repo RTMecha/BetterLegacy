@@ -85,10 +85,25 @@ namespace BetterLegacy.Menus
         /// The normal menu music group.
         /// </summary>
         public const string RANDOM_MUSIC_NAME = "menu";
+        /// <summary>
+        /// ID of the main menu.
+        /// </summary>
         public const string MAIN_MENU_ID = "0";
+        /// <summary>
+        /// ID of the story saves menu.
+        /// </summary>
         public const string STORY_SAVES_MENU_ID = "1";
+        /// <summary>
+        /// ID of the chapter select menu.
+        /// </summary>
         public const string CHAPTER_SELECT_MENU_ID = "2";
+        /// <summary>
+        /// ID of the profile menu.
+        /// </summary>
         public const string PROFILE_MENU_ID = "3";
+        /// <summary>
+        /// ID of the extras menu.
+        /// </summary>
         public const string EXTRAS_MENU_ID = "4";
 
         #endregion
@@ -170,6 +185,9 @@ namespace BetterLegacy.Menus
             CurrentAudioSource.clip = null;
         }
 
+        /// <summary>
+        /// The chosen song to play. -1 is considered a reset value. If it is this value, a different song will be chosen and will not change unless this number is -1.
+        /// </summary>
         public int randomIndex = -1;
 
         /// <summary>
@@ -611,6 +629,11 @@ namespace BetterLegacy.Menus
 
         #region Interface Functions
 
+        /// <summary>
+        /// Parses text from spawn.
+        /// </summary>
+        /// <param name="input">Input string.</param>
+        /// <returns>Returns parsed text.</returns>
         public string ParseSpawnText(string input)
         {
             RTString.RegexMatches(input, new Regex(@"{{Date=(.*?)}}"), match =>
@@ -620,6 +643,11 @@ namespace BetterLegacy.Menus
             return ParseText(input);
         }
 
+        /// <summary>
+        /// Parses text per-tick.
+        /// </summary>
+        /// <param name="input">Input string.</param>
+        /// <returns>Returns parsed text.</returns>
         public string ParseTickText(string input)
         {
             RTString.RegexMatches(input, new Regex(@"{{AudioTimeSeconds=(.*?)}}"), match =>
@@ -641,12 +669,19 @@ namespace BetterLegacy.Menus
             return input.Replace("{{AudioTime}}", AudioManager.inst.CurrentAudioSource.time.ToString());
         }
 
+        /// <summary>
+        /// Parses text.
+        /// </summary>
+        /// <param name="input">Input string.</param>
+        /// <returns>Returns parsed text.</returns>
         public string ParseText(string input, Dictionary<string, JSONNode> customVariables = null) => RTString.ParseText(input, customVariables);
 
         /// <summary>
         /// Parses an entire func JSON. Supports both JSON Object and JSON Array.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
+        /// <param name="thisElement">Interface element reference.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
         public void ParseFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
             // allow multiple functions to occur.
@@ -665,6 +700,8 @@ namespace BetterLegacy.Menus
         /// Parses an "if_func" JSON and returns the result. Supports both JSON Object and JSON Array.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
+        /// <param name="thisElement">Interface element reference.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
         /// <returns>Returns true if the passed JSON functions is true, otherwise false.</returns>
         public bool ParseIfFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
@@ -701,6 +738,8 @@ namespace BetterLegacy.Menus
         /// Parses a singular "if_func" JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
+        /// <param name="thisElement">Interface element reference.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
         /// <returns>Returns true if the passed JSON function is true, otherwise false.</returns>
         public bool ParseIfFunctionSingle(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
@@ -1278,7 +1317,9 @@ namespace BetterLegacy.Menus
         /// <summary>
         /// Parses a singular "func" JSON and performs an action based on the name and parameters.
         /// </summary>
-        /// <param name="jn">The func JSON. Must have a name and a params array. If it has a "if_func", then it will parse and check if it's true.</param>
+        /// <param name="jn">The func JSON. Must have a name and a params array, but can be a string if the function has no parameters. If it has a "if_func", then it will parse and check if it's true.</param>
+        /// <param name="thisElement">Interface element reference.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
         public void ParseFunctionSingle(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
             var jnIfFunc = ParseVarFunction(jn["if_func"], thisElement, customVariables);
@@ -4169,6 +4210,13 @@ namespace BetterLegacy.Menus
             }
         }
 
+        /// <summary>
+        /// Parses a "func" JSON and returns a variable from it based on the name and parameters.
+        /// </summary>
+        /// <param name="jn">The func JSON. Can be a <see cref="Lang"/>, string, variable key or func.</param>
+        /// <param name="thisElement">Interface element reference.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
+        /// <returns>Returns the variable returned from the JSON function.</returns>
         public JSONNode ParseVarFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
             // if json is null or it's an array, just return itself.

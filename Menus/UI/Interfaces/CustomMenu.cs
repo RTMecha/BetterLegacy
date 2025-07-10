@@ -15,6 +15,9 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
+    /// <summary>
+    /// Custom interface read from JSON.
+    /// </summary>
     public class CustomMenu : MenuBase
     {
         public CustomMenu() : base() { }
@@ -31,6 +34,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
             base.UpdateTheme();
         }
 
+        /// <summary>
+        /// If the current game Beatmap Theme (<see cref="Core.Managers.ThemeManager.Current"/>) should be used.
+        /// </summary>
         public bool useGameTheme;
 
         /// <summary>
@@ -44,16 +50,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public BeatmapTheme loadedTheme;
 
         /// <summary>
-        /// Parses a Custom Menu from a JSON file.
+        /// Parses a Custom Menu from JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed Custom Menu.</returns>
-        public static CustomMenu Parse(JSONNode jn)
+        public static CustomMenu Parse(JSONNode jn, Dictionary<string, JSONNode> customVariables = null)
         {
             var customMenu = new CustomMenu();
 
             customMenu.id = jn["id"];
-            Dictionary<string, JSONNode> customVariables = null;
             var variables = InterfaceManager.inst.ParseVarFunction(jn["variables"]);
             if (jn["variables"] != null)
             {
@@ -552,6 +557,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             return customMenu;
         }
 
+        /// <summary>
+        /// Parses a collection of interface prefabs from JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed collection of interface prefabs.</returns>
         public static IEnumerable<MenuPrefab> ParsePrefabs(JSONNode jn)
         {
             if (jn == null || !jn.IsArray)
@@ -572,6 +582,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
+        /// <summary>
+        /// Parses a dictionary of layouts.
+        /// </summary>
+        /// <param name="layouts">Interface's layout dictionary.</param>
+        /// <param name="jn">JSON to parse.</param>
         public static void ParseLayouts(Dictionary<string, MenuLayoutBase> layouts, JSONNode jn)
         {
             if (jn == null)
@@ -580,7 +595,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (jn.IsObject)
             {
                 foreach (var keyValuePair in jn.Linq)
-                    ParseLayout(layouts, keyValuePair.Key, InterfaceManager.inst.ParseVarFunction(keyValuePair.Value));
+                {
+                    var jnLayout = InterfaceManager.inst.ParseVarFunction(keyValuePair.Value);
+                    if (jnLayout.IsArray)
+                    {
+                        ParseLayouts(layouts, jnLayout);
+                        continue;
+                    }
+
+                    ParseLayout(layouts, keyValuePair.Key, jnLayout);
+                }
             }
 
             if (jn.IsArray)
@@ -600,6 +624,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
+        /// <summary>
+        /// Parses a layout.
+        /// </summary>
+        /// <param name="layouts">Interface's layout dictionary.</param>
+        /// <param name="key">Key of the layout.</param>
+        /// <param name="jnLayout">JSON to parse.</param>
         public static void ParseLayout(Dictionary<string, MenuLayoutBase> layouts, string key, JSONNode jnLayout)
         {
             if (string.IsNullOrEmpty(key) || layouts.ContainsKey(key) || jnLayout == null)
@@ -632,6 +662,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
+        /// <summary>
+        /// Parses a collection of interface elements from JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <param name="prefabs">Interface prefabs.</param>
+        /// <param name="spriteAssets">Sprite assets.</param>
+        /// <param name="customVariables">Custom variables.</param>
+        /// <returns>Returns a parsed collection of interface elements.</returns>
         public static IEnumerable<MenuImage> ParseElements(JSONNode jn, List<MenuPrefab> prefabs = null, Dictionary<string, Sprite> spriteAssets = null, Dictionary<string, JSONNode> customVariables = null)
         {
             if (jn == null || !jn.IsArray)

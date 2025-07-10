@@ -239,6 +239,9 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public ReactiveSetting reactiveSetting;
 
+        /// <summary>
+        /// If the interface element was parsed.
+        /// </summary>
         public bool parsed = false;
 
         /// <summary>
@@ -246,6 +249,9 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public bool selectable = true;
 
+        /// <summary>
+        /// Dictionary of cached variables.
+        /// </summary>
         public Dictionary<string, JSONNode> cachedVariables;
 
         #endregion
@@ -257,12 +263,6 @@ namespace BetterLegacy.Menus.UI.Elements
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Provides a way to see the object in UnityExplorer.
-        /// </summary>
-        /// <returns>A string containing the objects' ID and name.</returns>
-        public override string ToString() => $"{id} - {name}";
 
         /// <summary>
         /// Creates a new MenuImage element with all the same values as <paramref name="orig"/>.
@@ -373,12 +373,17 @@ namespace BetterLegacy.Menus.UI.Elements
             animations.Clear();
         }
 
-        #region Functions
-
-        #endregion
-
         #region JSON
 
+        /// <summary>
+        /// Parses a <see cref="MenuImage"/> interface element from JSON.
+        /// </summary>
+        /// <param name="jnElement">JSON to parse.</param>
+        /// <param name="j">Loop index.</param>
+        /// <param name="loop">How many times the element is set to loop.</param>
+        /// <param name="spriteAssets">Sprite assets.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
+        /// <returns>Returns a parsed interface element.</returns>
         public static MenuImage Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
             var element = new MenuImage();
@@ -387,6 +392,14 @@ namespace BetterLegacy.Menus.UI.Elements
             return element;
         }
 
+        /// <summary>
+        /// Reads interface element data from JSON.
+        /// </summary>
+        /// <param name="jnElement">JSON to read.</param>
+        /// <param name="j">Loop index.</param>
+        /// <param name="loop">How many times the element is set to loop.</param>
+        /// <param name="spriteAssets">Sprite assets.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
         public virtual void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
             #region Base
@@ -549,6 +562,8 @@ namespace BetterLegacy.Menus.UI.Elements
             2 => gameObject.transform.localEulerAngles[axis],
             _ => 0f
         };
+
+        public override string ToString() => $"{id} - {name}";
 
         #endregion
     }

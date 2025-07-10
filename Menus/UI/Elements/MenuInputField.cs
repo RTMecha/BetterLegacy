@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -147,6 +148,135 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #region Methods
 
+        /// <summary>
+        /// Creates a new MenuText element with all the same values as <paramref name="orig"/>.
+        /// </summary>
+        /// <param name="orig">The element to copy.</param>
+        /// <param name="newID">If a new ID should be generated.</param>
+        /// <returns>Returns a copied MenuInputField element.</returns>
+        public static MenuInputField DeepCopy(MenuInputField orig, bool newID = true) => new MenuInputField
+        {
+            #region Base
+
+            id = newID ? LSText.randomNumString(16) : orig.id,
+            name = orig.name,
+            parentLayout = orig.parentLayout,
+            parent = orig.parent,
+            siblingIndex = orig.siblingIndex,
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = orig.regenerate,
+            fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = orig.loop,
+
+            #endregion
+
+            #region UI
+
+            text = orig.text,
+            textAnchor = orig.textAnchor,
+            textFontSize = orig.textFontSize,
+            placeholder = orig.placeholder,
+            placeholderAnchor = orig.placeholderAnchor,
+            placeholderFontSize = orig.placeholderFontSize,
+            icon = orig.icon,
+            iconPath = orig.iconPath,
+            rect = orig.rect,
+            rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+            roundedSide = orig.roundedSide, // default side should be Whole.
+            mask = orig.mask,
+            reactiveSetting = orig.reactiveSetting,
+
+            #endregion
+
+            #region Color
+
+            color = orig.color,
+            opacity = orig.opacity,
+            hue = orig.hue,
+            sat = orig.sat,
+            val = orig.val,
+            textColor = orig.textColor,
+            textHue = orig.textHue,
+            textSat = orig.textSat,
+            textVal = orig.textVal,
+            placeholderColor = orig.placeholderColor,
+            placeholderHue = orig.placeholderHue,
+            placeholderSat = orig.placeholderSat,
+            placeholderVal = orig.placeholderVal,
+
+            overrideColor = orig.overrideColor,
+            overrideTextColor = orig.overrideTextColor,
+            overridePlaceholderColor = orig.overridePlaceholderColor,
+            useOverrideColor = orig.useOverrideColor,
+            useOverrideTextColor = orig.useOverrideTextColor,
+            useOverridePlaceholderColor = orig.useOverridePlaceholderColor,
+
+            #endregion
+
+            #region Anim
+
+            wait = orig.wait,
+            length = orig.length,
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = orig.playBlipSound,
+            selectable = orig.selectable,
+            funcJSON = orig.funcJSON, // function to run when the element is clicked.
+            onScrollUpFuncJSON = orig.onScrollUpFuncJSON,
+            onScrollDownFuncJSON = orig.onScrollDownFuncJSON,
+            spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+            onWaitEndFuncJSON = orig.onWaitEndFuncJSON,
+            tickFunc = orig.tickFunc,
+            func = orig.func,
+            onScrollUpFunc = orig.onScrollUpFunc,
+            onScrollDownFunc = orig.onScrollDownFunc,
+            spawnFunc = orig.spawnFunc,
+            onWaitEndFunc = orig.onWaitEndFunc,
+            tickFuncJSON = orig.tickFuncJSON,
+
+            varName = orig.varName,
+            endEditFunc = orig.endEditFunc,
+            endEditFuncJSON = orig.endEditFuncJSON,
+            valueChangedFunc = orig.valueChangedFunc,
+            valueChangedFuncJSON = orig.valueChangedFuncJSON,
+
+            #endregion
+        };
+
+        #region JSON
+
+        /// <summary>
+        /// Parses a <see cref="MenuInputField"/> interface element from JSON.
+        /// </summary>
+        /// <param name="jnElement">JSON to parse.</param>
+        /// <param name="j">Loop index.</param>
+        /// <param name="loop">How many times the element is set to loop.</param>
+        /// <param name="spriteAssets">Sprite assets.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
+        /// <returns>Returns a parsed interface element.</returns>
+        public static new MenuInputField Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
+        {
+            var element = new MenuInputField();
+            element.Read(jnElement, j, loop, spriteAssets, customVariables);
+            element.parsed = true;
+            return element;
+        }
+
+        /// <summary>
+        /// Reads interface element data from JSON.
+        /// </summary>
+        /// <param name="jnElement">JSON to read.</param>
+        /// <param name="j">Loop index.</param>
+        /// <param name="loop">How many times the element is set to loop.</param>
+        /// <param name="spriteAssets">Sprite assets.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
         public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets, Dictionary<string, JSONNode> customVariables = null)
         {
             #region Base
@@ -280,6 +410,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #endregion
         }
+
+        #endregion
 
         /// <summary>
         /// Writes the InputField text to a function.

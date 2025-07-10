@@ -147,6 +147,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public int layer = 900;
 
+        /// <summary>
+        /// If the game should pause when this interface opens.
+        /// </summary>
         public bool pauseGame = false;
 
         #endregion
@@ -330,6 +333,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #region Generate UI
 
+        /// <summary>
+        /// If the interface is currently generating.
+        /// </summary>
         public bool generating = false;
 
         /// <summary>
