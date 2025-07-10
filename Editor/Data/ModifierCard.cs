@@ -863,6 +863,18 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.setRenderType): {
+                        DropdownGenerator(modifier, "Render Type", 0, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
+                        break;
+                    }
+                case nameof(ModifierActions.setRenderTypeOther): {
+                        PrefabGroupOnly(modifier);
+                        var str = StringGenerator(modifier, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        DropdownGenerator(modifier, "Render Type", 1, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
+                        break;
+                    }
 
                 #endregion
 
@@ -3511,16 +3523,21 @@ namespace BetterLegacy.Editor.Data
 
                 case nameof(ModifierActions.loadInterface): {
                         StringGenerator(modifier, "Path", 0);
+                        BoolGenerator(modifier, "Pause Level", 1);
+                        BoolGenerator(modifier, "Pass Variables", 2);
 
                         break;
                     }
-                //case "pauseLevel): {
+                //case nameof(ModifierActions.exitInterface): {
                 //        break;
                 //    }
-                //case "quitToMenu): {
+                //case nameof(ModifierActions.pauseLevel): {
                 //        break;
                 //    }
-                //case "quitToArcade): {
+                //case nameof(ModifierActions.quitToMenu): {
+                //        break;
+                //    }
+                //case nameof(ModifierActions.quitToArcade): {
                 //        break;
                 //    }
 

@@ -877,6 +877,26 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void setRenderType(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            if (modifier.reference && modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject)
+                modifier.reference.runtimeObject.visualObject.SetRenderType(modifier.GetInt(0, 0, variables));
+        }
+
+        public static void setRenderTypeOther(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (list.IsEmpty())
+                return;
+
+            var renderType = modifier.GetInt(1, 0, variables);
+            foreach (var beatmapObject in list)
+            {
+                if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
+                    beatmapObject.runtimeObject.visualObject.SetRenderType(renderType);
+            }
+        }
+
         #endregion
 
         #region Player
@@ -6354,12 +6374,28 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            InterfaceManager.inst.ParseInterface(path);
+            Dictionary<string, JSONNode> customVariables = null;
+            if (modifier.GetBool(2, false, variables))
+            {
+                customVariables = new Dictionary<string, JSONNode>();
+                foreach (var variable in variables)
+                    customVariables[variable.Key] = variable.Value;
+            }
+
+            InterfaceManager.inst.ParseInterface(path, customVariables: customVariables);
 
             InterfaceManager.inst.MainDirectory = RTFile.BasePath;
 
-            RTBeatmap.Current.Pause();
+            if (modifier.GetBool(1, true, variables))
+                RTBeatmap.Current.Pause();
             ArcadeHelper.endedLevel = false;
+        }
+
+        public static void exitInterface<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            InterfaceManager.inst.CloseMenus();
+            if (CoreHelper.Paused)
+                RTBeatmap.Current.Resume();
         }
 
         public static void pauseLevel<T>(Modifier<T> modifier, Dictionary<string, string> variables)

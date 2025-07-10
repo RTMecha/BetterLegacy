@@ -875,6 +875,8 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.trailRendererHex) => ModifierActions.trailRendererHex,
             nameof(ModifierActions.rigidbody) => ModifierActions.rigidbody,
             nameof(ModifierActions.rigidbodyOther) => ModifierActions.rigidbodyOther,
+            nameof(ModifierActions.setRenderType) => ModifierActions.setRenderType,
+            nameof(ModifierActions.setRenderTypeOther) => ModifierActions.setRenderTypeOther,
 
             #endregion
 
@@ -1241,6 +1243,7 @@ namespace BetterLegacy.Core.Helpers
             #region Interfaces
 
             nameof(ModifierActions.loadInterface) => ModifierActions.loadInterface,
+            nameof(ModifierActions.exitInterface) => ModifierActions.exitInterface,
             nameof(ModifierActions.quitToMenu) => ModifierActions.quitToMenu,
             nameof(ModifierActions.quitToArcade) => ModifierActions.quitToArcade,
             nameof(ModifierActions.pauseLevel) => ModifierActions.pauseLevel,
@@ -1992,6 +1995,8 @@ namespace BetterLegacy.Core.Helpers
             //nameof(ModifierActions.trailRenderer) => ModifierActions.trailRenderer,
             //nameof(ModifierActions.rigidbody) => ModifierActions.rigidbody,
             //nameof(ModifierActions.rigidbodyOther) => ModifierActions.rigidbodyOther,
+            //nameof(ModifierActions.setRenderType) => ModifierActions.setRenderType,
+            //nameof(ModifierActions.setRenderTypeOther) => ModifierActions.setRenderTypeOther,
 
             #endregion
 
@@ -2359,6 +2364,7 @@ namespace BetterLegacy.Core.Helpers
             #region Interfaces
 
             nameof(ModifierActions.loadInterface) => ModifierActions.loadInterface,
+            nameof(ModifierActions.exitInterface) => ModifierActions.exitInterface,
             nameof(ModifierActions.quitToMenu) => ModifierActions.quitToMenu,
             nameof(ModifierActions.quitToArcade) => ModifierActions.quitToArcade,
             nameof(ModifierActions.pauseLevel) => ModifierActions.pauseLevel,
