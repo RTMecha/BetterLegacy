@@ -677,26 +677,6 @@ namespace BetterLegacy.Menus
         public string ParseText(string input, Dictionary<string, JSONNode> customVariables = null) => RTString.ParseText(input, customVariables);
 
         /// <summary>
-        /// Parses an entire func JSON. Supports both JSON Object and JSON Array.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <param name="thisElement">Interface element reference.</param>
-        /// <param name="customVariables">Passed custom variables.</param>
-        public void ParseFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-        {
-            // allow multiple functions to occur.
-            if (jn.IsArray)
-            {
-                for (int i = 0; i < jn.Count; i++)
-                    ParseFunction(ParseVarFunction(jn[i], thisElement, customVariables), thisElement, customVariables);
-
-                return;
-            }
-
-            ParseFunctionSingle(jn, thisElement, customVariables);
-        }
-
-        /// <summary>
         /// Parses an "if_func" JSON and returns the result. Supports both JSON Object and JSON Array.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
@@ -708,7 +688,7 @@ namespace BetterLegacy.Menus
             if (jn == null)
                 return true;
 
-            if (jn.IsObject)
+            if (jn.IsObject || jn.IsString)
                 return ParseIfFunctionSingle(jn, thisElement, customVariables);
 
             bool result = true;
@@ -743,9 +723,16 @@ namespace BetterLegacy.Menus
         /// <returns>Returns true if the passed JSON function is true, otherwise false.</returns>
         public bool ParseIfFunctionSingle(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
+            if (jn == null)
+                return false;
+
+            var jnFunc = ParseVarFunction(jn["func"], thisElement, customVariables);
+            if (jnFunc != null)
+                ParseFunction(jnFunc, thisElement, customVariables);
+
             var parameters = jn["params"];
             string name = jn.IsString ? jn : jn["name"];
-            var not = jn["not"].AsBool; // If true, then check if the function is not true.
+            var not = !jn.IsString && jn["not"].AsBool; // If true, then check if the function is not true.
 
             if (string.IsNullOrEmpty(name))
                 return false;
@@ -1315,6 +1302,26 @@ namespace BetterLegacy.Menus
         }
 
         /// <summary>
+        /// Parses an entire func JSON. Supports both JSON Object and JSON Array.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <param name="thisElement">Interface element reference.</param>
+        /// <param name="customVariables">Passed custom variables.</param>
+        public void ParseFunction(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+        {
+            // allow multiple functions to occur.
+            if (jn.IsArray)
+            {
+                for (int i = 0; i < jn.Count; i++)
+                    ParseFunction(ParseVarFunction(jn[i], thisElement, customVariables), thisElement, customVariables);
+
+                return;
+            }
+
+            ParseFunctionSingle(jn, thisElement, customVariables);
+        }
+
+        /// <summary>
         /// Parses a singular "func" JSON and performs an action based on the name and parameters.
         /// </summary>
         /// <param name="jn">The func JSON. Must have a name and a params array, but can be a string if the function has no parameters. If it has a "if_func", then it will parse and check if it's true.</param>
@@ -1663,6 +1670,27 @@ namespace BetterLegacy.Menus
 
                             ParseFunction(func, thisElement, loopVar);
                         }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region CacheVariable
+
+                case "CacheVariable": {
+                        if (parameters == null)
+                            break;
+
+                        var varName = ParseVarFunction(parameters.Get(0, "var_name"), thisElement, customVariables);
+                        if (varName == null || !varName.IsString)
+                            break;
+
+                        var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
+                        if (value == null)
+                            break;
+
+                        customVariables[varName] = value;
 
                         break;
                     }
@@ -4011,8 +4039,6 @@ namespace BetterLegacy.Menus
                 #region LoadNextStoryLevel
 
                 case "LoadNextStoryLevel": {
-                        var isArray = parameters.IsArray;
-
                         StoryManager.inst.ContinueStory = true;
 
                         int chapter = StoryManager.inst.CurrentSave.ChapterIndex;
@@ -4338,7 +4364,7 @@ namespace BetterLegacy.Menus
                                 var ifCheck = check["if"];
 
                                 if (ifCheck == null && !result)
-                                    return check["return"];
+                                    return check.IsString || check.IsNull ? check : check["return"];
 
                                 var elseCheck = check["else"].AsBool;
                                 if (result && !elseCheck)
@@ -4668,6 +4694,69 @@ namespace BetterLegacy.Menus
                         if (varName == null || !varName.IsString)
                             break;
                         return LegacyPlugin.player.memory[varName.Value];
+                    }
+
+                #endregion
+
+                #region StoryLevelID
+
+                case "StoryLevelID": {
+                        if (parameters == null)
+                            break;
+
+                        var chapterIndex = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables);
+                        var levelIndex = ParseVarFunction(parameters.Get(1, "level"), thisElement, customVariables);
+                        var bonus = ParseVarFunction(parameters.Get(2, "bonus"), thisElement, customVariables);
+                        var chapters = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
+
+                        return chapters.TryGetAt(chapterIndex.AsInt, out StoryMode.Chapter chapter) && chapter.levels.TryGetAt(levelIndex.AsInt, out StoryMode.LevelSequence level) ? level.id : ParseVarFunction(parameters.Get(3, "default"), thisElement, customVariables);
+                    }
+
+                #endregion
+
+                #region StoryLevelName
+
+                case "StoryLevelName": {
+                        if (parameters == null)
+                            break;
+
+                        var chapterIndex = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables);
+                        var levelIndex = ParseVarFunction(parameters.Get(1, "level"), thisElement, customVariables);
+                        var bonus = ParseVarFunction(parameters.Get(2, "bonus"), thisElement, customVariables);
+                        var chapters = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
+
+                        return chapters.TryGetAt(chapterIndex.AsInt, out StoryMode.Chapter chapter) && chapter.levels.TryGetAt(levelIndex.AsInt, out StoryMode.LevelSequence level) ? level.name : ParseVarFunction(parameters.Get(3, "default"), thisElement, customVariables);
+                    }
+
+                #endregion
+                    
+                #region StoryLevelSongTitle
+
+                case "StoryLevelSongTitle": {
+                        if (parameters == null)
+                            break;
+
+                        var chapterIndex = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables);
+                        var levelIndex = ParseVarFunction(parameters.Get(1, "level"), thisElement, customVariables);
+                        var bonus = ParseVarFunction(parameters.Get(2, "bonus"), thisElement, customVariables);
+                        var chapters = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
+
+                        return chapters.TryGetAt(chapterIndex.AsInt, out StoryMode.Chapter chapter) && chapter.levels.TryGetAt(levelIndex.AsInt, out StoryMode.LevelSequence level) ? level.songTitle : ParseVarFunction(parameters.Get(3, "default"), thisElement, customVariables);
+                    }
+
+                #endregion
+                    
+                #region StoryLevelCount
+
+                case "StoryLevelCount": {
+                        if (parameters == null)
+                            break;
+
+                        var chapterIndex = ParseVarFunction(parameters.Get(0, "chapter"), thisElement, customVariables);
+                        var bonus = ParseVarFunction(parameters.Get(1, "bonus"), thisElement, customVariables);
+                        var chapters = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
+
+                        return chapters.TryGetAt(chapterIndex.AsInt, out StoryMode.Chapter chapter) ? chapter.Count : ParseVarFunction(parameters.Get(2, "default"), thisElement, customVariables);
                     }
 
                 #endregion
