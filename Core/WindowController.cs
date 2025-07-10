@@ -24,11 +24,16 @@ namespace BetterLegacy.Core
         public static UnityEngine.Vector2Int CurrentPosition { get; set; }
         public static UnityEngine.Vector2Int CurrentResolution { get; set; }
 
-        static IntPtr windowHandle;
+        static IntPtr? windowHandle = null;
         public static IntPtr WindowHandle
-           => windowHandle == IntPtr.Zero
-               ? windowHandle = FindWindow(null, UnityEngine.Application.productName)
-               : windowHandle;
+        {
+            get
+            {
+                if (!windowHandle.HasValue)
+                    windowHandle = FindWindow(null, UnityEngine.Application.productName);
+                return windowHandle.Value;
+            }
+        }
 
         public static void SetPosition(int x, int y)
         {
