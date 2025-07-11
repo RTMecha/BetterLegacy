@@ -15,6 +15,14 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class PinnedEditorLayer : PAObject<PinnedEditorLayer>
     {
+        public PinnedEditorLayer() : base() { }
+
+        public PinnedEditorLayer(int layer, EditorTimeline.LayerType layerType) : this()
+        {
+            this.layer = layer;
+            this.layerType = layerType;
+        }
+
         #region Values
 
         /// <summary>
