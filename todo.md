@@ -100,8 +100,6 @@
   Update: 1.8.0
 - Some way to replace the song in-editor. (Have the current song update if the song that's being replaced is the same level)  
   Update: 1.8.0
-- List for pinned editor layers.  
-  Update: 1.8.0
 - Prefab reference name in object editor.  
   Update: 1.8.0
 - Level priority sort  
