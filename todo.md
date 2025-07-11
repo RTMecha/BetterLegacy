@@ -102,8 +102,6 @@
   Update: 1.8.0
 - List for pinned editor layers.  
   Update: 1.8.0
-- Add difficulty and artist name to the level creator popup.  
-  Update: 1.8.0
 - Prefab reference name in object editor.  
   Update: 1.8.0
 - Level priority sort  
