@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -78,6 +80,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public PinnedEditorLayer CurrentPinnedEditorLayer { get; set; }
 
+        /// <summary>
+        /// List of copied pinned editor layers.
+        /// </summary>
+        public List<PinnedEditorLayer> copiedPinnedEditorLayers = new List<PinnedEditorLayer>();
+
         #endregion
 
         #region Methods
@@ -87,11 +94,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void PinCurrentEditorLayer()
         {
-            RTEditor.inst.editorInfo.pinnedEditorLayers.Add(new PinnedEditorLayer
+            RTEditor.inst.editorInfo.pinnedEditorLayers.Add(new PinnedEditorLayer(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType)
             {
                 name = "Pinned Editor Layer",
-                layer = EditorTimeline.inst.Layer,
-                layerType = EditorTimeline.inst.layerType,
                 overrideColor = true,
                 color = new Color(UnityRandom.Range(0.5f, 1f), UnityRandom.Range(0.5f, 1f), UnityRandom.Range(0.5f, 1f)),
             });
@@ -154,6 +159,22 @@ namespace BetterLegacy.Editor.Managers
                                 Dialog.Open();
                             RenderDialog();
                         }),
+                        new ButtonFunction("Delete", () =>
+                        {
+                            RTEditor.inst.editorInfo.pinnedEditorLayers.RemoveAt(index);
+                            CurrentPinnedEditorLayer = null;
+                            if (Dialog.IsCurrent)
+                                Dialog.Close();
+                            RenderPopup();
+                        }),
+                        new ButtonFunction("Clear All", () =>
+                        {
+                            RTEditor.inst.editorInfo.pinnedEditorLayers.Clear();
+                            CurrentPinnedEditorLayer = null;
+                            if (Dialog.IsCurrent)
+                                Dialog.Close();
+                            RenderPopup();
+                        }),
                         new ButtonFunction(true),
                         new ButtonFunction("Set to Current Layer", () =>
                         {
@@ -161,6 +182,22 @@ namespace BetterLegacy.Editor.Managers
                             pinnedEditorLayer.layerType = EditorTimeline.inst.layerType;
                             EditorTimeline.inst.RenderLayerInput(pinnedEditorLayer.layer, pinnedEditorLayer.layerType);
                             RenderDialog();
+                            RenderPopup();
+                        }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () =>
+                        {
+                            copiedPinnedEditorLayers.Clear();
+                            copiedPinnedEditorLayers.Add(pinnedEditorLayer);
+                        }),
+                        new ButtonFunction("Copy All", () =>
+                        {
+                            copiedPinnedEditorLayers.Clear();
+                            copiedPinnedEditorLayers.AddRange(RTEditor.inst.editorInfo.pinnedEditorLayers);
+                        }),
+                        new ButtonFunction("Paste", () =>
+                        {
+                            RTEditor.inst.editorInfo.pinnedEditorLayers.AddRange(copiedPinnedEditorLayers);
                             RenderPopup();
                         }),
                         new ButtonFunction(true),
@@ -197,9 +234,6 @@ namespace BetterLegacy.Editor.Managers
                 var image = gameObject.transform.Find("Image").GetComponent<Image>();
                 image.color = color;
 
-                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(text);
-
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
                 UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                 var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
@@ -212,6 +246,9 @@ namespace BetterLegacy.Editor.Managers
                     RenderPopup();
                 });
 
+                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(text);
+                EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
                 EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
 
