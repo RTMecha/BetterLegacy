@@ -106,6 +106,27 @@ namespace BetterLegacy.Core.Helpers
         #region Functions
 
         /// <summary>
+        /// Performs an action once a predicate is true.
+        /// </summary>
+        /// <param name="predicate">Predicate to check.</param>
+        /// <param name="action">Action to run once the predicate returns true.</param>
+        public static void WaitUntil(Func<bool> predicate, Action action) => StartCoroutine(IWaitUntil(predicate, action));
+
+        /// <summary>
+        /// Performs an action once a predicate is true.
+        /// </summary>
+        /// <param name="predicate">Predicate to check.</param>
+        /// <param name="action">Action to run once the predicate returns true.</param>
+        public static IEnumerator IWaitUntil(Func<bool> predicate, Action action)
+        {
+            if (predicate == null)
+                yield break;
+
+            yield return Until(predicate);
+            action?.Invoke();
+        }
+
+        /// <summary>
         /// Performs an action after a set amount of time.
         /// </summary>
         /// <param name="t">Seconds to wait.</param>
