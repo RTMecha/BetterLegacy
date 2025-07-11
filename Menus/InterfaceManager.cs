@@ -3012,6 +3012,50 @@ namespace BetterLegacy.Menus
 
                 #endregion
 
+                #region ApplyElement
+
+                // Sets an input field elements' text.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = element JSON
+                // 1 = id
+                // Example:
+                // [
+                //   {
+                //     ... < JSON object representing element values
+                //   },
+                //   "525778246" < finds an element with this ID.
+                // ]
+                //
+                // - JSON Object Structure -
+                // "element"
+                // "id"
+                // Example:
+                // {
+                //   "element": {
+                //     ...
+                //   },
+                //   "id": null < id can be left null to specify the element this function runs from
+                // }
+                case "ApplyElement": {
+                        if (parameters == null)
+                            break;
+
+                        var jnElement = ParseVarFunction(parameters.Get(0, "element"), thisElement, customVariables);
+                        var id = ParseVarFunction(parameters.Get(1, "id"), thisElement, customVariables);
+
+                        var element = id == null ? thisElement : CurrentInterface.elements.Find(x => x.id == id);
+                        if (!element)
+                            break;
+
+                        element.Read(jnElement, 0, 0, CurrentInterface.spriteAssets, customVariables);
+
+                        break;
+                    }
+
+                #endregion
+
                 #endregion
 
                 #region Effects
