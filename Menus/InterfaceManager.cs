@@ -1329,14 +1329,17 @@ namespace BetterLegacy.Menus
         /// <param name="customVariables">Passed custom variables.</param>
         public void ParseFunctionSingle(JSONNode jn, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
         {
-            var jnIfFunc = ParseVarFunction(jn["if_func"], thisElement, customVariables);
-            if (jnIfFunc != null)
+            if (!jn.IsString)
             {
-                if (!ParseIfFunction(jnIfFunc, thisElement, customVariables))
-                    return;
+                var jnIfFunc = ParseVarFunction(jn["if_func"], thisElement, customVariables);
+                if (jnIfFunc != null)
+                {
+                    if (!ParseIfFunction(jnIfFunc, thisElement, customVariables))
+                        return;
+                }
             }
 
-            var parameters = jn["params"];
+            var parameters = jn.IsString ? null : jn["params"];
             string name = jn.IsString ? jn : jn["name"];
 
             switch (name)
@@ -4116,8 +4119,6 @@ namespace BetterLegacy.Menus
                 #region LoadChapterTransition
 
                 case "LoadChapterTransition": {
-                        var isArray = parameters.IsArray;
-
                         StoryManager.inst.ContinueStory = true;
 
                         var chapter = StoryManager.inst.CurrentSave.ChapterIndex;
@@ -4511,7 +4512,7 @@ namespace BetterLegacy.Menus
                 //   "default": "False" < returns this value since NULL does not exist.
                 // }
                 case "StoryLoadBoolVar": {
-                        return StoryManager.inst.CurrentSave.LoadBool(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                        return StoryManager.inst.CurrentSave.LoadBool(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables)).ToString();
                     }
 
                 #endregion
@@ -4539,7 +4540,7 @@ namespace BetterLegacy.Menus
                 //   "default": "0" < returns this value since NULL does not exist.
                 // }
                 case "StoryLoadIntVar": {
-                        return StoryManager.inst.CurrentSave.LoadInt(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                        return StoryManager.inst.CurrentSave.LoadInt(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables)).ToString();
                     }
 
                 #endregion
@@ -4567,7 +4568,7 @@ namespace BetterLegacy.Menus
                 //   "default": "0" < returns this value since NULL does not exist.
                 // }
                 case "StoryLoadFloatVar": {
-                        return StoryManager.inst.CurrentSave.LoadFloat(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                        return StoryManager.inst.CurrentSave.LoadFloat(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables)).ToString();
                     }
 
                 #endregion
@@ -4595,7 +4596,7 @@ namespace BetterLegacy.Menus
                 //   "default": "False" < returns this value since NULL does not exist.
                 // }
                 case "StoryLoadStringVar": {
-                        return StoryManager.inst.CurrentSave.LoadString(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
+                        return StoryManager.inst.CurrentSave.LoadString(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables)).ToString();
                     }
 
                 #endregion
@@ -4623,7 +4624,7 @@ namespace BetterLegacy.Menus
                 //   "default": "False" < returns this value since NULL does not exist.
                 // }
                 case "StoryLoadJSONVar": {
-                        return StoryManager.inst.CurrentSave.LoadJSON(parameters.Get(0, "load")).ToString();
+                        return StoryManager.inst.CurrentSave.LoadJSON(ParseVarFunction(parameters.Get(0, "load"), thisElement, customVariables));
                     }
 
                 #endregion
