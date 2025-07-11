@@ -18,7 +18,7 @@ namespace BetterLegacy.Editor.Data.Popups
     {
         public ContentPopup(string name) : base(name) { }
 
-        public ContentPopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...") : base(name)
+        public ContentPopup(string name, string title, Vector2? defaultPosition = null, Vector2? size = null, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...") : base(name)
         {
             this.title = title;
             this.defaultPosition = defaultPosition;
@@ -147,8 +147,10 @@ namespace BetterLegacy.Editor.Data.Popups
                 return;
 
             var inSize = size == Vector2.zero ? new Vector2(600f, 450f) : size;
-            GameObject.transform.AsRT().anchoredPosition = defaultPosition;
+            if (defaultPosition is Vector2 defaultPositionValue)
+                GameObject.transform.AsRT().anchoredPosition = defaultPositionValue;
             GameObject.transform.AsRT().sizeDelta = inSize;
+
             if (TopPanel)
                 TopPanel.sizeDelta = new Vector2(inSize.x + 32f, 32f);
 
