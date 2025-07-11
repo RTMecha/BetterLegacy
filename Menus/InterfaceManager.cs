@@ -4361,10 +4361,17 @@ namespace BetterLegacy.Menus
                             for (int i = 0; i < parameters.Count; i++)
                             {
                                 var check = parameters[i];
+                                if (check.IsString)
+                                {
+                                    if (!result)
+                                        return check;
+                                    continue;
+                                }
+
                                 var ifCheck = check["if"];
 
                                 if (ifCheck == null && !result)
-                                    return check.IsString || check.IsNull ? check : check["return"];
+                                    return check.IsNull ? check : check["return"];
 
                                 var elseCheck = check["else"].AsBool;
                                 if (result && !elseCheck)
