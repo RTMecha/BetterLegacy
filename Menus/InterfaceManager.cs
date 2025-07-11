@@ -4488,7 +4488,7 @@ namespace BetterLegacy.Menus
 
                 #endregion
 
-                #region StoryLoadBool
+                #region StoryLoadBoolVar
 
                 // Parses a variable from the current story save.
                 // Supports both JSON array and JSON object.
@@ -4510,13 +4510,13 @@ namespace BetterLegacy.Menus
                 //   "load": "NULL",
                 //   "default": "False" < returns this value since NULL does not exist.
                 // }
-                case "StoryLoadBool": {
+                case "StoryLoadBoolVar": {
                         return StoryManager.inst.CurrentSave.LoadBool(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
                     }
 
                 #endregion
 
-                #region StoryLoadInt
+                #region StoryLoadIntVar
 
                 // Parses a variable from the current story save.
                 // Supports both JSON array and JSON object.
@@ -4538,13 +4538,13 @@ namespace BetterLegacy.Menus
                 //   "load": "NULL",
                 //   "default": "0" < returns this value since NULL does not exist.
                 // }
-                case "StoryLoadInt": {
+                case "StoryLoadIntVar": {
                         return StoryManager.inst.CurrentSave.LoadInt(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
                     }
 
                 #endregion
 
-                #region StoryLoadFloat
+                #region StoryLoadFloatVar
 
                 // Parses a variable from the current story save.
                 // Supports both JSON array and JSON object.
@@ -4566,13 +4566,13 @@ namespace BetterLegacy.Menus
                 //   "load": "NULL",
                 //   "default": "0" < returns this value since NULL does not exist.
                 // }
-                case "StoryLoadFloat": {
+                case "StoryLoadFloatVar": {
                         return StoryManager.inst.CurrentSave.LoadFloat(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
                     }
 
                 #endregion
 
-                #region StoryLoadString
+                #region StoryLoadStringVar
 
                 // Parses a variable from the current story save.
                 // Supports both JSON array and JSON object.
@@ -4594,13 +4594,13 @@ namespace BetterLegacy.Menus
                 //   "load": "NULL",
                 //   "default": "False" < returns this value since NULL does not exist.
                 // }
-                case "StoryLoadString": {
+                case "StoryLoadStringVar": {
                         return StoryManager.inst.CurrentSave.LoadString(parameters.Get(0, "load"), parameters.Get(1, "default")).ToString();
                     }
 
                 #endregion
 
-                #region StoryLoadJSON
+                #region StoryLoadJSONVar
 
                 // Parses a variable from the current story save.
                 // Supports both JSON array and JSON object.
@@ -4622,7 +4622,7 @@ namespace BetterLegacy.Menus
                 //   "load": "NULL",
                 //   "default": "False" < returns this value since NULL does not exist.
                 // }
-                case "StoryLoadJSON": {
+                case "StoryLoadJSONVar": {
                         return StoryManager.inst.CurrentSave.LoadJSON(parameters.Get(0, "load")).ToString();
                     }
 
