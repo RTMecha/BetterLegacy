@@ -94,6 +94,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string PREFAB_TYPES_POPUP = "Prefab Types Popup";
         public const string TEXT_EDITOR = "Text Editor";
         public const string FONT_SELECTOR_POPUP = "Font Selector Popup";
+        public const string PINNED_EDITOR_LAYER_POPUP = "Pinned Editor Layer Popup";
 
         #endregion
 
@@ -116,12 +117,12 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <summary>
         /// Default position the editor popup should be at.
         /// </summary>
-        public Vector2 defaultPosition;
+        public Vector2? defaultPosition;
 
         /// <summary>
         /// Size of the editor popup.
         /// </summary>
-        public Vector2 size;
+        public Vector2? size;
 
         /// <summary>
         /// Close editor popup function.
@@ -368,7 +369,11 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <summary>
         /// Renders the editor popup position and size.
         /// </summary>
-        public void RenderSize() => RenderSize(size);
+        public void RenderSize()
+        {
+            if (size is Vector2 sizeValue)
+                RenderSize(sizeValue);
+        }
 
         /// <summary>
         /// Renders the editor popup position and size.
@@ -380,8 +385,10 @@ namespace BetterLegacy.Editor.Data.Popups
                 return;
 
             var inSize = size == Vector2.zero ? new Vector2(600f, 450f) : size;
-            GameObject.transform.AsRT().anchoredPosition = defaultPosition;
+            if (defaultPosition is Vector2 defaultPositionValue)
+                GameObject.transform.AsRT().anchoredPosition = defaultPositionValue;
             GameObject.transform.AsRT().sizeDelta = inSize;
+
             if (TopPanel)
                 TopPanel.sizeDelta = new Vector2(inSize.x + 32f, 32f);
         }

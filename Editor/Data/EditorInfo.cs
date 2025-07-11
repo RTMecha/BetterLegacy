@@ -257,8 +257,8 @@ namespace BetterLegacy.Editor.Data
             jn["timeline"]["bin_count"] = EditorTimeline.inst.BinCount;
             jn["timeline"]["bin_position"] = EditorTimeline.inst.binSlider.value;
 
-            for (int i = 0; i < EditorTimeline.inst.pinnedEditorLayers.Count; i++)
-                jn["timeline"]["pinned_layers"][i] = EditorTimeline.inst.pinnedEditorLayers[i].ToJSON();
+            for (int i = 0; i < pinnedEditorLayers.Count; i++)
+                jn["timeline"]["pinned_layers"][i] = pinnedEditorLayers[i].ToJSON();
 
             jn["editor"]["editing_time"] = timer.time;
             jn["editor"]["open_amount"] = openAmount;
@@ -295,9 +295,6 @@ namespace BetterLegacy.Editor.Data
             EditorTimeline.inst.SetLayer(layer, layerType, false);
             EditorTimeline.inst.SetTimeline(mainZoom, mainPosition);
 
-            EditorTimeline.inst.pinnedEditorLayers.Clear();
-            EditorTimeline.inst.pinnedEditorLayers.AddRange(pinnedEditorLayers.Select(x => PinnedEditorLayer.DeepCopy(x)));
-
             SettingEditor.inst.SnapBPM = bpm;
 
             if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length && EditorConfig.Instance.LevelLoadsLastTime.Value)
@@ -326,9 +323,6 @@ namespace BetterLegacy.Editor.Data
 
             layer = EditorTimeline.inst.Layer;
             layerType = EditorTimeline.inst.layerType;
-
-            pinnedEditorLayers.Clear();
-            pinnedEditorLayers.AddRange(EditorTimeline.inst.pinnedEditorLayers.Select(x => PinnedEditorLayer.DeepCopy(x)));
 
             bpm = MetaData.Current.song.BPM;
 

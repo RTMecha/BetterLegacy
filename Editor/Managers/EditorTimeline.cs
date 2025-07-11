@@ -1446,11 +1446,6 @@ namespace BetterLegacy.Editor.Managers
         #region Layers
 
         /// <summary>
-        /// List of editor layers the user has pinned in a level.
-        /// </summary>
-        public List<PinnedEditorLayer> pinnedEditorLayers = new List<PinnedEditorLayer>();
-
-        /// <summary>
         /// The current editor layer.
         /// </summary>
         public int Layer
@@ -1502,12 +1497,46 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="layer">The layer to get the color of.</param>
         /// <returns>Returns an editor layers' color.</returns>
-        public static Color GetLayerColor(int layer)
+        public static Color GetLayerColor(int layer, LayerType layerType = LayerType.Objects)
         {
-            if (inst.pinnedEditorLayers.TryFind(x => x.layer == layer, out PinnedEditorLayer pinnedEditorLayer))
+            if (RTEditor.inst.editorInfo.pinnedEditorLayers.TryFind(x => x.overrideColor && x.layer == layer && x.layerType == layerType, out PinnedEditorLayer pinnedEditorLayer))
                 return pinnedEditorLayer.color;
 
             return layer >= 0 && layer < EditorManager.inst.layerColors.Count ? EditorManager.inst.layerColors[layer] : Color.white;
+        }
+
+        /// <summary>
+        /// Renders the layer inputs.
+        /// </summary>
+        /// <param name="layer">Layer to render.</param>
+        /// <param name="layerType">Layer type to render.</param>
+        public void RenderLayerInput(int layer, LayerType layerType)
+        {
+            var color = GetLayerColor(layer, layerType);
+            timelineOverlayImage.color = color;
+            RTEditor.inst.editorLayerImage.color = color;
+
+            RTEditor.inst.editorLayerField.SetTextWithoutNotify(GetLayerString(layer));
+            RTEditor.inst.editorLayerField.onValueChanged.NewListener(_val =>
+            {
+                if (int.TryParse(_val, out int num))
+                    SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
+            });
+
+            if (RTEditor.inst.editorLayerToggles != null)
+            {
+                for (int i = 0; i < RTEditor.inst.editorLayerToggles.Length; i++)
+                {
+                    var toggle = RTEditor.inst.editorLayerToggles[i];
+                    var index = i;
+                    toggle.SetIsOnWithoutNotify(index == layer);
+                    toggle.onValueChanged.NewListener(_val => SetLayer(index));
+                }
+            }
+
+            RTEditor.inst.eventLayerToggle.SetIsOnWithoutNotify(layerType == LayerType.Events);
+            RTEditor.inst.eventLayerToggle.onValueChanged.NewListener(_val => SetLayer(_val ? LayerType.Events : LayerType.Objects));
+
         }
 
         /// <summary>
@@ -1542,31 +1571,7 @@ namespace BetterLegacy.Editor.Managers
 
             Layer = layer;
             this.layerType = layerType;
-            timelineOverlayImage.color = GetLayerColor(layer);
-            RTEditor.inst.editorLayerImage.color = GetLayerColor(layer);
-
-            RTEditor.inst.editorLayerField.SetTextWithoutNotify(GetLayerString(layer));
-            RTEditor.inst.editorLayerField.onValueChanged.NewListener(_val =>
-            {
-                if (int.TryParse(_val, out int num))
-                    SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
-            });
-
-            if (RTEditor.inst.editorLayerToggles != null)
-            {
-                for (int i = 0; i < RTEditor.inst.editorLayerToggles.Length; i++)
-                {
-                    var toggle = RTEditor.inst.editorLayerToggles[i];
-                    var index = i;
-                    toggle.onValueChanged.ClearAll();
-                    toggle.isOn = index == layer;
-                    toggle.onValueChanged.AddListener(_val => SetLayer(index));
-                }
-            }
-
-            RTEditor.inst.eventLayerToggle.SetIsOnWithoutNotify(layerType == LayerType.Events);
-            RTEditor.inst.eventLayerToggle.onValueChanged.NewListener(_val => SetLayer(_val ? LayerType.Events : LayerType.Objects));
-
+            RenderLayerInput(layer, layerType);
             RTEventEditor.inst.SetEventActive(layerType == LayerType.Events);
 
             if (prevLayer != layer || prevLayerType != layerType)

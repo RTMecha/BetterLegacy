@@ -732,6 +732,7 @@ namespace BetterLegacy.Editor.Managers
             LevelCombiner.Init();
             ProjectPlanner.Init();
             UploadedLevelsManager.Init();
+            PinnedLayerEditor.Init();
 
             RTBackgroundEditor.Init();
 
@@ -1298,8 +1299,6 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void LoadSettings()
         {
-            EditorTimeline.inst.pinnedEditorLayers.Clear();
-
             if (!RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)))
             {
                 editorInfo = new EditorInfo();
@@ -2408,7 +2407,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="close">Function to run when the user closes the editor popup.</param>
         /// <param name="placeholderText">Search field placeholder text.</param>
         /// <returns>Returns a generated content popup.</returns>
-        public ContentPopup GeneratePopup(string name, string title, Vector2 defaultPosition, Vector2 size, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
+        public ContentPopup GeneratePopup(string name, string title, Vector2? defaultPosition = null, Vector2? size = null, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
         {
             var editorPopup = new ContentPopup(name, title, defaultPosition, size, refreshSearch, close, placeholderText);
             editorPopup.Init();
@@ -2772,15 +2771,18 @@ namespace BetterLegacy.Editor.Managers
                     new ButtonFunction("Toggle Object Preview Visibility", () =>
                     {
                         EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value = !EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible.Value;
-                    })//,
-                    //new ButtonFunction("Pin Editor Layer", () =>
-                    //{
-
-                    //})//,
-                    //new ButtonFunction("View Pinned Editor Layers", () =>
-                    //{
-
-                    //})
+                    }),
+                    new ButtonFunction("Pin Editor Layer", () =>
+                    {
+                        PinnedLayerEditor.inst.PinCurrentEditorLayer();
+                        PinnedLayerEditor.inst.Popup.Open();
+                        PinnedLayerEditor.inst.RenderPopup();
+                    }),
+                    new ButtonFunction("View Pinned Editor Layers", () =>
+                    {
+                        PinnedLayerEditor.inst.Popup.Open();
+                        PinnedLayerEditor.inst.RenderPopup();
+                    })
                     );
             };
         }
@@ -4103,7 +4105,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
             }
         }
-
 
         void CreatePreview()
         {
@@ -5909,6 +5910,38 @@ namespace BetterLegacy.Editor.Managers
                 RotCloseDurationConfig = EditorConfig.Instance.FontSelectorPopupRotCloseDuration,
                 RotOpenEaseConfig = EditorConfig.Instance.FontSelectorPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.FontSelectorPopupRotCloseEase,
+            },
+            new EditorAnimation(EditorPopup.PINNED_EDITOR_LAYER_POPUP)
+            {
+                ActiveConfig = EditorConfig.Instance.PinnedEditorLayerPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.PinnedEditorLayerPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.PinnedEditorLayerPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.PinnedEditorLayerPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.PinnedEditorLayerPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.PinnedEditorLayerPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.PinnedEditorLayerPopupRotCloseEase,
             },
             new EditorAnimation(EditorPopup.COLOR_PICKER)
             {

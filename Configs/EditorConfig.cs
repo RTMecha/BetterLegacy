@@ -1116,6 +1116,40 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Pinned Editor Layer Popup
+
+        public Setting<bool> PinnedEditorLayerPopupActive { get; set; }
+
+        public Setting<bool> PinnedEditorLayerPopupPosActive { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupPosOpen { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupPosClose { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupPosOpenDuration { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupPosCloseDuration { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupPosXOpenEase { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupPosXCloseEase { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupPosYOpenEase { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupPosYCloseEase { get; set; }
+
+        public Setting<bool> PinnedEditorLayerPopupScaActive { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupScaOpen { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupScaClose { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupScaOpenDuration { get; set; }
+        public Setting<Vector2> PinnedEditorLayerPopupScaCloseDuration { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupScaXOpenEase { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupScaXCloseEase { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupScaYOpenEase { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupScaYCloseEase { get; set; }
+
+        public Setting<bool> PinnedEditorLayerPopupRotActive { get; set; }
+        public Setting<float> PinnedEditorLayerPopupRotOpen { get; set; }
+        public Setting<float> PinnedEditorLayerPopupRotClose { get; set; }
+        public Setting<float> PinnedEditorLayerPopupRotOpenDuration { get; set; }
+        public Setting<float> PinnedEditorLayerPopupRotCloseDuration { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupRotOpenEase { get; set; }
+        public Setting<Easing> PinnedEditorLayerPopupRotCloseEase { get; set; }
+
+        #endregion
+
         #region Color Picker Popup
 
         public Setting<bool> ColorPickerPopupActive { get; set; }
@@ -2462,6 +2496,40 @@ namespace BetterLegacy.Configs
             FontSelectorPopupRotCloseDuration = Bind(this, ANIMATIONS, "Font Selector Popup Close Rotation Duration", 0f, "The duration of closing.");
             FontSelectorPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
             FontSelectorPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Font Selector Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Pinned Editor Layer Popup
+
+            PinnedEditorLayerPopupActive = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Active", true, "If the popup animation should play.");
+
+            PinnedEditorLayerPopupPosActive = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Animate Position", false, "If position should be animated.");
+            PinnedEditorLayerPopupPosOpen = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PinnedEditorLayerPopupPosClose = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PinnedEditorLayerPopupPosOpenDuration = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            PinnedEditorLayerPopupPosCloseDuration = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            PinnedEditorLayerPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            PinnedEditorLayerPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            PinnedEditorLayerPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            PinnedEditorLayerPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
+
+            PinnedEditorLayerPopupScaActive = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Animate Scale", true, "If scale should be animated.");
+            PinnedEditorLayerPopupScaOpen = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PinnedEditorLayerPopupScaClose = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PinnedEditorLayerPopupScaOpenDuration = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            PinnedEditorLayerPopupScaCloseDuration = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            PinnedEditorLayerPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            PinnedEditorLayerPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            PinnedEditorLayerPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            PinnedEditorLayerPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
+
+            PinnedEditorLayerPopupRotActive = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Animate Rotation", false, "If rotation should be animated.");
+            PinnedEditorLayerPopupRotOpen = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            PinnedEditorLayerPopupRotClose = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            PinnedEditorLayerPopupRotOpenDuration = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Open Rotation Duration", 0f, "The duration of opening.");
+            PinnedEditorLayerPopupRotCloseDuration = Bind(this, ANIMATIONS, "Pinned Editor Layer Popup Close Rotation Duration", 0f, "The duration of closing.");
+            PinnedEditorLayerPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            PinnedEditorLayerPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Pinned Editor Layer Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
