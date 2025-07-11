@@ -3861,6 +3861,7 @@ namespace BetterLegacy.Editor.Managers
             var newFilePopupBase = NewLevelPopup.GameObject.transform;
 
             var newFilePopup = newFilePopupBase.Find("New File Popup");
+            newFilePopup.transform.AsRT().sizeDelta = new Vector2(500f, 428f);
 
             var newFilePopupDetection = newFilePopup.gameObject.AddComponent<Clickable>();
             newFilePopupDetection.onEnable = _val =>
@@ -3897,6 +3898,11 @@ namespace BetterLegacy.Editor.Managers
             var spacer = newFilePopup.GetChild(6);
 
             var path = pather.Find("song-filename").GetComponent<InputField>();
+            path.onEndEdit.ClearAll();
+            path.onValueChanged.NewListener(_val =>
+            {
+                EditorLevelManager.inst.newLevelSettings.audioPath = _val;
+            });
 
             spacer.gameObject.Duplicate(newFilePopup, "spacer", 7);
 
@@ -3911,8 +3917,7 @@ namespace BetterLegacy.Editor.Managers
             var browseLocalText = browseLocal.Find("Text").GetComponent<Text>();
             browseLocalText.text = SYSTEM_BROWSER;
             var browseLocalButton = browseLocal.GetComponent<Button>();
-            browseLocalButton.onClick.ClearAll();
-            browseLocalButton.onClick.AddListener(() =>
+            browseLocalButton.onClick.NewListener(() =>
             {
                 string text = FileBrowser.OpenSingleFile("Select a song to use!", RTFile.ApplicationDirectory, "ogg", "wav", "mp3");
                 if (string.IsNullOrEmpty(text))
@@ -3926,8 +3931,7 @@ namespace BetterLegacy.Editor.Managers
             var browseInternalText = browseInternal.transform.Find("Text").GetComponent<Text>();
             browseInternalText.text = EDITOR_BROWSER;
             var browseInternalButton = browseInternal.GetComponent<Button>();
-            browseInternalButton.onClick.ClearAll();
-            browseInternalButton.onClick.AddListener(() =>
+            browseInternalButton.onClick.NewListener(() =>
             {
                 BrowserPopup.Open();
                 RTFileBrowser.inst.UpdateBrowserFile(RTFile.AudioDotFormats, onSelectFile: _val =>
@@ -3945,8 +3949,7 @@ namespace BetterLegacy.Editor.Managers
             var chooseTemplateText = chooseTemplate.transform.Find("Text").GetComponent<Text>();
             chooseTemplateText.text = "Choose Template";
             var chooseTemplateButton = chooseTemplate.GetComponent<Button>();
-            chooseTemplateButton.onClick.ClearAll();
-            chooseTemplateButton.onClick.AddListener(() =>
+            chooseTemplateButton.onClick.NewListener(() =>
             {
                 LevelTemplateEditor.inst.RenderLevelTemplates();
                 LevelTemplateEditor.inst.Dialog.Open();
@@ -3962,27 +3965,67 @@ namespace BetterLegacy.Editor.Managers
 
             var levelNameLabel = newFilePopup.Find("Level Name");
             var levelName = newFilePopup.Find("level-name");
-            var songTitleLabel = levelNameLabel.gameObject.Duplicate(newFilePopup, "Song Name", 4);
-            var songTitle = levelName.gameObject.Duplicate(newFilePopup, "song-title", 5);
-            var songTitleLabelText = songTitleLabel.GetComponent<Text>();
-            songTitleLabelText.text = "Song Title";
-            var songTitleInputField = songTitle.GetComponent<InputField>();
-            songTitleInputField.onValueChanged.ClearAll();
-            songTitleInputField.onEndEdit.ClearAll();
-            songTitleInputField.text = EditorLevelManager.DEFAULT_SONG_TITLE;
-            songTitleInputField.onValueChanged.AddListener(_val =>
-            {
-                EditorLevelManager.inst.newLevelSongTitle = _val;
-                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 3);
-            });
 
             var levelNameField = levelName.GetComponent<InputField>();
             levelNameField.onEndEdit.ClearAll();
             levelNameField.onValueChanged.NewListener(_val =>
             {
-                EditorManager.inst.NewLevelName(_val);
+                EditorLevelManager.inst.newLevelSettings.levelName = RTFile.ValidateDirectory(_val);
+                levelNameField.text = EditorLevelManager.inst.newLevelSettings.levelName;
                 Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 2);
             });
+
+            var songTitleLabel = levelNameLabel.gameObject.Duplicate(newFilePopup, "Song Name", 4);
+            var songTitleLabelText = songTitleLabel.GetComponent<Text>();
+            songTitleLabelText.text = "Song Title";
+            var songTitle = levelName.gameObject.Duplicate(newFilePopup, "song-title", 5);
+            var songTitleInputField = songTitle.GetComponent<InputField>();
+            songTitleInputField.onEndEdit.ClearAll();
+            songTitleInputField.SetTextWithoutNotify(EditorLevelManager.DEFAULT_SONG_TITLE);
+            songTitleInputField.onValueChanged.NewListener(_val =>
+            {
+                EditorLevelManager.inst.newLevelSettings.songTitle = _val;
+                NewLevelPopup.RenderFormat();
+                Example.Current?.tutorials?.AdvanceTutorial(ExampleTutorial.CREATE_LEVEL, 3);
+            });
+
+            var songArtistLabel = levelNameLabel.gameObject.Duplicate(newFilePopup, "Song Artist", 4);
+            var songArtistLabelText = songArtistLabel.GetComponent<Text>();
+            songArtistLabelText.text = "Song Artist";
+            var songArtist = levelName.gameObject.Duplicate(newFilePopup, "song-artist", 5);
+            var songArtistInputField = songArtist.GetComponent<InputField>();
+            songArtistInputField.onEndEdit.ClearAll();
+            songArtistInputField.SetTextWithoutNotify(EditorLevelManager.DEFAULT_ARTIST);
+            songArtistInputField.onValueChanged.NewListener(_val =>
+            {
+                EditorLevelManager.inst.newLevelSettings.songArtist = _val;
+                NewLevelPopup.RenderFormat();
+                // todo: add tutorial
+            });
+
+            var formatLabel = levelNameLabel.gameObject.Duplicate(newFilePopup, "Song Format", 4);
+            var formatLabelText = formatLabel.GetComponent<Text>();
+            formatLabelText.text = $"{EditorLevelManager.DEFAULT_ARTIST} - {EditorLevelManager.DEFAULT_SONG_TITLE}";
+            NewLevelPopup.FormatLabel = formatLabelText;
+
+            var songSpacer = Creator.NewUIObject("spacer", newFilePopup, 4);
+            songSpacer.transform.AsRT().sizeDelta = new Vector2(0f, 16f);
+
+            var difficultyLabel = levelNameLabel.gameObject.Duplicate(newFilePopup, "Song Name", 4);
+            var difficultyLabelText = difficultyLabel.GetComponent<Text>();
+            difficultyLabelText.text = "Difficulty";
+            var difficultyToggles = Creator.NewUIObject("difficulty", newFilePopup, 5);
+            difficultyToggles.transform.AsRT().sizeDelta = new Vector2(384f, 32f);
+            var difficultyHorizontalLayoutGroup = difficultyToggles.AddComponent<HorizontalLayoutGroup>();
+            difficultyHorizontalLayoutGroup.childForceExpandHeight = true;
+            difficultyHorizontalLayoutGroup.childForceExpandWidth = true;
+            difficultyHorizontalLayoutGroup.childScaleHeight = false;
+            difficultyHorizontalLayoutGroup.childScaleWidth = false;
+            NewLevelPopup.DifficultyContent = difficultyToggles.transform.AsRT();
+
+            CoroutineHelper.WaitUntil(
+                predicate: () => RTMetaDataEditor.inst && RTMetaDataEditor.inst.difficultyToggle,
+                action: RenderDifficulty);
 
             var create = newFilePopup.Find("submit").GetComponent<Button>();
             create.onClick.NewListener(() =>
@@ -3993,6 +4036,11 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddLightText(levelNameLabel.GetComponent<Text>());
             EditorThemeManager.AddInputField(levelNameField);
+
+            EditorThemeManager.AddLightText(difficultyLabelText);
+
+            EditorThemeManager.AddLightText(songArtistLabelText);
+            EditorThemeManager.AddInputField(songArtistInputField);
 
             EditorThemeManager.AddLightText(songTitleLabelText);
             EditorThemeManager.AddInputField(songTitleInputField);
@@ -4018,6 +4066,44 @@ namespace BetterLegacy.Editor.Managers
 
             LevelTemplateEditor.Init();
         }
+
+        public void RenderDifficulty()
+        {
+            CoreHelper.DestroyChildren(NewLevelPopup.DifficultyContent);
+
+            var values = CustomEnumHelper.GetValues<DifficultyType>();
+            var count = values.Length - 1;
+
+            foreach (var difficulty in values)
+            {
+                if (difficulty.Ordinal < 0) // skip unknown difficulty
+                    continue;
+
+                var gameObject = RTMetaDataEditor.inst.difficultyToggle.Duplicate(NewLevelPopup.DifficultyContent, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
+                gameObject.transform.localScale = Vector3.one;
+
+                gameObject.transform.AsRT().sizeDelta = new Vector2(69f, 32f);
+
+                var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
+                text.color = LSColors.ContrastColor(difficulty.Color);
+                text.text = difficulty == count - 1 ? "Anim" : difficulty.DisplayName;
+                text.fontSize = 17;
+                var toggle = gameObject.GetComponent<Toggle>();
+                toggle.image.color = difficulty.Color;
+                toggle.group = null;
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = EditorLevelManager.inst.newLevelSettings.difficulty == difficulty;
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    EditorLevelManager.inst.newLevelSettings.difficulty = difficulty;
+                    RenderDifficulty();
+                });
+
+                EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
+            }
+        }
+
 
         void CreatePreview()
         {

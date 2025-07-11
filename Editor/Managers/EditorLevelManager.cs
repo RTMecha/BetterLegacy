@@ -94,19 +94,15 @@ namespace BetterLegacy.Editor.Managers
         public bool fromNewLevel;
 
         /// <summary>
-        /// Song artist to set to newly created levels.
+        /// Settings used for creating new levels.
         /// </summary>
-        public string newLevelSongArtist = DEFAULT_ARTIST;
-
-        /// <summary>
-        /// Song title to set to newly created levels.
-        /// </summary>
-        public string newLevelSongTitle = DEFAULT_SONG_TITLE;
-
-        /// <summary>
-        /// Difficulty to set to newly created levels.
-        /// </summary>
-        public int newLevelDifficulty = DEFAULT_DIFFICULTY;
+        public NewLevelSettings newLevelSettings = new NewLevelSettings(
+            audioPath: string.Empty,
+            levelName: DEFAULT_LEVEL_NAME,
+            songArtist: DEFAULT_ARTIST,
+            songTitle: DEFAULT_SONG_TITLE,
+            difficulty: DEFAULT_DIFFICULTY
+            );
 
         /// <summary>
         /// If the level should cut.
@@ -822,13 +818,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Creates a new level and loads it.
         /// </summary>
-        public void CreateNewLevel() => CreateNewLevel(() => LevelTemplateEditor.inst.CurrentTemplate.GetGameData(),
-            new NewLevelSettings(
-                EditorManager.inst.newAudioFile,
-                EditorManager.inst.newLevelName,
-                newLevelSongArtist,
-                newLevelSongTitle,
-                newLevelDifficulty));
+        public void CreateNewLevel() => CreateNewLevel(() => LevelTemplateEditor.inst.CurrentTemplate.GetGameData(), newLevelSettings);
 
         /// <summary>
         /// Creates a new level and loads it.
@@ -897,6 +887,7 @@ namespace BetterLegacy.Editor.Managers
             metaData.beatmap.game_version = ProjectArrhythmia.GameVersion.ToString();
             metaData.arcadeID = LSText.randomNumString(16);
             metaData.artist.Name = newSongArtist;
+            metaData.artist.Link = newSongArtist;
             metaData.song.title = newSongTitle;
             metaData.song.difficulty = newLevelDifficulty;
             metaData.uploaderName = SteamWrapper.inst.user.displayName;
