@@ -76,13 +76,10 @@ namespace BetterLegacy.Editor.Data
             name = jn["name"] ?? string.Empty;
             desc = jn["desc"] ?? string.Empty;
             overrideColor = jn["col"] != null;
-            color = LSColors.HexToColor(jn["col"]);
+            if (jn["col"] != null)
+                color = RTColors.HexToColor(jn["col"]);
         }
 
-        /// <summary>
-        /// Writes the pinned editor layer to JSON.
-        /// </summary>
-        /// <returns>Returns JSON representing the pinned editor layer.</returns>
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
