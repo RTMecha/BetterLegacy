@@ -73,6 +73,8 @@ namespace BetterLegacy.Editor.Data
         public override void ReadJSON(JSONNode jn)
         {
             layer = jn["layer"].AsInt;
+            layerType = (EditorTimeline.LayerType)jn["layer_type"].AsInt;
+
             name = jn["name"] ?? string.Empty;
             desc = jn["desc"] ?? string.Empty;
             overrideColor = jn["col"] != null;
