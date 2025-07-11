@@ -12,6 +12,7 @@
 
 ### Editor
 - You can now replace the current loaded levels' song by dragging a song file onto the PA window.
+- Fully implemented new "Pinned Editor Layer" system. This allows you to fully organize your editor layers, including layer names, descriptions and custom colors!.
 
 ## Changes
 ### Story
