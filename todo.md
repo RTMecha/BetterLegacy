@@ -29,7 +29,6 @@
   Think about allowing players to respawn even if all players haven't died yet.
 - Level preview song.
 - Custom end level function defaults.
-- Add Set Data to image shape for Custom Player objects.
 - Controller Preferences metadata. [Keyboard, Controller, Mouse]
 - Versus Mode (Players can attack other players via boosting through them, shooting them, etc)  
   Update: 1.10.0  
