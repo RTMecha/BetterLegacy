@@ -24,13 +24,14 @@ namespace BetterLegacy.Core.Components
             gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
         }
 
-        void Update()
+        public void Tick()
         {
             if (!AudioSource || !BeatmapObject)
                 return;
 
             var time = timeOffset - BeatmapObject.StartTime;
 
+            AudioSource.panStereo = panStereo;
             AudioSource.pitch = pitch * CurrentAudioSource.pitch;
             AudioSource.volume = volume * AudioManager.inst.sfxVol;
 
@@ -41,11 +42,18 @@ namespace BetterLegacy.Core.Components
                 AudioSource.Play();
 
             var length = AudioSource.clip.length - lengthOffset;
-            if (AudioSource.time != Mathf.Clamp(time * pitch % length, 0f, length))
-                AudioSource.time = Mathf.Clamp(time * pitch % length, 0f, length);
+
+            var timeCalc = loop ? time / pitch % (length / pitch) : time / pitch;
+            CurrentTime += (timeCalc - previousTime) * pitch;
+            CurrentTime = Mathf.Clamp(CurrentTime, 0f, AudioSource.clip.length);
+            if (RTMath.Distance(AudioSource.time, CurrentTime) > 0.1f)
+                AudioSource.time = CurrentTime;
+            previousTime = timeCalc;
         }
 
         public float timeOffset;
+
+        public float panStereo = 0f;
 
         public float pitch = 1f;
 
@@ -56,6 +64,9 @@ namespace BetterLegacy.Core.Components
         public float lengthOffset;
 
         public bool playing = true;
+
+        public float CurrentTime { get; set; }
+        float previousTime;
 
         /// <summary>
         /// The main audio source to base the time off of.
