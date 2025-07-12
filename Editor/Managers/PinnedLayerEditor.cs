@@ -94,12 +94,16 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void PinCurrentEditorLayer()
         {
-            RTEditor.inst.editorInfo.pinnedEditorLayers.Add(new PinnedEditorLayer(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType)
+            var pinnedEditorLayer = new PinnedEditorLayer(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType)
             {
                 name = "Pinned Editor Layer",
                 overrideColor = true,
                 color = new Color(UnityRandom.Range(0.5f, 1f), UnityRandom.Range(0.5f, 1f), UnityRandom.Range(0.5f, 1f)),
-            });
+            };
+            RTEditor.inst.editorInfo.pinnedEditorLayers.Add(pinnedEditorLayer);
+            CurrentPinnedEditorLayer = pinnedEditorLayer;
+            Dialog.Open();
+            RenderDialog();
             EditorTimeline.inst.RenderLayerInput(EditorTimeline.inst.Layer, EditorTimeline.inst.layerType);
         }
 
@@ -152,6 +156,14 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorContextMenu.inst.ShowContextMenu(
                         new ButtonFunction("Go to Layer", () => EditorTimeline.inst.SetLayer(pinnedEditorLayer.layer, pinnedEditorLayer.layerType)),
+                        new ButtonFunction("Set to Current Layer", () =>
+                        {
+                            pinnedEditorLayer.layer = EditorTimeline.inst.Layer;
+                            pinnedEditorLayer.layerType = EditorTimeline.inst.layerType;
+                            EditorTimeline.inst.RenderLayerInput(pinnedEditorLayer.layer, pinnedEditorLayer.layerType);
+                            RenderDialog();
+                            RenderPopup();
+                        }),
                         new ButtonFunction("Edit", () =>
                         {
                             CurrentPinnedEditorLayer = pinnedEditorLayer;
@@ -176,15 +188,6 @@ namespace BetterLegacy.Editor.Managers
                             RenderPopup();
                         }),
                         new ButtonFunction(true),
-                        new ButtonFunction("Set to Current Layer", () =>
-                        {
-                            pinnedEditorLayer.layer = EditorTimeline.inst.Layer;
-                            pinnedEditorLayer.layerType = EditorTimeline.inst.layerType;
-                            EditorTimeline.inst.RenderLayerInput(pinnedEditorLayer.layer, pinnedEditorLayer.layerType);
-                            RenderDialog();
-                            RenderPopup();
-                        }),
-                        new ButtonFunction(true),
                         new ButtonFunction("Copy", () =>
                         {
                             copiedPinnedEditorLayers.Clear();
@@ -205,7 +208,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (index <= 0)
                             {
-                                EditorManager.inst.DisplayNotification($"Cannot move the pinned editor layer up because it's at the start.", 2f, EditorManager.NotificationType.Warning);
+                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
                                 return;
                             }
 
@@ -216,11 +219,33 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (index >= RTEditor.inst.editorInfo.pinnedEditorLayers.Count - 1)
                             {
-                                EditorManager.inst.DisplayNotification($"Cannot move the pinned editor layer down because it's at the end.", 2f, EditorManager.NotificationType.Warning);
+                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer down since it's already at the end.", 3f, EditorManager.NotificationType.Error);
                                 return;
                             }
 
                             RTEditor.inst.editorInfo.pinnedEditorLayers.Move(index, index + 1);
+                            RenderPopup();
+                        }),
+                        new ButtonFunction("Move to Start", () =>
+                        {
+                            if (index <= 0)
+                            {
+                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            RTEditor.inst.editorInfo.pinnedEditorLayers.Move(index, 0);
+                            RenderPopup();
+                        }),
+                        new ButtonFunction("Move to End", () =>
+                        {
+                            if (index >= RTEditor.inst.editorInfo.pinnedEditorLayers.Count - 1)
+                            {
+                                EditorManager.inst.DisplayNotification("Could not move the pinned editor layer down since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            RTEditor.inst.editorInfo.pinnedEditorLayers.Move(index, RTEditor.inst.editorInfo.pinnedEditorLayers.Count - 1);
                             RenderPopup();
                         })
                         );
@@ -253,6 +278,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
 
                 TooltipHelper.AddHoverTooltip(gameObject, $"<#{RTColors.ColorToHexOptional(color)}>{pinnedEditorLayer.name}</color>", pinnedEditorLayer.desc, clear: true);
+                num++;
             }
         }
 
