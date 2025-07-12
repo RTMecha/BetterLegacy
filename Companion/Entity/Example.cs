@@ -47,7 +47,7 @@ namespace BetterLegacy.Companion.Entity
             - More random occurances that can be enabled / disabled (sleeping due to boredom, etc)
             - Ensure Example has a lot of settings that can control his behavior if people want him to be a specific way. I don't want him to come off as annoying.
             - Figure out custom models / companions. Probably have it all in one package?
-            - Random enter & leave sequences
+            - Multiple companions?
             - Implement tutorials module. This won't be another "documentation". Instead, it'll be a proper hands-on tutorial that guides you along a specific process.
          */
 
@@ -356,7 +356,6 @@ namespace BetterLegacy.Companion.Entity
 
         public bool leaving;
 
-        // TODO: random entrance and exit animations?
         /// <summary>
         /// Enters the scene.
         /// </summary>
