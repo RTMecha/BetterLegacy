@@ -5,6 +5,7 @@
 - Added "Pause Level" and "Pass Variables" values to the loadInterface modifier.
 - Added exitInterface modifier. Used for cases where you want to exit the currently open interface under specific circumstances. (Does not work on the pause menu / end level menu. It's just for the loadInterface modifier)
 - Added setRenderType setRenderTypeOther modifiers. These can Set the render type of the object. Don't know why these weren't in there earlier.
+- The Audio event keyframe and sound modifiers now have a "Pan Stereo" value. This allows control of the left / right direction the sound is coming from, emulating spaces.
 
 ### Interfaces
 - Interface now has a dynamic variable system that allows for specific variables to affect anything in the interface.
@@ -20,6 +21,7 @@
 
 ### Core
 - Player stop boost function no longer depends on the moveable state of the player.
+- Tweaked the audioSource modifier a little. It should be better to use, hopefully.
 
 ### Interfaces
 - Due to the interface list feature, some interfaces have been combined into one file and there's also some new tests to demonstrate the capabilities of the interface now.
