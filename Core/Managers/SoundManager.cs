@@ -4,6 +4,7 @@ using UnityEngine;
 
 using HarmonyLib;
 
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 
 using SoundGroup = SoundLibrary.SoundGroup;
@@ -57,15 +58,21 @@ namespace BetterLegacy.Core.Managers
 
         #region Sound
 
-        public AudioSource PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
-        public AudioSource PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(AudioClip clip, AudioSourceSettings settings) => PlaySound(Camera.main.gameObject, clip, settings);
 
-        public AudioSource PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
-        public AudioSource PlaySound(GameObject gameObject, string soundName, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(gameObject, Library.GetClipFromName(soundName), volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(GameObject gameObject, AudioClip clip, AudioSourceSettings settings) => PlaySound(gameObject, clip, settings.volume, settings.pitch, settings.loop, settings.panStereo);
 
-        public AudioSource PlaySound(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null) => PlaySound(Camera.main.gameObject, clip, volume, pitch, loop, onSoundComplete);
+        public AudioSource PlaySound(DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, float panStereo = 0f, System.Action onSoundComplete = null) => PlaySound(defaultSound.ToString(), volume, pitch, loop, panStereo, onSoundComplete);
 
-        public AudioSource PlaySound(GameObject gameObject, AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, System.Action onSoundComplete = null)
+        public AudioSource PlaySound(GameObject gameObject, DefaultSounds defaultSound, float volume = 1, float pitch = 1, bool loop = false, float panStereo = 0f, System.Action onSoundComplete = null) => PlaySound(gameObject, defaultSound.ToString(), volume, pitch, loop, panStereo, onSoundComplete);
+
+        public AudioSource PlaySound(string soundName, float volume = 1f, float pitch = 1f, bool loop = false, float panStereo = 0f, System.Action onSoundComplete = null) => PlaySound(Library.GetClipFromName(soundName), volume, pitch, loop, panStereo, onSoundComplete);
+
+        public AudioSource PlaySound(GameObject gameObject, string soundName, float volume = 1f, float pitch = 1f, bool loop = false, float panStereo = 0f, System.Action onSoundComplete = null) => PlaySound(gameObject, Library.GetClipFromName(soundName), volume, pitch, loop, panStereo, onSoundComplete);
+
+        public AudioSource PlaySound(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, float panStereo = 0f, System.Action onSoundComplete = null) => PlaySound(Camera.main.gameObject, clip, volume, pitch, loop, panStereo, onSoundComplete);
+
+        public AudioSource PlaySound(GameObject gameObject, AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, float panStereo = 0f, System.Action onSoundComplete = null)
         {
             if (!clip)
                 return null;
@@ -77,6 +84,7 @@ namespace BetterLegacy.Core.Managers
             audioSource.loop = loop;
             audioSource.volume = BaseManager.sfxVol * volume;
             audioSource.pitch = pitch;
+            audioSource.panStereo = panStereo;
             audioSource.Play();
             float length = clip.length / pitch;
             //BaseManager.StartCoroutine(BaseManager.DestroyWithDelay(audioSource, length));

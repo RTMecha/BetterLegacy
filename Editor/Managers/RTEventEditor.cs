@@ -1349,8 +1349,10 @@ namespace BetterLegacy.Editor.Managers
             var audio = GenerateEventDialog("audio");
             {
                 var pitchVol = GenerateUIElement("music", "Vector2", audio.transform, 8, "Pitch", "Volume");
+                var panStereo = GenerateUIElement("panstereo", "Single", audio.transform, 10, "Pan Stereo");
 
                 EditorThemeManager.AddInputFields(pitchVol["UI"], true, "Event Editor");
+                EditorThemeManager.AddInputFields(panStereo["UI"], true, "Event Editor");
             }
 
             var videoBGParent = GenerateEventDialog("videobgparent");
@@ -2659,7 +2661,10 @@ namespace BetterLegacy.Editor.Managers
                         SetFloatInputField(dialogTmp, "music/x", 0, 0.1f, 10f, 0.001f, 10f, allowNegative: false);
 
                         // Audio Volume
-                        SetFloatInputField(dialogTmp, "music/y", 1, 0.1f, 10f, 0f, 1f, allowNegative: false);
+                        SetFloatInputField(dialogTmp, "music/y", 1, max: 1f, allowNegative: false);
+
+                        // Pan Stereo
+                        SetFloatInputField(dialogTmp, "panstereo/x", 2);
 
                         break;
                     } // Audio

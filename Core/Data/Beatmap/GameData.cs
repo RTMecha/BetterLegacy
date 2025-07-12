@@ -444,10 +444,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 			new EventKeyframe
             {
                 time = 0f,
-                values = new float[2]
+                values = new float[3]
                 {
                     1f,
-                    1f
+                    1f,
+                    0f
                 },
                 id = LSText.randomNumString(8),
             }, // Audio

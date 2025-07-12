@@ -173,14 +173,15 @@ namespace BetterLegacy.Core.Helpers
             var pitch = modifier.GetFloat(2, 1f, variables);
             var vol = modifier.GetFloat(3, 1f, variables);
             var loop = modifier.GetBool(4, false, variables);
+            var panStereo = modifier.GetFloat(5, 0f, variables);
 
             if (GameData.Current && GameData.Current.assets.sounds.TryFind(x => x.name == path, out SoundAsset soundAsset) && soundAsset.audio)
             {
-                ModifiersHelper.PlaySound(obj.id, soundAsset.audio, pitch, vol, loop);
+                ModifiersHelper.PlaySound(obj.id, soundAsset.audio, pitch, vol, loop, panStereo);
                 return;
             }
 
-            ModifiersHelper.GetSoundPath(obj.id, path, global, pitch, vol, loop);
+            ModifiersHelper.GetSoundPath(obj.id, path, global, pitch, vol, loop, panStereo);
         }
 
         public static void playSoundOnline<T>(Modifier<T> modifier, Dictionary<string, string> variables) where T : PAObject<T>, new()
@@ -192,9 +193,10 @@ namespace BetterLegacy.Core.Helpers
             var pitch = modifier.GetFloat(1, 1f, variables);
             var vol = modifier.GetFloat(2, 1f, variables);
             var loop = modifier.GetBool(3, false, variables);
+            var panStereo = modifier.GetFloat(4, 0f, variables);
 
             if (!string.IsNullOrEmpty(url))
-                ModifiersHelper.DownloadSoundAndPlay(obj.id, url, pitch, vol, loop);
+                ModifiersHelper.DownloadSoundAndPlay(obj.id, url, pitch, vol, loop, panStereo);
         }
 
         public static void playDefaultSound<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -202,6 +204,7 @@ namespace BetterLegacy.Core.Helpers
             var pitch = modifier.GetFloat(1, 1f, variables);
             var vol = modifier.GetFloat(2, 1f, variables);
             var loop = modifier.GetBool(3, false, variables);
+            var panStereo = modifier.GetFloat(4, 0f, variables);
 
             if (!AudioManager.inst.library.soundClips.TryGetValue(modifier.GetValue(0), out AudioClip[] audioClips))
                 return;
@@ -213,6 +216,7 @@ namespace BetterLegacy.Core.Helpers
             audioSource.loop = loop;
             audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
             audioSource.volume = vol * AudioManager.inst.sfxVol;
+            audioSource.panStereo = panStereo;
             audioSource.Play();
 
             float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
@@ -229,9 +233,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static void audioSource(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
-            var levelObject = modifier.reference.runtimeObject;
-            if (!levelObject || !levelObject.visualObject ||
-                !levelObject.visualObject.gameObject)
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                 return;
 
             if (modifier.TryGetResult(out AudioModifier audioModifier))
@@ -242,6 +245,8 @@ namespace BetterLegacy.Core.Helpers
                 audioModifier.timeOffset = modifier.GetBool(6, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(5, 0f, variables) : modifier.GetFloat(5, 0f, variables);
                 audioModifier.lengthOffset = modifier.GetFloat(7, 0f, variables);
                 audioModifier.playing = modifier.GetBool(8, true, variables);
+                audioModifier.panStereo = modifier.GetFloat(9, 0f, variables);
+                audioModifier.Tick();
                 return;
             }
 
@@ -268,7 +273,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (fullPath.EndsWith(FileFormat.MP3.Dot()))
             {
-                modifier.Result = levelObject.visualObject.gameObject.AddComponent<AudioModifier>();
+                modifier.Result = runtimeObject.visualObject.gameObject.AddComponent<AudioModifier>();
                 ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(fullPath), modifier.reference, modifier);
                 return;
             }
@@ -283,11 +288,20 @@ namespace BetterLegacy.Core.Helpers
 
                 audioClip.name = path;
 
-                if (!levelObject.visualObject || !levelObject.visualObject.gameObject)
+                if (!runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                     return;
 
-                modifier.Result = levelObject.visualObject.gameObject.AddComponent<AudioModifier>();
-                ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
+                var audioModifier = runtimeObject.visualObject.gameObject.AddComponent<AudioModifier>();
+                modifier.Result = audioModifier;
+                audioModifier.Init(audioClip, modifier.reference, modifier);
+                audioModifier.pitch = modifier.GetFloat(2, 1f, variables);
+                audioModifier.volume = modifier.GetFloat(3, 1f, variables);
+                audioModifier.loop = modifier.GetBool(4, true, variables);
+                audioModifier.timeOffset = modifier.GetBool(6, true, variables) ? AudioManager.inst.CurrentAudioSource.time + modifier.GetFloat(5, 0f, variables) : modifier.GetFloat(5, 0f, variables);
+                audioModifier.lengthOffset = modifier.GetFloat(7, 0f, variables);
+                audioModifier.playing = modifier.GetBool(8, true, variables);
+                audioModifier.panStereo = modifier.GetFloat(9, 0f, variables);
+                audioModifier.Tick();
             }));
         }
 
@@ -4449,11 +4463,11 @@ namespace BetterLegacy.Core.Helpers
 
                 var soundName = modifier.GetValue(4, variables);
                 if (GameData.Current.assets.sounds.TryFind(x => x.name == soundName, out SoundAsset soundAsset) && soundAsset.audio)
-                    SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch);
+                    SoundManager.inst.PlaySound(soundAsset.audio, volume, pitch, panStereo: modifier.GetFloat(12, 0f, variables));
                 else if (SoundManager.inst.TryGetSound(soundName, out AudioClip audioClip))
-                    SoundManager.inst.PlaySound(audioClip, volume, pitch);
+                    SoundManager.inst.PlaySound(audioClip, volume, pitch, panStereo: modifier.GetFloat(12, 0f, variables));
                 else
-                    ModifiersHelper.GetSoundPath(modifier.reference.id, soundName, modifier.GetBool(5, false, variables), pitch, volume, false);
+                    ModifiersHelper.GetSoundPath(modifier.reference.id, soundName, modifier.GetBool(5, false, variables), pitch, volume, false, modifier.GetFloat(12, 0f, variables));
             }
         }
 

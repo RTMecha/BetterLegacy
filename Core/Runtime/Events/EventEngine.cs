@@ -219,7 +219,8 @@ namespace BetterLegacy.Core.Runtime.Events
                 new KFDelegate[]
                 {
                     UpdateAudioPitch,
-                    UpdateAudioVolume
+                    UpdateAudioVolume,
+                    UpdateAudioPanStereo
                 }, // Audio
                 new KFDelegate[]
                 {
@@ -1583,6 +1584,9 @@ namespace BetterLegacy.Core.Runtime.Events
         // 25 - 1
         void UpdateAudioVolume(float x) => audioVolume = Mathf.Clamp(x, 0f, 1f);
 
+        // 25 - 2
+        void UpdateAudioPanStereo(float x) => panStereo = x;
+
         #endregion
 
         #region Video BG Parent - 26
@@ -1884,6 +1888,7 @@ namespace BetterLegacy.Core.Runtime.Events
         public float camOffsetY;
 
         public float audioVolume = 1f;
+        public float panStereo;
 
         public float playerRotation;
         public float playerPositionX;

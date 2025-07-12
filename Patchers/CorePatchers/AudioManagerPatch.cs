@@ -2,6 +2,7 @@
 
 using HarmonyLib;
 
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 
@@ -18,9 +19,12 @@ namespace BetterLegacy.Patchers
 
             __instance.musicVol = (float)DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * __instance.masterVol * (RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.audioVolume : 1f) * SoundManager.musicVolume;
             __instance.sfxVol = (float)DataManager.inst.GetSettingInt("EffectsVolume", 9) / 9f * __instance.masterVol;
+
             if (!__instance.isFading)
                 __instance.CurrentAudioSource.volume = __instance.musicVol;
             __instance.CurrentAudioSource.pitch = __instance.pitch;
+            __instance.CurrentAudioSource.panStereo = CoreHelper.InGame && RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.panStereo : 0f;
+
             if (__instance.pitch != prevPitch)
             {
                 prevPitch = __instance.pitch;

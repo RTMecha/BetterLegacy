@@ -2602,7 +2602,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void GetSoundPath(string id, string path, bool fromSoundLibrary = false, float pitch = 1f, float volume = 1f, bool loop = false)
+        public static void GetSoundPath(string id, string path, bool fromSoundLibrary = false, float pitch = 1f, float volume = 1f, bool loop = false, float panStereo = 0f)
         {
             string fullPath = !fromSoundLibrary ? RTFile.CombinePaths(RTFile.BasePath, path) : RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
 
@@ -2618,19 +2618,19 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             if (!fullPath.EndsWith(FileFormat.MP3.Dot()))
-                CoroutineHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip => PlaySound(id, audioClip, pitch, volume, loop)));
+                CoroutineHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip => PlaySound(id, audioClip, pitch, volume, loop, panStereo)));
             else
-                PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, loop);
+                PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, loop, panStereo);
         }
 
-        public static void DownloadSoundAndPlay(string id, string path, float pitch = 1f, float volume = 1f, bool loop = false)
+        public static void DownloadSoundAndPlay(string id, string path, float pitch = 1f, float volume = 1f, bool loop = false, float panStereo = 0f)
         {
             try
             {
                 var audioType = RTFile.GetAudioType(path);
 
                 if (audioType != AudioType.UNKNOWN)
-                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop), onError => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop, panStereo), onError => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
             }
             catch
             {
@@ -2638,9 +2638,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void PlaySound(string id, AudioClip clip, float pitch, float volume, bool loop)
+        public static void PlaySound(string id, AudioClip clip, float pitch, float volume, bool loop, float panStereo = 0f)
         {
-            var audioSource = SoundManager.inst.PlaySound(clip, volume, pitch * AudioManager.inst.CurrentAudioSource.pitch, loop);
+            var audioSource = SoundManager.inst.PlaySound(clip, volume, pitch * AudioManager.inst.CurrentAudioSource.pitch, loop, panStereo);
             if (loop && !ModifiersManager.audioSources.ContainsKey(id))
                 ModifiersManager.audioSources.Add(id, audioSource);
         }

@@ -451,11 +451,11 @@ namespace BetterLegacy.Editor.Data
                             EditorContextMenu.inst.ShowContextMenu(
                                 new ButtonFunction("Use Local Browser", () =>
                                 {
-                                    var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
-                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
+                                    var global = modifier.GetBool(1, false);
+                                    var directory = global && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
                                                     RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
 
-                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
+                                    if (global && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
                                     {
                                         EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
                                         return;
@@ -465,7 +465,6 @@ namespace BetterLegacy.Editor.Data
                                     if (string.IsNullOrEmpty(result))
                                         return;
 
-                                    var global = Parser.TryParse(modifier.commands[1], false);
 
                                     result = RTFile.ReplaceSlash(result);
                                     if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
@@ -482,11 +481,11 @@ namespace BetterLegacy.Editor.Data
                                 {
                                     RTEditor.inst.BrowserPopup.Open();
 
-                                    var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
-                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
+                                    var global = modifier.GetBool(1, false);
+                                    var directory = global && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
                                                     RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
 
-                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
+                                    if (global && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
                                     {
                                         EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
                                         return;
@@ -494,7 +493,7 @@ namespace BetterLegacy.Editor.Data
 
                                     RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
                                     {
-                                        var global = Parser.TryParse(modifier.commands[1], false);
+                                        var global = modifier.GetBool(1, false);
                                         _val = RTFile.ReplaceSlash(_val);
                                         if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                         {
@@ -512,6 +511,7 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Pitch", 2, 1f);
                         SingleGenerator(modifier, "Volume", 3, 1f);
                         BoolGenerator(modifier, "Loop", 4, false);
+                        SingleGenerator(modifier, "Pan Stereo", 5);
 
                         break;
                     }
@@ -520,6 +520,7 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Pitch", 1, 1f);
                         SingleGenerator(modifier, "Volume", 2, 1f);
                         BoolGenerator(modifier, "Loop", 3, false);
+                        SingleGenerator(modifier, "Pan Stereo", 4);
                         break;
                     }
                 case nameof(ModifierActions.playDefaultSound): {
@@ -562,6 +563,7 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Pitch", 1, 1f);
                         SingleGenerator(modifier, "Volume", 2, 1f);
                         BoolGenerator(modifier, "Loop", 3, false);
+                        SingleGenerator(modifier, "Pan Stereo", 4);
 
                         break;
                     }
@@ -640,6 +642,8 @@ namespace BetterLegacy.Editor.Data
                         SingleGenerator(modifier, "Length Offset", 7, 0f);
 
                         BoolGenerator(modifier, "Playing", 8, true);
+
+                        SingleGenerator(modifier, "Pan Stereo", 9);
 
                         break;
                     }
@@ -2883,6 +2887,7 @@ namespace BetterLegacy.Editor.Data
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         SingleGenerator(modifier, "Time Offset", 10, 0f);
                         BoolGenerator(modifier, "Time Relative", 11, false);
+                        SingleGenerator(modifier, "Pan Stereo", 12);
 
                         break;
                     }
