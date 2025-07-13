@@ -1782,13 +1782,18 @@ namespace BetterLegacy.Menus
                 // 0 = file name without extension (files' extension must be lsi).
                 // 1 = if interface should be opened.
                 // 2 = set main directory.
-                // 3 = branch ID to load if the interface that's being loaded is a list type
+                // 3 = branch ID to load if the interface that's being loaded is a list type.
+                // 4 = branch chain ID list.
                 // Example:
                 // [
                 //   "story_mode",
                 //   "True",
                 //   "{{BepInExAssetsDirectory}}Interfaces",
-                //   "643284542742"
+                //   "643284542742",
+                //   [
+                //     "23567353643", < first interface opened
+                //     "643284542742" < second interface opened
+                //   ]
                 // ]
                 //
                 // - JSON Object Structure -
@@ -1796,12 +1801,17 @@ namespace BetterLegacy.Menus
                 // "load"
                 // "path"
                 // "id"
+                // "chain"
                 // Example:
                 // {
                 //   "file": "some_interface",
                 //   "load": "False",
                 //   "path": "beatmaps/interfaces", < (optional)
                 //   "id": "5325263" < ID of the interface to open if the file is a list
+                //   "chain": [
+                //     "23567353643",
+                //     "643284542742" < when the user exits this interface, they return to the previous
+                //   ]
                 // }
                 case "Parse": {
                         if (parameters == null)
@@ -1839,7 +1849,7 @@ namespace BetterLegacy.Menus
                             }
                         }
 
-                        ParseInterface(path, ParseVarFunction(parameters.Get(1, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "id"), thisElement, customVariables), branchChain);
+                        ParseInterface(path, ParseVarFunction(parameters.Get(1, "load"), thisElement, customVariables), ParseVarFunction(parameters.Get(3, "id"), thisElement, customVariables), branchChain, customVariables);
 
                         break;
                     }
@@ -4485,6 +4495,55 @@ namespace BetterLegacy.Menus
                         }
 
                         return (parameters["if"] != null && parameters["return"] != null && ParseIfFunction(parameters["if"], thisElement)).ToString();
+                    }
+
+                #endregion
+
+                #region ReadJSONFile
+
+                // Parses a JSON file and returns it.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = file name.
+                // 1 = set main directory.
+                // Example:
+                // [
+                //   "story_mode",
+                //   "{{BepInExAssetsDirectory}}Interfaces"
+                // ]
+                //
+                // - JSON Object Structure -
+                // "file"
+                // "path"
+                // Example:
+                // {
+                //   "file": "some_interface",
+                //   "path": "beatmaps/interfaces", < (optional)
+                // }
+                case "ReadJSONFile": {
+                        if (parameters == null)
+                            break;
+
+                        var file = ParseVarFunction(parameters.Get(0, "file"), thisElement, customVariables);
+                        if (file == null)
+                            break;
+
+                        var mainDirectory = ParseVarFunction(parameters.Get(1, "path"));
+
+                        if (mainDirectory == null || !mainDirectory.IsString || !mainDirectory.Value.Contains(RTFile.ApplicationDirectory))
+                            mainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, mainDirectory);
+
+                        var path = RTFile.CombinePaths(mainDirectory, file + FileFormat.LSI.Dot());
+
+                        if (!RTFile.FileExists(path))
+                        {
+                            CoreHelper.LogError($"Interface {file} does not exist!");
+
+                            break;
+                        }
+
+                        return JSON.Parse(RTFile.ReadFromFile(path));
                     }
 
                 #endregion
