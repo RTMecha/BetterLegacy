@@ -1240,8 +1240,8 @@ namespace BetterLegacy.Editor.Data
                     }
 
                 case nameof(ModifierActions.playerVelocity): {
-                        SingleGenerator(modifier, "X", 1, 0f);
-                        SingleGenerator(modifier, "Y", 2, 0f);
+                        SingleGenerator(modifier, "X", 0, 0f);
+                        SingleGenerator(modifier, "Y", 1, 0f);
 
                         break;
                     }
@@ -1253,14 +1253,14 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityAll): {
-                        SingleGenerator(modifier, "X", 1, 0f);
-                        SingleGenerator(modifier, "Y", 2, 0f);
+                        SingleGenerator(modifier, "X", 0, 0f);
+                        SingleGenerator(modifier, "Y", 1, 0f);
 
                         break;
                     }
                     
                 case nameof(ModifierActions.playerVelocityX): {
-                        SingleGenerator(modifier, "X", 1, 0f);
+                        SingleGenerator(modifier, "X", 0, 0f);
 
                         break;
                     }
@@ -1271,13 +1271,13 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityXAll): {
-                        SingleGenerator(modifier, "X", 1, 0f);
+                        SingleGenerator(modifier, "X", 0, 0f);
 
                         break;
                     }
                     
                 case nameof(ModifierActions.playerVelocityY): {
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        SingleGenerator(modifier, "Y", 0, 0f);
 
                         break;
                     }
@@ -1288,7 +1288,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityYAll): {
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        SingleGenerator(modifier, "Y", 0, 0f);
 
                         break;
                     }
