@@ -949,8 +949,14 @@ namespace BetterLegacy.Core.Helpers
 
             // speed
             nameof(ModifierActions.playerSpeed) => ModifierActions.playerSpeed,
+            nameof(ModifierActions.playerVelocity) => ModifierActions.playerVelocity,
+            nameof(ModifierActions.playerVelocityIndex) => ModifierActions.playerVelocityIndex,
             nameof(ModifierActions.playerVelocityAll) => ModifierActions.playerVelocityAll,
+            nameof(ModifierActions.playerVelocityX) => ModifierActions.playerVelocityX,
+            nameof(ModifierActions.playerVelocityXIndex) => ModifierActions.playerVelocityXIndex,
             nameof(ModifierActions.playerVelocityXAll) => ModifierActions.playerVelocityXAll,
+            nameof(ModifierActions.playerVelocityY) => ModifierActions.playerVelocityY,
+            nameof(ModifierActions.playerVelocityYIndex) => ModifierActions.playerVelocityYIndex,
             nameof(ModifierActions.playerVelocityYAll) => ModifierActions.playerVelocityYAll,
 
             nameof(ModifierActions.setPlayerModel) => ModifierActions.setPlayerModel,
@@ -2069,8 +2075,14 @@ namespace BetterLegacy.Core.Helpers
 
             // speed
             nameof(ModifierActions.playerSpeed) => ModifierActions.playerSpeed,
+            //nameof(ModifierActions.playerVelocity) => ModifierActions.playerVelocity,
+            nameof(ModifierActions.playerVelocityIndex) => ModifierActions.playerVelocityIndex,
             nameof(ModifierActions.playerVelocityAll) => ModifierActions.playerVelocityAll,
+            //nameof(ModifierActions.playerVelocityX) => ModifierActions.playerVelocityX,
+            nameof(ModifierActions.playerVelocityXIndex) => ModifierActions.playerVelocityXIndex,
             nameof(ModifierActions.playerVelocityXAll) => ModifierActions.playerVelocityXAll,
+            //nameof(ModifierActions.playerVelocityY) => ModifierActions.playerVelocityY,
+            nameof(ModifierActions.playerVelocityYIndex) => ModifierActions.playerVelocityYIndex,
             nameof(ModifierActions.playerVelocityYAll) => ModifierActions.playerVelocityYAll,
 
             nameof(ModifierActions.setPlayerModel) => ModifierActions.setPlayerModel,

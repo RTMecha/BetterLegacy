@@ -2049,18 +2049,39 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerVelocity(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
+            if (!modifier.reference)
+                return;
 
+            var x = modifier.GetFloat(0, 0f, variables);
+            var y = modifier.GetFloat(1, 0f, variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = modifier.reference.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player)
+                    return;
+
+                player.Player.rb.velocity = new Vector2(x, y);
+            });
         }
         
-        public static void playerVelocityIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void playerVelocityIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-
-        }
-        
-        public static void playerVelocityAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
-        {
+            var index = modifier.GetInt(0, 0, variables);
             var x = modifier.GetFloat(1, 0f, variables);
             var y = modifier.GetFloat(2, 0f, variables);
+
+            if (PlayerManager.Players.TryGetAt(index, out CustomPlayer player) && player.Player && player.Player.rb)
+                player.Player.rb.velocity = new Vector2(x, y);
+        }
+
+        public static void playerVelocityAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        {
+            var x = modifier.GetFloat(0, 0f, variables);
+            var y = modifier.GetFloat(1, 0f, variables);
 
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
@@ -2072,12 +2093,34 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerVelocityX(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
+            var x = modifier.GetFloat(0, 0f, variables);
 
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = modifier.reference.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player)
+                    return;
+
+                var velocity = player.Player.rb.velocity;
+                velocity.x = x;
+                player.Player.rb.velocity = velocity;
+            });
         }
 
-        public static void playerVelocityXIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void playerVelocityXIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            var index = modifier.GetInt(0, 0, variables);
+            var x = modifier.GetFloat(1, 0f, variables);
 
+            if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                return;
+
+            var velocity = player.Player.rb.velocity;
+            velocity.x = x;
+            player.Player.rb.velocity = velocity;
         }
 
         public static void playerVelocityXAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -2098,12 +2141,34 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerVelocityY(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
         {
+            var y = modifier.GetFloat(0, 0f, variables);
 
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = modifier.reference.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.Player)
+                    return;
+
+                var velocity = player.Player.rb.velocity;
+                velocity.y = y;
+                player.Player.rb.velocity = velocity;
+            });
         }
 
-        public static void playerVelocityYIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static void playerVelocityYIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
+            var index = modifier.GetInt(0, 0, variables);
+            var y = modifier.GetFloat(1, 0f, variables);
 
+            if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                return;
+
+            var velocity = player.Player.rb.velocity;
+            velocity.y = y;
+            player.Player.rb.velocity = velocity;
         }
 
         public static void playerVelocityYAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
