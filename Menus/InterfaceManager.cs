@@ -2759,16 +2759,19 @@ namespace BetterLegacy.Menus
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || !CurrentInterface)
                             return;
 
-                        var isArray = parameters.IsArray;
-                        string array = isArray ? parameters[0] : parameters["id"];
-                        string text = isArray ? parameters[1] : parameters["text"];
+                        var text = ParseVarFunction(parameters.Get(0, "text"), thisElement, customVariables);
+                        if (text == null || !text.IsString)
+                            break;
 
-                        if (CurrentInterface.elements.TryFind(x => x.id == array, out MenuImage menuImage) && menuImage is MenuText menuText)
-                        {
-                            menuText.text = text;
-                            menuText.textUI.maxVisibleCharacters = text.Length;
-                            menuText.textUI.text = text;
-                        }
+                        var id = ParseVarFunction(parameters.Get(1, "id"), thisElement, customVariables);
+
+                        var element = id == null ? thisElement : CurrentInterface.elements.Find(x => x.id == id);
+                        if (element is not MenuText menuText)
+                            break;
+
+                        menuText.text = text;
+                        menuText.textUI.maxVisibleCharacters = text.Value.Length;
+                        menuText.textUI.text = text;
 
                         break;
                     }
@@ -4239,7 +4242,7 @@ namespace BetterLegacy.Menus
 
                         var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables);
                         if (ParseVarFunction(parameters.Get(2, "relative"), thisElement, customVariables).AsBool)
-                            value += StoryManager.inst.CurrentSave.LoadString(saveName, string.Empty);
+                            value = StoryManager.inst.CurrentSave.LoadString(saveName, string.Empty) + value;
 
                         StoryManager.inst.CurrentSave.SaveString(saveName, value);
 
@@ -4544,6 +4547,17 @@ namespace BetterLegacy.Menus
                         }
 
                         return JSON.Parse(RTFile.ReadFromFile(path));
+                    }
+
+                #endregion
+
+                #region NoParse
+
+                case "NoParse": {
+                        if (parameters == null)
+                            break;
+
+                        return parameters.Get(0, "value");
                     }
 
                 #endregion
