@@ -160,6 +160,11 @@ namespace BetterLegacy.Menus.UI.Elements
         public bool updateTextOnTick;
 
         /// <summary>
+        /// Text to set per-tick.
+        /// </summary>
+        public JSONNode tickTextFunc;
+
+        /// <summary>
         /// If quick element animations should play at the end of interpolation instead of during it.
         /// </summary>
         public bool runAnimationsOnEnd;
@@ -341,6 +346,9 @@ namespace BetterLegacy.Menus.UI.Elements
             var jnText = InterfaceManager.inst.ParseVarFunction(jnElement["text"], this, customVariables);
             if (jnText != null)
                 text = jnText;
+            var jnTextFunc = InterfaceManager.inst.ParseVarFunction(jnElement["tick_text_func"], this, customVariables);
+            if (jnTextFunc != null)
+                tickTextFunc = jnTextFunc;
             var jnTextRect = InterfaceManager.inst.ParseVarFunction(jnElement["text_rect"], this, customVariables);
             if (jnTextRect != null)
                 textRect = RectValues.TryParse(jnTextRect, RectValues.FullAnchored);
@@ -537,6 +545,9 @@ namespace BetterLegacy.Menus.UI.Elements
             var text = this.text;
             if (updateTextOnTick)
                 text = InterfaceManager.inst.ParseTickText(text);
+            var tickTextFunc = InterfaceManager.inst.ParseVarFunction(this.tickTextFunc, this, cachedVariables);
+            if (tickTextFunc != null && tickTextFunc.IsString)
+                text = tickTextFunc;
 
             if (textInterpolation != null)
                 time = textInterpolation.Time;
@@ -544,7 +555,14 @@ namespace BetterLegacy.Menus.UI.Elements
                 time = (Time.time - timeOffset) * length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed;
             
             if (cachedQuickElements == null)
+            {
+                if (isSpawning || !textUI)
+                    return;
+
+                textUI.maxVisibleCharacters = text.Length;
+                textUI.text = text;
                 return;
+            }
 
             for (int i = 0; i < cachedQuickElements.Count; i++)
             {

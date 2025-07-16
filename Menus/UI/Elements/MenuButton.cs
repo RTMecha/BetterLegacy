@@ -314,7 +314,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
             var jnSelect = InterfaceManager.inst.ParseVarFunction(jnElement["select"], this, customVariables);
             if (jnSelect != null)
-                selectionPosition = Parser.TryParse(jnSelect, Vector2Int.zero);
+                selectionPosition = CustomMenu.ParseVector2Int(jnSelect, Vector2Int.zero, this, customVariables);
             var jnAlignSelect = InterfaceManager.inst.ParseVarFunction(jnElement["align_select"], this, customVariables);
             if (jnElement["align_select"] != null)
                 autoAlignSelectionPosition = jnAlignSelect.AsBool;

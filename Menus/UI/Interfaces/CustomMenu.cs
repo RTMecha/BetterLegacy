@@ -1005,6 +1005,36 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
+        public static Vector2 ParseVector2(JSONNode jn, Vector2 defaultValue, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+        {
+            if (jn == null)
+                return defaultValue;
+
+            var x = InterfaceManager.inst.ParseVarFunction(jn.Get(0, "x"),
+                thisElement: thisElement,
+                customVariables: customVariables);
+            var y = InterfaceManager.inst.ParseVarFunction(jn.Get(1, "y"),
+                thisElement: thisElement,
+                customVariables: customVariables);
+
+            return new Vector2(x != null ? x.AsFloat : defaultValue.x, y != null ? y.AsFloat : defaultValue.y);
+        }
+        
+        public static Vector2Int ParseVector2Int(JSONNode jn, Vector2Int defaultValue, MenuImage thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+        {
+            if (jn == null)
+                return defaultValue;
+
+            var x = InterfaceManager.inst.ParseVarFunction(jn.Get(0, "x"),
+                thisElement: thisElement,
+                customVariables: customVariables);
+            var y = InterfaceManager.inst.ParseVarFunction(jn.Get(1, "y"),
+                thisElement: thisElement,
+                customVariables: customVariables);
+
+            return new Vector2Int(x != null ? x.AsInt : defaultValue.x, y != null ? y.AsInt : defaultValue.y);
+        }
+
         #endregion
     }
 }
