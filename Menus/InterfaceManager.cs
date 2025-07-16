@@ -807,6 +807,10 @@ namespace BetterLegacy.Menus
                             return !not ? value : !value;
                         }
 
+                    case "Equals": {
+                            return ParseVarFunction(parameters.Get(0, "first"), thisElement, customVariables) == ParseVarFunction(parameters.Get(1, "second"), thisElement, customVariables);
+                        }
+
                     #endregion
 
                     #region Interface List
@@ -4752,6 +4756,50 @@ namespace BetterLegacy.Menus
                             strArgs[i] = ParseVarFunction(args[i], thisElement, customVariables).Value;
 
                         return string.Format(str, strArgs);
+                    }
+
+                #endregion
+
+                #region StringRemoveAt
+
+                case "StringRemoveAt": {
+                        var str = ParseVarFunction(parameters.Get(0, "str"), thisElement, customVariables);
+                        if (str == null || !str.IsString || string.IsNullOrEmpty(str))
+                            break;
+
+                        var index = ParseVarFunction(parameters.Get(1, "index"), thisElement, customVariables);
+                        var count = ParseVarFunction(parameters.Get(2, "count"), thisElement, customVariables);
+                        if (count == null)
+                            count = 1;
+                        return str.Value.Remove(index.IsString && index.Value == "end" ? str.Value.Length - 1 : index.AsInt, count);
+                    }
+
+                #endregion
+
+                #region StringReplace
+
+                case "StringReplace": {
+                        var str = ParseVarFunction(parameters.Get(0, "str"), thisElement, customVariables);
+                        if (str == null || !str.IsString)
+                            break;
+
+                        var oldVar = ParseVarFunction(parameters.Get(1, "old"), thisElement, customVariables);
+                        var newVar = ParseVarFunction(parameters.Get(2, "new"), thisElement, customVariables);
+                        return str.Value.Replace(oldVar.Value, newVar.Value);
+                    }
+
+                #endregion
+                    
+                #region StringInsert
+
+                case "StringInsert": {
+                        var str = ParseVarFunction(parameters.Get(0, "str"), thisElement, customVariables);
+                        if (str == null || !str.IsString)
+                            break;
+
+                        var index = ParseVarFunction(parameters.Get(1, "index"), thisElement, customVariables);
+                        var value = ParseVarFunction(parameters.Get(2, "value"), thisElement, customVariables);
+                        return str.Value.Insert(index.AsInt, value.Value);
                     }
 
                 #endregion
