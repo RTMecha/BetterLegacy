@@ -96,7 +96,7 @@ namespace BetterLegacy.Story
                 {
                     var chapterIndex = RTMath.Clamp(saveSlot.ChapterIndex, 0, StoryMode.Instance.chapters.Count - 1);
                     var levelSequenceIndex = RTMath.Clamp(saveSlot.GetLevelSequenceIndex(chapterIndex), 0, StoryMode.Instance.chapters[chapterIndex].Count - 1);
-                    progress = $" | DOC{RTString.ToStoryNumber(chapterIndex)} - SIM{RTString.ToStoryNumber(levelSequenceIndex)} |";
+                    progress = $" \"{saveSlot.SaveName}\" | DOC{RTString.ToStoryNumber(chapterIndex)} - SIM{RTString.ToStoryNumber(levelSequenceIndex)} |";
                 }
 
                 elements.Add(new MenuButton

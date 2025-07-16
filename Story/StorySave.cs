@@ -24,6 +24,11 @@ namespace BetterLegacy.Story
         #region Data
 
         /// <summary>
+        /// The name of the save.
+        /// </summary>
+        public string SaveName => LoadString("SaveName", "[ DEFAULT ]");
+
+        /// <summary>
         /// The currently saved chapter.
         /// </summary>
         public int ChapterIndex => LoadInt("Chapter", 0);
@@ -184,7 +189,10 @@ namespace BetterLegacy.Story
         {
             CoreHelper.Log($"Saving {name} > {value}");
             if (string.IsNullOrEmpty(value))
+            {
+                storySavesJSON["saves"].Remove(name);
                 return;
+            }
             storySavesJSON["saves"][name]["string"] = value;
             Save();
         }
