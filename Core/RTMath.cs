@@ -98,8 +98,6 @@ namespace BetterLegacy.Core
         {
             try
             {
-                input = input.Replace(";", ""); // replaces ; due to really old math evaluator
-                input = input.Replace("True", "1").Replace("true", "1").Replace("False", "0").Replace("false", "0"); // replaces true / false syntax with their number equivalents.
                 var context = EvaluationContext.CreateDefault();
 
                 if (variables != null)
@@ -164,104 +162,6 @@ namespace BetterLegacy.Core
                 context.RegisterVariable("screenHeight", Screen.height);
                 context.RegisterVariable("screenWidth", Screen.width);
                 context.RegisterVariable("currentEpoch", SteamworksFacepunch.Epoch.Current);
-
-                context.RegisterFunction("clampZero", parameters => ClampZero(parameters[0], parameters[1], parameters[2]));
-                context.RegisterFunction("lerpAngle", parameters => Mathf.LerpAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
-                context.RegisterFunction("moveTowards", parameters => Mathf.MoveTowards((float)parameters[0], (float)parameters[1], (float)parameters[2]));
-                context.RegisterFunction("moveTowardsAngle", parameters => Mathf.MoveTowardsAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
-                context.RegisterFunction("smoothStep", parameters => Mathf.SmoothStep((float)parameters[0], (float)parameters[1], (float)parameters[2]));
-                context.RegisterFunction("gamma", parameters => Mathf.Gamma((float)parameters[0], (float)parameters[1], (float)parameters[2]));
-                context.RegisterFunction("repeat", parameters => Mathf.Repeat((float)parameters[0], (float)parameters[1]));
-                context.RegisterFunction("pingPong", parameters => Mathf.PingPong((float)parameters[0], (float)parameters[1]));
-                context.RegisterFunction("deltaAngle", parameters => Mathf.DeltaAngle((float)parameters[0], (float)parameters[1]));
-                context.RegisterFunction("random", parameters => parameters.Length switch
-                {
-                    0 => new System.Random().NextDouble(),
-                    1 => new System.Random((int)parameters[0]).NextDouble(),
-                    2 => RandomHelper.SingleFromIndex(parameters[0].ToString(), (int)parameters[1]),
-                    _ => 0
-                });
-                context.RegisterFunction("randomSeed", parameters => parameters.Length switch
-                {
-                    0 => new System.Random(RandomHelper.CurrentSeed.GetHashCode()).NextDouble(),
-                    1 => new System.Random((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).NextDouble(),
-                    _ => 0
-                });
-                context.RegisterFunction("randomRange", parameters => parameters.Length switch
-                {
-                    2 => RandomHelper.SingleFromRange(new System.Random().Next().ToString(), (float)parameters[0], (float)parameters[1]),
-                    3 => RandomHelper.SingleFromIndexRange(parameters[0].ToString(), new System.Random().Next(), (float)parameters[1], (float)parameters[2]),
-                    4 => RandomHelper.SingleFromIndexRange(parameters[0].ToString(), (int)parameters[1], (float)parameters[2], (float)parameters[3]),
-                    _ => 0
-                });
-                context.RegisterFunction("randomSeedRange", parameters => parameters.Length switch
-                {
-                    2 => RandomHelper.SingleFromRange(RandomHelper.CurrentSeed, (float)parameters[0], (float)parameters[1]),
-                    3 => RandomHelper.SingleFromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), new System.Random().Next(), (float)parameters[1], (float)parameters[2]),
-                    4 => RandomHelper.SingleFromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), (int)parameters[1], (float)parameters[2], (float)parameters[3]),
-                    _ => 0
-                });
-                context.RegisterFunction("randomInt", parameters => parameters.Length switch
-                {
-                    0 => new System.Random().Next(),
-                    1 => new System.Random((int)parameters[0]).Next(),
-                    2 => RandomHelper.FromIndex(parameters[0].ToString(), (int)parameters[1]),
-                    _ => 0
-                });
-                context.RegisterFunction("randomSeedInt", parameters => parameters.Length switch
-                {
-                    0 => new System.Random(RandomHelper.CurrentSeed.GetHashCode()).Next(),
-                    1 => new System.Random((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).Next(),
-                    _ => 0
-                });
-                context.RegisterFunction("randomRangeInt", parameters => parameters.Length switch
-                {
-                    2 => RandomHelper.FromRange(new System.Random().Next().ToString(), (int)parameters[0], (int)parameters[1]),
-                    3 => RandomHelper.FromIndexRange(parameters[0].ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
-                    4 => RandomHelper.FromIndexRange(parameters[0].ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
-                    _ => 0
-                });
-                context.RegisterFunction("randomSeedRangeInt", parameters => parameters.Length switch
-                {
-                    2 => RandomHelper.FromRange(RandomHelper.CurrentSeed, (int)parameters[0], (int)parameters[1]),
-                    3 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
-                    4 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
-                    _ => 0
-                });
-                context.RegisterFunction("roundToNearestNumber", parameters => RoundToNearestNumber((float)parameters[0], (float)parameters[1]));
-                context.RegisterFunction("roundToNearestDecimal", parameters => RoundToNearestDecimal((float)parameters[0], (int)parameters[1]));
-                context.RegisterFunction("percentage", parameters => Percentage((float)parameters[0], (float)parameters[1]));
-                context.RegisterFunction("equals", parameters => parameters[0] == parameters[1] ? parameters[2] : parameters[3]);
-                context.RegisterFunction("lesserEquals", parameters => parameters[0] <= parameters[1] ? parameters[2] : parameters[3]);
-                context.RegisterFunction("greaterEquals", parameters => parameters[0] >= parameters[1] ? parameters[2] : parameters[3]);
-                context.RegisterFunction("lesser", parameters => parameters[0] < parameters[1] ? parameters[2] : parameters[3]);
-                context.RegisterFunction("greater", parameters => parameters[0] > parameters[1] ? parameters[2] : parameters[3]);
-                context.RegisterFunction("int", parameters => (int)parameters[0]);
-                context.RegisterFunction("vectorAngle", parameters => VectorAngle(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])));
-                context.RegisterFunction("distance", parameters => parameters.Length switch
-                {
-                    2 => Distance((float)parameters[0], (float)parameters[1]),
-                    4 => Vector2.Distance(new Vector2((float)parameters[0], (float)parameters[1]), new Vector2((float)parameters[2], (float)parameters[3])),
-                    6 => Vector3.Distance(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])),
-                    _ => 0
-                });
-                context.RegisterFunction("worldToViewportPointX", parameters =>
-                {
-                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
-                    return position.x;
-                });
-                context.RegisterFunction("worldToViewportPointY", parameters =>
-                {
-                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
-                    return position.y;
-                });
-                context.RegisterFunction("worldToViewportPointZ", parameters =>
-                {
-                    var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
-                    return position.z;
-                });
-                context.RegisterFunction("mirrorNegative", parameters => parameters[0] < 0 ? -parameters[0] : parameters[0]);
-                context.RegisterFunction("mirrorPositive", parameters => parameters[0] > 0 ? -parameters[0] : parameters[0]);
 
                 if (functions != null)
                     foreach (var function in functions)

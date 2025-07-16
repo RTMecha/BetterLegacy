@@ -6,6 +6,7 @@ using BetterLegacy.Core.Runtime;
 using ILMath.Exception;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ILMath
 {
@@ -35,6 +36,10 @@ namespace ILMath
             RegisterVariable("nan", double.NaN);
             RegisterVariable("degToRad", Math.PI / 180.0);
             RegisterVariable("radToDeg", 180.0 / Math.PI);
+            RegisterVariable("True", 1.0);
+            RegisterVariable("true", 1.0);
+            RegisterVariable("False", 0.0);
+            RegisterVariable("false", 0.0);
 
             // Register functions
             RegisterFunction("sin", parameters => Math.Sin(parameters[0]));
@@ -67,6 +72,105 @@ namespace ILMath
             RegisterFunction("clamp", parameters => RTMath.Clamp(parameters[0], parameters[1], parameters[2]));
             RegisterFunction("lerp", parameters => RTMath.Lerp(parameters[0], parameters[1], parameters[2]));
             RegisterFunction("inverseLerp", parameters => RTMath.InverseLerp(parameters[0], parameters[1], parameters[2]));
+
+
+            RegisterFunction("clampZero", parameters => RTMath.ClampZero(parameters[0], parameters[1], parameters[2]));
+            RegisterFunction("lerpAngle", parameters => Mathf.LerpAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+            RegisterFunction("moveTowards", parameters => Mathf.MoveTowards((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+            RegisterFunction("moveTowardsAngle", parameters => Mathf.MoveTowardsAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+            RegisterFunction("smoothStep", parameters => Mathf.SmoothStep((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+            RegisterFunction("gamma", parameters => Mathf.Gamma((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+            RegisterFunction("repeat", parameters => Mathf.Repeat((float)parameters[0], (float)parameters[1]));
+            RegisterFunction("pingPong", parameters => Mathf.PingPong((float)parameters[0], (float)parameters[1]));
+            RegisterFunction("deltaAngle", parameters => Mathf.DeltaAngle((float)parameters[0], (float)parameters[1]));
+            RegisterFunction("random", parameters => parameters.Length switch
+            {
+                0 => new System.Random().NextDouble(),
+                1 => new System.Random((int)parameters[0]).NextDouble(),
+                2 => RandomHelper.SingleFromIndex(parameters[0].ToString(), (int)parameters[1]),
+                _ => 0
+            });
+            RegisterFunction("randomSeed", parameters => parameters.Length switch
+            {
+                0 => new System.Random(RandomHelper.CurrentSeed.GetHashCode()).NextDouble(),
+                1 => new System.Random((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).NextDouble(),
+                _ => 0
+            });
+            RegisterFunction("randomRange", parameters => parameters.Length switch
+            {
+                2 => RandomHelper.SingleFromRange(new System.Random().Next().ToString(), (float)parameters[0], (float)parameters[1]),
+                3 => RandomHelper.SingleFromIndexRange(parameters[0].ToString(), new System.Random().Next(), (float)parameters[1], (float)parameters[2]),
+                4 => RandomHelper.SingleFromIndexRange(parameters[0].ToString(), (int)parameters[1], (float)parameters[2], (float)parameters[3]),
+                _ => 0
+            });
+            RegisterFunction("randomSeedRange", parameters => parameters.Length switch
+            {
+                2 => RandomHelper.SingleFromRange(RandomHelper.CurrentSeed, (float)parameters[0], (float)parameters[1]),
+                3 => RandomHelper.SingleFromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), new System.Random().Next(), (float)parameters[1], (float)parameters[2]),
+                4 => RandomHelper.SingleFromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), (int)parameters[1], (float)parameters[2], (float)parameters[3]),
+                _ => 0
+            });
+            RegisterFunction("randomInt", parameters => parameters.Length switch
+            {
+                0 => new System.Random().Next(),
+                1 => new System.Random((int)parameters[0]).Next(),
+                2 => RandomHelper.FromIndex(parameters[0].ToString(), (int)parameters[1]),
+                _ => 0
+            });
+            RegisterFunction("randomSeedInt", parameters => parameters.Length switch
+            {
+                0 => new System.Random(RandomHelper.CurrentSeed.GetHashCode()).Next(),
+                1 => new System.Random((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).Next(),
+                _ => 0
+            });
+            RegisterFunction("randomRangeInt", parameters => parameters.Length switch
+            {
+                2 => RandomHelper.FromRange(new System.Random().Next().ToString(), (int)parameters[0], (int)parameters[1]),
+                3 => RandomHelper.FromIndexRange(parameters[0].ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
+                4 => RandomHelper.FromIndexRange(parameters[0].ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
+                _ => 0
+            });
+            RegisterFunction("randomSeedRangeInt", parameters => parameters.Length switch
+            {
+                2 => RandomHelper.FromRange(RandomHelper.CurrentSeed, (int)parameters[0], (int)parameters[1]),
+                3 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
+                4 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
+                _ => 0
+            });
+            RegisterFunction("roundToNearestNumber", parameters => RTMath.RoundToNearestNumber((float)parameters[0], (float)parameters[1]));
+            RegisterFunction("roundToNearestDecimal", parameters => RTMath.RoundToNearestDecimal((float)parameters[0], (int)parameters[1]));
+            RegisterFunction("percentage", parameters => RTMath.Percentage((float)parameters[0], (float)parameters[1]));
+            RegisterFunction("equals", parameters => parameters[0] == parameters[1] ? parameters[2] : parameters[3]);
+            RegisterFunction("lesserEquals", parameters => parameters[0] <= parameters[1] ? parameters[2] : parameters[3]);
+            RegisterFunction("greaterEquals", parameters => parameters[0] >= parameters[1] ? parameters[2] : parameters[3]);
+            RegisterFunction("lesser", parameters => parameters[0] < parameters[1] ? parameters[2] : parameters[3]);
+            RegisterFunction("greater", parameters => parameters[0] > parameters[1] ? parameters[2] : parameters[3]);
+            RegisterFunction("int", parameters => (int)parameters[0]);
+            RegisterFunction("vectorAngle", parameters => RTMath.VectorAngle(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])));
+            RegisterFunction("distance", parameters => parameters.Length switch
+            {
+                2 => RTMath.Distance((float)parameters[0], (float)parameters[1]),
+                4 => Vector2.Distance(new Vector2((float)parameters[0], (float)parameters[1]), new Vector2((float)parameters[2], (float)parameters[3])),
+                6 => Vector3.Distance(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])),
+                _ => 0
+            });
+            RegisterFunction("worldToViewportPointX", parameters =>
+            {
+                var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
+                return position.x;
+            });
+            RegisterFunction("worldToViewportPointY", parameters =>
+            {
+                var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
+                return position.y;
+            });
+            RegisterFunction("worldToViewportPointZ", parameters =>
+            {
+                var position = Camera.main.WorldToViewportPoint(new Vector3((float)parameters[0], parameters.Length > 1 ? (float)parameters[1] : 0f, parameters.Length > 2 ? (float)parameters[2] : 0f));
+                return position.z;
+            });
+            RegisterFunction("mirrorNegative", parameters => parameters[0] < 0 ? -parameters[0] : parameters[0]);
+            RegisterFunction("mirrorPositive", parameters => parameters[0] > 0 ? -parameters[0] : parameters[0]);
         }
 
         /// <summary>
@@ -76,7 +180,7 @@ namespace ILMath
         /// <param name="value">The variable's value.</param>
         public void RegisterVariable(string identifier, double value)
         {
-            variables.Add(identifier, value);
+            variables[identifier] = value;
         }
 
         /// <summary>
@@ -86,7 +190,7 @@ namespace ILMath
         /// <param name="function">The function.</param>
         public void RegisterFunction(string identifier, MathFunction function)
         {
-            functions.Add(identifier, function);
+            functions[identifier] = function;
         }
 
         public double GetVariable(string identifier)
