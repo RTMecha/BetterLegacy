@@ -6,6 +6,7 @@
 - Added exitInterface modifier. Used for cases where you want to exit the currently open interface under specific circumstances. (Does not work on the pause menu / end level menu. It's just for the loadInterface modifier)
 - Added setRenderType setRenderTypeOther modifiers. These can Set the render type of the object. Don't know why these weren't in there earlier.
 - The Audio event keyframe and sound modifiers now have a "Pan Stereo" value. This allows control of the left / right direction the sound is coming from, emulating spaces.
+- Actually implemented playerVelocity modifiers.
 
 ### Interfaces
 - Interface now has a dynamic variable system that allows for specific variables to affect anything in the interface.
