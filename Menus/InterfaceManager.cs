@@ -20,6 +20,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Menus.UI.Elements;
@@ -3781,7 +3782,7 @@ namespace BetterLegacy.Menus
 
                 #region LoadLevel
 
-                // Finds a level by its' ID and loads it. On,y work if the user has already loaded levels.
+                // Finds a level by its' ID and loads it. Only works if the user has already loaded levels.
                 // Supports both JSON array and JSON object.
                 //
                 // - JSON Array Structure -
@@ -3807,6 +3808,41 @@ namespace BetterLegacy.Menus
 
                         if (LevelManager.Levels.TryFind(x => x.id == id, out Level level))
                             LevelManager.Play(level);
+                        else if (SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == id, out Level steamLevel))
+                            LevelManager.Play(steamLevel);
+
+                        break;
+                    }
+
+                #endregion
+                    
+                #region LoadLevelPath
+
+                // Loads a level via a path.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = id
+                // Example:
+                // [
+                //   "6365672" < loads level with this as its ID.
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "id"
+                // Example:
+                // {
+                //   "id": "6365672"
+                // }
+                case "LoadLevelPath": {
+                        if (parameters == null)
+                            break;
+
+                        var path = ParseVarFunction(parameters.Get(0, "path"), thisElement, customVariables);
+                        if (path == null || !path.IsString)
+                            break;
+
+                        LevelManager.Load(path.Value);
 
                         break;
                     }
