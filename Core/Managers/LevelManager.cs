@@ -419,6 +419,10 @@ namespace BetterLegacy.Core.Managers
 
             CursorManager.inst.HideCursor();
 
+            if (RTBeatmap.Current.shouldResetEndFuncOnStart)
+                RTBeatmap.Current.ResetEndLevelVariables();
+            RTBeatmap.Current.shouldResetEndFuncOnStart = true;
+
             #endregion
 
             #region Done

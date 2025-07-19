@@ -109,6 +109,11 @@ namespace BetterLegacy.Core.Runtime
         #region End Level
 
         /// <summary>
+        /// If the end level functions should be reset when the level starts.
+        /// </summary>
+        public bool shouldResetEndFuncOnStart = true;
+
+        /// <summary>
         /// Function to run when the level ends in the Arcade.
         /// </summary>
         public EndLevelFunction endLevelFunc;
@@ -255,9 +260,9 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public void ResetEndLevelVariables()
         {
-            endLevelFunc = 0;
-            endLevelData = null;
-            endLevelUpdateProgress = true;
+            endLevelFunc = GameData.Current?.data?.level?.endLevelFunc ?? EndLevelFunction.EndLevelMenu;
+            endLevelData = GameData.Current?.data?.level?.endLevelData;
+            endLevelUpdateProgress = GameData.Current?.data?.level?.endLevelUpdateProgress ?? true;
         }
 
         #endregion

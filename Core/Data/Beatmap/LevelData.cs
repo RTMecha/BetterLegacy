@@ -4,7 +4,7 @@ using SimpleJSON;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class LevelData : Exists
+    public class LevelData : PAObject<LevelData>
     {
         public LevelData()
         {
@@ -13,129 +13,302 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Values
 
-        public string levelVersion = "4.1.16";
+        /// <summary>
+        /// The version of the game this level was made in.
+        /// </summary>
+        public string levelVersion = ProjectArrhythmia.GAME_VERSION;
+
+        /// <summary>
+        /// The version of the BetterLegacy mod this level was made in.
+        /// </summary>
         public string modVersion;
-        public bool lockBoost = false;
-        public float speedMultiplier = 1f;
-        public int gameMode = 0;
-        public float floatDrag = 2f;
-        public float jumpGravity = 1f;
-        public float jumpIntensity = 1f;
-        public int maxJumpCount = 10;
-        public int maxJumpBoostCount = 1;
-        public int maxHealth = 3;
-
-        public bool forceReplayLevelOff;
-
-        public bool multiplyPlayerSpeed = true;
-        public bool allowCustomPlayerModels = true;
-        public bool spawnPlayers = true;
-
-        public bool limitPlayer = true;
-        public Vector2 limitMoveSpeed = new Vector2(20f, 20f);
-        public Vector2 limitBoostSpeed = new Vector2(85f, 85f);
-        public Vector2 limitBoostCooldown = new Vector2(0.1f, 0.1f);
-        public Vector2 limitBoostMinTime = new Vector2(0.07f, 0.07f);
-        public Vector2 limitBoostMaxTime = new Vector2(0.18f, 0.18f);
-        public Vector2 limitHitCooldown = new Vector2(0.001f, 2.5f);
 
         /// <summary>
         /// If the song should reverse at all when all players are dead.
         /// </summary>
         public bool reverse = true;
 
-        public int backgroundColor;
+        /// <summary>
+        /// If the intro sequence should display.
+        /// </summary>
+        public bool hideIntro;
 
-        public bool followPlayer;
+        /// <summary>
+        /// If <see cref="Configs.CoreConfig.ReplayLevel"/> setting should be ignored and not replay the level in the background.
+        /// </summary>
+        public bool forceReplayLevelOff;
 
-        public bool showIntro;
+        #region Player Conditions
+
+        /// <summary>
+        /// If the boost should be locked.
+        /// </summary>
+        public bool lockBoost = false;
+
+        /// <summary>
+        /// Default speed multiplier.
+        /// </summary>
+        public float speedMultiplier = 1f;
+
+        /// <summary>
+        /// Default game mode.
+        /// </summary>
+        public int gameMode = 0;
+
+        /// <summary>
+        /// Gravity drag.
+        /// </summary>
+        public float floatDrag = 2f;
+
+        /// <summary>
+        /// Jump gravity.
+        /// </summary>
+        public float jumpGravity = 1f;
+
+        /// <summary>
+        /// Jump intensity.
+        /// </summary>
+        public float jumpIntensity = 1f;
+
+        /// <summary>
+        /// Maximum jump count.
+        /// </summary>
+        public int maxJumpCount = 10;
+
+        /// <summary>
+        /// Maximum jump boost count.
+        /// </summary>
+        public int maxJumpBoostCount = 1;
+
+        /// <summary>
+        /// Maximum health.
+        /// </summary>
+        public int maxHealth = 3;
+
+        /// <summary>
+        /// If the players' speed should multiply by the pitch.
+        /// </summary>
+        public bool multiplyPlayerSpeed = true;
+
+        /// <summary>
+        /// If custom player models are allowed.
+        /// </summary>
+        public bool allowCustomPlayerModels = true;
+
+        /// <summary>
+        /// If players should spawn at the start of the level.
+        /// </summary>
+        public bool spawnPlayers = true;
+
+        #endregion
+
+        #region Limit
+
+        /// <summary>
+        /// If player properties should be limited.
+        /// </summary>
+        public bool limitPlayer = true;
+
+        /// <summary>
+        /// Move speed range.
+        /// </summary>
+        public Vector2 limitMoveSpeed = new Vector2(20f, 20f);
+
+        /// <summary>
+        /// Boost speed range.
+        /// </summary>
+        public Vector2 limitBoostSpeed = new Vector2(85f, 85f);
+
+        /// <summary>
+        /// Boost cooldown range.
+        /// </summary>
+        public Vector2 limitBoostCooldown = new Vector2(0.1f, 0.1f);
+
+        /// <summary>
+        /// Boost minimum time range.
+        /// </summary>
+        public Vector2 limitBoostMinTime = new Vector2(0.07f, 0.07f);
+
+        /// <summary>
+        /// Boost maximum time range.
+        /// </summary>
+        public Vector2 limitBoostMaxTime = new Vector2(0.18f, 0.18f);
+
+        /// <summary>
+        /// Hit cooldown range.
+        /// </summary>
+        public Vector2 limitHitCooldown = new Vector2(0.001f, 2.5f);
+
+        #endregion
+
+        #region End Level
+
+        /// <summary>
+        /// Offset from the levels' end.
+        /// </summary>
+        public float levelEndOffset = 0.1f;
+
+        /// <summary>
+        /// If the level should automatically end when the song reaches the end.
+        /// </summary>
+        public bool autoEndLevel = true;
+
+        /// <summary>
+        /// Function to run when the level ends in the Arcade.
+        /// </summary>
+        public EndLevelFunction endLevelFunc;
+
+        /// <summary>
+        /// End level function data.
+        /// </summary>
+        public string endLevelData;
+
+        /// <summary>
+        /// If level progress should be updated.
+        /// </summary>
+        public bool endLevelUpdateProgress = true;
+
+        #endregion
 
         #endregion
 
         #region Methods
 
-        public static LevelData Parse(JSONNode jn)
+        public override void CopyData(LevelData orig, bool newID = true)
         {
-            var levelData = new LevelData();
+            if (!orig)
+                return;
 
-            if (jn["level_version"] != null)
-                levelData.levelVersion = jn["level_version"];
-            else
-                levelData.levelVersion = ProjectArrhythmia.GameVersion.ToString();
+            levelVersion = orig.levelVersion;
+            modVersion = orig.modVersion;
 
-            if (jn["mod_version"] != null)
-                levelData.modVersion = jn["mod_version"];
-            else
-                levelData.modVersion = LegacyPlugin.ModVersion.ToString();
+            hideIntro = orig.hideIntro;
 
-            if (jn["show_intro"] != null)
-                levelData.showIntro = jn["show_intro"].AsBool;
+            lockBoost = orig.lockBoost;
+            speedMultiplier = orig.speedMultiplier;
+            gameMode = orig.gameMode;
+            jumpGravity = orig.jumpGravity;
+            jumpIntensity = orig.jumpIntensity;
+            maxJumpCount = orig.maxJumpCount;
+            maxJumpBoostCount = orig.maxJumpBoostCount;
+            maxHealth = orig.maxHealth;
+            forceReplayLevelOff = orig.forceReplayLevelOff;
+            multiplyPlayerSpeed = orig.multiplyPlayerSpeed;
+            allowCustomPlayerModels = orig.allowCustomPlayerModels;
+            spawnPlayers = orig.spawnPlayers;
+            limitPlayer = orig.limitPlayer;
 
-            if (jn["lock_boost"] != null)
-                levelData.lockBoost = jn["lock_boost"].AsBool;
-            
-            if (jn["speed_multiplier"] != null)
-                levelData.speedMultiplier = jn["speed_multiplier"].AsFloat;
-            
-            if (jn["gamemode"] != null)
-                levelData.gameMode = jn["gamemode"].AsInt;
+            limitMoveSpeed = orig.limitMoveSpeed;
+            limitBoostSpeed = orig.limitBoostSpeed;
+            limitBoostCooldown = orig.limitBoostCooldown;
+            limitBoostMinTime = orig.limitBoostMinTime;
+            limitBoostMaxTime = orig.limitBoostMaxTime;
+            limitHitCooldown = orig.limitHitCooldown;
 
-            if (jn["jump_gravity"] != null)
-                levelData.jumpGravity = jn["jump_gravity"].AsFloat;
-            
-            if (jn["jump_intensity"] != null)
-                levelData.jumpIntensity = jn["jump_intensity"].AsFloat;
-
-            if (jn["max_jump"] != null)
-                levelData.maxJumpCount = jn["max_jump"].AsInt;
-
-            if (jn["max_jump_boost"] != null)
-                levelData.maxJumpBoostCount = jn["max_jump_boost"].AsInt;
-
-            if (jn["max_health"] != null)
-                levelData.maxHealth = jn["max_health"].AsInt;
-
-            if (jn["force_replay_level_off"] != null)
-                levelData.forceReplayLevelOff = jn["force_replay_level_off"].AsBool;
-
-            if (jn["multiply_player_speed"] != null)
-                levelData.multiplyPlayerSpeed = jn["multiply_player_speed"].AsBool;
-
-            if (jn["allow_custom_player_models"] != null)
-                levelData.allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
-
-            if (jn["spawn_players"] != null)
-                levelData.spawnPlayers = jn["spawn_players"].AsBool;
-
-            if (jn["limit_player"] != null)
-                levelData.limitPlayer = jn["limit_player"].AsBool;
-            else if (jn["mod_version"] != null)
-                levelData.limitPlayer = false;
-            
-            if (jn["limit_move_speed"] != null)
-                levelData.limitMoveSpeed = Parser.TryParse(jn["limit_move_speed"], new Vector2(20f, 20f));
-            if (jn["limit_boost_speed"] != null)
-                levelData.limitBoostSpeed = Parser.TryParse(jn["limit_boost_speed"], new Vector2(85f, 85f));
-            if (jn["limit_boost_cooldown"] != null)
-                levelData.limitBoostCooldown = Parser.TryParse(jn["limit_boost_cooldown"], new Vector2(0.1f, 0.1f));
-            if (jn["limit_boost_min_time"] != null)
-                levelData.limitBoostMinTime = Parser.TryParse(jn["limit_boost_min_time"], new Vector2(0.07f, 0.07f));
-            if (jn["limit_boost_max_time"] != null)
-                levelData.limitBoostMaxTime = Parser.TryParse(jn["limit_boost_max_time"], new Vector2(0.18f, 0.18f));
-            if (jn["limit_hit_cooldown"] != null)
-                levelData.limitHitCooldown = Parser.TryParse(jn["limit_hit_cooldown"], new Vector2(2.5f, 2.5f));
-
-            return levelData;
+            levelEndOffset = orig.levelEndOffset;
+            autoEndLevel = orig.autoEndLevel;
+            endLevelFunc = orig.endLevelFunc;
+            endLevelData = orig.endLevelData;
+            endLevelUpdateProgress = orig.endLevelUpdateProgress;
         }
 
-        public JSONNode ToJSON()
+        public override void ReadJSON(JSONNode jn)
         {
-            var jn = JSON.Parse("{}");
+            if (jn["level_version"] != null)
+                levelVersion = jn["level_version"];
+            else
+                levelVersion = ProjectArrhythmia.GameVersion.ToString();
+
+            if (jn["mod_version"] != null)
+                modVersion = jn["mod_version"];
+            else
+                modVersion = LegacyPlugin.ModVersion.ToString();
+
+            if (jn["show_intro"] != null)
+                hideIntro = jn["show_intro"].AsBool;
+            
+            if (jn["hide_intro"] != null)
+                hideIntro = jn["hide_intro"].AsBool;
+
+            if (jn["lock_boost"] != null)
+                lockBoost = jn["lock_boost"].AsBool;
+
+            if (jn["speed_multiplier"] != null)
+                speedMultiplier = jn["speed_multiplier"].AsFloat;
+
+            if (jn["gamemode"] != null)
+                gameMode = jn["gamemode"].AsInt;
+
+            if (jn["jump_gravity"] != null)
+                jumpGravity = jn["jump_gravity"].AsFloat;
+
+            if (jn["jump_intensity"] != null)
+                jumpIntensity = jn["jump_intensity"].AsFloat;
+
+            if (jn["max_jump"] != null)
+                maxJumpCount = jn["max_jump"].AsInt;
+
+            if (jn["max_jump_boost"] != null)
+                maxJumpBoostCount = jn["max_jump_boost"].AsInt;
+
+            if (jn["max_health"] != null)
+                maxHealth = jn["max_health"].AsInt;
+
+            if (jn["force_replay_level_off"] != null)
+                forceReplayLevelOff = jn["force_replay_level_off"].AsBool;
+
+            if (jn["multiply_player_speed"] != null)
+                multiplyPlayerSpeed = jn["multiply_player_speed"].AsBool;
+
+            if (jn["allow_custom_player_models"] != null)
+                allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
+
+            if (jn["spawn_players"] != null)
+                spawnPlayers = jn["spawn_players"].AsBool;
+
+            if (jn["limit_player"] != null)
+                limitPlayer = jn["limit_player"].AsBool;
+            else if (jn["mod_version"] != null)
+                limitPlayer = false;
+
+            if (jn["limit_move_speed"] != null)
+                limitMoveSpeed = Parser.TryParse(jn["limit_move_speed"], new Vector2(20f, 20f));
+            if (jn["limit_boost_speed"] != null)
+                limitBoostSpeed = Parser.TryParse(jn["limit_boost_speed"], new Vector2(85f, 85f));
+            if (jn["limit_boost_cooldown"] != null)
+                limitBoostCooldown = Parser.TryParse(jn["limit_boost_cooldown"], new Vector2(0.1f, 0.1f));
+            if (jn["limit_boost_min_time"] != null)
+                limitBoostMinTime = Parser.TryParse(jn["limit_boost_min_time"], new Vector2(0.07f, 0.07f));
+            if (jn["limit_boost_max_time"] != null)
+                limitBoostMaxTime = Parser.TryParse(jn["limit_boost_max_time"], new Vector2(0.18f, 0.18f));
+            if (jn["limit_hit_cooldown"] != null)
+                limitHitCooldown = Parser.TryParse(jn["limit_hit_cooldown"], new Vector2(2.5f, 2.5f));
+
+            if (jn["level_end_offset"] != null)
+                levelEndOffset = Parser.TryParse(jn["level_end_offset"], 0.1f);
+
+            if (jn["auto_end_level"] != null)
+                autoEndLevel = jn["auto_end_level"].AsBool;
+
+            if (jn["end_level_func"] != null)
+                endLevelFunc = (EndLevelFunction)jn["end_level_func"].AsInt;
+
+            if (!string.IsNullOrEmpty(jn["end_level_data"]))
+                endLevelData = jn["end_level_data"];
+
+            if (jn["end_level_update_progress"] != null)
+                endLevelUpdateProgress = jn["end_level_update_progress"].AsBool;
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
             jn["level_version"] = ProjectArrhythmia.GAME_VERSION;
             jn["mod_version"] = modVersion;
 
-            if (showIntro)
-                jn["show_intro"] = showIntro; // this will be reversed since the default unmodded value is false
+            if (hideIntro)
+                jn["hide_intro"] = hideIntro;
 
             if (lockBoost)
                 jn["lock_boost"] = lockBoost;
@@ -186,6 +359,21 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["limit_boost_max_time"] = limitBoostMaxTime.ToJSON();
             if (limitHitCooldown.x != 2.5f || limitHitCooldown.y != 2.5f)
                 jn["limit_hit_cooldown"] = limitHitCooldown.ToJSON();
+
+            if (levelEndOffset != 0.1f)
+                jn["level_end_offset"] = levelEndOffset;
+
+            if (!autoEndLevel)
+                jn["auto_end_level"] = autoEndLevel;
+
+            if (endLevelFunc != EndLevelFunction.EndLevelMenu)
+                jn["end_level_func"] = (int)endLevelFunc;
+
+            if (!string.IsNullOrEmpty(endLevelData))
+                jn["end_level_data"] = endLevelData;
+
+            if (!endLevelUpdateProgress)
+                jn["end_level_update_progress"] = endLevelUpdateProgress;
 
             return jn;
         }

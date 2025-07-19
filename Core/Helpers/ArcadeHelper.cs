@@ -29,21 +29,6 @@ namespace BetterLegacy.Core.Helpers
         #region Values
 
         /// <summary>
-        /// Function to run when the level ends in the Arcade.
-        /// </summary>
-        public static EndLevelFunction endLevelFunc;
-
-        /// <summary>
-        /// End level function data.
-        /// </summary>
-        public static string endLevelData;
-
-        /// <summary>
-        /// If level progress should be updated.
-        /// </summary>
-        public static bool endLevelUpdateProgress = true;
-
-        /// <summary>
         /// If the level has ended.
         /// </summary>
         public static bool endedLevel;
@@ -56,7 +41,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// If the song has reached the end.
         /// </summary>
-        public static bool SongEnded => CoreHelper.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - 0.1f;
+        public static bool SongEnded => CoreHelper.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - (GameData.Current?.data?.level?.levelEndOffset ?? 0.1f) && (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level || GameData.Current.data.level.autoEndLevel);
 
         /// <summary>
         /// Replays the level during the End Level Menu.
