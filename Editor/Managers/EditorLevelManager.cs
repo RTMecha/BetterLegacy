@@ -919,7 +919,6 @@ namespace BetterLegacy.Editor.Managers
             {
                 limitPlayer = false,
             };
-            gameData.data.editor = new LevelEditorData();
             gameData.data.checkpoints.Add(Checkpoint.Default);
 
             if (gameData.events == null)

@@ -403,7 +403,6 @@ namespace BetterLegacy.Story
 
             gameData.data = new LevelBeatmapData();
             gameData.data.checkpoints = new List<Checkpoint>();
-            gameData.data.editor = new LevelEditorData();
             gameData.data.level = new LevelData();
 
             gameData.data.markers = gameData.data.markers.OrderBy(x => x.time).ToList();

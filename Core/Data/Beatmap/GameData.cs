@@ -656,23 +656,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 orig.backgroundObjects = new List<BackgroundObject>();
 
             var gameData = new GameData();
-            var beatmapData = new LevelBeatmapData();
-            beatmapData.editor = new LevelEditorData
-            {
-                timelinePos = orig.data.editor.timelinePos,
-                mainTimelineZoom = orig.data.editor.mainTimelineZoom
-            };
-            beatmapData.level = new LevelData
-            {
-                levelVersion = orig.data.level.levelVersion,
-                backgroundColor = orig.data.level.backgroundColor,
-                followPlayer = orig.data.level.followPlayer,
-                showIntro = orig.data.level.showIntro
-            };
-            beatmapData.checkpoints = orig.data.checkpoints.Select(x => x.Copy()).ToList();
-            beatmapData.markers = orig.data.markers.Select(x => x.Copy()).ToList();
-
-            gameData.data = beatmapData;
+            gameData.data = orig.data?.Copy();
             gameData.beatmapObjects = new List<BeatmapObject>((from obj in orig.beatmapObjects
                                                                    select obj.Copy(false)));
             gameData.backgroundLayers = new List<BackgroundLayer>((from obj in orig.backgroundLayers
@@ -1253,7 +1237,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a JSON object representing the <see cref="GameData"/>.</returns>
         public JSONNode ToJSONVG()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["editor"]["bpm"]["snap"]["objects"] = true;
             jn["editor"]["bpm"]["bpm_value"] = 140f;
@@ -1546,7 +1530,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public JSONNode ToJSON(bool saveGameDataThemes = false)
         {
             CoreHelper.Log("Saving Beatmap");
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             CoreHelper.Log("Saving Editor Data");
             jn["ed"]["timeline_pos"] = "0";
@@ -2146,7 +2130,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     data = new LevelBeatmapData
                     {
-                        editor = new LevelEditorData(),
                         level = new LevelData(),
                     },
                 };

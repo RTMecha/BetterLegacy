@@ -5,68 +5,102 @@ using SimpleJSON;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class LevelBeatmapData : Exists
+    public class LevelBeatmapData : PAObject<LevelBeatmapData>
     {
         public LevelBeatmapData() { }
 
-        public static LevelBeatmapData ParseVG(JSONNode jn)
+        public override void CopyData(LevelBeatmapData orig, bool newID = true)
         {
-            var beatmapData = new LevelBeatmapData
-            {
-                level = new LevelData(),
-                editor = new LevelEditorData(),
-                markers = new List<Marker>()
-            };
+            checkpoints = orig.checkpoints.Select(x => x.Copy()).ToList();
+            markers = orig.markers.Select(x => x.Copy()).ToList();
 
-            for (int i = 0; i < jn["markers"].Count; i++)
-                beatmapData.markers.Add(Marker.ParseVG(jn["markers"][i]));
-            
-            for (int i = 0; i < jn["checkpoints"].Count; i++)
-                beatmapData.checkpoints.Add(Checkpoint.ParseVG(jn["checkpoints"][i]));
-            if (beatmapData.checkpoints.IsEmpty())
-                beatmapData.checkpoints.Add(Checkpoint.Default);
+            VerifyData();
 
-            beatmapData.markers = beatmapData.markers.OrderBy(x => x.time).ToList();
-            beatmapData.checkpoints = beatmapData.checkpoints.OrderBy(x => x.time).ToList();
-
-            return beatmapData;
+            level.CopyData(orig.level);
         }
 
-        public static LevelBeatmapData Parse(JSONNode jn)
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
-            var beatmapData = new LevelBeatmapData
-            {
-                level = LevelData.Parse(jn["level_data"]),
-                editor = LevelEditorData.Parse(jn["ed"]),
-                markers = new List<Marker>(),
-            };
+            VerifyData();
+
+            markers.Clear();
+            for (int i = 0; i < jn["markers"].Count; i++)
+                markers.Add(Marker.ParseVG(jn["markers"][i], version));
+
+            checkpoints.Clear();
+            for (int i = 0; i < jn["checkpoints"].Count; i++)
+                checkpoints.Add(Checkpoint.ParseVG(jn["checkpoints"][i], version));
+            ValidateCheckpoints();
+
+            markers = markers.OrderBy(x => x.time).ToList();
+            checkpoints = checkpoints.OrderBy(x => x.time).ToList();
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            VerifyData();
+
+            level.ReadJSON(jn["level_data"]);
 
             for (int i = 0; i < jn["ed"]["markers"].Count; i++)
-                beatmapData.markers.Add(Marker.Parse(jn["ed"]["markers"][i]));
+                markers.Add(Marker.Parse(jn["ed"]["markers"][i]));
 
             for (int i = 0; i < jn["checkpoints"].Count; i++)
-                beatmapData.checkpoints.Add(Checkpoint.Parse(jn["checkpoints"][i]));
-            if (beatmapData.checkpoints.IsEmpty())
-                beatmapData.checkpoints.Add(Checkpoint.Default);
+                checkpoints.Add(Checkpoint.Parse(jn["checkpoints"][i]));
+            ValidateCheckpoints();
 
-            beatmapData.markers = beatmapData.markers.OrderBy(x => x.time).ToList();
-            beatmapData.checkpoints = beatmapData.checkpoints.OrderBy(x => x.time).ToList();
+            markers = markers.OrderBy(x => x.time).ToList();
+            checkpoints = checkpoints.OrderBy(x => x.time).ToList();
 
-            return beatmapData;
         }
 
+        /// <summary>
+        /// Verifies the inner data.
+        /// </summary>
+        public void VerifyData()
+        {
+            if (!level)
+                level = new LevelData();
+        }
+
+        /// <summary>
+        /// If the checkpoints list is empty, adds the default checkpoint.
+        /// </summary>
+        public void ValidateCheckpoints()
+        {
+            if (checkpoints.IsEmpty())
+                checkpoints.Add(Checkpoint.Default);
+        }
+
+        /// <summary>
+        /// Gets the index of the last checkpoint in time.
+        /// </summary>
+        /// <returns>Returns the last checkpoints' index.</returns>
         public int GetLastCheckpointIndex()
         {
             var index = checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
             return index < 0 ? 0 : index;
         }
 
+        /// <summary>
+        /// Gets the last checkpoint in time.
+        /// </summary>
+        /// <returns>Returns the last checkpoint.</returns>
         public Checkpoint GetLastCheckpoint() => checkpoints[GetLastCheckpointIndex()];
 
+        /// <summary>
+        /// List of checkpoints.
+        /// </summary>
         public List<Checkpoint> checkpoints = new List<Checkpoint>();
+
+        /// <summary>
+        /// List of markers. This would be located in an editor related object, but unfortunately that's not how it works in vanilla..... .-.
+        /// </summary>
         public List<Marker> markers = new List<Marker>();
 
+        /// <summary>
+        /// Level data that controls general behavior of the level.
+        /// </summary>
         public LevelData level;
-        public LevelEditorData editor;
     }
 }
