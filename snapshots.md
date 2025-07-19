@@ -28,6 +28,9 @@
 - Due to the interface list feature, some interfaces have been combined into one file and there's also some new tests to demonstrate the capabilities of the interface now.
 - Updated the splash text.
 
+### Editor
+- Renamed "Show Intro" to "Hide Intro". This is because in vanilla "Show Intro" was saved as off, despite the intro showing by default, so had to rename it to something.
+
 ------------------------------------------------------------------------------------------
 
 # 1.7.0 [June 15, 2025]
