@@ -21,8 +21,6 @@
   Update: 1.8.0  
 - Level modifiers (supports VG triggers).  
   Update: 1.8.0  
-- Global Player toggle for if the players should have their movement speed multiplied by the pitch or not.  
-  Update: 1.8.0  
 - 2D option for BG objects (VG parallax support?)
 - Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers, respawnable)  
   Update: 1.8.0  
