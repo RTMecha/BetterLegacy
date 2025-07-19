@@ -146,7 +146,7 @@ namespace BetterLegacy.Core.Managers
 
             if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
             {
-                bool introActive = GameData.Current && GameData.Current.data && GameData.Current.data.level && !GameData.Current.data.level.showIntro;
+                bool introActive = GameData.Current && GameData.Current.data && GameData.Current.data.level && !GameData.Current.data.level.hideIntro;
 
                 GameManager.inst.introTitle.gameObject.SetActive(introActive);
                 GameManager.inst.introArtist.gameObject.SetActive(introActive);

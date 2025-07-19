@@ -213,7 +213,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             GenerateToggle(Content, creatorLinkTitle, "unlock complete", "Unlock Completed", 6);
 
             GenerateDropdown(Content, creatorLinkTitle, "preferred player count", "Preferred Players", 7);
-            GenerateToggle(Content, creatorLinkTitle, "show intro", "Show Intro", 8);
+            GenerateToggle(Content, creatorLinkTitle, "hide intro", "Hide Intro", 8);
             GenerateToggle(Content, creatorLinkTitle, "replay end level off", "Replay End Level Off", 9);
             GenerateToggle(Content, creatorLinkTitle, "require version", "Require Version", 10);
             GenerateDropdown(Content, creatorLinkTitle, "version comparison", "Version Comparison", 11);

@@ -339,13 +339,13 @@ namespace BetterLegacy.Editor.Managers
             if (!levelData)
                 return;
 
-            var showIntro = Dialog.Content.Find("show intro/toggle").GetComponent<Toggle>();
+            var showIntro = Dialog.Content.Find("hide intro/toggle").GetComponent<Toggle>();
             showIntro.onValueChanged.ClearAll();
-            showIntro.isOn = !levelData.showIntro;
+            showIntro.isOn = levelData.hideIntro;
             showIntro.onValueChanged.AddListener(_val =>
             {
-                if (GameData.Current && GameData.Current.data != null && GameData.Current.data.level is LevelData levelData)
-                    levelData.showIntro = !_val;
+                if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData)
+                    levelData.hideIntro = _val;
             });
 
             var replayEndLevelOff = Dialog.Content.Find("replay end level off/toggle").GetComponent<Toggle>();
@@ -353,7 +353,7 @@ namespace BetterLegacy.Editor.Managers
             replayEndLevelOff.isOn = levelData.forceReplayLevelOff;
             replayEndLevelOff.onValueChanged.AddListener(_val =>
             {
-                if (GameData.Current && GameData.Current.data != null && GameData.Current.data.level is LevelData levelData)
+                if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData)
                     levelData.forceReplayLevelOff = !_val;
             });
 
