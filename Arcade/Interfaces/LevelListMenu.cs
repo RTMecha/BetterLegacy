@@ -344,13 +344,16 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static List<Level> Levels { get; set; }
         public static int LocalLevelPageCount => LocalLevels.Count / ArcadeMenu.MAX_LEVELS_PER_PAGE;
-        public static List<Level> LocalLevels => Levels.FindAll(level => !level || string.IsNullOrEmpty(Search)
-                        || level.id == Search
-                        || level.metadata.song.tags.Contains(Search.ToLower())
-                        || level.metadata.artist.Name.ToLower().Contains(Search.ToLower())
-                        || level.metadata.creator.steam_name.ToLower().Contains(Search.ToLower())
-                        || level.metadata.song.title.ToLower().Contains(Search.ToLower())
-                        || level.metadata.song.getDifficulty().ToLower().Contains(Search.ToLower()));
+        public static List<Level> LocalLevels => Levels.FindAll(level => !level.fromCollection &&
+            RTString.SearchString(Search,
+                new SearchMatcher(level.id, SearchMatchType.Exact),
+                new SearchArrayMatcher(level.metadata.song.tags),
+                level.metadata.artist.name,
+                level.metadata.creator.name,
+                level.metadata.song.title,
+                level.metadata.beatmap.name,
+                level.metadata.song.DifficultyType.DisplayName.GetText()
+                ));
 
         public void SearchLocalLevels(string search)
         {

@@ -196,13 +196,14 @@ namespace BetterLegacy.Core
         /// <param name="searchTerm">Search field input.</param>
         /// <param name="items">Items to compare.</param>
         /// <returns>Return true if search is found, otherwise returns false.</returns>
-        public static bool SearchString(string searchTerm, params string[] items)
+        public static bool SearchString(string searchTerm, params SearchMatcherBase[] items)
         {
             if (string.IsNullOrEmpty(searchTerm))
                 return true;
 
+            var term = searchTerm.ToLower();
             for (int i = 0; i < items.Length; i++)
-                if (items[i].ToLower().Contains(searchTerm.ToLower()))
+                if (items[i].Match(term))
                     return true;
 
             return false;
@@ -922,5 +923,91 @@ namespace BetterLegacy.Core
         public static char[] alphabetUpper = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', };
 
         #endregion
+    }
+
+    /// <summary>
+    /// Helper class for searching strings.
+    /// </summary>
+    public class SearchMatcher : SearchMatcherBase
+    {
+        public SearchMatcher(string value, SearchMatchType matchType = SearchMatchType.Contains)
+        {
+            this.value = value;
+            MatchType = matchType;
+        }
+
+        /// <summary>
+        /// Value of the object that is searched for.
+        /// </summary>
+        public string value;
+
+        public override SearchMatchType MatchType { get; }
+
+        public override bool Match(string searchTerm) => MatchType switch
+        {
+            SearchMatchType.Exact => value == searchTerm,
+            SearchMatchType.Contains => value.ToLower().Contains(searchTerm),
+            _ => true,
+        };
+    }
+
+    public class SearchArrayMatcher : SearchMatcherBase
+    {
+        public SearchArrayMatcher(string[] value, SearchMatchType matchType = SearchMatchType.Contains)
+        {
+            this.value = value;
+            MatchType = matchType;
+        }
+
+        /// <summary>
+        /// Value of the object that is searched for.
+        /// </summary>
+        public string[] value;
+
+        public override SearchMatchType MatchType { get; }
+
+        public override bool Match(string searchTerm) => MatchType switch
+        {
+            SearchMatchType.Exact => value.Contains(searchTerm),
+            SearchMatchType.Contains => value.Any(x => x.ToLower().Contains(searchTerm)),
+            _ => true,
+        };
+    }
+
+    /// <summary>
+    /// Indicates the object is a search helper.
+    /// </summary>
+    public abstract class SearchMatcherBase
+    {
+        /// <summary>
+        /// Match type.
+        /// </summary>
+        public abstract SearchMatchType MatchType { get; }
+
+        /// <summary>
+        /// Checks if the search term matches <see cref="value"/>.
+        /// </summary>
+        /// <param name="searchTerm">Search term.</param>
+        /// <returns>Returns true if a match is found, otherwise returns false.</returns>
+        public abstract bool Match(string searchTerm);
+
+        public static implicit operator SearchMatcherBase(string value) => new SearchMatcher(value);
+
+        public static implicit operator SearchMatcherBase(string[] value) => new SearchArrayMatcher(value);
+    }
+
+    /// <summary>
+    /// Match behavior.
+    /// </summary>
+    public enum SearchMatchType
+    {
+        /// <summary>
+        /// Search string and value should be the same.
+        /// </summary>
+        Exact,
+        /// <summary>
+        /// The value should contain the search string.
+        /// </summary>
+        Contains,
     }
 }

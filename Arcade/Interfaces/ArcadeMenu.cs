@@ -1269,13 +1269,16 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static int LocalLevelPageCount => (LocalLevelCollections.Count + LocalLevels.Count) / MAX_LEVELS_PER_PAGE;
         public static string LocalSearch => Searches[0];
-        public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(LocalSearch)
-                        || level.id == LocalSearch
-                        || level.metadata.song.tags.Contains(LocalSearch.ToLower())
-                        || level.metadata.artist.Name.ToLower().Contains(LocalSearch.ToLower())
-                        || level.metadata.creator.steam_name.ToLower().Contains(LocalSearch.ToLower())
-                        || level.metadata.song.title.ToLower().Contains(LocalSearch.ToLower())
-                        || level.metadata.song.getDifficulty().ToLower().Contains(LocalSearch.ToLower())));
+        public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection &&
+            RTString.SearchString(LocalSearch,
+                new SearchMatcher(level.id, SearchMatchType.Exact),
+                new SearchArrayMatcher(level.metadata.song.tags),
+                level.metadata.artist.name,
+                level.metadata.creator.name,
+                level.metadata.song.title,
+                level.metadata.beatmap.name,
+                level.metadata.song.DifficultyType.DisplayName.GetText()
+                ));
 
         public static List<LevelCollection> LocalLevelCollections => LevelManager.LevelCollections.FindAll(collection => string.IsNullOrEmpty(LocalSearch)
                         || collection.id == LocalSearch
@@ -1773,10 +1776,10 @@ namespace BetterLegacy.Arcade.Interfaces
                     .Where(x => string.IsNullOrEmpty(BrowserSearch) || Path.GetFileName(x).ToLower().Contains(BrowserSearch.ToLower()) || Level.TryVerify(x + "/", false, out Level level) &&
                         (level.id == BrowserSearch
                         || level.metadata.song.tags.Contains(BrowserSearch.ToLower())
-                        || level.metadata.artist.Name.ToLower().Contains(BrowserSearch.ToLower())
-                        || level.metadata.creator.steam_name.ToLower().Contains(BrowserSearch.ToLower())
+                        || level.metadata.artist.name.ToLower().Contains(BrowserSearch.ToLower())
+                        || level.metadata.creator.name.ToLower().Contains(BrowserSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(BrowserSearch.ToLower())
-                        || level.metadata.song.getDifficulty().ToLower().Contains(BrowserSearch.ToLower()))).ToArray();
+                        || level.metadata.song.DifficultyType.DisplayName.ToLower().Contains(BrowserSearch.ToLower()))).ToArray();
 
         public void SearchBrowser(string search)
         {
@@ -2026,13 +2029,16 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static int QueuePageCount => QueueLevels.Count / MAX_QUEUED_PER_PAGE;
         public static string QueueSearch => Searches[3];
-        public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(QueueSearch)
-                        || level.id == QueueSearch
-                        || level.metadata.song.tags.Contains(QueueSearch.ToLower())
-                        || level.metadata.artist.Name.ToLower().Contains(QueueSearch.ToLower())
-                        || level.metadata.creator.steam_name.ToLower().Contains(QueueSearch.ToLower())
-                        || level.metadata.song.title.ToLower().Contains(QueueSearch.ToLower())
-                        || level.metadata.song.getDifficulty().ToLower().Contains(QueueSearch.ToLower())));
+        public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection &&
+            RTString.SearchString(QueueSearch,
+                new SearchMatcher(level.id, SearchMatchType.Exact),
+                new SearchArrayMatcher(level.metadata.song.tags),
+                level.metadata.artist.name,
+                level.metadata.creator.name,
+                level.metadata.song.title,
+                level.metadata.beatmap.name,
+                level.metadata.song.DifficultyType.DisplayName.GetText()
+                ));
 
         public void SearchQueuedLevels(string search)
         {
@@ -2295,13 +2301,17 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static int SubscribedSteamLevelPageCount => SubscribedSteamLevels.Count / MAX_LEVELS_PER_PAGE;
         public static string SteamSearch => Searches[4];
-        public static List<Level> SubscribedSteamLevels => SteamWorkshopManager.inst.Levels.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(SteamSearch)
-                        || level.id == SteamSearch
-                        || level.metadata.song.tags.Contains(SteamSearch.ToLower())
-                        || level.metadata.artist.Name.ToLower().Contains(SteamSearch.ToLower())
-                        || level.metadata.creator.steam_name.ToLower().Contains(SteamSearch.ToLower())
-                        || level.metadata.song.title.ToLower().Contains(SteamSearch.ToLower())
-                        || level.metadata.song.getDifficulty().ToLower().Contains(SteamSearch.ToLower())));
+        public static List<Level> SubscribedSteamLevels => SteamWorkshopManager.inst.Levels.FindAll(level => !level.fromCollection &&
+            RTString.SearchString(SteamSearch,
+                new SearchMatcher(level.id, SearchMatchType.Exact),
+                new SearchArrayMatcher(level.metadata.song.tags),
+                level.metadata.artist.name,
+                level.metadata.creator.name,
+                level.metadata.song.title,
+                level.metadata.beatmap.name,
+                level.metadata.song.DifficultyType.DisplayName.GetText()
+                ));
+
         public static Dictionary<string, Sprite> OnlineSteamLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
         public void SearchSubscribedSteamLevels(string search)
