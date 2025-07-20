@@ -131,7 +131,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 if (UnityEngine.Random.value < 0.5f)
                 {
-                    noTexts[i] = $"<color={LSText.randomHex("666666")}>{LSText.randomString(36)}</color>";
+                    noTexts[i] = $"<{LSText.randomHex("666666")}>{LSText.randomString(36)}</color>";
                     noColors[i] = LSText.randomHex("666666");
                 }
             }
@@ -156,25 +156,24 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         device = customPlayer.deviceType.ToString() + " (" + customPlayer.deviceModel + ")";
 
                     text = customPlayer.index < 4 ?
-                        $"<color={textColor}><size=200%>■</color><voffset=0.25em><size=100%> <b>Nanobot:</b> {customPlayer.index + 1}    <b>Input Device:</b> {device}" :
-                        $"<color={textColor}><size=200%>●</color><voffset=0.25em><size=100%> <b>Nanobot:</b> {customPlayer.index + 1}    <b>Input Device:</b> {device}";
+                        $"<{textColor}><size=200%>■</color><voffset=0.25em><size=100%> <b>Nanobot:</b> {RTString.ToStoryNumber(customPlayer.index)}    < b>Input Device:</b> {device}" :
+                        $"<{textColor}><size=200%>●</color><voffset=0.25em><size=100%> <b>Nanobot:</b> {RTString.ToStoryNumber(customPlayer.index)}    <b>Input Device:</b> {device}";
                 }
                 else
                 {
                     string textColor = (noColors.Count > i) ? noColors[i] : "#666666";
 
                     text = i < 4 ?
-                        $"<color={textColor}><size=200%>■</color><voffset=0.25em><size=100%> {(noTexts.Count > i ? noTexts[i] : string.Empty)}" :
-                        $"<color={textColor}><size=200%>●</color><voffset=0.25em><size=100%> {(noTexts.Count > i ? noTexts[i] : string.Empty)}";
+                        $"<{textColor}><size=200%>■</color><voffset=0.25em><size=100%> {(noTexts.Count > i ? noTexts[i] : string.Empty)}" :
+                        $"<{textColor}><size=200%>●</color><voffset=0.25em><size=100%> {(noTexts.Count > i ? noTexts[i] : string.Empty)}";
                 }
 
+                nanobots[i].text = text;
                 if (assignToUI && nanobots[i].textUI)
                 {
                     nanobots[i].textUI.maxVisibleCharacters = 9999;
                     nanobots[i].textUI.text = text;
                 }
-                else if (!assignToUI)
-                    nanobots[i].text = text;
             }
         }
 
