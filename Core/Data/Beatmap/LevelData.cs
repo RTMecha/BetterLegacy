@@ -4,12 +4,12 @@ using SimpleJSON;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
+    /// <summary>
+    /// Controls level behavior.
+    /// </summary>
     public class LevelData : PAObject<LevelData>
     {
-        public LevelData()
-        {
-            modVersion = LegacyPlugin.ModVersion.ToString();
-        }
+        public LevelData() => modVersion = LegacyPlugin.ModVersion.ToString();
 
         #region Values
 
