@@ -34,6 +34,13 @@ namespace BetterLegacy.Core.Data
         #region Methods
 
         /// <summary>
+        /// Gets a string from the <see cref="languages"/> dictionary. If it wasn't found, it'll get the English language.
+        /// </summary>
+        /// <param name="language">Language to find.</param>
+        /// <returns>Returns a string from the dictionary if it was found. If no string was found, then returns null.</returns>
+        public string GetText() => GetText(CurrentLanguage);
+
+        /// <summary>
         /// Tries to get a string in a specific language.
         /// </summary>
         /// <param name="language">Language to find a string from.</param>
@@ -157,7 +164,7 @@ namespace BetterLegacy.Core.Data
             set => languages[language] = value;
         }
 
-        public static implicit operator string(Lang lang) => lang ? lang.GetText(CurrentLanguage) : null;
+        public static implicit operator string(Lang lang) => lang ? lang.GetText() : null;
 
         public static implicit operator Lang(string input) => new Lang(CurrentLanguage, input);
 
