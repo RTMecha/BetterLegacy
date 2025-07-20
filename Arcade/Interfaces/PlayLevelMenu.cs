@@ -208,7 +208,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 textColor = 6,
             });
 
-            var artist = RTString.ReplaceFormatting(CurrentLevel.metadata.artist.Name);
+            var artist = RTString.ReplaceFormatting(CurrentLevel.metadata.artist.name);
             size = 32;
             if (artist.Length > 24 && artist.Length <= 40)
                 size = (int)(size * ((float)24f / artist.Length));
@@ -247,7 +247,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 textColor = 6,
             });
 
-            var creator = RTString.ReplaceFormatting(CurrentLevel.metadata.creator.steam_name);
+            var creator = RTString.ReplaceFormatting(CurrentLevel.metadata.creator.name);
             size = 32;
             if (creator.Length > 24 && creator.Length <= 40)
                 size = (int)(size * ((float)24f / creator.Length));
@@ -378,14 +378,30 @@ namespace BetterLegacy.Arcade.Interfaces
                     else
                         LevelManager.CurrentLevel = CurrentLevel;
 
-                    InterfaceManager.inst.CloseMenus();
+                    if (!LevelManager.CurrentLevel)
+                        return;
 
-                    if (LevelManager.CurrentLevel && LevelManager.CurrentLevel.metadata && LevelManager.CurrentLevel.metadata.IsIncompatible())
+                    var metadata = LevelManager.CurrentLevel.metadata;
+
+                    if (!metadata)
+                        return;
+
+                    if (metadata.IsIncompatible())
                     {
                         SoundManager.inst.PlaySound(DefaultSounds.Block);
-                        CoreHelper.Notify(LevelManager.CurrentLevel.metadata.GetIncompatibleMessage(), InterfaceManager.inst.CurrentTheme.guiColor);
+                        CoreHelper.Notify(metadata.GetIncompatibleMessage(), InterfaceManager.inst.CurrentTheme.guiColor);
                         return;
                     }
+
+                    if (metadata.beatmap && !metadata.beatmap.PlayersCanjoin(PlayerManager.Players.Count))
+                    {
+                        var count = metadata.beatmap.preferredPlayerCount;
+                        SoundManager.inst.PlaySound(DefaultSounds.Block);
+                        CoreHelper.Notify($"Cannot play this level as it only works with [ {count} ] player{(count == BeatmapMetaData.PreferredPlayerCount.One ? string.Empty : "s")}.", InterfaceManager.inst.CurrentTheme.guiColor);
+                        return;
+                    }
+
+                    InterfaceManager.inst.CloseMenus();
 
                     LevelManager.Play(LevelManager.CurrentLevel, RTBeatmap.Current.EndOfLevel);
                 },
