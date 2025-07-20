@@ -420,7 +420,7 @@ namespace BetterLegacy.Core.Managers
             ValidatePlayers();
             DestroyPlayers();
 
-            if (!GameData.Current || GameData.Current.data is not LevelBeatmapData beatmapData || beatmapData.level is not LevelData levelData || levelData.spawnPlayers)
+            if (GameData.Current && GameData.Current.data && (!GameData.Current.data.level || GameData.Current.data.level.spawnPlayers))
                 SpawnPlayers(GameData.Current.data.checkpoints[0]);
         }
 

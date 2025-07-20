@@ -100,7 +100,7 @@ namespace BetterLegacy.Editor.Managers
             slider.value = RTEditor.inst.editorInfo.bpm;
             slider.onValueChanged.AddListener(_val =>
             {
-                MetaData.Current.song.BPM = _val;
+                MetaData.Current.song.bpm = _val;
                 RTEditor.inst.editorInfo.bpm = _val;
                 SetBPMInputField(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();
@@ -114,7 +114,7 @@ namespace BetterLegacy.Editor.Managers
             input.onValueChanged.AddListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 120f);
-                MetaData.Current.song.BPM = bpm;
+                MetaData.Current.song.bpm = bpm;
                 RTEditor.inst.editorInfo.bpm = bpm;
                 SetBPMSlider(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();

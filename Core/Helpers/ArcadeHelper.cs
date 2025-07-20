@@ -285,20 +285,25 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void CopyArcadeQueue()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             for (int i = 0; i < LevelManager.ArcadeQueue.Count; i++)
             {
-                jn["queue"][i]["id"] = LevelManager.ArcadeQueue[i].id;
+                var queue = LevelManager.ArcadeQueue[i];
+                jn["queue"][i]["id"] = queue.id;
 
-                if (LevelManager.ArcadeQueue[i].metadata && LevelManager.ArcadeQueue[i].metadata.beatmap is LevelBeatmap levelBeatmap)
-                {
-                    if (!string.IsNullOrEmpty(LevelManager.ArcadeQueue[i].metadata.serverID))
-                        jn["queue"][i]["server_id"] = LevelManager.ArcadeQueue[i].metadata.serverID;
-                    if (!string.IsNullOrEmpty(LevelManager.ArcadeQueue[i].metadata.serverID))
-                        jn["queue"][i]["workhsop_id"] = levelBeatmap.beatmap_id;
-                    jn["queue"][i]["name"] = levelBeatmap.name;
-                }
+                if (!queue.metadata)
+                    continue;
+
+                if (!string.IsNullOrEmpty(queue.metadata.serverID))
+                    jn["queue"][i]["server_id"] = queue.metadata.serverID;
+
+                if (!queue.metadata.beatmap)
+                    continue;
+
+                if (queue.metadata.beatmap.workshopID != -1)
+                    jn["queue"][i]["workhsop_id"] = queue.metadata.beatmap.workshopID;
+                jn["queue"][i]["name"] = queue.metadata.beatmap.name;
             }
 
             LSText.CopyToClipboard(jn.ToString(3));

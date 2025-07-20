@@ -324,7 +324,7 @@ namespace BetterLegacy.Editor.Data
             layer = EditorTimeline.inst.Layer;
             layerType = EditorTimeline.inst.layerType;
 
-            bpm = MetaData.Current.song.BPM;
+            bpm = MetaData.Current.song.bpm;
 
             time = AudioManager.inst.CurrentAudioSource.time;
 

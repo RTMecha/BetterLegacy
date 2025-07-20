@@ -129,8 +129,7 @@ namespace BetterLegacy.Editor.Managers
         public void RenderArtist(MetaData metadata)
         {
             var openArtistURL = Dialog.Content.Find("artist/link/inputs/openurl").GetComponent<Button>();
-            openArtistURL.onClick.ClearAll();
-            openArtistURL.onClick.AddListener(() =>
+            openArtistURL.onClick.NewListener(() =>
             {
                 if (!string.IsNullOrEmpty(metadata.artist.URL))
                     Application.OpenURL(metadata.artist.URL);
@@ -138,36 +137,36 @@ namespace BetterLegacy.Editor.Managers
 
             var artistName = Dialog.Content.Find("artist/name/input").GetComponent<InputField>();
             artistName.onEndEdit.ClearAll();
-            artistName.text = metadata.artist.Name;
+            artistName.text = metadata.artist.name;
             artistName.onEndEdit.AddListener(_val =>
             {
-                string oldVal = metadata.artist.Name;
-                metadata.artist.Name = _val;
+                string oldVal = metadata.artist.name;
+                metadata.artist.name = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Name", () =>
                 {
-                    metadata.artist.Name = _val;
+                    metadata.artist.name = _val;
                     MetadataEditor.inst.OpenDialog();
                 }, () =>
                 {
-                    metadata.artist.Name = oldVal;
+                    metadata.artist.name = oldVal;
                     MetadataEditor.inst.OpenDialog();
                 }));
             });
 
             var artistLink = Dialog.Content.Find("artist/link/inputs/input").GetComponent<InputField>();
             artistLink.onEndEdit.ClearAll();
-            artistLink.text = metadata.artist.Link;
+            artistLink.text = metadata.artist.link;
             artistLink.onEndEdit.AddListener(_val =>
             {
-                string oldVal = metadata.artist.Link;
-                metadata.artist.Link = _val;
+                string oldVal = metadata.artist.link;
+                metadata.artist.link = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
-                    metadata.artist.Link = _val;
+                    metadata.artist.link = _val;
                     MetadataEditor.inst.OpenDialog();
                 }, () =>
                 {
-                    metadata.artist.Link = oldVal;
+                    metadata.artist.link = oldVal;
                     MetadataEditor.inst.OpenDialog();
                 }));
             });
@@ -175,18 +174,18 @@ namespace BetterLegacy.Editor.Managers
             var artistLinkTypes = Dialog.Content.Find("artist/link/inputs/dropdown").GetComponent<Dropdown>();
             artistLinkTypes.onValueChanged.ClearAll();
             artistLinkTypes.options = AlephNetwork.ArtistLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            artistLinkTypes.value = metadata.artist.LinkType;
+            artistLinkTypes.value = metadata.artist.linkType;
             artistLinkTypes.onValueChanged.AddListener(_val =>
             {
-                int oldVal = metadata.artist.LinkType;
-                metadata.artist.LinkType = _val;
+                int oldVal = metadata.artist.linkType;
+                metadata.artist.linkType = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
                 {
-                    metadata.artist.LinkType = _val;
+                    metadata.artist.linkType = _val;
                     MetadataEditor.inst.OpenDialog();
                 }, () =>
                 {
-                    metadata.artist.LinkType = oldVal;
+                    metadata.artist.linkType = oldVal;
                     MetadataEditor.inst.OpenDialog();
                 }));
             });
@@ -201,8 +200,8 @@ namespace BetterLegacy.Editor.Managers
 
             var creatorName = Dialog.Content.Find("creator/name/input").GetComponent<InputField>();
             creatorName.onValueChanged.ClearAll();
-            creatorName.text = metadata.creator.steam_name;
-            creatorName.onValueChanged.AddListener(_val => metadata.creator.steam_name = _val);
+            creatorName.text = metadata.creator.name;
+            creatorName.onValueChanged.AddListener(_val => metadata.creator.name = _val);
 
             var openCreatorURL = Dialog.Content.Find("creator/link/inputs/openurl").GetComponent<Button>();
             openCreatorURL.onClick.ClearAll();
@@ -362,7 +361,7 @@ namespace BetterLegacy.Editor.Managers
             preferredPlayerCount.value = (int)metadata.beatmap.preferredPlayerCount;
             preferredPlayerCount.onValueChanged.AddListener(_val =>
             {
-                metadata.beatmap.preferredPlayerCount = (LevelBeatmap.PreferredPlayerCount)_val;
+                metadata.beatmap.preferredPlayerCount = (BeatmapMetaData.PreferredPlayerCount)_val;
             });
 
             var requireVersion = Dialog.Content.Find("require version/toggle").GetComponent<Toggle>();
@@ -494,72 +493,75 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(Dialog.TagsContent);
 
-            for (int i = 0; i < metadata.song.tags.Length; i++)
+            if (metadata.song.tags != null)
             {
-                int index = i;
-                var tag = metadata.song.tags[i];
-                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
-                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.onValueChanged.ClearAll();
-                input.text = tag;
-                input.onValueChanged.AddListener(_val =>
+                for (int i = 0; i < metadata.song.tags.Length; i++)
                 {
-                    _val = RTString.ReplaceSpace(_val);
-                    var oldVal = metadata.song.tags[index];
-                    metadata.song.tags[index] = _val;
-
-                    EditorManager.inst.history.Add(new History.Command("Change MetaData Tag", () =>
+                    int index = i;
+                    var tag = metadata.song.tags[i];
+                    var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
+                    var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                    input.onValueChanged.ClearAll();
+                    input.text = tag;
+                    input.onValueChanged.AddListener(_val =>
                     {
+                        _val = RTString.ReplaceSpace(_val);
+                        var oldVal = metadata.song.tags[index];
                         metadata.song.tags[index] = _val;
-                        MetadataEditor.inst.OpenDialog();
-                    }, () =>
-                    {
-                        metadata.song.tags[index] = oldVal;
-                        MetadataEditor.inst.OpenDialog();
-                    }));
-                });
 
-                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(() =>
-                {
-                    var list = metadata.song.tags.ToList();
-                    var oldTag = list[index];
-                    list.RemoveAt(index);
-                    metadata.song.tags = list.ToArray();
-                    RenderTags(metadata);
+                        EditorManager.inst.history.Add(new History.Command("Change MetaData Tag", () =>
+                        {
+                            metadata.song.tags[index] = _val;
+                            MetadataEditor.inst.OpenDialog();
+                        }, () =>
+                        {
+                            metadata.song.tags[index] = oldVal;
+                            MetadataEditor.inst.OpenDialog();
+                        }));
+                    });
 
-                    EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
+                    var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                    deleteStorage.button.onClick.ClearAll();
+                    deleteStorage.button.onClick.AddListener(() =>
                     {
                         var list = metadata.song.tags.ToList();
+                        var oldTag = list[index];
                         list.RemoveAt(index);
                         metadata.song.tags = list.ToArray();
-                        MetadataEditor.inst.OpenDialog();
-                    }, () =>
-                    {
-                        var list = metadata.song.tags.ToList();
-                        list.Insert(index, oldTag);
-                        metadata.song.tags = list.ToArray();
-                        MetadataEditor.inst.OpenDialog();
-                    }));
-                });
+                        RenderTags(metadata);
 
-                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+                        EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
+                        {
+                            var list = metadata.song.tags.ToList();
+                            list.RemoveAt(index);
+                            metadata.song.tags = list.ToArray();
+                            MetadataEditor.inst.OpenDialog();
+                        }, () =>
+                        {
+                            var list = metadata.song.tags.ToList();
+                            list.Insert(index, oldTag);
+                            metadata.song.tags = list.ToArray();
+                            MetadataEditor.inst.OpenDialog();
+                        }));
+                    });
 
-                EditorThemeManager.ApplyInputField(input);
+                    EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
 
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                    EditorThemeManager.ApplyInputField(input);
+
+                    EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                    EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+                }
+
             }
 
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.TagsContent, "Add");
             var addText = add.transform.Find("Text").GetComponent<Text>();
             addText.text = "Add Tag";
             var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(() =>
+            addButton.onClick.NewListener(() =>
             {
-                var list = metadata.song.tags.ToList();
+                var list = metadata.song.tags?.ToList() ?? new List<string>();
                 list.Add("New Tag");
                 metadata.song.tags = list.ToArray();
                 RenderTags(metadata);
@@ -601,7 +603,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void VerifyLevelIsOnServer()
         {
-            if (!EditorManager.inst.hasLoadedLevel || !MetaData.IsValid)
+            if (!EditorManager.inst.hasLoadedLevel || !MetaData.Current)
                 return;
 
             if (uploading)
@@ -634,7 +636,7 @@ namespace BetterLegacy.Editor.Managers
                             RTEditor.inst.ShowWarningPopup("Level was not found on the server. Do you want to remove the server ID?", () =>
                             {
                                 MetaData.Current.serverID = null;
-                                MetaData.Current.beatmap.date_published = "";
+                                MetaData.Current.beatmap.datePublished = string.Empty;
                                 var jn = MetaData.Current.ToJSON();
                                 RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
 
@@ -657,7 +659,7 @@ namespace BetterLegacy.Editor.Managers
                             RTEditor.inst.ShowWarningPopup("Verification failed. In case the level is not on the server, do you want to remove the server ID?", () =>
                             {
                                 MetaData.Current.serverID = null;
-                                MetaData.Current.beatmap.date_published = "";
+                                MetaData.Current.beatmap.datePublished = string.Empty;
                                 var jn = MetaData.Current.ToJSON();
                                 RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
 
@@ -764,8 +766,8 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                MetaData.Current.beatmap.date_published = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-                MetaData.Current.beatmap.version_number++;
+                MetaData.Current.beatmap.datePublished = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+                MetaData.Current.beatmap.versionNumber++;
                 if (authData != null && authData["id"] != null)
                     MetaData.Current.uploaderID = authData["id"];
 
@@ -820,8 +822,8 @@ namespace BetterLegacy.Editor.Managers
                     if (string.IsNullOrEmpty(MetaData.Current.serverID))
                     {
                         MetaData.Current.uploaderID = null;
-                        MetaData.Current.beatmap.date_published = "";
-                        MetaData.Current.beatmap.version_number--;
+                        MetaData.Current.beatmap.datePublished = string.Empty;
+                        MetaData.Current.beatmap.versionNumber--;
                         var jn = MetaData.Current.ToJSON();
                         RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
                     }
@@ -885,7 +887,7 @@ namespace BetterLegacy.Editor.Managers
                     CoroutineHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{id}", () =>
                     {
                         uploading = false;
-                        MetaData.Current.beatmap.date_published = "";
+                        MetaData.Current.beatmap.datePublished = string.Empty;
                         MetaData.Current.serverID = null;
                         var jn = MetaData.Current.ToJSON();
                         RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());

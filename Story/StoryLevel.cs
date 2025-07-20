@@ -97,7 +97,7 @@ namespace BetterLegacy.Story
             var metadataJSON = assets.LoadAsset<TextAsset>($"metadata{FileFormat.JSON.Dot()}");
             var players = assets.LoadAsset<TextAsset>($"players{FileFormat.JSON.Dot()}");
 
-            var metadata = MetaData.Parse(JSON.Parse(metadataJSON.text), false);
+            var metadata = MetaData.Parse(JSON.Parse(metadataJSON.text));
             var storyLevel = new StoryLevel
             {
                 id = metadata?.arcadeID,

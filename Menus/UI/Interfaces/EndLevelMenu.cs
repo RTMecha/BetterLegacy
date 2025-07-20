@@ -94,7 +94,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 length = 0f,
             });
 
-            elements.AddRange(GenerateTopBar($"Level Summary > <b>\"{metadata.beatmap.name}\"</b> ({metadata.artist.Name} - {metadata.song.title})"));
+            elements.AddRange(GenerateTopBar($"Level Summary > <b>\"{metadata.beatmap.name}\"</b> ({metadata.artist.name} - {metadata.song.title})"));
 
             int line = 5;
             for (int i = 0; i < 11; i++) // code is based on the Legacy code atm. can't think of a better way of doing this

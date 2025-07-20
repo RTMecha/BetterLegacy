@@ -337,11 +337,11 @@ namespace BetterLegacy.Story
                 {
                     arcadeID = id,
                     uploaderName = "Vitamin Games",
-                    creator = new LevelCreator
+                    creator = new CreatorMetaData
                     {
-                        steam_name = "Pidge",
+                        name = "Pidge",
                     },
-                    beatmap = new LevelBeatmap
+                    beatmap = new BeatmapMetaData
                     {
                         name = jsonPath switch
                         {
@@ -353,7 +353,7 @@ namespace BetterLegacy.Story
                             _ => ""
                         }
                     },
-                    song = new LevelSong
+                    song = new SongMetaData
                     {
                         tags = new string[] { },
                         title = jsonPath switch
@@ -366,9 +366,9 @@ namespace BetterLegacy.Story
                             _ => ""
                         }
                     },
-                    artist = new LevelArtist
+                    artist = new ArtistMetaData
                     {
-                        Name = jsonPath switch
+                        name = jsonPath switch
                         {
                             "demo/level" => "meganeko",
                             "demo_new/level" => "Creo",
@@ -401,7 +401,7 @@ namespace BetterLegacy.Story
         {
             var gameData = new GameData();
 
-            gameData.data = new LevelBeatmapData();
+            gameData.data = new BeatmapData();
             gameData.data.checkpoints = new List<Checkpoint>();
             gameData.data.level = new LevelData();
 

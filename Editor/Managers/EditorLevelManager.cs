@@ -454,8 +454,8 @@ namespace BetterLegacy.Editor.Managers
                 if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
                     MetaData.Current.arcadeID = LSText.randomNumString(16);
 
-                if (ProjectArrhythmia.RequireUpdate(MetaData.Current.beatmap.game_version))
-                    rawJSON = LevelManager.UpdateBeatmap(rawJSON, MetaData.Current.beatmap.game_version);
+                if (ProjectArrhythmia.RequireUpdate(MetaData.Current.beatmap.gameVersion))
+                    rawJSON = LevelManager.UpdateBeatmap(rawJSON, MetaData.Current.beatmap.gameVersion);
 
                 GameData.Current = null;
                 GameData.Current = level.IsVG ?
@@ -633,8 +633,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.savingBeatmap = true;
 
             var gameData = GameData.Current;
-            if (gameData.data is LevelBeatmapData levelBeatmapData && levelBeatmapData.level is LevelData levelData)
-                levelData.modVersion = LegacyPlugin.ModVersion.ToString();
+            if (gameData.data && gameData.data.level)
+                gameData.data.level.modVersion = LegacyPlugin.ModVersion.ToString();
 
             if (EditorConfig.Instance.SaveAsync.Value)
                 yield return CoroutineHelper.StartCoroutineAsync(gameData.ISaveData(CurrentLevel.GetFile(Level.LEVEL_LSB)));
@@ -884,18 +884,18 @@ namespace BetterLegacy.Editor.Managers
 
             gameData.SaveData(RTFile.CombinePaths(path, Level.LEVEL_LSB));
             var metaData = new MetaData();
-            metaData.beatmap.game_version = ProjectArrhythmia.GameVersion.ToString();
+            metaData.beatmap.gameVersion = ProjectArrhythmia.GameVersion.ToString();
             metaData.arcadeID = LSText.randomNumString(16);
-            metaData.artist.Name = newSongArtist;
-            metaData.artist.Link = newSongArtist;
+            metaData.artist.name = newSongArtist;
+            metaData.artist.link = newSongArtist;
             metaData.song.title = newSongTitle;
             metaData.song.difficulty = newLevelDifficulty;
             metaData.uploaderName = SteamWrapper.inst.user.displayName;
-            metaData.creator.steam_name = SteamWrapper.inst.user.displayName;
-            metaData.creator.steam_id = SteamWrapper.inst.user.id;
+            metaData.creator.name = SteamWrapper.inst.user.displayName;
+            metaData.creator.steamID = SteamWrapper.inst.user.id;
             metaData.beatmap.name = newLevelName;
 
-            DataManager.inst.metaData = metaData;
+            MetaData.Current = metaData;
 
             fromNewLevel = true;
             metaData.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_LSB));
@@ -914,7 +914,7 @@ namespace BetterLegacy.Editor.Managers
         public GameData CreateBaseBeatmap()
         {
             var gameData = new GameData();
-            gameData.data = new LevelBeatmapData();
+            gameData.data = new BeatmapData();
             gameData.data.level = new LevelData()
             {
                 limitPlayer = false,
@@ -997,14 +997,14 @@ namespace BetterLegacy.Editor.Managers
             var levelPanels = RTEditor.inst.levelSort switch
             {
                 LevelSort.Cover => LevelPanels.Order(x => x.Level && x.Level.icon != SteamWorkshop.inst.defaultSteamImageSprite, !RTEditor.inst.levelAscend),
-                LevelSort.Artist => LevelPanels.Order(x => x.Level?.metadata?.artist?.Name ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.Creator => LevelPanels.Order(x => x.Level?.metadata?.creator?.steam_name ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.Artist => LevelPanels.Order(x => x.Level?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.Creator => LevelPanels.Order(x => x.Level?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
                 LevelSort.File => LevelPanels.Order(x => x.FolderPath, !RTEditor.inst.levelAscend),
                 LevelSort.Title => LevelPanels.Order(x => x.Level?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
                 LevelSort.Difficulty => LevelPanels.Order(x => x.Level?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
-                LevelSort.DateEdited => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_edited ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.DateCreated => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_created ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.DatePublished => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.date_published ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.DateEdited => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.DateCreated => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.DatePublished => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
                 _ => LevelPanels,
             };
 
@@ -1020,8 +1020,8 @@ namespace BetterLegacy.Editor.Managers
                     !editorWrapper.isFolder && (RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
                         metadata == null || metadata != null &&
                         (RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
-                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.artist.Name) ||
-                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.creator.steam_name) ||
+                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.artist.name) ||
+                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.creator.name) ||
                         RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
                         RTString.SearchString(EditorManager.inst.openFileSearch, LevelPanel.difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, LevelPanel.difficultyNames.Length - 1)]))));
 
@@ -1187,7 +1187,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var gamedata = GameData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.LEVEL_LSB), ArrhythmiaType.LS);
-            var metadata = MetaData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.METADATA_LSB), ArrhythmiaType.LS, false);
+            var metadata = MetaData.ReadFromFile(RTFile.CombinePaths(currentPath, Level.METADATA_LSB), ArrhythmiaType.LS);
 
             var vgd = gamedata.ToJSONVG();
 

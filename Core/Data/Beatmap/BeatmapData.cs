@@ -5,11 +5,35 @@ using SimpleJSON;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class LevelBeatmapData : PAObject<LevelBeatmapData>
+    /// <summary>
+    /// Represents the levels' beatmap data. Contains checkpoints, etc.
+    /// </summary>
+    public class BeatmapData : PAObject<BeatmapData>
     {
-        public LevelBeatmapData() { }
+        public BeatmapData() { }
 
-        public override void CopyData(LevelBeatmapData orig, bool newID = true)
+        #region Values
+
+        /// <summary>
+        /// List of checkpoints.
+        /// </summary>
+        public List<Checkpoint> checkpoints = new List<Checkpoint>();
+
+        /// <summary>
+        /// List of markers. This would be located in an editor related object, but unfortunately that's not how it works in vanilla..... .-.
+        /// </summary>
+        public List<Marker> markers = new List<Marker>();
+
+        /// <summary>
+        /// Level data that controls general behavior of the level.
+        /// </summary>
+        public LevelData level;
+
+        #endregion
+
+        #region Methods
+
+        public override void CopyData(BeatmapData orig, bool newID = true)
         {
             checkpoints = orig.checkpoints.Select(x => x.Copy()).ToList();
             markers = orig.markers.Select(x => x.Copy()).ToList();
@@ -88,19 +112,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns the last checkpoint.</returns>
         public Checkpoint GetLastCheckpoint() => checkpoints[GetLastCheckpointIndex()];
 
-        /// <summary>
-        /// List of checkpoints.
-        /// </summary>
-        public List<Checkpoint> checkpoints = new List<Checkpoint>();
-
-        /// <summary>
-        /// List of markers. This would be located in an editor related object, but unfortunately that's not how it works in vanilla..... .-.
-        /// </summary>
-        public List<Marker> markers = new List<Marker>();
-
-        /// <summary>
-        /// Level data that controls general behavior of the level.
-        /// </summary>
-        public LevelData level;
+        #endregion
     }
 }

@@ -28,7 +28,7 @@ namespace BetterLegacy.Core.Data.Level
             if (CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(METADATA_VGM)))
                 metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
             else if (RTFile.FileExists(GetFile(METADATA_LSB)))
-                metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_LSB))), false);
+                metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_LSB))));
             else if (RTFile.FileExists(GetFile(METADATA_VGM)))
                 metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
 
@@ -277,10 +277,8 @@ namespace BetterLegacy.Core.Data.Level
             {
                 if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
                     id = metadata.arcadeID;
-                else if (!string.IsNullOrEmpty(metadata.beatmap.beatmap_id) && metadata.beatmap.beatmap_id != "-1")
-                    id = metadata.beatmap.beatmap_id;
                 else
-                    id = "-1";
+                    id = metadata.beatmap.workshopID.ToString();
             }
 
             var defaultFile = (!CoreHelper.InEditor || !RTFile.FileExists(GetFile(LEVEL_LSB))) && CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;

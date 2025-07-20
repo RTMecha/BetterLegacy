@@ -269,24 +269,10 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(DataManager.SaveMetadata), typeof(string), typeof(DataManager.MetaData))]
         [HarmonyPrefix]
-        static bool SaveMetadataPrefix(ref LSError __result, DataManager __instance, string __0, DataManager.MetaData __1)
+        static bool SaveMetadataPrefix(ref LSError __result)
         {
             var result = new LSError(false, "");
-            JSONNode jn;
-            try
-            {
-                    jn = ((MetaData)__1).ToJSON();
-
-                    Debug.Log($"{__instance.className}Saving Metadata Full");
-                    RTFile.WriteToFile(__0, jn.ToString());
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-
             __result = result;
-
             return false;
         }
 
@@ -294,7 +280,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GeneratePrefabJSONPrefix(ref JSONNode __result)
         {
-            __result = JSON.Parse("{}");
+            __result = Parser.NewJSONObject();
             return false;
         }
 

@@ -129,7 +129,7 @@ namespace BetterLegacy.Core.Data.Level
         {
             if (level.metadata)
             {
-                level.metadata = MetaData.DeepCopy(level.metadata);
+                level.metadata = level.metadata.Copy(false);
                 level.metadata.arcadeID = id;
                 if (overwriteRequireUnlock)
                     level.metadata.requireUnlock = requireUnlock;
@@ -231,12 +231,12 @@ namespace BetterLegacy.Core.Data.Level
             id = LSText.randomNumString(16),
 
             name = level.metadata?.beatmap?.name,
-            creator = level.metadata?.creator?.steam_name,
+            creator = level.metadata?.creator?.name,
             songTitle = level.metadata?.song?.title,
 
             arcadeID = level.metadata?.arcadeID,
             serverID = level.metadata?.serverID,
-            workshopID = level.metadata?.beatmap?.beatmap_id,
+            workshopID = level.metadata?.beatmap?.workshopID.ToString() ?? string.Empty,
 
             hidden = false,
             requireUnlock = level.metadata.requireUnlock,

@@ -105,13 +105,13 @@ namespace BetterLegacy.Editor.Data
                 return string.Format(EditorConfig.Instance.OpenLevelTextFormatting.Value,
                     LSText.ClampString(Name, EditorConfig.Instance.OpenLevelFolderNameMax.Value),
                     LSText.ClampString(metadata.song.title, EditorConfig.Instance.OpenLevelSongNameMax.Value),
-                    LSText.ClampString(metadata.artist.Name, EditorConfig.Instance.OpenLevelArtistNameMax.Value),
-                    LSText.ClampString(metadata.creator.steam_name, EditorConfig.Instance.OpenLevelCreatorNameMax.Value),
+                    LSText.ClampString(metadata.artist.name, EditorConfig.Instance.OpenLevelArtistNameMax.Value),
+                    LSText.ClampString(metadata.creator.name, EditorConfig.Instance.OpenLevelCreatorNameMax.Value),
                     metadata.song.difficulty,
                     LSText.ClampString(metadata.song.description, EditorConfig.Instance.OpenLevelDescriptionMax.Value),
-                    LSText.ClampString(metadata.beatmap.date_edited, EditorConfig.Instance.OpenLevelDateMax.Value),
-                    LSText.ClampString(metadata.beatmap.date_created, EditorConfig.Instance.OpenLevelDateMax.Value),
-                    LSText.ClampString(metadata.beatmap.date_published, EditorConfig.Instance.OpenLevelDateMax.Value));
+                    LSText.ClampString(metadata.beatmap.dateEdited, EditorConfig.Instance.OpenLevelDateMax.Value),
+                    LSText.ClampString(metadata.beatmap.dateCreated, EditorConfig.Instance.OpenLevelDateMax.Value),
+                    LSText.ClampString(metadata.beatmap.datePublished, EditorConfig.Instance.OpenLevelDateMax.Value));
             }
         }
 
@@ -306,7 +306,7 @@ namespace BetterLegacy.Editor.Data
 
             gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
-                desc = "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.Name + " - " + metadata.song.title,
+                desc = "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.name + " - " + metadata.song.title,
                 hint = "</color>" + metadata.song.description
             });
 
@@ -333,7 +333,7 @@ namespace BetterLegacy.Editor.Data
 
             string difficultyName = difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)];
 
-            CombinerSetActive(RTString.SearchString(LevelCombiner.searchTerm, Path.GetFileName(folder), metadata.song.title, metadata.artist.Name, metadata.creator.steam_name, metadata.song.description, difficultyName));
+            CombinerSetActive(RTString.SearchString(LevelCombiner.searchTerm, Path.GetFileName(folder), metadata.song.title, metadata.artist.name, metadata.creator.name, metadata.song.description, difficultyName));
         }
 
         /// <summary>
@@ -430,8 +430,8 @@ namespace BetterLegacy.Editor.Data
 
             var metadata = Level.metadata;
 
-            TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.Name + " - " + metadata.song.title,
-                $"</color><br>Folder: {Level.FolderName}<br>Date Edited: {metadata.beatmap.date_edited}<br>Date Created: {metadata.beatmap.date_created}<br>Description: {metadata.song.description}");
+            TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.name + " - " + metadata.song.title,
+                $"</color><br>Folder: {Level.FolderName}<br>Date Edited: {metadata.beatmap.dateEdited}<br>Date Created: {metadata.beatmap.dateCreated}<br>Description: {metadata.song.description}");
         }
 
         /// <summary>

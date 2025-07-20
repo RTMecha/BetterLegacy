@@ -12,6 +12,7 @@ using SimpleJSON;
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
@@ -315,7 +316,7 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Setting paths...");
 
-            DataManager.inst.metaData = level.metadata;
+            MetaData.Current = level.metadata;
             GameManager.inst.currentLevelName = level.metadata.song.title;
             RTFile.BasePath = RTFile.AppendEndSlash(level.path);
 
@@ -342,7 +343,7 @@ namespace BetterLegacy.Core.Managers
                 yield return null;
 
             GameManager.inst.introTitle.text = level.metadata.song.title;
-            GameManager.inst.introArtist.text = level.metadata.artist.Name;
+            GameManager.inst.introArtist.text = level.metadata.artist.name;
 
             #endregion
 
@@ -590,14 +591,14 @@ namespace BetterLegacy.Core.Managers
         public static List<Level> SortLevels(List<Level> levels, LevelSort sort, bool ascend) => sort switch
         {
             LevelSort.Cover => levels.Order(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite, !ascend),
-            LevelSort.Artist => levels.Order(x => x.metadata.artist.Name, !ascend),
-            LevelSort.Creator => levels.Order(x => x.metadata.creator.steam_name, !ascend),
+            LevelSort.Artist => levels.Order(x => x.metadata.artist.name, !ascend),
+            LevelSort.Creator => levels.Order(x => x.metadata.creator.name, !ascend),
             LevelSort.File => levels.Order(x => System.IO.Path.GetFileName(x.path), !ascend),
             LevelSort.Title => levels.Order(x => x.metadata.song.title, !ascend),
             LevelSort.Difficulty => levels.Order(x => x.metadata.song.difficulty, !ascend),
-            LevelSort.DateEdited => levels.Order(x => x.metadata.beatmap.date_edited, !ascend),
-            LevelSort.DateCreated => levels.Order(x => x.metadata.beatmap.date_created, !ascend),
-            LevelSort.DatePublished => levels.Order(x => x.metadata.beatmap.date_published, !ascend),
+            LevelSort.DateEdited => levels.Order(x => x.metadata.beatmap.dateEdited, !ascend),
+            LevelSort.DateCreated => levels.Order(x => x.metadata.beatmap.dateCreated, !ascend),
+            LevelSort.DatePublished => levels.Order(x => x.metadata.beatmap.datePublished, !ascend),
             LevelSort.Ranking => levels.Order(x =>
             {
                 var saveData = GetSaveData(x.id);

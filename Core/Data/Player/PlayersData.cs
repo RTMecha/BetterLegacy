@@ -267,7 +267,7 @@ namespace BetterLegacy.Core.Data.Player
         /// <param name="id">ID of the player model.</param>
         public void SetPlayerModel(int index, string id)
         {
-            if (!PlayerModel.DefaultModels.Has(x => x.basePart.id == id) && (!MetaData.IsValid || MetaData.Current.song == null || MetaData.Current.song.difficulty != 6))
+            if (!PlayerModel.DefaultModels.Has(x => x.basePart.id == id) && (!MetaData.Current || MetaData.Current.song == null || MetaData.Current.song.difficulty != 6))
                 AchievementManager.inst.UnlockAchievement("costume_party");
 
             while (index >= playerModelsIndex.Count)

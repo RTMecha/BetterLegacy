@@ -12,11 +12,8 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -719,7 +716,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             CoreHelper.Log($"Parsing BeatmapData");
-            gameData.data = LevelBeatmapData.ParseVG(jn);
+            gameData.data = BeatmapData.ParseVG(jn);
 
             CoreHelper.Log($"Parsing Objects");
             for (int i = 0; i < jn["objects"].Count; i++)
@@ -1140,7 +1137,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         gameData.modifiers.Add(modifier);
                 }
 
-            gameData.data = LevelBeatmapData.Parse(jn);
+            gameData.data = BeatmapData.Parse(jn);
 
             for (int i = 0; i < jn["prefabs"].Count; i++)
             {
@@ -1213,9 +1210,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             try
             {
-                if (gameData.data is LevelBeatmapData levelBeatmapData &&
-                    levelBeatmapData.level is LevelData modLevelData &&
-                    Version.TryParse(modLevelData.modVersion, out Version modVersion) && modVersion < new Version(1, 3, 4))
+                if (gameData.data && gameData.data.level && Version.TryParse(gameData.data.level.modVersion, out Version modVersion) && modVersion < new Version(1, 3, 4))
                 {
                     for (int i = 0; i < gameData.events[3].Count; i++)
                         gameData.events[3][i].SetValue(3, 0f);
@@ -2075,7 +2070,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Fields
 
-        public LevelBeatmapData data;
+        public BeatmapData data;
 
         public Assets assets = new Assets();
 
@@ -2128,7 +2123,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 var baseData = new GameData
                 {
-                    data = new LevelBeatmapData
+                    data = new BeatmapData
                     {
                         level = new LevelData(),
                     },
