@@ -1,4 +1,4 @@
-﻿# snapshot-2025.7.1 - (pre-1.8.0) [???]
+﻿# snapshot-2025.7.1 - (pre-1.8.0) [Jul 20, 2025]
 
 ## Features
 ### Core
@@ -23,6 +23,8 @@
 ### Core
 - Player stop boost function no longer depends on the moveable state of the player.
 - Tweaked the audioSource modifier a little. It should be better to use, hopefully.
+- Preferred Player Count value now blocks the user from entering the level if the player count does not match.
+- Reworked some MetaData values.
 
 ### Interfaces
 - Due to the interface list feature, some interfaces have been combined into one file and there's also some new tests to demonstrate the capabilities of the interface now.
@@ -33,7 +35,7 @@
 
 ------------------------------------------------------------------------------------------
 
-# 1.7.0 [June 15, 2025]
+# 1.7.0 [Jun 15, 2025]
 
 ## Features
 ### Story
