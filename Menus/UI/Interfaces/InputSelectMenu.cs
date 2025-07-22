@@ -156,7 +156,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         device = customPlayer.deviceType.ToString() + " (" + customPlayer.deviceModel + ")";
 
                     text = customPlayer.index < 4 ?
-                        $"<{textColor}><size=200%>■</color><voffset=0.25em><size=100%> <b>Nanobot:</b> {RTString.ToStoryNumber(customPlayer.index)}    < b>Input Device:</b> {device}" :
+                        $"<{textColor}><size=200%>■</color><voffset=0.25em><size=100%> <b>Nanobot:</b> {RTString.ToStoryNumber(customPlayer.index)}    <b>Input Device:</b> {device}" :
                         $"<{textColor}><size=200%>●</color><voffset=0.25em><size=100%> <b>Nanobot:</b> {RTString.ToStoryNumber(customPlayer.index)}    <b>Input Device:</b> {device}";
                 }
                 else
