@@ -28,6 +28,7 @@ namespace BetterLegacy.Core
         public static Color defaultGradientColor1 = new Color(0f, 0.8f, 0.56f, 0.5f);
         public static Color defaultGradientColor2 = new Color(0.81f, 0.37f, 1f, 0.5f);
         public static Color defaultDangerColor = new Color(0.66f, 0f, 0f);
+        public static Color errorColor = LSColors.pink500;
 
         /// <summary>
         /// Converts a float to a hex value.
