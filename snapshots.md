@@ -1,4 +1,12 @@
-﻿# snapshot-2025.7.1 - (pre-1.8.0) [Jul 20, 2025]
+﻿# ???
+
+## Changes
+### Core
+- Overhauled modifier system to be a lot more unified than before.
+- Player Model & Player Editor code has been heavily cleaned up.
+- Beware, some stuff might be broken and definitely will not be compatible with 1.7.x and below.
+
+# snapshot-2025.7.1 - (pre-1.8.0) [Jul 20, 2025]
 
 ## Features
 ### Core
