@@ -51,7 +51,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             variables.Clear();
             if (orderMatters)
-                ModifiersHelper.RunModifiersLoop(modifiers, variables: variables);
+                ModifiersHelper.RunModifiersLoop(modifiers, variables);
             else
                 ModifiersHelper.RunModifiersAll(modifiers, variables);
         }

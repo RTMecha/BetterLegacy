@@ -293,7 +293,7 @@ namespace BetterLegacy.Core.Runtime
             {
                 // gamedata modifiers update first
                 if (GameData.Current && !GameData.Current.modifiers.IsEmpty())
-                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, true, new Dictionary<string, string>());
+                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, new Dictionary<string, string>());
 
                 OnObjectModifiersTick(); // modifiers update second
                 OnBackgroundModifiersTick(); // bg modifiers update third
