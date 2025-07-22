@@ -84,7 +84,7 @@ namespace BetterLegacy.Core.Helpers
                 inputField.text = result.ToString();
         });
 
-        public static EventTrigger.Entry ScrollDeltaVector2(InputField ifx, InputField ify, float amount, float mutliply, List<float> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
+        public static EventTrigger.Entry ScrollDeltaVector2(InputField ifx, InputField ify, float amount = 0.1f, float mutliply = 10f, List<float> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
             if (!Input.GetKey(KeyCode.LeftShift) || !float.TryParse(ifx.text, out float x) || !float.TryParse(ify.text, out float y))
                 return;
@@ -129,7 +129,7 @@ namespace BetterLegacy.Core.Helpers
             ify.text = y.ToString("f2");
         });
 
-        public static EventTrigger.Entry ScrollDeltaVector2Int(InputField ifx, InputField ify, int amount, List<int> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
+        public static EventTrigger.Entry ScrollDeltaVector2Int(InputField ifx, InputField ify, int amount = 1, List<int> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
             if (!Input.GetKey(KeyCode.LeftShift) || !int.TryParse(ifx.text, out int x) || !int.TryParse(ify.text, out int y))
                 return;
