@@ -1865,7 +1865,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
-                                        beatmapObject.modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<BeatmapObject>).Copy(beatmapObject)));
+                                        beatmapObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
                                         CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
                                         RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
@@ -1883,7 +1883,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         var backgroundObject = timelineObject.GetData<BackgroundObject>();
 
-                                        backgroundObject.modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<BackgroundObject>).Copy(backgroundObject)));
+                                        backgroundObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
                                         CoroutineHelper.StartCoroutine(RTBackgroundEditor.inst.Dialog.ModifiersDialog.RenderModifiers(backgroundObject));
                                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
@@ -2074,7 +2074,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
 
-                        bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => x.Copy(true, bm)));
+                        bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => x.Copy()));
                     }, false, true);
                 })); // Modifiers
                 GenerateButton(syncLayout.transform, new ButtonFunction("IGN", eventData =>

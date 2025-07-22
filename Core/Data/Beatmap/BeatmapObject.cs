@@ -12,7 +12,6 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
@@ -25,7 +24,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable<BeatmapObject>, IEditable
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable
     {
         public BeatmapObject() : base() { }
 
@@ -352,9 +351,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Modifiers the object contains.
         /// </summary>
-        public List<Modifier<BeatmapObject>> modifiers = new List<Modifier<BeatmapObject>>();
+        public List<Modifier> modifiers = new List<Modifier>();
 
-        public List<Modifier<BeatmapObject>> Modifiers { get => modifiers; set => modifiers = value; }
+        public List<Modifier> Modifiers { get => modifiers; set => modifiers = value; }
 
         /// <summary>
         /// If modifiers ignore the lifespan restriction.
@@ -499,7 +498,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Cached runtime modifiers.
         /// </summary>
-        public RTModifiers<BeatmapObject> runtimeModifiers;
+        public RTModifiers runtimeModifiers;
 
         /// <summary>
         /// Use for object modifiers.
@@ -1074,7 +1073,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
 
-            this.ReadModifiersJSON(jn, ModifiersManager.defaultBeatmapObjectModifiers);
+            this.ReadModifiersJSON(jn, ModifiersManager.inst.modifiers);
         }
 
         public override JSONNode ToJSONVG()

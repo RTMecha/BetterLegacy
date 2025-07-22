@@ -14,7 +14,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerModel : PAObject<PlayerModel>, IModifyable<PAPlayer>
+    public class PlayerModel : PAObject<PlayerModel>, IModifyable
     {
         public PlayerModel()
         {
@@ -269,11 +269,11 @@ namespace BetterLegacy.Core.Data.Player
 
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PAPlayer;
 
-        public List<string> Tags { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
 
-        public List<Modifier<PAPlayer>> modifiers = new List<Modifier<PAPlayer>>();
+        public List<Modifier> modifiers = new List<Modifier>();
 
-        public List<Modifier<PAPlayer>> Modifiers { get => modifiers; set => modifiers = value; }
+        public List<Modifier> Modifiers { get => modifiers; set => modifiers = value; }
 
         public bool IgnoreLifespan { get; set; }
 
@@ -308,9 +308,7 @@ namespace BetterLegacy.Core.Data.Player
             customObjects.Clear();
             for (int i = 0; i < orig.customObjects.Count; i++)
                 customObjects.Add(orig.customObjects[i].Copy());
-            modifiers.Clear();
-            for (int i = 0; i < orig.modifiers.Count; i++)
-                modifiers.Add(orig.modifiers[i].Copy(null));
+            this.CopyModifyableData(orig);
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -365,7 +363,7 @@ namespace BetterLegacy.Core.Data.Player
             if (jn["modifiers"] != null && jn["modifiers"].Count > 0)
                 for (int i = 0; i < jn["modifiers"].Count; i++)
                 {
-                    var modifier = Modifier<PAPlayer>.Parse(jn["modifiers"][i]);
+                    var modifier = Modifier.Parse(jn["modifiers"][i]);
                     if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultPlayerModifiers))
                         modifiers.Add(modifier);
                 }

@@ -173,45 +173,28 @@ namespace BetterLegacy.Editor.Managers
             _ => null,
         };
 
-        public List<ModifierBase> GetCopiedModifiers(ModifierReferenceType referenceType) => referenceType switch
+        public List<Modifier> GetCopiedModifiers(ModifierReferenceType referenceType) => copiedModifiers.TryGetValue(referenceType, out List<Modifier> list) ? list : null;
+
+        public Dictionary<ModifierReferenceType, List<Modifier>> copiedModifiers = new Dictionary<ModifierReferenceType, List<Modifier>>()
         {
-            ModifierReferenceType.BeatmapObject => copiedBeatmapObjectModifiers,
-            ModifierReferenceType.BackgroundObject => copiedBackgroundObjectModifiers,
-            ModifierReferenceType.PAPlayer => copiedPlayerModifiers,
-            ModifierReferenceType.GameData => copiedLevelModifiers,
-            _ => null,
+            { ModifierReferenceType.BeatmapObject, new List<Modifier>() },
+            { ModifierReferenceType.BackgroundObject, new List<Modifier>() },
+            { ModifierReferenceType.PrefabObject, new List<Modifier>() },
+            { ModifierReferenceType.PAPlayer, new List<Modifier>() },
+            { ModifierReferenceType.GameData, new List<Modifier>() },
         };
-
-        public List<ModifierBase> copiedBeatmapObjectModifiers = new List<ModifierBase>();
-
-        public List<ModifierBase> copiedBackgroundObjectModifiers = new List<ModifierBase>();
-
-        public List<ModifierBase> copiedPlayerModifiers = new List<ModifierBase>();
-
-        public List<ModifierBase> copiedLevelModifiers = new List<ModifierBase>();
-
-
 
         #region Default Modifiers
 
         public ContentPopup DefaultModifiersPopup { get; set; }
 
-        public List<ModifierBase> GetDefaultModifiers(ModifierReferenceType referenceType) => referenceType switch
-        {
-            ModifierReferenceType.BeatmapObject => ModifiersManager.defaultBeatmapObjectModifiers,
-            ModifierReferenceType.BackgroundObject => ModifiersManager.defaultBackgroundObjectModifiers,
-            ModifierReferenceType.PAPlayer => ModifiersManager.defaultPlayerModifiers,
-            ModifierReferenceType.GameData => ModifiersManager.defaultLevelModifiers,
-            _ => null,
-        };
-
-        public void OpenDefaultModifiersList<T>(ModifierReferenceType referenceType, IModifyable<T> modifyable, int addIndex = -1)
+        public void OpenDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1)
         {
             DefaultModifiersPopup.Open();
             RefreshDefaultModifiersList(referenceType, modifyable, addIndex);
         }
 
-        public void RefreshDefaultModifiersList<T>(ModifierReferenceType referenceType, IModifyable<T> modifyable, int addIndex = -1)
+        public void RefreshDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1)
         {
             DefaultModifiersPopup.SearchField.onValueChanged.NewListener(_val =>
             {
@@ -219,25 +202,15 @@ namespace BetterLegacy.Editor.Managers
                 RefreshDefaultModifiersList(referenceType, modifyable, addIndex);
             });
 
-            var defaultModifiers = GetDefaultModifiers(referenceType);
-
-            if (defaultModifiers == null)
-                return;
-
-            int shape = referenceType switch
-            {
-                ModifierReferenceType.BeatmapObject => (modifyable as BeatmapObject).Shape,
-                ModifierReferenceType.BackgroundObject => (modifyable as BackgroundObject).Shape,
-                _ => 0,
-            };
+            int shape = modifyable is IShapeable shapeable ? shapeable.Shape : 0;
 
             DefaultModifiersPopup.ClearContent();
 
             var modifiersEditorDialog = GetModifiersDialog(referenceType);
 
-            foreach (var defaultModifier in defaultModifiers)
+            foreach (var defaultModifier in ModifiersManager.inst.modifiers)
             {
-                if (!SearchModifier(searchTerm, defaultModifier))
+                if (!SearchModifier(searchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.hideInEditor)
                     continue;
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";
@@ -266,7 +239,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    var modifier = (defaultModifier as Modifier<T>).Copy(true, (T)modifyable);
+                    var modifier = defaultModifier.Copy();
                     if (addIndex == -1)
                         modifyable.Modifiers.Add(modifier);
                     else
@@ -277,7 +250,6 @@ namespace BetterLegacy.Editor.Managers
                     switch (referenceType)
                     {
                         case ModifierReferenceType.BeatmapObject: {
-                                var beatmapObject = modifyable as BeatmapObject;
                                 RTLevel.Current?.UpdateObject(modifyable as BeatmapObject, RTLevel.ObjectContext.MODIFIERS);
                                 break;
                             }
@@ -295,19 +267,19 @@ namespace BetterLegacy.Editor.Managers
 
         public string searchTerm;
 
-        public bool SearchModifier(string searchTerm, ModifierBase modifier) =>
+        public bool SearchModifier(string searchTerm, Modifier modifier) =>
             string.IsNullOrEmpty(searchTerm) ||
             RTString.SearchString(searchTerm, modifier.Name) ||
-            searchTerm.ToLower() == "action" && modifier.type == ModifierBase.Type.Action ||
-            searchTerm.ToLower() == "trigger" && modifier.type == ModifierBase.Type.Trigger;
+            searchTerm.ToLower() == "action" && modifier.type == Modifier.Type.Action ||
+            searchTerm.ToLower() == "trigger" && modifier.type == Modifier.Type.Trigger;
 
         #endregion
 
         #region UI Part Handlers
 
-        public void PasteGenerator<T>(IModifyable<T> modifyable)
+        public void PasteGenerator(IModifyable modifyable)
         {
-            var referenceType = ModifierBase.GetReferenceType<T>();
+            var referenceType = modifyable.ReferenceType;
 
             if (referenceType == ModifierReferenceType.Null)
             {
@@ -316,7 +288,6 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var copiedModifiers = GetCopiedModifiers(referenceType);
-
             if (copiedModifiers == null || copiedModifiers.IsEmpty())
                 return;
 
@@ -335,7 +306,7 @@ namespace BetterLegacy.Editor.Managers
             buttonStorage.label.text = "Paste";
             buttonStorage.button.onClick.NewListener(() =>
             {
-                modifyable.Modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+                modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
                 CoroutineHelper.StartCoroutine(modifiersEditorDialog.RenderModifiers(modifyable));
                 if (modifyable is BeatmapObject beatmapObject)

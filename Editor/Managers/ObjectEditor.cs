@@ -862,8 +862,8 @@ namespace BetterLegacy.Editor.Managers
                 bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
                 bm.shape = 4;
                 bm.shapeOption = 0;
-                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out ModifierBase defaultModifier) && defaultModifier is Modifier<BeatmapObject> modifier)
-                    bm.modifiers.Add(modifier.Copy(true, bm));
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == "textSequence", out Modifier modifier))
+                    bm.modifiers.Add(modifier.Copy());
             }),
         };
 
@@ -1782,7 +1782,7 @@ namespace BetterLegacy.Editor.Managers
 
                     beatmapObject.modifiers.ForEach(modifier =>
                     {
-                        modifier.Inactive?.Invoke(modifier, null);
+                        modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                         modifier.Result = default;
                     });
 
@@ -1806,7 +1806,7 @@ namespace BetterLegacy.Editor.Managers
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     modifier.Result = default;
                 });
 
@@ -1826,7 +1826,7 @@ namespace BetterLegacy.Editor.Managers
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     modifier.Result = default;
                 });
 
@@ -1844,7 +1844,7 @@ namespace BetterLegacy.Editor.Managers
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     modifier.Result = default;
                 });
 
@@ -1864,7 +1864,7 @@ namespace BetterLegacy.Editor.Managers
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     modifier.Result = default;
                 });
 
@@ -1884,7 +1884,7 @@ namespace BetterLegacy.Editor.Managers
 
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     modifier.Result = default;
                 });
 
@@ -1942,7 +1942,7 @@ namespace BetterLegacy.Editor.Managers
 
                         beatmapObject.modifiers.ForEach(modifier =>
                         {
-                            modifier.Inactive?.Invoke(modifier, null);
+                            modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                             modifier.Result = default;
                         });
 
@@ -2678,9 +2678,9 @@ namespace BetterLegacy.Editor.Managers
                                     if (beatmapObject.modifiers.Has(x => x.Name == formatText))
                                         return;
 
-                                    if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == formatText, out ModifierBase defaultModifier) && defaultModifier is Modifier<BeatmapObject> modifier)
+                                    if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == formatText, out Modifier modifier))
                                     {
-                                        beatmapObject.modifiers.Add(modifier.Copy(true, beatmapObject));
+                                        beatmapObject.modifiers.Add(modifier.Copy());
                                         CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
                                     }
                                 }),

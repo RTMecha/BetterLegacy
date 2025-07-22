@@ -1140,6 +1140,16 @@ namespace BetterLegacy
         HomingDynamic,
     }
 
+    public enum ModifierReferenceType
+    {
+        Null,
+        BeatmapObject,
+        BackgroundObject,
+        PrefabObject,
+        PAPlayer,
+        GameData,
+    }
+
     #endregion
 
     #region Arcade / Game

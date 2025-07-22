@@ -8,13 +8,13 @@ namespace BetterLegacy.Editor.Components
 {
     public class ModifierActiveNotifier : MonoBehaviour
     {
-        public ModifierBase modifierBase;
+        public Modifier modifier;
         public Image notifier;
 
         void Update()
         {
-            if (notifier && modifierBase != null)
-                notifier.color = RTColors.FadeColor(notifier.color, (modifierBase.type == ModifierBase.Type.Action ? modifierBase.running : modifierBase.triggered) ? 1f : 0.1f);
+            if (notifier && modifier)
+                notifier.color = RTColors.FadeColor(notifier.color, (modifier.type == Modifier.Type.Action ? modifier.running : modifier.triggered) ? 1f : 0.1f);
         }
     }
 }

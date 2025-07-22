@@ -345,10 +345,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public IRTObject ToIRuntimeModifiers(BeatmapObject beatmapObject) => SkipRuntimeModifiers(beatmapObject) ? null : ToRuntimeModifiers(beatmapObject);
 
-        RTModifiers<BeatmapObject> ToRuntimeModifiers(BeatmapObject beatmapObject)
+        RTModifiers ToRuntimeModifiers(BeatmapObject beatmapObject)
         {
-            var runtimeModifiers = new RTModifiers<BeatmapObject>(
-                    beatmapObject.modifiers, beatmapObject.orderModifiers,
+            var runtimeModifiers = new RTModifiers(
+                    beatmapObject.modifiers, beatmapObject, beatmapObject.orderModifiers,
                     beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime,
                     beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration
                 );
@@ -546,10 +546,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public IRTObject ToIRuntimeModifiers(BackgroundObject backgroundObject) => SkipRuntimeModifiers(backgroundObject) ? null : ToRuntimeModifiers(backgroundObject);
 
-        RTModifiers<BackgroundObject> ToRuntimeModifiers(BackgroundObject backgroundObject)
+        RTModifiers ToRuntimeModifiers(BackgroundObject backgroundObject)
         {
-            var runtimeModifiers = new RTModifiers<BackgroundObject>(
-                    backgroundObject.modifiers, backgroundObject.orderModifiers,
+            var runtimeModifiers = new RTModifiers(
+                    backgroundObject.modifiers, backgroundObject, backgroundObject.orderModifiers,
                     backgroundObject.ignoreLifespan ? 0f : backgroundObject.StartTime,
                     backgroundObject.ignoreLifespan ? SoundManager.inst.MusicLength : backgroundObject.StartTime + backgroundObject.SpawnDuration
                 );

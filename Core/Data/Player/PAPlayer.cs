@@ -12,7 +12,7 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PAPlayer : Exists
+    public class PAPlayer : Exists, IModifierReference
     {
         public PAPlayer(bool active, int index, InputDevice device)
         {
@@ -113,6 +113,10 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
+        public ModifierReferenceType ReferenceType => ModifierReferenceType.PAPlayer;
+
+        public int IntVariable { get; set; }
+
         #endregion
 
         #region Methods
@@ -203,13 +207,8 @@ namespace BetterLegacy.Core.Data.Player
 
         public void UpdateModifiers()
         {
-            if (CoreHelper.Paused || PlayerModel == null || PlayerModel.modifiers == null || PlayerModel.modifiers.IsEmpty())
-                return;
-
-            for (int i = 0; i < PlayerModel.modifiers.Count; i++)
-                PlayerModel.modifiers[i].reference = this;
-
-            ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, new System.Collections.Generic.Dictionary<string, string>());
+            if (!CoreHelper.Paused && PlayerModel && PlayerModel.modifiers != null && !PlayerModel.modifiers.IsEmpty())
+                ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, this, new System.Collections.Generic.Dictionary<string, string>());
         }
 
         public void ResetHealth() => Health = PlayerModel?.basePart?.health ?? 3;

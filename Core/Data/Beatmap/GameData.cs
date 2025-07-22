@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents a Project Arrhythmia level.
     /// </summary>
-    public class GameData : Exists
+    public class GameData : Exists, IModifierReference
     {
         public GameData() { }
 
@@ -634,6 +634,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         //public static JSONNode LastParsedJSON { get; set; }
         //public static GameData ConvertedGameData { get; set; }
 
+        public ModifierReferenceType ReferenceType => ModifierReferenceType.GameData;
+
+        public int IntVariable { get; set; }
+
         #endregion
 
         #region Methods
@@ -701,12 +705,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var eventType = jnTrigger["event_type"].AsInt;
                 var eventTrigger = jnTrigger["event_trigger"].AsInt;
 
-                var triggerModifier = new Modifier<GameData>(ModifiersHelper.GetLevelTriggerName(eventTrigger));
+                var triggerModifier = new Modifier(ModifiersHelper.GetLevelTriggerName(eventTrigger));
                 triggerModifier.triggerCount = jnTrigger["event_retrigger"].AsInt;
                 triggerModifier.SetValue(1, jnTrigger["event_trigger_time"]["x"].AsFloat.ToString());
                 triggerModifier.SetValue(2, jnTrigger["event_trigger_time"]["y"].AsFloat.ToString());
 
-                var actionModifier = new Modifier<GameData>(ModifiersHelper.GetLevelActionName(eventType));
+                var actionModifier = new Modifier(ModifiersHelper.GetLevelActionName(eventType));
 
                 for (int j = 0; j < jnTrigger["event_data"].Count; j++)
                     actionModifier.SetValue(j, jnTrigger["event_data"][j]);
@@ -1123,16 +1127,16 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     if (jnModifier["action"] != null)
                     {
-                        var triggerModifier = Modifier<GameData>.Parse(jnModifier["trigger"], gameData);
+                        var triggerModifier = Modifier.Parse(jnModifier["trigger"]);
                         triggerModifier.triggerCount = jnModifier["retrigger"].AsInt;
-                        var actionModifier = Modifier<GameData>.Parse(jnModifier["action"], gameData);
+                        var actionModifier = Modifier.Parse(jnModifier["action"]);
 
                         gameData.modifiers.Add(triggerModifier);
                         gameData.modifiers.Add(actionModifier);
                         continue;
                     }
 
-                    var modifier = Modifier<GameData>.Parse(jnModifier, gameData);
+                    var modifier = Modifier.Parse(jnModifier);
                     if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultLevelModifiers))
                         gameData.modifiers.Add(modifier);
                 }
@@ -1281,13 +1285,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 numLayer++;
             }
 
-            Modifier<GameData> firstTrigger = null;
+            Modifier firstTrigger = null;
             int numModifier = 0;
             for (int i = 0; i < modifiers.Count; i++)
             {
                 var modifier = modifiers[i];
 
-                if (modifier.type == ModifierBase.Type.Trigger && firstTrigger == null)
+                if (modifier.type == Modifier.Type.Trigger && firstTrigger == null)
                 {
                     firstTrigger = modifier;
                     continue;
@@ -1299,7 +1303,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (firstTrigger == null) // no previous triggers to associate with the action
                     continue;
 
-                if (modifier.type != ModifierBase.Type.Action) // modifier needs to be an action in order to save
+                if (modifier.type != Modifier.Type.Action) // modifier needs to be an action in order to save
                     continue;
 
                 var jnTrigger = Parser.NewJSONObject();
@@ -1791,19 +1795,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Tries to get an object with a modifier's tag group.
         /// </summary>
-        /// <param name="modifier">Modifier reference.</param>
-        /// <param name="tag">Tag group.</param>
-        /// <param name="result">Object result.</param>
-        /// <returns>Returns true if an object was found, otherwise returns false.</returns>
-        public bool TryFindObjectWithTag(Modifier<BeatmapObject> modifier, string tag, out BeatmapObject result)
-        {
-            result = FindObjectWithTag(modifier, tag);
-            return result;
-        }
-
-        /// <summary>
-        /// Tries to get an object with a modifier's tag group.
-        /// </summary>
         /// <param name="prefabInstanceOnly">If the object should only be associated with the prefab of the object.</param>
         /// <param name="groupAlive">If the object should only be alive.</param>
         /// <param name="prefabable">Prefabable object.</param>
@@ -1826,22 +1817,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Gets an object with a modifier's tag group.
         /// </summary>
-        /// <param name="modifier">Modifier reference.</param>
-        /// <param name="tag">Tag group.</param>
-        /// <returns>Returns the found object.</returns>
-        public BeatmapObject FindObjectWithTag(Modifier<BeatmapObject> modifier, string tag) => modifier.prefabInstanceOnly && !string.IsNullOrEmpty(modifier.reference.prefabInstanceID) ?
-                beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == modifier.reference.prefabID && x.prefabInstanceID == modifier.reference.prefabInstanceID) :
-                beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
-
-        /// <summary>
-        /// Gets an object with a modifier's tag group.
-        /// </summary>
         /// <param name="prefabInstanceOnly">If the object should only be associated with the prefab of the object.</param>
         /// <param name="groupAlive">If the object should only be alive.</param>
         /// <param name="prefabable">Prefabable object.</param>
         /// <param name="tag">Tag group.</param>
         /// <returns>Returns the found object.</returns>
-        public BeatmapObject FindObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) => prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+        public BeatmapObject FindObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) => string.IsNullOrEmpty(tag) ? prefabable as BeatmapObject : prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
                 beatmapObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
                 beatmapObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
 
@@ -1861,16 +1842,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<BeatmapObject> FindObjectsWithTag(string tag) => FindObjectsWithTag(beatmapObjects, tag);
 
         /// <summary>
-        /// Returns a list of objects with a modifier's tag group.
-        /// </summary>
-        /// <param name="modifier">Modifier reference.</param>
-        /// <param name="tag">Tag group.</param>
-        /// <returns>Returns a list of found objects.</returns>
-        public List<BeatmapObject> FindObjectsWithTag(Modifier<BeatmapObject> modifier, string tag) => modifier.prefabInstanceOnly && !string.IsNullOrEmpty(modifier.reference.prefabInstanceID) ?
-                beatmapObjects.FindAll(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == modifier.reference.prefabID && x.prefabInstanceID == modifier.reference.prefabInstanceID) :
-                beatmapObjects.FindAll(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
-
-        /// <summary>
         /// Gets a list of objects with a tag group.
         /// </summary>
         /// <param name="prefabInstanceOnly">If the objects should only be associated with the prefab of the object.</param>
@@ -1878,9 +1849,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="prefabable">Prefabable object.</param>
         /// <param name="tag">Tag group.</param>
         /// <returns>Returns a list of found objects.</returns>
-        public List<BeatmapObject> FindObjectsWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) => prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-            beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
-            beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
+        public List<BeatmapObject> FindObjectsWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) =>
+            string.IsNullOrEmpty(tag) ?
+                new List<BeatmapObject>() { prefabable as BeatmapObject } :
+                prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                    beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
+                    beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
 
         /// <summary>
         /// Gets a list of objects with a tag group.
@@ -2086,7 +2060,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
 
-        public List<Modifier<GameData>> modifiers = new List<Modifier<GameData>>();
+        public List<Modifier> modifiers = new List<Modifier>();
 
         public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 

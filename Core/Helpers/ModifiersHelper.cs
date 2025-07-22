@@ -10,6 +10,7 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Core.Components.Player;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
@@ -38,10 +39,10 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// Checks if triggers return true.
         /// </summary>
-        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <typeparam name="T">The type of <see cref="Modifier"/>.</typeparam>
         /// <param name="triggers">Triggers to check.</param>
         /// <returns>Returns true if all modifiers are active or if some have else if on, otherwise returns false.</returns>
-        public static bool CheckTriggers<T>(List<Modifier<T>> triggers, Dictionary<string, string> variables)
+        public static bool CheckTriggers(List<Modifier> triggers, IModifierReference reference, Dictionary<string, string> variables)
         {
             bool result = true;
             triggers.ForLoop(trigger =>
@@ -53,7 +54,7 @@ namespace BetterLegacy.Core.Helpers
                     return;
                 }
 
-                var innerResult = trigger.not ? !trigger.Trigger(trigger, variables) : trigger.Trigger(trigger, variables);
+                var innerResult = trigger.not ? !trigger.RunTrigger(trigger, reference, variables) : trigger.RunTrigger(trigger, reference, variables);
 
                 if (trigger.elseIf && !result && innerResult)
                     result = true;
@@ -69,63 +70,55 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// Assigns the associated modifier functions to the modifier.
         /// </summary>
-        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <typeparam name="T">The type of <see cref="Modifier"/>.</typeparam>
         /// <param name="modifier">The modifier to assign to.</param>
-        public static void AssignModifierActions<T>(Modifier<T> modifier)
+        public static void AssignModifierActions(Modifier modifier, IModifierReference reference)
         {
-            switch (modifier.referenceType)
+            switch (reference.ReferenceType)
             {
                 case ModifierReferenceType.BeatmapObject: {
-                        var objectModifier = modifier as Modifier<BeatmapObject>;
-
                         var name = modifier.Name;
 
                         // Only assign methods depending on modifier type.
-                        if (objectModifier.type == ModifierBase.Type.Action)
-                            objectModifier.Action = GetObjectAction(name);
-                        if (objectModifier.type == ModifierBase.Type.Trigger)
-                            objectModifier.Trigger = GetObjectTrigger(name);
+                        if (modifier.type == Modifier.Type.Action)
+                            modifier.Action = GetObjectAction(name);
+                        if (modifier.type == Modifier.Type.Trigger)
+                            modifier.Trigger = GetObjectTrigger(name);
 
-                        objectModifier.Inactive = ObjectInactive;
+                        modifier.Inactive = ObjectInactive;
 
                         break;
                     }
                 case ModifierReferenceType.BackgroundObject: {
-                        var bgModifier = modifier as Modifier<BackgroundObject>;
-
                         var name = modifier.Name;
-                        if (bgModifier.type == ModifierBase.Type.Action)
-                            bgModifier.Action = GetBGAction(name);
-                        if (bgModifier.type == ModifierBase.Type.Trigger)
-                            bgModifier.Trigger = GetBGTrigger(name);
+                        if (modifier.type == Modifier.Type.Action)
+                            modifier.Action = GetBGAction(name);
+                        if (modifier.type == Modifier.Type.Trigger)
+                            modifier.Trigger = GetBGTrigger(name);
 
-                        bgModifier.Inactive = BGInactive;
+                        modifier.Inactive = BGInactive;
 
                         break;
                     }
                 case ModifierReferenceType.PAPlayer: {
-                        var playerModifier = modifier as Modifier<PAPlayer>;
-
                         var name = modifier.Name;
-                        if (playerModifier.type == ModifierBase.Type.Action)
-                            playerModifier.Action = GetPlayerAction(name);
-                        if (playerModifier.type == ModifierBase.Type.Trigger)
-                            playerModifier.Trigger = GetPlayerTrigger(name);
+                        if (modifier.type == Modifier.Type.Action)
+                            modifier.Action = GetPlayerAction(name);
+                        if (modifier.type == Modifier.Type.Trigger)
+                            modifier.Trigger = GetPlayerTrigger(name);
 
-                        playerModifier.Inactive = PlayerInactive;
+                        modifier.Inactive = PlayerInactive;
 
                         break;
                     }
                 case ModifierReferenceType.GameData: {
-                        var levelModifier = modifier as Modifier<GameData>;
-
                         var name = modifier.Name;
 
                         // Only assign methods depending on modifier type.
-                        if (levelModifier.type == ModifierBase.Type.Action)
-                            levelModifier.Action = GetLevelAction(name);
-                        if (levelModifier.type == ModifierBase.Type.Trigger)
-                            levelModifier.Trigger = GetLevelTrigger(name);
+                        if (modifier.type == Modifier.Type.Action)
+                            modifier.Action = GetLevelAction(name);
+                        if (modifier.type == Modifier.Type.Trigger)
+                            modifier.Trigger = GetLevelTrigger(name);
 
                         break;
                     }
@@ -137,15 +130,15 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifier">The modifier to assign to.</param>
-        /// <param name="action">Action function to set if <see cref="ModifierBase.type"/> is <see cref="ModifierBase.Type.Action"/>.</param>
-        /// <param name="trigger">Trigger function to set if <see cref="ModifierBase.type"/> is <see cref="ModifierBase.Type.Trigger"/>.</param>
+        /// <param name="action">Action function to set if <see cref="Modifier.type"/> is <see cref="Modifier.Type.Action"/>.</param>
+        /// <param name="trigger">Trigger function to set if <see cref="Modifier.type"/> is <see cref="Modifier.Type.Trigger"/>.</param>
         /// <param name="inactive">Inactive function to set.</param>
-        public static void AssignModifierAction<T>(Modifier<T> modifier, Action<Modifier<T>, Dictionary<string, string>> action, Func<Modifier<T>, Dictionary<string, string>, bool> trigger, Action<Modifier<T>, Dictionary<string, string>> inactive)
+        public static void AssignModifierAction<T>(Modifier modifier, Action<Modifier, IModifierReference, Dictionary<string, string>> action, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger, Action<Modifier, IModifierReference, Dictionary<string, string>> inactive)
         {
             // Only assign methods depending on modifier type.
-            if (modifier.type == ModifierBase.Type.Action)
+            if (modifier.type == Modifier.Type.Action)
                 modifier.Action = action;
-            if (modifier.type == ModifierBase.Type.Trigger)
+            if (modifier.type == Modifier.Type.Trigger)
                 modifier.Trigger = trigger;
 
             // Both action and trigger modifier types can be inactive.
@@ -158,24 +151,24 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersAll<T>(List<Modifier<T>> modifiers, Dictionary<string, string> variables = null)
+        public static void RunModifiersAll(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null)
         {
-            var actions = new List<Modifier<T>>();
-            var triggers = new List<Modifier<T>>();
+            var actions = new List<Modifier>();
+            var triggers = new List<Modifier>();
             modifiers.ForLoop(modifier =>
             {
                 switch (modifier.type)
                 {
-                    case ModifierBase.Type.Action: {
+                    case Modifier.Type.Action: {
                             if (modifier.Action == null || modifier.Inactive == null)
-                                AssignModifierActions(modifier);
+                                AssignModifierActions(modifier, reference);
 
                             actions.Add(modifier);
                             break;
                         }
-                    case ModifierBase.Type.Trigger: {
+                    case Modifier.Type.Trigger: {
                             if (modifier.Trigger == null || modifier.Inactive == null)
-                                AssignModifierActions(modifier);
+                                AssignModifierActions(modifier, reference);
 
                             triggers.Add(modifier);
                             break;
@@ -186,7 +179,7 @@ namespace BetterLegacy.Core.Helpers
             if (!triggers.IsEmpty())
             {
                 // If all triggers are active
-                if (CheckTriggers(triggers, variables))
+                if (CheckTriggers(triggers, reference, variables))
                 {
                     bool returned = false;
                     actions.ForLoop(act =>
@@ -200,7 +193,7 @@ namespace BetterLegacy.Core.Helpers
                             act.active = true;
 
                         act.running = true;
-                        act.Action?.Invoke(act, variables);
+                        act.RunAction(act, reference, variables);
                         if (act.Name == "return")
                             returned = true;
                     });
@@ -227,7 +220,7 @@ namespace BetterLegacy.Core.Helpers
 
                     modifier.active = false;
                     modifier.running = false;
-                    modifier.Inactive?.Invoke(modifier, variables);
+                    modifier.RunInactive(modifier, reference, variables);
                 });
                 return;
             }
@@ -243,7 +236,7 @@ namespace BetterLegacy.Core.Helpers
                     act.active = true;
 
                 act.running = true;
-                act.Action?.Invoke(act, variables);
+                act.RunAction(act, reference, variables);
             });
         }
 
@@ -253,22 +246,22 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
+        public static void RunModifiersLoop(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
         {
             bool returned = false;
             bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
-            ModifierBase.Type previousType = ModifierBase.Type.Action;
+            Modifier.Type previousType = Modifier.Type.Action;
             int index = 0;
             while (index < modifiers.Count)
             {
                 var modifier = modifiers[index];
                 var name = modifier.Name;
 
-                var isAction = modifier.type == ModifierBase.Type.Action;
-                var isTrigger = modifier.type == ModifierBase.Type.Trigger;
+                var isAction = modifier.type == Modifier.Type.Action;
+                var isTrigger = modifier.type == Modifier.Type.Trigger;
 
                 if (isAction && modifier.Action == null || isTrigger && modifier.Trigger == null || modifier.Inactive == null)
-                    AssignModifierActions(modifier);
+                    AssignModifierActions(modifier, reference);
 
                 if (returned)
                 {
@@ -301,7 +294,7 @@ namespace BetterLegacy.Core.Helpers
                             for (int i = startIndex; i < endCount; i += increment)
                             {
                                 variables[variable] = i.ToString();
-                                RunModifiersLoop(selectModifiers, variables, i, endCount);
+                                RunModifiersLoop(selectModifiers, reference, variables, i, endCount);
                             }
                         }
                     }
@@ -322,7 +315,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (isTrigger)
                 {
-                    if (previousType == ModifierBase.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
+                    if (previousType == Modifier.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
                         result = true;
 
                     if (modifier.active || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
@@ -332,7 +325,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                     else
                     {
-                        var innerResult = modifier.not ? !modifier.Trigger(modifier, variables) : modifier.Trigger(modifier, variables);
+                        var innerResult = modifier.not ? !modifier.RunTrigger(modifier, reference, variables) : modifier.RunTrigger(modifier, reference, variables);
 
                         // Allow trigger to turn result to true again if "elseIf" is on
                         if (modifier.elseIf && !result && innerResult)
@@ -351,7 +344,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     modifier.active = false;
                     modifier.running = false;
-                    modifier.Inactive?.Invoke(modifier, variables);
+                    modifier.RunInactive(modifier, reference, variables);
 
                     previousType = modifier.type;
                     index++;
@@ -377,7 +370,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (isAction && result) // Only run modifier if result is true
                 {
-                    modifier.Action?.Invoke(modifier, variables);
+                    modifier.RunAction(modifier, reference, variables);
 
                     if (name == "return" || name == "continue") // return stops the loop, continue moves it to the next loop
                         returned = true;
@@ -392,10 +385,22 @@ namespace BetterLegacy.Core.Helpers
 
         #region Functions
 
-        public static bool VerifyModifier<T>(Modifier<T> modifier, List<ModifierBase> modifiers)
+        public static ModifierReferenceType GetReferenceType<T>()
         {
-            modifier.hasChanged = false;
+            var type = typeof(T);
+            if (type == typeof(BeatmapObject))
+                return ModifierReferenceType.BeatmapObject;
+            else if (type == typeof(BackgroundObject))
+                return ModifierReferenceType.BackgroundObject;
+            else if (type == typeof(PAPlayer))
+                return ModifierReferenceType.PAPlayer;
+            else if (type == typeof(GameData))
+                return ModifierReferenceType.GameData;
+            return ModifierReferenceType.Null;
+        }
 
+        public static bool VerifyModifier(Modifier modifier, List<Modifier> modifiers)
+        {
             if (!modifier.verified)
             {
                 modifier.verified = true;
@@ -413,11 +418,11 @@ namespace BetterLegacy.Core.Helpers
         {
             "time" => 0,
             "timeInRange" => 0,
-            "playerHit" => 1,
-            "playerDeath" => 2,
-            "levelStart" => 3,
-            "levelRestart" => 4,
-            "levelRewind" => 5,
+            "onPlayerHit" => 1,
+            "onPlayerDeath" => 2,
+            "onLevelStart" => 3,
+            "onLevelRestart" => 4,
+            "onLevelRewind" => 5,
             _ => -1,
         };
         
@@ -441,11 +446,11 @@ namespace BetterLegacy.Core.Helpers
         public static string GetLevelTriggerName(int type) => type switch
         {
             0 => "timeInRange",
-            1 => "playerHit",
-            2 => "playerDeath",
-            3 => "levelStart",
-            4 => "levelRestart",
-            5 => "levelRewind",
+            1 => "onPlayerHit",
+            2 => "onPlayerDeath",
+            3 => "onLevelStart",
+            4 => "onLevelRestart",
+            5 => "onLevelRewind",
             _ => string.Empty,
         };
 
@@ -466,54 +471,54 @@ namespace BetterLegacy.Core.Helpers
             _ => string.Empty,
         };
 
-        public static Func<Modifier<GameData>, Dictionary<string, string>, bool> GetLevelTrigger(string key) => key switch
+        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetLevelTrigger(string key) => key switch
         {
-            "time" => (modifier, variables) =>
+            "time" => (modifier, reference, variables) =>
             {
                 var time = RTLevel.FixedTime;
                 return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
             },
-            "timeInRange" => (modifier, variables) =>
+            "timeInRange" => (modifier, reference, variables) =>
             {
                 var time = RTLevel.FixedTime;
                 return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
             },
-            "playerHit" => (modifier, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isTakingHit),
-            "playerDeath" => (modifier, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isDead),
+            "onPlayerHit" => (modifier, reference, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isTakingHit),
+            "onPlayerDeath" => (modifier, reference, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isDead),
 
-            "levelStart" => (modifier, variables) => AudioManager.inst.CurrentAudioSource.time < 0.1f,
-            "levelRestart" => (modifier, variables) => false, // why is this here...?
-            "levelRewind" => (modifier, variables) => CoreHelper.Reversing,
-            _ => (modifier, variables) => false,
+            "onLevelStart" => (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time < 0.1f,
+            "onLevelRestart" => (modifier, reference, variables) => false, // why is this here...?
+            "onLevelRewind" => (modifier, reference, variables) => CoreHelper.Reversing,
+            _ => (modifier, reference, variables) => false,
         };
 
-        public static Action<Modifier<GameData>, Dictionary<string, string>> GetLevelAction(string key) => key switch
+        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetLevelAction(string key) => key switch
         {
             "playerMoveAll" => ModifierActions.playerMoveAll,
-            "playerBoostLock" => (modifier, variables) =>
+            "playerBoostLock" => (modifier, reference, variables) =>
             {
                 if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
                     RTPlayer.LockBoost = lockBoost;
             },
-            "playerXLock" => (modifier, variables) =>
+            "playerXLock" => (modifier, reference, variables) =>
             {
 
             },
-            "playerYLock" => (modifier, variables) =>
+            "playerYLock" => (modifier, reference, variables) =>
             {
 
             },
             "playerBoost" => ModifierActions.playerBoostAll,
             "setMusicTime" => ModifierActions.setMusicTime,
             "setPitch" => ModifierActions.setPitch,
-            _ => (modifier, variables) => { },
+            _ => (modifier, reference, variables) => { },
         };
 
         #endregion
 
         #region BeatmapObject
 
-        public static Func<Modifier<BeatmapObject>, Dictionary<string, string>, bool> GetObjectTrigger(string key) => key switch
+        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetObjectTrigger(string key) => key switch
         {
             #region Player
 
@@ -778,38 +783,38 @@ namespace BetterLegacy.Core.Helpers
 
             #region Dev Only
 
-            "storyLoadIntEqualsDEVONLY" => (modifier, variables) =>
+            "storyLoadIntEqualsDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntLesserEqualsDEVONLY" => (modifier, variables) =>
+            "storyLoadIntLesserEqualsDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntGreaterEqualsDEVONLY" => (modifier, variables) =>
+            "storyLoadIntGreaterEqualsDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntLesserDEVONLY" => (modifier, variables) =>
+            "storyLoadIntLesserDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntGreaterDEVONLY" => (modifier, variables) =>
+            "storyLoadIntGreaterDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
             },
-            "storyLoadBoolDEVONLY" => (modifier, variables) =>
+            "storyLoadBoolDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
             },
 
             #endregion
 
-            "break" => (modifier, variables) => true,
-            _ => (modifier, variables) => false,
+            "break" => (modifier, reference, variables) => true,
+            _ => (modifier, reference, variables) => false,
         };
 
-        public static Action<Modifier<BeatmapObject>, Dictionary<string, string>> GetObjectAction(string key) => key switch
+        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetObjectAction(string key) => key switch
         {
             #region Audio
 
@@ -1280,19 +1285,19 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
-            _ => (modifier, variables) => { },
+            _ => (modifier, reference, variables) => { },
         };
 
         /// <summary>
         /// The function to run when a modifier is inactive and has a reference of <see cref="BeatmapObject"/>.
         /// </summary>
         /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void ObjectInactive(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables = null)
+        public static void ObjectInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables = null)
         {
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
+                modifier.VerifyModifier(ModifiersManager.inst.modifiers);
             }
 
             if (modifier.commands.IsEmpty())
@@ -1314,29 +1319,28 @@ namespace BetterLegacy.Core.Helpers
                     case "blur":
                     case "blurOther":
                     case "blurVariableOther": {
-                            if (modifier.reference &&
-                                modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                                modifier.reference.runtimeObject is RTBeatmapObject levelObject &&
-                                levelObject.visualObject.renderer && levelObject.visualObject is SolidObject &&
+                            if (reference is BeatmapObject beatmapObject &&
+                                beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                                beatmapObject.runtimeObject is RTBeatmapObject runtimeObject &&
+                                runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
                                 modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
                             {
-                                levelObject.visualObject.renderer.material = LegacyResources.objectMaterial;
-
-                                ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.renderer.material;
+                                runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                                solidObject.material = runtimeObject.visualObject.renderer.material;
                             }
 
                             break;
                         }
                     case "blurVariable": {
-                            if (modifier.reference &&
-                                modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                                modifier.reference.runtimeObject is RTBeatmapObject levelObject &&
-                                levelObject.visualObject.renderer && levelObject.visualObject is SolidObject &&
+                            if (reference is BeatmapObject beatmapObject &&
+                                beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                                beatmapObject.runtimeObject is RTBeatmapObject runtimeObject &&
+                                runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
                                 modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool setNormal) && setNormal)
                             {
-                                levelObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                                runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
 
-                                ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.renderer.material;
+                                solidObject.material = runtimeObject.visualObject.renderer.material;
                             }
 
                             break;
@@ -1359,13 +1363,16 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     case "enableObject": {
-                            if (modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
-                                levelObject.top.gameObject.SetActive(false);
+                            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                                runtimeObject.top.gameObject.SetActive(false);
 
                             break;
                         }
                     case "enableObjectOther": {
-                            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0));
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
+                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0));
 
                             if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
                             {
@@ -1380,6 +1387,9 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "enableObjectTree": {
+                            if (reference is not BeatmapObject beatmapObject)
+                                return;
+
                             if (modifier.GetValue(0) == "0")
                                 modifier.SetValue(0, "False");
 
@@ -1391,19 +1401,19 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result == null)
                             {
-                                var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
+                                var root = Parser.TryParse(modifier.value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
 
-                                modifier.Result = beatmapObject.GetChildTree();
+                                modifier.Result = root.GetChildTree();
                             }
 
                             var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var beatmapObject = list[i];
-                                var levelObject = beatmapObject.runtimeObject;
-                                if (levelObject && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(false);
+                                var child = list[i];
+                                var runtimeObject = child.runtimeObject;
+                                if (runtimeObject && runtimeObject.top)
+                                    runtimeObject.top.gameObject.SetActive(false);
                             }
 
                             break;
@@ -1415,9 +1425,12 @@ namespace BetterLegacy.Core.Helpers
                                 return;
                             }
 
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+                                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
 
                                 var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
@@ -1434,9 +1447,9 @@ namespace BetterLegacy.Core.Helpers
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var beatmapObject = list[i];
-                                var levelObject = beatmapObject.runtimeObject;
-                                if (levelObject && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(false);
+                                var runtimeObject = beatmapObject.runtimeObject;
+                                if (runtimeObject && runtimeObject.top)
+                                    runtimeObject.top.gameObject.SetActive(false);
                             }
 
                             modifier.Result = null;
@@ -1444,16 +1457,16 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "disableObject": {
-                            if (!modifier.hasChanged && modifier.reference != null && modifier.reference.runtimeObject is RTBeatmapObject levelObject && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
-                            {
-                                levelObject.top.gameObject.SetActive(true);
-                                modifier.hasChanged = true;
-                            }
+                            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                                runtimeObject.top.gameObject.SetActive(true);
 
                             break;
                         }
                     case "disableObjectOther": {
-                            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0));
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
+                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0));
 
                             if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
@@ -1477,9 +1490,12 @@ namespace BetterLegacy.Core.Helpers
                                 return;
                             }
 
+                            if (reference is not BeatmapObject beatmapObject)
+                                return;
+
                             if (modifier.Result == null)
                             {
-                                var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
+                                var root = Parser.TryParse(modifier.value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
 
                                 modifier.Result = beatmapObject.GetChildTree();
                             }
@@ -1488,10 +1504,10 @@ namespace BetterLegacy.Core.Helpers
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var beatmapObject = list[i];
-                                var levelObject = beatmapObject.runtimeObject;
-                                if (levelObject && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(true);
+                                var child = list[i];
+                                var runtimeObject = child.runtimeObject;
+                                if (runtimeObject && runtimeObject.top)
+                                    runtimeObject.top.gameObject.SetActive(true);
                             }
 
                             break;
@@ -1503,9 +1519,12 @@ namespace BetterLegacy.Core.Helpers
                                 return;
                             }
 
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+                                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
 
                                 var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
@@ -1522,9 +1541,9 @@ namespace BetterLegacy.Core.Helpers
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var beatmapObject = list[i];
-                                var levelObject = beatmapObject.runtimeObject;
-                                if (levelObject && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(true);
+                                var runtimeObject = beatmapObject.runtimeObject;
+                                if (runtimeObject && runtimeObject.top)
+                                    runtimeObject.top.gameObject.SetActive(true);
                             }
 
                             modifier.Result = null;
@@ -1533,28 +1552,34 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                     case "reactivePosChain": {
-                            modifier.reference.reactivePositionOffset = Vector3.zero;
+                            if (reference is BeatmapObject beatmapObject)
+                                beatmapObject.reactivePositionOffset = Vector3.zero;
 
                             break;
                         }
                     case "reactiveScaChain": {
-                            modifier.reference.reactiveScaleOffset = Vector3.zero;
+                            if (reference is BeatmapObject beatmapObject)
+                                beatmapObject.reactiveScaleOffset = Vector3.zero;
 
                             break;
                         }
                     case "reactiveRotChain": {
-                            modifier.reference.reactiveRotationOffset = 0f;
+                            if (reference is BeatmapObject beatmapObject)
+                                beatmapObject.reactiveRotationOffset = 0f;
 
                             break;
                         }
                     case "signalModifier":
                     case "mouseOverSignalModifier": {
-                            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
+                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
 
                             if (!list.IsEmpty() && list.Any(x => x.modifiers.Any(y => y.Result != null)))
                                 foreach (var bm in list)
                                 {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
                                         m.Result = null;
                                 }
 
@@ -1565,13 +1590,16 @@ namespace BetterLegacy.Core.Helpers
                             if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
                                 return;
 
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
                             int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
-                            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(groupIndex));
+                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(groupIndex));
 
                             if (!list.IsEmpty() && !modifier.constant)
                                 foreach (var bm in list)
                                 {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
                                         m.Result = null;
                                 }
 
@@ -1586,17 +1614,20 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setText": {
-                            if (modifier.constant && modifier.reference.ShapeType == ShapeType.Text && modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject != null &&
-                                modifier.reference.runtimeObject.visualObject is TextObject textObject)
-                                textObject.text = modifier.reference.text;
+                            if (modifier.constant && reference is BeatmapObject beatmapObject && beatmapObject.ShapeType == ShapeType.Text && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
+                                beatmapObject.runtimeObject.visualObject is TextObject textObject)
+                                textObject.text = beatmapObject.text;
                             break;
                         }
                     case "setTextOther": {
-                            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1));
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
+                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
 
                             if (modifier.constant && !list.IsEmpty())
                                 foreach (var bm in list)
-                                    if (bm.ShapeType == ShapeType.Text && bm.runtimeObject && bm.runtimeObject.visualObject != null &&
+                                    if (bm.ShapeType == ShapeType.Text && bm.runtimeObject && bm.runtimeObject.visualObject &&
                                         bm.runtimeObject.visualObject is TextObject textObject)
                                         textObject.text = bm.text;
                             break;
@@ -1632,12 +1663,12 @@ namespace BetterLegacy.Core.Helpers
 
         #region BackgroundObject
 
-        public static Func<Modifier<BackgroundObject>, Dictionary<string, string>, bool> GetBGTrigger(string key) => key switch
+        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetBGTrigger(string key) => key switch
         {
-            "timeLesserEquals" => (modifier, variables) => AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, variables),
-            "timeGreaterEquals" => (modifier, variables) => AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, variables),
-            "timeLesser" => (modifier, variables)  => AudioManager.inst.CurrentAudioSource.time < modifier.GetFloat(0, 0f, variables),
-            "timeGreater" => (modifier, variables)  => AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, variables),
+            "timeLesserEquals" => (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, variables),
+            "timeGreaterEquals" => (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, variables),
+            "timeLesser" => (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time < modifier.GetFloat(0, 0f, variables),
+            "timeGreater" => (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, variables),
 
             #region Player
 
@@ -1902,41 +1933,41 @@ namespace BetterLegacy.Core.Helpers
 
             #region Dev Only
 
-            "storyLoadIntEqualsDEVONLY" => (modifier, variables) =>
+            "storyLoadIntEqualsDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntLesserEqualsDEVONLY" => (modifier, variables) =>
+            "storyLoadIntLesserEqualsDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntGreaterEqualsDEVONLY" => (modifier, variables) =>
+            "storyLoadIntGreaterEqualsDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntLesserDEVONLY" => (modifier, variables) =>
+            "storyLoadIntLesserDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
             },
-            "storyLoadIntGreaterDEVONLY" => (modifier, variables) =>
+            "storyLoadIntGreaterDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
             },
-            "storyLoadBoolDEVONLY" => (modifier, variables) =>
+            "storyLoadBoolDEVONLY" => (modifier, reference, variables) =>
             {
                 return Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
             },
 
             #endregion
 
-            "break" => (modifier, variables) => true,
-            _ => (modifier, variables) => false,
+            "break" => (modifier, reference, variables) => true,
+            _ => (modifier, reference, variables) => false,
         };
 
-        public static Action<Modifier<BackgroundObject>, Dictionary<string, string>> GetBGAction(string key) => key switch
+        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetBGAction(string key) => key switch
         {
-            "setActive" => ModifierActions.setActive,
-            "setActiveOther" => ModifierActions.setActiveOther,
+            nameof(ModifierActions.setActive) => ModifierActions.setActive,
+            nameof(ModifierActions.setActiveOther) => ModifierActions.setActiveOther,
 
             #region Audio
 
@@ -2388,19 +2419,19 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
-            _ => (modifier, variables) => { },
+            _ => (modifier, reference, variables) => { },
         };
 
         /// <summary>
         /// The function to run when a modifier is inactive and has a reference of <see cref="BackgroundObject"/>.
         /// </summary>
         /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void BGInactive(Modifier<BackgroundObject> modifier, Dictionary<string, string> variables = null)
+        public static void BGInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables = null)
         {
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
+                modifier.VerifyModifier(ModifiersManager.inst.modifiers);
             }
 
             if (modifier.commands.IsEmpty())
@@ -2437,12 +2468,15 @@ namespace BetterLegacy.Core.Helpers
 
                     case "signalModifier":
                     case "mouseOverSignalModifier": {
-                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, modifier.reference, modifier.GetValue(1));
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
+                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
 
                             if (!list.IsEmpty() && list.Any(x => x.modifiers.Any(y => y.Result != null)))
                                 foreach (var bm in list)
                                 {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
                                         m.Result = null;
                                 }
 
@@ -2453,13 +2487,16 @@ namespace BetterLegacy.Core.Helpers
                             if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
                                 return;
 
+                            if (reference is not IPrefabable prefabable)
+                                return;
+
                             int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
-                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, modifier.reference, modifier.GetValue(groupIndex));
+                            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(groupIndex));
 
                             if (!list.IsEmpty() && !modifier.constant)
                                 foreach (var bm in list)
                                 {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
                                         m.Result = null;
                                 }
 
@@ -2497,7 +2534,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region Player
 
-        public static Func<Modifier<PAPlayer>, Dictionary<string, string>, bool> GetPlayerTrigger(string key) => key switch
+        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetPlayerTrigger(string key) => key switch
         {
             "keyPressDown" => ModifierTriggers.PlayerTriggers.keyPressDown,
             "keyPress" => ModifierTriggers.PlayerTriggers.keyPress,
@@ -2522,10 +2559,10 @@ namespace BetterLegacy.Core.Helpers
             "isBoosting" => ModifierTriggers.PlayerTriggers.isBoosting,
             "isColliding" => ModifierTriggers.PlayerTriggers.isColliding,
             "isSolidColliding" => ModifierTriggers.PlayerTriggers.isSolidColliding,
-            _ => (modifier, variables) => false,
+            _ => (modifier, reference, variables) => false,
         };
 
-        public static Action<Modifier<PAPlayer>, Dictionary<string, string>> GetPlayerAction(string key) => key switch
+        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetPlayerAction(string key) => key switch
         {
             "setCustomActive" => ModifierActions.PlayerActions.setCustomActive,
             "kill" => ModifierActions.PlayerActions.kill,
@@ -2539,14 +2576,14 @@ namespace BetterLegacy.Core.Helpers
             "setIdleAnimation" => ModifierActions.PlayerActions.setIdleAnimation,
             "playDefaultSound" => ModifierActions.playDefaultSound,
             "animateObject" => ModifierActions.animateObject,
-            _ => (modifier, variables) => { },
+            _ => (modifier, reference, variables) => { },
         };
 
         /// <summary>
         /// The function to run when a modifier is inactive and has a reference of <see cref="PAPlayer"/>.
         /// </summary>
         /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void PlayerInactive(Modifier<PAPlayer> modifier, Dictionary<string, string> variables = null)
+        public static void PlayerInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables = null)
         {
             if (!modifier.verified)
             {
@@ -2554,13 +2591,13 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (modifier.commands.IsEmpty() || modifier.reference == null)
+            if (modifier.commands.IsEmpty() || reference == null)
                 return;
 
             switch (modifier.Name)
             {
                 case "setCustomActive": {
-                        if (modifier.GetBool(2, true) && modifier.reference.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.RTCustomPlayerObject customObject))
+                        if (modifier.GetBool(2, true) && reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.RTCustomPlayerObject customObject))
                             customObject.active = !Parser.TryParse(modifier.value, false);
 
                         break;
@@ -2728,7 +2765,7 @@ namespace BetterLegacy.Core.Helpers
             if (delay != 0.0)
                 yield return CoroutineHelper.Seconds(delay);
 
-            if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> modifier))
+            if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier modifier))
                 modifier.Result = "death hd";
             yield break;
         }

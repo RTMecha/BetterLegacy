@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/> that spawns all objects contained in the Prefab.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable<PrefabObject>, IEditable
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable, IEditable
     {
         public PrefabObject() : base()
         {
@@ -179,9 +179,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Modifiers the object contains.
         /// </summary>
-        public List<Modifier<PrefabObject>> modifiers = new List<Modifier<PrefabObject>>();
+        public List<Modifier> modifiers = new List<Modifier>();
 
-        public List<Modifier<PrefabObject>> Modifiers { get => modifiers; set => modifiers = value; }
+        public List<Modifier> Modifiers { get => modifiers; set => modifiers = value; }
 
         /// <summary>
         /// If modifiers ignore the lifespan restriction.
@@ -468,7 +468,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 };
             }
 
-            this.ReadModifiersJSON(jn, ModifiersManager.defaultPrefabObjectModifiers);
+            this.ReadModifiersJSON(jn, ModifiersManager.inst.modifiers);
         }
 
         public override JSONNode ToJSONVG()

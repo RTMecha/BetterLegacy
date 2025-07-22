@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable<BackgroundObject>, IEditable
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable, IModifierReference, IEditable
     {
         public BackgroundObject() : base() { }
 
@@ -190,9 +190,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<string> Tags { get => tags; set => tags = value; }
 
-        public List<Modifier<BackgroundObject>> modifiers = new List<Modifier<BackgroundObject>>();
+        public List<Modifier> modifiers = new List<Modifier>();
 
-        public List<Modifier<BackgroundObject>> Modifiers { get => modifiers; set => modifiers = value; }
+        public List<Modifier> Modifiers { get => modifiers; set => modifiers = value; }
 
         /// <summary>
         /// If modifiers ignore the lifespan restriction.
@@ -270,7 +270,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public RTBackgroundObject runtimeObject;
 
-        public RTModifiers<BackgroundObject> runtimeModifiers;
+        public RTModifiers runtimeModifiers;
 
         #endregion
 
@@ -511,7 +511,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
 
-            this.ReadModifiersJSON(jn, ModifiersManager.defaultBackgroundObjectModifiers, true);
+            this.ReadModifiersJSON(jn, ModifiersManager.inst.modifiers, true);
         }
 
         public override JSONNode ToJSONVG()

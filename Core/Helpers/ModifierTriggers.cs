@@ -26,9 +26,12 @@ namespace BetterLegacy.Core.Helpers
     {
         #region Player
 
-        public static bool playerCollide(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool playerCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var runtimeObject = modifier.reference.runtimeObject;
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
                 var collider = runtimeObject.visualObject.collider;
@@ -47,9 +50,12 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool playerCollideIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool playerCollideIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var runtimeObject = modifier.reference.runtimeObject;
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
             {
                 var collider = runtimeObject.visualObject.collider;
@@ -60,37 +66,37 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
         
-        public static bool playerHealthEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerHealthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health == health);
         }
         
-        public static bool playerHealthLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerHealthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health <= health);
         }
         
-        public static bool playerHealthGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerHealthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health >= health);
         }
         
-        public static bool playerHealthLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerHealthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health < health);
         }
         
-        public static bool playerHealthGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerHealthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
             return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health > health);
         }
         
-        public static bool playerMoving<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerMoving(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
             {
@@ -112,59 +118,56 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
         
-        public static bool playerBoosting(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool playerBoosting(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var levelObject = modifier.reference.runtimeObject;
-            if (levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
             {
-                var orderedList = PlayerManager.Players
-                    .Where(x => x.RuntimePlayer && x.RuntimePlayer.rb)
-                    .OrderBy(x => Vector2.Distance(x.RuntimePlayer.rb.position, levelObject.visualObject.gameObject.transform.position)).ToList();
+                var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
 
-                if (!orderedList.IsEmpty())
-                {
-                    var closest = orderedList[0];
-
-                    return closest.RuntimePlayer.isBoosting;
-                }
+                if (player && player.RuntimePlayer)
+                    return player.RuntimePlayer.isBoosting;
             }
 
             return false;
         }
         
-        public static bool playerAlive<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.Alive;
         }
         
-        public static bool playerDeathsEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerDeathsEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.deaths.Count == modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerDeathsLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerDeathsLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.deaths.Count <= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerDeathsGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerDeathsGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.deaths.Count >= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerDeathsLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerDeathsLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.deaths.Count < modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerDeathsGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerDeathsGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.deaths.Count > modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerDistanceGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerDistanceGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not ITransformable transformable)
+            if (reference is not ITransformable transformable)
                 return false;
 
             var pos = transformable.GetFullPosition();
@@ -182,9 +185,9 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
         
-        public static bool playerDistanceLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerDistanceLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not ITransformable transformable)
+            if (reference is not ITransformable transformable)
                 return false;
 
             var pos = transformable.GetFullPosition();
@@ -202,62 +205,62 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
         
-        public static bool playerCountEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerCountEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return PlayerManager.Players.Count == modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerCountLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerCountLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return PlayerManager.Players.Count <= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerCountGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerCountGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return PlayerManager.Players.Count >= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerCountLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerCountLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return PlayerManager.Players.Count < modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerCountGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerCountGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return PlayerManager.Players.Count > modifier.GetInt(0, 0, variables);
         }
         
-        public static bool onPlayerHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool onPlayerHit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.playerHit;
         }
         
-        public static bool onPlayerDeath<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool onPlayerDeath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.playerDied;
         }
         
-        public static bool playerBoostEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerBoostEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.boosts.Count == modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerBoostLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerBoostLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.boosts.Count <= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerBoostGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerBoostGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.boosts.Count >= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerBoostLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerBoostLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.boosts.Count < modifier.GetInt(0, 0, variables);
         }
         
-        public static bool playerBoostGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool playerBoostGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.boosts.Count > modifier.GetInt(0, 0, variables);
         }
@@ -266,78 +269,80 @@ namespace BetterLegacy.Core.Helpers
 
         #region Controls
 
-        public static bool keyPressDown<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool keyPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, variables));
         }
 
-        public static bool keyPress<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool keyPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Input.GetKey((KeyCode)modifier.GetInt(0, 0, variables));
         }
 
-        public static bool keyPressUp<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool keyPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, variables));
         }
 
-        public static bool mouseButtonDown<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mouseButtonDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Input.GetMouseButtonDown(modifier.GetInt(0, 0, variables));
         }
 
-        public static bool mouseButton<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mouseButton(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Input.GetMouseButton(modifier.GetInt(0, 0, variables));
         }
 
-        public static bool mouseButtonUp<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mouseButtonUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Input.GetMouseButtonUp(modifier.GetInt(0, 0, variables));
         }
 
-        public static bool mouseOver(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool mouseOver(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject && modifier.reference.runtimeObject.visualObject.gameObject)
+            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject && beatmapObject.runtimeObject.visualObject.gameObject)
             {
-                if (!modifier.reference.detector)
+                if (!beatmapObject.detector)
                 {
-                    var gameObject = modifier.reference.runtimeObject.visualObject.gameObject;
+                    var gameObject = beatmapObject.runtimeObject.visualObject.gameObject;
                     var op = gameObject.GetOrAddComponent<Detector>();
-                    op.beatmapObject = modifier.reference;
-                    modifier.reference.detector = op;
+                    op.beatmapObject = beatmapObject;
+                    beatmapObject.detector = op;
                 }
 
-                if (modifier.reference.detector)
-                    return modifier.reference.detector.hovered;
+                return beatmapObject.detector && beatmapObject.detector.hovered;
             }
 
             return false;
         }
 
-        public static bool mouseOverSignalModifier(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool mouseOverSignalModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
             var delay = modifier.GetFloat(0, 0f, variables);
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
-            if (modifier.reference.runtimeObject && modifier.reference.runtimeObject.visualObject && modifier.reference.runtimeObject.visualObject.gameObject)
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(1, variables));
+            if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject && beatmapObject.runtimeObject.visualObject.gameObject)
             {
-                if (!modifier.reference.detector)
+                if (!beatmapObject.detector)
                 {
-                    var gameObject = modifier.reference.runtimeObject.visualObject.gameObject;
+                    var gameObject = beatmapObject.runtimeObject.visualObject.gameObject;
                     var op = gameObject.GetOrAddComponent<Detector>();
-                    op.beatmapObject = modifier.reference;
-                    modifier.reference.detector = op;
+                    op.beatmapObject = beatmapObject;
+                    beatmapObject.detector = op;
                 }
 
-                if (modifier.reference.detector)
+                if (beatmapObject.detector)
                 {
-                    if (modifier.reference.detector.hovered && !list.IsEmpty())
+                    if (beatmapObject.detector.hovered && !list.IsEmpty())
                     {
                         foreach (var bm in list)
                             CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
                     }
 
-                    if (modifier.reference.detector.hovered)
+                    if (beatmapObject.detector.hovered)
                         return true;
                 }
             }
@@ -345,11 +350,11 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool controlPressDown<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool controlPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var type = modifier.GetInt(0, 0, variables);
 
-            if (modifier.reference is not ITransformable transformable)
+            if (reference is not ITransformable transformable)
                 return false;
 
             var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
@@ -361,11 +366,11 @@ namespace BetterLegacy.Core.Helpers
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
         }
 
-        public static bool controlPress<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool controlPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var type = modifier.GetInt(0, 0, variables);
 
-            if (modifier.reference is not ITransformable transformable)
+            if (reference is not ITransformable transformable)
                 return false;
 
             var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
@@ -377,11 +382,11 @@ namespace BetterLegacy.Core.Helpers
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
         }
 
-        public static bool controlPressUp<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool controlPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var type = modifier.GetInt(0, 0, variables);
 
-            if (modifier.reference is not ITransformable transformable)
+            if (reference is not ITransformable transformable)
                 return false;
 
             var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
@@ -397,32 +402,35 @@ namespace BetterLegacy.Core.Helpers
 
         #region Collide
 
-        public static bool bulletCollide(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool bulletCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var runtimeObject = modifier.reference.runtimeObject;
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
                 return false;
 
-            if (!modifier.reference.detector)
+            if (!beatmapObject.detector)
             {
                 var op = runtimeObject.visualObject.gameObject.GetOrAddComponent<Detector>();
-                op.beatmapObject = modifier.reference;
-                modifier.reference.detector = op;
+                op.beatmapObject = beatmapObject;
+                beatmapObject.detector = op;
             }
 
-            if (modifier.reference.detector)
-                return modifier.reference.detector.bulletOver;
-
-            return false;
+            return beatmapObject.detector && beatmapObject.detector.bulletOver;
         }
 
-        public static bool objectCollide(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool objectCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var runtimeObject = modifier.reference.runtimeObject;
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
             if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
                 return false;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0)).FindAll(x => x.runtimeObject.visualObject && x.runtimeObject.visualObject.collider);
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0)).FindAll(x => x.runtimeObject.visualObject && x.runtimeObject.visualObject.collider);
             return !list.IsEmpty() && list.Any(x => x.runtimeObject.visualObject.collider.IsTouching(runtimeObject.visualObject.collider));
         }
 
@@ -430,7 +438,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region JSON
 
-        public static bool loadEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool loadEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
             {
@@ -450,7 +458,7 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool loadLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool loadLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
             {
@@ -464,7 +472,7 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool loadGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool loadGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
             {
@@ -478,7 +486,7 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool loadLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool loadLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
             {
@@ -492,7 +500,7 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool loadGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool loadGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json))
             {
@@ -506,7 +514,7 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static bool loadExists<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool loadExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTFile.TryReadFromFile(ModifiersHelper.GetSaveFile(modifier.GetValue(1, variables)), out string json) && !string.IsNullOrEmpty(JSON.Parse(json)[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]);
         }
@@ -515,115 +523,130 @@ namespace BetterLegacy.Core.Helpers
 
         #region Variable
 
-        public static bool localVariableEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && result == modifier.GetValue(1, variables);
         }
         
-        public static bool localVariableLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) <= modifier.GetFloat(1, 0f, variables);
         }
         
-        public static bool localVariableGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) >= modifier.GetFloat(1, 0f, variables);
         }
         
-        public static bool localVariableLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) < modifier.GetFloat(1, 0f, variables);
         }
 
-        public static bool localVariableGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && (float.TryParse(result, out float num) ? num : Parser.TryParse(result, 0)) > modifier.GetFloat(1, 0f, variables);
         }
 
-        public static bool localVariableContains<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableContains(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && result.Contains(modifier.GetValue(1, variables));
         }
 
-        public static bool localVariableStartsWith<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableStartsWith(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && result.StartsWith(modifier.GetValue(1, variables));
         }
 
-        public static bool localVariableEndsWith<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableEndsWith(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.TryGetValue(modifier.GetValue(0), out string result) && result.EndsWith(modifier.GetValue(1, variables));
         }
 
-        public static bool localVariableExists<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool localVariableExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return variables.ContainsKey(modifier.GetValue(0));
         }
         
-        public static bool variableEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool variableEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable == modifier.GetInt(0, 0, variables);
+            return reference is IModifyable modifyable && modifyable.IntVariable == modifier.GetInt(0, 0, variables);
         }
 
-        public static bool variableLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool variableLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable <= modifier.GetInt(0, 0, variables);
+            return reference is IModifyable modifyable && modifyable.IntVariable <= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool variableGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool variableGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable >= modifier.GetInt(0, 0, variables);
+            return reference is IModifyable modifyable && modifyable.IntVariable >= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool variableLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool variableLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable < modifier.GetInt(0, 0, variables);
+            return reference is IModifyable modifyable && modifyable.IntVariable < modifier.GetInt(0, 0, variables);
         }
         
-        public static bool variableGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool variableGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return modifier.reference is IModifyable<T> modifyable && modifyable.IntVariable > modifier.GetInt(0, 0, variables);
+            return reference is IModifyable modifyable && modifyable.IntVariable > modifier.GetInt(0, 0, variables);
         }
         
-        public static bool variableOtherEquals(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool variableOtherEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (reference is not IPrefabable prefabable)
+                return false;
+
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
 
             int num = modifier.GetInt(0, 0, variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable == num);
         }
         
-        public static bool variableOtherLesserEquals(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool variableOtherLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (reference is not IPrefabable prefabable)
+                return false;
+
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
 
             int num = modifier.GetInt(0, 0, variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable <= num);
         }
         
-        public static bool variableOtherGreaterEquals(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool variableOtherGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (reference is not IPrefabable prefabable)
+                return false;
+
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
 
             int num = modifier.GetInt(0, 0, variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable >= num);
         }
         
-        public static bool variableOtherLesser(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool variableOtherLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (reference is not IPrefabable prefabable)
+                return false;
+
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
 
             int num = modifier.GetInt(0, 0, variables);
 
             return !beatmapObjects.IsEmpty() && beatmapObjects.Any(x => x.integerVariable < num);
         }
         
-        public static bool variableOtherGreater(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool variableOtherGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(1, variables));
+            if (reference is not IPrefabable prefabable)
+                return false;
+
+            var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
 
             int num = modifier.GetInt(0, 0, variables);
 
@@ -634,42 +657,42 @@ namespace BetterLegacy.Core.Helpers
 
         #region Audio
 
-        public static bool pitchEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool pitchEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return AudioManager.inst.pitch == modifier.GetFloat(0, 0f, variables);
         }
         
-        public static bool pitchLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool pitchLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return AudioManager.inst.pitch <= modifier.GetFloat(0, 0f, variables);
         }
         
-        public static bool pitchGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool pitchGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return AudioManager.inst.pitch >= modifier.GetFloat(0, 0f, variables);
         }
         
-        public static bool pitchLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool pitchLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return AudioManager.inst.pitch < modifier.GetFloat(0, 0f, variables);
         }
         
-        public static bool pitchGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool pitchGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return AudioManager.inst.pitch > modifier.GetFloat(0, 0f, variables);
         }
         
-        public static bool musicTimeGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool musicTimeGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && modifier.reference is ILifetime<AutoKillType> lifetime ? lifetime.StartTime : 0f) > modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime<AutoKillType> lifetime ? lifetime.StartTime : 0f) > modifier.GetFloat(0, 0f, variables);
         }
         
-        public static bool musicTimeLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool musicTimeLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && modifier.reference is ILifetime<AutoKillType> lifetime ? lifetime.StartTime : 0f) < modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime<AutoKillType> lifetime ? lifetime.StartTime : 0f) < modifier.GetFloat(0, 0f, variables);
         }
 
-        public static bool musicPlaying<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool musicPlaying(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return AudioManager.inst.CurrentAudioSource.isPlaying;
         }
@@ -678,27 +701,27 @@ namespace BetterLegacy.Core.Helpers
 
         #region Challenge Mode
 
-        public static bool inZenMode<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool inZenMode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.Invincible;
         }
         
-        public static bool inNormal<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool inNormal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.IsNormal;
         }
         
-        public static bool in1Life<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool in1Life(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.Is1Life;
         }
         
-        public static bool inNoHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool inNoHit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.IsNoHit;
         }
         
-        public static bool inPractice<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool inPractice(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return RTBeatmap.Current.IsPractice;
         }
@@ -707,7 +730,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region Random
 
-        public static bool randomEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool randomEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (!modifier.HasResult())
                 modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) == modifier.GetInt(0, 0, variables);
@@ -715,7 +738,7 @@ namespace BetterLegacy.Core.Helpers
             return modifier.HasResult() && modifier.GetResult<bool>();
         }
         
-        public static bool randomLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool randomLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (!modifier.HasResult())
                 modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) < modifier.GetInt(0, 0, variables);
@@ -723,7 +746,7 @@ namespace BetterLegacy.Core.Helpers
             return modifier.HasResult() && modifier.GetResult<bool>();
         }
         
-        public static bool randomGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool randomGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (!modifier.HasResult())
                 modifier.Result = UnityEngine.Random.Range(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables)) > modifier.GetInt(0, 0, variables);
@@ -735,9 +758,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Math
 
-        public static bool mathEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mathEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IEvaluatable evaluatable)
+            if (reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
@@ -747,9 +770,9 @@ namespace BetterLegacy.Core.Helpers
             return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) == RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
         }
 
-        public static bool mathLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mathLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IEvaluatable evaluatable)
+            if (reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
@@ -759,9 +782,9 @@ namespace BetterLegacy.Core.Helpers
             return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) <= RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
         }
 
-        public static bool mathGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mathGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IEvaluatable evaluatable)
+            if (reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
@@ -771,9 +794,9 @@ namespace BetterLegacy.Core.Helpers
             return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) >= RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
         }
         
-        public static bool mathLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mathLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IEvaluatable evaluatable)
+            if (reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
@@ -783,9 +806,9 @@ namespace BetterLegacy.Core.Helpers
             return RTMath.Parse(modifier.GetValue(0, variables), numberVariables, functions) < RTMath.Parse(modifier.GetValue(1, variables), numberVariables, functions);
         }
         
-        public static bool mathGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool mathGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IEvaluatable evaluatable)
+            if (reference is not IEvaluatable evaluatable)
                 return false;
 
             var numberVariables = evaluatable.GetObjectVariables();
@@ -799,9 +822,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Axis
 
-        public static bool axisEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool axisEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IPrefabable prefabable)
+            if (reference is not IPrefabable prefabable)
                 return false;
 
             int fromType = modifier.GetInt(1, 0, variables);
@@ -826,9 +849,9 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) == equals;
         }
         
-        public static bool axisLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool axisLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IPrefabable prefabable)
+            if (reference is not IPrefabable prefabable)
                 return false;
 
             int fromType = modifier.GetInt(1, 0, variables);
@@ -853,9 +876,9 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) <= equals;
         }
         
-        public static bool axisGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool axisGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IPrefabable prefabable)
+            if (reference is not IPrefabable prefabable)
                 return false;
 
             int fromType = modifier.GetInt(1, 0, variables);
@@ -880,9 +903,9 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) >= equals;
         }
         
-        public static bool axisLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool axisLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IPrefabable prefabable)
+            if (reference is not IPrefabable prefabable)
                 return false;
 
             int fromType = modifier.GetInt(1, 0, variables);
@@ -907,9 +930,9 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) < equals;
         }
         
-        public static bool axisGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool axisGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.reference is not IPrefabable prefabable)
+            if (reference is not IPrefabable prefabable)
                 return false;
 
             int fromType = modifier.GetInt(1, 0, variables);
@@ -938,82 +961,82 @@ namespace BetterLegacy.Core.Helpers
 
         #region Level Rank
 
-        public static bool levelRankEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankOtherEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankOtherEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(1, variables);
             return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankOtherLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankOtherLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(1, variables);
             return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankOtherGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankOtherGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(1, variables);
             return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankOtherLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankOtherLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(1, variables);
             return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankOtherGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankOtherGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(1, variables);
             return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankCurrentEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankCurrentEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return LevelManager.GetLevelRank(RTBeatmap.Current.hits) == modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankCurrentLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankCurrentLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return LevelManager.GetLevelRank(RTBeatmap.Current.hits) <= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankCurrentGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankCurrentGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return LevelManager.GetLevelRank(RTBeatmap.Current.hits) >= modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankCurrentLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankCurrentLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return LevelManager.GetLevelRank(RTBeatmap.Current.hits) < modifier.GetInt(0, 0, variables);
         }
         
-        public static bool levelRankCurrentGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelRankCurrentGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return LevelManager.GetLevelRank(RTBeatmap.Current.hits) > modifier.GetInt(0, 0, variables);
         }
@@ -1022,30 +1045,30 @@ namespace BetterLegacy.Core.Helpers
 
         #region Level
 
-        public static bool levelUnlocked<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(0, variables);
             return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && !level.Locked;
         }
 
-        public static bool levelCompleted<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelCompleted(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return CoreHelper.InEditor || LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.Completed;
         }
 
-        public static bool levelCompletedOther<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelCompletedOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(0, variables);
             return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == id, out Level level) && level.saveData && level.saveData.Completed;
         }
 
-        public static bool levelExists<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(0, variables);
             return LevelManager.Levels.Has(x => x.id == id);
         }
 
-        public static bool levelPathExists<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool levelPathExists(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var basePath = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, modifier.GetValue(0, variables));
 
@@ -1060,160 +1083,160 @@ namespace BetterLegacy.Core.Helpers
         #region Real Time
         
         // seconds
-        public static bool realTimeSecondEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeSecondEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("ss"), 0) == modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeSecondLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeSecondLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("ss"), 0) <= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeSecondGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeSecondGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("ss"), 0) >= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeSecondLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeSecondLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("ss"), 0) < modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeSecondGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeSecondGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("ss"), 0) > modifier.GetInt(0, 0, variables);
         }
 
         // minutes
-        public static bool realTimeMinuteEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMinuteEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("mm"), 0) == modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMinuteLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMinuteLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("mm"), 0) <= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMinuteGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMinuteGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("mm"), 0) >= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMinuteLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMinuteLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("mm"), 0) < modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMinuteGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMinuteGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("mm"), 0) > modifier.GetInt(0, 0, variables);
         }
 
         // 24 hours
-        public static bool realTime24HourEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime24HourEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("HH"), 0) == modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime24HourLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime24HourLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("HH"), 0) <= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime24HourGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime24HourGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("HH"), 0) >= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime24HourLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime24HourLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("HH"), 0) < modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime24HourGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime24HourGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("HH"), 0) > modifier.GetInt(0, 0, variables);
         }
 
         // 12 hours
-        public static bool realTime12HourEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime12HourEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("hh"), 0) == modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime12HourLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime12HourLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("hh"), 0) <= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime12HourGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime12HourGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("hh"), 0) >= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime12HourLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime12HourLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("hh"), 0) < modifier.GetInt(0, 0, variables);
         }
-        public static bool realTime12HourGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTime12HourGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("hh"), 0) > modifier.GetInt(0, 0, variables);
         }
 
         // days
-        public static bool realTimeDayEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeDayEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("dd"), 0) == modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeDayLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeDayLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("dd"), 0) <= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeDayGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeDayGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("dd"), 0) >= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeDayLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeDayLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("dd"), 0) < modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeDayGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeDayGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("dd"), 0) > modifier.GetInt(0, 0, variables);
         }
         
-        public static bool realTimeDayWeekEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeDayWeekEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return DateTime.Now.ToString("dddd") == modifier.GetValue(0, variables);
         }
 
         // months
-        public static bool realTimeMonthEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMonthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("MM"), 0) == modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMonthLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMonthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("MM"), 0) <= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMonthGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMonthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("MM"), 0) >= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMonthLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMonthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("MM"), 0) < modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeMonthGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeMonthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("MM"), 0) > modifier.GetInt(0, 0, variables);
         }
 
         // years
-        public static bool realTimeYearEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeYearEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) == modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeYearLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeYearLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) <= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeYearGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeYearGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) >= modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeYearLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeYearLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) < modifier.GetInt(0, 0, variables);
         }
-        public static bool realTimeYearGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool realTimeYearGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) > modifier.GetInt(0, 0, variables);
         }
@@ -1222,32 +1245,32 @@ namespace BetterLegacy.Core.Helpers
 
         #region Config
 
-        public static bool usernameEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool usernameEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return CoreConfig.Instance.DisplayName.Value == modifier.GetValue(0, variables);
         }
         
-        public static bool languageEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool languageEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return CoreConfig.Instance.Language.Value == (Language)modifier.GetInt(0, 0, variables);
         }
         
-        public static bool configLDM<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool configLDM(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return CoreConfig.Instance.LDM.Value;
         }
 
-        public static bool configShowEffects<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool configShowEffects(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return EventsConfig.Instance.ShowFX.Value;
         }
 
-        public static bool configShowPlayerGUI<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool configShowPlayerGUI(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return EventsConfig.Instance.ShowGUI.Value;
         }
         
-        public static bool configShowIntro<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool configShowIntro(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return EventsConfig.Instance.ShowIntro.Value;
         }
@@ -1256,7 +1279,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
-        public static bool await<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool await(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (!modifier.constant)
             {
@@ -1282,25 +1305,28 @@ namespace BetterLegacy.Core.Helpers
             return time > modifier.GetFloat(0, 0f, variables);
         }
 
-        public static bool containsTag<T>(Modifier<T> modifier, Dictionary<string, string> variables) => modifier.reference is IModifyable<T> modifyable && modifyable.Tags.Contains(modifier.GetValue(0, variables));
+        public static bool containsTag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => reference is IModifyable modifyable && modifyable.Tags.Contains(modifier.GetValue(0, variables));
 
-        public static bool inEditor<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CoreHelper.InEditor;
+        public static bool inEditor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => CoreHelper.InEditor;
         
-        public static bool isEditing<T>(Modifier<T> modifier, Dictionary<string, string> variables) => CoreHelper.IsEditing;
+        public static bool isEditing(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => CoreHelper.IsEditing;
 
-        public static bool requireSignal<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool requireSignal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return modifier.HasResult();
         }
         
-        public static bool isFullscreen<T>(Modifier<T> modifier, Dictionary<string, string> variables)
+        public static bool isFullscreen(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return Screen.fullScreen;
         }
         
-        public static bool objectAlive(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool objectAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            if (reference is not IPrefabable prefabable)
+                return false;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
             for (int i = 0; i < list.Count; i++)
             {
                 if (list[i].Alive)
@@ -1309,14 +1335,17 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
         
-        public static bool objectSpawned(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        public static bool objectSpawned(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            if (reference is not IPrefabable prefabable)
+                return false;
+
             if (!modifier.HasResult())
                 modifier.Result = new List<string>();
 
             var ids = modifier.GetResult<List<string>>();
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
             for (int i = 0; i < list.Count; i++)
             {
                 if (!ids.Contains(list[i].id) && list[i].Alive)
@@ -1338,138 +1367,162 @@ namespace BetterLegacy.Core.Helpers
 
         public static class PlayerTriggers
         {
-            public static bool keyPressDown(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool keyPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, variables));
             }
 
-            public static bool keyPress(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool keyPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return Input.GetKey((KeyCode)modifier.GetInt(0, 0, variables));
             }
 
-            public static bool keyPressUp(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool keyPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, variables));
             }
 
-            public static bool mouseButtonDown(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool mouseButtonDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return Input.GetMouseButtonDown(modifier.GetInt(0, 0, variables));
             }
 
-            public static bool mouseButton(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool mouseButton(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return Input.GetMouseButton(modifier.GetInt(0, 0, variables));
             }
 
-            public static bool mouseButtonUp(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool mouseButtonUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return Input.GetMouseButtonUp(modifier.GetInt(0, 0, variables));
             }
 
-            public static bool controlPressDown(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool controlPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
+                if (reference is not PAPlayer player)
+                    return false;
+
                 var type = modifier.GetInt(0, 0, variables);
-                var device = modifier.reference.device;
+                var device = player.device;
 
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
             }
 
-            public static bool controlPress(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool controlPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
+                if (reference is not PAPlayer player)
+                    return false;
+
                 var type = modifier.GetInt(0, 0, variables);
-                var device = modifier.reference.device;
+                var device = player.device;
 
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
             }
 
-            public static bool controlPressUp(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool controlPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
+                if (reference is not PAPlayer player)
+                    return false;
+
                 var type = modifier.GetInt(0, 0, variables);
-                var device = modifier.reference.device;
+                var device = player.device;
 
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
             }
 
-            public static bool healthEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.Health == modifier.GetInt(0, 3, variables);
+                return reference is PAPlayer player && player.Health == modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthGreaterEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.Health >= modifier.GetInt(0, 3, variables);
+                return reference is PAPlayer player && player.Health >= modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthLesserEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.Health <= modifier.GetInt(0, 3, variables);
+                return reference is PAPlayer player && player.Health <= modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthGreater(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.Health > modifier.GetInt(0, 3, variables);
+                return reference is PAPlayer player && player.Health > modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthLesser(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.Health < modifier.GetInt(0, 3, variables);
+                return reference is PAPlayer player && player.Health < modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthPerEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                if (reference is not PAPlayer player)
+                    return false;
+
+                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
 
                 return health == modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerGreaterEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                if (reference is not PAPlayer player)
+                    return false;
+
+                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
 
                 return health >= modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerLesserEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                if (reference is not PAPlayer player)
+                    return false;
+
+                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
 
                 return health <= modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerGreater(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                if (reference is not PAPlayer player)
+                    return false;
+
+                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
 
                 return health > modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerLesser(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                if (reference is not PAPlayer player)
+                    return false;
+
+                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
 
                 return health < modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool isDead(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isDead(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.isDead;
+                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isDead;
             }
 
-            public static bool isBoosting(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isBoosting(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.isBoosting;
+                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isBoosting;
             }
 
-            public static bool isColliding(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.triggerColliding;
+                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.triggerColliding;
             }
 
-            public static bool isSolidColliding(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isSolidColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.colliding;
+                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.colliding;
             }
         }
     }

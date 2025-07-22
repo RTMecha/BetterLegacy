@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using BetterLegacy.Core.Data.Beatmap;
 
@@ -12,7 +8,7 @@ namespace BetterLegacy.Core.Data
     /// Indicates an object can run modifiers.
     /// </summary>
     /// <typeparam name="T">Type of the object that can run modifiers.</typeparam>
-    public interface IModifyable<T>
+    public interface IModifyable
     {
         /// <summary>
         /// The reference type of the modifyable.
@@ -27,7 +23,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Modifiers the object contains.
         /// </summary>
-        public List<Modifier<T>> Modifiers { get; set; }
+        public List<Modifier> Modifiers { get; set; }
 
         /// <summary>
         /// If modifiers ignore the lifespan restriction.

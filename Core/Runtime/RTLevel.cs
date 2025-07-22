@@ -293,7 +293,7 @@ namespace BetterLegacy.Core.Runtime
             {
                 // gamedata modifiers update first
                 if (GameData.Current && !GameData.Current.modifiers.IsEmpty())
-                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, new Dictionary<string, string>());
+                    ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, GameData.Current, new Dictionary<string, string>());
 
                 OnObjectModifiersTick(); // modifiers update second
                 OnBackgroundModifiersTick(); // bg modifiers update third
@@ -918,7 +918,7 @@ namespace BetterLegacy.Core.Runtime
                         {
                             runtimeModifiers.modifiers.ForLoop(modifier =>
                             {
-                                modifier.Inactive?.Invoke(modifier, null);
+                                modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                                 modifier.Result = null;
                             });
 
@@ -1022,7 +1022,7 @@ namespace BetterLegacy.Core.Runtime
             {
                 runtimeModifiers.modifiers.ForLoop(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     modifier.Result = null;
                 });
 

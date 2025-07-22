@@ -82,7 +82,7 @@ namespace BetterLegacy.Core.Data
                 return PAObjectType.Prefab;
             if (obj is BeatmapTheme)
                 return PAObjectType.BeatmapTheme;
-            if (obj is ModifierBase)
+            if (obj is Modifier)
                 return PAObjectType.Modifier;
             if (obj is PlayerModel)
                 return PAObjectType.PlayerModel;

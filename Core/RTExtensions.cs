@@ -1417,6 +1417,13 @@ namespace BetterLegacy.Core
             _ => RTFile.ApplicationDirectory + "settings/menus",
         };
 
+        /// <summary>
+        /// Converts the reference type into a compatibility check.
+        /// </summary>
+        /// <param name="referenceType">Reference Type.</param>
+        /// <returns>Returns the associated reference type.</returns>
+        public static ModifierCompatibility ToCompatibility(this ModifierReferenceType referenceType) => ModifierCompatibility.FromType(referenceType);
+
         #endregion
 
         #region Interfaces
@@ -1603,16 +1610,15 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <typeparam name="T">Type of the modifyable.</typeparam>
         /// <param name="orig">Modifyable object to copy and apply from.</param>
-        public static void CopyModifyableData<T>(this IModifyable<T> modifyable, IModifyable<T> orig)
+        public static void CopyModifyableData(this IModifyable modifyable, IModifyable orig)
         {
-            modifyable.Tags = !orig.Tags.IsEmpty() ? orig.Tags.Clone() : new List<string>();
+            modifyable.Tags = orig.Tags != null && !orig.Tags.IsEmpty() ? orig.Tags.Clone() : new List<string>();
             modifyable.IgnoreLifespan = orig.IgnoreLifespan;
             modifyable.OrderModifiers = orig.OrderModifiers;
 
-            var reference = (T)modifyable;
             modifyable.Modifiers.Clear();
             for (int i = 0; i < orig.Modifiers.Count; i++)
-                modifyable.Modifiers.Add(orig.Modifiers[i].Copy(reference));
+                modifyable.Modifiers.Add(orig.Modifiers[i].Copy());
         }
 
         /// <summary>
@@ -1791,7 +1797,7 @@ namespace BetterLegacy.Core
         /// <param name="modifyable">Modifyable object reference.</param>
         /// <param name="jn">JSON to read from.</param>
         /// <param name="defaultModifiers">Default modifiers list to validate from.</param>
-        public static void ReadModifiersJSON<T>(this IModifyable<T> modifyable, JSONNode jn, List<ModifierBase> defaultModifiers, bool handleOutdatedPageModifiers = false)
+        public static void ReadModifiersJSON(this IModifyable modifyable, JSONNode jn, List<Modifier> defaultModifiers, bool handleOutdatedPageModifiers = false)
         {
             modifyable.Tags.Clear();
             if (jn["tags"] != null)
@@ -1803,8 +1809,6 @@ namespace BetterLegacy.Core
 
             if (jn["ordmod"] != null)
                 modifyable.OrderModifiers = jn["ordmod"].AsBool;
-
-            var reference = (T)modifyable;
 
             modifyable.Modifiers.Clear();
             if (handleOutdatedPageModifiers)
@@ -1820,10 +1824,10 @@ namespace BetterLegacy.Core
                         //var wasOrderModifiers = orderModifiers;
 
                         modifyable.OrderModifiers = true;
-                        var list = new List<Modifier<T>>();
+                        var list = new List<Modifier>();
                         for (int j = 0; j < jn["modifiers"][i].Count; j++)
                         {
-                            var modifier = Modifier<T>.Parse(jn["modifiers"][i][j], reference);
+                            var modifier = Modifier.Parse(jn["modifiers"][i][j]);
                             if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
                                 list.Add(modifier);
                         }
@@ -1837,7 +1841,7 @@ namespace BetterLegacy.Core
                     }
                     else
                     {
-                        var modifier = Modifier<T>.Parse(jn["modifiers"][i], reference);
+                        var modifier = Modifier.Parse(jn["modifiers"][i]);
                         if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
                             modifyable.Modifiers.Add(modifier);
                     }
@@ -1848,7 +1852,7 @@ namespace BetterLegacy.Core
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
-                var modifier = Modifier<T>.Parse(jn["modifiers"][i], reference);
+                var modifier = Modifier.Parse(jn["modifiers"][i]);
                 if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
                     modifyable.Modifiers.Add(modifier);
             }
@@ -1860,7 +1864,7 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">Type of the modifyable.</typeparam>
         /// <param name="modifyable">Modifyable object reference.</param>
         /// <param name="jn">JSON to write to.</param>
-        public static void WriteModifiersJSON<T>(this IModifyable<T> modifyable, JSONNode jn)
+        public static void WriteModifiersJSON(this IModifyable modifyable, JSONNode jn)
         {
             if (modifyable.Tags != null)
                 for (int i = 0; i < modifyable.Tags.Count; i++)

@@ -27,7 +27,7 @@ namespace BetterLegacy.Editor.Data
     /// </summary>
     public class ModifierCard : Exists
     {
-        public ModifierCard(ModifierBase modifier, int index, ModifiersEditorDialog dialog)
+        public ModifierCard(Modifier modifier, int index, ModifiersEditorDialog dialog)
         {
             Modifier = modifier;
             this.index = index;
@@ -36,7 +36,7 @@ namespace BetterLegacy.Editor.Data
 
         public GameObject gameObject;
 
-        public ModifierBase Modifier { get; set; }
+        public Modifier Modifier { get; set; }
 
         public Transform layout;
 
@@ -44,12 +44,12 @@ namespace BetterLegacy.Editor.Data
 
         public ModifiersEditorDialog dialog;
 
-        public void RenderModifier<T>()
+        public void RenderModifier<T>(T reference = default)
         {
-            if (Modifier is not Modifier<T> modifier)
+            if (Modifier is not Modifier modifier)
                 return;
 
-            if (modifier.reference is not IModifyable<T> modifyable)
+            if (reference is not IModifyable modifyable)
                 return;
 
             if (!dialog)
@@ -76,9 +76,8 @@ namespace BetterLegacy.Editor.Data
             EditorThemeManager.ApplyLightText(modifierTitle);
 
             var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
-            collapse.onValueChanged.ClearAll();
-            collapse.isOn = modifier.collapse;
-            collapse.onValueChanged.AddListener(Collapse<T>);
+            collapse.SetIsOnWithoutNotify(modifier.collapse);
+            collapse.onValueChanged.NewListener(_val => Collapse(_val, reference));
 
             TooltipHelper.AssignTooltip(collapse.gameObject, "Collapse Modifier");
             EditorThemeManager.ApplyToggle(collapse, ThemeGroup.List_Button_1_Normal);
@@ -87,21 +86,21 @@ namespace BetterLegacy.Editor.Data
                 EditorThemeManager.ApplyGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
-            delete.button.onClick.NewListener(Delete<T>);
+            delete.button.onClick.NewListener(() => Delete(reference));
 
             TooltipHelper.AssignTooltip(delete.gameObject, "Delete Modifier");
             EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
             EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
-            copy.button.onClick.NewListener(Copy<T>);
+            copy.button.onClick.NewListener(() => Copy(reference));
 
             TooltipHelper.AssignTooltip(copy.gameObject, "Copy Modifier");
             EditorThemeManager.ApplyGraphic(copy.button.image, ThemeGroup.Copy, true);
             EditorThemeManager.ApplyGraphic(copy.image, ThemeGroup.Copy_Text);
 
             var notifier = gameObject.AddComponent<ModifierActiveNotifier>();
-            notifier.modifierBase = modifier;
+            notifier.modifier = modifier;
             notifier.notifier = gameObject.transform.Find("Label/Notifier").gameObject.GetComponent<Image>();
             TooltipHelper.AssignTooltip(notifier.notifier.gameObject, "Notifier Modifier");
             EditorThemeManager.ApplyGraphic(notifier.notifier, ThemeGroup.Warning_Confirm, true);
@@ -115,31 +114,33 @@ namespace BetterLegacy.Editor.Data
 
                 var buttonFunctions = new List<ButtonFunction>()
                 {
-                    new ButtonFunction("Add", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifier.referenceType, modifyable)),
-                    new ButtonFunction("Add Above", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifier.referenceType, modifyable, index)),
-                    new ButtonFunction("Add Below", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifier.referenceType, modifyable, index + 1)),
-                    new ButtonFunction("Delete", Delete<T>),
+                    new ButtonFunction("Add", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable)),
+                    new ButtonFunction("Add Above", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index)),
+                    new ButtonFunction("Add Below", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index + 1)),
+                    new ButtonFunction("Delete", () => Delete(reference)),
                     new ButtonFunction(true),
-                    new ButtonFunction("Copy", Copy<T>),
+                    new ButtonFunction("Copy", () => Copy(reference)),
                     new ButtonFunction("Copy All", () =>
                     {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
+                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
+                        if (copiedModifiers == null)
+                            return;
                         copiedModifiers.Clear();
-                        copiedModifiers.AddRange(modifyable.Modifiers.Select(x => x.Copy(default)));
+                        copiedModifiers.AddRange(modifyable.Modifiers.Select(x => x.Copy()));
 
                         ModifiersEditor.inst.PasteGenerator(modifyable);
                         EditorManager.inst.DisplayNotification("Copied Modifiers!", 1.5f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction("Paste", () =>
                     {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
+                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
                         if (copiedModifiers == null || copiedModifiers.IsEmpty())
                         {
                             EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
                             return;
                         }
 
-                        modifyable.Modifiers.AddRange(copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+                        modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
                         CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
 
@@ -152,14 +153,14 @@ namespace BetterLegacy.Editor.Data
                     }),
                     new ButtonFunction("Paste Above", () =>
                     {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
+                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
                         if (copiedModifiers == null || copiedModifiers.IsEmpty())
                         {
                             EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
                             return;
                         }
 
-                        modifyable.Modifiers.InsertRange(index, copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+                        modifyable.Modifiers.InsertRange(index, copiedModifiers.Select(x => x.Copy()));
 
                         CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
 
@@ -172,14 +173,14 @@ namespace BetterLegacy.Editor.Data
                     }),
                     new ButtonFunction("Paste Below", () =>
                     {
-                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
+                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
                         if (copiedModifiers == null || copiedModifiers.IsEmpty())
                         {
                             EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
                             return;
                         }
 
-                        modifyable.Modifiers.InsertRange(index + 1, copiedModifiers.Select(x => (x as Modifier<T>).Copy((T)modifyable)));
+                        modifyable.Modifiers.InsertRange(index + 1, copiedModifiers.Select(x => x.Copy()));
 
                         CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
 
@@ -196,7 +197,7 @@ namespace BetterLegacy.Editor.Data
                 if (!modifyable.OrderModifiers)
                     buttonFunctions.Add(new ButtonFunction("Sort Modifiers", () =>
                     {
-                        modifyable.Modifiers = modifyable.Modifiers.OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
+                        modifyable.Modifiers = modifyable.Modifiers.OrderBy(x => x.type == Modifier.Type.Action).ToList();
 
                         CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                     }));
@@ -240,10 +241,10 @@ namespace BetterLegacy.Editor.Data
                         CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                     }),
                     new ButtonFunction(true),
-                    new ButtonFunction("Update Modifier", Update<T>),
+                    new ButtonFunction("Update Modifier", () => Update(modifier, reference)),
                     new ButtonFunction(true),
-                    new ButtonFunction("Collapse", () => Collapse<T>(true)),
-                    new ButtonFunction("Unollapse", () => Collapse<T>(false)),
+                    new ButtonFunction("Collapse", () => Collapse(true, reference)),
+                    new ButtonFunction("Unollapse", () => Collapse(false, reference)),
                     new ButtonFunction("Collapse All", () =>
                     {
                         foreach (var mod in modifyable.Modifiers)
@@ -281,12 +282,11 @@ namespace BetterLegacy.Editor.Data
             constantText.text = "Constant";
 
             var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
-            constantToggle.onValueChanged.ClearAll();
-            constantToggle.isOn = modifier.constant;
-            constantToggle.onValueChanged.AddListener(_val =>
+            constantToggle.SetIsOnWithoutNotify(modifier.constant);
+            constantToggle.onValueChanged.NewListener(_val =>
             {
                 modifier.constant = _val;
-                Update(modifier);
+                Update(modifier, reference);
             });
 
             TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
@@ -302,7 +302,7 @@ namespace BetterLegacy.Editor.Data
 
                 try
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
                 }
                 catch (Exception ex)
                 {
@@ -315,7 +315,7 @@ namespace BetterLegacy.Editor.Data
             TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
             TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
 
-            if (modifier.type == ModifierBase.Type.Trigger)
+            if (modifier.type == Modifier.Type.Trigger)
             {
                 var not = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Not");
                 not.transform.localScale = Vector3.one;
@@ -323,12 +323,11 @@ namespace BetterLegacy.Editor.Data
                 notText.text = "Not";
 
                 var notToggle = not.transform.Find("Toggle").GetComponent<Toggle>();
-                notToggle.onValueChanged.ClearAll();
-                notToggle.isOn = modifier.not;
-                notToggle.onValueChanged.AddListener(_val =>
+                notToggle.SetIsOnWithoutNotify(modifier.not);
+                notToggle.onValueChanged.NewListener(_val =>
                 {
                     modifier.not = _val;
-                    Update(modifier);
+                    Update(modifier, reference);
                 });
 
                 TooltipHelper.AssignTooltip(notToggle.gameObject, "Trigger Not Modifier");
@@ -341,12 +340,11 @@ namespace BetterLegacy.Editor.Data
                 elseIfText.text = "Else If";
 
                 var elseIfToggle = elseIf.transform.Find("Toggle").GetComponent<Toggle>();
-                elseIfToggle.onValueChanged.ClearAll();
-                elseIfToggle.isOn = modifier.elseIf;
-                elseIfToggle.onValueChanged.AddListener(_val =>
+                elseIfToggle.SetIsOnWithoutNotify(modifier.elseIf);
+                elseIfToggle.onValueChanged.NewListener(_val =>
                 {
                     modifier.elseIf = _val;
-                    Update(modifier);
+                    Update(modifier, reference);
                 });
 
                 TooltipHelper.AssignTooltip(elseIfToggle.gameObject, "Trigger Else If Modifier");
@@ -358,10 +356,7 @@ namespace BetterLegacy.Editor.Data
             {
                 modifier.verified = true;
                 if (!name.Contains("DEVONLY"))
-                {
-                    var defaultModifiers = ModifiersEditor.inst.GetDefaultModifiers(modifier.referenceType);
-                    modifier.VerifyModifier(defaultModifiers);
-                }
+                    modifier.VerifyModifier(ModifiersManager.inst.modifiers);
             }
 
             if (string.IsNullOrEmpty(name))
@@ -373,13 +368,13 @@ namespace BetterLegacy.Editor.Data
             switch (name)
             {
                 case nameof(ModifierActions.setActive): {
-                        BoolGenerator(modifier, "Active", 0, false);
+                        BoolGenerator(modifier, reference, "Active", 0, false);
 
                         break;
                     }
                 case nameof(ModifierActions.setActiveOther): {
-                        BoolGenerator(modifier, "Active", 0, false);
-                        StringGenerator(modifier, "BG Group", 1);
+                        BoolGenerator(modifier, reference, "Active", 0, false);
+                        StringGenerator(modifier, reference, "BG Group", 1);
 
                         break;
                     }
@@ -388,7 +383,7 @@ namespace BetterLegacy.Editor.Data
                 case "timeGreaterEquals":
                 case "timeLesser":
                 case "timeGreater": {
-                        SingleGenerator(modifier, "Time", 0, 0f);
+                        SingleGenerator(modifier, reference, "Time", 0, 0f);
 
                         break;
                     }
@@ -398,33 +393,33 @@ namespace BetterLegacy.Editor.Data
                 #region Audio
 
                 case nameof(ModifierActions.setPitch): {
-                        SingleGenerator(modifier, "Pitch", 0, 1f);
+                        SingleGenerator(modifier, reference, "Pitch", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.addPitch): {
-                        SingleGenerator(modifier, "Pitch", 0, 1f);
+                        SingleGenerator(modifier, reference, "Pitch", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.setPitchMath): {
-                        StringGenerator(modifier, "Pitch", 0);
+                        StringGenerator(modifier, reference, "Pitch", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.addPitchMath): {
-                        StringGenerator(modifier, "Pitch", 0);
+                        StringGenerator(modifier, reference, "Pitch", 0);
 
                         break;
                     }
 
                 case nameof(ModifierActions.setMusicTime): {
-                        SingleGenerator(modifier, "Time", 0, 1f);
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.setMusicTimeMath): {
-                        StringGenerator(modifier, "Time", 0);
+                        StringGenerator(modifier, reference, "Time", 0);
 
                         break;
                     }
@@ -435,13 +430,13 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.setMusicPlaying): {
-                        BoolGenerator(modifier, "Playing", 0, false);
+                        BoolGenerator(modifier, reference, "Playing", 0, false);
 
                         break;
                     }
 
                 case nameof(ModifierActions.playSound): {
-                        var str = StringGenerator(modifier, "Path", 0);
+                        var str = StringGenerator(modifier, reference, "Path", 0);
                         var search = str.transform.Find("Input").gameObject.AddComponent<ContextClickable>();
                         search.onClick = pointerEventData =>
                         {
@@ -507,20 +502,20 @@ namespace BetterLegacy.Editor.Data
                                 })
                                 );
                         };
-                        BoolGenerator(modifier, "Global", 1, false);
-                        SingleGenerator(modifier, "Pitch", 2, 1f);
-                        SingleGenerator(modifier, "Volume", 3, 1f);
-                        BoolGenerator(modifier, "Loop", 4, false);
-                        SingleGenerator(modifier, "Pan Stereo", 5);
+                        BoolGenerator(modifier, reference, "Global", 1, false);
+                        SingleGenerator(modifier, reference, "Pitch", 2, 1f);
+                        SingleGenerator(modifier, reference, "Volume", 3, 1f);
+                        BoolGenerator(modifier, reference, "Loop", 4, false);
+                        SingleGenerator(modifier, reference, "Pan Stereo", 5);
 
                         break;
                     }
                 case nameof(ModifierActions.playSoundOnline): {
-                        StringGenerator(modifier, "URL", 0);
-                        SingleGenerator(modifier, "Pitch", 1, 1f);
-                        SingleGenerator(modifier, "Volume", 2, 1f);
-                        BoolGenerator(modifier, "Loop", 3, false);
-                        SingleGenerator(modifier, "Pan Stereo", 4);
+                        StringGenerator(modifier, reference, "URL", 0);
+                        SingleGenerator(modifier, reference, "Pitch", 1, 1f);
+                        SingleGenerator(modifier, reference, "Volume", 2, 1f);
+                        BoolGenerator(modifier, reference, "Loop", 3, false);
+                        SingleGenerator(modifier, reference, "Pan Stereo", 4);
                         break;
                     }
                 case nameof(ModifierActions.playDefaultSound): {
@@ -560,15 +555,15 @@ namespace BetterLegacy.Editor.Data
                         EditorThemeManager.ApplyLightText(labelText);
                         EditorThemeManager.ApplyDropdown(d);
 
-                        SingleGenerator(modifier, "Pitch", 1, 1f);
-                        SingleGenerator(modifier, "Volume", 2, 1f);
-                        BoolGenerator(modifier, "Loop", 3, false);
-                        SingleGenerator(modifier, "Pan Stereo", 4);
+                        SingleGenerator(modifier, reference, "Pitch", 1, 1f);
+                        SingleGenerator(modifier, reference, "Volume", 2, 1f);
+                        BoolGenerator(modifier, reference, "Loop", 3, false);
+                        SingleGenerator(modifier, reference, "Pan Stereo", 4);
 
                         break;
                     }
                 case nameof(ModifierActions.audioSource): {
-                        var str = StringGenerator(modifier, "Path", 0);
+                        var str = StringGenerator(modifier, reference, "Path", 0);
                         var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
                         search.onClick = pointerEventData =>
                         {
@@ -632,18 +627,18 @@ namespace BetterLegacy.Editor.Data
                                 })
                                 );
                         };
-                        BoolGenerator(modifier, "Global", 1, false);
-                        SingleGenerator(modifier, "Pitch", 2, 1f);
-                        SingleGenerator(modifier, "Volume", 3, 1f);
-                        BoolGenerator(modifier, "Loop", 4, true);
+                        BoolGenerator(modifier, reference, "Global", 1, false);
+                        SingleGenerator(modifier, reference, "Pitch", 2, 1f);
+                        SingleGenerator(modifier, reference, "Volume", 3, 1f);
+                        BoolGenerator(modifier, reference, "Loop", 4, true);
 
-                        SingleGenerator(modifier, "Time", 5, 0f);
-                        BoolGenerator(modifier, "Time Relative", 6, true);
-                        SingleGenerator(modifier, "Length Offset", 7, 0f);
+                        SingleGenerator(modifier, reference, "Time", 5, 0f);
+                        BoolGenerator(modifier, reference, "Time Relative", 6, true);
+                        SingleGenerator(modifier, reference, "Length Offset", 7, 0f);
 
-                        BoolGenerator(modifier, "Playing", 8, true);
+                        BoolGenerator(modifier, reference, "Playing", 8, true);
 
-                        SingleGenerator(modifier, "Pan Stereo", 9);
+                        SingleGenerator(modifier, reference, "Pan Stereo", 9);
 
                         break;
                     }
@@ -653,17 +648,17 @@ namespace BetterLegacy.Editor.Data
                 #region Level
 
                 case nameof(ModifierActions.loadLevel): {
-                        StringGenerator(modifier, "Path", 0);
+                        StringGenerator(modifier, reference, "Path", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.loadLevelID): {
-                        StringGenerator(modifier, "ID", 0);
+                        StringGenerator(modifier, reference, "ID", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.loadLevelInternal): {
-                        StringGenerator(modifier, "Inner Path", 0);
+                        StringGenerator(modifier, reference, "Inner Path", 0);
 
                         break;
                     }
@@ -674,45 +669,45 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.loadLevelInCollection): {
-                        StringGenerator(modifier, "ID", 0);
+                        StringGenerator(modifier, reference, "ID", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.downloadLevel): {
-                        StringGenerator(modifier, "Arcade ID", 0);
-                        StringGenerator(modifier, "Server ID", 1);
-                        StringGenerator(modifier, "Workshop ID", 2);
-                        StringGenerator(modifier, "Song Title", 3);
-                        StringGenerator(modifier, "Level Name", 4);
-                        BoolGenerator(modifier, "Play Level", 5, true);
+                        StringGenerator(modifier, reference, "Arcade ID", 0);
+                        StringGenerator(modifier, reference, "Server ID", 1);
+                        StringGenerator(modifier, reference, "Workshop ID", 2);
+                        StringGenerator(modifier, reference, "Song Title", 3);
+                        StringGenerator(modifier, reference, "Level Name", 4);
+                        BoolGenerator(modifier, reference, "Play Level", 5, true);
 
                         break;
                     }
                 case nameof(ModifierActions.endLevel): {
                         var options = CoreHelper.ToOptionData<EndLevelFunction>();
                         options.Insert(0, new Dropdown.OptionData("Default"));
-                        DropdownGenerator(modifier, "End Level Function", 0, options);
-                        StringGenerator(modifier, "End Level Data", 1);
-                        BoolGenerator(modifier, "Save Player Data", 2, true);
+                        DropdownGenerator(modifier, reference, "End Level Function", 0, options);
+                        StringGenerator(modifier, reference, "End Level Data", 1);
+                        BoolGenerator(modifier, reference, "Save Player Data", 2, true);
 
                         break;
                     }
                 case nameof(ModifierActions.setAudioTransition): {
-                        SingleGenerator(modifier, "Value", 0, 1f);
+                        SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.setIntroFade): {
-                        BoolGenerator(modifier, "Should Fade", 0, true);
+                        BoolGenerator(modifier, reference, "Should Fade", 0, true);
 
                         break;
                     }
                 case nameof(ModifierActions.setLevelEndFunc): {
                         var options = CoreHelper.ToOptionData<EndLevelFunction>();
                         options.Insert(0, new Dropdown.OptionData("Default"));
-                        DropdownGenerator(modifier, "End Level Function", 0, options);
-                        StringGenerator(modifier, "End Level Data", 1);
-                        BoolGenerator(modifier, "Save Player Data", 2, true);
+                        DropdownGenerator(modifier, reference, "End Level Function", 0, options);
+                        StringGenerator(modifier, reference, "End Level Data", 1);
+                        BoolGenerator(modifier, reference, "Save Player Data", 2, true);
 
                         break;
                     }
@@ -722,49 +717,49 @@ namespace BetterLegacy.Editor.Data
                 #region Component
 
                 case nameof(ModifierActions.blur): {
-                        SingleGenerator(modifier, "Amount", 0, 0.5f);
-                        BoolGenerator(modifier, "Use Opacity", 1, false);
-                        BoolGenerator(modifier, "Set Back to Normal", 2, false);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
 
                         break;
                     }
                 case nameof(ModifierActions.blurOther): {
                         PrefabGroupOnly(modifier);
-                        SingleGenerator(modifier, "Amount", 0, 0.5f);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Set Back to Normal", 2, false);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
 
                         break;
                     }
                 case nameof(ModifierActions.blurVariable): {
-                        SingleGenerator(modifier, "Amount", 0, 0.5f);
-                        BoolGenerator(modifier, "Set Back to Normal", 1, false);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 1, false);
 
                         break;
                     }
                 case nameof(ModifierActions.blurVariableOther): {
                         PrefabGroupOnly(modifier);
-                        SingleGenerator(modifier, "Amount", 0, 0.5f);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Set Back to Normal", 2, false);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
 
                         break;
                     }
                 case nameof(ModifierActions.blurColored): {
-                        SingleGenerator(modifier, "Amount", 0, 0.5f);
-                        BoolGenerator(modifier, "Use Opacity", 1, false);
-                        BoolGenerator(modifier, "Set Back to Normal", 2, false);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
 
                         break;
                     }
                 case nameof(ModifierActions.blurColoredOther): {
                         PrefabGroupOnly(modifier);
-                        SingleGenerator(modifier, "Amount", 0, 0.5f);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Set Back to Normal", 2, false);
+                        BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
 
                         break;
                     }
@@ -772,9 +767,9 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.particleSystem): {
-                        SingleGenerator(modifier, "Life Time", 0, 5f);
+                        SingleGenerator(modifier, reference, "Life Time", 0, 5f);
 
-                        DropdownGenerator(modifier, "Shape", 1, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
+                        DropdownGenerator(modifier, reference, "Shape", 1, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
                         {
                             false, // square
                             false, // circle
@@ -793,90 +788,90 @@ namespace BetterLegacy.Editor.Data
                                 modifier.SetValue(1, "0");
 
                             modifier.SetValue(2, "0");
-                            RenderModifier<T>();
-                            Update(modifier);
+                            RenderModifier(reference);
+                            Update(modifier, reference);
                         });
 
                         var shape = modifier.GetInt(1, 0);
-                        DropdownGenerator(modifier, "Shape Option", 2, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
+                        DropdownGenerator(modifier, reference, "Shape Option", 2, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
 
-                        ColorGenerator(modifier, "Color", 3);
-                        SingleGenerator(modifier, "Start Opacity", 4, 1f);
-                        SingleGenerator(modifier, "End Opacity", 5, 0f);
-                        SingleGenerator(modifier, "Start Scale", 6, 1f);
-                        SingleGenerator(modifier, "End Scale", 7, 0f);
-                        SingleGenerator(modifier, "Rotation", 8, 0f);
-                        SingleGenerator(modifier, "Speed", 9, 5f);
-                        SingleGenerator(modifier, "Amount", 10, 1f);
-                        SingleGenerator(modifier, "Duration", 11, 1f);
-                        SingleGenerator(modifier, "Force X", 12, 0f);
-                        SingleGenerator(modifier, "Force Y", 13, 0f);
-                        BoolGenerator(modifier, "Emit Trail", 14, false);
-                        SingleGenerator(modifier, "Angle", 15, 0f);
-                        IntegerGenerator(modifier, "Burst Count", 16, 0);
+                        ColorGenerator(modifier, reference, "Color", 3);
+                        SingleGenerator(modifier, reference, "Start Opacity", 4, 1f);
+                        SingleGenerator(modifier, reference, "End Opacity", 5, 0f);
+                        SingleGenerator(modifier, reference, "Start Scale", 6, 1f);
+                        SingleGenerator(modifier, reference, "End Scale", 7, 0f);
+                        SingleGenerator(modifier, reference, "Rotation", 8, 0f);
+                        SingleGenerator(modifier, reference, "Speed", 9, 5f);
+                        SingleGenerator(modifier, reference, "Amount", 10, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 11, 1f);
+                        SingleGenerator(modifier, reference, "Force X", 12, 0f);
+                        SingleGenerator(modifier, reference, "Force Y", 13, 0f);
+                        BoolGenerator(modifier, reference, "Emit Trail", 14, false);
+                        SingleGenerator(modifier, reference, "Angle", 15, 0f);
+                        IntegerGenerator(modifier, reference, "Burst Count", 16, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.trailRenderer): {
-                        SingleGenerator(modifier, "Time", 0, 1f);
-                        SingleGenerator(modifier, "Start Width", 1, 1f);
-                        SingleGenerator(modifier, "End Width", 2, 0f);
-                        ColorGenerator(modifier, "Start Color", 3);
-                        SingleGenerator(modifier, "Start Opacity", 4, 1f);
-                        ColorGenerator(modifier, "End Color", 5);
-                        SingleGenerator(modifier, "End Opacity", 6, 0f);
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
+                        SingleGenerator(modifier, reference, "Start Width", 1, 1f);
+                        SingleGenerator(modifier, reference, "End Width", 2, 0f);
+                        ColorGenerator(modifier, reference, "Start Color", 3);
+                        SingleGenerator(modifier, reference, "Start Opacity", 4, 1f);
+                        ColorGenerator(modifier, reference, "End Color", 5);
+                        SingleGenerator(modifier, reference, "End Opacity", 6, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.trailRendererHex): {
-                        SingleGenerator(modifier, "Time", 0, 1f);
-                        SingleGenerator(modifier, "Start Width", 1, 1f);
-                        SingleGenerator(modifier, "End Width", 2, 0f);
-                        StringGenerator(modifier, "Start Color", 3);
-                        StringGenerator(modifier, "End Color", 4);
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
+                        SingleGenerator(modifier, reference, "Start Width", 1, 1f);
+                        SingleGenerator(modifier, reference, "End Width", 2, 0f);
+                        StringGenerator(modifier, reference, "Start Color", 3);
+                        StringGenerator(modifier, reference, "End Color", 4);
 
                         break;
                     }
                 case nameof(ModifierActions.rigidbody): {
-                        SingleGenerator(modifier, "Gravity", 1, 0f);
+                        SingleGenerator(modifier, reference, "Gravity", 1, 0f);
 
-                        DropdownGenerator(modifier, "Collision Mode", 2, CoreHelper.StringToOptionData("Discrete", "Continuous"));
+                        DropdownGenerator(modifier, reference, "Collision Mode", 2, CoreHelper.StringToOptionData("Discrete", "Continuous"));
 
-                        SingleGenerator(modifier, "Drag", 3, 0f);
-                        SingleGenerator(modifier, "Velocity X", 4, 0f);
-                        SingleGenerator(modifier, "Velocity Y", 5, 0f);
+                        SingleGenerator(modifier, reference, "Drag", 3, 0f);
+                        SingleGenerator(modifier, reference, "Velocity X", 4, 0f);
+                        SingleGenerator(modifier, reference, "Velocity Y", 5, 0f);
 
-                        DropdownGenerator(modifier, "Body Type", 6, CoreHelper.StringToOptionData("Dynamic", "Kinematic", "Static"));
+                        DropdownGenerator(modifier, reference, "Body Type", 6, CoreHelper.StringToOptionData("Dynamic", "Kinematic", "Static"));
 
                         break;
                     }
                 case nameof(ModifierActions.rigidbodyOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        SingleGenerator(modifier, "Gravity", 1, 0f);
+                        SingleGenerator(modifier, reference, "Gravity", 1, 0f);
 
-                        DropdownGenerator(modifier, "Collision Mode", 2, CoreHelper.StringToOptionData("Discrete", "Continuous"));
+                        DropdownGenerator(modifier, reference, "Collision Mode", 2, CoreHelper.StringToOptionData("Discrete", "Continuous"));
 
-                        SingleGenerator(modifier, "Drag", 3, 0f);
-                        SingleGenerator(modifier, "Velocity X", 4, 0f);
-                        SingleGenerator(modifier, "Velocity Y", 5, 0f);
+                        SingleGenerator(modifier, reference, "Drag", 3, 0f);
+                        SingleGenerator(modifier, reference, "Velocity X", 4, 0f);
+                        SingleGenerator(modifier, reference, "Velocity Y", 5, 0f);
 
-                        DropdownGenerator(modifier, "Body Type", 6, CoreHelper.StringToOptionData("Dynamic", "Kinematic", "Static"));
+                        DropdownGenerator(modifier, reference, "Body Type", 6, CoreHelper.StringToOptionData("Dynamic", "Kinematic", "Static"));
 
                         break;
                     }
                 case nameof(ModifierActions.setRenderType): {
-                        DropdownGenerator(modifier, "Render Type", 0, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
+                        DropdownGenerator(modifier, reference, "Render Type", 0, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
                         break;
                     }
                 case nameof(ModifierActions.setRenderTypeOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, "Render Type", 1, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
+                        DropdownGenerator(modifier, reference, "Render Type", 1, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
                         break;
                     }
 
@@ -885,35 +880,35 @@ namespace BetterLegacy.Editor.Data
                 #region Player
 
                 case nameof(ModifierActions.playerHit): {
-                        IntegerGenerator(modifier, "Hit Amount", 0, 0);
+                        IntegerGenerator(modifier, reference, "Hit Amount", 0, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.playerHitIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        IntegerGenerator(modifier, "Hit Amount", 1, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Hit Amount", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.playerHitAll): {
-                        IntegerGenerator(modifier, "Hit Amount", 0, 0);
+                        IntegerGenerator(modifier, reference, "Hit Amount", 0, 0);
 
                         break;
                     }
 
                 case nameof(ModifierActions.playerHeal): {
-                        IntegerGenerator(modifier, "Heal Amount", 0, 0);
+                        IntegerGenerator(modifier, reference, "Heal Amount", 0, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.playerHealIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        IntegerGenerator(modifier, "Heal Amount", 1, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Heal Amount", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.playerHealAll): {
-                        IntegerGenerator(modifier, "Heal Amount", 0, 0);
+                        IntegerGenerator(modifier, reference, "Heal Amount", 0, 0);
 
                         break;
                     }
@@ -922,7 +917,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerKillIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -934,7 +929,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerRespawnIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -953,28 +948,28 @@ namespace BetterLegacy.Editor.Data
                             modifier.commands.Insert(1, axis[1]);
                         }
 
-                        SingleGenerator(modifier, "X", 0, 0f);
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 1, 0f);
 
-                        SingleGenerator(modifier, "Duration", 2, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 4, false);
+                        BoolGenerator(modifier, reference, "Relative", 4, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerMoveIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
-                        SingleGenerator(modifier, "X", 1, 0f);
-                        SingleGenerator(modifier, "Y", 2, 0f);
+                        SingleGenerator(modifier, reference, "X", 1, 0f);
+                        SingleGenerator(modifier, reference, "Y", 2, 0f);
 
-                        SingleGenerator(modifier, "Duration", 3, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 3, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 5, false);
+                        BoolGenerator(modifier, reference, "Relative", 5, false);
 
                         break;
                     }
@@ -989,119 +984,119 @@ namespace BetterLegacy.Editor.Data
                             modifier.commands.Insert(1, axis[1]);
                         }
 
-                        SingleGenerator(modifier, "X", 0, 0f);
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 1, 0f);
 
-                        SingleGenerator(modifier, "Duration", 2, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 4, false);
+                        BoolGenerator(modifier, reference, "Relative", 4, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerMoveX): {
-                        SingleGenerator(modifier, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
 
-                        SingleGenerator(modifier, "Duration", 1, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 3, false);
+                        BoolGenerator(modifier, reference, "Relative", 3, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerMoveXIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
-                        SingleGenerator(modifier, "X", 1, 0f);
+                        SingleGenerator(modifier, reference, "X", 1, 0f);
 
-                        SingleGenerator(modifier, "Duration", 2, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 4, false);
+                        BoolGenerator(modifier, reference, "Relative", 4, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerMoveXAll): {
-                        SingleGenerator(modifier, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
 
-                        SingleGenerator(modifier, "Duration", 1, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 3, false);
+                        BoolGenerator(modifier, reference, "Relative", 3, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerMoveY): {
-                        SingleGenerator(modifier, "Y", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 0, 0f);
 
-                        SingleGenerator(modifier, "Duration", 1, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 3, false);
+                        BoolGenerator(modifier, reference, "Relative", 3, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerMoveYIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        SingleGenerator(modifier, reference, "Y", 1, 0f);
 
-                        SingleGenerator(modifier, "Duration", 2, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 4, false);
+                        BoolGenerator(modifier, reference, "Relative", 4, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerMoveYAll): {
-                        SingleGenerator(modifier, "Y", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 0, 0f);
 
-                        SingleGenerator(modifier, "Duration", 1, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 3, false);
+                        BoolGenerator(modifier, reference, "Relative", 3, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerRotate): {
-                        SingleGenerator(modifier, "Rotation", 0, 0f);
+                        SingleGenerator(modifier, reference, "Rotation", 0, 0f);
 
-                        SingleGenerator(modifier, "Duration", 1, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 3, false);
+                        BoolGenerator(modifier, reference, "Relative", 3, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerRotateIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
-                        SingleGenerator(modifier, "Rotation", 1, 0f);
+                        SingleGenerator(modifier, reference, "Rotation", 1, 0f);
 
-                        SingleGenerator(modifier, "Duration", 2, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 4, false);
+                        BoolGenerator(modifier, reference, "Relative", 4, false);
 
                         break;
                     }
                 case nameof(ModifierActions.playerRotateAll): {
-                        SingleGenerator(modifier, "Rotation", 0, 0f);
+                        SingleGenerator(modifier, reference, "Rotation", 0, 0f);
 
-                        SingleGenerator(modifier, "Duration", 1, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Relative", 3, false);
+                        BoolGenerator(modifier, reference, "Relative", 3, false);
 
                         break;
                     }
@@ -1110,7 +1105,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerMoveIndexToObject): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -1121,7 +1116,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerMoveXIndexToObject): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -1132,7 +1127,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerMoveYIndexToObject): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -1143,7 +1138,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerRotateIndexToObject): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -1152,21 +1147,21 @@ namespace BetterLegacy.Editor.Data
                 //    }
 
                 case nameof(ModifierActions.playerBoost): {
-                        SingleGenerator(modifier, "X", 0);
-                        SingleGenerator(modifier, "Y", 1);
+                        SingleGenerator(modifier, reference, "X", 0);
+                        SingleGenerator(modifier, reference, "Y", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.playerBoostIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        SingleGenerator(modifier, "X", 1);
-                        SingleGenerator(modifier, "Y", 2);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "X", 1);
+                        SingleGenerator(modifier, reference, "Y", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.playerBoostAll): {
-                        SingleGenerator(modifier, "X", 0);
-                        SingleGenerator(modifier, "Y", 1);
+                        SingleGenerator(modifier, reference, "X", 0);
+                        SingleGenerator(modifier, reference, "Y", 1);
 
                         break;
                     }
@@ -1176,7 +1171,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerCancelBoostIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -1189,7 +1184,7 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerDisableBoostIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
@@ -1198,104 +1193,104 @@ namespace BetterLegacy.Editor.Data
                 //    }
                 
                 case nameof(ModifierActions.playerEnableBoost): {
-                        BoolGenerator(modifier, "Enabled", 0, true);
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         break;
                     }
                 case nameof(ModifierActions.playerEnableBoostIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        BoolGenerator(modifier, "Enabled", 1, true);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        BoolGenerator(modifier, reference, "Enabled", 1, true);
 
                         break;
                     }
                 case nameof(ModifierActions.playerEnableBoostAll): {
-                        BoolGenerator(modifier, "Enabled", 0, true);
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         break;
                     }
                 case nameof(ModifierActions.playerEnableMove): {
-                        BoolGenerator(modifier, "Can Move", 0, true);
-                        BoolGenerator(modifier, "Can Rotate", 1, true);
+                        BoolGenerator(modifier, reference, "Can Move", 0, true);
+                        BoolGenerator(modifier, reference, "Can Rotate", 1, true);
 
                         break;
                     }
                 case nameof(ModifierActions.playerEnableMoveIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        BoolGenerator(modifier, "Can Move", 1, true);
-                        BoolGenerator(modifier, "Can Rotate", 2, true);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        BoolGenerator(modifier, reference, "Can Move", 1, true);
+                        BoolGenerator(modifier, reference, "Can Rotate", 2, true);
 
                         break;
                     }
                 case nameof(ModifierActions.playerEnableMoveAll): {
-                        BoolGenerator(modifier, "Can Move", 0, true);
-                        BoolGenerator(modifier, "Can Rotate", 1, true);
+                        BoolGenerator(modifier, reference, "Can Move", 0, true);
+                        BoolGenerator(modifier, reference, "Can Rotate", 1, true);
 
                         break;
                     }
 
                 case nameof(ModifierActions.playerSpeed): {
-                        SingleGenerator(modifier, "Global Speed", 0, 1f);
+                        SingleGenerator(modifier, reference, "Global Speed", 0, 1f);
 
                         break;
                     }
 
                 case nameof(ModifierActions.playerVelocity): {
-                        SingleGenerator(modifier, "X", 0, 0f);
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 1, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        SingleGenerator(modifier, "X", 1, 0f);
-                        SingleGenerator(modifier, "Y", 2, 0f);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "X", 1, 0f);
+                        SingleGenerator(modifier, reference, "Y", 2, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityAll): {
-                        SingleGenerator(modifier, "X", 0, 0f);
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 1, 0f);
 
                         break;
                     }
                     
                 case nameof(ModifierActions.playerVelocityX): {
-                        SingleGenerator(modifier, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityXIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        SingleGenerator(modifier, "X", 1, 0f);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "X", 1, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityXAll): {
-                        SingleGenerator(modifier, "X", 0, 0f);
+                        SingleGenerator(modifier, reference, "X", 0, 0f);
 
                         break;
                     }
                     
                 case nameof(ModifierActions.playerVelocityY): {
-                        SingleGenerator(modifier, "Y", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 0, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityYIndex): {
-                        IntegerGenerator(modifier, "Player Index", 0, 0);
-                        SingleGenerator(modifier, "Y", 1, 0f);
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "Y", 1, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.playerVelocityYAll): {
-                        SingleGenerator(modifier, "Y", 0, 0f);
+                        SingleGenerator(modifier, reference, "Y", 0, 0f);
 
                         break;
                     }
 
                 case nameof(ModifierActions.setPlayerModel): {
-                        IntegerGenerator(modifier, "Player Index", 1, 0, max: 3);
-                        var modelID = StringGenerator(modifier, "Model ID", 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: 3);
+                        var modelID = StringGenerator(modifier, reference, "Model ID", 0);
                         var contextClickable = modelID.transform.Find("Input").gameObject.GetOrAddComponent<ContextClickable>();
                         contextClickable.onClick = eventData =>
                         {
@@ -1316,21 +1311,21 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setGameMode): {
-                        DropdownGenerator(modifier, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
+                        DropdownGenerator(modifier, reference, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
 
                         break;
                     }
                     
                 case nameof(ModifierActions.gameMode): {
-                        DropdownGenerator(modifier, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
+                        DropdownGenerator(modifier, reference, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
 
                         break;
                     }
 
                 case nameof(ModifierActions.blackHole): {
-                        SingleGenerator(modifier, "Value", 0, 1f);
-                        BoolGenerator(modifier, "Use Opacity", 1, false);
+                        SingleGenerator(modifier, reference, "Value", 0, 1f);
+                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
 
                         break;
                     }
@@ -1343,21 +1338,21 @@ namespace BetterLegacy.Editor.Data
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "True");
 
-                        BoolGenerator(modifier, "Enabled", 0, true);
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
                         break;
                     }
                 //case "hideMouse): {
                 //        break;
                 //    }
                 case nameof(ModifierActions.setMousePosition): {
-                        IntegerGenerator(modifier, "Position X", 1, 0);
-                        IntegerGenerator(modifier, "Position Y", 1, 0);
+                        IntegerGenerator(modifier, reference, "Position X", 1, 0);
+                        IntegerGenerator(modifier, reference, "Position Y", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.followMousePosition): {
-                        SingleGenerator(modifier, "Position Focus", 0, 1f);
-                        SingleGenerator(modifier, "Rotation Delay", 1, 1f);
+                        SingleGenerator(modifier, reference, "Position Focus", 0, 1f);
+                        SingleGenerator(modifier, reference, "Rotation Delay", 1, 1f);
 
                         break;
                     }
@@ -1367,63 +1362,63 @@ namespace BetterLegacy.Editor.Data
                 #region Variable
                     
                 case nameof(ModifierActions.getToggle): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        BoolGenerator(modifier, "Value", 1, false);
-                        BoolGenerator(modifier, "Invert Value", 2, false);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Value", 1, false);
+                        BoolGenerator(modifier, reference, "Invert Value", 2, false);
 
                         break;
                     }
                 case nameof(ModifierActions.getFloat): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        SingleGenerator(modifier, "Value", 1, 0f);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        SingleGenerator(modifier, reference, "Value", 1, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.getInt): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Value", 1, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Value", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.getString): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getStringLower): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getStringUpper): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getColor): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        ColorGenerator(modifier, "Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        ColorGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getEnum): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
                         var options = new List<string>();
                         for (int i = 3; i < modifier.commands.Count; i += 2)
                             options.Add(modifier.commands[i]);
 
                         if (!options.IsEmpty())
-                            DropdownGenerator(modifier, "Value", 1, options);
+                            DropdownGenerator(modifier, reference, "Value", 1, options);
 
                         var collapseValue = modifier.GetBool(2, false);
                         BoolGenerator("Collapse Enum Editor", collapseValue, _val =>
                         {
                             modifier.SetValue(2, _val.ToString());
                             var value = scrollbar ? scrollbar.value : 0f;
-                            RenderModifier<T>();
+                            RenderModifier(reference);
                             CoroutineHelper.PerformAtNextFrame(() =>
                             {
                                 if (scrollbar)
@@ -1440,16 +1435,16 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Enum Value {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
+                            DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 2; j++)
                                     modifier.commands.RemoveAt(groupIndex);
                             });
 
-                            var groupName = StringGenerator(modifier, "Name", i, _val =>
+                            var groupName = StringGenerator(modifier, reference, "Name", i, _val =>
                             {
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
+                                RenderModifier(reference);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -1457,13 +1452,13 @@ namespace BetterLegacy.Editor.Data
                                 });
                             });
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
-                            var value = StringGenerator(modifier, "Value", i + 1);
+                            var value = StringGenerator(modifier, reference, "Value", i + 1);
                             EditorHelper.AddInputFieldContextMenu(value.transform.Find("Input").GetComponent<InputField>());
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Enum Value", () =>
+                        AddGenerator(modifier, reference, "Add Enum Value", () =>
                         {
                             modifier.commands.Add($"Enum {a}");
                             modifier.commands.Add(a.ToString());
@@ -1472,152 +1467,152 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.getTag): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Index", 1, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Index", 1, 0);
 
                         break;
                     }
 
                 case nameof(ModifierActions.getAxis): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 10);
+                        var str = StringGenerator(modifier, reference, "Object Group", 10);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        SingleGenerator(modifier, "Delay", 3, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 4, 1f);
-                        SingleGenerator(modifier, "Offset", 5, 0f);
-                        SingleGenerator(modifier, "Min", 6, -99999f);
-                        SingleGenerator(modifier, "Max", 7, 99999f);
-                        SingleGenerator(modifier, "Loop", 9, 99999f);
-                        BoolGenerator(modifier, "Use Visual", 8, false);
+                        SingleGenerator(modifier, reference, "Multiply", 4, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 5, 0f);
+                        SingleGenerator(modifier, reference, "Min", 6, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 7, 99999f);
+                        SingleGenerator(modifier, reference, "Loop", 9, 99999f);
+                        BoolGenerator(modifier, reference, "Use Visual", 8, false);
 
                         break;
                     }
                 case nameof(ModifierActions.getPitch): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.getMusicTime): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.getMath): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getNearestPlayer): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.getCollidingPlayers): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.getPlayerHealth): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Player Index", 1, 0, max: int.MaxValue);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
                 case nameof(ModifierActions.getPlayerPosX): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Player Index", 1, 0, max: int.MaxValue);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
                 case nameof(ModifierActions.getPlayerPosY): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Player Index", 1, 0, max: int.MaxValue);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
                 case nameof(ModifierActions.getPlayerRot): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Player Index", 1, 0, max: int.MaxValue);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
                 case nameof(ModifierActions.getEventValue): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
-                        IntegerGenerator(modifier, "Axis", 2, 0);
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        IntegerGenerator(modifier, reference, "Axis", 2, 0);
 
-                        SingleGenerator(modifier, "Delay", 3, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 4, 1f);
-                        SingleGenerator(modifier, "Offset", 5, 0f);
-                        SingleGenerator(modifier, "Min", 6, -99999f);
-                        SingleGenerator(modifier, "Max", 7, 99999f);
-                        SingleGenerator(modifier, "Loop", 8, 99999f);
+                        SingleGenerator(modifier, reference, "Multiply", 4, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 5, 0f);
+                        SingleGenerator(modifier, reference, "Min", 6, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 7, 99999f);
+                        SingleGenerator(modifier, reference, "Loop", 8, 99999f);
 
                         break;
                     }
                 case nameof(ModifierActions.getSample): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
-                        IntegerGenerator(modifier, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
-                        SingleGenerator(modifier, "Intensity", 2, 0f);
+                        IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        SingleGenerator(modifier, reference, "Intensity", 2, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.getText): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        BoolGenerator(modifier, "Use Visual", 1, false);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Use Visual", 1, false);
 
                         break;
                     }
                 case nameof(ModifierActions.getTextOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 2);
+                        var str = StringGenerator(modifier, reference, "Object Group", 2);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        StringGenerator(modifier, "Variable Name", 0);
-                        BoolGenerator(modifier, "Use Visual", 1, false);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Use Visual", 1, false);
 
                         break;
                     }
                 case nameof(ModifierActions.getCurrentKey): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.getColorSlotHexCode): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        ColorGenerator(modifier, "Color", 1);
-                        SingleGenerator(modifier, "Opacity", 2, 1f, max: 1f);
-                        SingleGenerator(modifier, "Hue", 3);
-                        SingleGenerator(modifier, "Saturation", 4);
-                        SingleGenerator(modifier, "Value", 5);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        ColorGenerator(modifier, reference, "Color", 1);
+                        SingleGenerator(modifier, reference, "Opacity", 2, 1f, max: 1f);
+                        SingleGenerator(modifier, reference, "Hue", 3);
+                        SingleGenerator(modifier, reference, "Saturation", 4);
+                        SingleGenerator(modifier, reference, "Value", 5);
 
                         break;
                     }
                 case nameof(ModifierActions.getFloatFromHexCode): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Hex Code", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Hex Code", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getHexCodeFromFloat): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        SingleGenerator(modifier, "Value", 1, 0f, max: 1f);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        SingleGenerator(modifier, reference, "Value", 1, 0f, max: 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.getMixedColors): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         int a = 0;
                         for (int i = 1; i < modifier.commands.Count; i++)
@@ -1625,86 +1620,83 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Color {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
-                            {
-                                modifier.commands.RemoveAt(groupIndex);
-                            });
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
 
-                            var groupName = StringGenerator(modifier, "Color Hex Code", i);
+                            var groupName = StringGenerator(modifier, reference, "Color Hex Code", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Color Value", () =>
+                        AddGenerator(modifier, reference, "Add Color Value", () =>
                         {
-                            modifier.commands.Add(RTColors.ColorToHexOptional(LSColors.pink500));
+                            modifier.commands.Add(RTColors.ColorToHexOptional(RTColors.errorColor));
                         });
 
                         break;
                     }
                 case nameof(ModifierActions.getModifiedColor): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Hex Color", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Hex Color", 1);
 
-                        SingleGenerator(modifier, "Opacity", 2, 1f, max: 1f);
-                        SingleGenerator(modifier, "Hue", 3);
-                        SingleGenerator(modifier, "Saturation", 4);
-                        SingleGenerator(modifier, "Value", 5);
+                        SingleGenerator(modifier, reference, "Opacity", 2, 1f, max: 1f);
+                        SingleGenerator(modifier, reference, "Hue", 3);
+                        SingleGenerator(modifier, reference, "Saturation", 4);
+                        SingleGenerator(modifier, reference, "Value", 5);
 
                         break;
                     }
                 case nameof(ModifierActions.getVisualColor): {
-                        StringGenerator(modifier, "Color 1 Var Name", 0);
-                        StringGenerator(modifier, "Color 2 Var Name", 1);
+                        StringGenerator(modifier, reference, "Color 1 Var Name", 0);
+                        StringGenerator(modifier, reference, "Color 2 Var Name", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getJSONString): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
                 case nameof(ModifierActions.getJSONFloat): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
                 case nameof(ModifierActions.getJSON): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "JSON", 1);
-                        StringGenerator(modifier, "JSON Value", 2);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "JSON", 1);
+                        StringGenerator(modifier, reference, "JSON Value", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.getSubString): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Start Index", 1, 0);
-                        IntegerGenerator(modifier, "Length", 2, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Start Index", 1, 0);
+                        IntegerGenerator(modifier, reference, "Length", 2, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.getStringLength): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Text", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Text", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getParsedString): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
                 case nameof(ModifierActions.getSplitString): {
-                        StringGenerator(modifier, "Text", 0);
-                        StringGenerator(modifier, "Character", 1);
+                        StringGenerator(modifier, reference, "Text", 0);
+                        StringGenerator(modifier, reference, "Character", 1);
 
                         int a = 0;
                         for (int i = 2; i < modifier.commands.Count; i++)
@@ -1712,18 +1704,15 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Variable {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
-                            {
-                                modifier.commands.RemoveAt(groupIndex);
-                            });
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
 
-                            var groupName = StringGenerator(modifier, "Variable Name", i);
+                            var groupName = StringGenerator(modifier, reference, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add String Value", () =>
+                        AddGenerator(modifier, reference, "Add String Value", () =>
                         {
                             modifier.commands.Add($"SPLITSTRING_VAR_{a}");
                         });
@@ -1731,22 +1720,22 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.getSplitStringAt): {
-                        StringGenerator(modifier, "Text", 0);
-                        StringGenerator(modifier, "Character", 1);
-                        StringGenerator(modifier, "Variable Name", 2);
+                        StringGenerator(modifier, reference, "Text", 0);
+                        StringGenerator(modifier, reference, "Character", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.getSplitStringCount): {
-                        StringGenerator(modifier, "Text", 0);
-                        StringGenerator(modifier, "Character", 1);
-                        StringGenerator(modifier, "Variable Name", 2);
+                        StringGenerator(modifier, reference, "Text", 0);
+                        StringGenerator(modifier, reference, "Character", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.getRegex): {
-                        StringGenerator(modifier, "Regex", 0);
-                        StringGenerator(modifier, "Text", 1);
+                        StringGenerator(modifier, reference, "Regex", 0);
+                        StringGenerator(modifier, reference, "Text", 1);
 
                         int a = 0;
                         for (int i = 2; i < modifier.commands.Count; i++)
@@ -1754,18 +1743,15 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator(a == 0 ? "- Whole Match Variable" : $"- Match Variable {a}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
-                            {
-                                modifier.commands.RemoveAt(groupIndex);
-                            });
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
 
-                            var groupName = StringGenerator(modifier, "Variable Name", i);
+                            var groupName = StringGenerator(modifier, reference, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Regex Value", () =>
+                        AddGenerator(modifier, reference, "Add Regex Value", () =>
                         {
                             modifier.commands.Add($"REGEX_VAR_{a}");
                         });
@@ -1773,8 +1759,8 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.getFormatVariable): { // whaaaaaaat (found i could use nameof() here)
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Format Text", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Format Text", 1);
 
                         int a = 0;
                         for (int i = 2; i < modifier.commands.Count; i++)
@@ -1782,18 +1768,15 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Text Arg {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
-                            {
-                                modifier.commands.RemoveAt(groupIndex);
-                            });
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
 
-                            var groupName = StringGenerator(modifier, "Variable Name", i);
+                            var groupName = StringGenerator(modifier, reference, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Text Value", () =>
+                        AddGenerator(modifier, reference, "Add Text Value", () =>
                         {
                             modifier.commands.Add($"Text");
                         });
@@ -1801,27 +1784,27 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.getComparison): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Compare From", 1);
-                        StringGenerator(modifier, "Compare To", 2);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Compare From", 1);
+                        StringGenerator(modifier, reference, "Compare To", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.getComparisonMath): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Compare From", 1);
-                        StringGenerator(modifier, "Compare To", 2);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Compare From", 1);
+                        StringGenerator(modifier, reference, "Compare To", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.getSignaledVariables): {
-                        BoolGenerator(modifier, "Clear", 0, true);
+                        BoolGenerator(modifier, reference, "Clear", 0, true);
 
                         break;
                     }
                 case nameof(ModifierActions.signalLocalVariables): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
@@ -1839,11 +1822,11 @@ namespace BetterLegacy.Editor.Data
                         var isGroup = modifier.commands.Count == 2;
                         if (isGroup)
                             PrefabGroupOnly(modifier);
-                        IntegerGenerator(modifier, "Value", 0, 0);
+                        IntegerGenerator(modifier, reference, "Value", 0, 0);
 
                         if (isGroup)
                         {
-                            var str = StringGenerator(modifier, "Object Group", 1);
+                            var str = StringGenerator(modifier, reference, "Object Group", 1);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         }
 
@@ -1851,36 +1834,36 @@ namespace BetterLegacy.Editor.Data
                     }
                 case nameof(ModifierActions.animateVariableOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        SingleGenerator(modifier, "Delay", 3, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 4, 1f);
-                        SingleGenerator(modifier, "Offset", 5, 0f);
-                        SingleGenerator(modifier, "Min", 6, -99999f);
-                        SingleGenerator(modifier, "Max", 7, 99999f);
-                        SingleGenerator(modifier, "Loop", 8, 99999f);
+                        SingleGenerator(modifier, reference, "Multiply", 4, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 5, 0f);
+                        SingleGenerator(modifier, reference, "Min", 6, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 7, 99999f);
+                        SingleGenerator(modifier, reference, "Loop", 8, 99999f);
 
                         break;
                     }
 
                 case nameof(ModifierActions.clampVariable): {
-                        IntegerGenerator(modifier, "Minimum", 1, 0);
-                        IntegerGenerator(modifier, "Maximum", 2, 0);
+                        IntegerGenerator(modifier, reference, "Minimum", 1, 0);
+                        IntegerGenerator(modifier, reference, "Maximum", 2, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.clampVariableOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        IntegerGenerator(modifier, "Minimum", 1, 0);
-                        IntegerGenerator(modifier, "Maximum", 2, 0);
+                        IntegerGenerator(modifier, reference, "Minimum", 1, 0);
+                        IntegerGenerator(modifier, reference, "Maximum", 2, 0);
 
                         break;
                     }
@@ -1893,48 +1876,48 @@ namespace BetterLegacy.Editor.Data
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "True");
 
-                        BoolGenerator(modifier, "Enabled", 0, true);
-                        BoolGenerator(modifier, "Reset", 1, true);
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+                        BoolGenerator(modifier, reference, "Reset", 1, true);
                         break;
                     }
                 case nameof(ModifierActions.enableObjectTree): {
                         if (modifier.value == "0")
                             modifier.value = "False";
 
-                        BoolGenerator(modifier, "Enabled", 2, true);
-                        BoolGenerator(modifier, "Use Self", 0, true);
-                        BoolGenerator(modifier, "Reset", 1, true);
+                        BoolGenerator(modifier, reference, "Enabled", 2, true);
+                        BoolGenerator(modifier, reference, "Use Self", 0, true);
+                        BoolGenerator(modifier, reference, "Reset", 1, true);
 
                         break;
                     }
                 case nameof(ModifierActions.enableObjectOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Enabled", 2, true);
-                        BoolGenerator(modifier, "Reset", 1, true);
+                        BoolGenerator(modifier, reference, "Enabled", 2, true);
+                        BoolGenerator(modifier, reference, "Reset", 1, true);
 
                         break;
                     }
                 case nameof(ModifierActions.enableObjectTreeOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Enabled", 3, true);
-                        BoolGenerator(modifier, "Use Self", 0, true);
-                        BoolGenerator(modifier, "Reset", 2, true);
+                        BoolGenerator(modifier, reference, "Enabled", 3, true);
+                        BoolGenerator(modifier, reference, "Use Self", 0, true);
+                        BoolGenerator(modifier, reference, "Reset", 2, true);
 
                         break;
                     }
                 case nameof(ModifierActions.enableObjectGroup): {
                         PrefabGroupOnly(modifier);
-                        BoolGenerator(modifier, "Enabled", 0, true);
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         var options = new List<string>() { "All" };
                         for (int i = 2; i < modifier.commands.Count; i++)
                             options.Add(modifier.commands[i]);
 
-                        DropdownGenerator(modifier, "Value", 1, options);
+                        DropdownGenerator(modifier, reference, "Value", 1, options);
 
                         int a = 0;
                         for (int i = 2; i < modifier.commands.Count; i++)
@@ -1942,15 +1925,12 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Group {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
-                            {
-                                modifier.commands.RemoveAt(groupIndex);
-                            });
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
 
-                            var groupName = StringGenerator(modifier, "Object Group", i, _val =>
+                            var groupName = StringGenerator(modifier, reference, "Object Group", i, _val =>
                             {
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
+                                RenderModifier(reference);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -1962,7 +1942,7 @@ namespace BetterLegacy.Editor.Data
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Group", () =>
+                        AddGenerator(modifier, reference, "Add Group", () =>
                         {
                             modifier.commands.Add($"Object Group");
                         });
@@ -1974,7 +1954,7 @@ namespace BetterLegacy.Editor.Data
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "True");
 
-                        BoolGenerator(modifier, "Reset", 1, true);
+                        BoolGenerator(modifier, reference, "Reset", 1, true);
 
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
@@ -1983,27 +1963,27 @@ namespace BetterLegacy.Editor.Data
                         if (modifier.value == "0")
                             modifier.value = "False";
 
-                        BoolGenerator(modifier, "Use Self", 0, true);
-                        BoolGenerator(modifier, "Reset", 1, true);
+                        BoolGenerator(modifier, reference, "Use Self", 0, true);
+                        BoolGenerator(modifier, reference, "Reset", 1, true);
 
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case nameof(ModifierActions.disableObjectOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Reset", 1, true);
+                        BoolGenerator(modifier, reference, "Reset", 1, true);
 
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
                 case nameof(ModifierActions.disableObjectTreeOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Use Self", 0, true);
-                        BoolGenerator(modifier, "Reset", 2, true);
+                        BoolGenerator(modifier, reference, "Use Self", 0, true);
+                        BoolGenerator(modifier, reference, "Reset", 2, true);
 
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
@@ -2014,52 +1994,52 @@ namespace BetterLegacy.Editor.Data
                 #region JSON
 
                 case nameof(ModifierActions.saveFloat): {
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
-                        SingleGenerator(modifier, "Value", 0, 0f);
+                        SingleGenerator(modifier, reference, "Value", 0, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.saveString): {
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
-                        StringGenerator(modifier, "Value", 0);
+                        StringGenerator(modifier, reference, "Value", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.saveText): {
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
                 case nameof(ModifierActions.saveVariable): {
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
                 case nameof(ModifierActions.loadVariable): {
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
                 case nameof(ModifierActions.loadVariableOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
@@ -2069,72 +2049,72 @@ namespace BetterLegacy.Editor.Data
                 #region Reactive
 
                 case nameof(ModifierActions.reactivePos): {
-                        SingleGenerator(modifier, "Total Intensity", 0, 1f);
+                        SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
-                        IntegerGenerator(modifier, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
-                        IntegerGenerator(modifier, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
 
-                        SingleGenerator(modifier, "Intensity X", 3, 0f);
-                        SingleGenerator(modifier, "Intensity Y", 4, 0f);
+                        SingleGenerator(modifier, reference, "Intensity X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Intensity Y", 4, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.reactiveSca): {
-                        SingleGenerator(modifier, "Total Intensity", 0, 1f);
+                        SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
-                        IntegerGenerator(modifier, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
-                        IntegerGenerator(modifier, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
 
-                        SingleGenerator(modifier, "Intensity X", 3, 0f);
-                        SingleGenerator(modifier, "Intensity Y", 4, 0f);
+                        SingleGenerator(modifier, reference, "Intensity X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Intensity Y", 4, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.reactiveRot): {
-                        SingleGenerator(modifier, "Intensity", 0, 1f);
-                        IntegerGenerator(modifier, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        SingleGenerator(modifier, reference, "Intensity", 0, 1f);
+                        IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
 
                         break;
                     }
                 case nameof(ModifierActions.reactiveCol): {
-                        SingleGenerator(modifier, "Intensity", 0, 1f);
-                        IntegerGenerator(modifier, "Sample", 1, 0);
-                        ColorGenerator(modifier, "Color", 2);
+                        SingleGenerator(modifier, reference, "Intensity", 0, 1f);
+                        IntegerGenerator(modifier, reference, "Sample", 1, 0);
+                        ColorGenerator(modifier, reference, "Color", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.reactiveColLerp): {
-                        SingleGenerator(modifier, "Intensity", 0, 1f);
-                        IntegerGenerator(modifier, "Sample", 1, 0);
-                        ColorGenerator(modifier, "Color", 2);
+                        SingleGenerator(modifier, reference, "Intensity", 0, 1f);
+                        IntegerGenerator(modifier, reference, "Sample", 1, 0);
+                        ColorGenerator(modifier, reference, "Color", 2);
 
                         break;
                     }
                 case nameof(ModifierActions.reactivePosChain): {
-                        SingleGenerator(modifier, "Total Intensity", 0, 1f);
+                        SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
-                        IntegerGenerator(modifier, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
-                        IntegerGenerator(modifier, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
 
-                        SingleGenerator(modifier, "Intensity X", 3, 0f);
-                        SingleGenerator(modifier, "Intensity Y", 4, 0f);
+                        SingleGenerator(modifier, reference, "Intensity X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Intensity Y", 4, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.reactiveScaChain): {
-                        SingleGenerator(modifier, "Total Intensity", 0, 1f);
+                        SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
-                        IntegerGenerator(modifier, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
-                        IntegerGenerator(modifier, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        IntegerGenerator(modifier, reference, "Sample Y", 2, 0, max: RTLevel.MAX_SAMPLES);
 
-                        SingleGenerator(modifier, "Intensity X", 3, 0f);
-                        SingleGenerator(modifier, "Intensity Y", 4, 0f);
+                        SingleGenerator(modifier, reference, "Intensity X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Intensity Y", 4, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.reactiveRotChain): {
-                        SingleGenerator(modifier, "Intensity", 0, 1f);
-                        IntegerGenerator(modifier, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
+                        SingleGenerator(modifier, reference, "Intensity", 0, 1f);
+                        IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
 
                         break;
                     }
@@ -2144,53 +2124,53 @@ namespace BetterLegacy.Editor.Data
                 #region Events
 
                 case nameof(ModifierActions.eventOffset): {
-                        DropdownGenerator(modifier, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
-                        IntegerGenerator(modifier, "Value Index", 2, 0);
-                        SingleGenerator(modifier, "Offset Value", 0, 0f);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.eventOffsetVariable): {
-                        DropdownGenerator(modifier, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
-                        IntegerGenerator(modifier, "Value Index", 2, 0);
-                        SingleGenerator(modifier, "Multiply Variable", 0, 1f);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        SingleGenerator(modifier, reference, "Multiply Variable", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.eventOffsetMath): {
-                        DropdownGenerator(modifier, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
-                        IntegerGenerator(modifier, "Value Index", 2, 0);
-                        StringGenerator(modifier, "Evaluation", 0);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        StringGenerator(modifier, reference, "Evaluation", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.eventOffsetAnimate): {
-                        DropdownGenerator(modifier, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
-                        IntegerGenerator(modifier, "Value Index", 2, 0);
-                        SingleGenerator(modifier, "Offset Value", 0, 0f);
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
-                        SingleGenerator(modifier, "Time", 3, 1f);
-                        DropdownGenerator(modifier, "Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
-                        BoolGenerator(modifier, "Relative", 5, false);
+                        SingleGenerator(modifier, reference, "Time", 3, 1f);
+                        DropdownGenerator(modifier, reference, "Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        BoolGenerator(modifier, reference, "Relative", 5, false);
 
                         break;
                     }
                 case nameof(ModifierActions.eventOffsetCopyAxis): {
-                        DropdownGenerator(modifier, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        DropdownGenerator(modifier, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, "To Type", 3, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
-                        IntegerGenerator(modifier, "To Axis", 4, 0);
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        IntegerGenerator(modifier, reference, "To Axis", 4, 0);
 
-                        SingleGenerator(modifier, "Delay", 5, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 5, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 6, 1f);
-                        SingleGenerator(modifier, "Offset", 7, 0f);
-                        SingleGenerator(modifier, "Min", 8, -99999f);
-                        SingleGenerator(modifier, "Max", 9, 99999f);
+                        SingleGenerator(modifier, reference, "Multiply", 6, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 7, 0f);
+                        SingleGenerator(modifier, reference, "Min", 8, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 9, 99999f);
 
-                        SingleGenerator(modifier, "Loop", 10, 99999f);
-                        BoolGenerator(modifier, "Use Visual", 11, false);
+                        SingleGenerator(modifier, reference, "Loop", 10, 99999f);
+                        BoolGenerator(modifier, reference, "Use Visual", 11, false);
 
                         break;
                     }
@@ -2206,117 +2186,117 @@ namespace BetterLegacy.Editor.Data
                 #region Color
 
                 case nameof(ModifierActions.addColor): {
-                        ColorGenerator(modifier, "Color", 1);
+                        ColorGenerator(modifier, reference, "Color", 1);
 
-                        SingleGenerator(modifier, "Hue", 2, 0f);
-                        SingleGenerator(modifier, "Saturation", 3, 0f);
-                        SingleGenerator(modifier, "Value", 4, 0f);
+                        SingleGenerator(modifier, reference, "Hue", 2, 0f);
+                        SingleGenerator(modifier, reference, "Saturation", 3, 0f);
+                        SingleGenerator(modifier, reference, "Value", 4, 0f);
 
-                        SingleGenerator(modifier, "Add Amount", 0, 1f);
+                        SingleGenerator(modifier, reference, "Add Amount", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.addColorOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        ColorGenerator(modifier, "Color", 2);
+                        ColorGenerator(modifier, reference, "Color", 2);
 
-                        SingleGenerator(modifier, "Hue", 3, 0f);
-                        SingleGenerator(modifier, "Saturation", 4, 0f);
-                        SingleGenerator(modifier, "Value", 5, 0f);
+                        SingleGenerator(modifier, reference, "Hue", 3, 0f);
+                        SingleGenerator(modifier, reference, "Saturation", 4, 0f);
+                        SingleGenerator(modifier, reference, "Value", 5, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 0, 1f);
+                        SingleGenerator(modifier, reference, "Multiply", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.lerpColor): {
-                        ColorGenerator(modifier, "Color", 1);
+                        ColorGenerator(modifier, reference, "Color", 1);
 
-                        SingleGenerator(modifier, "Hue", 2, 0f);
-                        SingleGenerator(modifier, "Saturation", 3, 0f);
-                        SingleGenerator(modifier, "Value", 4, 0f);
+                        SingleGenerator(modifier, reference, "Hue", 2, 0f);
+                        SingleGenerator(modifier, reference, "Saturation", 3, 0f);
+                        SingleGenerator(modifier, reference, "Value", 4, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 0, 1f);
+                        SingleGenerator(modifier, reference, "Multiply", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.lerpColorOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        ColorGenerator(modifier, "Color", 2);
+                        ColorGenerator(modifier, reference, "Color", 2);
 
-                        SingleGenerator(modifier, "Hue", 3, 0f);
-                        SingleGenerator(modifier, "Saturation", 4, 0f);
-                        SingleGenerator(modifier, "Value", 5, 0f);
+                        SingleGenerator(modifier, reference, "Hue", 3, 0f);
+                        SingleGenerator(modifier, reference, "Saturation", 4, 0f);
+                        SingleGenerator(modifier, reference, "Value", 5, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 0, 1f);
+                        SingleGenerator(modifier, reference, "Multiply", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.addColorPlayerDistance): {
-                        ColorGenerator(modifier, "Color", 1);
-                        SingleGenerator(modifier, "Multiply", 0, 1f);
-                        SingleGenerator(modifier, "Offset", 2, 10f);
+                        ColorGenerator(modifier, reference, "Color", 1);
+                        SingleGenerator(modifier, reference, "Multiply", 0, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 2, 10f);
 
                         break;
                     }
                 case nameof(ModifierActions.lerpColorPlayerDistance): {
-                        ColorGenerator(modifier, "Color", 1);
-                        SingleGenerator(modifier, "Multiply", 0, 1f);
-                        SingleGenerator(modifier, "Offset", 2, 10f);
+                        ColorGenerator(modifier, reference, "Color", 1);
+                        SingleGenerator(modifier, reference, "Multiply", 0, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 2, 10f);
 
-                        SingleGenerator(modifier, "Opacity", 3, 1f);
-                        SingleGenerator(modifier, "Hue", 4, 0f);
-                        SingleGenerator(modifier, "Saturation", 5, 0f);
-                        SingleGenerator(modifier, "Value", 6, 0f);
+                        SingleGenerator(modifier, reference, "Opacity", 3, 1f);
+                        SingleGenerator(modifier, reference, "Hue", 4, 0f);
+                        SingleGenerator(modifier, reference, "Saturation", 5, 0f);
+                        SingleGenerator(modifier, reference, "Value", 6, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.setOpacity): {
-                        SingleGenerator(modifier, "Amount", 0, 1f);
+                        SingleGenerator(modifier, reference, "Amount", 0, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.setOpacityOther): {
-                        SingleGenerator(modifier, "Amount", 0, 1f);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        SingleGenerator(modifier, reference, "Amount", 0, 1f);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierActions.copyColor): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Apply Color 1", 1, true);
-                        BoolGenerator(modifier, "Apply Color 2", 2, true);
+                        BoolGenerator(modifier, reference, "Apply Color 1", 1, true);
+                        BoolGenerator(modifier, reference, "Apply Color 2", 2, true);
 
                         break;
                     }
                 case nameof(ModifierActions.copyColorOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Apply Color 1", 1, true);
-                        BoolGenerator(modifier, "Apply Color 2", 2, true);
+                        BoolGenerator(modifier, reference, "Apply Color 1", 1, true);
+                        BoolGenerator(modifier, reference, "Apply Color 2", 2, true);
 
                         break;
                     }
                 case nameof(ModifierActions.applyColorGroup): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        DropdownGenerator(modifier, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
                         break;
                     }
                 case nameof(ModifierActions.setColorHex): {
-                        var primaryHexCode = StringGenerator(modifier, "Primary Hex Code", 0);
+                        var primaryHexCode = StringGenerator(modifier, reference, "Primary Hex Code", 0);
                         var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
                         primaryHexCodeContextMenu.onClick = pointerEventData =>
                         {
@@ -2374,7 +2354,7 @@ namespace BetterLegacy.Editor.Data
                                 }));
                         };
 
-                        var secondaryHexCode = StringGenerator(modifier, "Secondary Hex Code", 1);
+                        var secondaryHexCode = StringGenerator(modifier, reference, "Secondary Hex Code", 1);
                         var secondaryHexCodeContextMenu = secondaryHexCode.AddComponent<ContextClickable>();
                         secondaryHexCodeContextMenu.onClick = pointerEventData =>
                         {
@@ -2435,10 +2415,10 @@ namespace BetterLegacy.Editor.Data
                     }
                 case nameof(ModifierActions.setColorHexOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        var primaryHexCode = StringGenerator(modifier, "Primary Hex Code", 0);
+                        var primaryHexCode = StringGenerator(modifier, reference, "Primary Hex Code", 0);
                         var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
                         primaryHexCodeContextMenu.onClick = pointerEventData =>
                         {
@@ -2496,7 +2476,7 @@ namespace BetterLegacy.Editor.Data
                                 }));
                         };
 
-                        var secondaryHexCode = StringGenerator(modifier, "Secondary Hex Code", 2);
+                        var secondaryHexCode = StringGenerator(modifier, reference, "Secondary Hex Code", 2);
                         var secondaryHexCodeContextMenu = secondaryHexCode.AddComponent<ContextClickable>();
                         secondaryHexCodeContextMenu.onClick = pointerEventData =>
                         {
@@ -2557,52 +2537,52 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setColorRGBA): {
-                        SingleGenerator(modifier, "Red 1", 0, 1f);
-                        SingleGenerator(modifier, "Green 1", 1, 1f);
-                        SingleGenerator(modifier, "Blue 1", 2, 1f);
-                        SingleGenerator(modifier, "Opacity 1", 3, 1f);
+                        SingleGenerator(modifier, reference, "Red 1", 0, 1f);
+                        SingleGenerator(modifier, reference, "Green 1", 1, 1f);
+                        SingleGenerator(modifier, reference, "Blue 1", 2, 1f);
+                        SingleGenerator(modifier, reference, "Opacity 1", 3, 1f);
 
-                        SingleGenerator(modifier, "Red 2", 4, 1f);
-                        SingleGenerator(modifier, "Green 2", 5, 1f);
-                        SingleGenerator(modifier, "Blue 2", 6, 1f);
-                        SingleGenerator(modifier, "Opacity 2", 7, 1f);
+                        SingleGenerator(modifier, reference, "Red 2", 4, 1f);
+                        SingleGenerator(modifier, reference, "Green 2", 5, 1f);
+                        SingleGenerator(modifier, reference, "Blue 2", 6, 1f);
+                        SingleGenerator(modifier, reference, "Opacity 2", 7, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.setColorRGBAOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 8);
+                        var str = StringGenerator(modifier, reference, "Object Group", 8);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        SingleGenerator(modifier, "Red 1", 0, 1f);
-                        SingleGenerator(modifier, "Green 1", 1, 1f);
-                        SingleGenerator(modifier, "Blue 1", 2, 1f);
-                        SingleGenerator(modifier, "Opacity 1", 3, 1f);
+                        SingleGenerator(modifier, reference, "Red 1", 0, 1f);
+                        SingleGenerator(modifier, reference, "Green 1", 1, 1f);
+                        SingleGenerator(modifier, reference, "Blue 1", 2, 1f);
+                        SingleGenerator(modifier, reference, "Opacity 1", 3, 1f);
 
-                        SingleGenerator(modifier, "Red 2", 4, 1f);
-                        SingleGenerator(modifier, "Green 2", 5, 1f);
-                        SingleGenerator(modifier, "Blue 2", 6, 1f);
-                        SingleGenerator(modifier, "Opacity 2", 7, 1f);
+                        SingleGenerator(modifier, reference, "Red 2", 4, 1f);
+                        SingleGenerator(modifier, reference, "Green 2", 5, 1f);
+                        SingleGenerator(modifier, reference, "Blue 2", 6, 1f);
+                        SingleGenerator(modifier, reference, "Opacity 2", 7, 1f);
 
                         break;
                     }
                 case nameof(ModifierActions.animateColorKF): {
-                        SingleGenerator(modifier, "Time", 0);
-                        DropdownGenerator(modifier, "Color Source", 1, CoreHelper.StringToOptionData("Objects", "BG Objects", "Effects"), onSelect: _val => RenderModifier<T>());
+                        SingleGenerator(modifier, reference, "Time", 0);
+                        DropdownGenerator(modifier, reference, "Color Source", 1, CoreHelper.StringToOptionData("Objects", "BG Objects", "Effects"), onSelect: _val => RenderModifier(reference));
 
                         var colorSource = modifier.GetInt(1, 0);
 
-                        ColorGenerator(modifier, "Color 1 Start", 2, colorSource);
-                        SingleGenerator(modifier, "Opacity 1 Start", 3, 1f);
-                        SingleGenerator(modifier, "Hue 1 Start", 4, 0f);
-                        SingleGenerator(modifier, "Saturation 1 Start", 5, 0f);
-                        SingleGenerator(modifier, "Value 1 Start", 6, 0f);
+                        ColorGenerator(modifier, reference, "Color 1 Start", 2, colorSource);
+                        SingleGenerator(modifier, reference, "Opacity 1 Start", 3, 1f);
+                        SingleGenerator(modifier, reference, "Hue 1 Start", 4, 0f);
+                        SingleGenerator(modifier, reference, "Saturation 1 Start", 5, 0f);
+                        SingleGenerator(modifier, reference, "Value 1 Start", 6, 0f);
 
-                        ColorGenerator(modifier, "Color 2 Start", 7, colorSource);
-                        SingleGenerator(modifier, "Opacity 2 Start", 8, 1f);
-                        SingleGenerator(modifier, "Hue 2 Start", 9, 0f);
-                        SingleGenerator(modifier, "Saturation 2 Start", 10, 0f);
-                        SingleGenerator(modifier, "Value 2 Start", 11, 0f);
+                        ColorGenerator(modifier, reference, "Color 2 Start", 7, colorSource);
+                        SingleGenerator(modifier, reference, "Opacity 2 Start", 8, 1f);
+                        SingleGenerator(modifier, reference, "Hue 2 Start", 9, 0f);
+                        SingleGenerator(modifier, reference, "Saturation 2 Start", 10, 0f);
+                        SingleGenerator(modifier, reference, "Value 2 Start", 11, 0f);
 
                         int a = 0;
                         for (int i = 12; i < modifier.commands.Count; i += 14)
@@ -2610,7 +2590,7 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Keyframe {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
+                            DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 14; j++)
                                     modifier.commands.RemoveAt(groupIndex);
@@ -2621,7 +2601,7 @@ namespace BetterLegacy.Editor.Data
                             {
                                 modifier.SetValue(groupIndex, _val.ToString());
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
+                                RenderModifier(reference);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -2632,26 +2612,26 @@ namespace BetterLegacy.Editor.Data
                             if (collapseValue)
                                 continue;
 
-                            SingleGenerator(modifier, "Keyframe Time", i + 1);
-                            DropdownGenerator(modifier, "Easing", i + 13, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
-                            BoolGenerator(modifier, "Relative", i + 12, true);
+                            SingleGenerator(modifier, reference, "Keyframe Time", i + 1);
+                            DropdownGenerator(modifier, reference, "Easing", i + 13, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                            BoolGenerator(modifier, reference, "Relative", i + 12, true);
 
-                            ColorGenerator(modifier, "Color 1", i + 2, colorSource);
-                            SingleGenerator(modifier, "Opacity 1", i + 3, 1f);
-                            SingleGenerator(modifier, "Hue 1", i + 4, 0f);
-                            SingleGenerator(modifier, "Saturation 1", i + 5, 0f);
-                            SingleGenerator(modifier, "Value 1", i + 6, 0f);
+                            ColorGenerator(modifier, reference, "Color 1", i + 2, colorSource);
+                            SingleGenerator(modifier, reference, "Opacity 1", i + 3, 1f);
+                            SingleGenerator(modifier, reference, "Hue 1", i + 4, 0f);
+                            SingleGenerator(modifier, reference, "Saturation 1", i + 5, 0f);
+                            SingleGenerator(modifier, reference, "Value 1", i + 6, 0f);
 
-                            ColorGenerator(modifier, "Color 2", i + 7, colorSource);
-                            SingleGenerator(modifier, "Opacity 2", i + 8, 1f);
-                            SingleGenerator(modifier, "Hue 2", i + 9, 0f);
-                            SingleGenerator(modifier, "Saturation 2", i + 10, 0f);
-                            SingleGenerator(modifier, "Value 2", i + 11, 0f);
+                            ColorGenerator(modifier, reference, "Color 2", i + 7, colorSource);
+                            SingleGenerator(modifier, reference, "Opacity 2", i + 8, 1f);
+                            SingleGenerator(modifier, reference, "Hue 2", i + 9, 0f);
+                            SingleGenerator(modifier, reference, "Saturation 2", i + 10, 0f);
+                            SingleGenerator(modifier, reference, "Value 2", i + 11, 0f);
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Keyframe", () =>
+                        AddGenerator(modifier, reference, "Add Keyframe", () =>
                         {
                             modifier.commands.Add("False"); // collapse keyframe
                             modifier.commands.Add("0"); // keyframe time
@@ -2672,10 +2652,10 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateColorKFHex): {
-                        SingleGenerator(modifier, "Time", 0);
+                        SingleGenerator(modifier, reference, "Time", 0);
 
-                        StringGenerator(modifier, "Color 1", 1);
-                        StringGenerator(modifier, "Color 2", 2);
+                        StringGenerator(modifier, reference, "Color 1", 1);
+                        StringGenerator(modifier, reference, "Color 2", 2);
 
                         int a = 0;
                         for (int i = 3; i < modifier.commands.Count; i += 6)
@@ -2683,7 +2663,7 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Keyframe {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
+                            DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 6; j++)
                                     modifier.commands.RemoveAt(groupIndex);
@@ -2694,7 +2674,7 @@ namespace BetterLegacy.Editor.Data
                             {
                                 modifier.SetValue(groupIndex, _val.ToString());
                                 var value = scrollbar ? scrollbar.value : 0f;
-                                RenderModifier<T>();
+                                RenderModifier(reference);
                                 CoroutineHelper.PerformAtNextFrame(() =>
                                 {
                                     if (scrollbar)
@@ -2705,17 +2685,17 @@ namespace BetterLegacy.Editor.Data
                             if (collapseValue)
                                 continue;
 
-                            SingleGenerator(modifier, "Keyframe Time", i + 1);
-                            DropdownGenerator(modifier, "Easing", i + 5, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
-                            BoolGenerator(modifier, "Relative", i + 4, true);
+                            SingleGenerator(modifier, reference, "Keyframe Time", i + 1);
+                            DropdownGenerator(modifier, reference, "Easing", i + 5, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                            BoolGenerator(modifier, reference, "Relative", i + 4, true);
 
-                            StringGenerator(modifier, "Color 1", i + 2);
-                            StringGenerator(modifier, "Color 2", i + 3);
+                            StringGenerator(modifier, reference, "Color 1", i + 2);
+                            StringGenerator(modifier, reference, "Color 2", i + 3);
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Keyframe", () =>
+                        AddGenerator(modifier, reference, "Add Keyframe", () =>
                         {
                             modifier.commands.Add("False"); // collapse keyframe
                             modifier.commands.Add("0"); // keyframe time
@@ -2733,9 +2713,9 @@ namespace BetterLegacy.Editor.Data
                 #region Shape
 
                 case nameof(ModifierActions.setShape): {
-                        var isBG = modifier.referenceType == ModifierReferenceType.BackgroundObject;
+                        var isBG = modifyable.ReferenceType == ModifierReferenceType.BackgroundObject;
 
-                        DropdownGenerator(modifier, "Shape", 0, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
+                        DropdownGenerator(modifier, reference, "Shape", 0, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
                         {
                             false, // square
                             false, // circle
@@ -2754,118 +2734,118 @@ namespace BetterLegacy.Editor.Data
                                 modifier.SetValue(0, "0");
 
                             modifier.SetValue(1, "0");
-                            RenderModifier<T>();
-                            Update(modifier);
+                            RenderModifier(reference);
+                            Update(modifier, reference);
                         });
 
                         var shape = modifier.GetInt(0, 0);
-                        DropdownGenerator(modifier, "Shape Option", 1, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
+                        DropdownGenerator(modifier, reference, "Shape Option", 1, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
 
                         break;
                     }
                 case nameof(ModifierActions.setPolygonShape): {
-                        SingleGenerator(modifier, "Radius", 0);
-                        IntegerGenerator(modifier, "Sides", 1, min: 3, max: 32);
-                        SingleGenerator(modifier, "Roundness", 2, max: 1f);
-                        SingleGenerator(modifier, "Thickness", 3, max: 1f);
-                        SingleGenerator(modifier, "Thick Offset X", 5);
-                        SingleGenerator(modifier, "Thick Offset Y", 6);
-                        SingleGenerator(modifier, "Thick Scale X", 7);
-                        SingleGenerator(modifier, "Thick Scale Y", 8);
-                        IntegerGenerator(modifier, "Slices", 4, max: 32);
-                        SingleGenerator(modifier, "Angle", 9);
+                        SingleGenerator(modifier, reference, "Radius", 0);
+                        IntegerGenerator(modifier, reference, "Sides", 1, min: 3, max: 32);
+                        SingleGenerator(modifier, reference, "Roundness", 2, max: 1f);
+                        SingleGenerator(modifier, reference, "Thickness", 3, max: 1f);
+                        SingleGenerator(modifier, reference, "Thick Offset X", 5);
+                        SingleGenerator(modifier, reference, "Thick Offset Y", 6);
+                        SingleGenerator(modifier, reference, "Thick Scale X", 7);
+                        SingleGenerator(modifier, reference, "Thick Scale Y", 8);
+                        IntegerGenerator(modifier, reference, "Slices", 4, max: 32);
+                        SingleGenerator(modifier, reference, "Angle", 9);
 
                         break;
                     }
                 case nameof(ModifierActions.setPolygonShapeOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        SingleGenerator(modifier, "Radius", 1, max: 1f);
-                        IntegerGenerator(modifier, "Sides", 2, min: 3, max: 32);
-                        SingleGenerator(modifier, "Roundness", 3, max: 1f);
-                        SingleGenerator(modifier, "Thickness", 4, max: 1f);
-                        SingleGenerator(modifier, "Thick Offset X", 6);
-                        SingleGenerator(modifier, "Thick Offset Y", 7);
-                        SingleGenerator(modifier, "Thick Scale X", 8);
-                        SingleGenerator(modifier, "Thick Scale Y", 9);
-                        IntegerGenerator(modifier, "Slices", 5, max: 32);
-                        SingleGenerator(modifier, "Angle", 10);
+                        SingleGenerator(modifier, reference, "Radius", 1, max: 1f);
+                        IntegerGenerator(modifier, reference, "Sides", 2, min: 3, max: 32);
+                        SingleGenerator(modifier, reference, "Roundness", 3, max: 1f);
+                        SingleGenerator(modifier, reference, "Thickness", 4, max: 1f);
+                        SingleGenerator(modifier, reference, "Thick Offset X", 6);
+                        SingleGenerator(modifier, reference, "Thick Offset Y", 7);
+                        SingleGenerator(modifier, reference, "Thick Scale X", 8);
+                        SingleGenerator(modifier, reference, "Thick Scale Y", 9);
+                        IntegerGenerator(modifier, reference, "Slices", 5, max: 32);
+                        SingleGenerator(modifier, reference, "Angle", 10);
 
                         break;
                     }
                 case nameof(ModifierActions.actorFrameTexture): {
-                        DropdownGenerator(modifier, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
-                        IntegerGenerator(modifier, "Width", 1, 512);
-                        IntegerGenerator(modifier, "Height", 2, 512);
-                        SingleGenerator(modifier, "Pos X", 3, 0f);
-                        SingleGenerator(modifier, "Pos Y", 4, 0f);
+                        DropdownGenerator(modifier, reference, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
+                        IntegerGenerator(modifier, reference, "Width", 1, 512);
+                        IntegerGenerator(modifier, reference, "Height", 2, 512);
+                        SingleGenerator(modifier, reference, "Pos X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Pos Y", 4, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.setImage): {
-                        StringGenerator(modifier, "Path", 0);
+                        StringGenerator(modifier, reference, "Path", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.setImageOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        StringGenerator(modifier, "Path", 0);
+                        StringGenerator(modifier, reference, "Path", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.setText): {
-                        StringGenerator(modifier, "Text", 0);
+                        StringGenerator(modifier, reference, "Text", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.setTextOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        StringGenerator(modifier, "Text", 0);
+                        StringGenerator(modifier, reference, "Text", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.addText): {
-                        StringGenerator(modifier, "Text", 0);
+                        StringGenerator(modifier, reference, "Text", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.addTextOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        StringGenerator(modifier, "Text", 0);
+                        StringGenerator(modifier, reference, "Text", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.removeText): {
-                        IntegerGenerator(modifier, "Remove Amount", 0, 0);
+                        IntegerGenerator(modifier, reference, "Remove Amount", 0, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.removeTextOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        IntegerGenerator(modifier, "Remove Amount", 0, 0);
+                        IntegerGenerator(modifier, reference, "Remove Amount", 0, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.removeTextAt): {
-                        IntegerGenerator(modifier, "Remove At", 0, 0);
+                        IntegerGenerator(modifier, reference, "Remove At", 0, 0);
 
                         break;
                     }
                 case nameof(ModifierActions.removeTextOtherAt): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        IntegerGenerator(modifier, "Remove At", 0, 0);
+                        IntegerGenerator(modifier, reference, "Remove At", 0, 0);
 
                         break;
                     }
@@ -2873,21 +2853,21 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.textSequence): {
-                        SingleGenerator(modifier, "Length", 0, 1f);
-                        BoolGenerator(modifier, "Display Glitch", 1, true);
-                        BoolGenerator(modifier, "Play Sound", 2, true);
-                        BoolGenerator(modifier, "Custom Sound", 3, false);
-                        StringGenerator(modifier, "Sound Path", 4);
-                        BoolGenerator(modifier, "Global", 5, false);
+                        SingleGenerator(modifier, reference, "Length", 0, 1f);
+                        BoolGenerator(modifier, reference, "Display Glitch", 1, true);
+                        BoolGenerator(modifier, reference, "Play Sound", 2, true);
+                        BoolGenerator(modifier, reference, "Custom Sound", 3, false);
+                        StringGenerator(modifier, reference, "Sound Path", 4);
+                        BoolGenerator(modifier, reference, "Global", 5, false);
 
-                        SingleGenerator(modifier, "Pitch", 6, 1f);
-                        SingleGenerator(modifier, "Volume", 7, 1f);
-                        SingleGenerator(modifier, "Pitch Vary", 8, 0f);
-                        var str = StringGenerator(modifier, "Custom Text", 9);
+                        SingleGenerator(modifier, reference, "Pitch", 6, 1f);
+                        SingleGenerator(modifier, reference, "Volume", 7, 1f);
+                        SingleGenerator(modifier, reference, "Pitch Vary", 8, 0f);
+                        var str = StringGenerator(modifier, reference, "Custom Text", 9);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        SingleGenerator(modifier, "Time Offset", 10, 0f);
-                        BoolGenerator(modifier, "Time Relative", 11, false);
-                        SingleGenerator(modifier, "Pan Stereo", 12);
+                        SingleGenerator(modifier, reference, "Time Offset", 10, 0f);
+                        BoolGenerator(modifier, reference, "Time Relative", 11, false);
+                        SingleGenerator(modifier, reference, "Pan Stereo", 12);
 
                         break;
                     }
@@ -2898,11 +2878,11 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.translateShape): {
-                        SingleGenerator(modifier, "Pos X", 1, 0f);
-                        SingleGenerator(modifier, "Pos Y", 2, 0f);
-                        SingleGenerator(modifier, "Sca X", 3, 0f);
-                        SingleGenerator(modifier, "Sca Y", 4, 0f);
-                        SingleGenerator(modifier, "Rot", 5, 0f, 15f, 3f);
+                        SingleGenerator(modifier, reference, "Pos X", 1, 0f);
+                        SingleGenerator(modifier, reference, "Pos Y", 2, 0f);
+                        SingleGenerator(modifier, reference, "Sca X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Sca Y", 4, 0f);
+                        SingleGenerator(modifier, reference, "Rot", 5, 0f, 15f, 3f);
 
                         break;
                     }
@@ -2912,251 +2892,251 @@ namespace BetterLegacy.Editor.Data
                 #region Animation
 
                 case nameof(ModifierActions.animateObject): {
-                        SingleGenerator(modifier, "Time", 0, 1f);
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        SingleGenerator(modifier, "X", 2, 0f);
-                        SingleGenerator(modifier, "Y", 3, 0f);
-                        SingleGenerator(modifier, "Z", 4, 0f);
+                        SingleGenerator(modifier, reference, "X", 2, 0f);
+                        SingleGenerator(modifier, reference, "Y", 3, 0f);
+                        SingleGenerator(modifier, reference, "Z", 4, 0f);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Apply Delta Time", 7, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 7, true);
 
                         break;
                     }
                 case nameof(ModifierActions.animateObjectOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 7);
+                        var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        SingleGenerator(modifier, "Time", 0, 1f);
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        SingleGenerator(modifier, "X", 2, 0f);
-                        SingleGenerator(modifier, "Y", 3, 0f);
-                        SingleGenerator(modifier, "Z", 4, 0f);
+                        SingleGenerator(modifier, reference, "X", 2, 0f);
+                        SingleGenerator(modifier, reference, "Y", 3, 0f);
+                        SingleGenerator(modifier, reference, "Z", 4, 0f);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Apply Delta Time", 8, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 8, true);
 
                         break;
                     }
                 case nameof(ModifierActions.animateSignal): {
                         PrefabGroupOnly(modifier);
 
-                        SingleGenerator(modifier, "Time", 0, 1f);
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        SingleGenerator(modifier, "X", 2, 0f);
-                        SingleGenerator(modifier, "Y", 3, 0f);
-                        SingleGenerator(modifier, "Z", 4, 0f);
+                        SingleGenerator(modifier, reference, "X", 2, 0f);
+                        SingleGenerator(modifier, reference, "Y", 3, 0f);
+                        SingleGenerator(modifier, reference, "Z", 4, 0f);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        StringGenerator(modifier, "Signal Group", 7);
-                        SingleGenerator(modifier, "Signal Delay", 8, 0f);
-                        BoolGenerator(modifier, "Signal Deactivate", 9, true);
+                        StringGenerator(modifier, reference, "Signal Group", 7);
+                        SingleGenerator(modifier, reference, "Signal Delay", 8, 0f);
+                        BoolGenerator(modifier, reference, "Signal Deactivate", 9, true);
 
-                        BoolGenerator(modifier, "Apply Delta Time", 10, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 10, true);
 
                         break;
                     }
                 case nameof(ModifierActions.animateSignalOther): {
                         PrefabGroupOnly(modifier);
 
-                        SingleGenerator(modifier, "Time", 0, 1f);
+                        SingleGenerator(modifier, reference, "Time", 0, 1f);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        SingleGenerator(modifier, "X", 2, 0f);
-                        SingleGenerator(modifier, "Y", 3, 0f);
-                        SingleGenerator(modifier, "Z", 4, 0f);
+                        SingleGenerator(modifier, reference, "X", 2, 0f);
+                        SingleGenerator(modifier, reference, "Y", 3, 0f);
+                        SingleGenerator(modifier, reference, "Z", 4, 0f);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        var str = StringGenerator(modifier, "Object Group", 7);
+                        var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        StringGenerator(modifier, "Signal Group", 8);
-                        SingleGenerator(modifier, "Signal Delay", 9, 0f);
-                        BoolGenerator(modifier, "Signal Deactivate", 10, true);
+                        StringGenerator(modifier, reference, "Signal Group", 8);
+                        SingleGenerator(modifier, reference, "Signal Delay", 9, 0f);
+                        BoolGenerator(modifier, reference, "Signal Deactivate", 10, true);
 
-                        BoolGenerator(modifier, "Apply Delta Time", 11, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 11, true);
 
                         break;
                     }
                     
                 case nameof(ModifierActions.animateObjectMath): {
-                        StringGenerator(modifier, "Time", 0);
+                        StringGenerator(modifier, reference, "Time", 0);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        StringGenerator(modifier, "X", 2);
-                        StringGenerator(modifier, "Y", 3);
-                        StringGenerator(modifier, "Z", 4);
+                        StringGenerator(modifier, reference, "X", 2);
+                        StringGenerator(modifier, reference, "Y", 3);
+                        StringGenerator(modifier, reference, "Z", 4);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Apply Delta Time", 7, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 7, true);
 
                         break;
                     }
                 case nameof(ModifierActions.animateObjectMathOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 7);
+                        var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        StringGenerator(modifier, "Time", 0);
+                        StringGenerator(modifier, reference, "Time", 0);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        StringGenerator(modifier, "X", 2);
-                        StringGenerator(modifier, "Y", 3);
-                        StringGenerator(modifier, "Z", 4);
+                        StringGenerator(modifier, reference, "X", 2);
+                        StringGenerator(modifier, reference, "Y", 3);
+                        StringGenerator(modifier, reference, "Z", 4);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        BoolGenerator(modifier, "Apply Delta Time", 8, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 8, true);
 
                         break;
                     }
                 case nameof(ModifierActions.animateSignalMath): {
                         PrefabGroupOnly(modifier);
 
-                        StringGenerator(modifier, "Time", 0);
+                        StringGenerator(modifier, reference, "Time", 0);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        StringGenerator(modifier, "X", 2);
-                        StringGenerator(modifier, "Y", 3);
-                        StringGenerator(modifier, "Z", 4);
+                        StringGenerator(modifier, reference, "X", 2);
+                        StringGenerator(modifier, reference, "Y", 3);
+                        StringGenerator(modifier, reference, "Z", 4);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        StringGenerator(modifier, "Signal Group", 7);
-                        StringGenerator(modifier, "Signal Delay", 8);
-                        BoolGenerator(modifier, "Signal Deactivate", 9, true);
+                        StringGenerator(modifier, reference, "Signal Group", 7);
+                        StringGenerator(modifier, reference, "Signal Delay", 8);
+                        BoolGenerator(modifier, reference, "Signal Deactivate", 9, true);
 
-                        BoolGenerator(modifier, "Apply Delta Time", 10, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 10, true);
 
                         break;
                     }
                 case nameof(ModifierActions.animateSignalMathOther): {
                         PrefabGroupOnly(modifier);
 
-                        StringGenerator(modifier, "Time", 0);
+                        StringGenerator(modifier, reference, "Time", 0);
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
 
-                        StringGenerator(modifier, "X", 2);
-                        StringGenerator(modifier, "Y", 3);
-                        StringGenerator(modifier, "Z", 4);
+                        StringGenerator(modifier, reference, "X", 2);
+                        StringGenerator(modifier, reference, "Y", 3);
+                        StringGenerator(modifier, reference, "Z", 4);
 
-                        BoolGenerator(modifier, "Relative", 5, true);
+                        BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                        var str = StringGenerator(modifier, "Object Group", 7);
+                        var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        StringGenerator(modifier, "Signal Group", 8);
-                        StringGenerator(modifier, "Signal Delay", 9);
-                        BoolGenerator(modifier, "Signal Deactivate", 10, true);
+                        StringGenerator(modifier, reference, "Signal Group", 8);
+                        StringGenerator(modifier, reference, "Signal Delay", 9);
+                        BoolGenerator(modifier, reference, "Signal Deactivate", 10, true);
 
-                        BoolGenerator(modifier, "Apply Delta Time", 11, true);
+                        BoolGenerator(modifier, reference, "Apply Delta Time", 11, true);
 
                         break;
                     }
 
                 case nameof(ModifierActions.gravity): {
-                        SingleGenerator(modifier, "X", 1, -1f);
-                        SingleGenerator(modifier, "Y", 2, 0f);
-                        SingleGenerator(modifier, "Time Multiply", 3, 1f);
-                        IntegerGenerator(modifier, "Curve", 4, 2);
+                        SingleGenerator(modifier, reference, "X", 1, -1f);
+                        SingleGenerator(modifier, reference, "Y", 2, 0f);
+                        SingleGenerator(modifier, reference, "Time Multiply", 3, 1f);
+                        IntegerGenerator(modifier, reference, "Curve", 4, 2);
 
                         break;
                     }
                 case nameof(ModifierActions.gravityOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        SingleGenerator(modifier, "X", 1, -1f);
-                        SingleGenerator(modifier, "Y", 2, 0f);
-                        SingleGenerator(modifier, "Time Multiply", 3, 1f);
-                        IntegerGenerator(modifier, "Curve", 4, 2);
+                        SingleGenerator(modifier, reference, "X", 1, -1f);
+                        SingleGenerator(modifier, reference, "Y", 2, 0f);
+                        SingleGenerator(modifier, reference, "Time Multiply", 3, 1f);
+                        IntegerGenerator(modifier, reference, "Curve", 4, 2);
 
                         break;
                     }
 
                 case nameof(ModifierActions.copyAxis): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        DropdownGenerator(modifier, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        DropdownGenerator(modifier, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        SingleGenerator(modifier, "Delay", 5, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 5, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 6, 1f);
-                        SingleGenerator(modifier, "Offset", 7, 0f);
-                        SingleGenerator(modifier, "Min", 8, -99999f);
-                        SingleGenerator(modifier, "Max", 9, 99999f);
+                        SingleGenerator(modifier, reference, "Multiply", 6, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 7, 0f);
+                        SingleGenerator(modifier, reference, "Min", 8, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 9, 99999f);
 
-                        SingleGenerator(modifier, "Loop", 10, 99999f);
-                        BoolGenerator(modifier, "Use Visual", 11, false);
+                        SingleGenerator(modifier, reference, "Loop", 10, 99999f);
+                        BoolGenerator(modifier, reference, "Use Visual", 11, false);
 
                         break;
                     }
                 case nameof(ModifierActions.copyAxisMath): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        DropdownGenerator(modifier, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        DropdownGenerator(modifier, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        SingleGenerator(modifier, "Delay", 5, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 5, 0f);
 
-                        SingleGenerator(modifier, "Min", 6, -99999f);
-                        SingleGenerator(modifier, "Max", 7, 99999f);
-                        BoolGenerator(modifier, "Use Visual", 9, false);
-                        StringGenerator(modifier, "Expression", 8);
+                        SingleGenerator(modifier, reference, "Min", 6, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 7, 99999f);
+                        BoolGenerator(modifier, reference, "Use Visual", 9, false);
+                        StringGenerator(modifier, reference, "Expression", 8);
 
                         break;
                     }
                 case nameof(ModifierActions.copyAxisGroup): {
                         PrefabGroupOnly(modifier);
-                        StringGenerator(modifier, "Expression", 0);
+                        StringGenerator(modifier, reference, "Expression", 0);
 
-                        DropdownGenerator(modifier, "To Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, "To Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "To Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "To Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
                         int a = 0;
                         for (int i = 3; i < modifier.commands.Count; i += 8)
@@ -3164,27 +3144,27 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Group {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
+                            DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 8; j++)
                                     modifier.commands.RemoveAt(groupIndex);
                             });
 
-                            var groupName = StringGenerator(modifier, "Name", i);
+                            var groupName = StringGenerator(modifier, reference, "Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
-                            var str = StringGenerator(modifier, "Object Group", i + 1);
+                            var str = StringGenerator(modifier, reference, "Object Group", i + 1);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                            DropdownGenerator(modifier, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color", "Variable"));
-                            DropdownGenerator(modifier, "From Axis", i + 3, CoreHelper.StringToOptionData("X", "Y", "Z"));
-                            SingleGenerator(modifier, "Delay", i + 4, 0f);
-                            SingleGenerator(modifier, "Min", i + 5, -9999f);
-                            SingleGenerator(modifier, "Max", i + 6, 9999f);
-                            BoolGenerator(modifier, "Use Visual", 7, false);
+                            DropdownGenerator(modifier, reference, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color", "Variable"));
+                            DropdownGenerator(modifier, reference, "From Axis", i + 3, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                            SingleGenerator(modifier, reference, "Delay", i + 4, 0f);
+                            SingleGenerator(modifier, reference, "Min", i + 5, -9999f);
+                            SingleGenerator(modifier, reference, "Max", i + 6, 9999f);
+                            BoolGenerator(modifier, reference, "Use Visual", 7, false);
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Group", () =>
+                        AddGenerator(modifier, reference, "Add Group", () =>
                         {
                             var lastIndex = modifier.commands.Count - 1;
 
@@ -3201,22 +3181,22 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.copyPlayerAxis): {
-                        DropdownGenerator(modifier, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        DropdownGenerator(modifier, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        DropdownGenerator(modifier, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
-                        DropdownGenerator(modifier, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                        DropdownGenerator(modifier, reference, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        SingleGenerator(modifier, "Multiply", 6, 1f);
-                        SingleGenerator(modifier, "Offset", 7, 0f);
-                        SingleGenerator(modifier, "Min", 8, -99999f);
-                        SingleGenerator(modifier, "Max", 9, 99999f);
+                        SingleGenerator(modifier, reference, "Multiply", 6, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 7, 0f);
+                        SingleGenerator(modifier, reference, "Min", 8, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 9, 99999f);
 
                         break;
                     }
 
                 case nameof(ModifierActions.legacyTail): {
-                        SingleGenerator(modifier, "Total Time", 0, 200f);
+                        SingleGenerator(modifier, reference, "Total Time", 0, 200f);
 
                         var path = ModifiersEditor.inst.stringInput.Duplicate(layout, "usage");
                         path.transform.localScale = Vector3.one;
@@ -3231,20 +3211,20 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Tail Group {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
+                            DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 3; j++)
                                     modifier.commands.RemoveAt(groupIndex);
                             });
 
-                            var str = StringGenerator(modifier, "Object Group", i);
+                            var str = StringGenerator(modifier, reference, "Object Group", i);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                            SingleGenerator(modifier, "Distance", i + 1, 2f);
-                            SingleGenerator(modifier, "Time", i + 2, 12f);
+                            SingleGenerator(modifier, reference, "Distance", i + 1, 2f);
+                            SingleGenerator(modifier, reference, "Time", i + 2, 12f);
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Group", () =>
+                        AddGenerator(modifier, reference, "Add Group", () =>
                         {
                             var lastIndex = modifier.commands.Count - 1;
                             var length = "2";
@@ -3269,26 +3249,26 @@ namespace BetterLegacy.Editor.Data
                         PrefabGroupOnly(modifier);
                         if (name != "applyAnimation")
                         {
-                            var str = StringGenerator(modifier, "Object Group", 0);
+                            var str = StringGenerator(modifier, reference, "Object Group", 0);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         }
                         else
                         {
-                            var from = StringGenerator(modifier, "From Group", 0);
+                            var from = StringGenerator(modifier, reference, "From Group", 0);
                             EditorHelper.AddInputFieldContextMenu(from.transform.Find("Input").GetComponent<InputField>());
-                            var to = StringGenerator(modifier, "To Group", 10);
+                            var to = StringGenerator(modifier, reference, "To Group", 10);
                             EditorHelper.AddInputFieldContextMenu(to.transform.Find("Input").GetComponent<InputField>());
                         }
 
-                        BoolGenerator(modifier, "Animate Position", 1, true);
-                        BoolGenerator(modifier, "Animate Scale", 2, true);
-                        BoolGenerator(modifier, "Animate Rotation", 3, true);
-                        SingleGenerator(modifier, "Delay Position", 4, 0f);
-                        SingleGenerator(modifier, "Delay Scale", 5, 0f);
-                        SingleGenerator(modifier, "Delay Rotation", 6, 0f);
-                        BoolGenerator(modifier, "Use Visual", 7, false);
-                        SingleGenerator(modifier, "Length", 8, 1f);
-                        SingleGenerator(modifier, "Speed", 9, 1f);
+                        BoolGenerator(modifier, reference, "Animate Position", 1, true);
+                        BoolGenerator(modifier, reference, "Animate Scale", 2, true);
+                        BoolGenerator(modifier, reference, "Animate Rotation", 3, true);
+                        SingleGenerator(modifier, reference, "Delay Position", 4, 0f);
+                        SingleGenerator(modifier, reference, "Delay Scale", 5, 0f);
+                        SingleGenerator(modifier, reference, "Delay Rotation", 6, 0f);
+                        BoolGenerator(modifier, reference, "Use Visual", 7, false);
+                        SingleGenerator(modifier, reference, "Length", 8, 1f);
+                        SingleGenerator(modifier, reference, "Speed", 9, 1f);
 
                         break;
                     }
@@ -3298,27 +3278,27 @@ namespace BetterLegacy.Editor.Data
                         PrefabGroupOnly(modifier);
                         if (name != "applyAnimationMath")
                         {
-                            var str = StringGenerator(modifier, "Object Group", 0);
+                            var str = StringGenerator(modifier, reference, "Object Group", 0);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         }
                         else
                         {
-                            var from = StringGenerator(modifier, "From Group", 0);
+                            var from = StringGenerator(modifier, reference, "From Group", 0);
                             EditorHelper.AddInputFieldContextMenu(from.transform.Find("Input").GetComponent<InputField>());
-                            var to = StringGenerator(modifier, "To Group", 10);
+                            var to = StringGenerator(modifier, reference, "To Group", 10);
                             EditorHelper.AddInputFieldContextMenu(to.transform.Find("Input").GetComponent<InputField>());
                         }
 
-                        BoolGenerator(modifier, "Animate Position", 1, true);
-                        BoolGenerator(modifier, "Animate Scale", 2, true);
-                        BoolGenerator(modifier, "Animate Rotation", 3, true);
-                        StringGenerator(modifier, "Delay Position", 4);
-                        StringGenerator(modifier, "Delay Scale", 5);
-                        StringGenerator(modifier, "Delay Rotation", 6);
-                        BoolGenerator(modifier, "Use Visual", 7, false);
-                        StringGenerator(modifier, "Length", 8);
-                        StringGenerator(modifier, "Speed", 9);
-                        StringGenerator(modifier, "Time", name != "applyAnimationMath" ? 10 : 11);
+                        BoolGenerator(modifier, reference, "Animate Position", 1, true);
+                        BoolGenerator(modifier, reference, "Animate Scale", 2, true);
+                        BoolGenerator(modifier, reference, "Animate Rotation", 3, true);
+                        StringGenerator(modifier, reference, "Delay Position", 4);
+                        StringGenerator(modifier, reference, "Delay Scale", 5);
+                        StringGenerator(modifier, reference, "Delay Rotation", 6);
+                        BoolGenerator(modifier, reference, "Use Visual", 7, false);
+                        StringGenerator(modifier, reference, "Length", 8);
+                        StringGenerator(modifier, reference, "Speed", 9);
+                        StringGenerator(modifier, reference, "Time", name != "applyAnimationMath" ? 10 : 11);
 
                         break;
                     }
@@ -3338,7 +3318,7 @@ namespace BetterLegacy.Editor.Data
                         if (isOther)
                         {
                             PrefabGroupOnly(modifier);
-                            var str = StringGenerator(modifier, "Object Group", isMulti ? 9 : 10);
+                            var str = StringGenerator(modifier, reference, "Object Group", isMulti ? 9 : 10);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         }
 
@@ -3348,31 +3328,31 @@ namespace BetterLegacy.Editor.Data
                         if (isMulti)
                             valueIndex--;
 
-                        DropdownGenerator(modifier, "Search Prefab Using", valueIndex + 2, CoreHelper.StringToOptionData("Index", "Name", "ID"));
-                        StringGenerator(modifier, "Prefab Reference", 0);
+                        DropdownGenerator(modifier, reference, "Search Prefab Using", valueIndex + 2, CoreHelper.StringToOptionData("Index", "Name", "ID"));
+                        StringGenerator(modifier, reference, "Prefab Reference", 0);
 
-                        SingleGenerator(modifier, "Position X", 1, 0f);
-                        SingleGenerator(modifier, "Position Y", 2, 0f);
-                        SingleGenerator(modifier, "Scale X", 3, 0f);
-                        SingleGenerator(modifier, "Scale Y", 4, 0f);
-                        SingleGenerator(modifier, "Rotation", 5, 0f, 15f, 3f);
+                        SingleGenerator(modifier, reference, "Position X", 1, 0f);
+                        SingleGenerator(modifier, reference, "Position Y", 2, 0f);
+                        SingleGenerator(modifier, reference, "Scale X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Scale Y", 4, 0f);
+                        SingleGenerator(modifier, reference, "Rotation", 5, 0f, 15f, 3f);
 
-                        IntegerGenerator(modifier, "Repeat Count", 6, 0);
-                        SingleGenerator(modifier, "Repeat Offset Time", 7, 0f);
-                        SingleGenerator(modifier, "Speed", 8, 1f);
+                        IntegerGenerator(modifier, reference, "Repeat Count", 6, 0);
+                        SingleGenerator(modifier, reference, "Repeat Offset Time", 7, 0f);
+                        SingleGenerator(modifier, reference, "Speed", 8, 1f);
 
                         if (!isMulti)
-                            BoolGenerator(modifier, "Permanent", 9, false);
+                            BoolGenerator(modifier, reference, "Permanent", 9, false);
 
-                        SingleGenerator(modifier, "Time", valueIndex, 0f);
-                        BoolGenerator(modifier, "Time Relative", valueIndex + 1, true);
+                        SingleGenerator(modifier, reference, "Time", valueIndex, 0f);
+                        BoolGenerator(modifier, reference, "Time Relative", valueIndex + 1, true);
 
                         break;
                     }
 
                 case nameof(ModifierActions.clearSpawnedPrefabs): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
@@ -3389,8 +3369,8 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.addHit): {
-                        BoolGenerator(modifier, "Use Self Position", 0, true);
-                        StringGenerator(modifier, "Time", 1);
+                        BoolGenerator(modifier, reference, "Use Self Position", 0, true);
+                        StringGenerator(modifier, reference, "Time", 1);
 
                         break;
                     }
@@ -3401,8 +3381,8 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.addDeath): {
-                        BoolGenerator(modifier, "Use Self Position", 0, true);
-                        StringGenerator(modifier, "Time", 1);
+                        BoolGenerator(modifier, reference, "Use Self Position", 0, true);
+                        StringGenerator(modifier, reference, "Time", 1);
 
                         break;
                     }
@@ -3419,39 +3399,39 @@ namespace BetterLegacy.Editor.Data
                 //    }
                 case nameof(ModifierActions.updateObject): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierActions.setParent): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierActions.setParentOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        BoolGenerator(modifier, "Clear Parent", 1, false);
-                        var str2 = StringGenerator(modifier, "Parent Group To", 2);
+                        BoolGenerator(modifier, reference, "Clear Parent", 1, false);
+                        var str2 = StringGenerator(modifier, reference, "Parent Group To", 2);
                         EditorHelper.AddInputFieldContextMenu(str2.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierActions.detachParent): {
-                        BoolGenerator(modifier, "Detach", 0, false);
+                        BoolGenerator(modifier, reference, "Detach", 0, false);
 
                         break;
                     }
                 case nameof(ModifierActions.detachParentOther): {
-                        BoolGenerator(modifier, "Detach", 0, false);
+                        BoolGenerator(modifier, reference, "Detach", 0, false);
 
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
@@ -3462,15 +3442,15 @@ namespace BetterLegacy.Editor.Data
                 #region Physics
 
                 case nameof(ModifierActions.setCollision): {
-                        BoolGenerator(modifier, "On", 0, false);
+                        BoolGenerator(modifier, reference, "On", 0, false);
                         break;
                     }
                 case nameof(ModifierActions.setCollisionOther): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        BoolGenerator(modifier, "On", 0, false);
+                        BoolGenerator(modifier, reference, "On", 0, false);
                         break;
                     }
 
@@ -3479,17 +3459,17 @@ namespace BetterLegacy.Editor.Data
                 #region Checkpoints
                     
                 case nameof(ModifierActions.createCheckpoint): {
-                        SingleGenerator(modifier, "Time", 0);
-                        BoolGenerator(modifier, "Time Relative", 1);
+                        SingleGenerator(modifier, reference, "Time", 0);
+                        BoolGenerator(modifier, reference, "Time Relative", 1);
 
-                        SingleGenerator(modifier, "Pos X", 2);
-                        SingleGenerator(modifier, "Pos Y", 3);
+                        SingleGenerator(modifier, reference, "Pos X", 2);
+                        SingleGenerator(modifier, reference, "Pos Y", 3);
 
-                        BoolGenerator(modifier, "Heal", 4);
-                        BoolGenerator(modifier, "Respawn", 5, true);
-                        BoolGenerator(modifier, "Reverse On Death", 6, true);
-                        BoolGenerator(modifier, "Set Time On Death", 7, true);
-                        DropdownGenerator(modifier, "Spawn Position Type", 8, CoreHelper.ToOptionData<Checkpoint.SpawnPositionType>());
+                        BoolGenerator(modifier, reference, "Heal", 4);
+                        BoolGenerator(modifier, reference, "Respawn", 5, true);
+                        BoolGenerator(modifier, reference, "Reverse On Death", 6, true);
+                        BoolGenerator(modifier, reference, "Set Time On Death", 7, true);
+                        DropdownGenerator(modifier, reference, "Spawn Position Type", 8, CoreHelper.ToOptionData<Checkpoint.SpawnPositionType>());
 
                         int a = 0;
                         for (int i = 9; i < modifier.commands.Count; i += 2)
@@ -3497,19 +3477,19 @@ namespace BetterLegacy.Editor.Data
                             int groupIndex = i;
                             var label = LabelGenerator($"- Position {a + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () =>
+                            DeleteGenerator(modifier, reference, label.transform, () =>
                             {
-                                modifier.commands.RemoveAt(groupIndex);
-                                modifier.commands.RemoveAt(groupIndex);
+                                for (int j = 0; j < 2; j++)
+                                    modifier.commands.RemoveAt(groupIndex);
                             });
 
-                            SingleGenerator(modifier, "Pos X", i);
-                            SingleGenerator(modifier, "Pos Y", i + 1);
+                            SingleGenerator(modifier, reference, "Pos X", i);
+                            SingleGenerator(modifier, reference, "Pos Y", i + 1);
 
                             a++;
                         }
 
-                        AddGenerator(modifier, "Add Position Value", () =>
+                        AddGenerator(modifier, reference, "Add Position Value", () =>
                         {
                             modifier.commands.Add("0");
                             modifier.commands.Add("0");
@@ -3518,7 +3498,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.resetCheckpoint): {
-                        BoolGenerator(modifier, "Reset to Previous", 0);
+                        BoolGenerator(modifier, reference, "Reset to Previous", 0);
                         break;
                     }
 
@@ -3527,9 +3507,9 @@ namespace BetterLegacy.Editor.Data
                 #region Interfaces
 
                 case nameof(ModifierActions.loadInterface): {
-                        StringGenerator(modifier, "Path", 0);
-                        BoolGenerator(modifier, "Pause Level", 1);
-                        BoolGenerator(modifier, "Pass Variables", 2);
+                        StringGenerator(modifier, reference, "Path", 0);
+                        BoolGenerator(modifier, reference, "Pause Level", 1);
+                        BoolGenerator(modifier, reference, "Pass Variables", 2);
 
                         break;
                     }
@@ -3551,8 +3531,8 @@ namespace BetterLegacy.Editor.Data
                 #region Misc
 
                 case nameof(ModifierActions.setBGActive): {
-                        BoolGenerator(modifier, "Active", 0, false);
-                        var str = StringGenerator(modifier, "BG Group", 1);
+                        BoolGenerator(modifier, reference, "Active", 0, false);
+                        var str = StringGenerator(modifier, reference, "BG Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
@@ -3560,30 +3540,30 @@ namespace BetterLegacy.Editor.Data
 
                 case nameof(ModifierActions.signalModifier): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        SingleGenerator(modifier, "Delay", 0, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 0, 0f);
 
                         break;
                     }
                 case nameof(ModifierActions.activateModifier): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        BoolGenerator(modifier, "Do Multiple", 1, true);
-                        IntegerGenerator(modifier, "Singlular Index", 2, 0);
+                        BoolGenerator(modifier, reference, "Do Multiple", 1, true);
+                        IntegerGenerator(modifier, reference, "Singlular Index", 2, 0);
 
                         for (int i = 3; i < modifier.commands.Count; i++)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Name {i + 1}");
 
-                            DeleteGenerator(modifier, label.transform, () => modifier.commands.RemoveAt(groupIndex));
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
 
-                            StringGenerator(modifier, "Modifier Name", groupIndex);
+                            StringGenerator(modifier, reference, "Modifier Name", groupIndex);
                         }
 
-                        AddGenerator(modifier, "Add Modifier Ref", () =>
+                        AddGenerator(modifier, reference, "Add Modifier Ref", () =>
                         {
                             modifier.commands.Add("modifierName");
                         });
@@ -3592,31 +3572,31 @@ namespace BetterLegacy.Editor.Data
                     }
 
                 case nameof(ModifierActions.editorNotify): {
-                        StringGenerator(modifier, "Text", 0);
-                        SingleGenerator(modifier, "Time", 1, 0.5f);
-                        DropdownGenerator(modifier, "Notify Type", 2, CoreHelper.StringToOptionData("Info", "Success", "Error", "Warning"));
+                        StringGenerator(modifier, reference, "Text", 0);
+                        SingleGenerator(modifier, reference, "Time", 1, 0.5f);
+                        DropdownGenerator(modifier, reference, "Notify Type", 2, CoreHelper.StringToOptionData("Info", "Success", "Error", "Warning"));
 
                         break;
                     }
                 case nameof(ModifierActions.setWindowTitle): {
-                        StringGenerator(modifier, "Title", 0);
+                        StringGenerator(modifier, reference, "Title", 0);
 
                         break;
                     }
                 case nameof(ModifierActions.setDiscordStatus): {
-                        StringGenerator(modifier, "State", 0);
-                        StringGenerator(modifier, "Details", 1);
-                        DropdownGenerator(modifier, "Sub Icon", 2, CoreHelper.StringToOptionData("Arcade", "Editor", "Play", "Menu"));
-                        DropdownGenerator(modifier, "Icon", 3, CoreHelper.StringToOptionData("PA Logo White", "PA Logo Black"));
+                        StringGenerator(modifier, reference, "State", 0);
+                        StringGenerator(modifier, reference, "Details", 1);
+                        DropdownGenerator(modifier, reference, "Sub Icon", 2, CoreHelper.StringToOptionData("Arcade", "Editor", "Play", "Menu"));
+                        DropdownGenerator(modifier, reference, "Icon", 3, CoreHelper.StringToOptionData("PA Logo White", "PA Logo Black"));
 
                         break;
                     }
 
                 case "forLoop": {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        IntegerGenerator(modifier, "Start Index", 1, 0);
-                        IntegerGenerator(modifier, "End Count", 2, 10);
-                        IntegerGenerator(modifier, "Increment", 3, 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Start Index", 1, 0);
+                        IntegerGenerator(modifier, reference, "End Count", 2, 10);
+                        IntegerGenerator(modifier, reference, "Increment", 3, 1);
 
                         break;
                     }
@@ -3634,55 +3614,55 @@ namespace BetterLegacy.Editor.Data
                 #region Triggers
 
                 case nameof(ModifierTriggers.localVariableContains): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Contains", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Contains", 1);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableStartsWith): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Starts With", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Starts With", 1);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableEndsWith): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Ends With", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Ends With", 1);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableEquals): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Compare To", 1);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Compare To", 1);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableLesserEquals): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        SingleGenerator(modifier, "Compare To", 1, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableGreaterEquals): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        SingleGenerator(modifier, "Compare To", 1, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableLesser): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        SingleGenerator(modifier, "Compare To", 1, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableGreater): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        SingleGenerator(modifier, "Compare To", 1, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
                 case nameof(ModifierTriggers.localVariableExists): {
-                        StringGenerator(modifier, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
@@ -3696,15 +3676,15 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.pitchGreater):
                 case nameof(ModifierTriggers.playerDistanceLesser):
                 case nameof(ModifierTriggers.playerDistanceGreater): {
-                        SingleGenerator(modifier, "Value", 0, 1f);
+                        SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
 
                 case nameof(ModifierTriggers.musicTimeGreater):
                 case nameof(ModifierTriggers.musicTimeLesser): {
-                        SingleGenerator(modifier, "Time", 0, 0f);
-                        BoolGenerator(modifier, "Offset From Start Time", 1, false);
+                        SingleGenerator(modifier, reference, "Time", 0, 0f);
+                        BoolGenerator(modifier, reference, "Offset From Start Time", 1, false);
 
                         break;
                     }
@@ -3714,26 +3694,26 @@ namespace BetterLegacy.Editor.Data
                 #region String
 
                 case nameof(ModifierTriggers.usernameEquals): {
-                        StringGenerator(modifier, "Username", 0);
+                        StringGenerator(modifier, reference, "Username", 0);
                         break;
                     }
                 case nameof(ModifierTriggers.objectCollide): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierTriggers.levelPathExists):
                 case nameof(ModifierTriggers.realTimeDayWeekEquals): {
-                        StringGenerator(modifier, name == "realTimeDayWeekEquals" ? "Day" : "Path", 0);
+                        StringGenerator(modifier, reference, name == "realTimeDayWeekEquals" ? "Day" : "Path", 0);
 
                         break;
                     }
                 case nameof(ModifierTriggers.levelUnlocked):
                 case nameof(ModifierTriggers.levelCompletedOther):
                 case nameof(ModifierTriggers.levelExists): {
-                        StringGenerator(modifier, "ID", 0);
+                        StringGenerator(modifier, reference, "ID", 0);
 
                         break;
                     }
@@ -3814,11 +3794,11 @@ namespace BetterLegacy.Editor.Data
                         if (isGroup)
                             PrefabGroupOnly(modifier);
 
-                        IntegerGenerator(modifier, "Value", 0, 0);
+                        IntegerGenerator(modifier, reference, "Value", 0, 0);
 
                         if (isGroup)
                         {
-                            var str = StringGenerator(modifier, "Object Group", 1);
+                            var str = StringGenerator(modifier, reference, "Object Group", 1);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         }
 
@@ -3833,7 +3813,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.keyPress):
                 case nameof(ModifierTriggers.keyPressUp): {
                         var dropdownData = CoreHelper.ToDropdownData<KeyCode>();
-                        DropdownGenerator(modifier, "Key", 0, dropdownData.Key, dropdownData.Value);
+                        DropdownGenerator(modifier, reference, "Key", 0, dropdownData.Key, dropdownData.Value);
 
                         break;
                     }
@@ -3842,7 +3822,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.controlPress):
                 case nameof(ModifierTriggers.controlPressUp): {
                         var dropdownData = CoreHelper.ToDropdownData<PlayerInputControlType>();
-                        DropdownGenerator(modifier, "Button", 0, dropdownData.Key, dropdownData.Value);
+                        DropdownGenerator(modifier, reference, "Button", 0, dropdownData.Key, dropdownData.Value);
 
                         break;
                     }
@@ -3863,18 +3843,18 @@ namespace BetterLegacy.Editor.Data
                         if (name == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 0 && !float.TryParse(modifier.value, out float abcdef))
                             modifier.value = "0";
 
-                        StringGenerator(modifier, "Path", 1);
-                        StringGenerator(modifier, "JSON 1", 2);
-                        StringGenerator(modifier, "JSON 2", 3);
+                        StringGenerator(modifier, reference, "Path", 1);
+                        StringGenerator(modifier, reference, "JSON 1", 2);
+                        StringGenerator(modifier, reference, "JSON 2", 3);
 
                         if (name != "loadExists" && (name != "loadEquals" || Parser.TryParse(modifier.commands[4], 0) == 0))
-                            SingleGenerator(modifier, "Value", 0, 0f);
+                            SingleGenerator(modifier, reference, "Value", 0, 0f);
 
                         if (name == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 1)
-                            StringGenerator(modifier, "Value", 0);
+                            StringGenerator(modifier, reference, "Value", 0);
 
                         if (name == "loadEquals")
-                            DropdownGenerator(modifier, "Type", 4, CoreHelper.StringToOptionData("Number", "Text"));
+                            DropdownGenerator(modifier, reference, "Type", 4, CoreHelper.StringToOptionData("Number", "Text"));
 
                         break;
                     }
@@ -3885,9 +3865,9 @@ namespace BetterLegacy.Editor.Data
 
                 case nameof(ModifierTriggers.mouseOverSignalModifier): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 1);
+                        var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-                        SingleGenerator(modifier, "Delay", 0, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 0, 0f);
 
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
@@ -3900,9 +3880,9 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.randomGreater):
                 case nameof(ModifierTriggers.randomLesser):
                 case nameof(ModifierTriggers.randomEquals): {
-                        IntegerGenerator(modifier, "Minimum", 1, 0);
-                        IntegerGenerator(modifier, "Maximum", 2, 0);
-                        IntegerGenerator(modifier, "Compare To", 0, 0);
+                        IntegerGenerator(modifier, reference, "Minimum", 1, 0);
+                        IntegerGenerator(modifier, reference, "Maximum", 2, 0);
+                        IntegerGenerator(modifier, reference, "Compare To", 0, 0);
 
                         break;
                     }
@@ -3917,22 +3897,22 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.axisLesser):
                 case nameof(ModifierTriggers.axisGreater): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
-                        DropdownGenerator(modifier, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                        DropdownGenerator(modifier, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                        SingleGenerator(modifier, "Delay", 3, 0f);
+                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
 
-                        SingleGenerator(modifier, "Multiply", 4, 1f);
-                        SingleGenerator(modifier, "Offset", 5, 0f);
-                        SingleGenerator(modifier, "Min", 6, -99999f);
-                        SingleGenerator(modifier, "Max", 7, 99999f);
-                        SingleGenerator(modifier, "Loop", 10, 99999f);
-                        BoolGenerator(modifier, "Use Visual", 9, false);
+                        SingleGenerator(modifier, reference, "Multiply", 4, 1f);
+                        SingleGenerator(modifier, reference, "Offset", 5, 0f);
+                        SingleGenerator(modifier, reference, "Min", 6, -99999f);
+                        SingleGenerator(modifier, reference, "Max", 7, 99999f);
+                        SingleGenerator(modifier, reference, "Loop", 10, 99999f);
+                        BoolGenerator(modifier, reference, "Use Visual", 9, false);
 
-                        SingleGenerator(modifier, "Equals", 8, 1f);
+                        SingleGenerator(modifier, reference, "Equals", 8, 1f);
 
                         break;
                     }
@@ -3957,9 +3937,9 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.levelRankCurrentLesser):
                 case nameof(ModifierTriggers.levelRankCurrentGreater): {
                         if (name.Contains("Other"))
-                            StringGenerator(modifier, "ID", 1);
+                            StringGenerator(modifier, reference, "ID", 1);
 
-                        DropdownGenerator(modifier, "Rank", 0, Rank.Null.GetNames().ToList());
+                        DropdownGenerator(modifier, reference, "Rank", 0, Rank.Null.GetNames().ToList());
 
                         break;
                     }
@@ -3973,8 +3953,8 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.mathGreaterEquals):
                 case nameof(ModifierTriggers.mathLesser):
                 case nameof(ModifierTriggers.mathGreater): {
-                        StringGenerator(modifier, "First", 0);
-                        StringGenerator(modifier, "Second", 1);
+                        StringGenerator(modifier, reference, "First", 0);
+                        StringGenerator(modifier, reference, "Second", 1);
 
                         break;
                     }
@@ -3984,14 +3964,14 @@ namespace BetterLegacy.Editor.Data
                 #region Misc
 
                 case nameof(ModifierTriggers.containsTag): {
-                        StringGenerator(modifier, "Tag", 0);
+                        StringGenerator(modifier, reference, "Tag", 0);
 
                         break;
                     }
                 case nameof(ModifierTriggers.objectAlive):
                 case nameof(ModifierTriggers.objectSpawned): {
                         PrefabGroupOnly(modifier);
-                        var str = StringGenerator(modifier, "Object Group", 0);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
@@ -4005,7 +3985,7 @@ namespace BetterLegacy.Editor.Data
                         for (int i = 0; i < languages.Length; i++)
                             options.Add(new Dropdown.OptionData(Enum.GetName(typeof(Language), i) ?? "Invalid Value"));
 
-                        DropdownGenerator(modifier, "Language", 0, options);
+                        DropdownGenerator(modifier, reference, "Language", 0, options);
 
                         break;
                     }
@@ -4017,66 +3997,66 @@ namespace BetterLegacy.Editor.Data
                 #region Dev Only
 
                 case nameof(ModifierActions.loadSceneDEVONLY): {
-                        StringGenerator(modifier, "Scene", 0);
+                        StringGenerator(modifier, reference, "Scene", 0);
                         if (modifier.commands.Count > 1)
-                            BoolGenerator(modifier, "Show Loading", 1, true);
+                            BoolGenerator(modifier, reference, "Show Loading", 1, true);
 
                         break;
                     }
                 case nameof(ModifierActions.loadStoryLevelDEVONLY): {
-                        IntegerGenerator(modifier, "Chapter", 1, 0);
-                        IntegerGenerator(modifier, "Level", 2, 0);
-                        BoolGenerator(modifier, "Bonus", 0, false);
-                        BoolGenerator(modifier, "Skip Cutscene", 3, false);
+                        IntegerGenerator(modifier, reference, "Chapter", 1, 0);
+                        IntegerGenerator(modifier, reference, "Level", 2, 0);
+                        BoolGenerator(modifier, reference, "Bonus", 0, false);
+                        BoolGenerator(modifier, reference, "Skip Cutscene", 3, false);
 
                         break;
                     }
                 case nameof(ModifierActions.storySaveBoolDEVONLY): {
-                        StringGenerator(modifier, "Save", 0);
-                        BoolGenerator(modifier, "Value", 1, false);
+                        StringGenerator(modifier, reference, "Save", 0);
+                        BoolGenerator(modifier, reference, "Value", 1, false);
                         break;
                     }
                 case nameof(ModifierActions.storySaveIntDEVONLY): {
-                        StringGenerator(modifier, "Save", 0);
-                        IntegerGenerator(modifier, "Value", 1, 0);
+                        StringGenerator(modifier, reference, "Save", 0);
+                        IntegerGenerator(modifier, reference, "Value", 1, 0);
                         break;
                     }
                 case nameof(ModifierActions.storySaveFloatDEVONLY): {
-                        StringGenerator(modifier, "Save", 0);
-                        SingleGenerator(modifier, "Value", 1, 0f);
+                        StringGenerator(modifier, reference, "Save", 0);
+                        SingleGenerator(modifier, reference, "Value", 1, 0f);
                         break;
                     }
                 case nameof(ModifierActions.storySaveStringDEVONLY): {
-                        StringGenerator(modifier, "Save", 0);
-                        StringGenerator(modifier, "Value", 1);
+                        StringGenerator(modifier, reference, "Save", 0);
+                        StringGenerator(modifier, reference, "Value", 1);
                         break;
                     }
                 case nameof(ModifierActions.storySaveIntVariableDEVONLY): {
-                        StringGenerator(modifier, "Save", 0);
+                        StringGenerator(modifier, reference, "Save", 0);
                         break;
                     }
                 case nameof(ModifierActions.getStorySaveBoolDEVONLY): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value Name", 1);
-                        BoolGenerator(modifier, "Default Value", 2, false);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value Name", 1);
+                        BoolGenerator(modifier, reference, "Default Value", 2, false);
                         break;
                     }
                 case nameof(ModifierActions.getStorySaveIntDEVONLY): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value Name", 1);
-                        IntegerGenerator(modifier, "Default Value", 2, 0);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value Name", 1);
+                        IntegerGenerator(modifier, reference, "Default Value", 2, 0);
                         break;
                     }
                 case nameof(ModifierActions.getStorySaveFloatDEVONLY): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value Name", 1);
-                        SingleGenerator(modifier, "Default Value", 2, 0f);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value Name", 1);
+                        SingleGenerator(modifier, reference, "Default Value", 2, 0f);
                         break;
                     }
                 case nameof(ModifierActions.getStorySaveStringDEVONLY): {
-                        StringGenerator(modifier, "Variable Name", 0);
-                        StringGenerator(modifier, "Value Name", 1);
-                        StringGenerator(modifier, "Default Value", 2);
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Value Name", 1);
+                        StringGenerator(modifier, reference, "Default Value", 2);
                         break;
                     }
 
@@ -4085,25 +4065,25 @@ namespace BetterLegacy.Editor.Data
                 case "storyLoadIntGreaterEqualsDEVONLY":
                 case "storyLoadIntLesserDEVONLY":
                 case "storyLoadIntGreaterDEVONLY": {
-                        StringGenerator(modifier, "Load", 0);
-                        IntegerGenerator(modifier, "Default", 1, 0);
-                        IntegerGenerator(modifier, "Equals", 2, 0);
+                        StringGenerator(modifier, reference, "Load", 0);
+                        IntegerGenerator(modifier, reference, "Default", 1, 0);
+                        IntegerGenerator(modifier, reference, "Equals", 2, 0);
 
                         break;
                     }
                 case "storyLoadBoolDEVONLY": {
-                        StringGenerator(modifier, "Load", 0);
-                        BoolGenerator(modifier, "Default", 1, false);
+                        StringGenerator(modifier, reference, "Load", 0);
+                        BoolGenerator(modifier, reference, "Default", 1, false);
 
                         break;
                     }
 
                 case nameof(ModifierActions.exampleEnableDEVONLY): {
-                        BoolGenerator(modifier, "Active", 0, false);
+                        BoolGenerator(modifier, reference, "Active", 0, false);
                         break;
                     }
                 case nameof(ModifierActions.exampleSayDEVONLY): {
-                        StringGenerator(modifier, "Dialogue", 0);
+                        StringGenerator(modifier, reference, "Dialogue", 0);
                         break;
                     }
 
@@ -4113,19 +4093,16 @@ namespace BetterLegacy.Editor.Data
 
         #region Functions
 
-        public void Collapse<T>(bool collapse)
+        public void Collapse<T>(bool collapse, T reference)
         {
             Modifier.collapse = collapse;
-            RenderModifier<T>();
+            RenderModifier(reference);
             CoroutineHelper.PerformAtEndOfFrame(() => LayoutRebuilder.ForceRebuildLayoutImmediate(dialog.Content.AsRT()));
         }
 
-        public void Delete<T>()
+        public void Delete<T>(T reference)
         {
-            if (Modifier is not Modifier<T> modifier)
-                return;
-
-            if (modifier.reference is not IModifyable<T> modifyable)
+            if (reference is not IModifyable modifyable)
                 return;
 
             modifyable.Modifiers.RemoveAt(index);
@@ -4134,7 +4111,7 @@ namespace BetterLegacy.Editor.Data
             for (int i = 0; i < dialog.modifierCards.Count; i++)
                 dialog.modifierCards[i].index = i;
 
-            switch (modifier.referenceType)
+            switch (modifyable.ReferenceType)
             {
                 case ModifierReferenceType.BeatmapObject: {
                         var beatmapObject = modifyable as BeatmapObject;
@@ -4152,39 +4129,41 @@ namespace BetterLegacy.Editor.Data
             }
         }
 
-        public void Copy<T>()
+        public void Copy<T>(T reference)
         {
-            if (Modifier is not Modifier<T> modifier)
+            if (Modifier is not Modifier modifier)
                 return;
 
-            if (modifier.reference is not IModifyable<T> modifyable)
+            if (reference is not IModifyable modifyable)
                 return;
 
-            var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifier.referenceType);
+            var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(modifyable.ReferenceType);
+            if (copiedModifiers == null)
+                return;
             copiedModifiers.Clear();
-            copiedModifiers.Add(modifier.Copy(default));
+            copiedModifiers.Add(modifier.Copy());
 
             ModifiersEditor.inst.PasteGenerator(modifyable);
             EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
         }
 
-        public void Update<T>() => Update(Modifier as Modifier<T>);
+        public void Update<T>(T reference) => Update(Modifier as Modifier, reference);
 
-        public void Update<T>(Modifier<T> modifier)
+        public void Update<T>(Modifier modifier, T reference)
         {
             if (!modifier)
                 return;
 
             modifier.active = false;
             modifier.runCount = 0;
-            modifier.Inactive?.Invoke(modifier, null);
+            modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
         }
 
         #endregion
 
         #region Generators
 
-        public void PrefabGroupOnly<T>(Modifier<T> modifier)
+        public void PrefabGroupOnly(Modifier modifier)
         {
             var prefabInstance = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Prefab");
             prefabInstance.transform.localScale = Vector3.one;
@@ -4192,9 +4171,8 @@ namespace BetterLegacy.Editor.Data
             prefabInstanceText.text = "Prefab Group Only";
 
             var prefabInstanceToggle = prefabInstance.transform.Find("Toggle").GetComponent<Toggle>();
-            prefabInstanceToggle.onValueChanged.ClearAll();
-            prefabInstanceToggle.isOn = modifier.prefabInstanceOnly;
-            prefabInstanceToggle.onValueChanged.AddListener(_val =>
+            prefabInstanceToggle.SetIsOnWithoutNotify(modifier.prefabInstanceOnly);
+            prefabInstanceToggle.onValueChanged.NewListener(_val =>
             {
                 modifier.prefabInstanceOnly = _val;
                 modifier.active = false;
@@ -4209,9 +4187,8 @@ namespace BetterLegacy.Editor.Data
             groupAliveText.text = "Require Group Alive";
 
             var groupAliveToggle = groupAlive.transform.Find("Toggle").GetComponent<Toggle>();
-            groupAliveToggle.onValueChanged.ClearAll();
-            groupAliveToggle.isOn = modifier.groupAlive;
-            groupAliveToggle.onValueChanged.AddListener(_val =>
+            groupAliveToggle.SetIsOnWithoutNotify(modifier.groupAlive);
+            groupAliveToggle.onValueChanged.NewListener(_val =>
             {
                 modifier.groupAlive = _val;
                 modifier.active = false;
@@ -4259,7 +4236,7 @@ namespace BetterLegacy.Editor.Data
             return single;
         }
 
-        public GameObject SingleGenerator<T>(Modifier<T> modifier, string label, int type, float defaultValue = 0f, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
+        public GameObject SingleGenerator<T>(Modifier modifier, T reference, string label, int type, float defaultValue = 0f, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
         {
             var single = NumberGenerator(layout, label, modifier.GetValue(type), _val =>
             {
@@ -4267,7 +4244,7 @@ namespace BetterLegacy.Editor.Data
                     _val = RTMath.ClampZero(num, min, max).ToString();
 
                 modifier.SetValue(type, _val);
-                Update(modifier);
+                Update(modifier, reference);
             }, out InputField inputField);
 
             TriggerHelper.IncreaseDecreaseButtons(inputField, amount, multiply, min, max, single.transform);
@@ -4285,10 +4262,10 @@ namespace BetterLegacy.Editor.Data
                         RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                         {
                             modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (modifier.reference is IModifyable<T> modifyable)
+                            if (reference is IModifyable modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
-                            Update(modifier);
+                            Update(modifier, reference);
                         });
                     }));
             };
@@ -4296,7 +4273,7 @@ namespace BetterLegacy.Editor.Data
             return single;
         }
 
-        public GameObject IntegerGenerator<T>(Modifier<T> modifier, string label, int type, int defaultValue = 0, int amount = 1, int min = 0, int max = 0)
+        public GameObject IntegerGenerator<T>(Modifier modifier, T reference, string label, int type, int defaultValue = 0, int amount = 1, int min = 0, int max = 0)
         {
             var single = NumberGenerator(layout, label, modifier.GetValue(type), _val =>
             {
@@ -4305,7 +4282,7 @@ namespace BetterLegacy.Editor.Data
 
                 modifier.SetValue(type, _val);
 
-                Update(modifier);
+                Update(modifier, reference);
             }, out InputField inputField);
 
             TriggerHelper.IncreaseDecreaseButtonsInt(inputField, amount, min, max, t: single.transform);
@@ -4323,10 +4300,10 @@ namespace BetterLegacy.Editor.Data
                         RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                         {
                             modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (modifier.reference is IModifyable<T> modifyable)
+                            if (reference is IModifyable modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
-                            Update(modifier);
+                            Update(modifier, reference);
                         });
                     }));
             };
@@ -4355,13 +4332,13 @@ namespace BetterLegacy.Editor.Data
             return global;
         }
 
-        public GameObject BoolGenerator<T>(Modifier<T> modifier, string label, int type, bool defaultValue = false)
+        public GameObject BoolGenerator<T>(Modifier modifier, T reference, string label, int type, bool defaultValue = false)
         {
             var global = BoolGenerator(label, modifier.GetBool(type, defaultValue), _val =>
             {
                 modifier.SetValue(type, _val.ToString());
 
-                Update(modifier);
+                Update(modifier, reference);
             }, out Toggle globalToggle);
             var contextClickable = globalToggle.gameObject.AddComponent<ContextClickable>();
             contextClickable.onClick = eventData =>
@@ -4376,10 +4353,10 @@ namespace BetterLegacy.Editor.Data
                         RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                         {
                             modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (modifier.reference is IModifyable<T> modifyable)
+                            if (reference is IModifyable modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
-                            Update(modifier);
+                            Update(modifier, reference);
                         });
                     }));
             };
@@ -4415,27 +4392,26 @@ namespace BetterLegacy.Editor.Data
             return path;
         }
 
-        public GameObject StringGenerator<T>(Modifier<T> modifier, string label, int type, Action<string> onEndEdit = null) => StringGenerator(layout, label, modifier.GetValue(type), _val =>
+        public GameObject StringGenerator<T>(Modifier modifier, T reference, string label, int type, Action<string> onEndEdit = null) => StringGenerator(layout, label, modifier.GetValue(type), _val =>
         {
             modifier.SetValue(type, _val);
 
-            Update(modifier);
+            Update(modifier, reference);
         }, onEndEdit);
 
-        public void SetObjectColors<T>(Toggle[] toggles, int index, int currentValue, Modifier<T> modifier, List<Color> colors)
+        public void SetObjectColors<T>(Toggle[] toggles, int index, int currentValue, Modifier modifier, T reference, List<Color> colors)
         {
             int num = 0;
             foreach (var toggle in toggles)
             {
                 int toggleIndex = num;
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = num == currentValue;
-                toggle.onValueChanged.AddListener(_val =>
+                toggle.SetIsOnWithoutNotify(num == currentValue);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     modifier.SetValue(index, toggleIndex.ToString());
 
-                    SetObjectColors(toggles, index, toggleIndex, modifier, colors);
-                    Update(modifier);
+                    SetObjectColors(toggles, index, toggleIndex, modifier, reference, colors);
+                    Update(modifier, reference);
                 });
 
                 toggle.GetComponent<Image>().color = colors.GetAt(toggleIndex);
@@ -4451,7 +4427,7 @@ namespace BetterLegacy.Editor.Data
             }
         }
 
-        public GameObject ColorGenerator<T>(Modifier<T> modifier, string label, int type, int colorSource = 0)
+        public GameObject ColorGenerator<T>(Modifier modifier, T reference, string label, int type, int colorSource = 0)
         {
             var startColorBase = ModifiersEditor.inst.numberInput.Duplicate(layout, label);
             startColorBase.transform.localScale = Vector3.one;
@@ -4511,10 +4487,10 @@ namespace BetterLegacy.Editor.Data
                             RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                             {
                                 modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                                if (modifier.reference is IModifyable<T> modifyable)
+                                if (reference is IModifyable modifyable)
                                     CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                                 RTEditor.inst.HideNameEditor();
-                                Update(modifier);
+                                Update(modifier, reference);
                             });
                         }));
                 };
@@ -4523,14 +4499,14 @@ namespace BetterLegacy.Editor.Data
             CoreHelper.Delete(colorPrefab);
 
             EditorThemeManager.ApplyLightText(labelText);
-            SetObjectColors(toggles, type, modifier.GetInt(type, -1), modifier, colors);
+            SetObjectColors(toggles, type, modifier.GetInt(type, -1), modifier, reference, colors);
 
             return startColorBase;
         }
 
-        public GameObject DropdownGenerator<T>(Modifier<T> modifier, string label, int type, List<string> options, Action<int> onSelect = null) => DropdownGenerator(modifier, label, type, options.Select(x => new Dropdown.OptionData(x)).ToList(), null, onSelect);
+        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<string> options, Action<int> onSelect = null) => DropdownGenerator(modifier, reference, label, type, options.Select(x => new Dropdown.OptionData(x)).ToList(), null, onSelect);
 
-        public GameObject DropdownGenerator<T>(Modifier<T> modifier, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions = null, Action<int> onSelect = null)
+        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions = null, Action<int> onSelect = null)
         {
             var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -4561,7 +4537,7 @@ namespace BetterLegacy.Editor.Data
                 modifier.SetValue(type, _val.ToString());
                 onSelect?.Invoke(_val);
 
-                Update(modifier);
+                Update(modifier, reference);
             });
 
             if (dropdown.template)
@@ -4583,10 +4559,10 @@ namespace BetterLegacy.Editor.Data
                         RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                         {
                             modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
-                            if (modifier.reference is IModifyable<T> modifyable)
+                            if (reference is IModifyable modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();
-                            Update(modifier);
+                            Update(modifier, reference);
                         });
                     }));
             };
@@ -4594,7 +4570,7 @@ namespace BetterLegacy.Editor.Data
             return dd;
         }
 
-        public GameObject DeleteGenerator<T>(Modifier<T> modifier, Transform parent, Action onDelete)
+        public GameObject DeleteGenerator<T>(Modifier modifier, T reference, Transform parent, Action onDelete)
         {
             var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(parent, "delete");
             deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
@@ -4603,20 +4579,20 @@ namespace BetterLegacy.Editor.Data
             {
                 onDelete?.Invoke();
 
-                if (modifier.reference is BeatmapObject beatmapObject)
+                if (reference is BeatmapObject beatmapObject)
                     RTLevel.Current?.UpdateObject(beatmapObject);
-                if (modifier.reference is BackgroundObject backgroundObject)
+                if (reference is BackgroundObject backgroundObject)
                     RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
 
                 var scrollbar = dialog.Scrollbar;
                 var value = scrollbar ? scrollbar.value : 0f;
-                RenderModifier<T>();
+                RenderModifier(reference);
                 CoroutineHelper.PerformAtNextFrame(() =>
                 {
                     if (scrollbar)
                         scrollbar.value = value;
                 });
-                Update(modifier);
+                Update(modifier, reference);
             });
 
             EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
@@ -4624,7 +4600,7 @@ namespace BetterLegacy.Editor.Data
             return deleteGroup;
         }
 
-        public GameObject AddGenerator<T>(Modifier<T> modifier, string text, Action onAdd)
+        public GameObject AddGenerator<T>(Modifier modifier, T reference, string text, Action onAdd)
         {
             var baseAdd = Creator.NewUIObject("add", layout);
             baseAdd.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
@@ -4639,20 +4615,20 @@ namespace BetterLegacy.Editor.Data
             {
                 onAdd?.Invoke();
 
-                if (modifier.reference is BeatmapObject beatmapObject)
+                if (reference is BeatmapObject beatmapObject)
                     RTLevel.Current?.UpdateObject(beatmapObject);
-                if (modifier.reference is BackgroundObject backgroundObject)
+                if (reference is BackgroundObject backgroundObject)
                     RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
 
                 var scrollbar = dialog.Scrollbar;
                 var value = scrollbar ? scrollbar.value : 0f;
-                RenderModifier<T>();
+                RenderModifier(reference);
                 CoroutineHelper.PerformAtNextFrame(() =>
                 {
                     if (scrollbar)
                         scrollbar.value = value;
                 });
-                Update(modifier);
+                Update(modifier, reference);
             });
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);

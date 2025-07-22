@@ -27,26 +27,26 @@ namespace BetterLegacy.Core.Managers
         {
             ModifiersHelper.development = !ModifiersHelper.development;
 
-            if (!ModifiersHelper.development)
-                defaultBeatmapObjectModifiers.RemoveAll(x => x.Name.Contains("DEVONLY"));
-            else
-                AddDevelopmentModifiers();
+            modifiers.ForLoop(modifier =>
+            {
+                if (modifier.Name.Contains("DEVONLY"))
+                    modifier.hideInEditor = !ModifiersHelper.development;
+            });
         }
 
         void Awake()
         {
             inst = this;
-            defaultBeatmapObjectModifiers.Clear();
-            defaultBackgroundObjectModifiers.Clear();
+            modifiers.Clear();
 
-            LoadFile<BeatmapObject>(defaultBeatmapObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.lsb"));
-            LoadFile<BackgroundObject>(defaultBackgroundObjectModifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_bg_modifiers.lsb"));
+            LoadFile(modifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.json"));
 
-            if (ModifiersHelper.development)
-                AddDevelopmentModifiers();
+            AddDevelopmentModifiers();
+
+            modifiers.AddRange(defaultPlayerModifiers);
         }
 
-        void LoadFile<T>(List<ModifierBase> modifiers, string path)
+        void LoadFile(List<Modifier> modifiers, string path)
         {
             if (!RTFile.FileExists(path))
                 return;
@@ -54,45 +54,47 @@ namespace BetterLegacy.Core.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
-                LoadModifiers<T>(modifiers, jn["modifiers"][i]);
+                LoadModifiers(modifiers, jn["modifiers"][i]);
         }
 
-        void LoadModifiers<T>(List<ModifierBase> modifiers, JSONNode jn)
+        void LoadModifiers(List<Modifier> modifiers, JSONNode jn)
         {
             if (jn.IsArray)
             {
                 for (int i = 0; i < jn.Count; i++)
-                    LoadModifiers<T>(modifiers, jn[i]);
+                    LoadModifiers(modifiers, jn[i]);
                 return;
             }
 
-            modifiers.Add(Modifier<T>.Parse(jn));
+            var modifier = Modifier.Parse(jn);
+            modifier.compatibility = ModifierCompatibility.Parse(jn["compat"]);
+            modifiers.Add(modifier);
         }
 
         void AddDevelopmentModifiers()
         {
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "loadSceneDEVONLY", false, "Interface", "False"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "loadStoryLevelDEVONLY", false, "False", "0", "0", "False", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "loadSceneDEVONLY", false, "Interface", "False"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "loadStoryLevelDEVONLY", false, "False", "0", "0", "False", "0"));
 
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveBoolDEVONLY", false, "BoolVariable", "True"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveIntDEVONLY", false, "IntVariable", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveFloatDEVONLY", false, "FloatVariable", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveStringDEVONLY", false, "StringVariable", "Value"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "storySaveIntVariableDEVONLY", false, "IntVariable"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveBoolDEVONLY", true, "STORY_BOOL_VAR", "BoolVariable", "False"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveIntDEVONLY", true, "STORY_INT_VAR", "IntVariable", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveFloatDEVONLY", true, "STORY_FLOAT_VAR", "FloatVariable", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "getStorySaveStringDEVONLY", true, "STORY_STRING_VAR", "StringVariable", string.Empty));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "storySaveBoolDEVONLY", false, "BoolVariable", "True"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "storySaveIntDEVONLY", false, "IntVariable", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "storySaveFloatDEVONLY", false, "FloatVariable", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "storySaveStringDEVONLY", false, "StringVariable", "Value"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "storySaveIntVariableDEVONLY", false, "IntVariable"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "getStorySaveBoolDEVONLY", true, "STORY_BOOL_VAR", "BoolVariable", "False"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "getStorySaveIntDEVONLY", true, "STORY_INT_VAR", "IntVariable", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "getStorySaveFloatDEVONLY", true, "STORY_FLOAT_VAR", "FloatVariable", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "getStorySaveStringDEVONLY", true, "STORY_STRING_VAR", "StringVariable", string.Empty));
 
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "exampleEnableDEVONLY", false, "False"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Action, "exampleSayDEVONLY", false, "Something!"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "exampleEnableDEVONLY", false, "False"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Action, "exampleSayDEVONLY", false, "Something!"));
 
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Trigger, "storyLoadIntEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Trigger, "storyLoadIntLesserEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Trigger, "storyLoadIntGreaterEqualsDEVONLY", false, "IntVariable", "0", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Trigger, "storyLoadIntLesserDEVONLY", false, "IntVariable", "0", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Trigger, "storyLoadIntGreaterDEVONLY", false, "IntVariable", "0", "0"));
-            defaultBeatmapObjectModifiers.Add(RegisterModifier<BeatmapObject>(ModifierBase.Type.Trigger, "storyLoadBoolDEVONLY", false, "BoolVariable", "False"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Trigger, "storyLoadIntEqualsDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Trigger, "storyLoadIntLesserEqualsDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Trigger, "storyLoadIntGreaterEqualsDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Trigger, "storyLoadIntLesserDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Trigger, "storyLoadIntGreaterDEVONLY", false, "IntVariable", "0", "0"));
+            modifiers.Add(RegisterModifierDEVONLY(Modifier.Type.Trigger, "storyLoadBoolDEVONLY", false, "BoolVariable", "False"));
         }
 
         public static void DeleteKey(string id, AudioSource audioSource)
@@ -103,228 +105,113 @@ namespace BetterLegacy.Core.Managers
 
         public static Dictionary<string, AudioSource> audioSources = new Dictionary<string, AudioSource>();
 
-        static Modifier<T> RegisterModifier<T>(ModifierBase.Type type, string name, bool constant, params string[] values)
-        {
-            var modifier = new Modifier<T>(name)
-            {
-                type = type,
-                constant = constant,
-                value = values == null || values.IsEmpty() ? string.Empty : values[0],
-            };
-            for (int i = 1; i < values.Length; i++)
-                modifier.commands.Add(values[i]);
-            return modifier;
-        }
+        static Modifier RegisterModifier(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(type, name, constant, values);
+        
+        static Modifier RegisterModifierDEVONLY(Modifier.Type type, string name, bool constant, params string[] values) => new Modifier(type, name, constant, values) { hideInEditor = true };
 
-        public static List<ModifierBase> defaultLevelModifiers = new List<ModifierBase>()
-        {
-            new Modifier<GameData>("playerBubble")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerBubble",
-					"0", // Time
-                },
-                value = "Text", // Text
-            }, // playerBubble (todo)
-			new Modifier<GameData>("playerMoveAll")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerLocation",
-					"0", // Y
-					"0", // Time
-                },
-                value = "0", // X
-            }, // playerLocation
-			new Modifier<GameData>("playerEnableBoostAll")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerBoostLock",
-					"", // Show Bubble
-					"", // Bubble Time
-                },
-                value = "False", // Lock Enabled
-            }, // playerEnableBoostAll
-			new Modifier<GameData>("playerXLock")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerXLock",
-					"", // Show Bubble
-					"", // Bubble Time
-                },
-                value = "False", // Lock Enabled
-            }, // playerXLock
-			new Modifier<GameData>("playerYLock")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerYLock",
-                    "", // Show Bubble
-					"", // Bubble Time
-                },
-                value = "False", // Lock Enabled
-            }, // playerYLock
-			new Modifier<GameData>("playerBoost")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerBoost",
-                    "0", // Y
-                },
-                value = "0", // X
-            }, // playerBoost
-			new Modifier<GameData>("setMusicTime")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "setMusicTime"
-                },
-                value = "0", // time
-            }, // setMusicTime
-			new Modifier<GameData>("setPitch")
-            {
-                type = ModifierBase.Type.Action,
-                constant = false,
-                commands = new List<string>
-                {
-                    "setPitch"
-                },
-                value = "0", // time
-            }, // setPitch
+        public List<Modifier> modifiers = new List<Modifier>();
 
-            new Modifier<GameData>("time")
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = true,
-                commands = new List<string>
-                {
-                    "time",
-                    "0", // Activation Time Range Min
-					"0", // Activation Time Range Max
-				},
-                value = "",
-            }, // time
-			new Modifier<GameData>("playerHit")
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerHit",
-                    "0", // Activation Time Range Min
-					"0", // Activation Time Range Max
-				},
-                value = "",
-            }, // playerHit
-			new Modifier<GameData>("playerDeath")
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = false,
-                commands = new List<string>
-                {
-                    "playerDeath",
-                    "0", // Activation Time Range Min
-					"0", // Activation Time Range Max
-				},
-                value = "",
-            }, // playerDeath
-			new Modifier<GameData>("levelStart")
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = false,
-                commands = new List<string>
-                {
-                    "levelStart",
-                    "0", // Activation Time Range Min
-					"0", // Activation Time Range Max
-				},
-                value = "",
-            }, // levelStart
-			new Modifier<GameData>("levelRestart")
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = false,
-                commands = new List<string>
-                {
-                    "levelRestart",
-                    "0", // Activation Time Range Min
-					"0", // Activation Time Range Max
-				},
-                value = "",
-            }, // levelRestart
-			new Modifier<GameData>("levelRewind")
-            {
-                type = ModifierBase.Type.Trigger,
-                constant = false,
-                commands = new List<string>
-                {
-                    "levelRewind",
-                    "0", // Activation Time Range Min
-					"0", // Activation Time Range Max
-				},
-                value = "",
-            }, // levelRewind
+        public static List<Modifier> defaultLevelModifiers = new List<Modifier>()
+        {
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerBubble", false,
+                "Text", // Text
+                "0" // Time
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerMoveAll", false,
+                "0", // X
+                "0", // Y
+                "0" // Time
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerEnableBoostAll", false,
+                "False", // Lock Enabled
+                "", // Show Bubble
+                "" // Bubble Time
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerXLock", false,
+                "False", // Lock Enabled
+                "", // Show Bubble
+                "" // Lock Enabled
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "playerYLock", false,
+                "False", // Lock Enabled
+                "", // Show Bubble
+                "" // Lock Enabled
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "setMusicTime", false,
+                "0" // Time
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Action, "setPitch", false,
+                "1" // Time
+                ),
+
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "timeInRange", false,
+                "", // IDK
+                "0", // Activation Time Range Min
+                "0" // Activation Time Range Max
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "playerHit", false,
+                "", // IDK
+                "0", // Activation Time Range Min
+                "0" // Activation Time Range Max
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "playerDeath", false,
+                "", // IDK
+                "0", // Activation Time Range Min
+                "0" // Activation Time Range Max
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelStart", false,
+                "", // IDK
+                "0", // Activation Time Range Min
+                "0" // Activation Time Range Max
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelRestart", false,
+                "", // IDK
+                "0", // Activation Time Range Min
+                "0" // Activation Time Range Max
+                ),
+            new Modifier(ModifierCompatibility.GameDataCompatible, Modifier.Type.Trigger, "onLevelRewind", false,
+                "", // IDK
+                "0", // Activation Time Range Min
+                "0" // Activation Time Range Max
+                ),
         };
 
-        public static List<ModifierBase> defaultBeatmapObjectModifiers = new List<ModifierBase>();
-
-        public static List<ModifierBase> defaultBackgroundObjectModifiers = new List<ModifierBase>();
-        
-        public static List<ModifierBase> defaultPrefabObjectModifiers = new List<ModifierBase>();
-
-        public static List<ModifierBase> defaultPlayerModifiers = new List<ModifierBase>
+        public static List<Modifier> defaultPlayerModifiers = new List<Modifier>
         {
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "setCustomActive", true, "False", "0", "True"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "kill", false, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "hit", false, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "boost", false, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "shoot", false, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "pulse", false, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "jump", false, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "signalModifier", false, "0", "Object Group"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "playAnimation", false, "0", "boost"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "setIdleAnimation", false, "0", "boost"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Action, "animateObject", true, "1", "0", "0", "0", "0", "True", "0", "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "setCustomActive", true, "False", "0", "True"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "kill", false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "hit", false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "boost", false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "shoot", false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "pulse", false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "jump", false, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "signalModifier", false, "0", "Object Group"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "playAnimation", false, "0", "boost"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "setIdleAnimation", false, "0", "boost"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, "animateObject", true, "1", "0", "0", "0", "0", "True", "0", "0"),
 
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "keyPressDown", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "keyPress", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "keyPressUp", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "mouseButtonDown", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "mouseButton", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "mouseButtonUp", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "controlPress", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "controlPressUp", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthEquals", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthGreaterEquals", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthLesserEquals", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthGreater", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthLesser", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthPerEquals", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthPerGreaterEquals", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthPerLesserEquals", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthPerGreater", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "healthPerLesser", true, "0"),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "isDead", true, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "isBoosting", true, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "isColliding", true, ""),
-            RegisterModifier<PAPlayer>(ModifierBase.Type.Trigger, "isSolidColliding", true, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "keyPressDown", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "keyPress", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "keyPressUp", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "mouseButtonDown", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "mouseButton", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "mouseButtonUp", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "controlPress", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "controlPressUp", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthEquals", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthGreaterEquals", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthLesserEquals", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthGreater", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthLesser", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthPerEquals", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthPerGreaterEquals", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthPerLesserEquals", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthPerGreater", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "healthPerLesser", true, "0"),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "isDead", true, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "isBoosting", true, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "isColliding", true, ""),
+            new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Trigger, "isSolidColliding", true, ""),
         };
     }
 }

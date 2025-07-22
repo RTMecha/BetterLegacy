@@ -193,7 +193,7 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new ButtonFunction("Create audio object", () =>
                             {
-                                if (!ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "playSound", out ModifierBase defaultModifier) || defaultModifier is not Modifier<BeatmapObject> modifier)
+                                if (!ModifiersManager.inst.modifiers.TryFind(x => x.Name == "playSound", out Modifier modifier))
                                     return;
 
                                 var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
@@ -211,7 +211,7 @@ namespace BetterLegacy.Editor.Managers
                                     var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
                                     beatmapObject.objectType = BeatmapObject.ObjectType.Empty;
-                                    modifier = modifier.Copy(true, beatmapObject);
+                                    modifier = modifier.Copy();
                                     modifier.SetValue(0, jpgFileLocation.Remove(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1)));
                                     beatmapObject.modifiers.Add(modifier);
                                 });
@@ -312,7 +312,7 @@ namespace BetterLegacy.Editor.Managers
                                         break;
 
                                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                                    beatmapObject.modifiers.Add(Modifier<BeatmapObject>.Parse(jn["data"], beatmapObject));
+                                    beatmapObject.modifiers.Add(Modifier.Parse(jn["data"]));
 
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderDialog(beatmapObject);
@@ -325,7 +325,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
                                     for (int j = 0; j < jn["data"].Count; j++)
-                                        beatmapObject.modifiers.Add(Modifier<BeatmapObject>.Parse(jn["data"][j], beatmapObject));
+                                        beatmapObject.modifiers.Add(Modifier.Parse(jn["data"][j]));
 
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderDialog(beatmapObject);
@@ -3242,7 +3242,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var modifier = beatmapObject.modifiers[j];
                         modifier.active = false;
-                        modifier.Inactive?.Invoke(modifier, null);
+                        modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     }
                 }
 

@@ -2677,10 +2677,7 @@ namespace BetterLegacy.Core.Components.Player
             var control = Core.GetControl();
             var modifierBlock = control.CollideModifierBlock;
             if (modifierBlock)
-            {
-                modifierBlock.SetReference(Core);
-                ModifiersHelper.RunModifiersLoop(modifierBlock.Modifiers, new Dictionary<string, string>());
-            }
+                ModifiersHelper.RunModifiersLoop(modifierBlock.Modifiers, Core, new Dictionary<string, string>());
         }
 
         bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {playerIndex + 1})";

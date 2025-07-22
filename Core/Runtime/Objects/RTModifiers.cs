@@ -6,20 +6,25 @@ using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
-    public class RTModifiers<T> : Exists, IRTObject
+    public class RTModifiers : Exists, IRTObject
     {
         public RTModifiers() { }
 
-        public RTModifiers(List<Modifier<T>> modifiers, bool orderMatters, float startTime, float killTime)
+        public RTModifiers(List<Modifier> modifiers, IModifierReference reference, bool orderMatters, float startTime, float killTime)
         {
             this.modifiers = modifiers;
+            this.reference = reference;
             this.orderMatters = orderMatters;
 
             StartTime = startTime;
             KillTime = killTime;
+
+            modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, reference));
         }
 
-        public List<Modifier<T>> modifiers;
+        public IModifierReference reference;
+
+        public List<Modifier> modifiers;
 
         public bool orderMatters;
 
@@ -43,7 +48,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 modifier.runCount = 0;
                 modifier.active = false;
                 modifier.running = false;
-                modifier.Inactive?.Invoke(modifier, variables);
+                modifier.Inactive?.Invoke(modifier, reference, variables);
             });
         }
 
@@ -51,9 +56,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             variables.Clear();
             if (orderMatters)
-                ModifiersHelper.RunModifiersLoop(modifiers, variables);
+                ModifiersHelper.RunModifiersLoop(modifiers, reference, variables);
             else
-                ModifiersHelper.RunModifiersAll(modifiers, variables);
+                ModifiersHelper.RunModifiersAll(modifiers, reference, variables);
         }
     }
 }

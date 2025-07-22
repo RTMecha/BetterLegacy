@@ -160,7 +160,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         /// <typeparam name="T">Type of the modifyable object.</typeparam>
         /// <param name="modifyable">Object that is modifyable.</param>
-        public IEnumerator RenderModifiers<T>(IModifyable<T> modifyable)
+        public IEnumerator RenderModifiers(IModifyable modifyable)
         {
             Label.gameObject.SetActive(RTEditor.ShowModdedUI);
             IntVariableUI.gameObject.SetActive(RTEditor.ShowModdedUI);
@@ -222,7 +222,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 int index = num;
                 var modifierCard = new ModifierCard(modifier, index, this);
                 modifierCards.Add(modifierCard);
-                modifierCard.RenderModifier<T>();
+                modifierCard.RenderModifier(modifyable);
                 num++;
             }
 

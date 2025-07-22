@@ -1031,7 +1031,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 beatmapObject.modifiers.ForLoop(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                     modifier.Result = default;
                 });
             }
@@ -1040,7 +1040,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 backgroundObject.modifiers.ForLoop(modifier =>
                 {
-                    modifier.Inactive?.Invoke(modifier, null);
+                    modifier.Inactive?.Invoke(modifier, backgroundObject, null);
                     modifier.Result = default;
                 });
             }
@@ -1061,7 +1061,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
                             beatmapObject.modifiers.ForEach(modifier =>
                             {
-                                modifier.Inactive?.Invoke(modifier, null);
+                                modifier.Inactive?.Invoke(modifier, beatmapObject, null);
                                 modifier.Result = default;
                             });
 
@@ -1079,7 +1079,7 @@ namespace BetterLegacy.Editor.Managers
                             RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                             backgroundObject.modifiers.ForEach(modifier =>
                             {
-                                modifier.Inactive?.Invoke(modifier, null);
+                                modifier.Inactive?.Invoke(modifier, backgroundObject, null);
                                 modifier.Result = default;
                             });
 

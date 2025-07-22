@@ -12,7 +12,7 @@ namespace BetterLegacy.Core.Components
         /// <summary>
         /// Assigns audio, a BeatmapObject and modifier.
         /// </summary>
-        public void Init(AudioClip audioClip, BeatmapObject beatmapObject, Modifier<BeatmapObject> modifier)
+        public void Init(AudioClip audioClip, BeatmapObject beatmapObject, Modifier modifier)
         {
             AudioClip = audioClip;
             BeatmapObject = beatmapObject;
@@ -85,6 +85,6 @@ namespace BetterLegacy.Core.Components
 
         public BeatmapObject BeatmapObject { get; set; }
 
-        public Modifier<BeatmapObject> Modifier { get; set; }
+        public Modifier Modifier { get; set; }
     }
 }

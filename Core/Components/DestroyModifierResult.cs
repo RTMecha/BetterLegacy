@@ -18,6 +18,6 @@ namespace BetterLegacy.Core.Components
         /// <summary>
         /// Modifier reference.
         /// </summary>
-        public Modifier<BeatmapObject> Modifier { get; set; }
+        public Modifier Modifier { get; set; }
     }
 }
