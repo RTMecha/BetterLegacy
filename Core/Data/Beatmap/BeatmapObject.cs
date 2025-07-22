@@ -563,11 +563,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             gradientType = orig.gradientType;
             gradientScale = orig.gradientScale;
             gradientRotation = orig.gradientRotation;
-            shape = orig.shape;
-            shapeOption = orig.shapeOption;
-            polygonShape = orig.polygonShape.Copy();
-            autoTextAlign = orig.autoTextAlign;
-            text = orig.text;
+            this.CopyShapeableData(orig);
+
             LDM = orig.LDM;
 
             this.CopyParentData(orig);
