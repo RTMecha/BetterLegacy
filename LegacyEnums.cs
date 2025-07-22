@@ -2317,5 +2317,16 @@ namespace BetterLegacy
         Count
     }
 
+    /// <summary>
+    /// Type of the players' current device.
+    /// </summary>
+    public enum ControllerType
+    {
+        XBox,
+        PS,
+        Keyboard,
+        Unknown
+    }
+
     #endregion
 }
