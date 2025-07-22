@@ -960,8 +960,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="hits">Amount of hits.</param>
         /// <param name="length">Total length of the level contributes to the accuracy.</param>
         /// <returns>Returns a calculated accuracy.</returns>
-        public static float CalculateAccuracy(int hits, float length)
-            => 100f / ((hits / (length / PlayerManager.AcurracyDivisionAmount)) + 1f);
+        public static float CalculateAccuracy(int hits, float length) => 100f / ((hits / (length / 10f)) + 1f);
 
         #endregion
     }
