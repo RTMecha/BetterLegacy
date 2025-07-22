@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Components
 
         void LateUpdate()
         {
-            if (!active || !leader || !leader.gameObject.activeSelf || !leader.gameObject.activeInHierarchy)
+            if (!active || !GameManager.inst.players.activeSelf || !GameManager.inst.players.activeInHierarchy)
             {
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.Euler(Vector3.zero);
@@ -43,8 +43,8 @@ namespace BetterLegacy.Core.Components
 
             if (rotate)
             {
-                if (InHorizontalBounds && InVerticalBounds)
-                    quaternion = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0f, 0f, leader.transform.rotation.eulerAngles.z), num);
+                if (InHorizontalBounds && InVerticalBounds && !PlayerManager.Players.IsEmpty() && PlayerManager.Players[0].RuntimePlayer)
+                    quaternion = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0f, 0f, PlayerManager.Players[0].RuntimePlayer.rb.transform.eulerAngles.z), num);
                 transform.localRotation = quaternion;
             }
             else
@@ -56,7 +56,6 @@ namespace BetterLegacy.Core.Components
         public bool move;
 
         Transform tracker;
-        public Transform leader;
 
         public float followSharpness = 0.1f;
 

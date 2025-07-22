@@ -925,9 +925,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
-
-                if (player && player.Player)
-                    player.Player.Hit(Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue));
+                player?.RuntimePlayer?.Hit(Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue));
             });
         }
         
@@ -937,8 +935,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var damage = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.Hit(damage);
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player))
+                player.RuntimePlayer?.Hit(damage);
         }
         
         public static void playerHitAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -947,8 +945,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var damage = Mathf.Clamp(modifier.GetInt(0, 1, variables), 0, int.MaxValue);
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                player.Player.Hit(damage);
+            foreach (var player in PlayerManager.Players)
+                player.RuntimePlayer?.Hit(damage);
         }
         
         public static void playerHeal(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -963,9 +961,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
-
-                if (player && player.Player)
-                    player.Player.Heal(heal);
+                player?.RuntimePlayer?.Heal(heal);
             });
         }
         
@@ -975,8 +971,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var health = Mathf.Clamp(modifier.GetInt(1, 1, variables), 0, int.MaxValue);
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.Heal(health);
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.Heal(health);
         }
 
         public static void playerHealAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -988,9 +984,8 @@ namespace BetterLegacy.Core.Helpers
             bool healed = false;
             foreach (var player in PlayerManager.Players)
             {
-                if (player.Player)
-                    if (player.Player.Heal(heal, false))
-                        healed = true;
+                if (player.RuntimePlayer && player.RuntimePlayer.Heal(heal, false))
+                    healed = true;
             }
 
             if (healed)
@@ -1008,8 +1003,8 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.Kill();
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.Kill();
             });
         }
         
@@ -1018,8 +1013,8 @@ namespace BetterLegacy.Core.Helpers
             if (RTBeatmap.Current.Invincible || modifier.constant)
                 return;
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player)
-                customPlayer.Player.Kill();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.Kill();
         }
         
         public static void playerKillAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -1028,8 +1023,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             foreach (var player in PlayerManager.Players)
-                if (player.Player)
-                    player.Player.Kill();
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.Kill();
         }
         
         public static void playerRespawn(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -1050,10 +1045,8 @@ namespace BetterLegacy.Core.Helpers
         
         public static void playerRespawnIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (modifier.constant)
-                return;
-
-            PlayerManager.RespawnPlayer(modifier.GetInt(0, 0));
+            if (!modifier.constant)
+                PlayerManager.RespawnPlayer(modifier.GetInt(0, 0));
         }
         
         public static void playerRespawnAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -1088,10 +1081,10 @@ namespace BetterLegacy.Core.Helpers
                     vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(1, 0f, variables));
 
                 bool relative = modifier.GetBool(4, false, variables);
-                if (!player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
-                var tf = player.Player.rb.transform;
+                var tf = player.RuntimePlayer.rb.transform;
                 if (modifier.constant)
                     tf.localPosition = vector;
                 else
@@ -1126,10 +1119,10 @@ namespace BetterLegacy.Core.Helpers
 
             var relative = modifier.GetBool(5, false, variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
-            var tf = customPlayer.Player.rb.transform;
+            var tf = player.RuntimePlayer.rb.transform;
             if (modifier.constant)
                 tf.localPosition = vector;
             else
@@ -1171,9 +1164,12 @@ namespace BetterLegacy.Core.Helpers
                 easing = DataManager.inst.AnimationList[e].Name;
 
             bool relative = modifier.GetBool(4, false, variables);
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            foreach (var player in PlayerManager.Players)
             {
-                var tf = player.Player.rb.transform;
+                if (!player.RuntimePlayer)
+                    continue;
+
+                var tf = player.RuntimePlayer.rb.transform;
                 if (duration == 0f || modifier.constant)
                 {
                     if (relative)
@@ -1217,10 +1213,10 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
-                var tf = player.Player.rb.transform;
+                var tf = player.RuntimePlayer.rb.transform;
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
@@ -1258,10 +1254,10 @@ namespace BetterLegacy.Core.Helpers
 
             var relative = modifier.GetBool(4, false, variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
-            var tf = customPlayer.Player.rb.transform;
+            var tf = player.RuntimePlayer.rb.transform;
             if (modifier.constant)
             {
                 var v = tf.localPosition;
@@ -1296,9 +1292,12 @@ namespace BetterLegacy.Core.Helpers
                 easing = DataManager.inst.AnimationList[e].Name;
 
             bool relative = modifier.GetBool(3, false, variables);
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            foreach (var player in PlayerManager.Players)
             {
-                var tf = player.Player.rb.transform;
+                if (!player.RuntimePlayer)
+                    continue;
+
+                var tf = player.RuntimePlayer.rb.transform;
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
@@ -1344,10 +1343,10 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
-                var tf = player.Player.rb.transform;
+                var tf = player.RuntimePlayer.rb.transform;
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
@@ -1385,10 +1384,10 @@ namespace BetterLegacy.Core.Helpers
 
             var relative = modifier.GetBool(4, false, variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
-            var tf = customPlayer.Player.rb.transform;
+            var tf = player.RuntimePlayer.rb.transform;
             if (modifier.constant)
             {
                 var v = tf.localPosition;
@@ -1423,9 +1422,12 @@ namespace BetterLegacy.Core.Helpers
                 easing = DataManager.inst.AnimationList[e].Name;
 
             bool relative = modifier.GetBool(3, false, variables);
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            foreach (var player in PlayerManager.Players)
             {
-                var tf = player.Player.rb.transform;
+                if (!player.RuntimePlayer)
+                    continue;
+
+                var tf = player.RuntimePlayer.rb.transform;
                 if (modifier.constant)
                 {
                     var v = tf.localPosition;
@@ -1470,10 +1472,10 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
-                var tf = player.Player.rb.transform;
+                var tf = player.RuntimePlayer.rb.transform;
                 if (modifier.constant)
                 {
                     var v = tf.localRotation.eulerAngles;
@@ -1511,10 +1513,10 @@ namespace BetterLegacy.Core.Helpers
 
             var relative = modifier.GetBool(4, false, variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer))
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
-            var tf = customPlayer.Player.rb.transform;
+            var tf = player.RuntimePlayer.rb.transform;
             if (modifier.constant)
             {
                 var v = tf.localRotation.eulerAngles;
@@ -1549,9 +1551,12 @@ namespace BetterLegacy.Core.Helpers
             var duration = modifier.GetFloat(1, 1f, variables);
 
             bool relative = modifier.GetBool(3, false, variables);
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            foreach (var player in PlayerManager.Players)
             {
-                var tf = player.Player.rb.transform;
+                if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
+                    continue;
+
+                var tf = player.RuntimePlayer.rb.transform;
                 if (modifier.constant)
                 {
                     var v = tf.localRotation.eulerAngles;
@@ -1589,10 +1594,10 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
+                if (!player || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+                player.RuntimePlayer.rb.position = new Vector3(pos.x, pos.y, 0f);
             });
         }
 
@@ -1606,10 +1611,10 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 var pos = modifier.reference.GetFullPosition();
-                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+                player.RuntimePlayer.rb.position = new Vector3(pos.x, pos.y, 0f);
             });
         }
 
@@ -1624,11 +1629,11 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
+                if (!player || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var y = player.Player.rb.position.y;
-                player.Player.rb.position = new Vector2(pos.x, y);
+                var y = player.RuntimePlayer.rb.position.y;
+                player.RuntimePlayer.rb.position = new Vector2(pos.x, y);
             });
         }
         
@@ -1643,11 +1648,11 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
+                if (!player || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var y = player.Player.rb.position.y;
-                player.Player.rb.position = new Vector2(pos.x, y);
+                var y = player.RuntimePlayer.rb.position.y;
+                player.RuntimePlayer.rb.position = new Vector2(pos.x, y);
             });
         }
 
@@ -1661,11 +1666,11 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 var pos = modifier.reference.GetFullPosition();
-                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var y = player.Player.rb.position.y;
-                player.Player.rb.position = new Vector2(pos.x, y);
+                var y = player.RuntimePlayer.rb.position.y;
+                player.RuntimePlayer.rb.position = new Vector2(pos.x, y);
             });
         }
 
@@ -1680,11 +1685,11 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 foreach (var player in PlayerManager.Players)
                 {
-                    if (!player.Player || !player.Player.rb)
+                    if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                         continue;
 
-                    var y = player.Player.rb.position.y;
-                    player.Player.rb.position = new Vector2(pos.x, y);
+                    var y = player.RuntimePlayer.rb.position.y;
+                    player.RuntimePlayer.rb.position = new Vector2(pos.x, y);
                 }
             });
         }
@@ -1700,11 +1705,11 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
+                if (!player || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var x = player.Player.rb.position.x;
-                player.Player.rb.position = new Vector2(x, pos.y);
+                var x = player.RuntimePlayer.rb.position.x;
+                player.RuntimePlayer.rb.position = new Vector2(x, pos.y);
             });
         }
 
@@ -1718,11 +1723,11 @@ namespace BetterLegacy.Core.Helpers
             RTLevel.Current.postTick.Enqueue(() =>
             {
                 var pos = modifier.reference.GetFullPosition();
-                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var x = player.Player.rb.position.x;
-                player.Player.rb.position = new Vector2(x, pos.y);
+                var x = player.RuntimePlayer.rb.position.x;
+                player.RuntimePlayer.rb.position = new Vector2(x, pos.y);
             });
         }
 
@@ -1737,11 +1742,11 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 foreach (var player in PlayerManager.Players)
                 {
-                    if (!player.Player || !player.Player.rb)
+                    if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                         continue;
 
-                    var x = player.Player.rb.position.x;
-                    player.Player.rb.position = new Vector2(x, pos.y);
+                    var x = player.RuntimePlayer.rb.position.x;
+                    player.RuntimePlayer.rb.position = new Vector2(x, pos.y);
                 }
             });
         }
@@ -1757,10 +1762,10 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player || !player.Player.rb)
+                if (!player || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                player.Player.rb.transform.SetLocalRotationEulerZ(modifier.reference.GetFullRotation().z);
+                player.RuntimePlayer.rb.transform.SetLocalRotationEulerZ(modifier.reference.GetFullRotation().z);
             });
         }
 
@@ -1773,10 +1778,10 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+                if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                player.Player.rb.transform.SetLocalRotationEulerZ(modifier.reference.GetFullRotation().z);
+                player.RuntimePlayer.rb.transform.SetLocalRotationEulerZ(modifier.reference.GetFullRotation().z);
             });
         }
 
@@ -1792,10 +1797,10 @@ namespace BetterLegacy.Core.Helpers
 
                 foreach (var player in PlayerManager.Players)
                 {
-                    if (!player.Player || !player.Player.rb)
+                    if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                         continue;
 
-                    player.Player.rb.transform.SetLocalRotationEulerZ(rot);
+                    player.RuntimePlayer.rb.transform.SetLocalRotationEulerZ(rot);
                 }
             });
         }
@@ -1830,14 +1835,14 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
                 if (shouldBoostX)
-                    player.Player.lastMoveHorizontal = x;
+                    player.RuntimePlayer.lastMoveHorizontal = x;
                 if (shouldBoostY)
-                    player.Player.lastMoveVertical = y;
-                player.Player.Boost();
+                    player.RuntimePlayer.lastMoveVertical = y;
+                player.RuntimePlayer.Boost();
             });
         }
         
@@ -1862,13 +1867,13 @@ namespace BetterLegacy.Core.Helpers
                 y = Parser.TryParse(yStr, 0f);
             }
 
-            if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player)
+            if (!modifier.constant && PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
             {
                 if (shouldBoostX)
-                    player.Player.lastMoveHorizontal = x;
+                    player.RuntimePlayer.lastMoveHorizontal = x;
                 if (shouldBoostY)
-                    player.Player.lastMoveVertical = y;
-                player.Player.Boost();
+                    player.RuntimePlayer.lastMoveVertical = y;
+                player.RuntimePlayer.Boost();
             }
         }
         
@@ -1893,13 +1898,16 @@ namespace BetterLegacy.Core.Helpers
                 y = Parser.TryParse(yStr, 0f);
             }
 
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+            foreach (var player in PlayerManager.Players)
             {
+                if (!player.RuntimePlayer)
+                    continue;
+
                 if (shouldBoostX)
-                    player.Player.lastMoveHorizontal = x;
+                    player.RuntimePlayer.lastMoveHorizontal = x;
                 if (shouldBoostY)
-                    player.Player.lastMoveVertical = y;
-                player.Player.Boost();
+                    player.RuntimePlayer.lastMoveVertical = y;
+                player.RuntimePlayer.Boost();
             }
         }
         
@@ -1914,23 +1922,23 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player && player.Player.CanCancelBoosting)
-                    player.Player.StopBoosting();
+                if (player && player.RuntimePlayer && player.RuntimePlayer.CanCancelBoosting)
+                    player.RuntimePlayer.StopBoosting();
             });
         }
 
         public static void playerCancelBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player && player.Player.CanCancelBoosting)
-                player.Player.StopBoosting();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CanCancelBoosting)
+                player.RuntimePlayer.StopBoosting();
         }
 
         public static void playerCancelBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             foreach (var player in PlayerManager.Players)
             {
-                if (player && player.Player && player.Player.CanCancelBoosting)
-                    player.Player.StopBoosting();
+                if (player && player.RuntimePlayer && player.RuntimePlayer.CanCancelBoosting)
+                    player.RuntimePlayer.StopBoosting();
             }
         }
 
@@ -1945,21 +1953,24 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.CanBoost = false;
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.CanBoost = false;
             });
         }
         
         public static void playerDisableBoostIndex<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player)
-                player.Player.CanBoost = false;
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.CanBoost = false;
         }
         
         public static void playerDisableBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                player.Player.CanBoost = false;
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.CanBoost = false;
+            }
         }
         
         public static void playerEnableBoost(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -1975,8 +1986,8 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (player && player.Player)
-                    player.Player.CanBoost = enabled;
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.CanBoost = enabled;
             });
         }
         
@@ -1984,16 +1995,19 @@ namespace BetterLegacy.Core.Helpers
         {
             var enabled = modifier.GetBool(1, true, variables);
 
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) && player.Player)
-                player.Player.CanBoost = enabled;
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.CanBoost = enabled;
         }
         
         public static void playerEnableBoostAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var enabled = modifier.GetBool(0, true, variables);
 
-            foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                player.Player.CanBoost = enabled;
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.CanBoost = enabled;
+            }
         }
         
         public static void playerEnableMove(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -2010,11 +2024,11 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
-                player.Player.CanMove = enabled;
-                player.Player.CanRotate = rotate;
+                player.RuntimePlayer.CanMove = enabled;
+                player.RuntimePlayer.CanRotate = rotate;
             });
         }
 
@@ -2023,11 +2037,11 @@ namespace BetterLegacy.Core.Helpers
             var enabled = modifier.GetBool(1, true, variables);
             var rotate = modifier.GetBool(2, true, variables);
 
-            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer player) || !player.Player)
+            if (!PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
-            player.Player.CanMove = enabled;
-            player.Player.CanRotate = rotate;
+            player.RuntimePlayer.CanMove = enabled;
+            player.RuntimePlayer.CanRotate = rotate;
         }
 
         public static void playerEnableMoveAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -2037,11 +2051,11 @@ namespace BetterLegacy.Core.Helpers
 
             foreach (var player in PlayerManager.Players)
             {
-                if (!player.Player)
+                if (!player.RuntimePlayer)
                     continue;
 
-                player.Player.CanMove = enabled;
-                player.Player.CanRotate = rotate;
+                player.RuntimePlayer.CanMove = enabled;
+                player.RuntimePlayer.CanRotate = rotate;
             }
         }
 
@@ -2061,10 +2075,8 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player)
-                    return;
-
-                player.Player.rb.velocity = new Vector2(x, y);
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.rb.velocity = new Vector2(x, y);
             });
         }
         
@@ -2074,8 +2086,8 @@ namespace BetterLegacy.Core.Helpers
             var x = modifier.GetFloat(1, 0f, variables);
             var y = modifier.GetFloat(2, 0f, variables);
 
-            if (PlayerManager.Players.TryGetAt(index, out CustomPlayer player) && player.Player && player.Player.rb)
-                player.Player.rb.velocity = new Vector2(x, y);
+            if (PlayerManager.Players.TryGetAt(index, out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
+                player.RuntimePlayer.rb.velocity = new Vector2(x, y);
         }
 
         public static void playerVelocityAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -2086,8 +2098,8 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
                 var player = PlayerManager.Players[i];
-                if (player.Player && player.Player.rb)
-                    player.Player.rb.velocity = new Vector2(x, y);
+                if (player.RuntimePlayer && player.RuntimePlayer.rb)
+                    player.RuntimePlayer.rb.velocity = new Vector2(x, y);
             }
         }
 
@@ -2101,12 +2113,12 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
-                var velocity = player.Player.rb.velocity;
+                var velocity = player.RuntimePlayer.rb.velocity;
                 velocity.x = x;
-                player.Player.rb.velocity = velocity;
+                player.RuntimePlayer.rb.velocity = velocity;
             });
         }
 
@@ -2115,12 +2127,12 @@ namespace BetterLegacy.Core.Helpers
             var index = modifier.GetInt(0, 0, variables);
             var x = modifier.GetFloat(1, 0f, variables);
 
-            if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+            if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                 return;
 
-            var velocity = player.Player.rb.velocity;
+            var velocity = player.RuntimePlayer.rb.velocity;
             velocity.x = x;
-            player.Player.rb.velocity = velocity;
+            player.RuntimePlayer.rb.velocity = velocity;
         }
 
         public static void playerVelocityXAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -2130,12 +2142,12 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
                 var player = PlayerManager.Players[i];
-                if (!player.Player || !player.Player.rb)
+                if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                     continue;
 
-                var velocity = player.Player.rb.velocity;
+                var velocity = player.RuntimePlayer.rb.velocity;
                 velocity.x = x;
-                player.Player.rb.velocity = velocity;
+                player.RuntimePlayer.rb.velocity = velocity;
             }
         }
 
@@ -2149,12 +2161,12 @@ namespace BetterLegacy.Core.Helpers
                 var pos = modifier.reference.GetFullPosition();
                 var player = PlayerManager.GetClosestPlayer(pos);
 
-                if (!player || !player.Player)
+                if (!player || !player.RuntimePlayer)
                     return;
 
-                var velocity = player.Player.rb.velocity;
+                var velocity = player.RuntimePlayer.rb.velocity;
                 velocity.y = y;
-                player.Player.rb.velocity = velocity;
+                player.RuntimePlayer.rb.velocity = velocity;
             });
         }
 
@@ -2163,12 +2175,12 @@ namespace BetterLegacy.Core.Helpers
             var index = modifier.GetInt(0, 0, variables);
             var y = modifier.GetFloat(1, 0f, variables);
 
-            if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer player) || !player.Player || !player.Player.rb)
+            if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                 return;
 
-            var velocity = player.Player.rb.velocity;
+            var velocity = player.RuntimePlayer.rb.velocity;
             velocity.y = y;
-            player.Player.rb.velocity = velocity;
+            player.RuntimePlayer.rb.velocity = velocity;
         }
 
         public static void playerVelocityYAll<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -2178,12 +2190,12 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < PlayerManager.Players.Count; i++)
             {
                 var player = PlayerManager.Players[i];
-                if (!player.Player || !player.Player.rb)
+                if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                     continue;
 
-                var velocity = player.Player.rb.velocity;
+                var velocity = player.RuntimePlayer.rb.velocity;
                 velocity.y = y;
-                player.Player.rb.velocity = velocity;
+                player.RuntimePlayer.rb.velocity = velocity;
             }
         }
         
@@ -2200,13 +2212,13 @@ namespace BetterLegacy.Core.Helpers
             PlayersData.Current.SetPlayerModel(index, modifier.GetValue(0, variables));
             PlayerManager.AssignPlayerModels();
 
-            if (!PlayerManager.Players.TryGetAt(index, out CustomPlayer customPlayer) || !customPlayer.Player)
+            if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer)
                 return;
 
-            customPlayer.UpdatePlayerModel();
+            player.UpdatePlayerModel();
 
-            customPlayer.Player.playerNeedsUpdating = true;
-            customPlayer.Player.UpdateModel();
+            player.RuntimePlayer.playerNeedsUpdating = true;
+            player.RuntimePlayer.UpdateModel();
         }
         
         public static void setGameMode<T>(Modifier<T> modifier, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
@@ -2235,10 +2247,10 @@ namespace BetterLegacy.Core.Helpers
 
             players.ForLoop(player =>
             {
-                if (!player.Player || !player.Player.rb)
+                if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var transform = player.Player.rb.transform;
+                var transform = player.RuntimePlayer.rb.transform;
 
                 var vector = new Vector3(transform.position.x, transform.position.y, 0f);
                 var target = new Vector3(pos.x, pos.y, 0f);
@@ -2443,33 +2455,33 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < players.Count; i++)
                 {
                     var player = players[i];
-                    variables[modifier.GetValue(0) + "_" + i] = (player.Player && player.Player.CurrentCollider && player.Player.CurrentCollider.IsTouching(collider)).ToString();
+                    variables[modifier.GetValue(0) + "_" + i] = (player.RuntimePlayer && player.RuntimePlayer.CurrentCollider && player.RuntimePlayer.CurrentCollider.IsTouching(collider)).ToString();
                 }
             }
         }
 
         public static void getPlayerHealth<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer))
-                variables[modifier.GetValue(0)] = customPlayer.Health.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player))
+                variables[modifier.GetValue(0)] = player.Health.ToString();
         }
         
         public static void getPlayerPosX<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.rb)
-                variables[modifier.GetValue(0)] = customPlayer.Player.rb.transform.position.x.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
+                variables[modifier.GetValue(0)] = player.RuntimePlayer.rb.transform.position.x.ToString();
         }
         
         public static void getPlayerPosY<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.rb)
-                variables[modifier.GetValue(0)] = customPlayer.Player.rb.transform.position.y.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
+                variables[modifier.GetValue(0)] = player.RuntimePlayer.rb.transform.position.y.ToString();
         }
 
         public static void getPlayerRot<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.rb)
-                variables[modifier.GetValue(0)] = customPlayer.Player.rb.transform.eulerAngles.z.ToString();
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
+                variables[modifier.GetValue(0)] = player.RuntimePlayer.rb.transform.eulerAngles.z.ToString();
         }
 
         public static void getEventValue<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -3463,7 +3475,7 @@ namespace BetterLegacy.Core.Helpers
             if (players.IsEmpty())
                 return;
 
-            var player = players[0].Player;
+            var player = players[0].RuntimePlayer;
 
             if (!player || !player.rb)
                 return;
@@ -3482,7 +3494,7 @@ namespace BetterLegacy.Core.Helpers
             if (players.IsEmpty())
                 return;
 
-            var player = players[0].Player;
+            var player = players[0].RuntimePlayer;
 
             if (!player || !player.rb)
                 return;
@@ -3597,10 +3609,10 @@ namespace BetterLegacy.Core.Helpers
             {
                 var player = PlayerManager.GetClosestPlayer(runtimeObject.visualObject.gameObject.transform.position);
 
-                if (!player.Player || !player.Player.rb)
+                if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var distance = Vector2.Distance(player.Player.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
+                var distance = Vector2.Distance(player.RuntimePlayer.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
 
                 runtimeObject.visualObject.SetColor(runtimeObject.visualObject.GetPrimaryColor() + ThemeManager.inst.Current.GetObjColor(index) * -(distance * multiply - offset));
             });
@@ -3625,10 +3637,10 @@ namespace BetterLegacy.Core.Helpers
             {
                 var player = PlayerManager.GetClosestPlayer(runtimeObject.visualObject.gameObject.transform.position);
 
-                if (!player.Player || !player.Player.rb)
+                if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
                     return;
 
-                var distance = Vector2.Distance(player.Player.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
+                var distance = Vector2.Distance(player.RuntimePlayer.rb.transform.position, runtimeObject.visualObject.gameObject.transform.position);
 
                 runtimeObject.visualObject.SetColor(Color.Lerp(runtimeObject.visualObject.GetPrimaryColor(),
                                 RTColors.FadeColor(RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val), opacity),
@@ -4621,10 +4633,10 @@ namespace BetterLegacy.Core.Helpers
             var applyDeltaTime = modifier.GetBool(7, true, variables);
 
             ITransformable transformable;
-            if (modifier.referenceType == ModifierReferenceType.CustomPlayer)
+            if (modifier.referenceType == ModifierReferenceType.PAPlayer)
             {
                 var id = modifier.GetValue(7, variables);
-                if (modifier.reference is CustomPlayer customPlayer && customPlayer.Player && customPlayer.Player.customObjects.TryFind(x => x.id == id, out RTPlayer.CustomObject customObject))
+                if (modifier.reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
                     transformable = customObject;
                 else
                     transformable = null;
@@ -5572,8 +5584,8 @@ namespace BetterLegacy.Core.Helpers
 
             var players = PlayerManager.Players;
 
-            if (players.TryFind(x => x.Player && x.Player.rb, out CustomPlayer customPlayer))
-                transformable.SetTransform(toType, toAxis, Mathf.Clamp((customPlayer.Player.rb.transform.GetLocalVector(fromType).At(fromAxis) - offset) * multiply, min, max));
+            if (players.TryFind(x => x.RuntimePlayer && x.RuntimePlayer.rb, out PAPlayer player))
+                transformable.SetTransform(toType, toAxis, Mathf.Clamp((player.RuntimePlayer.rb.transform.GetLocalVector(fromType).At(fromAxis) - offset) * multiply, min, max));
         }
         
         public static void legacyTail(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
@@ -6230,8 +6242,8 @@ namespace BetterLegacy.Core.Helpers
                 else
                 {
                     var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
-                    if (player && player.Player)
-                        vector = player.Player.rb.position;
+                    if (player && player.RuntimePlayer)
+                        vector = player.RuntimePlayer.rb.position;
                 }
             }
 
@@ -6269,8 +6281,8 @@ namespace BetterLegacy.Core.Helpers
                 else
                 {
                     var player = PlayerManager.GetClosestPlayer(beatmapObject.GetFullPosition());
-                    if (player && player.Player)
-                        vector = player.Player.rb.position;
+                    if (player && player.RuntimePlayer)
+                        vector = player.RuntimePlayer.rb.position;
                 }
             }
 
@@ -6709,49 +6721,44 @@ namespace BetterLegacy.Core.Helpers
 
         public static class PlayerActions
         {
-            public static void setCustomActive(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void setCustomActive(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var id = modifier.GetValue(1, variables);
-                if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == id, out RTPlayer.CustomObject customObject))
+                if (modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
                     customObject.active = modifier.GetBool(0, false, variables);
             }
 
-            public static void kill(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void kill(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 modifier.reference.Health = 0;
             }
 
-            public static void hit(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void hit(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                if (modifier.reference.Player)
-                    modifier.reference.Player.Hit();
+                modifier.reference?.RuntimePlayer?.Hit();
             }
 
-            public static void boost(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void boost(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                if (modifier.reference.Player)
-                    modifier.reference.Player.Boost();
+                modifier.reference?.RuntimePlayer?.Boost();
             }
 
-            public static void shoot(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void shoot(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                if (modifier.reference.Player)
-                    modifier.reference.Player.Shoot();
+                modifier.reference?.RuntimePlayer?.Shoot();
             }
 
-            public static void pulse(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void pulse(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                if (modifier.reference.Player)
-                    modifier.reference.Player.Pulse();
+                modifier.reference?.RuntimePlayer?.Pulse();
             }
 
-            public static void jump(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void jump(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                if (modifier.reference.Player)
-                    modifier.reference.Player.Jump();
+                modifier.reference?.RuntimePlayer?.Jump();
             }
 
-            public static void signalModifier(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void signalModifier(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var list = GameData.Current.FindObjectsWithTag(modifier.GetValue(1, variables));
                 var delay = modifier.GetFloat(0, 0f, variables);
@@ -6760,23 +6767,23 @@ namespace BetterLegacy.Core.Helpers
                     CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
             }
 
-            public static void playAnimation(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void playAnimation(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var id = modifier.GetValue(0, variables);
                 var referenceID = modifier.GetValue(1, variables);
-                if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == id, out RTPlayer.CustomObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+                if (modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
                 {
                     var runtimeAnimation = new RTAnimation("Custom Animation");
-                    modifier.reference.Player.ApplyAnimation(runtimeAnimation, animation, customObject);
-                    modifier.reference.Player.animationController.Play(runtimeAnimation);
+                    modifier.reference.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
+                    modifier.reference.RuntimePlayer.animationController.Play(runtimeAnimation);
                 }
             }
 
-            public static void setIdleAnimation(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static void setIdleAnimation(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var id = modifier.GetValue(0, variables);
                 var referenceID = modifier.GetValue(1, variables);
-                if (modifier.reference.Player && modifier.reference.Player.customObjects.TryFind(x => x.id == id, out RTPlayer.CustomObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+                if (modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
                     customObject.currentIdleAnimation = animation.ReferenceID;
             }
         }

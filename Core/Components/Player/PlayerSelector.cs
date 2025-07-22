@@ -34,7 +34,7 @@ namespace BetterLegacy.Core.Components.Player
                 return;
 
             EditorManager.inst.SetTooltip(null, $"<#{LSColors.ColorToHex(CoreHelper.CurrentBeatmapTheme.GetPlayerColor(player.playerIndex))}>Player {player.playerIndex + 1}</color>",
-                $"<b>Health</b>: <#4B86B4>{player.CustomPlayer?.Health ?? 3}</color>\n" +
+                $"<b>Health</b>: <#4B86B4>{player.Core?.Health ?? 3}</color>\n" +
                 $"<b>Damage Colliding</b>: <#4B86B4>{player.triggerColliding}</color>\n" +
                 $"<b>Solid Colliding</b>: <#4B86B4>{player.colliding}</color>\n" +
                 $"<b>Position</b>: <#4B86B4>{player.rb.position}</color>\n" +

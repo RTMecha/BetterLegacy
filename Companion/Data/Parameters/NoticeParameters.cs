@@ -19,7 +19,7 @@ namespace BetterLegacy.Companion.Data.Parameters
     {
         public PlayerNoticeParameters() { }
 
-        public PlayerNoticeParameters(CustomPlayer player)
+        public PlayerNoticeParameters(PAPlayer player)
         {
             this.player = player;
         }
@@ -27,7 +27,7 @@ namespace BetterLegacy.Companion.Data.Parameters
         /// <summary>
         /// Player reference.
         /// </summary>
-        public CustomPlayer player;
+        public PAPlayer player;
     }
 
     public class BeatmapObjectNoticeParameters : NoticeParameters

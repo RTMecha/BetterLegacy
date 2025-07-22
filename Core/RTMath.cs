@@ -127,10 +127,10 @@ namespace BetterLegacy.Core
                     for (int i = 0; i < players.Count; i++)
                     {
                         var player = players[i];
-                        var isNull = !player.Player || !player.Player.rb;
-                        float posX = isNull ? 0f : player.Player.rb.position.x;
-                        float posY = isNull ? 0f : player.Player.rb.position.y;
-                        float rot = isNull ? 0f : player.Player.rb.rotation;
+                        var isNull = !player.RuntimePlayer || !player.RuntimePlayer.rb;
+                        float posX = isNull ? 0f : player.RuntimePlayer.rb.position.x;
+                        float posY = isNull ? 0f : player.RuntimePlayer.rb.position.y;
+                        float rot = isNull ? 0f : player.RuntimePlayer.rb.rotation;
                         context.RegisterVariable($"player{i}PosX", posX);
                         context.RegisterVariable($"player{i}PosY", posY);
                         context.RegisterVariable($"player{i}Rot", rot);

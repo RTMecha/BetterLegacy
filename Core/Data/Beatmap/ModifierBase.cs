@@ -108,8 +108,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return ModifierReferenceType.BeatmapObject;
             else if (type == typeof(BackgroundObject))
                 return ModifierReferenceType.BackgroundObject;
-            else if (type == typeof(CustomPlayer))
-                return ModifierReferenceType.CustomPlayer;
+            else if (type == typeof(PAPlayer))
+                return ModifierReferenceType.PAPlayer;
             else if (type == typeof(GameData))
                 return ModifierReferenceType.GameData;
             return ModifierReferenceType.Null;
@@ -120,7 +120,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (commands.IsEmpty())
                 return;
 
-            if (modifiers.TryFind(x => x.Name == Name && x.type == type, out ModifierBase defaultModifier))
+            if (modifiers != null && modifiers.TryFind(x => x.Name == Name && x.type == type, out ModifierBase defaultModifier))
             {
                 int num = commands.Count;
                 while (commands.Count < defaultModifier.commands.Count)

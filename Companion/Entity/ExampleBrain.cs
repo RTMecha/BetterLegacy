@@ -59,11 +59,11 @@ namespace BetterLegacy.Companion.Entity
         {
             get
             {
-                if (!Cursor.visible && !InputDataManager.inst.players.IsEmpty())
+                if (!Cursor.visible && !PlayerManager.Players.IsEmpty())
                 {
                     var player = PlayerManager.Players[0];
 
-                    return !player.Player || !player.Player.rb ? Input.mousePosition : Camera.main.WorldToScreenPoint(player.Player.rb.position);
+                    return !player.RuntimePlayer || !player.RuntimePlayer.rb ? Input.mousePosition : Camera.main.WorldToScreenPoint(player.RuntimePlayer.rb.position);
                 }
 
                 return Input.mousePosition;

@@ -1108,7 +1108,6 @@ namespace BetterLegacy.Editor.Managers
         public ContentPopup DebuggerPopup { get; set; }
 
         public ContentPopup AutosavePopup { get; set; }
-        public ContentPopup PlayerModelsPopup { get; set; }
 
         public ContentPopup DocumentationPopup { get; set; }
 
@@ -6243,7 +6242,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.SetEditRenderArea();
             GameManager.inst.UpdateTimeline();
 
-            if (!EditorConfig.Instance.ResetHealthInEditor.Value || InputDataManager.inst.players.IsEmpty())
+            if (!EditorConfig.Instance.ResetHealthInEditor.Value || PlayerManager.Players.IsEmpty())
                 return;
 
             if (!EditorManager.inst.hasLoadedLevel)

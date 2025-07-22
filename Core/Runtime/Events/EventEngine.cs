@@ -904,9 +904,9 @@ namespace BetterLegacy.Core.Runtime.Events
             {
                 foreach (var customPlayer in PlayerManager.Players)
                 {
-                    if (customPlayer.Player && customPlayer.Player.rb)
+                    if (customPlayer.RuntimePlayer && customPlayer.RuntimePlayer.rb)
                     {
-                        var player = customPlayer.Player.rb.transform;
+                        var player = customPlayer.RuntimePlayer.rb.transform;
                         player.localPosition = new Vector3(playerPositionX, playerPositionY, 0f);
                         player.localRotation = Quaternion.Euler(0f, 0f, playerRotation);
                     }

@@ -228,12 +228,12 @@ namespace BetterLegacy.Editor.Managers
             idleAnimation.positionKeyframes.Add(new EventKeyframe(1f, new float[] { 3f, 0f, 0f }, "InOutSine"));
             idleAnimation.positionKeyframes.Add(new EventKeyframe(2f, new float[] { 0f, 0f, 0f }, "InOutSine"));
 
-            if (PlayerManager.Players.TryGetAt(0, out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.PlayerModel && customPlayer.Player.Model.customObjects.TryGetAt(0, out PlayerModel.CustomObject customObject))
+            if (PlayerManager.Players.TryGetAt(0, out PAPlayer player) && player.RuntimePlayer && player.PlayerModel && player.RuntimePlayer.Model.customObjects.TryGetAt(0, out CustomPlayerObject customObject))
             {
                 customObject.animations.Clear();
                 customObject.animations.Add(boostAnimation);
                 customObject.animations.Add(idleAnimation);
-                customPlayer.Player.UpdateModel();
+                player.RuntimePlayer.UpdateModel();
             }
         }
 

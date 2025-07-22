@@ -93,7 +93,7 @@ namespace BetterLegacy.Companion.Data.Parameters
     /// </summary>
     public class PlayerDialogueParameters : DialogueParameters
     {
-        public PlayerDialogueParameters(CustomPlayer player) : base()
+        public PlayerDialogueParameters(PAPlayer player) : base()
         {
             this.player = player;
         }
@@ -101,7 +101,7 @@ namespace BetterLegacy.Companion.Data.Parameters
         /// <summary>
         /// Player reference.
         /// </summary>
-        public CustomPlayer player;
+        public PAPlayer player;
     }
 
     /// <summary>

@@ -4,7 +4,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-using BetterLegacy.Arcade.Managers;
+using InControl;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
@@ -50,29 +51,27 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Wrapped players list.
         /// </summary>
-        public static List<CustomPlayer> Players => InputDataManager.inst.players.Select(x => x as CustomPlayer).ToList();
+        public static List<PAPlayer> Players { get; set; } = new List<PAPlayer>();
 
         /// <summary>
         /// If the game is currently in single player.
         /// </summary>
-        public static bool IsSingleplayer => InputDataManager.inst.players.Count == 1;
+        public static bool IsSingleplayer => Players.Count == 1;
 
         /// <summary>
         /// If the game has no players loaded.
         /// </summary>
-        public static bool NoPlayers => InputDataManager.inst.players == null || InputDataManager.inst.players.IsEmpty();
+        public static bool NoPlayers => Players == null || Players.IsEmpty();
 
         /// <summary>
         /// If any of the players are not the modded versions.
         /// </summary>
-        public static bool InvalidPlayers => NoPlayers || InputDataManager.inst.players.Any(x => x is not CustomPlayer);
+        public static bool InvalidPlayers => NoPlayers || Players.Any(x => x is not PAPlayer);
 
         /// <summary>
         /// If other players should be considered in the level ranking.
         /// </summary>
         public static bool IncludeOtherPlayersInRank { get; set; }
-
-        public static float AcurracyDivisionAmount { get; set; } = 10f;
 
         #endregion
 
@@ -119,7 +118,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="vector2">Position to check closeness to.</param>
         /// <returns>Returns a CustomPlayer closest to the Vector2 parameter.</returns>
-        public static CustomPlayer GetClosestPlayer(Vector2 pos)
+        public static PAPlayer GetClosestPlayer(Vector2 pos)
         {
             var players = Players;
             var index = GetClosestPlayerIndex(pos);
@@ -137,15 +136,15 @@ namespace BetterLegacy.Core.Managers
             if (IsSingleplayer)
             {
                 var singleplayer = players[0];
-                return singleplayer && singleplayer.Player ? 0 : -1;
+                return singleplayer && singleplayer.RuntimePlayer ? 0 : -1;
             }
 
             if (players.IsEmpty())
                 return -1;
 
             var orderedList = players
-                .Where(x => x.Player && x.Player.rb)
-                .OrderBy(x => Vector2.Distance(x.Player.rb.position, pos));
+                .Where(x => x.RuntimePlayer && x.RuntimePlayer.rb)
+                .OrderBy(x => Vector2.Distance(x.RuntimePlayer.rb.position, pos));
 
             if (orderedList.Count() < 1)
                 return -1;
@@ -165,7 +164,7 @@ namespace BetterLegacy.Core.Managers
             if (IsSingleplayer)
             {
                 var customPlayer = players[0];
-                return customPlayer.Player && customPlayer.Player.rb ? customPlayer.Player.rb.transform.position : Vector2.zero;
+                return customPlayer.RuntimePlayer && customPlayer.RuntimePlayer.rb ? customPlayer.RuntimePlayer.rb.transform.position : Vector2.zero;
             }
 
             if (players.IsEmpty())
@@ -176,9 +175,9 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < players.Count; i++)
             {
                 var player = players[i];
-                if (player && player.Player && player.Player.rb)
+                if (player && player.RuntimePlayer && player.RuntimePlayer.rb)
                 {
-                    result += player.Player.rb.position;
+                    result += player.RuntimePlayer.rb.position;
                     count++;
                 }
             }
@@ -196,15 +195,35 @@ namespace BetterLegacy.Core.Managers
             if (!invalid)
                 return;
 
-            InputDataManager.inst.players.Clear();
-            InputDataManager.inst.players.Add(CreateDefaultPlayer());
+            Players.Clear();
+            Players.Add(CreateDefaultPlayer());
         }
 
         /// <summary>
         /// Creates the default player that uses a keyboard.
         /// </summary>
-        /// <returns>Returns a <see cref="CustomPlayer"/> with the default values.</returns>
-        public static CustomPlayer CreateDefaultPlayer() => new CustomPlayer(true, 0, null);
+        /// <returns>Returns a <see cref="PAPlayer"/> with the default values.</returns>
+        public static PAPlayer CreateDefaultPlayer() => new PAPlayer(true, 0, null);
+
+        public static PAPlayer FindPlayerUsingDevice(InputDevice inputDevice) => Players.Find(x => x.device == inputDevice);
+
+        public static bool DeviceNotConnected(InputDevice inputDevice) => !Players.Has(x => x.device == inputDevice);
+
+        public static PAPlayer FindPlayerUsingKeyboard() => Players.Find(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
+
+        public static bool KeyboardNotConnected() => !Players.Has(x => x.deviceName == "keyboard" || x.deviceType == ControllerType.Keyboard);
+
+        public static void RemovePlayer(PAPlayer player)
+        {
+            if (player.RuntimePlayer)
+            {
+                player.RuntimePlayer.Actions = null;
+                player.RuntimePlayer.FaceController = null;
+                CoreHelper.Delete(player.RuntimePlayer);
+            }
+            player.RuntimePlayer = null;
+            Players.Remove(player);
+        }
 
         #endregion
 
@@ -223,7 +242,7 @@ namespace BetterLegacy.Core.Managers
             bool spawned = false;
             foreach (var customPlayer in Players)
             {
-                if (!customPlayer.Player)
+                if (!customPlayer.RuntimePlayer)
                 {
                     spawned = true;
                     SpawnPlayer(customPlayer, positions[customPlayer.index]);
@@ -248,7 +267,7 @@ namespace BetterLegacy.Core.Managers
             bool spawned = false;
             foreach (var customPlayer in Players)
             {
-                if (!customPlayer.Player)
+                if (!customPlayer.RuntimePlayer)
                 {
                     spawned = true;
                     SpawnPlayer(customPlayer, pos);
@@ -267,12 +286,12 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="customPlayer">Player to spawn.</param>
         /// <param name="pos">Position to spawn at.</param>
-        public static void SpawnPlayer(CustomPlayer customPlayer, Vector3 pos)
+        public static void SpawnPlayer(PAPlayer player, Vector3 pos)
         {
-            if (customPlayer.PlayerModel && customPlayer.PlayerModel.basePart)
-                customPlayer.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : customPlayer.PlayerModel.basePart.health;
+            if (player.PlayerModel && player.PlayerModel.basePart)
+                player.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.PlayerModel.basePart.health;
 
-            var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(GameManager.inst.players.transform, "Player " + (customPlayer.index + 1));
+            var gameObject = GameManager.inst.PlayerPrefabs[0].Duplicate(GameManager.inst.players.transform, "Player " + (player.index + 1));
             gameObject.layer = 8;
             gameObject.SetActive(true);
             Destroy(gameObject.GetComponent<Player>());
@@ -282,51 +301,51 @@ namespace BetterLegacy.Core.Managers
             gameObject.transform.Find("Player").localPosition = new Vector3(pos.x, pos.y, 0f);
             gameObject.transform.localRotation = Quaternion.identity;
 
-            var player = gameObject.GetComponent<RTPlayer>();
+            var runtimePlayer = gameObject.GetComponent<RTPlayer>();
 
-            if (!player)
-                player = gameObject.AddComponent<RTPlayer>();
+            if (!runtimePlayer)
+                runtimePlayer = gameObject.AddComponent<RTPlayer>();
 
-            player.CustomPlayer = customPlayer;
-            player.Model = customPlayer.PlayerModel;
-            player.playerIndex = customPlayer.index;
-            player.initialHealthCount = customPlayer.Health;
-            customPlayer.Player = player;
+            runtimePlayer.Core = player;
+            runtimePlayer.Model = player.PlayerModel;
+            runtimePlayer.playerIndex = player.index;
+            runtimePlayer.initialHealthCount = player.Health;
+            player.RuntimePlayer = runtimePlayer;
 
             if (GameManager.inst.players.activeSelf)
             {
-                player.Spawn();
-                player.UpdateModel();
+                runtimePlayer.Spawn();
+                runtimePlayer.UpdateModel();
             }
             else
-                player.playerNeedsUpdating = true;
+                runtimePlayer.playerNeedsUpdating = true;
 
-            if (customPlayer.device == null)
+            if (player.device == null)
             {
                 var setBoth = (CoreHelper.InEditor || allowController) && IsSingleplayer;
-                player.Actions = setBoth ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
-                player.isKeyboard = true;
-                player.FaceController = setBoth ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
+                runtimePlayer.Actions = setBoth ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
+                runtimePlayer.isKeyboard = true;
+                runtimePlayer.FaceController = setBoth ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
             }
             else
             {
                 var myGameActions = MyGameActions.CreateWithJoystickBindings();
-                myGameActions.Device = customPlayer.device;
-                player.Actions = myGameActions;
-                player.isKeyboard = false;
+                myGameActions.Device = player.device;
+                runtimePlayer.Actions = myGameActions;
+                runtimePlayer.isKeyboard = false;
 
                 var faceController = FaceController.CreateWithJoystickBindings();
-                faceController.Device = customPlayer.device;
-                player.FaceController = faceController;
+                faceController.Device = player.device;
+                runtimePlayer.FaceController = faceController;
             }
 
-            player.SetPath(pos);
+            runtimePlayer.SetPath(pos);
 
             if (RTBeatmap.Current.challengeMode.Lives > 0)
             {
-                player.playerDeathEvent += _val =>
+                runtimePlayer.playerDeathEvent += _val =>
                 {
-                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.Alive)))
+                    if (Players.All(x => x is PAPlayer player && (!player.Alive || !player.RuntimePlayer.Alive)))
                     {
                         RTBeatmap.Current.lives--;
 
@@ -344,16 +363,16 @@ namespace BetterLegacy.Core.Managers
             }
             else
             {
-                player.playerDeathEvent += _val =>
+                runtimePlayer.playerDeathEvent += _val =>
                 {
-                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.Alive)))
+                    if (Players.All(x => x is PAPlayer player && (!player.Alive || !player.RuntimePlayer.Alive)))
                         GameManager.inst.gameState = GameManager.State.Reversing;
                 };
             }
 
-            if (IncludeOtherPlayersInRank || player.playerIndex == 0)
+            if (IncludeOtherPlayersInRank || runtimePlayer.playerIndex == 0)
             {
-                player.playerDeathEvent += _val =>
+                runtimePlayer.playerDeathEvent += _val =>
                 {
                     if (!CoreHelper.InEditor)
                         RTBeatmap.Current.deaths.Add(new PlayerDataPoint(_val));
@@ -362,13 +381,13 @@ namespace BetterLegacy.Core.Managers
                 };
 
                 if (!CoreHelper.InEditor)
-                    player.playerHitEvent += (int _health, Vector3 _val) =>
+                    runtimePlayer.playerHitEvent += (int _health, Vector3 _val) =>
                     {
                         RTBeatmap.Current.hits.Add(new PlayerDataPoint(_val));
                     };
             }
 
-            customPlayer.active = true;
+            player.active = true;
         }
 
         /// <summary>
@@ -431,11 +450,8 @@ namespace BetterLegacy.Core.Managers
         {
             foreach (var player in Players)
             {
-                if (!player.Player)
-                    continue;
-
-                player.Player.ClearObjects();
-                player.Player = null;
+                player.RuntimePlayer?.ClearObjects();
+                player.RuntimePlayer = null;
             }
         }
 
@@ -446,15 +462,11 @@ namespace BetterLegacy.Core.Managers
         public static void DestroyPlayer(int index)
         {
             var players = Players;
-            if (!players.InRange(index))
+            if (!players.TryGetAt(index, out PAPlayer player))
                 return;
 
-            var player = Players[index];
-            if (!player.Player)
-                return;
-
-            player.Player.ClearObjects();
-            player.Player = null;
+            player.RuntimePlayer?.ClearObjects();
+            player.RuntimePlayer = null;
         }
 
         /// <summary>
@@ -490,9 +502,7 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             var player = Players[index];
-            if (player.Player)
-                player.Player.ClearObjects();
-
+            player.RuntimePlayer?.ClearObjects();
             player.CurrentModel = PlayersData.Current.GetPlayerModel(index).basePart.id;
 
             SpawnPlayers(pos);
@@ -567,12 +577,11 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void UpdatePlayerModels()
         {
-            if (InputDataManager.inst)
-                foreach (var player in Players.Where(x => x && x.Player))
-                {
-                    player.UpdatePlayerModel();
-                    player.Player.UpdateModel();
-                }
+            foreach (var player in Players)
+            {
+                player.UpdatePlayerModel();
+                player.RuntimePlayer?.UpdateModel();
+            }
         }
 
         public static void AssignPlayerModels()

@@ -1305,7 +1305,7 @@ namespace BetterLegacy.Editor.Data
                             EditorContextMenu.inst.ShowContextMenu(
                                 new ButtonFunction("Select model", () =>
                                 {
-                                    RTEditor.inst.PlayerModelsPopup.Open();
+                                    PlayerEditor.inst.ModelsPopup.Open();
                                     CoroutineHelper.StartCoroutine(PlayerEditor.inst.RefreshModels(model =>
                                     {
                                         contextClickable.GetComponent<InputField>().text = model.basePart.id;

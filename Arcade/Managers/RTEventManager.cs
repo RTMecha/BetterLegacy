@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-
+ 
 using BetterLegacy.Core.Components;
 using BetterLegacy.Editor;
 
@@ -66,12 +66,6 @@ namespace BetterLegacy.Arcade.Managers
             uiCam.orthographic = true;
             uiCam.farClipPlane = 10000f;
             uiCam.nearClipPlane = -10000f;
-        }
-
-        void FixedUpdate()
-        {
-            if (!delayTracker.leader && InputDataManager.inst.players.Count > 0 && GameManager.inst.players.transform.Find("Player 1/Player"))
-                delayTracker.leader = GameManager.inst.players.transform.Find("Player 1/Player");
         }
     }
 }

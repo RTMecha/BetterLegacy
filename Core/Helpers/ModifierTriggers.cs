@@ -37,12 +37,25 @@ namespace BetterLegacy.Core.Helpers
                 for (int i = 0; i < players.Count; i++)
                 {
                     var player = players[i];
-                    if (!player.Player || !player.Player.CurrentCollider)
+                    if (!player.RuntimePlayer || !player.RuntimePlayer.CurrentCollider)
                         continue;
 
-                    if (player.Player.CurrentCollider.IsTouching(collider))
+                    if (player.RuntimePlayer.CurrentCollider.IsTouching(collider))
                         return true;
                 }
+            }
+            return false;
+        }
+
+        public static bool playerCollideIndex(Modifier<BeatmapObject> modifier, Dictionary<string, string> variables)
+        {
+            var runtimeObject = modifier.reference.runtimeObject;
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.collider)
+            {
+                var collider = runtimeObject.visualObject.collider;
+
+                if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CurrentCollider)
+                    return player.RuntimePlayer.CurrentCollider.IsTouching(collider);
             }
             return false;
         }
@@ -50,31 +63,31 @@ namespace BetterLegacy.Core.Helpers
         public static bool playerHealthEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
-            return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health == health);
+            return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health == health);
         }
         
         public static bool playerHealthLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
-            return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health <= health);
+            return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health <= health);
         }
         
         public static bool playerHealthGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
-            return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health >= health);
+            return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health >= health);
         }
         
         public static bool playerHealthLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
-            return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health < health);
+            return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health < health);
         }
         
         public static bool playerHealthGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
             var health = modifier.GetInt(0, 0, variables);
-            return !InputDataManager.inst.players.IsEmpty() && InputDataManager.inst.players.Any(x => x.health > health);
+            return !PlayerManager.Players.IsEmpty() && PlayerManager.Players.Any(x => x.health > health);
         }
         
         public static bool playerMoving<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -105,14 +118,14 @@ namespace BetterLegacy.Core.Helpers
             if (levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
             {
                 var orderedList = PlayerManager.Players
-                    .Where(x => x.Player && x.Player.rb)
-                    .OrderBy(x => Vector2.Distance(x.Player.rb.position, levelObject.visualObject.gameObject.transform.position)).ToList();
+                    .Where(x => x.RuntimePlayer && x.RuntimePlayer.rb)
+                    .OrderBy(x => Vector2.Distance(x.RuntimePlayer.rb.position, levelObject.visualObject.gameObject.transform.position)).ToList();
 
                 if (!orderedList.IsEmpty())
                 {
                     var closest = orderedList[0];
 
-                    return closest.Player.isBoosting;
+                    return closest.RuntimePlayer.isBoosting;
                 }
             }
 
@@ -121,7 +134,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool playerAlive<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out CustomPlayer customPlayer) && customPlayer.Player && customPlayer.Player.Alive;
+            return PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.Alive;
         }
         
         public static bool playerDeathsEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -191,27 +204,27 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool playerCountEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return InputDataManager.inst.players.Count == modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count == modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerCountLesserEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return InputDataManager.inst.players.Count <= modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count <= modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerCountGreaterEquals<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return InputDataManager.inst.players.Count >= modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count >= modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerCountLesser<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return InputDataManager.inst.players.Count < modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count < modifier.GetInt(0, 0, variables);
         }
         
         public static bool playerCountGreater<T>(Modifier<T> modifier, Dictionary<string, string> variables)
         {
-            return InputDataManager.inst.players.Count > modifier.GetInt(0, 0, variables);
+            return PlayerManager.Players.Count > modifier.GetInt(0, 0, variables);
         }
         
         public static bool onPlayerHit<T>(Modifier<T> modifier, Dictionary<string, string> variables)
@@ -1325,37 +1338,37 @@ namespace BetterLegacy.Core.Helpers
 
         public static class PlayerTriggers
         {
-            public static bool keyPressDown(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool keyPressDown(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, variables));
             }
 
-            public static bool keyPress(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool keyPress(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return Input.GetKey((KeyCode)modifier.GetInt(0, 0, variables));
             }
 
-            public static bool keyPressUp(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool keyPressUp(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, variables));
             }
 
-            public static bool mouseButtonDown(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool mouseButtonDown(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return Input.GetMouseButtonDown(modifier.GetInt(0, 0, variables));
             }
 
-            public static bool mouseButton(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool mouseButton(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return Input.GetMouseButton(modifier.GetInt(0, 0, variables));
             }
 
-            public static bool mouseButtonUp(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool mouseButtonUp(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return Input.GetMouseButtonUp(modifier.GetInt(0, 0, variables));
             }
 
-            public static bool controlPressDown(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool controlPressDown(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var type = modifier.GetInt(0, 0, variables);
                 var device = modifier.reference.device;
@@ -1363,7 +1376,7 @@ namespace BetterLegacy.Core.Helpers
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
             }
 
-            public static bool controlPress(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool controlPress(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var type = modifier.GetInt(0, 0, variables);
                 var device = modifier.reference.device;
@@ -1371,7 +1384,7 @@ namespace BetterLegacy.Core.Helpers
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
             }
 
-            public static bool controlPressUp(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool controlPressUp(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var type = modifier.GetInt(0, 0, variables);
                 var device = modifier.reference.device;
@@ -1379,84 +1392,84 @@ namespace BetterLegacy.Core.Helpers
                 return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
             }
 
-            public static bool healthEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return modifier.reference.Health == modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthGreaterEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthGreaterEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return modifier.reference.Health >= modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthLesserEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthLesserEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return modifier.reference.Health <= modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthGreater(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthGreater(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return modifier.reference.Health > modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthLesser(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthLesser(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 return modifier.reference.Health < modifier.GetInt(0, 3, variables);
             }
 
-            public static bool healthPerEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                 return health == modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerGreaterEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerGreaterEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                 return health >= modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerLesserEquals(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerLesserEquals(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                 return health <= modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerGreater(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerGreater(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                 return health > modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool healthPerLesser(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool healthPerLesser(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
                 var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                 return health < modifier.GetFloat(0, 50f, variables);
             }
 
-            public static bool isDead(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isDead(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                return modifier.reference.Player && modifier.reference.Player.isDead;
+                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.isDead;
             }
 
-            public static bool isBoosting(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isBoosting(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                return modifier.reference.Player && modifier.reference.Player.isBoosting;
+                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.isBoosting;
             }
 
-            public static bool isColliding(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isColliding(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                return modifier.reference.Player && modifier.reference.Player.triggerColliding;
+                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.triggerColliding;
             }
 
-            public static bool isSolidColliding(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables)
+            public static bool isSolidColliding(Modifier<PAPlayer> modifier, Dictionary<string, string> variables)
             {
-                return modifier.reference.Player && modifier.reference.Player.colliding;
+                return modifier.reference.RuntimePlayer && modifier.reference.RuntimePlayer.colliding;
             }
         }
     }

@@ -21,11 +21,11 @@ namespace BetterLegacy.Core.Data.Player
     /// </summary>
     public class PlayersData : Exists
     {
-        public PlayersData()
-        {
-            AssignDefaultModels();
-        }
+        public PlayersData() => AssignDefaultModels();
 
+        /// <summary>
+        /// If custom player models are allowed.
+        /// </summary>
         public static bool AllowCustomModels => GameData.Current && GameData.Current.data && GameData.Current.data.level.allowCustomPlayerModels;
 
         /// <summary>
@@ -33,9 +33,14 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public static bool UseGlobal => CoreHelper.InEditor || AllowCustomModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value;
 
-        public static bool IsValid => Current;
+        /// <summary>
+        /// The current <see cref="PlayersData"/>.
+        /// </summary>
         public static PlayersData Current { get; set; }
 
+        /// <summary>
+        /// Player models from the players folder.
+        /// </summary>
         public static Dictionary<string, PlayerModel> externalPlayerModels = new Dictionary<string, PlayerModel>();
 
         /// <summary>
@@ -43,6 +48,9 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public Dictionary<string, PlayerModel> playerModels = new Dictionary<string, PlayerModel>();
 
+        /// <summary>
+        /// Current model directionary.
+        /// </summary>
         public static Dictionary<string, PlayerModel> CurrentModelDictionary => UseGlobal ? externalPlayerModels : Current.playerModels;
 
         /// <summary>
@@ -54,12 +62,28 @@ namespace BetterLegacy.Core.Data.Player
         /// How players above the normal amount are treated.
         /// </summary>
         public MaxBehavior maxBehavior;
+        
+        /// <summary>
+        /// List of player controls.
+        /// </summary>
+        public List<PlayerControl> playerControls = new List<PlayerControl>
+        {
+            new PlayerControl(),
+            new PlayerControl(),
+            new PlayerControl(),
+            new PlayerControl(),
+        };
 
         #region Methods
 
+        /// <summary>
+        /// Gets a player model.
+        /// </summary>
+        /// <param name="id">ID of the model to get.</param>
+        /// <returns>Returns the found player model.</returns>
         public static PlayerModel GetPlayerModel(string id) =>
             UseGlobal && externalPlayerModels.TryGetValue(id, out PlayerModel externalPlayerModel) ? externalPlayerModel :
-            IsValid && Current.playerModels.TryGetValue(id, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
+            Current && Current.playerModels.TryGetValue(id, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
 
         /// <summary>
         /// Creates a copy of a <see cref="PlayersData"/>.
@@ -109,7 +133,7 @@ namespace BetterLegacy.Core.Data.Player
 
                 externalPlayerModels[id] = model;
 
-                if (IsValid && CoreHelper.InEditor)
+                if (Current && CoreHelper.InEditor)
                     Current.playerModels[id] = model;
             }
         }
@@ -250,7 +274,7 @@ namespace BetterLegacy.Core.Data.Player
         {
             if (playerModels.TryGetValue(id, out PlayerModel orig))
             {
-                var model = PlayerModel.DeepCopy(orig);
+                var model = orig.Copy();
                 model.basePart.name += " Clone";
                 model.basePart.id = LSText.randomNumString(16);
 
@@ -278,6 +302,9 @@ namespace BetterLegacy.Core.Data.Player
         #endregion
     }
 
+    /// <summary>
+    /// How players above the normal amount are treated.
+    /// </summary>
     public enum MaxBehavior
     {
         /// <summary>

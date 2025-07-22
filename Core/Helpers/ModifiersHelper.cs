@@ -103,8 +103,8 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
-                case ModifierReferenceType.CustomPlayer: {
-                        var playerModifier = modifier as Modifier<CustomPlayer>;
+                case ModifierReferenceType.PAPlayer: {
+                        var playerModifier = modifier as Modifier<PAPlayer>;
 
                         var name = modifier.Name;
                         if (playerModifier.type == ModifierBase.Type.Action)
@@ -253,150 +253,139 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, bool active = true, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
+        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
         {
-            if (active)
+            bool returned = false;
+            bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
+            ModifierBase.Type previousType = ModifierBase.Type.Action;
+            int index = 0;
+            while (index < modifiers.Count)
             {
-                bool returned = false;
-                bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
-                ModifierBase.Type previousType = ModifierBase.Type.Action;
-                int index = 0;
-                while (index < modifiers.Count)
+                var modifier = modifiers[index];
+                var name = modifier.Name;
+
+                var isAction = modifier.type == ModifierBase.Type.Action;
+                var isTrigger = modifier.type == ModifierBase.Type.Trigger;
+
+                if (isAction && modifier.Action == null || isTrigger && modifier.Trigger == null || modifier.Inactive == null)
+                    AssignModifierActions(modifier);
+
+                if (returned)
                 {
-                    var modifier = modifiers[index];
-                    var name = modifier.Name;
+                    index++;
+                    continue;
+                }
 
-                    var isAction = modifier.type == ModifierBase.Type.Action;
-                    var isTrigger = modifier.type == ModifierBase.Type.Trigger;
-
-                    if (isAction && modifier.Action == null || isTrigger && modifier.Trigger == null || modifier.Inactive == null)
-                        AssignModifierActions(modifier);
-
-                    if (returned)
-                    {
-                        index++;
-                        continue;
-                    }
-
-                    if (name == "forLoop") // this modifier requires a specific function, so it's placed here.
-                    {
-                        if (!modifier.running)
-                            modifier.runCount++;
-
-                        modifier.running = true;
-
-                        var variable = modifier.GetValue(0);
-                        var startIndex = modifier.GetInt(1, 0, variables);
-                        var endCount = modifier.GetInt(2, 0, variables);
-                        var increment = modifier.GetInt(3, 1, variables);
-
-                        var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
-                        endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
-
-                        try
-                        {
-                            // if result is false, then skip the for loop sequence.
-                            if (!(modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
-                            {
-                                var selectModifiers = modifiers.GetIndexRange(index + 1, endIndex);
-
-                                for (int i = startIndex; i < endCount; i += increment)
-                                {
-                                    variables[variable] = i.ToString();
-                                    RunModifiersLoop(selectModifiers, true, variables, i, endCount);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
-                                $"Index: {index}\n" +
-                                $"End Index: {endIndex}\nException: {ex}");
-                        }
-
-                        // Only occur once
-                        if (!modifier.constant && sequence + 1 >= end)
-                            modifier.active = true;
-
-                        index = endIndex; // exit for loop.
-                        continue;
-                    }
-
-                    if (isTrigger)
-                    {
-                        if (previousType == ModifierBase.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
-                            result = true;
-
-                        if (modifier.active || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
-                        {
-                            modifier.triggered = false;
-                            result = false;
-                        }
-                        else
-                        {
-                            var innerResult = modifier.not ? !modifier.Trigger(modifier, variables) : modifier.Trigger(modifier, variables);
-
-                            // Allow trigger to turn result to true again if "elseIf" is on
-                            if (modifier.elseIf && !result && innerResult)
-                                result = true;
-
-                            if (!modifier.elseIf && !innerResult)
-                                result = false;
-
-                            modifier.triggered = innerResult;
-                            previousType = modifier.type;
-                        }
-                    }
-
-                    // Set modifier inactive state
-                    if (!result && !(!modifier.active && !modifier.running))
-                    {
-                        modifier.active = false;
-                        modifier.running = false;
-                        modifier.Inactive?.Invoke(modifier, variables);
-
-                        previousType = modifier.type;
-                        index++;
-                        continue;
-                    }
-
-                    // Continue if modifier was already active with constant on
-                    if (modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
-                    {
-                        previousType = modifier.type;
-                        index++;
-                        continue;
-                    }
-
+                if (name == "forLoop") // this modifier requires a specific function, so it's placed here.
+                {
                     if (!modifier.running)
                         modifier.runCount++;
+
+                    modifier.running = true;
+
+                    var variable = modifier.GetValue(0);
+                    var startIndex = modifier.GetInt(1, 0, variables);
+                    var endCount = modifier.GetInt(2, 0, variables);
+                    var increment = modifier.GetInt(3, 1, variables);
+
+                    var endIndex = modifiers.FindLastIndex(x => x.Name == "return"); // return is treated as a break of the for loop
+                    endIndex = endIndex < 0 ? modifiers.Count : endIndex + 1;
+
+                    try
+                    {
+                        // if result is false, then skip the for loop sequence.
+                        if (!(modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
+                        {
+                            var selectModifiers = modifiers.GetIndexRange(index + 1, endIndex);
+
+                            for (int i = startIndex; i < endCount; i += increment)
+                            {
+                                variables[variable] = i.ToString();
+                                RunModifiersLoop(selectModifiers, variables, i, endCount);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogError($"Had an exception with the forLoop modifier.\n" +
+                            $"Index: {index}\n" +
+                            $"End Index: {endIndex}\nException: {ex}");
+                    }
 
                     // Only occur once
                     if (!modifier.constant && sequence + 1 >= end)
                         modifier.active = true;
 
-                    modifier.running = true;
-
-                    if (isAction && result) // Only run modifier if result is true
-                    {
-                        modifier.Action?.Invoke(modifier, variables);
-
-                        if (name == "return" || name == "continue") // return stops the loop, continue moves it to the next loop
-                            returned = true;
-                    }
-
-                    previousType = modifier.type;
-                    index++;
+                    index = endIndex; // exit for loop.
+                    continue;
                 }
-            }
-            else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
-                findAll.ForLoop(modifier =>
+
+                if (isTrigger)
                 {
-                    modifier.runCount = 0;
+                    if (previousType == ModifierBase.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
+                        result = true;
+
+                    if (modifier.active || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
+                    {
+                        modifier.triggered = false;
+                        result = false;
+                    }
+                    else
+                    {
+                        var innerResult = modifier.not ? !modifier.Trigger(modifier, variables) : modifier.Trigger(modifier, variables);
+
+                        // Allow trigger to turn result to true again if "elseIf" is on
+                        if (modifier.elseIf && !result && innerResult)
+                            result = true;
+
+                        if (!modifier.elseIf && !innerResult)
+                            result = false;
+
+                        modifier.triggered = innerResult;
+                        previousType = modifier.type;
+                    }
+                }
+
+                // Set modifier inactive state
+                if (!result && !(!modifier.active && !modifier.running))
+                {
                     modifier.active = false;
                     modifier.running = false;
                     modifier.Inactive?.Invoke(modifier, variables);
-                });
+
+                    previousType = modifier.type;
+                    index++;
+                    continue;
+                }
+
+                // Continue if modifier was already active with constant on
+                if (modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
+                {
+                    previousType = modifier.type;
+                    index++;
+                    continue;
+                }
+
+                if (!modifier.running)
+                    modifier.runCount++;
+
+                // Only occur once
+                if (!modifier.constant && sequence + 1 >= end)
+                    modifier.active = true;
+
+                modifier.running = true;
+
+                if (isAction && result) // Only run modifier if result is true
+                {
+                    modifier.Action?.Invoke(modifier, variables);
+
+                    if (name == "return" || name == "continue") // return stops the loop, continue moves it to the next loop
+                        returned = true;
+                }
+
+                previousType = modifier.type;
+                index++;
+            }
         }
 
         #endregion
@@ -489,8 +478,8 @@ namespace BetterLegacy.Core.Helpers
                 var time = RTLevel.FixedTime;
                 return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
             },
-            "playerHit" => (modifier, variables) => PlayerManager.Players.Any(x => x.Player && x.Player.isTakingHit),
-            "playerDeath" => (modifier, variables) => PlayerManager.Players.Any(x => x.Player && x.Player.isDead),
+            "playerHit" => (modifier, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isTakingHit),
+            "playerDeath" => (modifier, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isDead),
 
             "levelStart" => (modifier, variables) => AudioManager.inst.CurrentAudioSource.time < 0.1f,
             "levelRestart" => (modifier, variables) => false, // why is this here...?
@@ -2508,7 +2497,7 @@ namespace BetterLegacy.Core.Helpers
 
         #region Player
 
-        public static Func<Modifier<CustomPlayer>, Dictionary<string, string>, bool> GetPlayerTrigger(string key) => key switch
+        public static Func<Modifier<PAPlayer>, Dictionary<string, string>, bool> GetPlayerTrigger(string key) => key switch
         {
             "keyPressDown" => ModifierTriggers.PlayerTriggers.keyPressDown,
             "keyPress" => ModifierTriggers.PlayerTriggers.keyPress,
@@ -2536,7 +2525,7 @@ namespace BetterLegacy.Core.Helpers
             _ => (modifier, variables) => false,
         };
 
-        public static Action<Modifier<CustomPlayer>, Dictionary<string, string>> GetPlayerAction(string key) => key switch
+        public static Action<Modifier<PAPlayer>, Dictionary<string, string>> GetPlayerAction(string key) => key switch
         {
             "setCustomActive" => ModifierActions.PlayerActions.setCustomActive,
             "kill" => ModifierActions.PlayerActions.kill,
@@ -2554,10 +2543,10 @@ namespace BetterLegacy.Core.Helpers
         };
 
         /// <summary>
-        /// The function to run when a modifier is inactive and has a reference of <see cref="CustomPlayer"/>.
+        /// The function to run when a modifier is inactive and has a reference of <see cref="PAPlayer"/>.
         /// </summary>
         /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void PlayerInactive(Modifier<CustomPlayer> modifier, Dictionary<string, string> variables = null)
+        public static void PlayerInactive(Modifier<PAPlayer> modifier, Dictionary<string, string> variables = null)
         {
             if (!modifier.verified)
             {
@@ -2571,7 +2560,7 @@ namespace BetterLegacy.Core.Helpers
             switch (modifier.Name)
             {
                 case "setCustomActive": {
-                        if (modifier.GetBool(2, true) && modifier.reference.Player.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.CustomObject customObject))
+                        if (modifier.GetBool(2, true) && modifier.reference.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.RTCustomPlayerObject customObject))
                             customObject.active = !Parser.TryParse(modifier.value, false);
 
                         break;

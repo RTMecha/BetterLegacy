@@ -453,8 +453,8 @@ namespace BetterLegacy.Core
             if (str.Contains("playerHealth"))
                 RegexMatches(str, new Regex(@"<playerHealth=([0-9]+)>"), match =>
                 {
-                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < InputDataManager.inst.players.Count)
-                        str = str.Replace(match.Groups[0].ToString(), InputDataManager.inst.players[index].health.ToString());
+                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.Players.Count)
+                        str = str.Replace(match.Groups[0].ToString(), PlayerManager.Players[index].health.ToString());
                     else
                         str = str.Replace(match.Groups[0].ToString(), "");
                 });
@@ -462,7 +462,7 @@ namespace BetterLegacy.Core
             if (str.Contains("playerHealthBar"))
                 RegexMatches(str, new Regex(@"<playerHealthBar=([0-9]+)>"), match =>
                 {
-                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < InputDataManager.inst.players.Count)
+                    if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.Players.Count)
                     {
                         var player = PlayerManager.Players[index];
                         str = str.Replace(match.Groups[0].ToString(), ConvertHealthToEquals(player.Health, player.PlayerModel.basePart.health));
@@ -475,8 +475,8 @@ namespace BetterLegacy.Core
             {
                 var ph = 0;
 
-                for (int j = 0; j < InputDataManager.inst.players.Count; j++)
-                    ph += InputDataManager.inst.players[j].health;
+                for (int j = 0; j < PlayerManager.Players.Count; j++)
+                    ph += PlayerManager.Players[j].health;
 
                 str = str.Replace("<playerHealthTotal>", ph.ToString());
             }

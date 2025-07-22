@@ -177,7 +177,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ModifierReferenceType.BeatmapObject => copiedBeatmapObjectModifiers,
             ModifierReferenceType.BackgroundObject => copiedBackgroundObjectModifiers,
-            ModifierReferenceType.CustomPlayer => copiedPlayerModifiers,
+            ModifierReferenceType.PAPlayer => copiedPlayerModifiers,
             ModifierReferenceType.GameData => copiedLevelModifiers,
             _ => null,
         };
@@ -200,7 +200,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ModifierReferenceType.BeatmapObject => ModifiersManager.defaultBeatmapObjectModifiers,
             ModifierReferenceType.BackgroundObject => ModifiersManager.defaultBackgroundObjectModifiers,
-            ModifierReferenceType.CustomPlayer => ModifiersManager.defaultPlayerModifiers,
+            ModifierReferenceType.PAPlayer => ModifiersManager.defaultPlayerModifiers,
             ModifierReferenceType.GameData => ModifiersManager.defaultLevelModifiers,
             _ => null,
         };

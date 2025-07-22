@@ -58,7 +58,7 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.playersCanJoin = false;
             Instance.playerGUI.SetActive(true);
             Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
-            Instance.initialPlayerCount = InputDataManager.inst.players.Count;
+            Instance.initialPlayerCount = PlayerManager.Players.Count;
             InputDataManager.playerDisconnectedEvent += Instance.PlayerDisconnected;
             InputDataManager.playerReconnectedEvent += Instance.PlayerReconnected;
 
@@ -105,7 +105,7 @@ namespace BetterLegacy.Patchers
                 {
                     bool shouldPause = false;
                     foreach (var player in PlayerManager.Players)
-                        if (player.Player && player.Player.Actions.Pause.WasPressed)
+                        if (player.RuntimePlayer && player.RuntimePlayer.Actions.Pause.WasPressed)
                             shouldPause = true;
 
                     if (shouldPause)

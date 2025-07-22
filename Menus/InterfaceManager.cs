@@ -836,35 +836,35 @@ namespace BetterLegacy.Menus
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count == ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+                            var value = PlayerManager.Players.Count == ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountLesserEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count <= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+                            var value = PlayerManager.Players.Count <= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountGreaterEquals": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count >= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+                            var value = PlayerManager.Players.Count >= ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountLesser": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count < ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+                            var value = PlayerManager.Players.Count < ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
                     case "PlayerCountGreater": {
                             if (parameters == null)
                                 break;
 
-                            var value = InputDataManager.inst.players.Count > ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
+                            var value = PlayerManager.Players.Count > ParseVarFunction(parameters.Get(0, "count"), thisElement, customVariables).AsInt;
                             return !not ? value : !value;
                         }
 

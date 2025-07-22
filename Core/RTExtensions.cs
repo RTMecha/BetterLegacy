@@ -409,16 +409,16 @@ namespace BetterLegacy.Core
         public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe)
         {
             var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition());
-            if (player && player.Player)
-                return player.Player.transform.Find("Player");
+            if (player && player.RuntimePlayer)
+                return player.RuntimePlayer.transform.Find("Player");
             return null;
         }
         
         public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, float time)
         {
-            var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition());
-            if (player && player.Player)
-                return player.Player.transform.Find("Player");
+            var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition(time));
+            if (player && player.RuntimePlayer)
+                return player.RuntimePlayer.transform.Find("Player");
             return null;
         }
 
@@ -1662,6 +1662,31 @@ namespace BetterLegacy.Core
 
             if (shapeable.AutoTextAlign)
                 jn["ata"] = shapeable.AutoTextAlign;
+        }
+
+        /// <summary>
+        /// If <see cref="IShapeable"/> data should be serialized to JSON.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <returns>Returns true if all the shapeable's values are not default, otherwise returns false.</returns>
+        public static bool ShouldSerializeShape(this IShapeable shapeable) =>
+            shapeable.Shape != 0 ||
+            shapeable.ShapeOption != 0 ||
+            !string.IsNullOrEmpty(shapeable.Text) ||
+            shapeable.AutoTextAlign;
+
+        /// <summary>
+        /// Copies <see cref="IShapeable"/> data from another <see cref="IShapeable"/>.
+        /// </summary>
+        /// <param name="shapeable">Shapeable object reference.</param>
+        /// <param name="orig">Original to copy data from.</param>
+        public static void CopyShapeableData(this IShapeable shapeable, IShapeable orig)
+        {
+            shapeable.Shape = orig.Shape;
+            shapeable.ShapeOption = orig.ShapeOption;
+            shapeable.Polygon = orig.Polygon.Copy();
+            shapeable.Text = orig.Text;
+            shapeable.AutoTextAlign = orig.AutoTextAlign;
         }
 
         /// <summary>

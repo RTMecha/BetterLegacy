@@ -68,7 +68,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Custom player data reference.
         /// </summary>
-        public CustomPlayer CustomPlayer { get; set; }
+        public PAPlayer Core { get; set; }
 
         /// <summary>
         /// Player model reference.
@@ -129,23 +129,23 @@ namespace BetterLegacy.Core.Components.Player
 
         public Transform customObjectParent;
 
-        public PlayerObject basePart;
-        public PlayerObject head;
-        public PlayerObject face;
-        public PlayerObject boost;
-        public PlayerObject boostTail;
+        public RTPlayerObject basePart;
+        public RTPlayerObject head;
+        public RTPlayerObject face;
+        public RTPlayerObject boost;
+        public RTPlayerObject boostTail;
 
-        public List<PlayerObject> playerObjects = new List<PlayerObject>();
+        public List<RTPlayerObject> playerObjects = new List<RTPlayerObject>();
 
         /// <summary>
         /// A list of the players' tail parts. Only includes the tail parts that represent the health.
         /// </summary>
-        public List<PlayerObject> tailParts = new List<PlayerObject>();
+        public List<RTPlayerObject> tailParts = new List<RTPlayerObject>();
 
         /// <summary>
         /// A list of the custom objects spawned from the players' model.
         /// </summary>
-        public List<CustomObject> customObjects = new List<CustomObject>();
+        public List<RTCustomPlayerObject> customObjects = new List<RTCustomPlayerObject>();
 
         /// <summary>
         /// Used for pathing the players' tail.
@@ -470,7 +470,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// If the player is alive.
         /// </summary>
-        public bool Alive => CustomPlayer && CustomPlayer.Health > 0 && !isDead;
+        public bool Alive => Core && Core.Health > 0 && !isDead;
 
         /// <summary>
         /// Text of the nametag.
@@ -481,7 +481,7 @@ namespace BetterLegacy.Core.Components.Player
             {
                 try
                 {
-                    return !CustomPlayer ? string.Empty : "<#" + LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4))) + ">Player " + (PlayersData.Current.GetMaxIndex(playerIndex, 4) + 1).ToString() + " " + RTString.ConvertHealthToEquals(CustomPlayer.Health, initialHealthCount);
+                    return !Core ? string.Empty : "<#" + LSColors.ColorToHex(ThemeManager.inst.Current.GetPlayerColor(PlayersData.Current.GetMaxIndex(playerIndex, 4))) + ">Player " + (PlayersData.Current.GetMaxIndex(playerIndex, 4) + 1).ToString() + " " + RTString.ConvertHealthToEquals(Core.Health, initialHealthCount);
                 }
                 catch (Exception)
                 {
@@ -508,9 +508,9 @@ namespace BetterLegacy.Core.Components.Player
                 JumpIntensity = levelData.jumpIntensity;
                 MaxJumpCount = levelData.maxJumpCount;
                 MaxJumpBoostCount = levelData.maxJumpBoostCount;
-                CustomPlayer.MaxHealth = levelData.maxHealth;
+                PAPlayer.MaxHealth = levelData.maxHealth;
 
-                if (CoreHelper.InEditor && !InputDataManager.inst.players.IsEmpty())
+                if (CoreHelper.InEditor && !PlayerManager.Players.IsEmpty())
                 {
                     foreach (var customPlayer in PlayerManager.Players)
                         if (customPlayer.PlayerModel)
@@ -969,7 +969,7 @@ namespace BetterLegacy.Core.Components.Player
             var rb = transform.Find("Player").gameObject;
             this.rb = rb.GetComponent<Rigidbody2D>();
 
-            basePart = new PlayerObject
+            basePart = new RTPlayerObject
             {
                 id = "0",
                 parent = transform,
@@ -1036,7 +1036,7 @@ namespace BetterLegacy.Core.Components.Player
             headParticleSystemRenderer.trailMaterial = mat;
             headParticleSystemRenderer.material = mat;
 
-            this.head = new PlayerObject
+            this.head = new RTPlayerObject
             {
                 id = "73362742",
                 parent = rb.transform,
@@ -1058,7 +1058,7 @@ namespace BetterLegacy.Core.Components.Player
             faceParent.transform.localPosition = Vector3.zero;
             faceParent.transform.localRotation = Quaternion.identity;
 
-            face = new PlayerObject
+            face = new RTPlayerObject
             {
                 id = "6",
                 parent = faceBase.transform,
@@ -1109,7 +1109,7 @@ namespace BetterLegacy.Core.Components.Player
             boostParticleSystemRenderer.trailMaterial = mat;
             boostParticleSystemRenderer.material = mat;
 
-            this.boost = new PlayerObject
+            this.boost = new RTPlayerObject
             {
                 id = "1",
                 parent = boostBase.transform,
@@ -1131,7 +1131,7 @@ namespace BetterLegacy.Core.Components.Player
             boostDelayTracker.leader = tailTracker.transform;
             boostDelayTracker.player = this;
 
-            this.boostTail = new PlayerObject
+            this.boostTail = new RTPlayerObject
             {
                 id = "2",
                 parent = boostTail.transform,
@@ -1175,7 +1175,7 @@ namespace BetterLegacy.Core.Components.Player
                 tailParticleSystemRenderer.trailMaterial = mat;
                 tailParticleSystemRenderer.material = mat;
 
-                var tailPart = new PlayerObject
+                var tailPart = new RTPlayerObject
                 {
                     id = (i + 99).ToString(),
                     parent = tailBase.transform,
@@ -1232,8 +1232,10 @@ namespace BetterLegacy.Core.Components.Player
 
         void OnDestroy()
         {
-            if (CustomPlayer)
-                CustomPlayer.Player = null;
+            if (Core)
+                Core.RuntimePlayer = null;
+            Core = null;
+            Model = null;
         }
 
         #endregion
@@ -1255,7 +1257,7 @@ namespace BetterLegacy.Core.Components.Player
             UpdateCustomTheme(); UpdateBoostTheme(); UpdateSpeeds(); UpdateTrailLengths(); UpdateTheme();
             if (canvas)
             {
-                bool act = InputDataManager.inst.players.Count > 1 && CustomPlayer && ShowNameTags;
+                bool act = PlayerManager.Players.Count > 1 && Core && ShowNameTags;
                 canvas.SetActive(act);
 
                 if (act && nametagText)
@@ -1280,7 +1282,7 @@ namespace BetterLegacy.Core.Components.Player
                 boost.trailRenderer.endWidth = Model.boostPart.Trail.endWidth * v.magnitude / 1.414213f;
             }
 
-            if (!Alive && !isDead && CustomPlayer && !RTBeatmap.Current.challengeMode.Invincible)
+            if (!Alive && !isDead && Core && !RTBeatmap.Current.challengeMode.Invincible)
                 StartCoroutine(IKill());
         }
 
@@ -1308,7 +1310,7 @@ namespace BetterLegacy.Core.Components.Player
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.position);
                 cameraToViewportPoint.x = Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f);
                 cameraToViewportPoint.y = Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f);
-                if (Camera.main.orthographicSize > 0f && (!includeNegativeZoom || Camera.main.orthographicSize < 0f) && CustomPlayer)
+                if (Camera.main.orthographicSize > 0f && (!includeNegativeZoom || Camera.main.orthographicSize < 0f) && Core)
                     rb.position = Camera.main.ViewportToWorldPoint(cameraToViewportPoint);
             }
 
@@ -1432,7 +1434,7 @@ namespace BetterLegacy.Core.Components.Player
                     delayTracker.positionOffset = 0.1f * (-i + 5);
                     delayTracker.rotationOffset = 0.1f * (-i + 5);
                 }
-                else if (tailParts.TryGetAt(i - 2, out PlayerObject tailPart))
+                else if (tailParts.TryGetAt(i - 2, out RTPlayerObject tailPart))
                 {
                     var delayTracker = tailPart.delayTracker;
                     delayTracker.offset = -num * tailDistance / 2f;
@@ -1480,7 +1482,7 @@ namespace BetterLegacy.Core.Components.Player
 
         void UpdateControls()
         {
-            if (!CustomPlayer || !Model || !Alive)
+            if (!Core || !Model || !Alive)
             {
                 rb.velocity = Vector2.zero;
                 return;
@@ -1555,7 +1557,7 @@ namespace BetterLegacy.Core.Components.Player
 
             rb.gravityScale = 0f;
 
-            if (Alive && Actions != null && CustomPlayer.active && CanMove && !CoreHelper.Paused &&
+            if (Alive && Actions != null && Core.active && CanMove && !CoreHelper.Paused &&
                 (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
                 movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
@@ -2059,9 +2061,9 @@ namespace BetterLegacy.Core.Components.Player
                     return;
                 }
 
-                var customObject = playerObject as CustomObject;
+                var customObject = playerObject as RTCustomPlayerObject;
 
-                if (!CustomPlayer || !customObject.gameObject)
+                if (!Core || !customObject.gameObject)
                     return;
 
                 var active = customObject.active &&
@@ -2207,13 +2209,13 @@ namespace BetterLegacy.Core.Components.Player
         /// <returns>Returns true if the player was successfully healed.</returns>
         public bool Heal(int health, bool playSound = true)
         {
-            if (!CustomPlayer || !Alive || health <= 0)
+            if (!Core || !Alive || health <= 0)
                 return false;
 
-            int prevHealth = CustomPlayer.Health;
-            CustomPlayer.Health += health;
+            int prevHealth = Core.Health;
+            Core.Health += health;
 
-            if (prevHealth != CustomPlayer.Health)
+            if (prevHealth != Core.Health)
             {
                 InitHealAnimation();
                 if (playSound)
@@ -2235,17 +2237,17 @@ namespace BetterLegacy.Core.Components.Player
             timeHit = Time.time;
 
             InitBeforeHit();
-            if (CustomPlayer && CustomPlayer.Health > 0)
+            if (Core && Core.Health > 0)
             {
                 PlayHitParticles();
                 InitHitAnimation();
             }
-            if (!CustomPlayer)
+            if (!Core)
                 return;
 
             if (!RTBeatmap.Current.challengeMode.Invincible)
-                CustomPlayer.Health -= damage;
-            playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
+                Core.Health -= damage;
+            playerHitEvent?.Invoke(Core.Health, rb.position);
         }
 
         /// <summary>
@@ -2259,17 +2261,17 @@ namespace BetterLegacy.Core.Components.Player
             timeHit = Time.time;
 
             InitBeforeHit();
-            if (CustomPlayer && CustomPlayer.Health > 0)
+            if (Core && Core.Health > 0)
             {
                 PlayHitParticles();
                 InitHitAnimation();
             }
-            if (!CustomPlayer)
+            if (!Core)
                 return;
 
             if (!RTBeatmap.Current.challengeMode.Invincible)
-                CustomPlayer.Health--;
-            playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
+                Core.Health--;
+            playerHitEvent?.Invoke(Core.Health, rb.position);
         }
 
         /// <summary>
@@ -2277,8 +2279,8 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void Kill()
         {
-            if (CustomPlayer)
-                CustomPlayer.Health = 0;
+            if (Core)
+                Core.Health = 0;
         }
 
         /// <summary>
@@ -2414,8 +2416,8 @@ namespace BetterLegacy.Core.Components.Player
 
             var player = rb.gameObject;
 
-            int s = Mathf.Clamp(currentModel.pulsePart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-            int so = Mathf.Clamp(currentModel.pulsePart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+            int s = Mathf.Clamp(currentModel.pulsePart.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+            int so = Mathf.Clamp(currentModel.pulsePart.shapeOption, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
             if (s == 4 || s == 6)
             {
@@ -2506,8 +2508,8 @@ namespace BetterLegacy.Core.Components.Player
 
             var player = rb.gameObject;
 
-            int s = Mathf.Clamp(currentModel.bulletPart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-            int so = Mathf.Clamp(currentModel.bulletPart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+            int s = Mathf.Clamp(currentModel.bulletPart.shapeObj.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+            int so = Mathf.Clamp(currentModel.bulletPart.shapeObj.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
             if (s == 4 || s == 6)
             {
@@ -2668,6 +2670,17 @@ namespace BetterLegacy.Core.Components.Player
             triggerColliding = true;
             if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
                 Hit();
+
+            if (!Core)
+                return;
+
+            var control = Core.GetControl();
+            var modifierBlock = control.CollideModifierBlock;
+            if (modifierBlock)
+            {
+                modifierBlock.SetReference(Core);
+                ModifiersHelper.RunModifiersLoop(modifierBlock.Modifiers, new Dictionary<string, string>());
+            }
         }
 
         bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {playerIndex + 1})";
@@ -2710,12 +2723,12 @@ namespace BetterLegacy.Core.Components.Player
                 RTBeatmap.Current.playerDied = true;
             isDead = true;
             playerDeathEvent?.Invoke(rb.position);
-            CustomPlayer.active = false;
-            CustomPlayer.health = 0;
+            Core.active = false;
+            Core.health = 0;
             //anim.SetTrigger("kill");
             InitDeathAnimation();
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_DEATH, new PlayerNoticeParameters(CustomPlayer));
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_DEATH, new PlayerNoticeParameters(Core));
             yield return CoroutineHelper.SecondsRealtime(0.2f);
             InputDataManager.inst.StopControllerRumble(playerIndex);
             yield break;
@@ -2780,7 +2793,7 @@ namespace BetterLegacy.Core.Components.Player
             isTakingHit = true;
             CanTakeDamage = false;
 
-            Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_HIT, new PlayerNoticeParameters(CustomPlayer));
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.PLAYER_HIT, new PlayerNoticeParameters(Core));
 
             SoundManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? DefaultSounds.pirate_KillPlayer : DefaultSounds.HurtPlayer);
         }
@@ -2790,8 +2803,8 @@ namespace BetterLegacy.Core.Components.Player
             var currentModel = Model;
             if (currentModel)
             {
-                var delay = currentModel.bulletPart.delay;
-                yield return CoroutineHelper.Seconds(delay);
+                var cooldown = currentModel.bulletPart.cooldown;
+                yield return CoroutineHelper.Seconds(cooldown);
             }
             canShoot = true;
 
@@ -2900,9 +2913,9 @@ namespace BetterLegacy.Core.Components.Player
             {
                 int num = key + 259;
 
-                if (IndexToInt(CustomPlayer.playerIndex) > 0)
+                if (IndexToInt(Core.playerIndex) > 0)
                 {
-                    string str = (IndexToInt(CustomPlayer.playerIndex) * 2).ToString() + "0";
+                    string str = (IndexToInt(Core.playerIndex) * 2).ToString() + "0";
                     num += int.Parse(str);
                 }
 
@@ -2959,7 +2972,7 @@ namespace BetterLegacy.Core.Components.Player
             Assign(boost, currentModel.boostPart, true);
             Assign(boostTail, currentModel.boostTailPart);
 
-            int initialHealthCount = CustomPlayer ? this.initialHealthCount : currentModel.basePart.health;
+            int initialHealthCount = Core ? this.initialHealthCount : currentModel.basePart.health;
 
             while (tailParts.Count > initialHealthCount)
             {
@@ -2987,8 +3000,8 @@ namespace BetterLegacy.Core.Components.Player
             if (colAcc)
                 polygonCollider2D.CreateCollider(head.meshFilter);
 
-            if (CustomPlayer && CoreHelper.InEditor)
-                CustomPlayer.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : currentModel.basePart.health;
+            if (Core && CoreHelper.InEditor)
+                Core.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : currentModel.basePart.health;
 
             var healthSprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
                         RTFile.FileExists(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) :
@@ -3073,16 +3086,14 @@ namespace BetterLegacy.Core.Components.Player
             {
                 var reference = currentModelCustomObjects[i];
 
-                var customObj = new CustomObject()
+                var customObj = new RTCustomPlayerObject()
                 {
                     id = reference.id,
                     reference = reference,
                 };
 
-                var shape = reference.shape;
-
-                int s = Mathf.Clamp(shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-                int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+                int s = Mathf.Clamp(reference.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+                int so = Mathf.Clamp(reference.shapeOption, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
                 var shapeType = (ShapeType)s;
 
                 customObj.parent = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(customObjectParent).transform;
@@ -3183,7 +3194,7 @@ namespace BetterLegacy.Core.Components.Player
             UpdateParents();
         }
 
-        void UpdateCustomAnimations(CustomObject customObject)
+        void UpdateCustomAnimations(RTCustomPlayerObject customObject)
         {
             var reference = customObject.reference;
 
@@ -3248,7 +3259,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <param name="runtimeAnim">The RTAnimation.</param>
         /// <param name="animation">The PA Animation reference.</param>
         /// <param name="customObject">Custom object to animate.</param>
-        public void ApplyAnimation(RTAnimation runtimeAnim, PAAnimation animation, CustomObject customObject)
+        public void ApplyAnimation(RTAnimation runtimeAnim, PAAnimation animation, RTCustomPlayerObject customObject)
         {
             var reference = customObject.reference;
 
@@ -3316,17 +3327,17 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         /// <param name="visiblity">Visibility to check.</param>
         /// <returns>Returns true if visibility is active, otherwise returns false.</returns>
-        public bool CheckVisibility(PlayerModel.CustomObject.Visiblity visiblity)
+        public bool CheckVisibility(CustomPlayerObject.Visibility visiblity)
         {
             var value = visiblity.command switch
             {
                 "isBoosting" => isBoosting,
                 "isTakingHit" => isTakingHit,
                 "isZenMode" => RTBeatmap.Current.Invincible,
-                "isHealthPercentageGreater" => (float)CustomPlayer.health / initialHealthCount * 100f >= visiblity.value,
-                "isHealthGreaterEquals" => CustomPlayer.health >= visiblity.value,
-                "isHealthEquals" => CustomPlayer.health == visiblity.value,
-                "isHealthGreater" => CustomPlayer.health > visiblity.value,
+                "isHealthPercentageGreater" => (float)Core.health / initialHealthCount * 100f >= visiblity.value,
+                "isHealthGreaterEquals" => Core.health >= visiblity.value,
+                "isHealthEquals" => Core.health == visiblity.value,
+                "isHealthGreater" => Core.health > visiblity.value,
                 "isPressingKey" => Input.GetKey(GetKeyCode((int)visiblity.value)),
                 _ => true,
             };
@@ -3339,50 +3350,58 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void GrowTail(int initialHealthCount)
         {
-            while (initialHealthCount > tailParts.Count)
+            for (int i = 0; i < initialHealthCount; i++)
             {
-                int num = tailParts.Count + 1;
-                var last = tailParts.Last();
-                var tailBase = last.parent.gameObject.Duplicate(tailParent, $"Tail {num} Base");
-                tailBase.transform.localScale = Vector3.one;
-                var tail = tailBase.transform.GetChild(0);
-                tail.name = num.ToString();
+                var modelPart = Model.GetTail(i);
+                RTPlayerObject tailPart;
 
-
-                var playerDelayTracker = tailBase.GetOrAddComponent<PlayerDelayTracker>();
-                playerDelayTracker.offset = -num * tailDistance / 2f;
-                playerDelayTracker.positionOffset *= (-num + 4);
-                playerDelayTracker.player = this;
-                playerDelayTracker.leader = tailTracker.transform;
-
-                var tailParticles = tailBase.transform.Find("tail-particles");
-
-                var tailPart = new PlayerObject
+                if (i >= tailParts.Count)
                 {
-                    id = (num + 99).ToString(),
-                    parent = tailBase.transform,
-                    gameObject = tail.gameObject,
-                    meshFilter = tail.GetComponent<MeshFilter>(),
-                    renderer = tail.GetComponent<MeshRenderer>(),
-                    delayTracker = playerDelayTracker,
-                    trailRenderer = tail.GetComponent<TrailRenderer>(),
-                    particleSystem = tailParticles.GetComponent<ParticleSystem>(),
-                    particleSystemRenderer = tailParticles.GetComponent<ParticleSystemRenderer>(),
-                };
-                tailParts.Add(tailPart);
-                playerObjects.Add(tailPart);
-                tail.transform.localPosition = new Vector3(0f, 0f, 0.1f);
-                tailBase.transform.localPosition = last.parent.localPosition;
-                path.Insert(path.Count - 1, new MovementPath(tailBase.transform.localPosition, tailBase.transform.localRotation, tailBase.transform));
-                Assign(tailPart, Model.GetTail(num - 2));
-            }
+                    int num = tailParts.Count + 1;
+                    var last = tailParts.Last();
+                    var tailBase = last.parent.gameObject.Duplicate(tailParent, $"Tail {num} Base");
+                    tailBase.transform.localScale = Vector3.one;
+                    var tail = tailBase.transform.GetChild(0);
+                    tail.name = num.ToString();
 
-            while (initialHealthCount > healthObjects.Count)
-            {
-                var last = healthObjects.Last();
-                var healthObject = last.gameObject.Duplicate(healthText.transform);
+                    var playerDelayTracker = tailBase.GetOrAddComponent<PlayerDelayTracker>();
+                    playerDelayTracker.offset = -num * tailDistance / 2f;
+                    playerDelayTracker.positionOffset *= (-num + 4);
+                    playerDelayTracker.player = this;
+                    playerDelayTracker.leader = tailTracker.transform;
 
-                healthObjects.Add(new HealthObject(healthObject, healthObject.GetComponent<Image>()));
+                    var tailParticles = tailBase.transform.Find("tail-particles");
+
+                    tailPart = new RTPlayerObject
+                    {
+                        id = (num + 99).ToString(),
+                        parent = tailBase.transform,
+                        gameObject = tail.gameObject,
+                        meshFilter = tail.GetComponent<MeshFilter>(),
+                        renderer = tail.GetComponent<MeshRenderer>(),
+                        delayTracker = playerDelayTracker,
+                        trailRenderer = tail.GetComponent<TrailRenderer>(),
+                        particleSystem = tailParticles.GetComponent<ParticleSystem>(),
+                        particleSystemRenderer = tailParticles.GetComponent<ParticleSystemRenderer>(),
+                    };
+                    tailParts.Add(tailPart);
+                    playerObjects.Add(tailPart);
+                    tail.transform.localPosition = new Vector3(0f, 0f, modelPart.depth);
+                    tailBase.transform.localPosition = last.parent.localPosition;
+                    path.Insert(path.Count - 1, new MovementPath(tailBase.transform.localPosition, tailBase.transform.localRotation, tailBase.transform));
+                }
+                else
+                    tailPart = tailParts[i];
+
+                Assign(tailPart, modelPart);
+
+                if (i >= healthObjects.Count)
+                {
+                    var last = healthObjects.Last();
+                    var healthObject = last.gameObject.Duplicate(healthText.transform);
+
+                    healthObjects.Add(new HealthObject(healthObject, healthObject.GetComponent<Image>()));
+                }
             }
         }
 
@@ -3398,8 +3417,8 @@ namespace BetterLegacy.Core.Components.Player
             {
                 initialHealthCount = health;
 
-                if (tailGrows || tailParts.Count < 3)
-                    GrowTail(tailGrows ? initialHealthCount : 3);
+                if (tailGrows || tailParts.Count < Model.tailParts.Count)
+                    GrowTail(tailGrows ? initialHealthCount : Model.tailParts.Count);
             }
 
             for (int i = 0; i < tailParts.Count; i++)
@@ -3454,17 +3473,17 @@ namespace BetterLegacy.Core.Components.Player
             d.player = this;
             d.positionOffset = 0.9f;
 
-            canvas.SetActive(InputDataManager.inst.players.Count > 1 && CustomPlayer && ShowNameTags);
+            canvas.SetActive(PlayerManager.Players.Count > 1 && Core && ShowNameTags);
         }
 
         public void UpdateGUI()
         {
             var currentModel = Model;
 
-            if (!currentModel || !CustomPlayer)
+            if (!currentModel || !Core)
                 return;
 
-            var health = CustomPlayer.Health;
+            var health = Core.Health;
 
             if (!healthObjects.IsEmpty())
                 for (int i = 0; i < healthObjects.Count; i++)
@@ -3483,12 +3502,12 @@ namespace BetterLegacy.Core.Components.Player
                 barIm.rectTransform.sizeDelta = new Vector2(200f * (float)health / (float)initialHealthCount, 0f);
         }
 
-        void Assign(PlayerObject playerObject, PlayerModel.Generic generic, bool isBoost = false)
+        void Assign(RTPlayerObject rtPlayerObject, IPlayerObject playerObject, bool isBoost = false)
         {
-            playerObject.renderer.enabled = generic.active;
-            var trailRenderer = playerObject.trailRenderer;
-            var particleSystem = playerObject.particleSystem;
-            if (!generic.active)
+            rtPlayerObject.renderer.enabled = playerObject.Active;
+            var trailRenderer = rtPlayerObject.trailRenderer;
+            var particleSystem = rtPlayerObject.particleSystem;
+            if (!playerObject.Active)
             {
                 if (trailRenderer)
                 {
@@ -3500,28 +3519,42 @@ namespace BetterLegacy.Core.Components.Player
                     var p = particleSystem.emission;
                     p.enabled = false;
 
-                    if (playerObject.particleSystemRenderer)
-                        playerObject.particleSystemRenderer.enabled = false;
+                    if (rtPlayerObject.particleSystemRenderer)
+                        rtPlayerObject.particleSystemRenderer.enabled = false;
                 }
                 return;
             }
 
-            playerObject.meshFilter.mesh = GetShape(generic.shape.type, generic.shape.option).mesh;
-            playerObject.gameObject.transform.localPosition = new Vector3(generic.position.x, generic.position.y);
-            playerObject.gameObject.transform.localScale = new Vector3(generic.scale.x, generic.scale.y, 1f);
-            playerObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, generic.rotation);
+            if (playerObject.ShapeType == ShapeType.Polygon)
+            {
+                VGShapes.RoundedRingMesh(rtPlayerObject.meshFilter, null,
+                    playerObject.Polygon.Radius,
+                    playerObject.Polygon.Sides,
+                    playerObject.Polygon.Roundness,
+                    playerObject.Polygon.Thickness,
+                    playerObject.Polygon.Slices,
+                    playerObject.Polygon.ThicknessOffset,
+                    playerObject.Polygon.ThicknessScale,
+                    playerObject.Polygon.Angle);
+            }
+            else
+                rtPlayerObject.meshFilter.mesh = GetShape(playerObject.Shape, playerObject.ShapeOption).mesh;
+
+            rtPlayerObject.gameObject.transform.localPosition = new Vector3(playerObject.Position.x, playerObject.Position.y);
+            rtPlayerObject.gameObject.transform.localScale = new Vector3(playerObject.Scale.x, playerObject.Scale.y, 1f);
+            rtPlayerObject.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, playerObject.Rotation);
             
             if (trailRenderer)
             {
-                trailRenderer.enabled = !isBoost && generic.Trail.emitting;
-                trailRenderer.emitting = !isBoost && generic.Trail.emitting;
-                trailRenderer.startWidth = generic.Trail.startWidth;
-                trailRenderer.endWidth = generic.Trail.endWidth;
-                trailRenderer.transform.localPosition = generic.Trail.positionOffset;
+                trailRenderer.enabled = !isBoost && playerObject.Trail.emitting;
+                trailRenderer.emitting = !isBoost && playerObject.Trail.emitting;
+                trailRenderer.startWidth = playerObject.Trail.startWidth;
+                trailRenderer.endWidth = playerObject.Trail.endWidth;
+                trailRenderer.transform.localPosition = playerObject.Trail.positionOffset;
             }
 
-            if (playerObject.particleSystemRenderer)
-                playerObject.particleSystemRenderer.mesh = GetShape(generic.Particles.shape.type, generic.Particles.shape.option).mesh;
+            if (rtPlayerObject.particleSystemRenderer)
+                rtPlayerObject.particleSystemRenderer.mesh = GetShape(playerObject.Particles.shape, playerObject.Particles.shapeOption).mesh;
 
             if (!particleSystem)
                 return;
@@ -3529,14 +3562,14 @@ namespace BetterLegacy.Core.Components.Player
             var main = particleSystem.main;
             var emission = particleSystem.emission;
 
-            main.startLifetime = generic.Particles.lifeTime;
-            main.startSpeed = generic.Particles.speed;
+            main.startLifetime = playerObject.Particles.lifeTime;
+            main.startSpeed = playerObject.Particles.speed;
 
-            emission.enabled = generic.Particles.emitting;
-            particleSystem.emissionRate = isBoost ? 0f : generic.Particles.amount;
+            emission.enabled = playerObject.Particles.emitting;
+            particleSystem.emissionRate = isBoost ? 0f : playerObject.Particles.amount;
             if (isBoost)
             {
-                emission.burstCount = (int)generic.Particles.amount;
+                emission.burstCount = (int)playerObject.Particles.amount;
                 main.duration = 1f;
             }
 
@@ -3545,23 +3578,23 @@ namespace BetterLegacy.Core.Components.Player
             rotationOverLifetime.separateAxes = true;
             rotationOverLifetime.xMultiplier = 0f;
             rotationOverLifetime.yMultiplier = 0f;
-            rotationOverLifetime.zMultiplier = generic.Particles.rotation;
+            rotationOverLifetime.zMultiplier = playerObject.Particles.rotation;
 
             var forceOverLifetime = particleSystem.forceOverLifetime;
             forceOverLifetime.enabled = true;
             forceOverLifetime.space = ParticleSystemSimulationSpace.World;
-            forceOverLifetime.xMultiplier = generic.Particles.force.x;
-            forceOverLifetime.yMultiplier = generic.Particles.force.y;
+            forceOverLifetime.xMultiplier = playerObject.Particles.force.x;
+            forceOverLifetime.yMultiplier = playerObject.Particles.force.y;
 
             var particlesTrail = particleSystem.trails;
-            particlesTrail.enabled = generic.Particles.trailEmitting;
+            particlesTrail.enabled = playerObject.Particles.trailEmitting;
 
             var colorOverLifetime = particleSystem.colorOverLifetime;
             colorOverLifetime.enabled = true;
             var psCol = colorOverLifetime.color;
 
-            float alphaStart = generic.Particles.startOpacity;
-            float alphaEnd = generic.Particles.endOpacity;
+            float alphaStart = playerObject.Particles.startOpacity;
+            float alphaEnd = playerObject.Particles.endOpacity;
 
             var gradient = new Gradient();
             gradient.alphaKeys = new GradientAlphaKey[2]
@@ -3584,8 +3617,8 @@ namespace BetterLegacy.Core.Components.Player
 
             var ssss = sizeOverLifetime.size;
 
-            var sizeStart = generic.Particles.startScale;
-            var sizeEnd = generic.Particles.endScale;
+            var sizeStart = playerObject.Particles.startScale;
+            var sizeEnd = playerObject.Particles.endScale;
 
             var curve = new AnimationCurve(new Keyframe[2]
             {
@@ -3606,7 +3639,7 @@ namespace BetterLegacy.Core.Components.Player
             return type == 4 || type == 6 ? ShapeManager.inst.Shapes2D[0][0] : ShapeManager.inst.Shapes2D[type][option];
         }
 
-        void UpdateParent(CustomObject customObject)
+        void UpdateParent(RTCustomPlayerObject customObject)
         {
             var reference = customObject.reference;
             var delayTracker = customObject.delayTracker;
@@ -3616,7 +3649,7 @@ namespace BetterLegacy.Core.Components.Player
             delayTracker.rotationOffset = reference.rotationOffset;
             delayTracker.scaleParent = reference.scaleParent;
             delayTracker.rotationParent = reference.rotationParent;
-            delayTracker.leader = !string.IsNullOrEmpty(reference.customParent) && playerObjects.TryFind(x => x.id == reference.customParent && x.id != customObject.id, out PlayerObject parent) ?
+            delayTracker.leader = !string.IsNullOrEmpty(reference.customParent) && playerObjects.TryFind(x => x.id == reference.customParent && x.id != customObject.id, out RTPlayerObject parent) ?
                 parent.gameObject.transform :
                 reference.parent switch
                 {
@@ -3638,11 +3671,11 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Represents a custom object from the model.
         /// </summary>
-        public class CustomObject : PlayerObject, ITransformable
+        public class RTCustomPlayerObject : RTPlayerObject, ITransformable
         {
-            public CustomObject() => isCustom = true;
+            public RTCustomPlayerObject() => isCustom = true;
 
-            public PlayerModel.CustomObject reference;
+            public CustomPlayerObject reference;
             public TextMeshPro text;
             public bool idle = true;
             public string currentIdleAnimation = "idle";
@@ -3718,7 +3751,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Represents a spawned object.
         /// </summary>
-        public class EmittedObject : PlayerObject
+        public class EmittedObject : RTPlayerObject
         {
             public float opacity;
             public float colorTween;
@@ -3731,7 +3764,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Represents a part of the player.
         /// </summary>
-        public class PlayerObject : Exists
+        public class RTPlayerObject : Exists
         {
             public bool active = true;
             public string id;

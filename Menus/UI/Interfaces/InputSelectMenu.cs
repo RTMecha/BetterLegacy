@@ -146,9 +146,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
             for (int i = 0; i < nanobots.Count; i++)
             {
                 string text;
-                if (InputDataManager.inst.players.Count > i && InputDataManager.inst.players[i].active)
+                if (PlayerManager.Players.Count > i && PlayerManager.Players[i].active)
                 {
-                    var customPlayer = InputDataManager.inst.players[i];
+                    var customPlayer = PlayerManager.Players[i];
 
                     string textColor = "#" + RTColors.ColorToHex(playerColors[customPlayer.index % playerColors.Count]);
                     string device = customPlayer.deviceType.ToString();
@@ -221,7 +221,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             UpdateText();
 
-            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.players.Count > 0 && InputDataManager.inst.menuActions.Start.WasPressed)
+            if (!CoreHelper.IsUsingInputField && !PlayerManager.Players.IsEmpty() && InputDataManager.inst.menuActions.Start.WasPressed)
                 Continue();
         }
 
