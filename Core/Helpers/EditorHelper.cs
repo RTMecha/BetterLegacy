@@ -11,6 +11,7 @@ using UnityEngine.UI;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Runtime;
@@ -241,7 +242,7 @@ namespace BetterLegacy.Core.Helpers
                                 }
                             }
 
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
@@ -249,7 +250,7 @@ namespace BetterLegacy.Core.Helpers
                             prefabObject.events[0].values[0] = -prefabObject.events[0].values[0];
                             prefabObject.events[1].values[0] = -prefabObject.events[1].values[0];
                             prefabObject.events[2].values[0] = -prefabObject.events[2].values[0];
-                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
@@ -285,14 +286,14 @@ namespace BetterLegacy.Core.Helpers
                                 }
                             }
 
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.events[0].values[1] = -prefabObject.events[0].values[1];
                             prefabObject.events[1].values[1] = -prefabObject.events[1].values[1];
-                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
@@ -313,7 +314,7 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
 
             return true;
         }
@@ -368,8 +369,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (ObjectEditor.UpdateObjects)
                 {
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                 }
             }
         }
@@ -420,8 +421,8 @@ namespace BetterLegacy.Core.Helpers
 
                 if (ObjectEditor.UpdateObjects)
                 {
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                 }
             }
         }
@@ -628,6 +629,61 @@ namespace BetterLegacy.Core.Helpers
 
             EditorThemeManager.SaveEditorThemes();
             CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
+        }
+
+        /// <summary>
+        /// Shuffles a Beatmap Objects' ID and updates all references to the old ID.
+        /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to shuffle the ID of.</param>
+        public static void ShuffleID(BeatmapObject beatmapObject)
+        {
+            var newID = PAObjectBase.GetStringID();
+            var oldID = beatmapObject.id;
+            beatmapObject.id = newID;
+
+            ShuffleSetID(oldID, newID, GameData.Current.beatmapObjects, GameData.Current.prefabObjects);
+
+            for (int i = 0; i < GameData.Current.prefabs.Count; i++)
+            {
+                var p = GameData.Current.prefabs[i];
+                ShuffleSetID(oldID, newID, p.beatmapObjects, p.prefabObjects);
+            }
+
+            RTLevel.Reinit();
+        }
+
+        static void ShuffleSetID(string oldID, string newID, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects)
+        {
+            for (int i = 0; i < beatmapObjects.Count; i++)
+            {
+                var b = beatmapObjects[i];
+                if (b.parent == oldID)
+                    b.Parent = newID;
+            }
+
+            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+            {
+                var po = prefabObjects[i];
+                if (po.parent == oldID)
+                    po.Parent = newID;
+            }
+        }
+
+        /// <summary>
+        /// Shuffles a Prefab Objects' ID and updates all references to the old ID.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object to shuffle the ID of.</param>
+        public static void ShuffleID(PrefabObject prefabObject)
+        {
+            var newID = PAObjectBase.GetStringID();
+            var oldID = prefabObject.id;
+            prefabObject.id = newID;
+
+            foreach (var prefabable in GameData.Current.GetPrefabables())
+            {
+                if (prefabable.PrefabInstanceID == oldID)
+                    prefabable.PrefabInstanceID = newID;
+            }
         }
     }
 }
