@@ -465,7 +465,7 @@ namespace BetterLegacy.Core
                     if (int.TryParse(match.Groups[1].ToString(), out int index) && index < PlayerManager.Players.Count)
                     {
                         var player = PlayerManager.Players[index];
-                        str = str.Replace(match.Groups[0].ToString(), ConvertHealthToEquals(player.Health, player.PlayerModel.basePart.health));
+                        str = str.Replace(match.Groups[0].ToString(), ConvertHealthToEquals(player.Health, player.GetControl()?.Health ?? 3));
                     }
                     else
                         str = str.Replace(match.Groups[0].ToString(), "");
