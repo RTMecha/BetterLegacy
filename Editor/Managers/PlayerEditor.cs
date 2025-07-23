@@ -673,6 +673,13 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current.data.level.allowCustomPlayerModels = _val;
                 RTPlayer.SetGameDataProperties();
             });
+            
+            Dialog.GlobalTab.AllowPlayerModelControls.Toggle.SetIsOnWithoutNotify(GameData.Current.data.level.allowPlayerModelControls);
+            Dialog.GlobalTab.AllowPlayerModelControls.Toggle.onValueChanged.NewListener(_val =>
+            {
+                GameData.Current.data.level.allowPlayerModelControls = _val;
+                RTPlayer.SetGameDataProperties();
+            });
 
             Dialog.GlobalTab.LimitPlayer.Toggle.SetIsOnWithoutNotify(GameData.Current.data.level.limitPlayer);
             Dialog.GlobalTab.LimitPlayer.Toggle.onValueChanged.NewListener(_val =>

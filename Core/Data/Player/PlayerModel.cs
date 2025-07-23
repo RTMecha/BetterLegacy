@@ -449,6 +449,30 @@ namespace BetterLegacy.Core.Data.Player
                 tailParts.RemoveAt(index);
         }
 
+        /// <summary>
+        /// Gets a player control from the model.
+        /// </summary>
+        /// <returns>Returns a player control based on the models' values.</returns>
+        public PlayerControl ToPlayerControl() => new PlayerControl
+        {
+            Health = basePart.health,
+            moveSpeed = basePart.moveSpeed,
+            boostSpeed = basePart.boostSpeed,
+            boostCooldown = basePart.boostCooldown,
+            minBoostTime = basePart.minBoostTime,
+            maxBoostTime = basePart.maxBoostTime,
+            jumpGravity = basePart.jumpGravity,
+            jumpIntensity = basePart.jumpIntensity,
+            bounciness = basePart.bounciness,
+            jumpCount = basePart.jumpCount,
+            jumpBoostCount = basePart.jumpBoostCount,
+            airBoostOnly = basePart.airBoostOnly,
+            hitCooldown = basePart.hitCooldown,
+            collisionAccurate = basePart.collisionAccurate,
+            sprintSneakActive = basePart.sprintSneakActive,
+            canBoost = basePart.canBoost,
+        };
+
         #endregion
 
         #region Sub classes
@@ -482,6 +506,7 @@ namespace BetterLegacy.Core.Data.Player
             public int jumpCount = 1;
             public int jumpBoostCount = 1;
 
+            public bool airBoostOnly = false;
             public bool canBoost = true;
 
             public float hitCooldown = 2.5f;

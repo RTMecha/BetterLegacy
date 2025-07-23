@@ -125,7 +125,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// The collider that is currently being used.
         /// </summary>
-        public Collider2D CurrentCollider => Model != null && Model.basePart.collisionAccurate ? polygonCollider2D : circleCollider2D;
+        public Collider2D CurrentCollider => Core && Core.GetControl().collisionAccurate ? polygonCollider2D : circleCollider2D;
 
         public Transform customObjectParent;
 
@@ -458,7 +458,7 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public bool CanBoost
         {
-            get => CoreHelper.InEditorPreview && canBoost && !isBoosting && (Model == null || Model.basePart.canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
+            get => CoreHelper.InEditorPreview && canBoost && !isBoosting && (!Core || Core.GetControl().canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
             set => canBoost = value;
         }
 
@@ -510,11 +510,10 @@ namespace BetterLegacy.Core.Components.Player
                 MaxJumpBoostCount = levelData.maxJumpBoostCount;
                 PAPlayer.MaxHealth = levelData.maxHealth;
 
-                if (CoreHelper.InEditor && !PlayerManager.Players.IsEmpty())
+                if (CoreHelper.InEditor && !PlayerManager.NoPlayers)
                 {
-                    foreach (var customPlayer in PlayerManager.Players)
-                        if (customPlayer.PlayerModel)
-                            customPlayer.Health = customPlayer.PlayerModel.basePart.health;
+                    foreach (var player in PlayerManager.Players)
+                        player.Health = RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
                 }
             }
             catch (Exception ex)
@@ -1339,15 +1338,17 @@ namespace BetterLegacy.Core.Components.Player
 
             animationController.speed = pitch;
 
-            if (!Model)
+            if (GameData.Current.data.level.allowPlayerModelControls && !Model)
                 return;
 
-            var idleSpeed = Model.basePart.moveSpeed;
-            var boostSpeed = Model.basePart.boostSpeed;
-            var boostCooldown = Model.basePart.boostCooldown;
-            var minBoostTime = Model.basePart.minBoostTime;
-            var maxBoostTime = Model.basePart.maxBoostTime;
-            var hitCooldown = Model.basePart.hitCooldown;
+            var control = Core.GetControl();
+
+            var idleSpeed = control.moveSpeed;
+            var boostSpeed = control.boostSpeed;
+            var boostCooldown = control.boostCooldown;
+            var minBoostTime = control.minBoostTime;
+            var maxBoostTime = control.maxBoostTime;
+            var hitCooldown = control.hitCooldown;
 
             if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData && levelData.limitPlayer)
             {
@@ -2945,17 +2946,19 @@ namespace BetterLegacy.Core.Components.Player
 
             #region Cache
 
+            var control = Core?.GetControl() ?? currentModel.ToPlayerControl();
+
             tailDistance = currentModel.tailBase.distance;
             tailMode = (int)currentModel.tailBase.mode;
             tailGrows = currentModel.tailBase.grows;
 
             showBoostTail = currentModel.boostTailPart.active;
 
-            jumpGravity = currentModel.basePart.jumpGravity;
-            jumpIntensity = currentModel.basePart.jumpIntensity;
-            jumpCount = currentModel.basePart.jumpCount;
-            jumpBoostCount = currentModel.basePart.jumpBoostCount;
-            bounciness = currentModel.basePart.bounciness;
+            jumpGravity = control.jumpGravity;
+            jumpIntensity = control.jumpIntensity;
+            jumpCount = control.jumpCount;
+            jumpBoostCount = control.jumpBoostCount;
+            bounciness = control.bounciness;
 
             stretch = currentModel.stretchPart.active;
             stretchAmount = currentModel.stretchPart.amount;
@@ -2991,14 +2994,14 @@ namespace BetterLegacy.Core.Components.Player
             circleCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
             polygonCollider2D.isTrigger = RTBeatmap.Current.Invincible && ZenEditorIncludesSolid;
 
-            var colAcc = currentModel.basePart.collisionAccurate;
+            var colAcc = Core && Core.GetControl().collisionAccurate;
             circleCollider2D.enabled = !colAcc;
             polygonCollider2D.enabled = colAcc;
             if (colAcc)
                 polygonCollider2D.CreateCollider(head.meshFilter);
 
             if (Core && CoreHelper.InEditor)
-                Core.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : currentModel.basePart.health;
+                Core.Health = RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : Core.GetControl()?.Health ?? 3;
 
             var healthSprite = RTFile.FileExists(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.CombinePaths(RTFile.BasePath, $"health{FileFormat.PNG.Dot()}")) :
                         RTFile.FileExists(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) ? SpriteHelper.LoadSprite(RTFile.GetAsset($"health{FileFormat.PNG.Dot()}")) :

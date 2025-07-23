@@ -179,6 +179,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             GlobalTab.SpawnPlayers = SetupBool("Spawn Players", PlayerEditor.Tab.Global, editorTab: GlobalTab);
             GlobalTab.AllowCustomPlayerModels = SetupBool("Allow Custom Player Models", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.AllowPlayerModelControls = SetupBool("Allow Player Model Controls", PlayerEditor.Tab.Global, editorTab: GlobalTab);
 
             GlobalTab.Speed = SetupNumber("Global Speed", PlayerEditor.Tab.Global, editorTab: GlobalTab);
             GlobalTab.LockBoost = SetupBool("Global Lock Boost", PlayerEditor.Tab.Global, editorTab: GlobalTab);
@@ -881,6 +882,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorToggle SpawnPlayers { get; set; }
 
         public PlayerEditorToggle AllowCustomPlayerModels { get; set; }
+        public PlayerEditorToggle AllowPlayerModelControls { get; set; }
 
         public PlayerEditorNumber Speed { get; set; }
 

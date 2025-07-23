@@ -96,6 +96,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool allowCustomPlayerModels = true;
 
         /// <summary>
+        /// If player models can control the player core.
+        /// </summary>
+        public bool allowPlayerModelControls = false;
+
+        /// <summary>
         /// If players should spawn at the start of the level.
         /// </summary>
         public bool spawnPlayers = true;
@@ -195,6 +200,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             forceReplayLevelOff = orig.forceReplayLevelOff;
             multiplyPlayerSpeed = orig.multiplyPlayerSpeed;
             allowCustomPlayerModels = orig.allowCustomPlayerModels;
+            allowPlayerModelControls = orig.allowPlayerModelControls;
             spawnPlayers = orig.spawnPlayers;
             limitPlayer = orig.limitPlayer;
 
@@ -262,6 +268,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["allow_custom_player_models"] != null)
                 allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
+            
+            if (jn["allow_player_model_controls"] != null)
+                allowPlayerModelControls = jn["allow_player_model_controls"].AsBool;
 
             if (jn["spawn_players"] != null)
                 spawnPlayers = jn["spawn_players"].AsBool;
@@ -341,6 +350,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (!allowCustomPlayerModels)
                 jn["allow_custom_player_models"] = allowCustomPlayerModels;
+            
+            if (allowPlayerModelControls)
+                jn["allow_player_model_controls"] = allowPlayerModelControls;
             
             if (!spawnPlayers)
                 jn["spawn_players"] = spawnPlayers;

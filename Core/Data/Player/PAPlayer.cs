@@ -128,7 +128,9 @@ namespace BetterLegacy.Core.Data.Player
                 RuntimePlayer.Model = PlayerModel;
         }
 
-        public PlayerControl GetControl() => PlayersData.Current && PlayersData.Current.playerControls.TryGetAt(index, out PlayerControl playerControl) ? playerControl : new PlayerControl();
+        public PlayerControl GetControl() => GameData.Current.data.level.allowPlayerModelControls ? PlayerModel.ToPlayerControl() : GetCustomControl();
+
+        public PlayerControl GetCustomControl() => PlayersData.Current && PlayersData.Current.playerControls.TryGetAt(index, out PlayerControl playerControl) ? playerControl : new PlayerControl();
 
         public PlayerIndex GetPlayerIndex(int _index) => (PlayerIndex)_index;
 
@@ -211,7 +213,7 @@ namespace BetterLegacy.Core.Data.Player
                 ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, this, new System.Collections.Generic.Dictionary<string, string>());
         }
 
-        public void ResetHealth() => Health = PlayerModel?.basePart?.health ?? 3;
+        public void ResetHealth() => Health = GetControl()?.Health ?? 3;
 
         #endregion
     }
