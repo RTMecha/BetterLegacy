@@ -84,6 +84,11 @@ namespace BetterLegacy.Core.Data.Level
         public AudioClip music;
 
         /// <summary>
+        /// List of tracks to load from.
+        /// </summary>
+        public Dictionary<string, AudioClip> tracks = new Dictionary<string, AudioClip>();
+
+        /// <summary>
         /// MetaData of the level.
         /// </summary>
         public MetaData metadata;
