@@ -422,9 +422,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (objectIDs.Contains(bm.Parent))
                 {
-                    bm.Parent = "";
+                    bm.Parent = string.Empty;
 
-                    RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
+                    RTLevel.Current?.UpdateObject(bm, ObjectContext.PARENT_CHAIN);
                 }
             }
 
@@ -473,7 +473,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (remove)
                     GameData.Current.beatmapObjects.Remove(x => x.id == beatmapObject.id);
-                //RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN);
+
                 RTLevel.Current?.UpdateObject(beatmapObject, reinsert: false, recursive: false, recalculate: false);
 
                 if (update)
@@ -482,9 +482,9 @@ namespace BetterLegacy.Editor.Managers
                     {
                         if (bm.Parent == beatmapObject.id)
                         {
-                            bm.Parent = "";
+                            bm.Parent = string.Empty;
 
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.PARENT_CHAIN);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.PARENT_CHAIN);
                         }
                     }
                 }
@@ -890,7 +890,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                             prefabObject.parent = timelineObject.ID;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT, false);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
                             RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
                             success = true;
@@ -913,7 +913,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var prefabObject = CurrentSelection.GetData<PrefabObject>();
                     prefabObject.parent = timelineObject.ID;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
                     RTEditor.inst.parentPickerEnabled = false;
 

@@ -475,12 +475,12 @@ namespace BetterLegacy.Core.Helpers
         {
             "time" => (modifier, reference, variables) =>
             {
-                var time = RTLevel.FixedTime;
+                var time = RTLevel.Current.FixedTime;
                 return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
             },
             "timeInRange" => (modifier, reference, variables) =>
             {
-                var time = RTLevel.FixedTime;
+                var time = RTLevel.Current.FixedTime;
                 return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
             },
             "onPlayerHit" => (modifier, reference, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isTakingHit),
@@ -2894,7 +2894,7 @@ namespace BetterLegacy.Core.Helpers
         public static void SetParent(BeatmapObject child, string parent)
         {
             child.customParent = parent;
-            RTLevel.Current?.UpdateObject(child, RTLevel.ObjectContext.PARENT_CHAIN);
+            RTLevel.Current?.UpdateObject(child, ObjectContext.PARENT_CHAIN);
 
             if (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.RenderParent(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());

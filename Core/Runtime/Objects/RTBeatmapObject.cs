@@ -8,10 +8,9 @@ using BetterLegacy.Core.Runtime.Objects.Visual;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
-    public class RTBeatmapObject : Exists, IRTObject, IPrefabOffset
+    public class RTBeatmapObject : Exists, IRTObject
     {
-        public RTBeatmapObject(BeatmapObject beatmapObject, List<ParentObject> parentObjects, VisualObject visualObject,
-            Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
+        public RTBeatmapObject(BeatmapObject beatmapObject, List<ParentObject> parentObjects, VisualObject visualObject)
         {
             this.beatmapObject = beatmapObject;
 
@@ -23,10 +22,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             this.visualObject = visualObject;
 
             isImage = beatmapObject.ShapeType == ShapeType.Image;
-
-            this.prefabOffsetPosition = prefabOffsetPosition;
-            this.prefabOffsetScale = prefabOffsetScale;
-            this.prefabOffsetRotation = prefabOffsetRotation;
 
             try
             {
@@ -59,7 +54,6 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float StartTime { get; set; }
         public float KillTime { get; set; }
-        public int Room { get; set; }
 
         public BeatmapObject beatmapObject;
 
@@ -81,14 +75,6 @@ namespace BetterLegacy.Core.Runtime.Objects
         public Vector3 topPositionOffset;
         public Vector3 topScaleOffset;
         public Vector3 topRotationOffset;
-
-        public Vector3 prefabOffsetPosition;
-        public Vector3 prefabOffsetScale;
-        public Vector3 prefabOffsetRotation;
-
-        public Vector3 PrefabOffsetPosition { get => prefabOffsetPosition; set => prefabOffsetPosition = value; }
-        public Vector3 PrefabOffsetScale { get => prefabOffsetScale; set => prefabOffsetScale = value; }
-        public Vector3 PrefabOffsetRotation { get => prefabOffsetRotation; set => prefabOffsetRotation = value; }
 
         public Transform top;
 
@@ -215,30 +201,30 @@ namespace BetterLegacy.Core.Runtime.Objects
                 var y = EventManager.inst.cam.transform.position.y;
 
                 top.localPosition = (new Vector3(x, y, 0f) * positionParentOffset)
-                    + new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 20f : 0f)
+                    + new Vector3(0f, 0f, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 20f : 0f)
                     + topPositionOffset;
             }
             else
-                top.localPosition = new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 20f : 0f)
+                top.localPosition = new Vector3(0f, 0f, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background ? 20f : 0f)
                     + topPositionOffset;
 
             if (scaleParent && cameraParent)
             {
                 float camOrthoZoom = EventManager.inst.cam.orthographicSize / 20f - 1f;
 
-                top.localScale = (new Vector3(camOrthoZoom, camOrthoZoom, 1f) * scaleParentOffset) + prefabOffsetScale + topScaleOffset;
+                top.localScale = (new Vector3(camOrthoZoom, camOrthoZoom, 1f) * scaleParentOffset) + Vector3.one + topScaleOffset;
             }
             else
-                top.localScale = prefabOffsetScale + topScaleOffset;
+                top.localScale = Vector3.one + topScaleOffset;
 
             if (rotationParent && cameraParent)
             {
                 var camRot = EventManager.inst.camParent.transform.rotation.eulerAngles;
 
-                top.localRotation = Quaternion.Euler((camRot * rotationParentOffset) + prefabOffsetRotation + topRotationOffset);
+                top.localRotation = Quaternion.Euler((camRot * rotationParentOffset) + topRotationOffset);
             }
             else
-                top.localRotation = Quaternion.Euler(prefabOffsetRotation + topRotationOffset);
+                top.localRotation = Quaternion.Euler(topRotationOffset);
 
             // Update parents
             float positionOffset = 0.0f;

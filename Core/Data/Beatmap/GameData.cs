@@ -20,9 +20,11 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents a Project Arrhythmia level.
     /// </summary>
-    public class GameData : Exists, IModifierReference
+    public class GameData : Exists, IModifierReference, IBeatmap
     {
         public GameData() { }
+
+        #region Values
 
         #region Properties
 
@@ -637,6 +639,35 @@ namespace BetterLegacy.Core.Data.Beatmap
         public ModifierReferenceType ReferenceType => ModifierReferenceType.GameData;
 
         public int IntVariable { get; set; }
+
+        #endregion
+
+        public BeatmapData data;
+
+        public Assets assets = new Assets();
+
+        public List<BeatmapObject> BeatmapObjects { get => beatmapObjects; set => beatmapObjects = value; }
+        public List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
+
+        public List<PrefabObject> PrefabObjects { get => prefabObjects; set => prefabObjects = value; }
+        public List<PrefabObject> prefabObjects = new List<PrefabObject>();
+
+        public List<Prefab> Prefabs { get => prefabs; set => prefabs = value; }
+        public List<Prefab> prefabs = new List<Prefab>();
+
+        public int mainBackgroundLayer;
+
+        public List<BackgroundLayer> BackgroundLayers { get => backgroundLayers; set => backgroundLayers = value; }
+        public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
+
+        public List<BackgroundObject> BackgroundObjects { get => backgroundObjects; set => backgroundObjects = value; }
+        public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
+
+        public List<Modifier> modifiers = new List<Modifier>();
+
+        public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
+
+        public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
 
         #endregion
 
@@ -1545,7 +1576,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["assets"] = assets.ToJSON();
 
             CoreHelper.Log("Saving Object Prefabs");
-            var prefabObjects = this.prefabObjects.FindAll(x => !x.fromModifier);
+            var prefabObjects = this.prefabObjects.FindAll(x => !x.fromModifier && !x.FromPrefab);
             for (int i = 0; i < prefabObjects.Count; i++)
                 jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
@@ -1553,9 +1584,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["level_data"] = data.level.ToJSON();
 
             CoreHelper.Log("Saving prefabs");
-            if (prefabs != null)
-                for (int i = 0; i < prefabs.Count; i++)
-                    jn["prefabs"][i] = prefabs[i].ToJSON();
+            var prefabs = this.prefabs.FindAll(x => !x.FromPrefab);
+            for (int i = 0; i < prefabs.Count; i++)
+                jn["prefabs"][i] = prefabs[i].ToJSON();
 
             CoreHelper.Log($"Saving themes");
             var levelThemes =
@@ -1726,6 +1757,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
         }
+
+        public Assets GetAssets() => assets;
 
         #region Helpers
 
@@ -2039,32 +2072,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         #endregion
-
-        #endregion
-
-        #region Fields
-
-        public BeatmapData data;
-
-        public Assets assets = new Assets();
-
-        public List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
-
-        public List<PrefabObject> prefabObjects = new List<PrefabObject>();
-
-        public List<Prefab> prefabs = new List<Prefab>();
-
-        public int mainBackgroundLayer;
-
-        public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
-
-        public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
-
-        public List<Modifier> modifiers = new List<Modifier>();
-
-        public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
-
-        public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
 
         #endregion
 

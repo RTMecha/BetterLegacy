@@ -5,6 +5,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -12,7 +13,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Contains a package of <see cref="IPrefabable"/> objects.
     /// </summary>
-    public class Prefab : PAObject<Prefab>
+    public class Prefab : PAObject<Prefab>, IBeatmap, IPrefabable
     {
         public Prefab() : base() { }
 
@@ -77,6 +78,42 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string typeID;
 
+        #region Prefab
+
+        public float StartTime { get; set; }
+
+        /// <summary>
+        /// Used for objects spawned from a Prefab Object.
+        /// </summary>
+        public string originalID;
+
+        /// <summary>
+        /// If the object is spawned from a prefab and has no parent.
+        /// </summary>
+        public bool fromPrefabBase;
+
+        /// <summary>
+        /// If the object is spawned from a prefab.
+        /// </summary>
+        public bool fromPrefab;
+
+        /// <summary>
+        /// Prefab Object reference ID.
+        /// </summary>
+        public string prefabInstanceID = string.Empty;
+
+        public string OriginalID { get => originalID; set => originalID = value; }
+
+        public string PrefabID { get; set; }
+
+        public string PrefabInstanceID { get => prefabInstanceID; set => prefabInstanceID = value; }
+
+        public bool FromPrefab { get => fromPrefab; set => fromPrefab = value; }
+
+        public Prefab CachedPrefab { get; set; }
+
+        #endregion
+
         #region Contents
 
         /// <summary>
@@ -84,26 +121,31 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Assets assets = new Assets();
 
+        public List<BeatmapObject> BeatmapObjects { get => beatmapObjects; set => beatmapObjects = value; }
         /// <summary>
         /// Contained Beatmap Objects.
         /// </summary>
         public List<BeatmapObject> beatmapObjects = new List<BeatmapObject>();
 
+        public List<PrefabObject> PrefabObjects { get => prefabObjects; set => prefabObjects = value; }
         /// <summary>
         /// Contained Prefab Objects.
         /// </summary>
         public List<PrefabObject> prefabObjects = new List<PrefabObject>();
 
+        public List<Prefab> Prefabs { get => prefabs; set => prefabs = value; }
         /// <summary>
         /// Contained Prefabs (recursive).
         /// </summary>
         public List<Prefab> prefabs = new List<Prefab>();
 
+        public List<BackgroundLayer> BackgroundLayers { get => backgroundLayers; set => backgroundLayers = value; }
         /// <summary>
         /// Contained Background Layers.
         /// </summary>
         public List<BackgroundLayer> backgroundLayers = new List<BackgroundLayer>();
 
+        public List<BackgroundObject> BackgroundObjects { get => backgroundObjects; set => backgroundObjects = value; }
         /// <summary>
         /// Contained Background Objects.
         /// </summary>
@@ -199,6 +241,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             offset = jn["offset"].AsFloat;
             description = jn["desc"] ?? string.Empty;
 
+            this.ReadPrefabJSON(jn);
+
             if (string.IsNullOrEmpty(typeID))
                 typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
 
@@ -235,6 +279,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (id != null)
                 jn["id"] = id;
+
+            this.WritePrefabJSON(jn);
 
             if (typeID != null)
                 jn["type_id"] = typeID;
@@ -277,13 +323,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns the prefab type.</returns>
         public PrefabType GetPrefabType() => RTPrefabEditor.inst && RTPrefabEditor.inst.prefabTypes.TryFind(x => x.id == typeID, out PrefabType prefabType) ? prefabType : PrefabType.InvalidType;
 
-        #endregion
+        public Assets GetAssets() => assets;
 
-        #region Operators
-
-        public override bool Equals(object obj) => obj is Prefab paObj && id == paObj.id;
-
-        public override int GetHashCode() => base.GetHashCode();
+        public IRTObject GetRuntimeObject() => null;
 
         public override string ToString() => $"{id} - {name}";
 

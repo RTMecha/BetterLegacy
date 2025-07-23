@@ -19,8 +19,6 @@ namespace BetterLegacy.Configs
             Instance = this;
             BindSettings();
 
-            RTLevel.UseNewUpdateMethod = UseNewUpdateMethod.Value;
-
             SetupSettingChanged();
         }
 
@@ -542,7 +540,6 @@ namespace BetterLegacy.Configs
         public override void SetupSettingChanged()
         {
             SettingChanged += UpdateSettings;
-            UseNewUpdateMethod.SettingChanged += UseNewUpdateMethodChanged;
             DisplayName.SettingChanged += DisplayNameChanged;
             Fullscreen.SettingChanged += DefaultSettingsChanged;
             Resolution.SettingChanged += DefaultSettingsChanged;
@@ -645,8 +642,6 @@ namespace BetterLegacy.Configs
             LegacyPlugin.SaveProfile();
         }
 
-        void UseNewUpdateMethodChanged() => RTLevel.UseNewUpdateMethod = UseNewUpdateMethod.Value;
-        
         void MusicVolumeChanged() => SoundManager.inst.PlaySound(DefaultSounds.UpDown, (MusicVol.Value / 9f) * (MasterVol.Value / 9f));
 
         void SFXVolumeChanged() => SoundManager.inst.PlaySound(DefaultSounds.UpDown);

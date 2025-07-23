@@ -28,6 +28,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool FromPrefab { get; set; }
 
         /// <summary>
+        /// Cached Prefab reference.
+        /// </summary>
+        public Prefab CachedPrefab { get; set; }
+
+        /// <summary>
         /// Object spawn time.
         /// </summary>
         public float StartTime { get; set; }

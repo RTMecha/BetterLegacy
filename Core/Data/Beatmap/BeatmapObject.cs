@@ -60,7 +60,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string customParent;
 
-        string parent = string.Empty;
+        public string parent = string.Empty;
         /// <summary>
         /// ID of the object to parent this to.
         /// </summary>
@@ -455,6 +455,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string PrefabInstanceID { get => prefabInstanceID; set => prefabInstanceID = value; }
 
         public bool FromPrefab { get => fromPrefab; set => fromPrefab = value; }
+
+        public Prefab CachedPrefab { get; set; }
 
         #endregion
 
@@ -1961,7 +1963,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (shouldParent)
             {
                 Parent = beatmapObjectToParentTo.id;
-                RTLevel.Current?.UpdateObject(this, RTLevel.ObjectContext.PARENT_CHAIN);
+                RTLevel.Current?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
 
                 if (renderParent)
                     ObjectEditor.inst.RenderParent(this);

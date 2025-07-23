@@ -53,17 +53,17 @@ namespace BetterLegacy.Editor.Components
                                     switch (timelineObject.TimelineReference)
                                     {
                                         case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
                                                 break;
                                             }
                                         case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
                                                 break;
                                             }
                                         case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
                                                 break;
                                             }
@@ -78,17 +78,17 @@ namespace BetterLegacy.Editor.Components
                                     switch (timelineObject.TimelineReference)
                                     {
                                         case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
                                                 break;
                                             }
                                         case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
                                                 break;
                                             }
                                         case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
                                                 break;
                                             }
@@ -106,12 +106,12 @@ namespace BetterLegacy.Editor.Components
                                     switch (timelineObject.TimelineReference)
                                     {
                                         case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
                                                 break;
                                             }
                                         case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
                                                 break;
                                             }
@@ -129,12 +129,12 @@ namespace BetterLegacy.Editor.Components
                                     switch (timelineObject.TimelineReference)
                                     {
                                         case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
                                                 break;
                                             }
                                         case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
                                                 break;
                                             }
@@ -187,7 +187,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
@@ -205,7 +205,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                     RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
@@ -249,7 +249,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
@@ -267,7 +267,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                     RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
@@ -311,7 +311,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
@@ -329,7 +329,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
-                                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                                     RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
 
                                     break;
@@ -369,7 +369,7 @@ namespace BetterLegacy.Editor.Components
 
                                     selectedKeyframe.values[shift ? 1 : 0] = !shift ? Mathf.Clamp(val, 0, BeatmapTheme.OBJECT_COLORS_COUNT - 1) : Mathf.Clamp(val, 0f, 1f);
 
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
 
                                     break;
@@ -479,7 +479,7 @@ namespace BetterLegacy.Editor.Components
                             selectedKeyframe.values[1] = val;
                         }
 
-                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                         break;
                     }
@@ -493,7 +493,7 @@ namespace BetterLegacy.Editor.Components
                         if ((int)EditorConfig.Instance.ObjectDraggerHelperType.Value < 2 && (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY))
                             selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
                         break;
                     }

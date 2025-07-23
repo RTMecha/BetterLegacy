@@ -10,6 +10,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -17,7 +18,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/> that spawns all objects contained in the Prefab.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable, IEditable
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable, IModifierReference, IEditable, IPrefabable
     {
         public PrefabObject() : base()
         {
@@ -52,6 +53,40 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Transform offsets.
         /// </summary>
         public List<EventKeyframe> events = new List<EventKeyframe>();
+
+        #region Prefab
+
+        /// <summary>
+        /// Used for objects spawned from a Prefab Object.
+        /// </summary>
+        public string originalID;
+
+        /// <summary>
+        /// If the object is spawned from a prefab and has no parent.
+        /// </summary>
+        public bool fromPrefabBase;
+
+        /// <summary>
+        /// If the object is spawned from a prefab.
+        /// </summary>
+        public bool fromPrefab;
+
+        /// <summary>
+        /// Prefab Object reference ID.
+        /// </summary>
+        public string prefabInstanceID = string.Empty;
+
+        public string OriginalID { get => originalID; set => originalID = value; }
+
+        public string PrefabID { get => prefabID; set => prefabID = value; }
+
+        public string PrefabInstanceID { get => prefabInstanceID; set => prefabInstanceID = value; }
+
+        public bool FromPrefab { get => fromPrefab; set => fromPrefab = value; }
+
+        public Prefab CachedPrefab { get; set; }
+
+        #endregion
 
         #region Parent
 
@@ -252,6 +287,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Runtime
 
         /// <summary>
+        /// Cached runtime object.
+        /// </summary>
+        public RTPrefabObject runtimeObject;
+
+        /// <summary>
         /// Cached transform.
         /// </summary>
         public ObjectTransform? cachedTransform;
@@ -392,9 +432,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void ReadJSON(JSONNode jn)
         {
             id = jn["id"] ?? LSText.randomString(16);
-            prefabID = jn["pid"];
             StartTime = jn["st"].AsFloat;
 
+            this.ReadPrefabJSON(jn);
             this.ReadParentJSON(jn);
 
             if (jn["rc"] != null)
@@ -501,13 +541,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
-            jn["pid"] = prefabID;
             jn["st"] = StartTime;
+
+            this.WritePrefabJSON(jn);
+            this.WriteParentJSON(jn);
 
             if (Speed != 1f)
                 jn["sp"] = Speed;
-
-            this.WriteParentJSON(jn);
 
             if (autoKillType != PrefabAutoKillType.Regular)
             {
@@ -561,17 +601,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        /// <summary>
-        /// Gets the prefab reference.
-        /// </summary>
-        public Prefab GetPrefab() => GameData.Current.prefabs.Find(x => x.id == prefabID);
-
         public float GetObjectLifeLength(float offset = 0.0f, bool noAutokill = false, bool collapse = false)
         {
             if (collapse && editorData.collapse)
                 return 0.2f;
 
-            var prefab = GetPrefab();
+            var prefab = this.GetPrefab();
             if (!prefab)
                 return 0.2f;
 
@@ -720,13 +755,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     events.Add(eventKeyframe.Copy());
         }
 
-        #endregion
-
-        #region Operators
-
-        public override bool Equals(object obj) => obj is PrefabObject paObj && id == paObj.id;
-
-        public override int GetHashCode() => base.GetHashCode();
+        public IRTObject GetRuntimeObject() => runtimeObject;
 
         public override string ToString() => id;
 

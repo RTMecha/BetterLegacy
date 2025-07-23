@@ -164,7 +164,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTFile.CopyFile(dropInfo.filePath, RTFile.CombinePaths(RTFile.BasePath, $"level{audioFormat.Dot()}"));
                                 var previousAudio = level.music;
-                                var previousTime = RTLevel.FixedTime;
+                                var previousTime = RTLevel.Current.FixedTime;
                                 var previousPlayState = SoundManager.inst.Playing;
                                 level.music = null;
                                 CoroutineHelper.StartCoroutine(level.LoadAudioClipRoutine(() =>
@@ -6270,12 +6270,11 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="considerChallengeMode">If challenge mode should be accounted for.</param>
         public void UpdatePlayers(bool considerChallengeMode = true)
         {
-            if (!PlayerManager.NoPlayers)
-                foreach (var player in PlayerManager.Players)
-                {
-                    if (player.PlayerModel && player.PlayerModel.basePart)
-                        player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.PlayerModel.basePart.health;
-                }
+            if (PlayerManager.NoPlayers)
+                return;
+
+            foreach (var player in PlayerManager.Players)
+                player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
         }
 
         public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));

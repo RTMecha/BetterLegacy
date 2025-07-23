@@ -250,11 +250,11 @@ namespace BetterLegacy.Editor.Managers
                     switch (referenceType)
                     {
                         case ModifierReferenceType.BeatmapObject: {
-                                RTLevel.Current?.UpdateObject(modifyable as BeatmapObject, RTLevel.ObjectContext.MODIFIERS);
+                                RTLevel.Current?.UpdateObject(modifyable as BeatmapObject, ObjectContext.MODIFIERS);
                                 break;
                             }
                         case ModifierReferenceType.BackgroundObject: {
-                                RTLevel.Current?.UpdateBackgroundObject(modifyable as BackgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
+                                RTLevel.Current?.UpdateBackgroundObject(modifyable as BackgroundObject, BackgroundObjectContext.MODIFIERS);
                                 break;
                             }
                     }
@@ -310,9 +310,9 @@ namespace BetterLegacy.Editor.Managers
 
                 CoroutineHelper.StartCoroutine(modifiersEditorDialog.RenderModifiers(modifyable));
                 if (modifyable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
                 if (modifyable is BackgroundObject backgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.ObjectContext.MODIFIERS);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, ObjectContext.MODIFIERS);
 
                 EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
             });

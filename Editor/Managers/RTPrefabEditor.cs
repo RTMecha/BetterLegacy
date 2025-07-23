@@ -316,7 +316,7 @@ namespace BetterLegacy.Editor.Managers
                 if (isObjectLayer && prefabObject.editorData.Layer == EditorTimeline.inst.Layer)
                     EditorTimeline.inst.GetTimelineObject(prefabObject).RenderPosLength();
 
-                RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TIME, false);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME, false);
             }
             RTLevel.Current?.RecalculateObjectStates();
         }
@@ -421,7 +421,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     prefabObject.StartTime = n;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TIME);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
                     EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
                 }
                 else
@@ -467,7 +467,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.AutokillDropdown.onValueChanged.AddListener(_val =>
             {
                 prefabObject.autoKillType = (PrefabAutoKillType)_val;
-                RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.AUTOKILL);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL);
             });
 
             PrefabObjectEditor.AutokillField.inputField.onValueChanged.ClearAll();
@@ -478,7 +478,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     prefabObject.autoKillOffset = num;
                     if (prefabObject.autoKillType != PrefabAutoKillType.Regular)
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.AUTOKILL);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL);
                 }
             });
 
@@ -491,7 +491,7 @@ namespace BetterLegacy.Editor.Managers
                                                 prefabObject.autoKillType == PrefabAutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f;
 
                 if (prefabObject.autoKillType != PrefabAutoKillType.Regular)
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.AUTOKILL);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL);
                 RenderPrefabObjectAutokill(prefabObject, prefab);
             });
         }
@@ -568,7 +568,7 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.parent = "";
 
                 // Since parent has no affect on the timeline object, we will only need to update the physical object.
-                RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                 RenderPrefabObjectParent(prefabObject);
             });
 
@@ -612,7 +612,7 @@ namespace BetterLegacy.Editor.Managers
             spawnOnce.onValueChanged.AddListener(_val =>
             {
                 prefabObject.desync = _val;
-                RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
             });
 
             for (int i = 0; i < 3; i++)
@@ -632,7 +632,7 @@ namespace BetterLegacy.Editor.Managers
                     prefabObject.SetParentType(index, _val);
 
                     // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                 });
 
                 // Parent Offset
@@ -649,7 +649,7 @@ namespace BetterLegacy.Editor.Managers
                         prefabObject.SetParentOffset(index, num);
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                     }
                 });
 
@@ -666,7 +666,7 @@ namespace BetterLegacy.Editor.Managers
                 additive.onValueChanged.AddListener(_val =>
                 {
                     prefabObject.SetParentAdditive(index, _val);
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                 });
                 parallax.text = prefabObject.parentParallax[index].ToString();
                 parallax.onValueChanged.AddListener(_val =>
@@ -676,7 +676,7 @@ namespace BetterLegacy.Editor.Managers
                         prefabObject.parentParallax[index] = num;
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.PARENT);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                     }
                 });
 
@@ -708,7 +708,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentKeyframe.values[0] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldX.inputField.onEndEdit.NewListener(_val =>
@@ -730,7 +730,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentKeyframe.randomValues[0] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 r_inputFieldX.inputField.onEndEdit.NewListener(_val =>
@@ -762,7 +762,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             currentKeyframe.random = randomIndex;
                             RenderPrefabObjectTransforms(prefabObject);
-                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         });
                     }
                 }
@@ -781,7 +781,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             currentKeyframe.values[1] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         }
                     });
                     inputFieldY.inputField.onEndEdit.NewListener(_val =>
@@ -811,7 +811,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             currentKeyframe.randomValues[1] = num;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                         }
                     });
                     r_inputFieldY.inputField.onEndEdit.NewListener(_val =>
@@ -857,7 +857,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentKeyframe.randomValues[2] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
 
@@ -882,7 +882,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     num = Mathf.Clamp(num, 0, 1000);
                     prefabObject.RepeatCount = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.REPEAT);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.REPEAT);
                 }
             });
 
@@ -897,7 +897,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     num = Mathf.Clamp(num, 0f, 60f);
                     prefabObject.RepeatOffsetTime = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TIME);
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TIME);
                 }
             });
 
@@ -918,10 +918,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabObjectEditor.SpeedField.inputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                {
                     prefabObject.Speed = num;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.SPEED);
-                }
             });
 
             TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.SpeedField, min: 0.1f, max: PrefabObject.MAX_PREFAB_OBJECT_SPEED);
@@ -1295,12 +1292,14 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabObjectEditor.LeftContent.Find("inspect label").gameObject.SetActive(RTEditor.ShowModdedUI);
             PrefabObjectEditor.InspectPrefabObject.gameObject.SetActive(RTEditor.ShowModdedUI);
+            PrefabObjectEditor.InspectRuntimeObjectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
             PrefabObjectEditor.InspectTimelineObject.gameObject.SetActive(RTEditor.ShowModdedUI);
 
             if (!RTEditor.ShowModdedUI)
                 return;
 
             PrefabObjectEditor.InspectPrefabObject.button.onClick.NewListener(() => ModCompatibility.Inspect(prefabObject));
+            PrefabObjectEditor.InspectRuntimeObjectButton.button.onClick.NewListener(() => ModCompatibility.Inspect(prefabObject.runtimeObject));
             PrefabObjectEditor.InspectTimelineObject.button.onClick.NewListener(() => ModCompatibility.Inspect(EditorTimeline.inst.GetTimelineObject(prefabObject)));
         }
         
@@ -1343,7 +1342,7 @@ namespace BetterLegacy.Editor.Managers
                             if (isObjectLayer && prefabObj.editorData.Layer == EditorTimeline.inst.Layer)
                                 EditorTimeline.inst.GetTimelineObject(prefabObj).RenderPosLength();
 
-                            RTLevel.Current?.UpdatePrefab(prefabObj, RTLevel.PrefabContext.TIME, false);
+                            RTLevel.Current?.UpdatePrefab(prefabObj, PrefabObjectContext.TIME, false);
                         }
                         RTLevel.Current?.RecalculateObjectStates();
                     }));

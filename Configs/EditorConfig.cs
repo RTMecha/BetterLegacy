@@ -3232,12 +3232,13 @@ namespace BetterLegacy.Configs
             SelectObjectScaler.ScalerOffset = ObjectDraggerScalerOffset.Value;
             SelectObjectScaler.ScalerScale = ObjectDraggerScalerScale.Value;
 
-            if ((ObjectConverter.ShowEmpties != ShowEmpties.Value || ObjectConverter.ShowDamagable != OnlyShowDamagable.Value) && CoreHelper.InEditor)
+            if ((showEmpties != ShowEmpties.Value || OnlyShowDamagable.Value != OnlyShowDamagable.Value) && CoreHelper.InEditor)
                 RTLevel.Reinit();
 
-            ObjectConverter.ShowEmpties = ShowEmpties.Value;
-            ObjectConverter.ShowDamagable = OnlyShowDamagable.Value;
+            showEmpties = ShowEmpties.Value;
         }
+
+        static bool showEmpties;
 
         void TimelineColorsChanged()
         {

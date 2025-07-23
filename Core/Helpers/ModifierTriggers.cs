@@ -1300,7 +1300,7 @@ namespace BetterLegacy.Core.Helpers
                 time = timer.time;
             }
             else
-                time = RTLevel.FixedTime;
+                time = RTLevel.Current.FixedTime;
 
             return time > modifier.GetFloat(0, 0f, variables);
         }
@@ -1460,7 +1460,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not PAPlayer player)
                     return false;
 
-                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
+                var health = ((float)player.Health / player.GetControl().Health) * 100f;
 
                 return health == modifier.GetFloat(0, 50f, variables);
             }
@@ -1470,7 +1470,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not PAPlayer player)
                     return false;
 
-                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
+                var health = ((float)player.Health / player.GetControl().Health) * 100f;
 
                 return health >= modifier.GetFloat(0, 50f, variables);
             }
@@ -1480,7 +1480,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not PAPlayer player)
                     return false;
 
-                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
+                var health = ((float)player.Health / player.GetControl().Health) * 100f;
 
                 return health <= modifier.GetFloat(0, 50f, variables);
             }
@@ -1490,7 +1490,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not PAPlayer player)
                     return false;
 
-                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
+                var health = ((float)player.Health / player.GetControl().Health) * 100f;
 
                 return health > modifier.GetFloat(0, 50f, variables);
             }
@@ -1500,7 +1500,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not PAPlayer player)
                     return false;
 
-                var health = ((float)player.Health / player.PlayerModel.basePart.health) * 100f;
+                var health = ((float)player.Health / player.GetControl().Health) * 100f;
 
                 return health < modifier.GetFloat(0, 50f, variables);
             }

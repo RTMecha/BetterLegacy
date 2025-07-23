@@ -195,7 +195,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth -= num;
-                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.VISUAL_OFFSET);
+                        RTLevel.Current?.UpdateObject(bm, ObjectContext.VISUAL_OFFSET);
                     }
                 });
                 inputFieldStorage.middleButton.onClick.NewListener(() =>
@@ -206,7 +206,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth = num;
-                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.VISUAL_OFFSET);
+                        RTLevel.Current?.UpdateObject(bm, ObjectContext.VISUAL_OFFSET);
                     }
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
@@ -217,7 +217,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.Depth += num;
-                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.VISUAL_OFFSET);
+                        RTLevel.Current?.UpdateObject(bm, ObjectContext.VISUAL_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
@@ -242,15 +242,15 @@ namespace BetterLegacy.Editor.Managers
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
                                     break;
                                 }
                         }
@@ -271,15 +271,15 @@ namespace BetterLegacy.Editor.Managers
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
                                     break;
                                 }
                         }
@@ -301,15 +301,15 @@ namespace BetterLegacy.Editor.Managers
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
                                     break;
                                 }
                         }
@@ -335,13 +335,13 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
                             beatmapObject.autoKillOffset -= num;
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                         }
                         if (timelineObject.isBackgroundObject)
                         {
                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
                             backgroundObject.autoKillOffset -= num;
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
                         }
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
                     }
@@ -356,13 +356,13 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
                             beatmapObject.autoKillOffset = num;
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                         }
                         if (timelineObject.isBackgroundObject)
                         {
                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
                             backgroundObject.autoKillOffset = num;
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
                         }
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
                     }
@@ -377,13 +377,13 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var beatmapObject = timelineObject.GetData<BeatmapObject>();
                             beatmapObject.autoKillOffset += num;
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                         }
                         if (timelineObject.isBackgroundObject)
                         {
                             var backgroundObject = timelineObject.GetData<BackgroundObject>();
                             backgroundObject.autoKillOffset += num;
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
                         }
                         EditorTimeline.inst.RenderTimelineObject(timelineObject);
                     }
@@ -628,7 +628,7 @@ namespace BetterLegacy.Editor.Managers
                                      ObjectEditor.inst.RenderKeyframes(bm);
                                  }
 
-                                 RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                 RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                  EditorTimeline.inst.RenderTimelineObject(timelineObject);
                              }
 
@@ -673,7 +673,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                         beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
-                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                         timelineObject.RenderPosLength();
                     }
                 }));
@@ -705,7 +705,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.autoKillOffset = num;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                         }
                         if (timelineObject.isBackgroundObject)
                         {
@@ -723,7 +723,7 @@ namespace BetterLegacy.Editor.Managers
                             backgroundObject.autoKillOffset = num;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.AUTOKILL);
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL);
                         }
                     }
                 }));
@@ -751,7 +751,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.autoKillType = AutoKillType.NoAutokill;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
                             }
                             if (timelineObject.isBackgroundObject)
                             {
@@ -759,7 +759,7 @@ namespace BetterLegacy.Editor.Managers
                                 backgroundObject.autoKillType = AutoKillType.NoAutokill;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
                             }
                         }
                     }),
@@ -774,7 +774,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.autoKillType = AutoKillType.LastKeyframe;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
                             }
                             if (timelineObject.isBackgroundObject)
                             {
@@ -782,7 +782,7 @@ namespace BetterLegacy.Editor.Managers
                                 backgroundObject.autoKillType = AutoKillType.LastKeyframe;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
                             }
                         }
                     }),
@@ -797,7 +797,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.autoKillType = AutoKillType.LastKeyframeOffset;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
                             }
                             if (timelineObject.isBackgroundObject)
                             {
@@ -805,7 +805,7 @@ namespace BetterLegacy.Editor.Managers
                                 backgroundObject.autoKillType = AutoKillType.LastKeyframeOffset;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
                             }
                         }
                     }),
@@ -820,7 +820,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.autoKillType = AutoKillType.FixedTime;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
                             }
                             if (timelineObject.isBackgroundObject)
                             {
@@ -828,7 +828,7 @@ namespace BetterLegacy.Editor.Managers
                                 backgroundObject.autoKillType = AutoKillType.FixedTime;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
                             }
                         }
                     }),
@@ -842,7 +842,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.autoKillType = AutoKillType.SongTime;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.AUTOKILL);
                             }
                             if (timelineObject.isBackgroundObject)
                             {
@@ -850,7 +850,7 @@ namespace BetterLegacy.Editor.Managers
                                 backgroundObject.autoKillType = AutoKillType.SongTime;
 
                                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.AUTOKILL);
+                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.AUTOKILL);
                             }
                         }
                     }));
@@ -876,7 +876,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                             {
                                 beatmapObject.Parent = "";
-                                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
                             }
 
                             RTEditor.inst.HideWarningPopup();
@@ -934,15 +934,15 @@ namespace BetterLegacy.Editor.Managers
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
                                     break;
                                 }
                         }
@@ -961,15 +961,15 @@ namespace BetterLegacy.Editor.Managers
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.START_TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME);
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.START_TIME);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME);
                                     break;
                                 }
                         }
@@ -1002,7 +1002,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = (BeatmapObject.ObjectType)objectType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.OBJECT_TYPE);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction("Add", () =>
@@ -1021,7 +1021,7 @@ namespace BetterLegacy.Editor.Managers
 
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.OBJECT_TYPE);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
                         }
                     }));
 
@@ -1034,7 +1034,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Normal;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.OBJECT_TYPE);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), () =>
@@ -1045,7 +1045,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Helper;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.OBJECT_TYPE);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction("Deco", () =>
@@ -1056,7 +1056,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Decoration;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.OBJECT_TYPE);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), () =>
@@ -1067,7 +1067,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Empty;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.OBJECT_TYPE);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), () =>
@@ -1078,7 +1078,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Solid;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.OBJECT_TYPE);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
                         }
                     }));
 
@@ -1105,7 +1105,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = (GradientType)gradientType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Add", () =>
@@ -1122,7 +1122,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = (GradientType)gradientType;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
                         }
                     }));
 
@@ -1135,7 +1135,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = GradientType.Normal;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Linear Right", () =>
@@ -1146,7 +1146,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = GradientType.RightLinear;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Linear Left", () =>
@@ -1157,7 +1157,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = GradientType.LeftLinear;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Radial In", () =>
@@ -1168,7 +1168,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = GradientType.OutInRadial;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Radial Out", () =>
@@ -1179,7 +1179,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.gradientType = GradientType.InOutRadial;
 
                             EditorTimeline.inst.RenderTimelineObject(timelineObject);
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
                         }
                     }));
 
@@ -1215,7 +1215,7 @@ namespace BetterLegacy.Editor.Managers
                             var path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, beatmapObject.text);
 
                             ObjectEditor.inst.StoreImage(beatmapObject, path);
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.IMAGE);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
                         }
                     }),
                     new ButtonFunction("Clear", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear the images of all selected objects?", () =>
@@ -1226,7 +1226,7 @@ namespace BetterLegacy.Editor.Managers
                                 continue;
 
                             beatmapObject.text = string.Empty;
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.IMAGE);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.IMAGE);
                         }
                         RTEditor.inst.HideWarningPopup();
                     }, RTEditor.inst.HideWarningPopup), buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
@@ -1244,7 +1244,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Background;
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("Foreground", () =>
@@ -1252,7 +1252,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.Foreground;
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
                         }
                     }),
                     new ButtonFunction("UI", () =>
@@ -1260,7 +1260,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.RENDERING);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.RENDERING);
                         }
                     }));
 
@@ -1363,7 +1363,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[0] -= num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.middleButton.onClick.NewListener(() =>
@@ -1374,7 +1374,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[0] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.rightButton.onClick.NewListener(() =>
@@ -1385,7 +1385,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[0] += num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 var inputFieldStorageY = GenerateInputField(movePrefabsParent.transform, "move prefabs", "1", "Enter value...", true);
@@ -1398,7 +1398,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[1] -= num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.middleButton.onClick.NewListener(() =>
@@ -1409,7 +1409,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[1] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.rightButton.onClick.NewListener(() =>
@@ -1420,7 +1420,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[0].values[1] += num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageX.inputField));
@@ -1447,7 +1447,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[0] -= num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.middleButton.onClick.NewListener(() =>
@@ -1458,7 +1458,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[0] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageX.rightButton.onClick.NewListener(() =>
@@ -1469,7 +1469,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[0] += num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 var inputFieldStorageY = GenerateInputField(movePrefabsParent.transform, "scale prefabs", "0.1", "Enter value...", true);
@@ -1482,7 +1482,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[1] -= num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.middleButton.onClick.NewListener(() =>
@@ -1493,7 +1493,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[1] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorageY.rightButton.onClick.NewListener(() =>
@@ -1504,7 +1504,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[1].values[1] += num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorageX.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorageX.inputField));
@@ -1524,7 +1524,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[2].values[0] -= num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorage.middleButton.onClick.NewListener(() =>
@@ -1535,7 +1535,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[2].values[0] = num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
@@ -1546,7 +1546,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.events[2].values[0] += num;
-                        RTLevel.Current?.UpdatePrefab(prefabObject, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                     }
                 });
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
@@ -1661,17 +1661,17 @@ namespace BetterLegacy.Editor.Managers
                             switch (timelineObject.TimelineReference)
                             {
                                 case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
                                         break;
                                     }
@@ -1686,17 +1686,17 @@ namespace BetterLegacy.Editor.Managers
                             switch (timelineObject.TimelineReference)
                             {
                                 case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                        RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
                                         break;
                                     }
@@ -1711,17 +1711,17 @@ namespace BetterLegacy.Editor.Managers
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
                                     break;
                                 }
@@ -1746,12 +1746,12 @@ namespace BetterLegacy.Editor.Managers
                             switch (timelineObject.TimelineReference)
                             {
                                 case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
                                         break;
                                     }
@@ -1769,12 +1769,12 @@ namespace BetterLegacy.Editor.Managers
                             switch (timelineObject.TimelineReference)
                             {
                                 case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                        RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
                                         break;
                                     }
                                 case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                        RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
                                         break;
                                     }
@@ -1792,12 +1792,12 @@ namespace BetterLegacy.Editor.Managers
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
                                     break;
                                 }
                             case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
                                     break;
                                 }
@@ -1868,7 +1868,7 @@ namespace BetterLegacy.Editor.Managers
                                         beatmapObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
                                         CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
-                                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
 
                                         pasted = true;
                                         break;
@@ -1886,7 +1886,7 @@ namespace BetterLegacy.Editor.Managers
                                         backgroundObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
                                         CoroutineHelper.StartCoroutine(RTBackgroundEditor.inst.Dialog.ModifiersDialog.RenderModifiers(backgroundObject));
-                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
 
                                         pasted = true;
                                         break;
@@ -2146,7 +2146,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var bm = timelineObject.GetData<BeatmapObject>();
                     bm.text = bm.text.Replace(oldNameIF.text, newNameIF.text);
-                    RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.SHAPE);
+                    RTLevel.Current?.UpdateObject(bm, ObjectContext.SHAPE);
                 }
             });
 
@@ -2385,7 +2385,7 @@ namespace BetterLegacy.Editor.Managers
                                         kf.values[9] = Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Add", () =>
@@ -2425,7 +2425,7 @@ namespace BetterLegacy.Editor.Managers
                                         kf.values[9] += Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Sub", () =>
@@ -2465,7 +2465,7 @@ namespace BetterLegacy.Editor.Managers
                                         kf.values[9] -= Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                             }
                         }));
 
@@ -2498,7 +2498,7 @@ namespace BetterLegacy.Editor.Managers
                                         SetKeyframeValues(bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
                                             opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                     }
                                 }
 
@@ -2514,7 +2514,7 @@ namespace BetterLegacy.Editor.Managers
                                 SetKeyframeValues(bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
                                     opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Add", () =>
@@ -2536,7 +2536,7 @@ namespace BetterLegacy.Editor.Managers
                                         AddKeyframeValues(bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
                                             opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                     }
                                 }
 
@@ -2552,7 +2552,7 @@ namespace BetterLegacy.Editor.Managers
                                 AddKeyframeValues(bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
                                     opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                             }
                         }),
                         new ButtonFunction("Sub", () =>
@@ -2574,7 +2574,7 @@ namespace BetterLegacy.Editor.Managers
                                         SubKeyframeValues(bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
                                             opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                     }
                                 }
 
@@ -2590,7 +2590,7 @@ namespace BetterLegacy.Editor.Managers
                                 SubKeyframeValues(bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
                                     opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
-                                RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                             }
                         }));
 
@@ -2655,7 +2655,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.events[3].Add(kf);
                             }
 
-                            RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(bm));
                         }
                     }));
@@ -2730,7 +2730,7 @@ namespace BetterLegacy.Editor.Managers
                                     kf.random = copiedKeyframeData.random;
                                     kf.relative = copiedKeyframeData.relative;
 
-                                    RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                 }
                             }
                         }
@@ -2756,7 +2756,7 @@ namespace BetterLegacy.Editor.Managers
                                     kf.random = copiedKeyframeData.random;
                                     kf.relative = copiedKeyframeData.relative;
 
-                                    RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                                 }
                             }
                             EditorManager.inst.DisplayNotification("Pasted keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
@@ -3236,7 +3236,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (beatmapObject.ShapeType == ShapeType.Polygon && EditorConfig.Instance.AutoPolygonRadius.Value)
                                     beatmapObject.polygonShape.Radius = beatmapObject.polygonShape.GetAutoRadius();
 
-                                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
                             }
                             if (timelineObject.isBackgroundObject)
                             {
@@ -3279,7 +3279,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                     beatmapObject.text = _val;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.TEXT);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.TEXT);
                                 }
                                 if (timelineObject.isBackgroundObject)
                                 {
@@ -3345,7 +3345,7 @@ namespace BetterLegacy.Editor.Managers
                                     {
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                         beatmapObject.text = _val;
-                                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.TEXT);
+                                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.TEXT);
                                     }
                                     if (timelineObject.isBackgroundObject)
                                     {
@@ -3387,7 +3387,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.Radius = num;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3406,7 +3406,7 @@ namespace BetterLegacy.Editor.Managers
                                     beatmapObject.polygonShape.Sides = num;
                                     if (EditorConfig.Instance.AutoPolygonRadius.Value)
                                         beatmapObject.polygonShape.Radius = beatmapObject.polygonShape.GetAutoRadius();
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3423,7 +3423,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.Roundness = num;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3440,7 +3440,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.Thickness = num;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3456,7 +3456,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.ThicknessOffset = new Vector2(num, beatmapObject.polygonShape.ThicknessOffset.y);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3472,7 +3472,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.ThicknessOffset = new Vector2(beatmapObject.polygonShape.ThicknessOffset.x, num);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3488,7 +3488,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.ThicknessScale = new Vector2(num, beatmapObject.polygonShape.ThicknessScale.y);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3504,7 +3504,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.ThicknessScale = new Vector2(beatmapObject.polygonShape.ThicknessScale.x, num);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3521,7 +3521,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.Slices = num;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3537,7 +3537,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var beatmapObject in EditorTimeline.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
                                 {
                                     beatmapObject.polygonShape.Angle = num;
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.POLYGONS);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.POLYGONS);
                                 }
                             }
                         });
@@ -3572,7 +3572,7 @@ namespace BetterLegacy.Editor.Managers
                                             if (beatmapObject.gradientType != GradientType.Normal && (index == 4 || index == 6 || index == 10))
                                                 beatmapObject.Shape = 0;
 
-                                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.SHAPE);
+                                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
                                         }
                                         if (timelineObject.isBackgroundObject)
                                         {
@@ -3808,7 +3808,7 @@ namespace BetterLegacy.Editor.Managers
                         kf.random = copiedKeyframeData.random;
                         kf.relative = copiedKeyframeData.relative;
 
-                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                     }
                 }
                 EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
@@ -3842,7 +3842,7 @@ namespace BetterLegacy.Editor.Managers
                         kf.random = copiedKeyframeData.random;
                         kf.relative = copiedKeyframeData.relative;
 
-                        RTLevel.Current?.UpdateObject(bm, RTLevel.ObjectContext.KEYFRAMES);
+                        RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
                     }
                     EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
                 }

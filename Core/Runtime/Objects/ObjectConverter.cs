@@ -26,27 +26,24 @@ namespace BetterLegacy.Core.Runtime.Objects
     /// </summary>
     public class ObjectConverter : Exists
     {
-        public static bool ShowEmpties { get; set; } = false;
-
-        public static bool ShowDamagable { get; set; } = false;
-
         readonly GameData gameData;
+        readonly RTLevelBase runtimeLevel;
 
-        public ObjectConverter(GameData gameData)
+        public ObjectConverter(GameData beatmap, RTLevelBase runtimeLevel)
         {
             this.gameData = gameData;
-
-            for (int i = 0; i < gameData.beatmapObjects.Count; i++)
-                CacheSequence(gameData.beatmapObjects[i]);
+            this.runtimeLevel = runtimeLevel;
         }
 
         #region Runtime Objects
 
-        public bool SkipRuntimeObject(BeatmapObject beatmapObject) => ShowDamagable && beatmapObject.objectType != ObjectType.Normal || !ShowEmpties && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
+        public bool SkipRuntimeObject(BeatmapObject beatmapObject) => EditorConfig.Instance.OnlyShowDamagable.Value && beatmapObject.objectType != ObjectType.Normal || !EditorConfig.Instance.ShowEmpties.Value && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
 
-        public IEnumerable<IRTObject> ToRuntimeObjects()
+        public IEnumerable<IRTObject> ToRuntimeObjects() => ToRuntimeObjects(GameData.Current.beatmapObjects);
+
+        public IEnumerable<IRTObject> ToRuntimeObjects(IEnumerable<BeatmapObject> beatmapObjects)
         {
-            foreach (var beatmapObject in gameData.beatmapObjects)
+            foreach (var beatmapObject in beatmapObjects)
             {
                 if (SkipRuntimeObject(beatmapObject))
                 {
@@ -112,14 +109,14 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             GameObject parent = null;
 
-            if (!string.IsNullOrEmpty(beatmapObject.Parent) && gameData.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
                 parent = InitParentChain(beatmapObjectParent, parentObjects);
 
             var shape = Mathf.Clamp(beatmapObject.Shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
             var shapeType = (ShapeType)shape;
 
-            GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : ObjectManager.inst.objectParent.transform);
+            GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent ? parent.transform : runtimeLevel.Parent);
             
             baseObject.transform.localScale = Vector3.one;
 
@@ -136,22 +133,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             baseObject.name = beatmapObject.name;
 
-            var top = new GameObject($"top - [{beatmapObject.name}]");
-            top.transform.SetParent(ObjectManager.inst.objectParent.transform);
-            top.transform.localScale = Vector3.one;
-
-            var prefabOffsetPosition = Vector3.zero;
-            var prefabOffsetScale = Vector3.one;
-            var prefabOffsetRotation = Vector3.zero;
-
-            if (beatmapObject.fromPrefab && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID) && beatmapObject.TryGetPrefabObject(out PrefabObject prefabObject))
-            {
-                var transform = prefabObject.GetTransformOffset();
-
-                prefabOffsetPosition = transform.position;
-                prefabOffsetScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-                prefabOffsetRotation = new Vector3(0f, 0f, transform.rotation);
-            }
+            var top = Creator.NewGameObject($"top - [{beatmapObject.name}]", runtimeLevel.Parent);
 
             var tf = !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
                 parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
@@ -172,7 +154,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             VisualObject visual = shapeType switch
             {
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), (int)beatmapObject.renderLayerType),
-                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, gameData.assets.GetSprite(beatmapObject.text)),
+                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, gameData.GetAssets().GetSprite(beatmapObject.text)),
                 ShapeType.Polygon => new PolygonObject(visualObject, opacity, deco, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, beatmapObject.polygonShape),
                 _ => new SolidObject(visualObject, opacity, deco, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation),
             };
@@ -194,10 +176,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
 
-            var runtimeObject = new RTBeatmapObject(
-                beatmapObject,
-                parentObjects, visual,
-                prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
+            var runtimeObject = new RTBeatmapObject(beatmapObject, parentObjects, visual);
 
             runtimeObject.SetActive(false);
 
@@ -213,7 +192,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             parentObjects.Add(InitLevelParentObject(beatmapObject, gameObject));
 
             // Has parent - init parent (recursive)
-            if (!string.IsNullOrEmpty(beatmapObject.Parent) && gameData.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+            if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
             {
                 var parentObject = InitParentChain(beatmapObjectParent, parentObjects);
 
@@ -326,9 +305,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool SkipRuntimeModifiers(BeatmapObject beatmapObject) => beatmapObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value && beatmapObject.LDM;
 
-        public IEnumerable<IRTObject> ToRuntimeModifiers()
+        public IEnumerable<IRTObject> ToRuntimeModifiers() => ToRuntimeModifiers(gameData.BeatmapObjects);
+
+        public IEnumerable<IRTObject> ToRuntimeModifiers(IEnumerable<BeatmapObject> beatmapObjects)
         {
-            foreach (var beatmapObject in gameData.beatmapObjects)
+            foreach (var beatmapObject in beatmapObjects)
             {
                 if (SkipRuntimeModifiers(beatmapObject))
                 {
@@ -362,9 +343,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool SkipRuntimeBGObject(BackgroundObject backgroundObject) => !CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active;
 
-        public IEnumerable<IRTObject> ToRuntimeBGObjects()
+        public IEnumerable<IRTObject> ToRuntimeBGObjects() => ToRuntimeBGObjects(gameData.BackgroundObjects);
+
+        public IEnumerable<IRTObject> ToRuntimeBGObjects(IEnumerable<BackgroundObject> backgroundObjects)
         {
-            foreach (var backgroundObject in gameData.backgroundObjects)
+            foreach (var backgroundObject in backgroundObjects)
             {
                 if (SkipRuntimeBGObject(backgroundObject))
                 {
@@ -469,21 +452,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 }
             }
 
-            var prefabOffsetPosition = Vector3.zero;
-            var prefabOffsetScale = Vector3.one;
-            var prefabOffsetRotation = Vector3.zero;
-
-            if (backgroundObject.fromPrefab && !string.IsNullOrEmpty(backgroundObject.prefabInstanceID) && backgroundObject.TryGetPrefabObject(out PrefabObject prefabObject))
-            {
-                var transform = prefabObject.GetTransformOffset();
-
-                prefabOffsetPosition = transform.position;
-                prefabOffsetScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-                prefabOffsetRotation = new Vector3(0f, 0f, transform.rotation);
-            }
-
-            var runtimeObject = new RTBackgroundObject(backgroundObject, renderers,
-                prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
+            var runtimeObject = new RTBackgroundObject(backgroundObject, renderers);
 
             runtimeObject.SetActive(false);
             runtimeObject.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
@@ -496,9 +465,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             return runtimeObject;
         }
 
-        public IEnumerable<BackgroundLayerObject> ToBackgroundLayerObjects()
+        public IEnumerable<BackgroundLayerObject> ToBackgroundLayerObjects() => ToBackgroundLayerObjects(gameData.BackgroundLayers);
+
+        public IEnumerable<BackgroundLayerObject> ToBackgroundLayerObjects(IEnumerable<BackgroundLayer> backgroundLayers)
         {
-            foreach (var backgroundLayer in gameData.backgroundLayers)
+            foreach (var backgroundLayer in backgroundLayers)
             {
                 var backgroundLayerObject = ToBackgroundLayerObject(backgroundLayer);
                 yield return backgroundLayerObject;
@@ -527,9 +498,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool SkipRuntimeModifiers(BackgroundObject backgroundObject) => backgroundObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value;
 
-        public IEnumerable<IRTObject> ToBGRuntimeModifiers()
+        public IEnumerable<IRTObject> ToRuntimeBGModifiers() => ToRuntimeBGModifiers(gameData.BackgroundObjects);
+
+        public IEnumerable<IRTObject> ToRuntimeBGModifiers(IEnumerable<BackgroundObject> backgroundObjects)
         {
-            foreach (var backgroundObject in gameData.backgroundObjects)
+            foreach (var backgroundObject in backgroundObjects)
             {
                 if (SkipRuntimeModifiers(backgroundObject))
                 {
@@ -576,7 +549,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.PositionSequence, false);
 
             // Empty objects don't need a color sequence, so it is not cached
-            if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
+            if (EditorConfig.Instance.ShowEmpties.Value || beatmapObject.objectType != ObjectType.Empty)
             {
                 collection.ColorSequence = GetColorSequence(beatmapObject.events[3], DefaultThemeKeyframe);
 
@@ -605,7 +578,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, DefaultFloatKeyframe, collection.PositionSequence, false);
 
             // Empty objects don't need a color sequence, so it is not cached
-            if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
+            if (EditorConfig.Instance.ShowEmpties.Value || beatmapObject.objectType != ObjectType.Empty)
             {
                 collection.ColorSequence = GetColorSequence(beatmapObject.events[3], DefaultThemeKeyframe);
 

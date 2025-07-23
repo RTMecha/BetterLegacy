@@ -32,6 +32,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool FromPrefab { get; set; }
 
+        public Prefab CachedPrefab { get; set; }
+
         public float StartTime { get; set; }
 
         public IRTObject GetRuntimeObject() => null;
@@ -62,6 +64,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             depth = jn["d"].AsInt;
             if (jn["col"] != null)
                 color = jn["col"].AsInt;
+
+            this.ReadPrefabJSON(jn);
         }
 
         public override JSONNode ToJSONVG()
@@ -82,6 +86,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             jn["d"] = depth;
             if (color != -1)
                 jn["col"] = color;
+
+            this.WritePrefabJSON(jn);
 
             return jn;
         }

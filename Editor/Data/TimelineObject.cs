@@ -762,17 +762,17 @@ namespace BetterLegacy.Editor.Data
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
                                     break;
                                 }
                             case TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
                                     break;
                                 }
                             case TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
                                     break;
                                 }
@@ -787,17 +787,17 @@ namespace BetterLegacy.Editor.Data
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.HIDE);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
                                     break;
                                 }
                             case TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.HIDE);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
                                     break;
                                 }
                             case TimelineReferenceType.BackgroundObject: {
-                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.HIDE);
+                                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
                                     break;
                                 }
@@ -815,12 +815,12 @@ namespace BetterLegacy.Editor.Data
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
                                     break;
                                 }
                             case TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
                                     break;
                                 }
@@ -838,12 +838,12 @@ namespace BetterLegacy.Editor.Data
                         switch (timelineObject.TimelineReference)
                         {
                             case TimelineReferenceType.BeatmapObject: {
-                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), RTLevel.ObjectContext.SELECTABLE);
+                                    RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
                                     break;
                                 }
                             case TimelineReferenceType.PrefabObject: {
-                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.SELECTABLE);
+                                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
                                     break;
                                 }

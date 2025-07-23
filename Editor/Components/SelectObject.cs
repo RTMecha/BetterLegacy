@@ -244,9 +244,9 @@ namespace BetterLegacy.Editor.Components
                 selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
             if (prefabObjectToDrag != null)
-                RTLevel.Current?.UpdatePrefab(prefabObjectToDrag, RTLevel.PrefabContext.TRANSFORM_OFFSET);
+                RTLevel.Current?.UpdatePrefab(prefabObjectToDrag, PrefabObjectContext.TRANSFORM_OFFSET);
             else
-                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
         }
 
         float startDragTime;

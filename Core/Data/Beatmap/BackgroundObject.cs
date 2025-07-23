@@ -262,6 +262,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool FromPrefab { get => fromPrefab; set => fromPrefab = value; }
 
+        public Prefab CachedPrefab { get; set; }
+
         #endregion
 
         #region Runtime

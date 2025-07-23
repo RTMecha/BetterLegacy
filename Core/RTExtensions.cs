@@ -994,6 +994,19 @@ namespace BetterLegacy.Core
         /// <returns>Returns the found entry if one was found, otherwise returns the default value.</returns>
         public static TValue GetOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue) => dictionary.TryGetValue(key, out TValue value) ? value : defaultValue;
 
+        /// <summary>
+        /// Inserts a range of key value pairs from one dictionary to another.
+        /// </summary>
+        /// <typeparam name="TKey">Key of the dictionary.</typeparam>
+        /// <typeparam name="TValue">Value of the dictionary.</typeparam>
+        /// <param name="a">Dictionary to pass the elements to.</param>
+        /// <param name="b">Dictionary to pass the elements from.</param>
+        public static void InsertRange<TKey, TValue>(this Dictionary<TKey, TValue> a, Dictionary<TKey, TValue> b)
+        {
+            foreach (var keyValuePair in b)
+                a[keyValuePair.Key] = keyValuePair.Value;
+        }
+
         #endregion
 
         #region JSON
@@ -1460,7 +1473,12 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Gets the prefab reference.
         /// </summary>
-        public static Prefab GetPrefab(this IPrefabable instance) => GameData.Current.prefabs.Find(x => x.id == instance.PrefabID);
+        public static Prefab GetPrefab(this IPrefabable instance) => instance.CachedPrefab ? instance.CachedPrefab : GameData.Current.prefabs.Find(x => x.id == instance.PrefabID);
+
+        /// <summary>
+        /// Gets the prefab reference.
+        /// </summary>
+        public static Prefab GetPrefab(this IPrefabable instance, List<Prefab> prefabs) => prefabs.Find(x => x.id == instance.PrefabID);
 
         /// <summary>
         /// Tries to get the Prefab Object reference.

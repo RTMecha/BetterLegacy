@@ -10,19 +10,14 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
-    public class RTBackgroundObject : Exists, IRTObject, IPrefabOffset
+    public class RTBackgroundObject : Exists, IRTObject
     {
-        public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers,
-            Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
+        public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers)
         {
             this.backgroundObject = backgroundObject;
 
             StartTime = backgroundObject.StartTime;
             KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
-
-            this.prefabOffsetPosition = prefabOffsetPosition;
-            this.prefabOffsetScale = prefabOffsetScale;
-            this.prefabOffsetRotation = prefabOffsetRotation;
 
             this.renderers = renderers;
 
@@ -33,17 +28,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float StartTime { get; set; }
         public float KillTime { get; set; }
-        public int Room { get; set; }
 
         public BackgroundObject backgroundObject;
-
-        public Vector3 prefabOffsetPosition;
-        public Vector3 prefabOffsetScale;
-        public Vector3 prefabOffsetRotation;
-
-        public Vector3 PrefabOffsetPosition { get => prefabOffsetPosition; set => prefabOffsetPosition = value; }
-        public Vector3 PrefabOffsetScale { get => prefabOffsetScale; set => prefabOffsetScale = value; }
-        public Vector3 PrefabOffsetRotation { get => prefabOffsetRotation; set => prefabOffsetRotation = value; }
 
         public bool hidden;
 
@@ -111,13 +97,6 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (!backgroundObject.active || !backgroundObject.Enabled || hidden || !gameObject)
                 return;
-
-            if (top)
-            {
-                top.localPosition = new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y);
-                top.localScale = prefabOffsetScale;
-                top.localRotation = Quaternion.Euler(prefabOffsetRotation);
-            }
 
             var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 

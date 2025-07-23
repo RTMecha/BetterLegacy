@@ -81,7 +81,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         #region Unity Explorer
 
         public FunctionButtonStorage InspectPrefabObject { get; set; }
-
+        public FunctionButtonStorage InspectRuntimeObjectButton { get; set; }
         public FunctionButtonStorage InspectTimelineObject { get; set; }
 
         #endregion
@@ -653,6 +653,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 InspectPrefabObject.label.text = "Inspect Prefab Object";
                 EditorThemeManager.AddSelectable(InspectPrefabObject.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(InspectPrefabObject.label, ThemeGroup.Function_2_Text);
+
+                var inspectRuntimeObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect runtime object");
+                InspectRuntimeObjectButton = inspectRuntimeObject.GetComponent<FunctionButtonStorage>();
+                InspectRuntimeObjectButton.label.text = "Inspect Runtime Object";
+                EditorThemeManager.AddSelectable(InspectRuntimeObjectButton.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(InspectRuntimeObjectButton.label, ThemeGroup.Function_2_Text);
 
                 var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(LeftContent, "inspect timeline object");
                 InspectTimelineObject = inspectTimelineObject.GetComponent<FunctionButtonStorage>();

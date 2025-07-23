@@ -190,9 +190,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 modifyable.IgnoreLifespan = _val;
                 if (modifyable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
                 if (modifyable is BackgroundObject backgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
             });
 
             OrderToggle.onValueChanged.ClearAll();
@@ -201,9 +201,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 modifyable.OrderModifiers = _val;
                 if (modifyable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.MODIFIERS);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
                 if (modifyable is BackgroundObject backgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, RTLevel.BackgroundObjectContext.MODIFIERS);
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
             });
 
             if (!showModifiers)

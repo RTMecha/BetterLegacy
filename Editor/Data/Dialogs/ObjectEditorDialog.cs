@@ -150,7 +150,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Text UnityExplorerLabel { get; set; }
 
         public FunctionButtonStorage InspectBeatmapObjectButton { get; set; }
-        public FunctionButtonStorage InspectLevelObjectButton { get; set; }
+        public FunctionButtonStorage InspectRuntimeObjectButton { get; set; }
         public FunctionButtonStorage InspectTimelineObjectButton { get; set; }
 
         #endregion
@@ -1124,7 +1124,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             }
 
                             var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                            RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                             ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                         });
 
@@ -1150,7 +1150,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 }
 
                                 var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                                RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                             });
 
@@ -1322,7 +1322,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(timePosition, 0f);
 
-                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
 
                         timelineObject.Render();
                     }
@@ -1352,7 +1352,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     ObjectEditor.inst.RenderKeyframes(beatmapObject);
                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted keyframe data to selected keyframes!", 2f, EditorManager.NotificationType.Success);
                 });
 
@@ -1394,7 +1394,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     ObjectEditor.inst.RenderKeyframes(beatmapObject);
                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted position keyframe data to selected position keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
 
@@ -1421,7 +1421,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     ObjectEditor.inst.RenderKeyframes(beatmapObject);
                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted scale keyframe data to selected scale keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
 
@@ -1463,7 +1463,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     ObjectEditor.inst.RenderKeyframes(beatmapObject);
                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted rotation keyframe data to selected rotation keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
 
@@ -1489,7 +1489,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     ObjectEditor.inst.RenderKeyframes(beatmapObject);
                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted color keyframe data to selected color keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
 
@@ -1965,7 +1965,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 UnityExplorerLabel = Content.Find("unity explorer label").GetChild(0).GetComponent<Text>();
                 InspectBeatmapObjectButton = Content.Find("inspectbeatmapobject").GetComponent<FunctionButtonStorage>();
-                InspectLevelObjectButton = Content.Find("inspectlevelobject").GetComponent<FunctionButtonStorage>();
+                InspectRuntimeObjectButton = Content.Find("inspectlevelobject").GetComponent<FunctionButtonStorage>();
                 InspectTimelineObjectButton = Content.Find("inspecttimelineobject").GetComponent<FunctionButtonStorage>();
             }
 

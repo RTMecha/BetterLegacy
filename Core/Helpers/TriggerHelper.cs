@@ -504,7 +504,7 @@ namespace BetterLegacy.Core.Helpers
                             selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
                         ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
@@ -526,7 +526,7 @@ namespace BetterLegacy.Core.Helpers
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.transform.position.y;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 1: {
@@ -534,14 +534,14 @@ namespace BetterLegacy.Core.Helpers
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.orthographicSize / 20f;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 2: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.eulerAngles.x;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.KEYFRAMES);
+                                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 3: {
@@ -636,14 +636,14 @@ namespace BetterLegacy.Core.Helpers
                 if (timelineObject.isBeatmapObject)
                 {
                     var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                    RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.START_TIME, false);
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.START_TIME, false);
                     if (beatmapObject.desync)
-                        RTLevel.Current?.UpdateObject(beatmapObject, RTLevel.ObjectContext.PARENT_CHAIN, false);
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN, false);
                 }
                 if (timelineObject.isPrefabObject)
-                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), RTLevel.PrefabContext.TIME, false);
+                    RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.TIME, false);
                 if (timelineObject.isBackgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), RTLevel.BackgroundObjectContext.START_TIME, false);
+                    RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.START_TIME, false);
             }
 
             RTLevel.Current?.Sort();
