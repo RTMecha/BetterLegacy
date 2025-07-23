@@ -4,7 +4,9 @@ using System.Linq;
 using SimpleJSON;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 
@@ -231,6 +233,9 @@ namespace BetterLegacy.Editor.Data
                     editorInfo.time = jn["misc"]["t"].AsFloat;
                 if (jn["misc"]["time"] != null)
                     editorInfo.time = jn["misc"]["time"].AsFloat;
+
+                if (jn["misc"]["prefab_object_data"] != null && RTPrefabEditor.inst)
+                    RTPrefabEditor.inst.copiedInstanceData = PrefabObject.Parse(jn["misc"]["prefab_object_data"]);
             }
 
             return editorInfo;
@@ -242,7 +247,7 @@ namespace BetterLegacy.Editor.Data
         /// <returns>Returns a JSON object representing the editor info.</returns>
         public JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             if (!string.IsNullOrEmpty(prefabPath))
                 jn["paths"]["prefab"] = prefabPath;
@@ -280,6 +285,9 @@ namespace BetterLegacy.Editor.Data
             jn["misc"]["bpm_offset"] = bpmOffset;
             jn["misc"]["bpm_signature"] = timeSignature;
             jn["misc"]["time"] = AudioManager.inst.CurrentAudioSource.time;
+
+            if (RTPrefabEditor.inst && RTPrefabEditor.inst.copiedInstanceData)
+                jn["misc"]["prefab_object_data"] = RTPrefabEditor.inst.copiedInstanceData.ToJSON();
 
             return jn;
         }
