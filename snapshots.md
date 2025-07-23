@@ -3,6 +3,11 @@
 ## Features
 ### Core
 - Added "Allow Player Model Controls" to the Player settings. This allows player models to retain their control values, while making regular levels fair again.
+- Implemented Modifiers for Prefab Objects!
+- Added spawnPrefabCopy modifiers. These search for an existing Prefab Object and if one is found, copies its data.
+
+### Editor
+- Copied Prefab Instance data now saves to and loads from the editor.lse file.
 
 ## Changes
 ### Core
@@ -10,6 +15,9 @@
 - Player Model & Player Editor code has been heavily cleaned up.
 - Beware, some stuff might be broken and definitely will not be compatible with 1.7.x and below.
 - Reworked Prefab Objects to have their own runtime system.
+- Modifier JSON format has been tweaked. 1.7.x should still be compatible with this change as it was accounted for a while ago.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.7.1 - (pre-1.8.0) [Jul 20, 2025]
 
