@@ -1609,6 +1609,13 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Gets a <see cref="ObjectTransform"/> from a transformable object.
+        /// </summary>
+        /// <param name="transformable">Transformable reference.</param>
+        /// <returns>Returns a transform cache.</returns>
+        public static ObjectTransform GetObjectTransform(this ITransformable transformable) => new ObjectTransform(transformable.GetFullPosition(), transformable.GetFullScale(), transformable.GetFullRotation(true).z);
+
+        /// <summary>
         /// Copies parent data from another parentable object.
         /// </summary>
         /// <param name="orig">Parentable object to copy and apply from.</param>

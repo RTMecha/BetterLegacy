@@ -1463,7 +1463,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             return scale;
         }
 
-        public Vector3 GetFullRotation() => runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject ? runtimeObject.visualObject.gameObject.transform.localEulerAngles : new Vector3(0f, 0f, InterpolateChainRotation());
+        public Vector3 GetFullRotation(bool includeSelf)
+        {
+            if (runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+            {
+                var transform = runtimeObject.visualObject.gameObject.transform;
+                if (!includeSelf)
+                    transform = transform.parent.parent;
+                return transform.localEulerAngles;
+            }
+
+            return new Vector3(0f, 0f, InterpolateChainRotation(includeSelf: includeSelf));
+        }
 
         /// <summary>
         /// Interpolates an animation from the object.

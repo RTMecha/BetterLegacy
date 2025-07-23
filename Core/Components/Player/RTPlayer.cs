@@ -3745,7 +3745,7 @@ namespace BetterLegacy.Core.Components.Player
 
             public Vector3 GetFullScale() => gameObject.transform.lossyScale;
 
-            public Vector3 GetFullRotation() => gameObject.transform.eulerAngles;
+            public Vector3 GetFullRotation(bool includeSelf) => gameObject.transform.eulerAngles;
         }
 
         /// <summary>

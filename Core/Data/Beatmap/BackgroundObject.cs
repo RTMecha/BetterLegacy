@@ -744,7 +744,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public Vector3 GetFullScale() => runtimeObject && runtimeObject.BaseObject is GameObject gameObject ? gameObject.transform.lossyScale : scale;
 
-        public Vector3 GetFullRotation() => runtimeObject && runtimeObject.BaseObject is GameObject gameObject ? gameObject.transform.eulerAngles : new Vector3(rotation.x, rotation.y, rot);
+        public Vector3 GetFullRotation(bool includeSelf) => runtimeObject && runtimeObject.BaseObject is GameObject gameObject ? gameObject.transform.eulerAngles : new Vector3(rotation.x, rotation.y, rot);
 
         public IRTObject GetRuntimeObject() => runtimeObject;
 

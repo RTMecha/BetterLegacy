@@ -43,7 +43,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Gets the full rotation of the object.
         /// </summary>
         /// <returns>Returns the objects' full rotation.</returns>
-        public Vector3 GetFullRotation();
+        public Vector3 GetFullRotation(bool includeSelf);
 
         /// <summary>
         /// Gets a transform offset from the object.
