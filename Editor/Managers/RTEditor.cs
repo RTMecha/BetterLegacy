@@ -4919,6 +4919,62 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        public void RenderTags(IModifyable modifyable, ITagDialog dialog)
+        {
+            var tagsScrollView = dialog.TagsScrollView;
+            tagsScrollView.parent.GetChild(tagsScrollView.GetSiblingIndex() - 1).gameObject.SetActive(ShowModdedUI);
+            tagsScrollView.gameObject.SetActive(ShowModdedUI);
+
+            LSHelpers.DeleteChildren(dialog.TagsContent);
+
+            if (!ShowModdedUI)
+                return;
+
+            int num = 0;
+            foreach (var tag in modifyable.Tags)
+            {
+                int index = num;
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(dialog.TagsContent, index.ToString());
+                gameObject.transform.localScale = Vector3.one;
+                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                input.SetTextWithoutNotify(tag);
+                input.onValueChanged.NewListener(_val => modifyable.Tags[index] = _val);
+
+                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.NewListener(() =>
+                {
+                    modifyable.Tags.RemoveAt(index);
+                    RenderTags(modifyable, dialog);
+                });
+
+                EditorHelper.AddInputFieldContextMenu(input);
+                TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+
+                EditorThemeManager.ApplyInputField(input);
+
+                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+
+                num++;
+            }
+
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(dialog.TagsContent, "Add");
+            add.transform.localScale = Vector3.one;
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Add Tag";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.NewListener(() =>
+            {
+                modifyable.Tags.Add("New Tag");
+                RenderTags(modifyable, dialog);
+            });
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
+        }
+
         public void ShowFontSelector(Action<string> onFontSelected)
         {
             FontSelectorPopup.Open();

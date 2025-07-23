@@ -19,7 +19,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class BackgroundEditorDialog : EditorDialog, IContentUI
+    public class BackgroundEditorDialog : EditorDialog, IContentUI, ITagDialog
     {
         public BackgroundEditorDialog() : base(BACKGROUND_EDITOR) { }
 
@@ -36,8 +36,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public RectTransform TagsScrollView { get; set; }
 
         public RectTransform TagsContent { get; set; }
-
-        //public InputFieldStorage LayerField { get; set; }
 
         #region Start Time / Autokill
 

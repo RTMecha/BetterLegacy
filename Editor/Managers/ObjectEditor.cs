@@ -1668,61 +1668,7 @@ namespace BetterLegacy.Editor.Managers
         /// Renders the Tags list.
         /// </summary>
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
-        public void RenderTags(BeatmapObject beatmapObject)
-        {
-            var tagsScrollView = Dialog.TagsScrollView;
-            tagsScrollView.parent.GetChild(tagsScrollView.GetSiblingIndex() - 1).gameObject.SetActive(RTEditor.ShowModdedUI);
-            tagsScrollView.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            LSHelpers.DeleteChildren(Dialog.TagsContent);
-
-            if (!RTEditor.ShowModdedUI)
-                return;
-
-            int num = 0;
-            foreach (var tag in beatmapObject.tags)
-            {
-                int index = num;
-                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
-                gameObject.transform.localScale = Vector3.one;
-                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.SetTextWithoutNotify(tag);
-                input.onValueChanged.NewListener(_val => beatmapObject.tags[index] = _val);
-
-                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
-                {
-                    beatmapObject.tags.RemoveAt(index);
-                    RenderTags(beatmapObject);
-                });
-
-                EditorHelper.AddInputFieldContextMenu(input);
-                TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
-
-                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
-                EditorThemeManager.ApplyInputField(input);
-
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
-
-                num++;
-            }
-
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.TagsContent, "Add");
-            add.transform.localScale = Vector3.one;
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Tag";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
-            {
-                beatmapObject.tags.Add("New Tag");
-                RenderTags(beatmapObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
-        }
+        public void RenderTags(BeatmapObject beatmapObject) => RTEditor.inst.RenderTags(beatmapObject, Dialog);
 
         /// <summary>
         /// Renders the ObjectType Dropdown.

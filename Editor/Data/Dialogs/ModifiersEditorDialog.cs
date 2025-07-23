@@ -258,10 +258,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             try
             {
-                if (RTEditor.ShowModdedUI && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                    IntVariableUI.text = $"Integer Variable: [ {EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().integerVariable} ]";
-                if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
-                    IntVariableUI.text = $"Integer Variable: [ {EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>().integerVariable} ]";
+                if (!RTEditor.ShowModdedUI)
+                    return;
+
+                if (EditorTimeline.inst.CurrentSelection.TryGetData(out IModifierReference reference))
+                    IntVariableUI.text = $"Integer Variable: [ {reference.IntVariable} ]";
             }
             catch
             {

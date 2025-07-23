@@ -26,7 +26,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents the object editor dialog for editing a <see cref="Core.Data.Beatmap.BeatmapObject"/>.
     /// </summary>
-    public class ObjectEditorDialog : EditorDialog
+    public class ObjectEditorDialog : EditorDialog, ITagDialog
     {
         public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
 
@@ -1974,7 +1974,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             try
             {
                 ModifiersDialog = new ModifiersEditorDialog();
-                ModifiersDialog.Init(ObjEditor.inst.ObjectView.transform);
+                ModifiersDialog.Init(Content);
             }
             catch (Exception ex)
             {

@@ -310,61 +310,7 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.InversableField(Dialog.NameField, InputFieldSwapper.Type.String);
         }
 
-        public void RenderTags(BackgroundObject backgroundObject)
-        {
-            var tagsScrollView = Dialog.TagsScrollView;
-            tagsScrollView.parent.GetChild(tagsScrollView.GetSiblingIndex() - 1).gameObject.SetActive(RTEditor.ShowModdedUI);
-            tagsScrollView.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-            LSHelpers.DeleteChildren(Dialog.TagsContent);
-
-            if (!RTEditor.ShowModdedUI)
-                return;
-
-            int num = 0;
-            foreach (var tag in backgroundObject.tags)
-            {
-                int index = num;
-                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
-                gameObject.transform.localScale = Vector3.one;
-                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.onValueChanged.ClearAll();
-                input.text = tag;
-                input.onValueChanged.AddListener(_val => { backgroundObject.tags[index] = _val; });
-
-                TriggerHelper.InversableField(input, InputFieldSwapper.Type.String);
-
-                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
-                {
-                    backgroundObject.tags.RemoveAt(index);
-                    RenderTags(backgroundObject);
-                });
-
-                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
-                EditorThemeManager.ApplyInputField(input);
-
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
-
-                num++;
-            }
-
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.TagsContent, "Add");
-            add.transform.localScale = Vector3.one;
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Tag";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
-            {
-                backgroundObject.tags.Add("New Tag");
-                RenderTags(backgroundObject);
-            });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
-        }
+        public void RenderTags(BackgroundObject backgroundObject) => RTEditor.inst.RenderTags(backgroundObject, Dialog);
 
         public void RenderStartTime(BackgroundObject backgroundObject)
         {
