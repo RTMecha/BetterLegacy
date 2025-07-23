@@ -193,6 +193,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
                 if (modifyable is BackgroundObject backgroundObject)
                     RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
+                if (modifyable is PrefabObject prefabObject)
+                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.MODIFIERS);
             });
 
             OrderToggle.onValueChanged.ClearAll();
