@@ -541,7 +541,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -593,7 +593,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
             if (list.IsEmpty())
                 return;
 
@@ -648,7 +648,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -892,7 +892,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
             if (list.IsEmpty())
                 return;
 
@@ -933,7 +933,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2451,7 +2451,7 @@ namespace BetterLegacy.Core.Helpers
             bool visual = modifier.GetBool(8, false, variables);
             float loop = modifier.GetFloat(9, 9999f, variables);
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(10, variables), out BeatmapObject bm))
+            if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(10, variables), out BeatmapObject bm))
                 return;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
@@ -2570,7 +2570,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(2, variables), out BeatmapObject beatmapObject))
+            if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(2, variables), out BeatmapObject beatmapObject))
                 return;
 
             var useVisual = modifier.GetBool(1, false, variables);
@@ -2851,7 +2851,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
             if (list.IsEmpty())
                 return;
@@ -2884,7 +2884,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -2902,7 +2902,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2919,7 +2919,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -2937,7 +2937,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2954,7 +2954,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -2972,7 +2972,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
             if (list.IsEmpty())
                 return;
 
@@ -2989,7 +2989,7 @@ namespace BetterLegacy.Core.Helpers
                 if (reference is not IPrefabable prefabable)
                     return;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
                 if (list.IsEmpty())
                     return;
 
@@ -3012,7 +3012,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
             if (list.IsEmpty())
                 return;
 
@@ -3037,7 +3037,7 @@ namespace BetterLegacy.Core.Helpers
             var max = modifier.GetFloat(7, 9999f, variables);
             var loop = modifier.GetFloat(8, 9999f, variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
             if (list.IsEmpty())
                 return;
 
@@ -3097,7 +3097,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
             var min = modifier.GetInt(1, 0, variables);
             var max = modifier.GetInt(2, 0, variables);
@@ -3160,7 +3160,7 @@ namespace BetterLegacy.Core.Helpers
 
             var enabled = modifier.GetBool(2, true, variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
             if (!list.IsEmpty())
                 foreach (var beatmapObject in list)
@@ -3174,7 +3174,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.HasResult())
             {
-                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
                 var useSelf = modifier.GetBool(0, true, variables);
 
                 var resultList = new List<BeatmapObject>();
@@ -3214,7 +3214,7 @@ namespace BetterLegacy.Core.Helpers
                 if (string.IsNullOrEmpty(tag))
                     continue;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, tag);
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, tag);
                 if (list.IsEmpty())
                     continue;
 
@@ -3255,7 +3255,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
             if (!list.IsEmpty())
                 foreach (var beatmapObject in list)
@@ -3269,7 +3269,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.HasResult())
             {
-                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
                 var useSelf = modifier.GetBool(0, true, variables);
 
                 var resultList = new List<BeatmapObject>();
@@ -3363,7 +3363,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var jn = JSON.Parse(json);
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
             var fjn = jn[modifier.GetValue(2, variables)][modifier.GetValue(3, variables)]["float"];
 
             if (list.Count > 0 && !string.IsNullOrEmpty(fjn) && float.TryParse(fjn, out float eq))
@@ -3633,7 +3633,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
 
             if (list.IsEmpty())
                 return;
@@ -3678,7 +3678,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
 
             if (list.IsEmpty())
                 return;
@@ -3787,7 +3787,7 @@ namespace BetterLegacy.Core.Helpers
 
             var opacity = modifier.GetFloat(0, 1f, variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             if (list.IsEmpty())
                 return;
@@ -3811,7 +3811,7 @@ namespace BetterLegacy.Core.Helpers
             var applyColor1 = modifier.GetBool(1, true, variables);
             var applyColor2 = modifier.GetBool(2, true, variables);
 
-            if (GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject other) && beatmapObject.runtimeObject && other.runtimeObject)
+            if (GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject other) && beatmapObject.runtimeObject && other.runtimeObject)
             {
                 // queue post tick so the color overrides the sequence color
                 RTLevel.Current.postTick.Enqueue(() =>
@@ -3826,7 +3826,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
 
             if (list.IsEmpty())
                 return;
@@ -3857,7 +3857,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
 
             var cachedSequences = beatmapObject.cachedSequences;
             if (list.IsEmpty() || !cachedSequences)
@@ -4010,7 +4010,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             if (list.IsEmpty())
                 return;
@@ -4070,7 +4070,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(8, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(8, variables));
 
             if (list.IsEmpty())
                 return;
@@ -4349,7 +4349,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.TryGetResult(out VGShapes.MeshParams cache) && meshParams.Equals(cache))
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -4419,7 +4419,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             if (list.IsEmpty())
                 return;
@@ -4481,7 +4481,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             if (list.IsEmpty())
                 return;
@@ -4516,7 +4516,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             if (list.IsEmpty())
                 return;
@@ -4554,7 +4554,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             if (list.IsEmpty())
                 return;
@@ -4597,7 +4597,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             if (list.IsEmpty())
                 return;
@@ -4854,7 +4854,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7));
+            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7));
 
             var time = modifier.GetFloat(0, 0f, variables);
             var type = modifier.GetInt(1, 0, variables);
@@ -4985,7 +4985,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(9, true, variables))
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                 foreach (var bm in list)
                 {
@@ -5028,7 +5028,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     AnimationManager.inst.Remove(animation.id);
 
-                    var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                    var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                     foreach (var bm in list)
                         CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
@@ -5045,7 +5045,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables));
 
             var time = modifier.GetFloat(0, 0f, variables);
             var type = modifier.GetInt(1, 0, variables);
@@ -5058,7 +5058,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(10, true, variables))
             {
-                var list2 = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                var list2 = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                 foreach (var bm in list2)
                 {
@@ -5105,7 +5105,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         AnimationManager.inst.Remove(animation.id);
 
-                        var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                        var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                         foreach (var bm in list)
                             CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
@@ -5177,7 +5177,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables));
 
             var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -5253,7 +5253,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(9, true, variables))
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                 foreach (var bm in list)
                 {
@@ -5296,7 +5296,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     AnimationManager.inst.Remove(animation.id);
 
-                    var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                    var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                     foreach (var bm in list)
                         CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, signalTime));
@@ -5313,7 +5313,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables));
 
             var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -5331,7 +5331,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.GetBool(10, true, variables))
             {
-                var list2 = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                var list2 = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                 foreach (var bm in list2)
                 {
@@ -5376,7 +5376,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         AnimationManager.inst.Remove(animation.id);
 
-                        var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, signalGroup);
+                        var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, signalGroup);
 
                         foreach (var bm in list)
                             CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, signalTime));
@@ -5416,7 +5416,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(0, variables));
 
             var gravityX = modifier.GetFloat(1, 0f, variables);
             var gravityY = modifier.GetFloat(2, 0f, variables);
@@ -5455,7 +5455,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.HasResult())
             {
-                if (reference is IPrefabable prefabable && GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0), out BeatmapObject result))
+                if (reference is IPrefabable prefabable && GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0), out BeatmapObject result))
                     modifier.Result = result;
             }
 
@@ -5520,7 +5520,7 @@ namespace BetterLegacy.Core.Helpers
                 var evaluation = modifier.GetValue(8, variables);
                 var useVisual = modifier.GetBool(9, false, variables);
 
-                if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
+                if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                     return;
 
                 var time = RTLevel.Current.CurrentTime;
@@ -5650,7 +5650,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var group = modifier.GetValue(i + 1);
 
-                        if (GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, group, out BeatmapObject beatmapObject))
+                        if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject beatmapObject))
                             result.Add(beatmapObject);
                     }
 
@@ -5751,7 +5751,7 @@ namespace BetterLegacy.Core.Helpers
 
                 for (int i = 1; i < modifier.commands.Count; i += 3)
                 {
-                    var group = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(i, variables));
+                    var group = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(i, variables));
 
                     if (modifier.commands.Count <= i + 2 || group.Count < 1)
                         break;
@@ -5799,10 +5799,10 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(10, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
 
             if (!modifier.HasResult())
                 modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
@@ -5855,7 +5855,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject bm))
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject bm))
                 return;
 
             if (!modifier.HasResult())
@@ -5903,7 +5903,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
 
             if (!modifier.HasResult())
                 modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
@@ -5956,10 +5956,10 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(10, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
 
             if (!modifier.HasResult())
                 modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
@@ -6017,7 +6017,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.value, out BeatmapObject bm))
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.value, out BeatmapObject bm))
                 return;
 
             if (!modifier.HasResult())
@@ -6070,7 +6070,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
 
             if (!modifier.HasResult())
                 modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
@@ -6199,7 +6199,7 @@ namespace BetterLegacy.Core.Helpers
             if (!prefab)
                 return;
 
-            if (!GameData.Current.TryFindTransformableWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(10, variables), out ITransformable target))
+            if (!GameData.Current.TryFindTransformableWithTag(modifier, prefabable, modifier.GetValue(10, variables), out ITransformable target))
                 return;
 
             var animationResult = target.GetObjectTransform();
@@ -6226,7 +6226,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void spawnPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || modifier.HasResult())
+            if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
                 return;
 
             var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
@@ -6234,7 +6234,7 @@ namespace BetterLegacy.Core.Helpers
             if (!prefab)
                 return;
 
-            if (!GameData.Current.TryFindPrefabObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, null, modifier.GetValue(1), out PrefabObject orig))
+            if (!GameData.Current.TryFindPrefabObjectWithTag(modifier, prefabable, modifier.GetValue(1), out PrefabObject orig))
                 return;
 
             var prefabObject = new PrefabObject();
@@ -6336,7 +6336,7 @@ namespace BetterLegacy.Core.Helpers
             if (!prefab)
                 return;
 
-            if (!GameData.Current.TryFindTransformableWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(9, variables), out ITransformable target))
+            if (!GameData.Current.TryFindTransformableWithTag(modifier, prefabable, modifier.GetValue(9, variables), out ITransformable target))
                 return;
 
             var animationResult = target.GetObjectTransform();
@@ -6369,7 +6369,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void spawnMultiPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || modifier.HasResult())
+            if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
                 return;
 
             var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
@@ -6377,7 +6377,7 @@ namespace BetterLegacy.Core.Helpers
             if (!prefab)
                 return;
 
-            if (!GameData.Current.TryFindPrefabObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, null, modifier.GetValue(1), out PrefabObject orig))
+            if (!GameData.Current.TryFindPrefabObjectWithTag(modifier, prefabable, modifier.GetValue(1), out PrefabObject orig))
                 return;
 
             if (!modifier.HasResult())
@@ -6406,7 +6406,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var modifyables = GameData.Current.FindModifyables(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(0, variables));
 
             foreach (var modifyable in modifyables)
             {
@@ -6546,7 +6546,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0));
 
             if (modifier.constant || list.IsEmpty())
                 return;
@@ -6564,7 +6564,7 @@ namespace BetterLegacy.Core.Helpers
             var group = modifier.GetValue(0, variables);
             if (group == string.Empty)
                 ModifiersHelper.SetParent(beatmapObject, string.Empty);
-            else if (GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, group, out BeatmapObject target) && beatmapObject.CanParent(target))
+            else if (GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, group, out BeatmapObject target) && beatmapObject.CanParent(target))
                 ModifiersHelper.SetParent(beatmapObject, target.id);
             else
                 CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {beatmapObject.name}\nID: {beatmapObject.id}");
@@ -6578,12 +6578,12 @@ namespace BetterLegacy.Core.Helpers
             var group = modifier.GetValue(2, variables);
 
             BeatmapObject target = null;
-            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, group, out BeatmapObject targetAAA))
+            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, group, out BeatmapObject targetAAA))
                 target = targetAAA;
             if (!target)
                 target = beatmapObject;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, beatmapObject, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
 
             var isEmpty = modifier.GetBool(1, false, variables);
 
@@ -6613,7 +6613,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
             var detach = modifier.GetBool(0, true);
 
             for (int i = 0; i < list.Count; i++)
@@ -6639,7 +6639,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var colliderEnabled = modifier.GetBool(0, false, variables);
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
 
             foreach (var beatmapObject in list)
             {
@@ -6795,7 +6795,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(1, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
             var delay = modifier.GetFloat(0, 0f, variables);
 
             foreach (var bm in list)
@@ -6807,7 +6807,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier.prefabInstanceOnly, modifier.groupAlive, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
             var doMultiple = modifier.GetBool(1, true, variables);
             var index = modifier.GetInt(2, -1, variables);

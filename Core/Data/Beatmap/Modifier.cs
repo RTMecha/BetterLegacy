@@ -150,12 +150,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// If the modifier group functions should only target alive objects.
         /// </summary>
-        public bool groupAlive;
+        public bool groupAlive = false;
+
+        /// <summary>
+        /// If the modifier group functions should only target objects inside of the Prefab object, if the modifier is in one.
+        /// </summary>
+        public bool subPrefab = false;
 
         /// <summary>
         /// If the modifier should be collapsed in the editor.
         /// </summary>
-        public bool collapse;
+        public bool collapse = false;
 
         /// <summary>
         /// Function type of the modifier.
@@ -257,6 +262,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             prefabInstanceOnly = orig.prefabInstanceOnly;
             groupAlive = orig.groupAlive;
+            subPrefab = orig.subPrefab;
 
             collapse = orig.collapse;
 
@@ -279,19 +285,20 @@ namespace BetterLegacy.Core.Data.Beatmap
             constant = jn["const"].AsBool;
             prefabInstanceOnly = jn["po"].AsBool;
             groupAlive = jn["ga"].AsBool;
+            subPrefab = jn["sub"].AsBool;
 
             collapse = jn["collapse"].AsBool;
 
             commands.Clear();
-            if (jn["n"] != null)
+            if (jn["name"] != null)
             {
-                commands.Add(jn["n"]);
+                commands.Add(jn["name"]);
 
-                if (jn["vals"] != null)
+                if (jn["values"] != null)
                 {
-                    value = jn["vals"][0];
-                    for (int i = 1; i < jn["vals"].Count; i++)
-                        commands.Add(jn["vals"][i]);
+                    value = jn["values"][0];
+                    for (int i = 1; i < jn["values"].Count; i++)
+                        commands.Add(jn["values"][i]);
                 }
 
                 return;
@@ -318,15 +325,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (triggerCount > 0)
                 jn["count"] = triggerCount;
 
-            for (int i = 0; i < commands.Count; i++)
-                jn["commands"][i] = commands[i];
+            jn["name"] = Name;
 
-            jn["value"] = value;
+            for (int i = 0; i < commands.Count; i++)
+                jn["values"][i] = GetValue(i);
 
             jn["const"] = constant;
 
             if (prefabInstanceOnly)
                 jn["po"] = prefabInstanceOnly;
+            if (groupAlive)
+                jn["ga"] = groupAlive;
+            if (subPrefab)
+                jn["sub"] = subPrefab;
 
             if (collapse)
                 jn["collapse"] = collapse;

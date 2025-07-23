@@ -724,7 +724,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.blurOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -739,7 +739,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.blurVariableOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -755,7 +755,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.blurColoredOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -846,7 +846,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.rigidbodyOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -867,7 +867,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setRenderTypeOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -1476,7 +1476,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.getAxis): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 10);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -1575,7 +1575,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.getTextOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 2);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -1803,7 +1803,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.signalLocalVariables): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -1821,7 +1821,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.setVariableOther): {
                         var isGroup = modifier.commands.Count == 2;
                         if (isGroup)
-                            PrefabGroupOnly(modifier);
+                            PrefabGroupOnly(modifier, reference);
                         IntegerGenerator(modifier, reference, "Value", 0, 0);
 
                         if (isGroup)
@@ -1833,7 +1833,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateVariableOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -1858,7 +1858,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.clampVariableOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -1891,7 +1891,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.enableObjectOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Enabled", 2, true);
@@ -1900,7 +1900,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.enableObjectTreeOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Enabled", 3, true);
@@ -1910,7 +1910,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.enableObjectGroup): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         var options = new List<string>() { "All" };
@@ -1970,7 +1970,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.disableObjectOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Reset", 1, true);
@@ -1979,7 +1979,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.disableObjectTreeOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Use Self", 0, true);
@@ -2033,7 +2033,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.loadVariableOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -2197,7 +2197,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.addColorOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -2223,7 +2223,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.lerpColorOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -2269,7 +2269,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.copyColor): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Apply Color 1", 1, true);
@@ -2278,7 +2278,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.copyColorOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Apply Color 1", 1, true);
@@ -2287,7 +2287,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.applyColorGroup): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
@@ -2414,7 +2414,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setColorHexOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -2550,7 +2550,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setColorRGBAOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 8);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -2758,7 +2758,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setPolygonShapeOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -2790,7 +2790,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setImageOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         StringGenerator(modifier, reference, "Path", 0);
@@ -2803,7 +2803,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setTextOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         StringGenerator(modifier, reference, "Text", 0);
@@ -2816,7 +2816,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.addTextOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         StringGenerator(modifier, reference, "Text", 0);
@@ -2829,7 +2829,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.removeTextOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         IntegerGenerator(modifier, reference, "Remove Amount", 0, 0);
@@ -2842,7 +2842,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.removeTextOtherAt): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         IntegerGenerator(modifier, reference, "Remove At", 0, 0);
@@ -2909,7 +2909,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateObjectOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -2930,7 +2930,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateSignal): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
 
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
 
@@ -2953,7 +2953,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateSignalOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
 
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
 
@@ -2997,7 +2997,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateObjectMathOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3018,7 +3018,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateSignalMath): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
 
                         StringGenerator(modifier, reference, "Time", 0);
 
@@ -3041,7 +3041,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.animateSignalMathOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
 
                         StringGenerator(modifier, reference, "Time", 0);
 
@@ -3076,7 +3076,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.gravityOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3089,7 +3089,7 @@ namespace BetterLegacy.Editor.Data
                     }
 
                 case nameof(ModifierActions.copyAxis): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3112,7 +3112,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.copyAxisMath): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3132,7 +3132,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.copyAxisGroup): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         StringGenerator(modifier, reference, "Expression", 0);
 
                         DropdownGenerator(modifier, reference, "To Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
@@ -3246,7 +3246,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.applyAnimationFrom):
                 case nameof(ModifierActions.applyAnimationTo):
                 case nameof(ModifierActions.applyAnimation): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         if (name != "applyAnimation")
                         {
                             var str = StringGenerator(modifier, reference, "Object Group", 0);
@@ -3275,7 +3275,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.applyAnimationFromMath):
                 case nameof(ModifierActions.applyAnimationToMath):
                 case nameof(ModifierActions.applyAnimationMath): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         if (name != "applyAnimationMath")
                         {
                             var str = StringGenerator(modifier, reference, "Object Group", 0);
@@ -3317,7 +3317,7 @@ namespace BetterLegacy.Editor.Data
                         var isOther = name.Contains("Other");
                         if (isOther)
                         {
-                            PrefabGroupOnly(modifier);
+                            PrefabGroupOnly(modifier, reference);
                             var str = StringGenerator(modifier, reference, "Object Group", isMulti ? 9 : 10);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         }
@@ -3354,7 +3354,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.spawnPrefabCopy): {
                         var isMulti = name.Contains("Multi");
 
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
 
                         DropdownGenerator(modifier, reference, "Search Prefab Using", 4, CoreHelper.StringToOptionData("Index", "Name", "ID"));
                         StringGenerator(modifier, reference, "Prefab Reference", 0);
@@ -3372,7 +3372,7 @@ namespace BetterLegacy.Editor.Data
                     }
 
                 case nameof(ModifierActions.clearSpawnedPrefabs): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3419,21 +3419,21 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
                 case nameof(ModifierActions.updateObject): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierActions.setParent): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
                 case nameof(ModifierActions.setParentOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3451,7 +3451,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierActions.detachParentOther): {
                         BoolGenerator(modifier, reference, "Detach", 0, false);
 
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3467,7 +3467,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.setCollisionOther): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3560,7 +3560,7 @@ namespace BetterLegacy.Editor.Data
                     }
 
                 case nameof(ModifierActions.signalModifier): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         SingleGenerator(modifier, reference, "Delay", 0, 0f);
@@ -3568,7 +3568,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierActions.activateModifier): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Do Multiple", 1, true);
@@ -3719,7 +3719,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case nameof(ModifierTriggers.objectCollide): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3813,7 +3813,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.realTimeYearGreater): {
                         var isGroup = name.Contains("variableOther");
                         if (isGroup)
-                            PrefabGroupOnly(modifier);
+                            PrefabGroupOnly(modifier, reference);
 
                         IntegerGenerator(modifier, reference, "Value", 0, 0);
 
@@ -3885,7 +3885,7 @@ namespace BetterLegacy.Editor.Data
                 #region Signal
 
                 case nameof(ModifierTriggers.mouseOverSignalModifier): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         SingleGenerator(modifier, reference, "Delay", 0, 0f);
@@ -3917,7 +3917,7 @@ namespace BetterLegacy.Editor.Data
                 case nameof(ModifierTriggers.axisGreaterEquals):
                 case nameof(ModifierTriggers.axisLesser):
                 case nameof(ModifierTriggers.axisGreater): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -3991,7 +3991,7 @@ namespace BetterLegacy.Editor.Data
                     }
                 case nameof(ModifierTriggers.objectAlive):
                 case nameof(ModifierTriggers.objectSpawned): {
-                        PrefabGroupOnly(modifier);
+                        PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
@@ -4189,7 +4189,7 @@ namespace BetterLegacy.Editor.Data
 
         #region Generators
 
-        public void PrefabGroupOnly(Modifier modifier)
+        public void PrefabGroupOnly<T>(Modifier modifier, T reference)
         {
             var prefabInstance = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Prefab");
             prefabInstance.transform.localScale = Vector3.one;
@@ -4204,6 +4204,7 @@ namespace BetterLegacy.Editor.Data
                 modifier.active = false;
             });
 
+            TooltipHelper.AssignTooltip(prefabInstance, "Prefab Instance Group Modifier");
             EditorThemeManager.ApplyLightText(prefabInstanceText);
             EditorThemeManager.ApplyToggle(prefabInstanceToggle);
 
@@ -4220,8 +4221,29 @@ namespace BetterLegacy.Editor.Data
                 modifier.active = false;
             });
 
+            TooltipHelper.AssignTooltip(groupAlive, "Group Alive Modifier");
             EditorThemeManager.ApplyLightText(groupAliveText);
             EditorThemeManager.ApplyToggle(groupAliveToggle);
+
+            if (reference is PrefabObject)
+            {
+                var subPrefab = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Sub Prefab");
+                subPrefab.transform.localScale = Vector3.one;
+                var subPrefabText = subPrefab.transform.Find("Text").GetComponent<Text>();
+                subPrefabText.text = "Search in Prefab";
+
+                var subPrefabToggle = subPrefab.transform.Find("Toggle").GetComponent<Toggle>();
+                subPrefabToggle.SetIsOnWithoutNotify(modifier.subPrefab);
+                subPrefabToggle.onValueChanged.NewListener(_val =>
+                {
+                    modifier.subPrefab = _val;
+                    Update(modifier, reference);
+                });
+
+                TooltipHelper.AssignTooltip(subPrefab, "Sub Prefab Modifier");
+                EditorThemeManager.ApplyLightText(subPrefabText);
+                EditorThemeManager.ApplyToggle(subPrefabToggle);
+            }
         }
 
         public GameObject LabelGenerator(string label)

@@ -1834,9 +1834,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="tag">Tag group.</param>
         /// <param name="result">Object result.</param>
         /// <returns>Returns true if an object was found, otherwise returns false.</returns>
-        public bool TryFindObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag, out BeatmapObject result)
+        public bool TryFindObjectWithTag(Modifier modifier, IPrefabable prefabable, string tag, out BeatmapObject result)
         {
-            result = FindObjectWithTag(prefabInstanceOnly, groupAlive, prefabable, tag);
+            result = FindObjectWithTag(modifier, prefabable, tag);
             return result;
         }
 
@@ -1855,9 +1855,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="prefabable">Prefabable object.</param>
         /// <param name="tag">Tag group.</param>
         /// <returns>Returns the found object.</returns>
-        public BeatmapObject FindObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) => string.IsNullOrEmpty(tag) ? prefabable as BeatmapObject : prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                beatmapObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
-                beatmapObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
+        public BeatmapObject FindObjectWithTag(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            if (string.IsNullOrEmpty(tag))
+                return prefabable as BeatmapObject;
+
+            var beatmapObjects = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner.BeatmapObjects : this.beatmapObjects;
+
+            return modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.SamePrefabInstance(prefabable)) :
+                beatmapObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
+        }
 
         /// <summary>
         /// Gets an object with a tag group.
@@ -1876,9 +1884,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="tag">Tag group.</param>
         /// <param name="result">Object result.</param>
         /// <returns>Returns true if an object was found, otherwise returns false.</returns>
-        public bool TryFindPrefabObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag, out PrefabObject result)
+        public bool TryFindPrefabObjectWithTag(Modifier modifier, IPrefabable prefabable, string tag, out PrefabObject result)
         {
-            result = FindPrefabObjectWithTag(prefabInstanceOnly, groupAlive, prefabable, tag);
+            result = FindPrefabObjectWithTag(modifier, prefabable, tag);
             return result;
         }
 
@@ -1890,9 +1898,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="prefabable">Prefabable object.</param>
         /// <param name="tag">Tag group.</param>
         /// <returns>Returns the found object.</returns>
-        public PrefabObject FindPrefabObjectWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) => string.IsNullOrEmpty(tag) ? prefabable as PrefabObject : prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                prefabObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
-                prefabObjects.Find(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
+        public PrefabObject FindPrefabObjectWithTag(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            if (string.IsNullOrEmpty(tag))
+                return prefabable as PrefabObject;
+
+            var prefabObjects = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner.PrefabObjects : this.prefabObjects;
+
+            return modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                prefabObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.SamePrefabInstance(prefabable)) :
+                prefabObjects.Find(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
+        }
 
         /// <summary>
         /// Gets a list of objects with a tag group.
@@ -1909,12 +1925,17 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="prefabable">Prefabable object.</param>
         /// <param name="tag">Tag group.</param>
         /// <returns>Returns a list of found objects.</returns>
-        public List<BeatmapObject> FindObjectsWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag) =>
-            string.IsNullOrEmpty(tag) ?
-                new List<BeatmapObject>() { prefabable as BeatmapObject } :
-                prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                    beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag) && x.prefabID == prefabable.PrefabID && x.prefabInstanceID == prefabable.PrefabInstanceID) :
-                    beatmapObjects.FindAll(x => (!groupAlive || x.Alive) && x.tags.Contains(tag));
+        public List<BeatmapObject> FindObjectsWithTag(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            if (string.IsNullOrEmpty(tag))
+                return new List<BeatmapObject>() { prefabable as BeatmapObject };
+
+            var beatmapObjects = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner.BeatmapObjects : this.beatmapObjects;
+
+            return modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                beatmapObjects.FindAll(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag) && x.SamePrefabInstance(prefabable)) :
+                beatmapObjects.FindAll(x => (!modifier.groupAlive || x.Alive) && x.tags.Contains(tag));
+        }
 
         /// <summary>
         /// Gets a list of objects with a tag group.
@@ -1924,7 +1945,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a list of found objects.</returns>
         public List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, string tag) => beatmapObjects.FindAll(x => x.tags.Contains(tag));
 
-        public List<IPrefabable> FindPrefabablesWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag)
+        public List<IPrefabable> FindPrefabablesWithTag(Modifier modifier, IPrefabable prefabable, string tag)
         {
             var list = new List<IPrefabable>();
             if (string.IsNullOrEmpty(tag))
@@ -1933,22 +1954,24 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return list;
             }
 
-            Predicate<IPrefabable> predicate = prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+            Predicate<IPrefabable> predicate = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag) && x.SamePrefabInstance(prefabable) :
-                x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+                x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag);
 
-            list.AddRange(beatmapObjects.FindAll(x => predicate(x)));
-            list.AddRange(backgroundLayers.FindAll(x => predicate(x)));
-            list.AddRange(backgroundObjects.FindAll(x => predicate(x)));
-            list.AddRange(prefabs.FindAll(x => predicate(x)));
-            list.AddRange(prefabObjects.FindAll(x => predicate(x)));
+            IBeatmap beatmap = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
+
+            list.AddRange(beatmap.BeatmapObjects.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.BackgroundLayers.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.BackgroundObjects.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.Prefabs.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.PrefabObjects.FindAll(x => predicate(x)));
 
             return list;
         }
 
-        public List<IModifyable> FindModifyablesWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag)
+        public List<IModifyable> FindModifyablesWithTag(Modifier modifier, IPrefabable prefabable, string tag)
         {
             var list = new List<IModifyable>();
             if (string.IsNullOrEmpty(tag))
@@ -1958,22 +1981,24 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return list;
             }
 
-            Predicate<IModifyable> predicate = prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+            Predicate<IModifyable> predicate = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x.Tags.Contains(tag) && x is IPrefabable p && p.SamePrefabInstance(prefabable) :
-                x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+                x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x.Tags.Contains(tag);
 
-            list.AddRange(beatmapObjects.FindAll(x => predicate(x)));
-            //list.AddRange(backgroundLayers.FindAll(x => predicate(x)));
-            list.AddRange(backgroundObjects.FindAll(x => predicate(x)));
-            //list.AddRange(prefabs.FindAll(x => predicate(x)));
-            list.AddRange(prefabObjects.FindAll(x => predicate(x)));
+            IBeatmap beatmap = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
+
+            list.AddRange(beatmap.BeatmapObjects.FindAll(x => predicate(x)));
+            //list.AddRange(beatmap.BackgroundLayers.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.BackgroundObjects.FindAll(x => predicate(x)));
+            //list.AddRange(beatmap.Prefabs.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.PrefabObjects.FindAll(x => predicate(x)));
 
             return list;
         }
 
-        public List<ITransformable> FindTransformablesWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag)
+        public List<ITransformable> FindTransformablesWithTag(Modifier modifier, IPrefabable prefabable, string tag)
         {
             var list = new List<ITransformable>();
             if (string.IsNullOrEmpty(tag))
@@ -1983,22 +2008,24 @@ namespace BetterLegacy.Core.Data.Beatmap
                 return list;
             }
 
-            Predicate<ITransformable> predicate = prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+            Predicate<ITransformable> predicate = modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag) && x is IPrefabable p && p.SamePrefabInstance(prefabable) :
-                x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+                x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag);
 
-            list.AddRange(beatmapObjects.FindAll(x => predicate(x)));
-            //list.AddRange(backgroundLayers.FindAll(x => predicate(x)));
-            list.AddRange(backgroundObjects.FindAll(x => predicate(x)));
-            //list.AddRange(prefabs.FindAll(x => predicate(x)));
-            list.AddRange(prefabObjects.FindAll(x => predicate(x)));
+            IBeatmap beatmap = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
+
+            list.AddRange(beatmap.BeatmapObjects.FindAll(x => predicate(x)));
+            //list.AddRange(beatmap.BackgroundLayers.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.BackgroundObjects.FindAll(x => predicate(x)));
+            //list.AddRange(beatmap.Prefabs.FindAll(x => predicate(x)));
+            list.AddRange(beatmap.PrefabObjects.FindAll(x => predicate(x)));
 
             return list;
         }
 
-        public IEnumerable<ITransformable> FindTransformables(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag)
+        public IEnumerable<ITransformable> FindTransformables(Modifier modifier, IPrefabable prefabable, string tag)
         {
             if (string.IsNullOrEmpty(tag))
             {
@@ -2007,33 +2034,37 @@ namespace BetterLegacy.Core.Data.Beatmap
                 yield break;
             }
 
-            var transformables = GetTransformables();
+            IBeatmap beatmap = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
+
+            var transformables = beatmap.GetTransformables();
             foreach (var transformable in transformables)
             {
-                if ((!groupAlive || transformable is ILifetime<AutoKillType> akt && akt.Alive || transformable is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+                if ((!modifier.groupAlive || transformable is ILifetime<AutoKillType> akt && akt.Alive || transformable is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     transformable is IModifyable modifyable && modifyable.Tags.Contains(tag) &&
-                    (!(prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID)) || transformable is IPrefabable p && p.SamePrefabInstance(prefabable)))
+                    (!(modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID)) || transformable is IPrefabable p && p.SamePrefabInstance(prefabable)))
                     yield return transformable;
             }
         }
 
-        public bool TryFindTransformableWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag, out ITransformable result)
+        public bool TryFindTransformableWithTag(Modifier modifier, IPrefabable prefabable, string tag, out ITransformable result)
         {
-            result = FindTransformableWithTag(prefabInstanceOnly, groupAlive, prefabable, tag);
+            result = FindTransformableWithTag(modifier, prefabable, tag);
             return result is not null;
         }
 
-        public ITransformable FindTransformableWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag)
+        public ITransformable FindTransformableWithTag(Modifier modifier, IPrefabable prefabable, string tag)
         {
-            var transformables = GetTransformables();
-            return string.IsNullOrEmpty(tag) ? prefabable as ITransformable : prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                transformables.First(x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+            IBeatmap beatmap = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
+
+            var transformables = beatmap.GetTransformables();
+            return string.IsNullOrEmpty(tag) ? prefabable as ITransformable : modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                transformables.First(x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag) && x is IPrefabable p && p.SamePrefabInstance(prefabable)) :
-                transformables.First(x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+                transformables.First(x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x is IModifyable modifyable && modifyable.Tags.Contains(tag));
         }
 
-        public IEnumerable<IModifyable> FindModifyables(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag)
+        public IEnumerable<IModifyable> FindModifyables(Modifier modifier, IPrefabable prefabable, string tag)
         {
             if (string.IsNullOrEmpty(tag))
             {
@@ -2042,50 +2073,34 @@ namespace BetterLegacy.Core.Data.Beatmap
                 yield break;
             }
 
-            var modifyables = GetModifyables();
+            IBeatmap beatmap = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
+
+            var modifyables = beatmap.GetModifyables();
             foreach (var modifyable in modifyables)
             {
-                if ((!groupAlive || modifyable is ILifetime<AutoKillType> akt && akt.Alive || modifyable is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+                if ((!modifier.groupAlive || modifyable is ILifetime<AutoKillType> akt && akt.Alive || modifyable is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     modifyable.Tags.Contains(tag) &&
-                    (!(prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID)) || modifyable is IPrefabable p && p.SamePrefabInstance(prefabable)))
+                    (!(modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID)) || modifyable is IPrefabable p && p.SamePrefabInstance(prefabable)))
                     yield return modifyable;
             }
         }
 
-        public bool TryFindModifyableWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag, out IModifyable result)
+        public bool TryFindModifyableWithTag(Modifier modifier, IPrefabable prefabable, string tag, out IModifyable result)
         {
-            result = FindModifyableWithTag(prefabInstanceOnly, groupAlive, prefabable, tag);
+            result = FindModifyableWithTag(modifier, prefabable, tag);
             return result is not null;
         }
 
-        public IModifyable FindModifyableWithTag(bool prefabInstanceOnly, bool groupAlive, IPrefabable prefabable, string tag)
+        public IModifyable FindModifyableWithTag(Modifier modifier, IPrefabable prefabable, string tag)
         {
-            var modifyables = GetModifyables();
-            return string.IsNullOrEmpty(tag) ? prefabable as IModifyable : prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
-                modifyables.First(x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+            IBeatmap beatmap = modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
+
+            var modifyables = beatmap.GetModifyables();
+            return string.IsNullOrEmpty(tag) ? prefabable as IModifyable : modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) ?
+                modifyables.First(x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x.Tags.Contains(tag) && x is IPrefabable p && p.SamePrefabInstance(prefabable)) :
-                modifyables.First(x => (!groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
+                modifyables.First(x => (!modifier.groupAlive || x is ILifetime<AutoKillType> akt && akt.Alive || x is ILifetime<PrefabAutoKillType> pakt && pakt.Alive) &&
                     x.Tags.Contains(tag));
-        }
-
-        public IEnumerable<ITransformable> GetTransformables()
-        {
-            foreach (var beatmapObject in beatmapObjects)
-                yield return beatmapObject;
-            foreach (var backgroundObject in backgroundObjects)
-                yield return backgroundObject;
-            foreach (var prefabObject in prefabObjects)
-                yield return prefabObject;
-        }
-
-        public IEnumerable<IModifyable> GetModifyables()
-        {
-            foreach (var beatmapObject in beatmapObjects)
-                yield return beatmapObject;
-            foreach (var backgroundObject in backgroundObjects)
-                yield return backgroundObject;
-            foreach (var prefabObject in prefabObjects)
-                yield return prefabObject;
         }
 
         public static float InterpolateFloatKeyframes(List<EventKeyframe> eventKeyframes, float time, int valueIndex, bool isLerper = true)
