@@ -3195,10 +3195,12 @@ namespace BetterLegacy.Editor.Managers
                         var prefabObject = prefabObjects[i];
                         if (prefabObject.fromModifier)
                         {
-                            RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                            RTLevel.Current?.UpdatePrefab(prefabObject, false, false);
                             prefabObjects.RemoveAt(i);
                         }
                     }
+
+                    RTLevel.Current?.RecalculateObjectStates();
 
                     HideWarningPopup();
                 }, HideWarningPopup);

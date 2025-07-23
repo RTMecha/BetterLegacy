@@ -3115,7 +3115,7 @@ namespace BetterLegacy.Core.Helpers
         {
             if (reference is PrefabObject prefabObject)
             {
-                prefabObject.runtimeObject?.SetActive(modifier.GetBool(0, true, variables));
+                prefabObject.runtimeObject?.SetPrefabActive(modifier.GetBool(0, true, variables));
                 return;
             }
 
@@ -6154,7 +6154,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
 
         public static void spawnPrefabOffset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6186,7 +6186,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
         
         public static void spawnPrefabOffsetOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6221,7 +6221,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
 
         public static void spawnPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6249,7 +6249,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
 
         public static void spawnMultiPrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6285,7 +6285,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
         
         public static void spawnMultiPrefabOffset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6323,7 +6323,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
         
         public static void spawnMultiPrefabOffsetOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6364,7 +6364,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
 
         public static void spawnMultiPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6398,7 +6398,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevel.Current?.AddPrefabToLevel(prefabObject);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
         }
 
         public static void clearSpawnedPrefabs(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

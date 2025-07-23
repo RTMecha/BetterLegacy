@@ -51,7 +51,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             });
         }
 
-        public void Interpolate(float time)
+        public virtual void Interpolate(float time)
         {
             variables.Clear();
             if (orderMatters)

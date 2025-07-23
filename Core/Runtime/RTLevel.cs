@@ -198,36 +198,7 @@ namespace BetterLegacy.Core.Runtime
             gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
             gameData.backgroundObjects.RemoveAll(x => x.fromPrefab);
 
-            converter = new ObjectConverter(gameData, this);
-            var beatmapObjects = gameData.beatmapObjects.Where(x => !x.fromPrefab).ToList();
-            for (int i = 0; i < beatmapObjects.Count; i++)
-                converter.CacheSequence(beatmapObjects[i]);
-
-            for (int i = 0; i < gameData.prefabObjects.Count; i++)
-                AddPrefabToLevel(gameData.prefabObjects[i]);
-
-            IEnumerable<IRTObject> runtimeObjects = converter.ToRuntimeObjects(beatmapObjects);
-
-            objects = runtimeObjects.ToList();
-            objectEngine = new ObjectEngine(Objects);
-
-            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers(gameData.beatmapObjects.Where(x => !x.fromPrefab));
-
-            modifiers = runtimeModifiers.ToList();
-            objectModifiersEngine = new ObjectEngine(Modifiers);
-
-            IEnumerable<BackgroundLayerObject> backgroundLayerObjects = converter.ToBackgroundLayerObjects(gameData.backgroundLayers.Where(x => !x.FromPrefab));
-            backgroundLayers = backgroundLayerObjects.ToList();
-
-            IEnumerable<IRTObject> runtimeBGObjects = converter.ToRuntimeBGObjects(gameData.backgroundObjects.Where(x => !x.fromPrefab));
-
-            bgObjects = runtimeBGObjects.ToList();
-            backgroundEngine = new ObjectEngine(BGObjects);
-
-            IEnumerable<IRTObject> runtimeBGModifiers = converter.ToRuntimeBGModifiers(gameData.backgroundObjects.Where(x => !x.fromPrefab));
-
-            bgModifiers = runtimeBGModifiers.ToList();
-            bgModifiersEngine = new ObjectEngine(BGModifiers);
+            Load(gameData);
 
             Debug.Log($"{className}Loaded {objects.Count} objects (original: {gameData.beatmapObjects.Count})");
         }
@@ -264,9 +235,11 @@ namespace BetterLegacy.Core.Runtime
             OnEventsTick(); // events update fourth
             OnBeatmapObjectsTick(); // objects update fifth
             OnBackgroundObjectsTick(); // bgs update sixth
+            OnPrefabModifiersTick(); // prefab modifiers update seventh
+            OnPrefabObjectsTick(); // prefab objects update last
 
-            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
-                GameData.Current.prefabObjects[i].runtimeObject?.Tick();
+            //for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+            //    GameData.Current.prefabObjects[i].runtimeObject?.Tick();
 
             // reset player cache
             if (RTBeatmap.Current)
@@ -288,9 +261,6 @@ namespace BetterLegacy.Core.Runtime
 
             threadedTickRunner?.Dispose();
             threadedTickRunner = null;
-
-            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
-                GameData.Current.prefabObjects[i].runtimeObject?.Clear();
         }
 
         /// <summary>

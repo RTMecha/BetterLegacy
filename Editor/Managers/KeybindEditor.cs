@@ -1068,7 +1068,13 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
-                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), recalculate: false);
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                            prefabObject.modifiers.ForEach(modifier =>
+                            {
+                                modifier.Inactive?.Invoke(modifier, prefabObject, null);
+                                modifier.Result = default;
+                            });
 
                             break;
                         }

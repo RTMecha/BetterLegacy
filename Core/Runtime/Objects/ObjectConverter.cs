@@ -26,14 +26,9 @@ namespace BetterLegacy.Core.Runtime.Objects
     /// </summary>
     public class ObjectConverter : Exists
     {
-        readonly GameData gameData;
         readonly RTLevelBase runtimeLevel;
 
-        public ObjectConverter(GameData beatmap, RTLevelBase runtimeLevel)
-        {
-            this.gameData = gameData;
-            this.runtimeLevel = runtimeLevel;
-        }
+        public ObjectConverter(RTLevelBase runtimeLevel) => this.runtimeLevel = runtimeLevel;
 
         #region Runtime Objects
 
@@ -154,7 +149,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             VisualObject visual = shapeType switch
             {
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), (int)beatmapObject.renderLayerType),
-                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, gameData.GetAssets().GetSprite(beatmapObject.text)),
+                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, GameData.Current.GetAssets().GetSprite(beatmapObject.text)),
                 ShapeType.Polygon => new PolygonObject(visualObject, opacity, deco, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, beatmapObject.polygonShape),
                 _ => new SolidObject(visualObject, opacity, deco, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation),
             };
@@ -305,7 +300,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool SkipRuntimeModifiers(BeatmapObject beatmapObject) => beatmapObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value && beatmapObject.LDM;
 
-        public IEnumerable<IRTObject> ToRuntimeModifiers() => ToRuntimeModifiers(gameData.BeatmapObjects);
+        public IEnumerable<IRTObject> ToRuntimeModifiers() => ToRuntimeModifiers(GameData.Current.beatmapObjects);
 
         public IEnumerable<IRTObject> ToRuntimeModifiers(IEnumerable<BeatmapObject> beatmapObjects)
         {
@@ -330,7 +325,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var runtimeModifiers = new RTModifiers(
                     beatmapObject.modifiers, beatmapObject, beatmapObject.orderModifiers,
-                    beatmapObject.ignoreLifespan ? 0f : beatmapObject.StartTime,
+                    beatmapObject.ignoreLifespan ? -SoundManager.inst.MusicLength : beatmapObject.StartTime,
                     beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration
                 );
             beatmapObject.runtimeModifiers = runtimeModifiers;
@@ -343,7 +338,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool SkipRuntimeBGObject(BackgroundObject backgroundObject) => !CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active;
 
-        public IEnumerable<IRTObject> ToRuntimeBGObjects() => ToRuntimeBGObjects(gameData.BackgroundObjects);
+        public IEnumerable<IRTObject> ToRuntimeBGObjects() => ToRuntimeBGObjects(GameData.Current.BackgroundObjects);
 
         public IEnumerable<IRTObject> ToRuntimeBGObjects(IEnumerable<BackgroundObject> backgroundObjects)
         {
@@ -465,7 +460,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             return runtimeObject;
         }
 
-        public IEnumerable<BackgroundLayerObject> ToBackgroundLayerObjects() => ToBackgroundLayerObjects(gameData.BackgroundLayers);
+        public IEnumerable<BackgroundLayerObject> ToBackgroundLayerObjects() => ToBackgroundLayerObjects(GameData.Current.BackgroundLayers);
 
         public IEnumerable<BackgroundLayerObject> ToBackgroundLayerObjects(IEnumerable<BackgroundLayer> backgroundLayers)
         {
@@ -498,7 +493,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public bool SkipRuntimeModifiers(BackgroundObject backgroundObject) => backgroundObject.modifiers.IsEmpty() || CoreConfig.Instance.LDM.Value;
 
-        public IEnumerable<IRTObject> ToRuntimeBGModifiers() => ToRuntimeBGModifiers(gameData.BackgroundObjects);
+        public IEnumerable<IRTObject> ToRuntimeBGModifiers() => ToRuntimeBGModifiers(GameData.Current.backgroundObjects);
 
         public IEnumerable<IRTObject> ToRuntimeBGModifiers(IEnumerable<BackgroundObject> backgroundObjects)
         {
@@ -523,10 +518,88 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var runtimeModifiers = new RTModifiers(
                     backgroundObject.modifiers, backgroundObject, backgroundObject.orderModifiers,
-                    backgroundObject.ignoreLifespan ? 0f : backgroundObject.StartTime,
+                    backgroundObject.ignoreLifespan ? -SoundManager.inst.MusicLength : backgroundObject.StartTime,
                     backgroundObject.ignoreLifespan ? SoundManager.inst.MusicLength : backgroundObject.StartTime + backgroundObject.SpawnDuration
                 );
             backgroundObject.runtimeModifiers = runtimeModifiers;
+            return runtimeModifiers;
+        }
+
+        #endregion
+
+        #region Runtime Prefab Objects
+
+        public IEnumerable<IRTObject> ToRuntimePrefabObjects(IEnumerable<PrefabObject> prefabObjects)
+        {
+            foreach (var prefabObject in prefabObjects)
+            {
+                RTPrefabObject runtimePrefabObject = null;
+
+                try
+                {
+                    runtimePrefabObject = ToRuntimePrefabObject(prefabObject.GetPrefab(), prefabObject);
+                }
+                catch (Exception e)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{prefabObject.id}' to {nameof(RTBeatmapObject)}.");
+                    stringBuilder.AppendLine($"Exception: {e.Message}");
+                    stringBuilder.AppendLine(e.StackTrace);
+
+                    Debug.LogError(stringBuilder.ToString());
+                }
+
+                if (runtimePrefabObject)
+                    yield return runtimePrefabObject;
+            }
+        }
+
+        public IRTObject ToIRuntimePrefabObject(Prefab prefab, PrefabObject prefabObject) => ToRuntimePrefabObject(prefab, prefabObject);
+
+        RTPrefabObject ToRuntimePrefabObject(Prefab prefab, PrefabObject prefabObject)
+        {
+            var runtimeObject = new RTPrefabObject(prefab, prefabObject, runtimeLevel);
+            runtimeObject.Load();
+            prefabObject.runtimeObject = runtimeObject;
+
+            return runtimeObject;
+        }
+
+        #endregion
+
+        #region Runtime Prefab Modifiers
+
+        public bool SkipRuntimeModifiers(PrefabObject prefabObject) => prefabObject.modifiers.IsEmpty();
+
+        public IEnumerable<IRTObject> ToRuntimePrefabModifiers() => ToRuntimePrefabModifiers(GameData.Current.prefabObjects);
+
+        public IEnumerable<IRTObject> ToRuntimePrefabModifiers(IEnumerable<PrefabObject> prefabObjects)
+        {
+            foreach (var prefabObject in prefabObjects)
+            {
+                if (SkipRuntimeModifiers(prefabObject))
+                {
+                    prefabObject.runtimeModifiers = null;
+                    continue;
+                }
+
+                var runtimeModifiers = ToRuntimeModifiers(prefabObject.runtimeObject?.Prefab ?? prefabObject.GetPrefab(), prefabObject);
+
+                if (runtimeModifiers)
+                    yield return runtimeModifiers;
+            }
+        }
+
+        public IRTObject ToIRuntimeModifiers(Prefab prefab, PrefabObject prefabObject) => SkipRuntimeModifiers(prefabObject) ? null : ToRuntimeModifiers(prefab, prefabObject);
+
+        RTModifiers ToRuntimeModifiers(Prefab prefab, PrefabObject prefabObject)
+        {
+            var runtimeModifiers = new RTPrefabModifiers(
+                    prefabObject.modifiers, prefabObject, prefabObject.orderModifiers,
+                    prefabObject.ignoreLifespan ? -SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset,
+                    prefabObject.ignoreLifespan ? SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration
+                );
+            prefabObject.runtimeModifiers = runtimeModifiers;
             return runtimeModifiers;
         }
 

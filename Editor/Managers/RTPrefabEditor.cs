@@ -1538,7 +1538,7 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current.backgroundObjects.RemoveAt(index);
             });
 
-            RTLevel.Current?.AddPrefabToLevel(prefabObject, recalculate: false);
+            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
 
             GameData.Current.prefabObjects.FindAll(x => x.prefabID == originalPrefab.id).ForEach(x => RTLevel.Current?.UpdatePrefab(x, recalculate: false));
             RTLevel.Current?.RecalculateObjectStates();
@@ -1559,7 +1559,7 @@ namespace BetterLegacy.Editor.Managers
             var sw = CoreHelper.StartNewStopwatch();
 
             Debug.Log($"{PrefabEditor.inst.className}Removing Prefab Object's spawned objects.");
-            RTLevel.Current?.UpdatePrefab(prefabObject, false, false);
+            RTLevel.Current?.UpdatePrefab(prefabObject, false);
 
             EditorTimeline.inst.RemoveTimelineObject(EditorTimeline.inst.timelineObjects.Find(x => x.ID == id));
 
@@ -1646,7 +1646,7 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.prefabObjects.Add(prefabObject);
 
-            RTLevel.Current?.AddPrefabToLevel(prefabObject, recalculate: false);
+            RTLevel.Current?.UpdatePrefab(prefabObject);
             RTLevel.Current?.RecalculateObjectStates();
 
             EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
@@ -2476,7 +2476,7 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.prefabObjects.FindAll(x => x.prefabID == id).ForEach(x =>
             {
-                RTLevel.Current?.UpdatePrefab(x, false);
+                RTLevel.Current?.UpdatePrefab(x, false, false);
 
                 if (EditorTimeline.inst.timelineObjects.TryFindIndex(y => y.ID == x.id, out int index))
                 {
@@ -2495,6 +2495,8 @@ namespace BetterLegacy.Editor.Managers
                 prefabable.RemovePrefabReference();
                 timelineObject.RenderVisibleState(false);
             }
+
+            RTLevel.Current?.RecalculateObjectStates();
 
             StartCoroutine(RefreshInternalPrefabs());
         }
@@ -2516,7 +2518,7 @@ namespace BetterLegacy.Editor.Managers
                 if (prefabObject.prefabID != id)
                     continue;
 
-                RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                RTLevel.Current?.UpdatePrefab(prefabObject, false, false);
 
                 if (EditorTimeline.inst.timelineObjects.TryFindIndex(x => x.ID == prefabObject.id, out int j))
                 {
@@ -2535,6 +2537,8 @@ namespace BetterLegacy.Editor.Managers
                 prefabable.RemovePrefabReference();
                 timelineObject.RenderVisibleState(false);
             }
+
+            RTLevel.Current?.RecalculateObjectStates();
 
             StartCoroutine(RefreshInternalPrefabs());
         }

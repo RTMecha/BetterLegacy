@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Core.Runtime.Objects
@@ -7,7 +8,7 @@ namespace BetterLegacy.Core.Runtime.Objects
     /// <summary>
     /// Class for storing objects spawned from a Prefab Object.
     /// </summary>
-    public class PrefabSpawner : IBeatmap
+    public class PrefabSpawner : Exists, IBeatmap
     {
         /// <summary>
         /// Clears the spawned objects.

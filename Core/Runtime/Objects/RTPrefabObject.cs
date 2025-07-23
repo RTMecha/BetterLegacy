@@ -18,17 +18,19 @@ namespace BetterLegacy.Core.Runtime.Objects
     {
         #region Core
 
-        public RTPrefabObject(Prefab prefab, PrefabObject prefabObject)
+        public RTPrefabObject(Prefab prefab, PrefabObject prefabObject, RTLevelBase parentRuntime)
         {
             Prefab = prefab;
             PrefabObject = prefabObject;
+            ParentRuntime = parentRuntime;
 
-            StartTime = prefabObject.StartTime;
-            KillTime = prefabObject.SpawnDuration;
+            StartTime = prefabObject.StartTime + prefab.offset;
+            KillTime = prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration;
 
             var gameObject = Creator.NewGameObject(prefab.name, RTLevel.Current.Parent);
             Parent = gameObject.transform;
 
+            prefabObject.cachedTransform = null;
             var transform = prefabObject.GetTransformOffset();
 
             Position = transform.position;
@@ -51,6 +53,11 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public PrefabSpawner Spawner { get; set; } = new PrefabSpawner();
 
+        /// <summary>
+        /// The runtime that spawned this prefab.
+        /// </summary>
+        public RTLevelBase ParentRuntime { get; set; }
+
         public override Transform Parent { get; }
 
         public override float FixedTime => (AudioManager.inst.CurrentAudioSource.time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
@@ -58,49 +65,38 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <summary>
         /// If the Runtime Prefab Object is currently active.
         /// </summary>
-        public bool Active { get; set; }
+        public bool IsActive => EngineActive && Active;
+        /// <summary>
+        /// If the Runtime Prefab Object is currently active.
+        /// </summary>
+        public bool EngineActive { get; set; }
+        /// <summary>
+        /// If the Runtime Prefab Object is currently active. Used for modifiers.
+        /// </summary>
+        public bool Active { get; set; } = true;
 
+        /// <summary>
+        /// Position offset of the Prefab Object.
+        /// </summary>
         public Vector3 Position { get; set; }
 
+        /// <summary>
+        /// Scale offset of the Prefab Object.
+        /// </summary>
         public Vector3 Scale { get; set; }
 
+        /// <summary>
+        /// Rotation offset of the Prefab Object.
+        /// </summary>
         public Vector3 Rotation { get; set; }
-
-        bool prevAlive;
 
         public override void Load()
         {
             previousAudioTime = 0.0f;
             audioTimeVelocity = 0.0f;
 
-            AddPrefabToLevel(PrefabObject, false, false);
-
-            converter = new ObjectConverter(GameData.Current, this);
-            for (int i = 0; i < Spawner.BeatmapObjects.Count; i++)
-                converter.CacheSequence(Spawner.BeatmapObjects[i]);
-
-            IEnumerable<IRTObject> runtimeObjects = converter.ToRuntimeObjects(Spawner.BeatmapObjects);
-
-            objects = runtimeObjects.ToList();
-            objectEngine = new ObjectEngine(Objects);
-
-            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers(Spawner.BeatmapObjects);
-
-            modifiers = runtimeModifiers.ToList();
-            objectModifiersEngine = new ObjectEngine(Modifiers);
-
-            IEnumerable<BackgroundLayerObject> backgroundLayerObjects = converter.ToBackgroundLayerObjects(Spawner.BackgroundLayers);
-            backgroundLayers = backgroundLayerObjects.ToList();
-
-            IEnumerable<IRTObject> runtimeBGObjects = converter.ToRuntimeBGObjects(Spawner.BackgroundObjects);
-
-            bgObjects = runtimeBGObjects.ToList();
-            backgroundEngine = new ObjectEngine(BGObjects);
-
-            IEnumerable<IRTObject> runtimeBGModifiers = converter.ToRuntimeBGModifiers(Spawner.BackgroundObjects);
-
-            bgModifiers = runtimeBGModifiers.ToList();
-            bgModifiersEngine = new ObjectEngine(BGModifiers);
+            ApplyPrefab();
+            Load(Spawner, false);
         }
 
         public override void Tick()
@@ -114,45 +110,12 @@ namespace BetterLegacy.Core.Runtime.Objects
                 previousAudioTime = smoothedTime;
             }
 
-            while (preTick != null && !preTick.IsEmpty())
-                preTick.Dequeue()?.Invoke();
+            PreTick();
 
             try
             {
-                if (!PrefabObject.Modifiers.IsEmpty())
-                {
-                    var alive = PrefabObject.Alive;
-
-                    if (PrefabObject.IgnoreLifespan || alive)
-                    {
-                        var variables = new Dictionary<string, string>();
-                        if (PrefabObject.orderModifiers)
-                            ModifiersHelper.RunModifiersLoop(PrefabObject.Modifiers, PrefabObject, variables);
-                        else
-                            ModifiersHelper.RunModifiersAll(PrefabObject.modifiers, PrefabObject, variables);
-
-                        for (int i = 0; i < modifiers.Count; i++)
-                            if (modifiers[i] is RTModifiers runtimeModifiers)
-                                runtimeModifiers.variables.InsertRange(variables);
-
-                        for (int i = 0; i < bgModifiers.Count; i++)
-                            if (bgModifiers[i] is RTModifiers runtimeModifiers)
-                                runtimeModifiers.variables.InsertRange(variables);
-                    }
-                    else if (prevAlive != alive)
-                        PrefabObject.modifiers.ForLoop(modifier =>
-                        {
-                            modifier.runCount = 0;
-                            modifier.active = false;
-                            modifier.running = false;
-                            modifier.Inactive?.Invoke(modifier, PrefabObject, null);
-                        });
-
-                    prevAlive = alive;
-                }
-
-                OnObjectModifiersTick(); // modifiers update second
-                OnBackgroundModifiersTick(); // bg modifiers update third
+                OnObjectModifiersTick(); // modifiers update first
+                OnBackgroundModifiersTick(); // bg modifiers update second
             }
             catch (Exception ex)
             {
@@ -160,10 +123,15 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
 
             if (!Active)
+            {
+                PostTick();
                 return;
+            }
 
-            OnBeatmapObjectsTick(); // objects update fourth
-            OnBackgroundObjectsTick(); // bgs update fifth
+            OnBeatmapObjectsTick(); // objects update third
+            OnBackgroundObjectsTick(); // bgs update fourth
+            OnPrefabModifiersTick(); // prefab modifiers update fifth
+            OnPrefabObjectsTick(); // prefab objects update last
 
             if (Parent)
             {
@@ -172,8 +140,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 Parent.localEulerAngles = Rotation + PrefabObject.RotationOffset;
             }
 
-            while (postTick != null && !postTick.IsEmpty())
-                postTick.Dequeue()?.Invoke();
+            PostTick();
         }
 
         public override void Clear()
@@ -202,232 +169,48 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
+            if (EngineActive == active)
+                return;
+
+            EngineActive = active;
+            UpdateActive();
+        }
+
+        /// <summary>
+        /// Sets the active state of the prefab object. Used for modifiers.
+        /// </summary>
+        /// <param name="active">Active state.</param>
+        public void SetPrefabActive(bool active)
+        {
             if (Active == active)
                 return;
 
             Active = active;
+            UpdateActive();
+        }
 
+        /// <summary>
+        /// Updates the active state of the prefab object.
+        /// </summary>
+        public void UpdateActive()
+        {
             var parent = Parent;
             if (parent)
-                parent.gameObject.SetActive(active);
+                parent.gameObject.SetActive(IsActive);
         }
 
         public void Interpolate(float time) => Tick();
-
-        #endregion
-
-        #region Prefabs
-
-        public override void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true)
+        
+        /// <summary>
+        /// Applies all Beatmap Objects stored in the Prefab Object's Prefab to the level.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object to add to the level</param>
+        /// <param name="update">If the object should be updated.</param>
+        /// <param name="recalculate">If the engine should be recalculated.</param>
+        public void ApplyPrefab()
         {
-            foreach (var beatmapObject in Spawner.BeatmapObjects)
-                UpdateObject(beatmapObject, recursive: false, reinsert: false, recalculate: false);
+            var prefabObject = PrefabObject;
 
-            foreach (var backgroundObject in Spawner.BackgroundObjects)
-                UpdateBackgroundObject(backgroundObject, reinsert: false, recalculate: false);
-
-            foreach (var backgroundLayer in Spawner.BackgroundLayers)
-                ReinitObject(backgroundLayer, false);
-
-            foreach (var subPrefabObject in Spawner.PrefabObjects)
-                UpdatePrefab(subPrefabObject, false, recalculate: false);
-
-            GameData.Current.beatmapObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.backgroundLayers.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.backgroundObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.prefabObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.prefabs.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-
-            if (reinsert)
-                AddPrefabToLevel(prefabObject);
-            else
-            {
-                Clear();
-                prefabObject.runtimeObject = null;
-            }
-        }
-
-        public override void UpdatePrefab(PrefabObject prefabObject, string context, bool sort = true)
-        {
-            string lower = context.ToLower().Replace(" ", "").Replace("_", "");
-            switch (lower)
-            {
-                case PrefabObjectContext.TRANSFORM_OFFSET: {
-                        prefabObject.cachedTransform = null;
-                        var transform = prefabObject.GetTransformOffset();
-
-                        Position = transform.position;
-                        Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-                        Rotation = new Vector3(0f, 0f, transform.rotation);
-
-                        break;
-                    }
-                case PrefabObjectContext.TIME: {
-                        float t = 1f;
-
-                        if (prefabObject.RepeatOffsetTime != 0f)
-                            t = prefabObject.RepeatOffsetTime;
-
-                        float timeToAdd = 0f;
-
-                        var prefab = prefabObject.GetPrefab();
-
-                        for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
-                        {
-                            foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id))
-                            {
-                                if (!prefab.beatmapObjects.TryFind(x => x.id == beatmapObject.originalID, out BeatmapObject original))
-                                    continue;
-
-                                beatmapObject.StartTime = original.StartTime + timeToAdd;
-
-                                var runtimeObject = beatmapObject.runtimeObject;
-
-                                // Update Start Time
-                                if (!runtimeObject)
-                                    continue;
-
-                                runtimeObject.StartTime = beatmapObject.StartTime;
-                                runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
-
-                                runtimeObject.SetActive(beatmapObject.Alive);
-
-                                for (int j = 0; j < runtimeObject.parentObjects.Count; j++)
-                                {
-                                    var levelParent = runtimeObject.parentObjects[j];
-                                    var parent = levelParent.beatmapObject;
-
-                                    levelParent.timeOffset = parent.StartTime;
-                                }
-                            }
-
-                            foreach (var backgroundObject in GameData.Current.backgroundObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.id))
-                            {
-                                if (!prefab.backgroundObjects.TryFind(x => x.id == backgroundObject.originalID, out BackgroundObject original))
-                                    continue;
-
-                                backgroundObject.StartTime = original.StartTime + timeToAdd;
-
-                                var runtimeObject = backgroundObject.runtimeObject;
-
-                                // Update Start Time
-                                if (!runtimeObject)
-                                    continue;
-
-                                runtimeObject.StartTime = backgroundObject.StartTime;
-                                runtimeObject.KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
-
-                                runtimeObject.SetActive(backgroundObject.Alive);
-                            }
-
-                            timeToAdd += t;
-                        }
-
-                        if (!sort)
-                            break;
-
-                        objectEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                        objectEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        objectEngine?.spawner?.RecalculateObjectStates();
-
-                        objectModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                        objectModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        objectModifiersEngine?.spawner?.RecalculateObjectStates();
-
-                        backgroundEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                        backgroundEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        backgroundEngine?.spawner?.RecalculateObjectStates();
-
-                        bgModifiersEngine?.spawner?.activateList?.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                        bgModifiersEngine?.spawner?.deactivateList?.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                        bgModifiersEngine?.spawner?.RecalculateObjectStates();
-
-                        break;
-                    }
-                case PrefabObjectContext.AUTOKILL: {
-                        UpdatePrefab(prefabObject);
-
-                        // only issue with this rn is when objects already have autokill applied to them via the prefab object.
-
-                        //if (prefabObject.autoKillType == PrefabObject.AutoKillType.Regular)
-                        //{
-                        //    UpdatePrefab(prefabObject);
-                        //    break;
-                        //}
-
-                        //var prefab = prefabObject.GetPrefab();
-                        //var time = prefabObject.StartTime + (prefab?.offset ?? 0f);
-
-                        //for (int i = 0; i < prefabObject.expandedObjects.Count; i++)
-                        //{
-                        //    var beatmapObject = prefabObject.expandedObjects[i];
-
-                        //    if (time + beatmapObject.SpawnDuration > prefabObject.autoKillOffset)
-                        //    {
-                        //        beatmapObject.autoKillType = BeatmapObject.AutoKillType.SongTime;
-                        //        beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? time + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
-                        //    }
-
-                        //    UpdateObject(beatmapObject, ObjectContext.START_TIME);
-                        //}
-
-                        break;
-                    }
-                case PrefabObjectContext.PARENT: {
-                        for (int i = 0; i < prefabObject.expandedObjects.Count; i++)
-                        {
-                            var beatmapObject = prefabObject.expandedObjects[i] as BeatmapObject;
-                            if (!beatmapObject || !beatmapObject.fromPrefabBase)
-                                continue;
-
-                            beatmapObject.Parent = prefabObject.parent;
-                            beatmapObject.parentType = prefabObject.parentType;
-                            beatmapObject.parentOffsets = prefabObject.parentOffsets;
-                            beatmapObject.parentAdditive = prefabObject.parentAdditive;
-                            beatmapObject.parallaxSettings = prefabObject.parentParallax;
-                            beatmapObject.desync = prefabObject.desync;
-
-                            UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                        }
-                        break;
-                    }
-                case PrefabObjectContext.REPEAT: {
-                        UpdatePrefab(prefabObject);
-                        break;
-                    }
-                case PrefabObjectContext.HIDE: {
-                        foreach (var expanded in prefabObject.expandedObjects)
-                        {
-                            if (expanded is BeatmapObject beatmapObject)
-                            {
-                                beatmapObject.editorData.hidden = prefabObject.editorData.hidden;
-                                UpdateObject(beatmapObject, ObjectContext.HIDE);
-                            }
-                            if (expanded is BackgroundObject backgroundObject)
-                            {
-                                backgroundObject.editorData.hidden = prefabObject.editorData.hidden;
-                                UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.HIDE);
-                            }
-                        }
-
-                        break;
-                    }
-                case PrefabObjectContext.SELECTABLE: {
-                        foreach (var expanded in prefabObject.expandedObjects)
-                        {
-                            if (expanded is BeatmapObject beatmapObject)
-                            {
-                                beatmapObject.editorData.selectable = prefabObject.editorData.selectable;
-                                UpdateObject(beatmapObject, ObjectContext.SELECTABLE);
-                            }
-                        }
-                        break;
-                    }
-            }
-        }
-
-        public override void AddPrefabToLevel(PrefabObject prefabObject, bool update = true, bool recalculate = true)
-        {
             if (!prefabObject)
             {
                 CoreHelper.LogError($"Cannot add a null Prefab Object to the level.");
@@ -600,28 +383,6 @@ namespace BetterLegacy.Core.Runtime.Objects
                 }
 
                 timeToAdd += t;
-            }
-
-            prefabObject.cachedTransform = null;
-            if (update)
-            {
-                var transform = prefabObject.GetTransformOffset();
-
-                foreach (var beatmapObject in Spawner.BeatmapObjects)
-                    UpdateObject(beatmapObject, recalculate: false);
-                foreach (var backgroundLayer in Spawner.BackgroundLayers)
-                    ReinitObject(backgroundLayer);
-                foreach (var backgroundObject in Spawner.BackgroundObjects)
-                    UpdateBackgroundObject(backgroundObject, recalculate: false);
-                foreach (var subPrefabObject in Spawner.PrefabObjects)
-                    RTLevel.Current.UpdatePrefab(subPrefabObject, recalculate: false);
-
-                Position = transform.position;
-                Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-                Rotation = new Vector3(0f, 0f, transform.rotation);
-
-                if (recalculate)
-                    RecalculateObjectStates();
             }
         }
 

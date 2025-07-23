@@ -268,7 +268,7 @@ namespace BetterLegacy.Editor.Data
 
                 GameData.Current.prefabObjects.Add(prefabObjectCopy);
 
-                RTLevel.Current?.AddPrefabToLevel(prefabObjectCopy, recalculate: false);
+                RTLevel.Current?.UpdatePrefab(prefabObjectCopy, recalculate: false);
 
                 if (!CoreHelper.InEditor)
                     continue;

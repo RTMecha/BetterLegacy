@@ -53,6 +53,52 @@ namespace BetterLegacy.Core.Runtime
         public abstract void Load();
 
         /// <summary>
+        /// Loads the runtime from a package.
+        /// </summary>
+        /// <param name="beatmap">Package to convert to runtime.</param>
+        /// <param name="checkPrefab">If objects should be checked if they're from a prefab.</param>
+        public virtual void Load(IBeatmap beatmap, bool checkPrefab = true)
+        {
+            converter = new ObjectConverter(this);
+            var beatmapObjects = beatmap.BeatmapObjects.Where(x => !checkPrefab || !x.fromPrefab).ToList();
+            for (int i = 0; i < beatmapObjects.Count; i++)
+                converter.CacheSequence(beatmapObjects[i]);
+
+            IEnumerable<IRTObject> runtimePrefabObjects = converter.ToRuntimePrefabObjects(beatmap.PrefabObjects);
+
+            prefabObjects = runtimePrefabObjects.ToList();
+            prefabEngine = new ObjectEngine(PrefabObjects);
+
+            IEnumerable<IRTObject> runtimePrefabModifiers = converter.ToRuntimePrefabModifiers(beatmap.PrefabObjects);
+
+            prefabModifiers = runtimePrefabModifiers.ToList();
+            prefabModifiersEngine = new ObjectEngine(PrefabModifiers);
+
+            IEnumerable<IRTObject> runtimeObjects = converter.ToRuntimeObjects(beatmapObjects);
+
+            objects = runtimeObjects.ToList();
+            objectEngine = new ObjectEngine(Objects);
+
+            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers(beatmap.BeatmapObjects.Where(x => !checkPrefab || !x.fromPrefab));
+
+            modifiers = runtimeModifiers.ToList();
+            objectModifiersEngine = new ObjectEngine(Modifiers);
+
+            IEnumerable<BackgroundLayerObject> backgroundLayerObjects = converter.ToBackgroundLayerObjects(beatmap.BackgroundLayers.Where(x => !checkPrefab || !x.FromPrefab));
+            backgroundLayers = backgroundLayerObjects.ToList();
+
+            IEnumerable<IRTObject> runtimeBGObjects = converter.ToRuntimeBGObjects(beatmap.BackgroundObjects.Where(x => !checkPrefab || !x.fromPrefab));
+
+            bgObjects = runtimeBGObjects.ToList();
+            backgroundEngine = new ObjectEngine(BGObjects);
+
+            IEnumerable<IRTObject> runtimeBGModifiers = converter.ToRuntimeBGModifiers(beatmap.BackgroundObjects.Where(x => !checkPrefab || !x.fromPrefab));
+
+            bgModifiers = runtimeBGModifiers.ToList();
+            bgModifiersEngine = new ObjectEngine(BGModifiers);
+        }
+
+        /// <summary>
         /// Queue of actions to run before the tick starts.
         /// </summary>
         public Queue<Action> preTick = new Queue<Action>();
@@ -130,6 +176,8 @@ namespace BetterLegacy.Core.Runtime
             objectModifiersEngine?.spawner?.RecalculateObjectStates();
             backgroundEngine?.spawner?.RecalculateObjectStates();
             bgModifiersEngine?.spawner?.RecalculateObjectStates();
+            prefabEngine?.spawner?.RecalculateObjectStates();
+            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
         }
 
         #endregion
@@ -595,6 +643,69 @@ namespace BetterLegacy.Core.Runtime
         }
 
         /// <summary>
+        /// Removes a Beatmap Object from the runtime.
+        /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to remove.</param>
+        public void RemoveObject(BeatmapObject beatmapObject)
+        {
+            var runtimeObject = beatmapObject.runtimeObject;
+
+            if (runtimeObject)
+            {
+                var top = runtimeObject.top;
+                CoreHelper.Delete(top);
+                runtimeObject.top = null;
+
+                objectEngine?.spawner?.RemoveObject(runtimeObject, false);
+                objects.Remove(runtimeObject);
+
+                runtimeObject.parentObjects.Clear();
+
+                runtimeObject = null;
+                top = null;
+                beatmapObject.runtimeObject = null;
+            }
+
+            var runtimeModifiers = beatmapObject.runtimeModifiers;
+
+            if (runtimeModifiers)
+            {
+                runtimeModifiers.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    modifier.Result = null;
+                });
+
+                objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+                modifiers.Remove(runtimeModifiers);
+
+                runtimeModifiers = null;
+                beatmapObject.runtimeModifiers = null;
+            }
+        }
+
+        /// <summary>
+        /// Adds a Beatmap Object to the runtime.
+        /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to add.</param>
+        public void AddObject(BeatmapObject beatmapObject)
+        {
+            var iRuntimeObject = converter.ToIRuntimeObject(beatmapObject);
+            if (iRuntimeObject != null)
+            {
+                objects.Add(iRuntimeObject);
+                objectEngine?.spawner?.InsertObject(iRuntimeObject, false);
+            }
+
+            var iRuntimeModifiers = converter.ToIRuntimeModifiers(beatmapObject);
+            if (iRuntimeModifiers != null)
+            {
+                modifiers.Add(iRuntimeModifiers);
+                objectModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
+            }
+        }
+
+        /// <summary>
         /// Removes and recreates the object if it still exists.
         /// </summary>
         /// <param name="beatmapObject">Beatmap Object to update.</param>
@@ -624,60 +735,11 @@ namespace BetterLegacy.Core.Runtime
                 }
             }
 
-            var runtimeObject = beatmapObject.runtimeObject;
-
-            if (runtimeObject)
-            {
-                var top = runtimeObject.top;
-                CoreHelper.Delete(top);
-                runtimeObject.top = null;
-
-                objectEngine?.spawner?.RemoveObject(runtimeObject, false);
-                if (!objects.Remove(runtimeObject))
-                    CoreHelper.LogError($"Failed to remove Runtime Object.");
-
-                runtimeObject.parentObjects.Clear();
-
-                runtimeObject = null;
-                top = null;
-                beatmapObject.runtimeObject = null;
-            }
-
-            var runtimeModifiers = beatmapObject.runtimeModifiers;
-
-            if (runtimeModifiers)
-            {
-                runtimeModifiers.modifiers.ForLoop(modifier =>
-                {
-                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
-                    modifier.Result = null;
-                });
-
-                objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
-                if (!modifiers.Remove(runtimeModifiers))
-                    CoreHelper.LogError($"Failed to remove Runtime Modifiers.");
-
-                runtimeModifiers = null;
-                beatmapObject.runtimeModifiers = null;
-            }
+            RemoveObject(beatmapObject);
 
             // If the object should be reinserted.
-            if (!reinsert)
-                return;
-
-            var iRuntimeObject = converter.ToIRuntimeObject(beatmapObject);
-            if (iRuntimeObject != null)
-            {
-                objects.Add(iRuntimeObject);
-                objectEngine?.spawner?.InsertObject(iRuntimeObject, false);
-            }
-
-            var iRuntimeModifiers = converter.ToIRuntimeModifiers(beatmapObject);
-            if (iRuntimeModifiers != null)
-            {
-                modifiers.Add(iRuntimeModifiers);
-                objectModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
-            }
+            if (reinsert)
+                AddObject(beatmapObject);
         }
 
         public virtual void UpdateParentChain(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject = null)
@@ -828,10 +890,8 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void OnObjectModifiersTick()
         {
-            if (!GameData.Current || !CoreHelper.Playing)
-                return;
-
-            objectModifiersEngine?.Update(FixedTime);
+            if (GameData.Current && CoreHelper.Playing)
+                objectModifiersEngine?.Update(FixedTime);
         }
 
         #endregion
@@ -1002,17 +1062,11 @@ namespace BetterLegacy.Core.Runtime
         }
 
         /// <summary>
-        /// Removes and recreates the object if it still exists.
+        /// Removes a Background Object from the runtime.
         /// </summary>
-        /// <param name="backgroundObject">Background Object to update.</param>
-        /// <param name="reinsert">If the object should be reinserted.</param>
-        /// <param name="recursive">If the updating should be recursive.</param>
-        public virtual void ReinitObject(BackgroundObject backgroundObject, bool reinsert = true)
+        /// <param name="backgroundObject">Background Object to remove.</param>
+        public void RemoveBackgroundObject(BackgroundObject backgroundObject)
         {
-            backgroundObject.positionOffset = Vector3.zero;
-            backgroundObject.scaleOffset = Vector3.zero;
-            backgroundObject.rotationOffset = Vector3.zero;
-
             var runtimeObject = backgroundObject.runtimeObject;
 
             if (runtimeObject)
@@ -1035,12 +1089,14 @@ namespace BetterLegacy.Core.Runtime
                 runtimeModifiers = null;
                 backgroundObject.runtimeModifiers = null;
             }
+        }
 
-            // If the object should be reinserted and it is not null then we reinsert the object.
-            if (!reinsert || !backgroundObject)
-                return;
-
-            // Convert object to ILevelObject.
+        /// <summary>
+        /// Adds a Background Object to the runtime.
+        /// </summary>
+        /// <param name="backgroundObject">Background Object to add.</param>
+        public void AddBackgroundObject(BackgroundObject backgroundObject)
+        {
             var iRuntimeBGObject = converter.ToIRuntimeBGObject(backgroundObject);
             if (iRuntimeBGObject != null)
             {
@@ -1054,6 +1110,23 @@ namespace BetterLegacy.Core.Runtime
                 bgModifiers.Add(iRuntimeBGModifiers);
                 bgModifiersEngine?.spawner?.InsertObject(iRuntimeBGModifiers, false);
             }
+        }
+
+        /// <summary>
+        /// Removes and recreates the object if it still exists.
+        /// </summary>
+        /// <param name="backgroundObject">Background Object to update.</param>
+        /// <param name="reinsert">If the object should be reinserted.</param>
+        public virtual void ReinitObject(BackgroundObject backgroundObject, bool reinsert = true)
+        {
+            backgroundObject.positionOffset = Vector3.zero;
+            backgroundObject.scaleOffset = Vector3.zero;
+            backgroundObject.rotationOffset = Vector3.zero;
+
+            RemoveBackgroundObject(backgroundObject);
+
+            if (reinsert)
+                AddBackgroundObject(backgroundObject);
         }
 
         #region Modifiers
@@ -1075,10 +1148,8 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void OnBackgroundModifiersTick()
         {
-            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing)
-                return;
-
-            bgModifiersEngine?.Update(CurrentTime);
+            if (CoreConfig.Instance.ShowBackgroundObjects.Value && CoreHelper.Playing)
+                bgModifiersEngine?.Update(FixedTime);
         }
 
         #endregion
@@ -1088,18 +1159,175 @@ namespace BetterLegacy.Core.Runtime
         #region Prefabs
 
         /// <summary>
+        /// Prefab Objects time engine. Handles Prefab object spawning and interpolation.
+        /// </summary>
+        public ObjectEngine prefabEngine;
+
+        /// <summary>
+        /// Readonly collection of runtime Prefab objects.
+        /// </summary>
+        public IReadOnlyList<IRTObject> PrefabObjects => prefabObjects?.AsReadOnly();
+
+        /// <summary>
+        /// List of runtime Prefab objects.
+        /// </summary>
+        public List<IRTObject> prefabObjects;
+
+        public virtual void OnPrefabObjectsTick() => prefabEngine?.Update(CurrentTime);
+
+        /// <summary>
         /// Updates a Prefab Object.
         /// </summary>
         /// <param name="prefabObject">The Prefab Object to update.</param>
         /// <param name="reinsert">If the object should be updated or removed.</param>
-        public virtual void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true) => prefabObject.runtimeObject?.UpdatePrefab(prefabObject, reinsert, recalculate);
+        public void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true)
+        {
+            ReinitPrefab(prefabObject, reinsert);
+
+            if (!recalculate)
+                return;
+
+            objectEngine?.spawner?.RecalculateObjectStates();
+            objectModifiersEngine?.spawner?.RecalculateObjectStates();
+            prefabEngine?.spawner?.RecalculateObjectStates();
+            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+        }
 
         /// <summary>
         /// Updates a singled out value of a Prefab Object.
         /// </summary>
         /// <param name="prefabObject">The Prefab Object to update.</param>
         /// <param name="context">The context to update.</param>
-        public virtual void UpdatePrefab(PrefabObject prefabObject, string context, bool sort = true) => prefabObject.runtimeObject?.UpdatePrefab(prefabObject, context, sort);
+        public virtual void UpdatePrefab(PrefabObject prefabObject, string context, bool sort = true)
+        {
+            var runtimePrefabObject = prefabObject.runtimeObject;
+            if (!runtimePrefabObject)
+                UpdatePrefab(prefabObject);
+            runtimePrefabObject = prefabObject.runtimeObject;
+
+            string lower = context.ToLower().Replace(" ", "").Replace("_", "");
+            switch (lower)
+            {
+                case PrefabObjectContext.TRANSFORM_OFFSET: {
+                        prefabObject.cachedTransform = null;
+                        var transform = prefabObject.GetTransformOffset();
+
+                        runtimePrefabObject.Position = transform.position;
+                        runtimePrefabObject.Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+                        runtimePrefabObject.Rotation = new Vector3(0f, 0f, transform.rotation);
+
+                        break;
+                    }
+                case PrefabObjectContext.TIME: {
+                        prefabEngine?.spawner?.RecalculateObjectStates();
+                        prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+                        break;
+                    }
+                case PrefabObjectContext.AUTOKILL: {
+                        UpdatePrefab(prefabObject);
+
+                        // only issue with this rn is when objects already have autokill applied to them via the prefab object.
+
+                        //if (prefabObject.autoKillType == PrefabObject.AutoKillType.Regular)
+                        //{
+                        //    UpdatePrefab(prefabObject);
+                        //    break;
+                        //}
+
+                        //var prefab = prefabObject.GetPrefab();
+                        //var time = prefabObject.StartTime + (prefab?.offset ?? 0f);
+
+                        //for (int i = 0; i < prefabObject.expandedObjects.Count; i++)
+                        //{
+                        //    var beatmapObject = prefabObject.expandedObjects[i];
+
+                        //    if (time + beatmapObject.SpawnDuration > prefabObject.autoKillOffset)
+                        //    {
+                        //        beatmapObject.autoKillType = BeatmapObject.AutoKillType.SongTime;
+                        //        beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? time + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                        //    }
+
+                        //    UpdateObject(beatmapObject, ObjectContext.START_TIME);
+                        //}
+
+                        break;
+                    }
+                case PrefabObjectContext.PARENT: {
+                        for (int i = 0; i < prefabObject.expandedObjects.Count; i++)
+                        {
+                            var beatmapObject = prefabObject.expandedObjects[i] as BeatmapObject;
+                            if (!beatmapObject || !beatmapObject.fromPrefabBase)
+                                continue;
+
+                            beatmapObject.Parent = prefabObject.parent;
+                            beatmapObject.parentType = prefabObject.parentType;
+                            beatmapObject.parentOffsets = prefabObject.parentOffsets;
+                            beatmapObject.parentAdditive = prefabObject.parentAdditive;
+                            beatmapObject.parallaxSettings = prefabObject.parentParallax;
+                            beatmapObject.desync = prefabObject.desync;
+
+                            UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
+                        }
+                        break;
+                    }
+                case PrefabObjectContext.REPEAT: {
+                        UpdatePrefab(prefabObject);
+                        break;
+                    }
+                case PrefabObjectContext.HIDE: {
+                        foreach (var expanded in prefabObject.expandedObjects)
+                        {
+                            if (expanded is BeatmapObject beatmapObject)
+                            {
+                                beatmapObject.editorData.hidden = prefabObject.editorData.hidden;
+                                UpdateObject(beatmapObject, ObjectContext.HIDE);
+                            }
+                            if (expanded is BackgroundObject backgroundObject)
+                            {
+                                backgroundObject.editorData.hidden = prefabObject.editorData.hidden;
+                                UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.HIDE);
+                            }
+                        }
+
+                        break;
+                    }
+                case PrefabObjectContext.SELECTABLE: {
+                        foreach (var expanded in prefabObject.expandedObjects)
+                        {
+                            if (expanded is BeatmapObject beatmapObject)
+                            {
+                                beatmapObject.editorData.selectable = prefabObject.editorData.selectable;
+                                UpdateObject(beatmapObject, ObjectContext.SELECTABLE);
+                            }
+                        }
+                        break;
+                    }
+                case PrefabObjectContext.MODIFIERS: {
+                        var runtimeModifiers = prefabObject.runtimeModifiers;
+
+                        if (runtimeModifiers)
+                        {
+                            prefabModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+                            prefabModifiers.Remove(runtimeModifiers);
+
+                            runtimeModifiers = null;
+                            prefabObject.runtimeModifiers = null;
+                        }
+
+                        var iRuntimeModifiers = converter.ToIRuntimeModifiers(runtimePrefabObject.Prefab, prefabObject);
+                        if (iRuntimeModifiers != null)
+                        {
+                            prefabModifiers.Add(iRuntimeModifiers);
+                            prefabModifiersEngine?.spawner?.InsertObject(iRuntimeModifiers, false);
+                        }
+
+                        if (sort)
+                            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+
+                        break;
+                    }
+            }
+        }
 
         /// <summary>
         /// Loads all Prefab Objects to runtime.
@@ -1111,39 +1339,128 @@ namespace BetterLegacy.Core.Runtime
             {
                 if (i != 0)
                     yield return null;
-                AddPrefabToLevel(gameData.prefabObjects[i]);
+                UpdatePrefab(gameData.prefabObjects[i]);
             }
         }
 
         /// <summary>
-        /// Applies all Beatmap Objects stored in the Prefab Object's Prefab to the level.
+        /// Removes a Prefab Object from the runtime.
         /// </summary>
-        /// <param name="prefabObject">Prefab Object to add to the level</param>
-        /// <param name="update">If the object should be updated.</param>
-        /// <param name="recalculate">If the engine should be recalculated.</param>
-        public virtual void AddPrefabToLevel(PrefabObject prefabObject, bool update = true, bool recalculate = true)
+        /// <param name="prefabObject">Prefab Object to remove.</param>
+        public void RemovePrefab(PrefabObject prefabObject)
+        {
+            GameData.Current.beatmapObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.backgroundLayers.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.backgroundObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.prefabObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.prefabs.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+
+            var runtimeObject = prefabObject.runtimeObject;
+
+            if (runtimeObject)
+            {
+                var spawner = runtimeObject.Spawner;
+                if (spawner)
+                {
+                    foreach (var beatmapObject in spawner.BeatmapObjects)
+                        runtimeObject.UpdateObject(beatmapObject, recursive: false, reinsert: false, recalculate: false);
+
+                    foreach (var backgroundObject in spawner.BackgroundObjects)
+                        runtimeObject.UpdateBackgroundObject(backgroundObject, reinsert: false, recalculate: false);
+
+                    foreach (var backgroundLayer in spawner.BackgroundLayers)
+                        runtimeObject.ReinitObject(backgroundLayer, false);
+
+                    foreach (var subPrefabObject in spawner.PrefabObjects)
+                        runtimeObject.UpdatePrefab(subPrefabObject, false, recalculate: false);
+                }
+
+                runtimeObject.Clear();
+                prefabEngine?.spawner?.RemoveObject(runtimeObject, false);
+                prefabObjects.Remove(runtimeObject);
+
+                runtimeObject = null;
+                prefabObject.runtimeObject = null;
+            }
+
+            var runtimeModifiers = prefabObject.runtimeModifiers;
+
+            if (runtimeModifiers)
+            {
+                prefabModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
+                prefabModifiers.Remove(runtimeModifiers);
+
+                runtimeModifiers = null;
+                prefabObject.runtimeModifiers = null;
+            }
+        }
+
+        /// <summary>
+        /// Adds a Prefab Object to the runtime.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object to add.</param>
+        public void AddPrefab(PrefabObject prefabObject)
         {
             var prefab = prefabObject.GetPrefab();
-
             if (!prefab)
                 return;
 
-            if (!prefabObject.runtimeObject)
+            var iRuntimePrefabObject = converter.ToIRuntimePrefabObject(prefab, prefabObject);
+            if (iRuntimePrefabObject != null)
             {
-                prefabObject.runtimeObject = new RTPrefabObject(prefab, prefabObject);
-                prefabObject.runtimeObject.Load();
-                return;
+                prefabObjects.Add(iRuntimePrefabObject);
+                prefabEngine?.spawner?.InsertObject(iRuntimePrefabObject, false);
             }
 
-            try
+            var iRuntimePrefabModifiers = converter.ToIRuntimeModifiers(prefab, prefabObject);
+            if (iRuntimePrefabModifiers != null)
             {
-                prefabObject.runtimeObject.AddPrefabToLevel(prefabObject, update, recalculate);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Couldn't add the Prefab Object to the level.\nException: {ex}");
+                prefabModifiers.Add(iRuntimePrefabModifiers);
+                prefabModifiersEngine?.spawner?.InsertObject(iRuntimePrefabModifiers, false);
             }
         }
+
+        /// <summary>
+        /// Removes and recreates the object if it still exists.
+        /// </summary>
+        /// <param name="prefabObject">Prefab Object to update.</param>
+        /// <param name="reinsert">If the object should be reinserted.</param>
+        public virtual void ReinitPrefab(PrefabObject prefabObject, bool reinsert = true)
+        {
+            prefabObject.positionOffset = Vector3.zero;
+            prefabObject.scaleOffset = Vector3.zero;
+            prefabObject.rotationOffset = Vector3.zero;
+
+            RemovePrefab(prefabObject);
+
+            if (reinsert)
+                AddPrefab(prefabObject);
+        }
+
+        #region Modifiers
+
+        /// <summary>
+        /// Modifiers time engine. Handles active / inactive modifiers efficiently.
+        /// </summary>
+        public ObjectEngine prefabModifiersEngine;
+
+        /// <summary>
+        /// Readonly collection of runtime modifiers.
+        /// </summary>
+        public IReadOnlyList<IRTObject> PrefabModifiers => prefabModifiers?.AsReadOnly();
+
+        /// <summary>
+        /// List of runtime modifiers.
+        /// </summary>
+        public List<IRTObject> prefabModifiers;
+
+        public virtual void OnPrefabModifiersTick()
+        {
+            if (CoreHelper.Playing)
+                prefabModifiersEngine?.Update(FixedTime);
+        }
+
+        #endregion
 
         #endregion
 
