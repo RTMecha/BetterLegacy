@@ -1,10 +1,15 @@
 ﻿# ???
 
+## Features
+### Core
+- Added "Allow Player Model Controls" to the Player settings. This allows player models to retain their control values, while making regular levels fair again.
+
 ## Changes
 ### Core
 - Overhauled modifier system to be a lot more unified than before.
 - Player Model & Player Editor code has been heavily cleaned up.
 - Beware, some stuff might be broken and definitely will not be compatible with 1.7.x and below.
+- Reworked Prefab Objects to have their own runtime system.
 
 # snapshot-2025.7.1 - (pre-1.8.0) [Jul 20, 2025]
 
