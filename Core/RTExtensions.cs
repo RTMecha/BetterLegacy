@@ -1616,6 +1616,36 @@ namespace BetterLegacy.Core
         public static ObjectTransform GetObjectTransform(this ITransformable transformable) => new ObjectTransform(transformable.GetFullPosition(), transformable.GetFullScale(), transformable.GetFullRotation(true).z);
 
         /// <summary>
+        /// Gets all transformables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of transformables.</returns>
+        public static IEnumerable<ITransformable> GetTransformables(this IBeatmap beatmap)
+        {
+            foreach (var beatmapObject in beatmap.BeatmapObjects)
+                yield return beatmapObject;
+            foreach (var backgroundObject in beatmap.BackgroundObjects)
+                yield return backgroundObject;
+            foreach (var prefabObject in beatmap.PrefabObjects)
+                yield return prefabObject;
+        }
+
+        /// <summary>
+        /// Gets all modifyables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of modifyables.</returns>
+        public static IEnumerable<IModifyable> GetModifyables(this IBeatmap beatmap)
+        {
+            foreach (var beatmapObject in beatmap.BeatmapObjects)
+                yield return beatmapObject;
+            foreach (var backgroundObject in beatmap.BackgroundObjects)
+                yield return backgroundObject;
+            foreach (var prefabObject in beatmap.PrefabObjects)
+                yield return prefabObject;
+        }
+
+        /// <summary>
         /// Copies parent data from another parentable object.
         /// </summary>
         /// <param name="orig">Parentable object to copy and apply from.</param>
