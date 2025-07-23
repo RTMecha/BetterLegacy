@@ -32,7 +32,6 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float KillTime { get; set; }
 
-        public int Room { get; set; }
 
         public Dictionary<string, string> variables = new Dictionary<string, string>();
 
