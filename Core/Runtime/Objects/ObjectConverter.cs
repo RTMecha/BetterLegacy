@@ -206,12 +206,12 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             CachedSequences cachedSequences = beatmapObject.cachedSequences;
 
-            ParentObject levelParentObject = null;
+            ParentObject parentObject = null;
 
             try
             {
                 if (cachedSequences)
-                    levelParentObject = new ParentObject
+                    parentObject = new ParentObject
                     {
                         positionSequence = cachedSequences.PositionSequence,
                         scaleSequence = cachedSequences.ScaleSequence,
@@ -252,7 +252,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     var rot = new List<IKeyframe<float>>();
                     rot.Add(new FloatKeyframe(0f, 0f, Ease.Linear));
 
-                    levelParentObject = new ParentObject
+                    parentObject = new ParentObject
                     {
                         positionSequence = new Sequence<Vector3>(pos),
                         scaleSequence = new Sequence<Vector2>(sca),
@@ -296,7 +296,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 Debug.LogError(stringBuilder.ToString());
             }
 
-            return levelParentObject;
+            return parentObject;
         }
 
         #endregion

@@ -24,8 +24,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             spawner.Update(time);
 
-            foreach (IRTObject levelObject in spawner.ActiveObjects)
-                levelObject.Interpolate(time);
+            foreach (IRTObject runtimeObject in spawner.ActiveObjects)
+                runtimeObject.Interpolate(time);
         }
     }
 }

@@ -188,6 +188,9 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (!topActive)
                 return;
 
+            if (!top)
+                return;
+
             // Set visual object color
             visualObject.InterpolateColor(time - StartTime);
 
@@ -251,6 +254,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             for (int i = 0; i < parentObjects.Count; i++)
             {
                 var parentObject = parentObjects[i];
+                var timeOffset = parentObject.timeOffset;
 
                 if (totalScale == Vector3.zero) // stop interpolating entire parent chain if any of the parents scale is zero due to scale being multiplied.
                     break;
@@ -260,6 +264,14 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 if (parentObject.beatmapObject.detatched && desync) // for modifier use, probably
                     continue;
+
+                if (beatmapObject.fromPrefab && !parentObject.beatmapObject.fromPrefab)
+                {
+                    var prefab = beatmapObject.GetPrefab();
+                    var prefabObject = beatmapObject.GetPrefabObject();
+                    if (prefab && prefabObject)
+                        timeOffset -= (prefabObject.StartTime * prefabObject.Speed) + prefab.offset;
+                }
 
                 parentObject.spawned = true;
 
@@ -274,7 +286,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (animatePosition)
                 {
                     var value =
-                        parentObject.positionSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (positionOffset + positionAddedOffset) : time - parentObject.timeOffset - (positionOffset + positionAddedOffset)) +
+                        parentObject.positionSequence.Interpolate(desync ? syncOffset - timeOffset - (positionOffset + positionAddedOffset) : time - timeOffset - (positionOffset + positionAddedOffset)) +
                         parentObject.beatmapObject.reactivePositionOffset +
                         parentObject.beatmapObject.positionOffset;
 
@@ -287,7 +299,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (animateScale)
                 {
                     var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
-                    var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (scaleOffset + scaleAddedOffset) : time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
+                    var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset - timeOffset - (scaleOffset + scaleAddedOffset) : time - timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
                     var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.beatmapObject.scaleOffset.z);
                     parentObject.transform.localScale = scale;
                     totalScale = RTMath.Scale(totalScale, scale);
@@ -297,7 +309,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (animateRotation)
                 {
                     var value = Quaternion.AngleAxis(
-                        (parentObject.rotationSequence.Interpolate(desync ? syncOffset - parentObject.timeOffset - (rotationOffset + rotationAddedOffset) : time - parentObject.timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
+                        (parentObject.rotationSequence.Interpolate(desync ? syncOffset - timeOffset - (rotationOffset + rotationAddedOffset) : time - timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
                         Vector3.forward);
                     parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset);
                 }
@@ -319,7 +331,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     continue;
 
                 desync = parentObject.desync || parentObject.beatmapObject.detatched;
-                syncOffset = parentObject.timeOffset + parentObject.desyncOffset;
+                syncOffset = timeOffset + parentObject.desyncOffset;
             }
 
             currentScale = totalScale;

@@ -172,10 +172,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         public override void UpdatePrefab(PrefabObject prefabObject, bool reinsert = true, bool recalculate = true)
         {
             foreach (var beatmapObject in Spawner.BeatmapObjects)
-            {
-                if (string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObject.Parent == BeatmapObject.CAMERA_PARENT)
-                    UpdateObject(beatmapObject, reinsert: false, recalculate: false);
-            }
+                UpdateObject(beatmapObject, recursive: false, reinsert: false, recalculate: false);
 
             foreach (var backgroundObject in Spawner.BackgroundObjects)
                 UpdateBackgroundObject(backgroundObject, reinsert: false, recalculate: false);
@@ -193,7 +190,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             GameData.Current.prefabs.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
 
             if (reinsert)
-                AddPrefabToLevel(prefabObject, recalculate: recalculate);
+                AddPrefabToLevel(prefabObject);
             else
             {
                 Clear();

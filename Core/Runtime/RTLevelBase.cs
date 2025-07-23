@@ -629,11 +629,12 @@ namespace BetterLegacy.Core.Runtime
             if (runtimeObject)
             {
                 var top = runtimeObject.top;
-                if (top)
-                    UnityObject.Destroy(top.gameObject);
+                CoreHelper.Delete(top);
+                runtimeObject.top = null;
 
                 objectEngine?.spawner?.RemoveObject(runtimeObject, false);
-                objects.Remove(runtimeObject);
+                if (!objects.Remove(runtimeObject))
+                    CoreHelper.LogError($"Failed to remove Runtime Object.");
 
                 runtimeObject.parentObjects.Clear();
 
@@ -653,17 +654,17 @@ namespace BetterLegacy.Core.Runtime
                 });
 
                 objectModifiersEngine?.spawner?.RemoveObject(runtimeModifiers, false);
-                modifiers.Remove(runtimeModifiers);
+                if (!modifiers.Remove(runtimeModifiers))
+                    CoreHelper.LogError($"Failed to remove Runtime Modifiers.");
 
                 runtimeModifiers = null;
                 beatmapObject.runtimeModifiers = null;
             }
 
-            // If the object should be reinserted and it is not null then we reinsert the object.
-            if (!reinsert || !beatmapObject)
+            // If the object should be reinserted.
+            if (!reinsert)
                 return;
 
-            // Convert object to ILevelObject.
             var iRuntimeObject = converter.ToIRuntimeObject(beatmapObject);
             if (iRuntimeObject != null)
             {
