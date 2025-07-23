@@ -3350,6 +3350,27 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
 
+                case nameof(ModifierActions.spawnMultiPrefabCopy): 
+                case nameof(ModifierActions.spawnPrefabCopy): {
+                        var isMulti = name.Contains("Multi");
+
+                        PrefabGroupOnly(modifier);
+
+                        DropdownGenerator(modifier, reference, "Search Prefab Using", 4, CoreHelper.StringToOptionData("Index", "Name", "ID"));
+                        StringGenerator(modifier, reference, "Prefab Reference", 0);
+
+                        var str = StringGenerator(modifier, reference, "Prefab Object Group", 1);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        if (!isMulti)
+                            BoolGenerator(modifier, reference, "Permanent", 5, false);
+
+                        SingleGenerator(modifier, reference, "Time", 2, 0f);
+                        BoolGenerator(modifier, reference, "Time Relative", 3, true);
+
+                        break;
+                    }
+
                 case nameof(ModifierActions.clearSpawnedPrefabs): {
                         PrefabGroupOnly(modifier);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
@@ -4124,6 +4145,11 @@ namespace BetterLegacy.Editor.Data
                 case ModifierReferenceType.BackgroundObject: {
                         var backgroundObject = modifyable as BackgroundObject;
                         RTLevel.Current?.UpdateBackgroundObject(backgroundObject);
+                        break;
+                    }
+                case ModifierReferenceType.PrefabObject: {
+                        var prefabObject = modifyable as PrefabObject;
+                        RTLevel.Current?.UpdatePrefab(prefabObject);
                         break;
                     }
             }
