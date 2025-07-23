@@ -55,6 +55,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override float FixedTime => (AudioManager.inst.CurrentAudioSource.time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
 
+        /// <summary>
+        /// If the Runtime Prefab Object is currently active.
+        /// </summary>
+        public bool Active { get; set; }
+
         public Vector3 Position { get; set; }
 
         public Vector3 Scale { get; set; }
@@ -154,6 +159,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                 Debug.LogError($"Had an exception with modifier tick. Exception: {ex}");
             }
 
+            if (!Active)
+                return;
+
             OnBeatmapObjectsTick(); // objects update fourth
             OnBackgroundObjectsTick(); // bgs update fifth
 
@@ -194,12 +202,17 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
+            if (Active == active)
+                return;
+
+            Active = active;
+
             var parent = Parent;
             if (parent)
                 parent.gameObject.SetActive(active);
         }
 
-        public void Interpolate(float time) { }
+        public void Interpolate(float time) => Tick();
 
         #endregion
 
