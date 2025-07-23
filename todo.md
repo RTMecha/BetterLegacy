@@ -65,6 +65,10 @@
   - Highest Health
   - Lowest Health
   - Random
+- Multiple audio tracks.
+  Notes:  
+  - The current song can be set from the loaded audio tracks via modifiers.
+  - Tracks can be loaded / unloaded via modifiers.
 
 ### Story
 - Chapter 1.  
