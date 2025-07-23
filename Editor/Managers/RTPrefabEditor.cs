@@ -79,6 +79,8 @@ namespace BetterLegacy.Editor.Managers
 
         void Start() => StartCoroutine(SetupUI());
 
+        void Update() => PrefabObjectEditor?.ModifiersDialog?.Tick();
+
         // todo:
         // rework this UI generation code
         IEnumerator SetupUI()
@@ -352,6 +354,8 @@ namespace BetterLegacy.Editor.Managers
         {
             var prefab = prefabObject.GetPrefab();
 
+            RenderPrefabObjectTags(prefabObject);
+
             RenderPrefabObjectStartTime(prefabObject);
             RenderPrefabObjectAutokill(prefabObject, prefab);
             RenderPrefabObjectParent(prefabObject);
@@ -390,7 +394,11 @@ namespace BetterLegacy.Editor.Managers
                 PrefabObjectEditor.InspectPrefab.button.onClick.NewListener(() => ModCompatibility.Inspect(prefab));
 
             RenderPrefabObjectInfo(prefab);
+
+            CoroutineHelper.StartCoroutine(PrefabObjectEditor.ModifiersDialog.RenderModifiers(prefabObject));
         }
+
+        public void RenderPrefabObjectTags(PrefabObject prefabObject) => RTEditor.inst.RenderTags(prefabObject, PrefabObjectEditor);
 
         public void RenderPrefabObjectStartTime(PrefabObject prefabObject)
         {
@@ -450,7 +458,6 @@ namespace BetterLegacy.Editor.Managers
 
                 PrefabObjectEditor.StartTimeField.inputField.text = AudioManager.inst.CurrentAudioSource.time.ToString();
             });
-
         }
 
         public void RenderPrefabObjectAutokill(PrefabObject prefabObject, Prefab prefab)
@@ -1654,33 +1661,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefabObject">Prefab Object to paste data to.</param>
         public void PasteInstanceData(PrefabObject prefabObject)
         {
-            prefabObject.autoKillOffset = copiedInstanceData.autoKillOffset;
-            prefabObject.autoKillType = copiedInstanceData.autoKillType;
-
-            for (int i = 0; i < prefabObject.events.Count; i++)
-            {
-                if (!copiedInstanceData.events.InRange(i))
-                    return;
-
-                var copy = copiedInstanceData.events[i];
-                for (int j = 0; j < prefabObject.events[i].values.Length; j++)
-                {
-                    if (copy.values.TryGetAt(j, out float val))
-                        prefabObject.events[i].values[j] = val;
-                }
-                for (int j = 0; j < prefabObject.events[i].randomValues.Length; j++)
-                {
-                    if (copy.randomValues.TryGetAt(j, out float val))
-                        prefabObject.events[i].randomValues[j] = val;
-                }
-                prefabObject.events[i].random = copy.random;
-            }
-
-            prefabObject.CopyModifyableData(copiedInstanceData);
-            prefabObject.CopyParentData(copiedInstanceData);
-            prefabObject.RepeatCount = copiedInstanceData.RepeatCount;
-            prefabObject.RepeatOffsetTime = copiedInstanceData.RepeatOffsetTime;
-
+            prefabObject.PasteInstanceData(copiedInstanceData);
             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
             RTLevel.Current.UpdatePrefab(prefabObject);
         }

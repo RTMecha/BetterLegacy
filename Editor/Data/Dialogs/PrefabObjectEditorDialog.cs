@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -13,7 +15,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class PrefabObjectEditorDialog : EditorDialog
+    public class PrefabObjectEditorDialog : EditorDialog, ITagDialog
     {
         public PrefabObjectEditorDialog() : base(PREFAB_SELECTOR) { }
 
@@ -22,6 +24,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public RectTransform Left { get; set; }
 
         public RectTransform LeftContent { get; set; }
+
+        #region Tags
+
+        public RectTransform TagsScrollView { get; set; }
+
+        public RectTransform TagsContent { get; set; }
+
+        #endregion
 
         #region Start Time / Autokill
 
@@ -85,6 +95,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public FunctionButtonStorage InspectTimelineObject { get; set; }
 
         #endregion
+
+        public ModifiersEditorDialog ModifiersDialog { get; set; }
 
         #endregion
 
@@ -154,6 +166,47 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CoreHelper.RemoveAnimator(expandPrefabButton);
             EditorThemeManager.AddSelectable(expandPrefabButton, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(expandPrefabText, ThemeGroup.Function_2_Text);
+
+            #endregion
+
+            #region Tags
+
+            RTEditor.GenerateLabels("time label", LeftContent, new Label("Tags"));
+
+            // Tags Scroll View/Viewport/Content
+            var tagScrollView = Creator.NewUIObject("Tags Scroll View", LeftContent);
+            TagsScrollView = tagScrollView.transform.AsRT();
+            TagsScrollView.sizeDelta = new Vector2(522f, 40f);
+
+            var scroll = tagScrollView.AddComponent<ScrollRect>();
+
+            scroll.horizontal = true;
+            scroll.vertical = false;
+
+            var image = tagScrollView.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.01f);
+
+            var mask = tagScrollView.AddComponent<Mask>();
+
+            var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+            RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
+
+            var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
+            TagsContent = tagContent.transform.AsRT();
+
+            var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
+            tagContentGLG.cellSize = new Vector2(168f, 32f);
+            tagContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            tagContentGLG.constraintCount = 1;
+            tagContentGLG.childAlignment = TextAnchor.MiddleLeft;
+            tagContentGLG.spacing = new Vector2(8f, 0f);
+
+            var tagContentCSF = tagContent.AddComponent<ContentSizeFitter>();
+            tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+            scroll.viewport = tagViewport.transform.AsRT();
+            scroll.content = TagsContent;
 
             #endregion
 
@@ -668,6 +721,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             #endregion
+
+            try
+            {
+                ModifiersDialog = new ModifiersEditorDialog();
+                ModifiersDialog.Init(LeftContent);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error with setting up modifies UI: {ex}");
+            }
 
             #endregion
 

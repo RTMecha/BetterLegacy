@@ -134,6 +134,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog.Content,
             ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog.Content,
+            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.Content,
             _ => null,
         };
 
@@ -141,6 +142,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog.Scrollbar,
             ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog.Scrollbar,
+            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.Scrollbar,
             _ => null,
         };
 
@@ -148,6 +150,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog.pasteModifier,
             ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog.pasteModifier,
+            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.pasteModifier,
             _ => null,
         };
 
@@ -163,6 +166,10 @@ namespace BetterLegacy.Editor.Managers
                         RTBackgroundEditor.inst.Dialog.ModifiersDialog.pasteModifier = gameObject;
                         break;
                     }
+                case ModifierReferenceType.PrefabObject: {
+                        RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.pasteModifier = gameObject;
+                        break;
+                    }
             }
         }
 
@@ -170,6 +177,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog,
             ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog,
+            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog,
             _ => null,
         };
 
@@ -255,6 +263,10 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case ModifierReferenceType.BackgroundObject: {
                                 RTLevel.Current?.UpdateBackgroundObject(modifyable as BackgroundObject, BackgroundObjectContext.MODIFIERS);
+                                break;
+                            }
+                        case ModifierReferenceType.PrefabObject: {
+                                RTLevel.Current?.UpdatePrefab(modifyable as PrefabObject, PrefabObjectContext.MODIFIERS);
                                 break;
                             }
                     }

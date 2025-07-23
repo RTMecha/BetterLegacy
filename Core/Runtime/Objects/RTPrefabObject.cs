@@ -31,9 +31,9 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             var transform = prefabObject.GetTransformOffset();
 
-            Parent.localPosition = transform.position;
-            Parent.localScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-            Parent.localEulerAngles = new Vector3(0f, 0f, transform.rotation);
+            Position = transform.position;
+            Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+            Rotation = new Vector3(0f, 0f, transform.rotation);
         }
 
         /// <summary>
@@ -54,6 +54,14 @@ namespace BetterLegacy.Core.Runtime.Objects
         public override Transform Parent { get; }
 
         public override float FixedTime => (AudioManager.inst.CurrentAudioSource.time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
+
+        public Vector3 Position { get; set; }
+
+        public Vector3 Scale { get; set; }
+
+        public Vector3 Rotation { get; set; }
+
+        bool prevAlive;
 
         public override void Load()
         {
@@ -106,16 +114,37 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             try
             {
-                var variables = new Dictionary<string, string>();
-                ModifiersHelper.RunModifiersLoop(PrefabObject.Modifiers, PrefabObject, variables);
+                if (!PrefabObject.Modifiers.IsEmpty())
+                {
+                    var alive = PrefabObject.Alive;
 
-                for (int i = 0; i < modifiers.Count; i++)
-                    if (modifiers[i] is RTModifiers runtimeModifiers)
-                        runtimeModifiers.variables.InsertRange(variables);
-                
-                for (int i = 0; i < bgModifiers.Count; i++)
-                    if (bgModifiers[i] is RTModifiers runtimeModifiers)
-                        runtimeModifiers.variables.InsertRange(variables);
+                    if (PrefabObject.IgnoreLifespan || alive)
+                    {
+                        var variables = new Dictionary<string, string>();
+                        if (PrefabObject.orderModifiers)
+                            ModifiersHelper.RunModifiersLoop(PrefabObject.Modifiers, PrefabObject, variables);
+                        else
+                            ModifiersHelper.RunModifiersAll(PrefabObject.modifiers, PrefabObject, variables);
+
+                        for (int i = 0; i < modifiers.Count; i++)
+                            if (modifiers[i] is RTModifiers runtimeModifiers)
+                                runtimeModifiers.variables.InsertRange(variables);
+
+                        for (int i = 0; i < bgModifiers.Count; i++)
+                            if (bgModifiers[i] is RTModifiers runtimeModifiers)
+                                runtimeModifiers.variables.InsertRange(variables);
+                    }
+                    else if (prevAlive != alive)
+                        PrefabObject.modifiers.ForLoop(modifier =>
+                        {
+                            modifier.runCount = 0;
+                            modifier.active = false;
+                            modifier.running = false;
+                            modifier.Inactive?.Invoke(modifier, PrefabObject, null);
+                        });
+
+                    prevAlive = alive;
+                }
 
                 OnObjectModifiersTick(); // modifiers update second
                 OnBackgroundModifiersTick(); // bg modifiers update third
@@ -127,6 +156,13 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             OnBeatmapObjectsTick(); // objects update fourth
             OnBackgroundObjectsTick(); // bgs update fifth
+
+            if (Parent)
+            {
+                Parent.localPosition = Position + PrefabObject.PositionOffset;
+                Parent.localScale = Scale + PrefabObject.ScaleOffset;
+                Parent.localEulerAngles = Rotation + PrefabObject.RotationOffset;
+            }
 
             while (postTick != null && !postTick.IsEmpty())
                 postTick.Dequeue()?.Invoke();
@@ -207,9 +243,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                         prefabObject.cachedTransform = null;
                         var transform = prefabObject.GetTransformOffset();
 
-                        Parent.localPosition = transform.position;
-                        Parent.localScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-                        Parent.localEulerAngles = new Vector3(0f, 0f, transform.rotation);
+                        Position = transform.position;
+                        Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+                        Rotation = new Vector3(0f, 0f, transform.rotation);
 
                         break;
                     }
@@ -385,6 +421,10 @@ namespace BetterLegacy.Core.Runtime.Objects
                 return;
             }
 
+            prefabObject.positionOffset = Vector3.zero;
+            prefabObject.scaleOffset = Vector3.zero;
+            prefabObject.rotationOffset = Vector3.zero;
+
             var prefab = Prefab;
             if (!prefab)
                 prefab = prefabObject.GetPrefab();
@@ -555,7 +595,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 var transform = prefabObject.GetTransformOffset();
 
                 foreach (var beatmapObject in Spawner.BeatmapObjects)
-                    UpdateObject(beatmapObject, recursive: false, recalculate: false);
+                    UpdateObject(beatmapObject, recalculate: false);
                 foreach (var backgroundLayer in Spawner.BackgroundLayers)
                     ReinitObject(backgroundLayer);
                 foreach (var backgroundObject in Spawner.BackgroundObjects)
@@ -563,9 +603,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                 foreach (var subPrefabObject in Spawner.PrefabObjects)
                     RTLevel.Current.UpdatePrefab(subPrefabObject, recalculate: false);
 
-                Parent.localPosition = transform.position;
-                Parent.localScale = new Vector3(transform.scale.x, transform.scale.y, 1f);
-                Parent.localEulerAngles = new Vector3(0f, 0f, transform.rotation);
+                Position = transform.position;
+                Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
+                Rotation = new Vector3(0f, 0f, transform.rotation);
 
                 if (recalculate)
                     RecalculateObjectStates();

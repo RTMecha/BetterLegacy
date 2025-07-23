@@ -194,9 +194,23 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public float AutoKillOffset { get => autoKillOffset; set => autoKillOffset = value; }
 
-        public bool Alive => false;
+        public bool Alive
+        {
+            get
+            {
+                var prefab = this.GetPrefab();
+                var st = StartTime + prefab.offset;
+                return autoKillType switch
+                {
+                    PrefabAutoKillType.Regular => Runtime.RTLevel.Current.FixedTime >= st && Runtime.RTLevel.Current.FixedTime <= st + GetObjectLifeLength(prefab, noAutokill: true),
+                    PrefabAutoKillType.SongTime => Runtime.RTLevel.Current.FixedTime >= st && Runtime.RTLevel.Current.FixedTime <= autoKillOffset,
+                    PrefabAutoKillType.StartTimeOffset => Runtime.RTLevel.Current.FixedTime >= st && Runtime.RTLevel.Current.FixedTime <= st + autoKillOffset,
+                    _ => false,
+                };
+            }
+        }
 
-        public float SpawnDuration => 0f;
+        public float SpawnDuration => GetObjectLifeLength(noAutokill: true);
 
         #endregion
 
@@ -601,6 +615,36 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        public void PasteInstanceData(PrefabObject copiedInstanceData)
+        {
+            autoKillOffset = copiedInstanceData.autoKillOffset;
+            autoKillType = copiedInstanceData.autoKillType;
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                if (!copiedInstanceData.events.InRange(i))
+                    return;
+
+                var copy = copiedInstanceData.events[i];
+                for (int j = 0; j < events[i].values.Length; j++)
+                {
+                    if (copy.values.TryGetAt(j, out float val))
+                        events[i].values[j] = val;
+                }
+                for (int j = 0; j < events[i].randomValues.Length; j++)
+                {
+                    if (copy.randomValues.TryGetAt(j, out float val))
+                        events[i].randomValues[j] = val;
+                }
+                events[i].random = copy.random;
+            }
+
+            this.CopyModifyableData(copiedInstanceData);
+            this.CopyParentData(copiedInstanceData);
+            RepeatCount = copiedInstanceData.RepeatCount;
+            RepeatOffsetTime = copiedInstanceData.RepeatOffsetTime;
+        }
+
         public float GetObjectLifeLength(float offset = 0.0f, bool noAutokill = false, bool collapse = false)
         {
             if (collapse && editorData.collapse)
@@ -608,6 +652,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             var prefab = this.GetPrefab();
             if (!prefab)
+                return 0.2f;
+
+            return GetObjectLifeLength(prefab, offset, noAutokill, collapse);
+        }
+
+        public float GetObjectLifeLength(Prefab prefab, float offset = 0.0f, bool noAutokill = false, bool collapse = false)
+        {
+            if (collapse && editorData.collapse)
                 return 0.2f;
 
             float length = 0.2f;
@@ -622,6 +674,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 var time = prefab.backgroundObjects.Min(x => x.StartTime);
                 var l = prefab.backgroundObjects.Max(x => x.StartTime + x.GetObjectLifeLength(collapse: true) - time);
+                if (l > length)
+                    length = l;
+            }
+
+            if (!prefab.prefabObjects.IsEmpty())
+            {
+                var time = prefab.prefabObjects.Min(x => x.StartTime);
+                var l = prefab.prefabObjects.Max(x => x.StartTime + x.GetObjectLifeLength(collapse: true) - time);
                 if (l > length)
                     length = l;
             }
@@ -694,7 +754,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return scale.x != 0f && scale.y != 0f ? scale : Vector3.one;
         }
 
-        public Vector3 GetFullRotation() => rotationOffset + new Vector3(0f, 0f, events[2].values[0]);
+        public Vector3 GetFullRotation(bool includeSelf) => rotationOffset + new Vector3(0f, 0f, events[2].values[0]);
 
         /// <summary>
         /// Gets the transform offsets from the Prefab Object.

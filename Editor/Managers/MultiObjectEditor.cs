@@ -1858,10 +1858,7 @@ namespace BetterLegacy.Editor.Managers
                                 case TimelineObject.TimelineReferenceType.BeatmapObject: {
                                         var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.BeatmapObject);
                                         if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                                        {
-                                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
+                                            continue;
 
                                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
 
@@ -1876,10 +1873,7 @@ namespace BetterLegacy.Editor.Managers
                                 case TimelineObject.TimelineReferenceType.BackgroundObject: {
                                         var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.BackgroundObject);
                                         if (copiedModifiers == null || copiedModifiers.IsEmpty())
-                                        {
-                                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
-                                            return;
-                                        }
+                                            continue;
 
                                         var backgroundObject = timelineObject.GetData<BackgroundObject>();
 
@@ -1891,11 +1885,28 @@ namespace BetterLegacy.Editor.Managers
                                         pasted = true;
                                         break;
                                     }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        var copiedModifiers = ModifiersEditor.inst.GetCopiedModifiers(ModifierReferenceType.PrefabObject);
+                                        if (copiedModifiers == null || copiedModifiers.IsEmpty())
+                                            continue;
+
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+
+                                        prefabObject.modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
+
+                                        CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.RenderModifiers(prefabObject));
+                                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.MODIFIERS);
+
+                                        pasted = true;
+                                        break;
+                                    }
                             }
                         }
 
                         if (pasted)
                             EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        else
+                            EditorManager.inst.DisplayNotification($"No copied modifiers yet.", 3f, EditorManager.NotificationType.Error);
                     }));
 
                 EditorHelper.SetComplexity(labels, Complexity.Advanced);
