@@ -306,6 +306,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public RTPrefabObject runtimeObject;
 
         /// <summary>
+        /// Cached runtime modifiers.
+        /// </summary>
+        public RTPrefabModifiers runtimeModifiers;
+
+        /// <summary>
         /// Cached transform.
         /// </summary>
         public ObjectTransform? cachedTransform;
@@ -645,48 +650,36 @@ namespace BetterLegacy.Core.Data.Beatmap
             RepeatOffsetTime = copiedInstanceData.RepeatOffsetTime;
         }
 
-        public float GetObjectLifeLength(float offset = 0.0f, bool noAutokill = false, bool collapse = false)
-        {
-            if (collapse && editorData.collapse)
-                return 0.2f;
-
-            var prefab = this.GetPrefab();
-            if (!prefab)
-                return 0.2f;
-
-            return GetObjectLifeLength(prefab, offset, noAutokill, collapse);
-        }
+        public float GetObjectLifeLength(float offset = 0.0f, bool noAutokill = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : GetObjectLifeLength(this.GetPrefab(), offset, noAutokill, collapse);
 
         public float GetObjectLifeLength(Prefab prefab, float offset = 0.0f, bool noAutokill = false, bool collapse = false)
         {
-            if (collapse && editorData.collapse)
-                return 0.2f;
-
             float length = 0.2f;
 
-            if (!prefab.beatmapObjects.IsEmpty())
+            if (collapse && editorData.collapse)
+                return length;
+            if (!prefab)
+                return length;
+
+            var prefabables = prefab.GetPrefabables();
+            if (prefabables.IsEmpty())
+                return length;
+
+            var time = prefabables.Min(x => x.StartTime);
+            length = prefabables.Max(x => x.StartTime + x.GetObjectLifeLength(offset, noAutokill, collapse) - time);
+
+            var duration = length;
+            var t = RepeatOffsetTime != 0f ? RepeatOffsetTime : 1f;
+            if (RepeatCount == 0)
+                return duration;
+            var timeToAdd = 0f;
+            for (int i = 0; i < RepeatCount + 1; i++)
             {
-                var time = prefab.beatmapObjects.Min(x => x.StartTime);
-                length = prefab.beatmapObjects.Max(x => x.StartTime + x.GetObjectLifeLength(collapse: true) - time);
+                duration = (length * (i + 1)) + timeToAdd;
+                timeToAdd += t;
             }
 
-            if (!prefab.backgroundObjects.IsEmpty())
-            {
-                var time = prefab.backgroundObjects.Min(x => x.StartTime);
-                var l = prefab.backgroundObjects.Max(x => x.StartTime + x.GetObjectLifeLength(collapse: true) - time);
-                if (l > length)
-                    length = l;
-            }
-
-            if (!prefab.prefabObjects.IsEmpty())
-            {
-                var time = prefab.prefabObjects.Min(x => x.StartTime);
-                var l = prefab.prefabObjects.Max(x => x.StartTime + x.GetObjectLifeLength(collapse: true) - time);
-                if (l > length)
-                    length = l;
-            }
-
-            return length;
+            return duration;
         }
         
         public void ResetOffsets()

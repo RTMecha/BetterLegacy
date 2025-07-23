@@ -327,6 +327,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public IRTObject GetRuntimeObject() => null;
 
+        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => 0f;
+
         public override string ToString() => $"{id} - {name}";
 
         #endregion

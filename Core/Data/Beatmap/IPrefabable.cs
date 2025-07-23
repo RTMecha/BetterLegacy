@@ -38,6 +38,15 @@ namespace BetterLegacy.Core.Data.Beatmap
         public float StartTime { get; set; }
 
         /// <summary>
+        /// Gets the objects' lifetime based on its autokill type and offset.
+        /// </summary>
+        /// <param name="offset">Offset to apply to lifetime.</param>
+        /// <param name="noAutokill">If the autokill length should be considered.</param>
+        /// <param name="collapse">If the length should be collapsed.</param>
+        /// <returns>Returns the lifetime of the object.</returns>
+        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false);
+
+        /// <summary>
         /// Gets the runtime object for the prefabbed object.
         /// </summary>
         /// <returns>Returns the runtime object of the object.</returns>

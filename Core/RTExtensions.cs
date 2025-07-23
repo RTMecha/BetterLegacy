@@ -881,6 +881,13 @@ namespace BetterLegacy.Core
         public static bool IsEmpty<T>(this Queue<T> queue) => queue.Count < 1;
 
         /// <summary>
+        /// Checks if a collection contains no elements.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="IEnumerable{T}"/>.</typeparam>
+        /// <returns>Returns true if the collection doesn't contain elements.</returns>
+        public static bool IsEmpty<T>(this IEnumerable<T> collection) => collection.Count() < 1;
+
+        /// <summary>
         /// Checks if a dictionary contains no elements.
         /// </summary>
         /// <typeparam name="TKey">Type of the keys in <see cref="Dictionary{TKey, TValue}"/>.</typeparam>
@@ -1643,6 +1650,43 @@ namespace BetterLegacy.Core
                 yield return backgroundObject;
             foreach (var prefabObject in beatmap.PrefabObjects)
                 yield return prefabObject;
+        }
+
+        /// <summary>
+        /// Gets all prefabables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of prefabables.</returns>
+        public static List<IPrefabable> GetPrefabablesList(this IBeatmap beatmap)
+        {
+            var prefabables = new List<IPrefabable>();
+
+            prefabables.AddRange(beatmap.BeatmapObjects);
+            prefabables.AddRange(beatmap.BackgroundObjects);
+            prefabables.AddRange(beatmap.BackgroundLayers);
+            prefabables.AddRange(beatmap.PrefabObjects);
+            prefabables.AddRange(beatmap.Prefabs);
+
+            return prefabables;
+        }
+
+        /// <summary>
+        /// Gets all prefabables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of prefabables.</returns>
+        public static IEnumerable<IPrefabable> GetPrefabables(this IBeatmap beatmap)
+        {
+            foreach (var beatmapObject in beatmap.BeatmapObjects)
+                yield return beatmapObject;
+            foreach (var backgroundObject in beatmap.BackgroundObjects)
+                yield return backgroundObject;
+            foreach (var backgroundLayer in beatmap.BackgroundLayers)
+                yield return backgroundLayer;
+            foreach (var prefabObject in beatmap.PrefabObjects)
+                yield return prefabObject;
+            foreach (var prefab in beatmap.Prefabs)
+                yield return prefab;
         }
 
         /// <summary>

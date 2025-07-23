@@ -1453,7 +1453,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var prefabables = GameData.Current.GetPrefabables().FindAll(x => x.SamePrefabInstance(prefabable));
+            var prefabables = GameData.Current.GetPrefabables().Where(x => x.SamePrefabInstance(prefabable));
 
             var objects = GameData.Current.beatmapObjects.FindAll(x => x.SamePrefabInstance(prefabable));
             var bgObjects = GameData.Current.backgroundObjects.FindAll(x => x.SamePrefabInstance(prefabable));
