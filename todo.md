@@ -46,12 +46,6 @@
 - Glow object that acts like bloom.
 - Ignore start time object spawn?
 - Arcade auto plays song config.
-- Prefab Object Modifiers & Tags.  
-  Notes:  
-  - This feature might require Prefab Objects to still be loaded in the GameData. Could be a config.
-  - Allows for changing the objects in a singular Prefab Object. (prefab group only is on by default)
-  - Runs before Object Modifiers.
-  - Objects can detect if their Prefab Object has a specific tag.
 - Active event keyframe value.
   Notes:  
   - Skips the next keyframe if it's value is off. Acts kinda like relative except if the value at a specific index was 0.
@@ -99,6 +93,10 @@
   Update: 1.8.0  
 - Level priority sort  
   Update: 1.8.0  
+- QOL Keyframe Editor custom UI  
+  Notes:  
+  - Keyframe values (like positon x, y, scale x, y, etc) can have their UI customized.
+  - Accepts toggles, dropdown and input fields with min-max ranges.
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
