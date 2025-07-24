@@ -1146,6 +1146,14 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
 
+                case nameof(ModifierActions.playerDrag): {
+                        BoolGenerator(modifier, reference, "Use Position", 0);
+                        BoolGenerator(modifier, reference, "Use Scale", 1);
+                        BoolGenerator(modifier, reference, "Use Rotation", 2);
+
+                        break;
+                    }
+
                 case nameof(ModifierActions.playerBoost): {
                         SingleGenerator(modifier, reference, "X", 0);
                         SingleGenerator(modifier, reference, "Y", 1);
@@ -3615,6 +3623,12 @@ namespace BetterLegacy.Editor.Data
                         StringGenerator(modifier, reference, "Details", 1);
                         DropdownGenerator(modifier, reference, "Sub Icon", 2, CoreHelper.StringToOptionData("Arcade", "Editor", "Play", "Menu"));
                         DropdownGenerator(modifier, reference, "Icon", 3, CoreHelper.StringToOptionData("PA Logo White", "PA Logo Black"));
+
+                        break;
+                    }
+
+                case nameof(ModifierActions.callModifierBlock): {
+                        StringGenerator(modifier, reference, "Function Name", 0);
 
                         break;
                     }

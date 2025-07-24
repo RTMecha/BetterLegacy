@@ -74,11 +74,11 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="modifier">The modifier to assign to.</param>
         public static void AssignModifierActions(Modifier modifier, IModifierReference reference)
         {
+            var name = modifier.Name;
+
             switch (reference.ReferenceType)
             {
                 case ModifierReferenceType.BeatmapObject: {
-                        var name = modifier.Name;
-
                         // Only assign methods depending on modifier type.
                         if (modifier.type == Modifier.Type.Action)
                             modifier.Action = GetObjectAction(name);
@@ -90,7 +90,6 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case ModifierReferenceType.BackgroundObject: {
-                        var name = modifier.Name;
                         if (modifier.type == Modifier.Type.Action)
                             modifier.Action = GetBGAction(name);
                         if (modifier.type == Modifier.Type.Trigger)
@@ -101,7 +100,6 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case ModifierReferenceType.PrefabObject: {
-                        var name = modifier.Name;
                         if (modifier.type == Modifier.Type.Action)
                             modifier.Action = GetPrefabAction(name);
                         if (modifier.type == Modifier.Type.Trigger)
@@ -112,7 +110,6 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case ModifierReferenceType.PAPlayer: {
-                        var name = modifier.Name;
                         if (modifier.type == Modifier.Type.Action)
                             modifier.Action = GetPlayerAction(name);
                         if (modifier.type == Modifier.Type.Trigger)
@@ -123,13 +120,21 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
                 case ModifierReferenceType.GameData: {
-                        var name = modifier.Name;
-
                         // Only assign methods depending on modifier type.
                         if (modifier.type == Modifier.Type.Action)
                             modifier.Action = GetLevelAction(name);
                         if (modifier.type == Modifier.Type.Trigger)
                             modifier.Trigger = GetLevelTrigger(name);
+
+                        break;
+                    }
+                case ModifierReferenceType.Null: {
+                        if (modifier.type == Modifier.Type.Action)
+                            modifier.Action = GetObjectAction(name);
+                        if (modifier.type == Modifier.Type.Trigger)
+                            modifier.Trigger = GetObjectTrigger(name);
+
+                        modifier.Inactive = ObjectInactive;
 
                         break;
                     }
@@ -937,6 +942,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.playerRotateToObject) => ModifierActions.playerRotateToObject,
             nameof(ModifierActions.playerRotateIndexToObject) => ModifierActions.playerRotateIndexToObject,
             nameof(ModifierActions.playerRotateAllToObject) => ModifierActions.playerRotateAllToObject,
+            nameof(ModifierActions.playerDrag) => ModifierActions.playerDrag,
 
             // actions
             nameof(ModifierActions.playerBoost) => ModifierActions.playerBoost,
@@ -1032,6 +1038,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.getSignaledVariables) => ModifierActions.getSignaledVariables,
             nameof(ModifierActions.signalLocalVariables) => ModifierActions.signalLocalVariables,
             nameof(ModifierActions.clearLocalVariables) => ModifierActions.clearLocalVariables,
+            nameof(ModifierActions.storeLocalVariables) => ModifierActions.storeLocalVariables,
 
             nameof(ModifierActions.addVariable) => ModifierActions.addVariable,
             nameof(ModifierActions.addVariableOther) => ModifierActions.addVariableOther,
@@ -1281,6 +1288,8 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.setWindowTitle) => ModifierActions.setWindowTitle,
             nameof(ModifierActions.setDiscordStatus) => ModifierActions.setDiscordStatus,
 
+            nameof(ModifierActions.callModifierBlock) => ModifierActions.callModifierBlock,
+
             #endregion
 
             // dev only (story mode)
@@ -1329,6 +1338,10 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case nameof(ModifierActions.animateColorKFHex): {
+                            modifier.Result = null;
+                            break;
+                        }
+                    case nameof(ModifierActions.storeLocalVariables): {
                             modifier.Result = null;
                             break;
                         }
@@ -2199,6 +2212,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.getSignaledVariables) => ModifierActions.getSignaledVariables,
             nameof(ModifierActions.signalLocalVariables) => ModifierActions.signalLocalVariables,
             nameof(ModifierActions.clearLocalVariables) => ModifierActions.clearLocalVariables,
+            nameof(ModifierActions.storeLocalVariables) => ModifierActions.storeLocalVariables,
 
             nameof(ModifierActions.addVariable) => ModifierActions.addVariable,
             nameof(ModifierActions.addVariableOther) => ModifierActions.addVariableOther,
@@ -2449,6 +2463,8 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.setWindowTitle) => ModifierActions.setWindowTitle,
             nameof(ModifierActions.setDiscordStatus) => ModifierActions.setDiscordStatus,
 
+            nameof(ModifierActions.callModifierBlock) => ModifierActions.callModifierBlock,
+
             #endregion
 
             _ => (modifier, reference, variables) => { },
@@ -2478,6 +2494,10 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case nameof(ModifierActions.animateColorKFHex): {
+                            modifier.Result = null;
+                            break;
+                        }
+                    case nameof(ModifierActions.storeLocalVariables): {
                             modifier.Result = null;
                             break;
                         }
@@ -3080,6 +3100,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.getSignaledVariables) => ModifierActions.getSignaledVariables,
             nameof(ModifierActions.signalLocalVariables) => ModifierActions.signalLocalVariables,
             nameof(ModifierActions.clearLocalVariables) => ModifierActions.clearLocalVariables,
+            nameof(ModifierActions.storeLocalVariables) => ModifierActions.storeLocalVariables,
 
             nameof(ModifierActions.addVariable) => ModifierActions.addVariable,
             nameof(ModifierActions.addVariableOther) => ModifierActions.addVariableOther,
@@ -3330,6 +3351,8 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.setWindowTitle) => ModifierActions.setWindowTitle,
             nameof(ModifierActions.setDiscordStatus) => ModifierActions.setDiscordStatus,
 
+            nameof(ModifierActions.callModifierBlock) => ModifierActions.callModifierBlock,
+
             #endregion
 
             _ => (modifier, reference, variables) => { },
@@ -3359,6 +3382,10 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case nameof(ModifierActions.animateColorKFHex): {
+                            modifier.Result = null;
+                            break;
+                        }
+                    case nameof(ModifierActions.storeLocalVariables): {
                             modifier.Result = null;
                             break;
                         }

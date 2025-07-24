@@ -1114,13 +1114,19 @@ namespace BetterLegacy.Core.Helpers
                 else
                     vector = new Vector2(modifier.GetFloat(0, 0f, variables), modifier.GetFloat(1, 0f, variables));
 
+                var duration = modifier.GetFloat(3, 0f, variables);
                 bool relative = modifier.GetBool(4, false, variables);
                 if (!player || !player.RuntimePlayer)
                     return;
 
                 var tf = player.RuntimePlayer.rb.transform;
-                if (modifier.constant)
-                    tf.localPosition = vector;
+                if (duration == 0f || modifier.constant)
+                {
+                    if (relative)
+                        tf.localPosition += (Vector3)vector;
+                    else
+                        tf.localPosition = vector;
+                }
                 else
                 {
                     string easing = modifier.GetValue(3, variables);
@@ -1157,8 +1163,13 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var tf = player.RuntimePlayer.rb.transform;
-            if (modifier.constant)
-                tf.localPosition = vector;
+            if (duration == 0f || modifier.constant)
+            {
+                if (relative)
+                    tf.localPosition += (Vector3)vector;
+                else
+                    tf.localPosition = vector;
+            }
             else
             {
                 var animation = new RTAnimation("Player Move");
@@ -1839,6 +1850,50 @@ namespace BetterLegacy.Core.Helpers
             });
         }
         
+        public static void playerDrag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var usePosition = modifier.GetBool(0, false, variables);
+            var useScale = modifier.GetBool(1, false, variables);
+            var useRotation = modifier.GetBool(2, false, variables);
+
+            var prevPos = !usePosition ? Vector3.zero : beatmapObject.GetFullPosition();
+            var prevSca = !useScale ? Vector3.zero : beatmapObject.GetFullScale();
+            var prevRot = !useRotation ? Vector3.zero : beatmapObject.GetFullRotation(true);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+
+                var player = PlayerManager.GetClosestPlayer(pos);
+                if (!player || !player.RuntimePlayer || !player.RuntimePlayer.rb)
+                    return;
+
+                var rb = player.RuntimePlayer.rb;
+
+                Vector2 distance = Vector2.zero;
+                if (usePosition)
+                    distance = pos - prevPos;
+                if (useScale)
+                {
+                    var playerDistance = Vector3.Distance(pos, rb.position);
+
+                    var sca = beatmapObject.GetFullScale();
+                    distance += (Vector2)(sca - prevSca) * playerDistance;
+                }
+                if (useRotation)
+                {
+                    var rot = beatmapObject.GetFullRotation(true);
+                    distance += (Vector2)(RTMath.Rotate(rb.position + (Vector2)pos, rot.z) - RTMath.Rotate(rb.position + (Vector2)pos, prevRot.z));
+                }
+
+                rb.position += distance;
+            });
+        }
+
         public static void playerBoost(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (modifier.constant || reference is not BeatmapObject beatmapObject)
@@ -2299,6 +2354,11 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
+        public static void whiteHole(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            // todo
+        }
+
         #endregion
 
         #region Mouse Cursor
@@ -2466,7 +2526,13 @@ namespace BetterLegacy.Core.Helpers
         public static void getMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not IEvaluatable evaluatable)
+            {
+                var numberVariables = new Dictionary<string, float>();
+                ModifiersHelper.SetVariables(variables, numberVariables);
+
+                variables[modifier.GetValue(0)] = RTMath.Parse(modifier.GetValue(1, variables), numberVariables).ToString();
                 return;
+            }
 
             try
             {
@@ -2864,8 +2930,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (modifier.TryGetResult(out Dictionary<string, string> otherVariables))
                     {
-                        foreach (var variable in sendVariables)
-                            otherVariables[variable.Key] = variable.Value;
+                        otherVariables.InsertRange(variables);
                         return;
                     }
 
@@ -2875,6 +2940,18 @@ namespace BetterLegacy.Core.Helpers
         }
 
         public static void clearLocalVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => variables.Clear();
+
+        public static void storeLocalVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (modifier.TryGetResult(out Dictionary<string, string> storedVariables))
+            {
+                variables.InsertRange(storedVariables);
+                return;
+            }
+
+            var storeVariables = new Dictionary<string, string>(variables);
+            modifier.Result = storeVariables;
+        }
 
         // object variable
         public static void addVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6150,8 +6227,11 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
 
         public static void spawnPrefabOffset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6183,8 +6263,11 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
         
         public static void spawnPrefabOffsetOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6219,8 +6302,11 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
 
         public static void spawnPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6248,8 +6334,11 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
 
         public static void spawnMultiPrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6285,8 +6374,11 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
         
         public static void spawnMultiPrefabOffset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6324,8 +6416,11 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
         
         public static void spawnMultiPrefabOffsetOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6366,8 +6461,11 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
 
         public static void spawnMultiPrefabCopy(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6401,8 +6499,11 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-            runtimeLevel?.UpdatePrefab(prefabObject);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                runtimeLevel?.UpdatePrefab(prefabObject);
+            });
         }
 
         public static void clearSpawnedPrefabs(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6410,41 +6511,44 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(0, variables));
+            var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(0, variables)).ToList();
 
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
-
-            foreach (var modifyable in modifyables)
+            RTLevel.Current.postTick.Enqueue(() =>
             {
-                for (int j = 0; j < modifyable.Modifiers.Count; j++)
+                RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+
+                foreach (var modifyable in modifyables)
                 {
-                    var otherModifier = modifyable.Modifiers[j];
-
-                    if (otherModifier.TryGetResult(out PrefabObject prefabObjectResult))
+                    for (int j = 0; j < modifyable.Modifiers.Count; j++)
                     {
-                        runtimeLevel?.UpdatePrefab(prefabObjectResult, false);
+                        var otherModifier = modifyable.Modifiers[j];
 
-                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObjectResult.id);
+                        if (otherModifier.TryGetResult(out PrefabObject prefabObjectResult))
+                        {
+                            runtimeLevel?.UpdatePrefab(prefabObjectResult, false);
 
+                            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObjectResult.id);
+
+                            otherModifier.Result = null;
+                            continue;
+                        }
+
+                        if (!otherModifier.TryGetResult(out List<PrefabObject> result))
+                            continue;
+
+                        for (int k = 0; k < result.Count; k++)
+                        {
+                            var prefabObject = result[k];
+
+                            runtimeLevel?.UpdatePrefab(prefabObject, false);
+                            GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+                        }
+
+                        result.Clear();
                         otherModifier.Result = null;
-                        continue;
                     }
-
-                    if (!otherModifier.TryGetResult(out List<PrefabObject> result))
-                        continue;
-
-                    for (int k = 0; k < result.Count; k++)
-                    {
-                        var prefabObject = result[k];
-
-                        runtimeLevel?.UpdatePrefab(prefabObject, false);
-                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-                    }
-
-                    result.Clear();
-                    otherModifier.Result = null;
                 }
-            }
+            });
         }
 
         public static void setPrefabTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6906,6 +7010,13 @@ namespace BetterLegacy.Core.Helpers
                     string.Format(modifier.value, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                     string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                     discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
+        }
+
+        public static void callModifierBlock(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var name = modifier.GetValue(0, variables);
+            if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock<IModifierReference> modifierBlock))
+                modifierBlock.Run(reference, variables);
         }
 
         #endregion
