@@ -1,4 +1,10 @@
-﻿# snapshot-2025.7.3 - (pre-1.8.0) [Jul 24, 2025]
+﻿# ???
+
+## Fixes
+- Fixed some issues related to recursive prefabs. Objects spawned from the prefab should now reference the prefabs' runtime instead of the main runtime.
+- Optimized hidden prefab objects in editor.
+
+# snapshot-2025.7.3 - (pre-1.8.0) [Jul 24, 2025]
 
 ## Features
 ### Core
