@@ -34,6 +34,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             Position = transform.position;
             Scale = new Vector3(transform.scale.x, transform.scale.y, 1f);
             Rotation = new Vector3(0f, 0f, transform.rotation);
+
+            UpdateActive();
         }
 
         /// <summary>
@@ -73,7 +75,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <summary>
         /// If the Runtime Prefab Object is currently active.
         /// </summary>
-        public bool IsActive => EngineActive && Active;
+        public bool IsActive => EngineActive && Active && !PrefabObject.editorData.hidden;
         /// <summary>
         /// If the Runtime Prefab Object is currently active.
         /// </summary>

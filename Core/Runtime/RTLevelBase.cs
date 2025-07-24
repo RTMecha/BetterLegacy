@@ -1279,19 +1279,7 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case PrefabObjectContext.HIDE: {
-                        foreach (var expanded in prefabObject.expandedObjects)
-                        {
-                            if (expanded is BeatmapObject beatmapObject)
-                            {
-                                beatmapObject.editorData.hidden = prefabObject.editorData.hidden;
-                                UpdateObject(beatmapObject, ObjectContext.HIDE);
-                            }
-                            if (expanded is BackgroundObject backgroundObject)
-                            {
-                                backgroundObject.editorData.hidden = prefabObject.editorData.hidden;
-                                UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.HIDE);
-                            }
-                        }
+                        runtimePrefabObject.UpdateActive();
 
                         break;
                     }
