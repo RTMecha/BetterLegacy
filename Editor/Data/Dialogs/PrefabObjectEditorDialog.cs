@@ -15,7 +15,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class PrefabObjectEditorDialog : EditorDialog, ITagDialog
+    public class PrefabObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog
     {
         public PrefabObjectEditorDialog() : base(PREFAB_SELECTOR) { }
 
@@ -30,6 +30,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public RectTransform TagsScrollView { get; set; }
 
         public RectTransform TagsContent { get; set; }
+
+        #endregion
+
+        #region Parent
+
+        public FunctionButtonStorage ParentButton { get; set; }
+        public HoverTooltip ParentInfo { get; set; }
+        public Button ParentMoreButton { get; set; }
+        public GameObject ParentSettingsParent { get; set; }
+        public Toggle ParentDesyncToggle { get; set; }
+        public Button ParentSearchButton { get; set; }
+        public Button ParentClearButton { get; set; }
+        public Button ParentPickerButton { get; set; }
+
+        public List<ParentSetting> ParentSettings { get; set; } = new List<ParentSetting>();
 
         #endregion
 
@@ -286,57 +301,75 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Parent
 
+            //public FunctionButtonStorage ParentButton { get; set; }
+            //public HoverTooltip ParentInfo { get; set; }
+            //public Button ParentMoreButton { get; set; }
+            //public GameObject ParentSettingsParent { get; set; }
+            //public Toggle ParentDesyncToggle { get; set; }
+            //public Button ParentSearchButton { get; set; }
+            //public Button ParentClearButton { get; set; }
+            //public Button ParentPickerButton { get; set; }
+
+            //public List<ParentSetting> ParentSettings { get; set; } = new List<ParentSetting>();
+
             RTEditor.GenerateLabels("parent label", LeftContent, new Label("Parent Object"));
 
             var parentUI = ObjEditor.inst.ObjectView.transform.Find("parent").gameObject.Duplicate(LeftContent, "parent");
-            var parent_more = ObjEditor.inst.ObjectView.transform.Find("parent_more").gameObject.Duplicate(LeftContent, "parent_more");
+            ParentSettingsParent = ObjEditor.inst.ObjectView.transform.Find("parent_more").gameObject.Duplicate(LeftContent, "parent_more");
 
-            var parentTextText = parentUI.transform.Find("text/text").GetComponent<Text>();
-            var parentText = parentUI.transform.Find("text").GetComponent<Button>();
-            var parentMore = parentUI.transform.Find("more").GetComponent<Button>();
-            var parentParent = parentUI.transform.Find("parent").GetComponent<Button>();
-            var parentClear = parentUI.transform.Find("clear parent").GetComponent<Button>();
-            var parentPicker = parentUI.transform.Find("parent picker").GetComponent<Button>();
-            var spawnOnce = parent_more.transform.Find("spawn_once").GetComponent<Toggle>();
+            ParentButton = parentUI.transform.Find("text").GetComponent<FunctionButtonStorage>();
+            ParentInfo = ParentButton.label.gameObject.GetOrAddComponent<HoverTooltip>();
+            if (ParentInfo.tooltipLangauges.IsEmpty())
+                ParentInfo.tooltipLangauges.Add(new Tooltip() { language = Language.English, });
+            ParentMoreButton = parentUI.transform.Find("more").GetComponent<Button>();
+            ParentSearchButton = parentUI.transform.Find("parent").GetComponent<Button>();
+            ParentClearButton = parentUI.transform.Find("clear parent").GetComponent<Button>();
+            ParentPickerButton = parentUI.transform.Find("parent picker").GetComponent<Button>();
+            ParentDesyncToggle = ParentSettingsParent.transform.Find("spawn_once").GetComponent<Toggle>();
 
-            EditorThemeManager.AddGraphic(parentParent.image, ThemeGroup.Function_3, true);
-            EditorThemeManager.AddGraphic(parentParent.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
-            EditorThemeManager.AddSelectable(parentClear, ThemeGroup.Close);
-            EditorThemeManager.AddGraphic(parentClear.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-            EditorThemeManager.AddSelectable(parentPicker, ThemeGroup.Picker);
-            EditorThemeManager.AddGraphic(parentPicker.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Picker_Icon);
+            EditorThemeManager.AddGraphic(ParentSearchButton.image, ThemeGroup.Function_3, true);
+            EditorThemeManager.AddGraphic(ParentSearchButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
+            EditorThemeManager.AddSelectable(ParentClearButton, ThemeGroup.Close);
+            EditorThemeManager.AddGraphic(ParentClearButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+            EditorThemeManager.AddSelectable(ParentPickerButton, ThemeGroup.Picker);
+            EditorThemeManager.AddGraphic(ParentPickerButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Picker_Icon);
 
-            EditorThemeManager.AddSelectable(parentText, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(parentTextText, ThemeGroup.Function_2_Text);
-            EditorThemeManager.AddSelectable(parentMore, ThemeGroup.Function_2, false);
+            EditorThemeManager.AddSelectable(ParentButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(ParentButton.label, ThemeGroup.Function_2_Text);
+            EditorThemeManager.AddSelectable(ParentMoreButton, ThemeGroup.Function_2, false);
 
-            EditorThemeManager.AddToggle(spawnOnce, graphic: spawnOnce.transform.Find("Text").GetComponent<Text>());
+            EditorThemeManager.AddToggle(ParentDesyncToggle, graphic: ParentDesyncToggle.transform.Find("Text").GetComponent<Text>());
 
-            var array = new string[] { "pos", "sca", "rot", };
             for (int i = 0; i < 3; i++)
             {
-                var parentSetting = parent_more.transform.GetChild(i + 2);
-
-                var additive = parentSetting.Find($"{array[i]}_add");
-                var parallax = parentSetting.Find($"{array[i]}_parallax");
-
-                if (parentSetting.Find("text"))
+                var name = i switch
                 {
-                    var text = parentSetting.Find("text").GetComponent<Text>();
-                    text.fontSize = 19;
-                    EditorThemeManager.AddLightText(text);
-                }
+                    0 => "pos",
+                    1 => "sca",
+                    _ => "rot"
+                };
 
-                var parentSettingType = parentSetting.Find(array[i]);
-                var parentSettingOffset = parentSetting.Find($"{array[i]}_offset");
+                var row = ParentSettingsParent.transform.GetChild(i + 2);
+                var parentSetting = new ParentSetting()
+                {
+                    row = row,
+                    label = row.Find("text").GetComponent<Text>(),
+                    activeToggle = row.Find(name).GetComponent<Toggle>(),
+                    offsetField = row.Find($"{name}_offset").GetComponent<InputField>(),
+                    additiveToggle = row.Find($"{name}_add").GetComponent<Toggle>(),
+                    parallaxField = row.Find($"{name}_parallax").GetComponent<InputField>(),
+                };
+                ParentSettings.Add(parentSetting);
 
-                EditorThemeManager.AddToggle(parentSettingType.GetComponent<Toggle>(), ThemeGroup.Background_1);
-                EditorThemeManager.AddGraphic(parentSettingType.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
-                EditorThemeManager.AddInputField(parentSettingOffset.GetComponent<InputField>());
-                EditorThemeManager.AddToggle(additive.GetComponent<Toggle>(), ThemeGroup.Background_1);
-                var additiveImage = additive.transform.Find("Image").GetComponent<Image>();
-                EditorThemeManager.AddGraphic(additiveImage, ThemeGroup.Toggle_1_Check);
-                EditorThemeManager.AddInputField(parallax.GetComponent<InputField>());
+                parentSetting.label.fontSize = 19;
+                EditorThemeManager.AddLightText(parentSetting.label);
+
+                EditorThemeManager.AddToggle(parentSetting.activeToggle, ThemeGroup.Background_1);
+                EditorThemeManager.AddGraphic(parentSetting.activeToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                EditorThemeManager.AddInputField(parentSetting.offsetField);
+                EditorThemeManager.AddToggle(parentSetting.additiveToggle, ThemeGroup.Background_1);
+                EditorThemeManager.AddGraphic(parentSetting.additiveToggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                EditorThemeManager.AddInputField(parentSetting.parallaxField);
             }
 
             #endregion

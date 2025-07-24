@@ -4977,6 +4977,216 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
         }
 
+        public void RenderParent(IParentable parentable, IParentDialog dialog)
+        {
+            string parent = parentable.Parent;
+
+            dialog.ParentButton.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
+
+            dialog.ParentSearchButton.onClick.NewListener(() => ObjectEditor.inst.ShowParentSearch(EditorTimeline.inst.GetTimelineObject(parentable as IEditable)));
+            var parentSearchContextMenu = dialog.ParentSearchButton.gameObject.GetOrAddComponent<ContextClickable>();
+            parentSearchContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Open Parent Popup", () => ObjectEditor.inst.ShowParentSearch(EditorTimeline.inst.GetTimelineObject(parentable as IEditable))),
+                    new ButtonFunction("Parent to Camera", () =>
+                    {
+                        parentable.Parent = BeatmapObject.CAMERA_PARENT;
+                        parentable.UpdateParentChain();
+                        RenderParent(parentable, dialog);
+                    })
+                    );
+            };
+
+            dialog.ParentPickerButton.onClick.NewListener(() => parentPickerEnabled = true);
+
+            dialog.ParentClearButton.gameObject.SetActive(!string.IsNullOrEmpty(parent));
+
+            dialog.ParentSettingsParent.transform.AsRT().sizeDelta = new Vector2(351f, ShowModdedUI ? 152f : 112f);
+
+            var parentContextMenu = dialog.ParentButton.gameObject.GetOrAddComponent<ContextClickable>();
+            parentContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right || parentable is not BeatmapObject beatmapObject)
+                    return;
+
+                var list = new List<ButtonFunction>();
+
+                if (!string.IsNullOrEmpty(parentable.Parent))
+                {
+                    var parentChain = beatmapObject.GetParentChain();
+                    if (parentChain.Count > 0)
+                        list.Add(new ButtonFunction("View Parent Chain", () =>
+                        {
+                            ObjectEditor.inst.ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: parentChain);
+                        }));
+                }
+
+                if (GameData.Current.beatmapObjects.TryFindAll(x => x.Parent == beatmapObject.id, out List<BeatmapObject> findAll))
+                {
+                    var childTree = beatmapObject.GetChildTree();
+                    if (childTree.Count > 0)
+                        list.Add(new ButtonFunction("View Child Tree", () =>
+                        {
+                            ObjectEditor.inst.ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: childTree);
+                        }));
+                }
+
+                EditorContextMenu.inst.ShowContextMenu(list);
+            };
+
+            if (string.IsNullOrEmpty(parent))
+            {
+                dialog.ParentButton.button.interactable = false;
+                dialog.ParentMoreButton.interactable = false;
+                dialog.ParentSettingsParent.gameObject.SetActive(false);
+                dialog.ParentButton.label.text = "No Parent Object";
+
+                dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
+                dialog.ParentButton.button.onClick.ClearAll();
+                dialog.ParentMoreButton.onClick.ClearAll();
+                dialog.ParentClearButton.onClick.ClearAll();
+
+                return;
+            }
+
+            string p = null;
+
+            if (GameData.Current.beatmapObjects.TryFindIndex(x => x.id == parent, out int pa))
+            {
+                p = GameData.Current.beatmapObjects[pa].name;
+                if (parentable is BeatmapObject beatmapObject)
+                    dialog.ParentInfo.tooltipLangauges[0].hint = string.Format("Parent chain count: [{0}]\n(Inclusive)", beatmapObject.GetParentChain().Count);
+            }
+            else if (parent == BeatmapObject.CAMERA_PARENT)
+            {
+                p = "[CAMERA]";
+                dialog.ParentInfo.tooltipLangauges[0].hint = "Object parented to the camera.";
+            }
+
+            dialog.ParentButton.button.interactable = p != null;
+            dialog.ParentMoreButton.interactable = p != null;
+
+            dialog.ParentSettingsParent.gameObject.SetActive(p != null && ObjEditor.inst.advancedParent);
+
+            dialog.ParentClearButton.onClick.NewListener(() =>
+            {
+                if (parentable.CustomParent != null)
+                {
+                    parentable.CustomParent = null;
+                    EditorManager.inst.DisplayNotification("Removed custom parent!", 1.5f, EditorManager.NotificationType.Success);
+                }
+                else
+                    parentable.Parent = string.Empty;
+                parentable.UpdateParentChain();
+                RenderParent(parentable, dialog);
+            });
+
+            if (p == null)
+            {
+                dialog.ParentButton.label.text = "No Parent Object";
+                dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
+                dialog.ParentButton.button.onClick.ClearAll();
+                dialog.ParentMoreButton.onClick.ClearAll();
+
+                return;
+            }
+
+            dialog.ParentButton.label.text = p;
+
+            dialog.ParentButton.button.onClick.NewListener(() =>
+            {
+                if (GameData.Current.beatmapObjects.Find(x => x.id == parent) != null &&
+                    parent != BeatmapObject.CAMERA_PARENT &&
+                    EditorTimeline.inst.timelineObjects.TryFind(x => x.ID == parent, out TimelineObject timelineObject))
+
+                    EditorTimeline.inst.SetCurrentObject(timelineObject);
+                else if (parent == BeatmapObject.CAMERA_PARENT)
+                {
+                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Events);
+                    EventEditor.inst.SetCurrentEvent(0, GameData.Current.ClosestEventKeyframe(0));
+                }
+            });
+
+            dialog.ParentMoreButton.onClick.NewListener(() =>
+            {
+                ObjEditor.inst.advancedParent = !ObjEditor.inst.advancedParent;
+                dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
+            });
+            dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
+
+            dialog.ParentDesyncToggle.gameObject.SetActive(ShowModdedUI);
+            if (ShowModdedUI)
+            {
+                dialog.ParentDesyncToggle.isOn = parentable.ParentDesync;
+                dialog.ParentDesyncToggle.onValueChanged.NewListener(_val =>
+                {
+                    parentable.ParentDesync = _val;
+                    parentable.UpdateParentChain();
+                });
+            }
+
+            for (int i = 0; i < dialog.ParentSettings.Count; i++)
+            {
+                var parentSetting = dialog.ParentSettings[i];
+
+                var index = i;
+
+                // Parent Type
+                parentSetting.activeToggle.SetIsOnWithoutNotify(parentable.GetParentType(i));
+                parentSetting.activeToggle.onValueChanged.NewListener(_val =>
+                {
+                    parentable.SetParentType(index, _val);
+                    parentable.UpdateParentChain();
+                });
+
+                // Parent Offset
+                var lel = parentSetting.offsetField.GetComponent<LayoutElement>();
+                lel.minWidth = RTEditor.ShowModdedUI ? 64f : 128f;
+                lel.preferredWidth = RTEditor.ShowModdedUI ? 64f : 128f;
+                parentSetting.offsetField.SetTextWithoutNotify(parentable.GetParentOffset(i).ToString());
+                parentSetting.offsetField.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        parentable.SetParentOffset(index, num);
+                        parentable.UpdateParentChain();
+                    }
+                });
+
+                TriggerHelper.AddEventTriggers(parentSetting.offsetField.gameObject, TriggerHelper.ScrollDelta(parentSetting.offsetField));
+
+                parentSetting.additiveToggle.onValueChanged.ClearAll();
+                parentSetting.parallaxField.onValueChanged.ClearAll();
+                parentSetting.additiveToggle.gameObject.SetActive(ShowModdedUI);
+                parentSetting.parallaxField.gameObject.SetActive(ShowModdedUI);
+
+                if (!ShowModdedUI)
+                    continue;
+
+                parentSetting.additiveToggle.SetIsOnWithoutNotify(parentable.GetParentAdditive(i));
+                parentSetting.additiveToggle.onValueChanged.AddListener(_val =>
+                {
+                    parentable.SetParentAdditive(index, _val);
+                    parentable.UpdateParentChain();
+                });
+                parentSetting.parallaxField.SetTextWithoutNotify(parentable.ParentParallax[index].ToString());
+                parentSetting.parallaxField.onValueChanged.NewListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        parentable.ParentParallax[index] = num;
+                        parentable.UpdateParentChain();
+                    }
+                });
+
+                TriggerHelper.AddEventTriggers(parentSetting.parallaxField.gameObject, TriggerHelper.ScrollDelta(parentSetting.parallaxField));
+            }
+        }
+
         public void ShowFontSelector(Action<string> onFontSelected)
         {
             FontSelectorPopup.Open();

@@ -1937,228 +1937,7 @@ namespace BetterLegacy.Editor.Managers
         /// Renders all Parent UI.
         /// </summary>
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
-        public void RenderParent(BeatmapObject beatmapObject)
-        {
-            string parent = beatmapObject.Parent;
-            
-            Dialog.ParentButton.transform.AsRT().sizeDelta = new Vector2(!string.IsNullOrEmpty(parent) ? 201f : 241f, 32f);
-
-            Dialog.ParentSearchButton.onClick.NewListener(ShowParentSearch);
-            var parentSearchContextMenu = Dialog.ParentSearchButton.gameObject.GetOrAddComponent<ContextClickable>();
-            parentSearchContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Open Parent Popup", () => ShowParentSearch(EditorTimeline.inst.GetTimelineObject(beatmapObject))),
-                    new ButtonFunction("Parent to Camera", () =>
-                    {
-                        beatmapObject.Parent = BeatmapObject.CAMERA_PARENT;
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                        RenderParent(beatmapObject);
-                    })
-                    );
-            };
-
-            Dialog.ParentPickerButton.onClick.NewListener(() => RTEditor.inst.parentPickerEnabled = true);
-
-            Dialog.ParentClearButton.gameObject.SetActive(!string.IsNullOrEmpty(parent));
-
-            Dialog.ParentSettingsParent.transform.AsRT().sizeDelta = new Vector2(351f, RTEditor.ShowModdedUI ? 152f : 112f);
-
-            var parentContextMenu = Dialog.ParentButton.gameObject.GetOrAddComponent<ContextClickable>();
-            parentContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                var list = new List<ButtonFunction>();
-
-                if (!string.IsNullOrEmpty(beatmapObject.Parent))
-                {
-                    var parentChain = beatmapObject.GetParentChain();
-                    if (parentChain.Count > 0)
-                        list.Add(new ButtonFunction("View Parent Chain", () =>
-                        {
-                            ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: parentChain);
-                        }));
-                }
-
-                if (GameData.Current.beatmapObjects.TryFindAll(x => x.Parent == beatmapObject.id, out List<BeatmapObject> findAll))
-                {
-                    var childTree = beatmapObject.GetChildTree();
-                    if (childTree.Count > 0)
-                        list.Add(new ButtonFunction("View Child Tree", () =>
-                        {
-                            ShowObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)), beatmapObjects: childTree);
-                        }));
-                }
-
-                EditorContextMenu.inst.ShowContextMenu(list);
-            };
-
-            if (string.IsNullOrEmpty(parent))
-            {
-                Dialog.ParentButton.button.interactable = false;
-                Dialog.ParentMoreButton.interactable = false;
-                Dialog.ParentSettingsParent.gameObject.SetActive(false);
-                Dialog.ParentButton.label.text = "No Parent Object";
-
-                Dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
-                Dialog.ParentButton.button.onClick.ClearAll();
-                Dialog.ParentMoreButton.onClick.ClearAll();
-                Dialog.ParentClearButton.onClick.ClearAll();
-
-                return;
-            }
-
-            string p = null;
-
-            if (GameData.Current.beatmapObjects.TryFindIndex(x => x.id == parent, out int pa))
-            {
-                p = GameData.Current.beatmapObjects[pa].name;
-                Dialog.ParentInfo.tooltipLangauges[0].hint = string.Format("Parent chain count: [{0}]\n(Inclusive)", beatmapObject.GetParentChain().Count);
-            }
-            else if (parent == BeatmapObject.CAMERA_PARENT)
-            {
-                p = "[CAMERA]";
-                Dialog.ParentInfo.tooltipLangauges[0].hint = "Object parented to the camera.";
-            }
-
-            Dialog.ParentButton.button.interactable = p != null;
-            Dialog.ParentMoreButton.interactable = p != null;
-
-            Dialog.ParentSettingsParent.gameObject.SetActive(p != null && ObjEditor.inst.advancedParent);
-
-            Dialog.ParentClearButton.onClick.NewListener(() =>
-            {
-                if (beatmapObject.customParent != null)
-                {
-                    beatmapObject.customParent = null;
-                    EditorManager.inst.DisplayNotification("Removed custom parent!", 1.5f, EditorManager.NotificationType.Success);
-                }
-                else
-                    beatmapObject.Parent = string.Empty;
-
-                // Since parent has no affect on the timeline object, we will only need to update the physical object.
-                if (UpdateObjects)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-
-                RenderParent(beatmapObject);
-            });
-
-            if (p == null)
-            {
-                Dialog.ParentButton.label.text = "No Parent Object";
-                Dialog.ParentInfo.tooltipLangauges[0].hint = string.IsNullOrEmpty(parent) ? "Object not parented." : "No parent found.";
-                Dialog.ParentButton.button.onClick.ClearAll();
-                Dialog.ParentMoreButton.onClick.ClearAll();
-
-                return;
-            }
-
-            Dialog.ParentButton.label.text = p;
-
-            Dialog.ParentButton.button.onClick.NewListener(() =>
-            {
-                if (GameData.Current.beatmapObjects.Find(x => x.id == parent) != null &&
-                    parent != BeatmapObject.CAMERA_PARENT &&
-                    EditorTimeline.inst.timelineObjects.TryFind(x => x.ID == parent, out TimelineObject timelineObject))
-
-                    EditorTimeline.inst.SetCurrentObject(timelineObject);
-                else if (parent == BeatmapObject.CAMERA_PARENT)
-                {
-                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Events);
-                    EventEditor.inst.SetCurrentEvent(0, GameData.Current.ClosestEventKeyframe(0));
-                }
-            });
-
-            Dialog.ParentMoreButton.onClick.NewListener(() =>
-            {
-                ObjEditor.inst.advancedParent = !ObjEditor.inst.advancedParent;
-                Dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
-            });
-            Dialog.ParentSettingsParent.gameObject.SetActive(ObjEditor.inst.advancedParent);
-
-            Dialog.ParentDesyncToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
-            if (RTEditor.ShowModdedUI)
-            {
-                Dialog.ParentDesyncToggle.isOn = beatmapObject.desync;
-                Dialog.ParentDesyncToggle.onValueChanged.NewListener(_val =>
-                {
-                    beatmapObject.desync = _val;
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                });
-            }
-
-            for (int i = 0; i < Dialog.ParentSettings.Count; i++)
-            {
-                var parentSetting = Dialog.ParentSettings[i];
-
-                var index = i;
-
-                // Parent Type
-                parentSetting.activeToggle.SetIsOnWithoutNotify(beatmapObject.GetParentType(i));
-                parentSetting.activeToggle.onValueChanged.NewListener(_val =>
-                {
-                    beatmapObject.SetParentType(index, _val);
-
-                    // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                });
-
-                // Parent Offset
-                var lel = parentSetting.offsetField.GetComponent<LayoutElement>();
-                lel.minWidth = RTEditor.ShowModdedUI ? 64f : 128f;
-                lel.preferredWidth = RTEditor.ShowModdedUI ? 64f : 128f;
-                parentSetting.offsetField.SetTextWithoutNotify(beatmapObject.GetParentOffset(i).ToString());
-                parentSetting.offsetField.onValueChanged.NewListener(_val =>
-                {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        beatmapObject.SetParentOffset(index, num);
-
-                        // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        if (UpdateObjects)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                    }
-                });
-
-                TriggerHelper.AddEventTriggers(parentSetting.offsetField.gameObject, TriggerHelper.ScrollDelta(parentSetting.offsetField));
-
-                parentSetting.additiveToggle.onValueChanged.ClearAll();
-                parentSetting.parallaxField.onValueChanged.ClearAll();
-                parentSetting.additiveToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
-                parentSetting.parallaxField.gameObject.SetActive(RTEditor.ShowModdedUI);
-
-                if (!RTEditor.ShowModdedUI)
-                    continue;
-
-                parentSetting.additiveToggle.SetIsOnWithoutNotify(beatmapObject.GetParentAdditive(i));
-                parentSetting.additiveToggle.onValueChanged.AddListener(_val =>
-                {
-                    beatmapObject.SetParentAdditive(index, _val);
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                });
-                parentSetting.parallaxField.SetTextWithoutNotify(beatmapObject.parallaxSettings[index].ToString());
-                parentSetting.parallaxField.onValueChanged.NewListener(_val =>
-                {
-                    if (float.TryParse(_val, out float num))
-                    {
-                        beatmapObject.parallaxSettings[index] = num;
-
-                        // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
-                        if (UpdateObjects)
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                    }
-                });
-
-                TriggerHelper.AddEventTriggers(parentSetting.parallaxField.gameObject, TriggerHelper.ScrollDelta(parentSetting.parallaxField));
-            }
-        }
+        public void RenderParent(BeatmapObject beatmapObject) => RTEditor.inst.RenderParent(beatmapObject, Dialog);
 
         /// <summary>
         /// Renders the Origin InputFields.
@@ -5123,18 +4902,9 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var timelineObject in list)
                 {
                     if (timelineObject.isPrefabObject)
-                    {
-                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                        prefabObject.parent = "";
-                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
-                        RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
-                    }
+                        timelineObject.GetData<PrefabObject>().SetParent(string.Empty, false);
                     if (timelineObject.isBeatmapObject)
-                    {
-                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                        beatmapObject.Parent = "";
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
-                    }
+                        timelineObject.GetData<BeatmapObject>().SetParent(string.Empty, false);
                 }
 
                 RTLevel.Current?.RecalculateObjectStates();
@@ -5161,17 +4931,9 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in list)
                     {
                         if (timelineObject.isPrefabObject)
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.parent = BeatmapObject.CAMERA_PARENT;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
-                        }
+                            timelineObject.GetData<PrefabObject>().SetParent(BeatmapObject.CAMERA_PARENT, false);
                         if (timelineObject.isBeatmapObject)
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.Parent = BeatmapObject.CAMERA_PARENT;
-                            RTLevel.Current?.UpdateObject(bm, ObjectContext.PARENT_CHAIN);
-                        }
+                            timelineObject.GetData<BeatmapObject>().SetParent(BeatmapObject.CAMERA_PARENT, false);
                     }
 
                     RTLevel.Current?.RecalculateObjectStates();
@@ -5203,8 +4965,7 @@ namespace BetterLegacy.Editor.Managers
                 var objectToParentButton = objectToParent.GetComponent<Button>();
 
                 objectToParentText.text = s;
-                objectToParentButton.onClick.ClearAll();
-                objectToParentButton.onClick.AddListener(() =>
+                objectToParentButton.onClick.NewListener(() =>
                 {
                     string id = obj.id;
 
@@ -5212,21 +4973,18 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in list)
                     {
                         if (timelineObject.isPrefabObject)
-                        {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.parent = id;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
-                        }
+                            timelineObject.GetData<PrefabObject>().SetParent(obj, false);
                         if (timelineObject.isBeatmapObject)
-                            timelineObject.GetData<BeatmapObject>().SetParent(obj);
+                            timelineObject.GetData<BeatmapObject>().SetParent(obj, false);
                     }
 
                     RTLevel.Current?.RecalculateObjectStates();
 
                     RTEditor.inst.ParentSelectorPopup.Close();
-
+                    if (list.Count == 1 && timelineObject.isBeatmapObject)
+                        RenderDialog(timelineObject.GetData<BeatmapObject>());
                     if (list.Count == 1 && timelineObject.isPrefabObject)
-                        RTPrefabEditor.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
+                        RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
 
                     Debug.Log($"{EditorManager.inst.className}Set Parent ID: {id}");
                 });

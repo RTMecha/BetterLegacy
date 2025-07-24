@@ -26,7 +26,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents the object editor dialog for editing a <see cref="Core.Data.Beatmap.BeatmapObject"/>.
     /// </summary>
-    public class ObjectEditorDialog : EditorDialog, ITagDialog
+    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog
     {
         public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
 
@@ -1577,13 +1577,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 };
 
                 var row = ParentSettingsParent.transform.Find($"{name}_row");
-                var parentSetting = new ParentSetting();
-                parentSetting.row = row;
-                parentSetting.label = row.Find("text").GetComponent<Text>();
-                parentSetting.activeToggle = row.Find(name).GetComponent<Toggle>();
-                parentSetting.offsetField = row.Find($"{name}_offset").GetComponent<InputField>();
-                parentSetting.additiveToggle = row.Find($"{name}_add").GetComponent<Toggle>();
-                parentSetting.parallaxField = row.Find($"{name}_parallax").GetComponent<InputField>();
+                var parentSetting = new ParentSetting()
+                {
+                    row = row,
+                    label = row.Find("text").GetComponent<Text>(),
+                    activeToggle = row.Find(name).GetComponent<Toggle>(),
+                    offsetField = row.Find($"{name}_offset").GetComponent<InputField>(),
+                    additiveToggle = row.Find($"{name}_add").GetComponent<Toggle>(),
+                    parallaxField = row.Find($"{name}_parallax").GetComponent<InputField>(),
+                };
                 ParentSettings.Add(parentSetting);
             }
 
