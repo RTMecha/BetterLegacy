@@ -1,10 +1,13 @@
-﻿# ???
+﻿# snapshot-2025.7.2 - (pre-1.8.0) [Jul 24, 2025]
 
 ## Features
 ### Core
 - Added "Allow Player Model Controls" to the Player settings. This allows player models to retain their control values, while making regular levels fair again.
 - Implemented Modifiers for Prefab Objects!
 - Added spawnPrefabCopy modifiers. These search for an existing Prefab Object and if one is found, copies its data.
+- Added setPrefabTime modifier. This overrides the Prefab Objects' runtime time and sets a custom time.
+- Added playerCollideIndex modifier. Acts like the regular playerCollide modifier except for a specific player.
+- Tail parts can now be added / removed in player models.
 
 ### Editor
 - Copied Prefab Instance data now saves to and loads from the editor.lse file.
@@ -14,8 +17,10 @@
 - Overhauled modifier system to be a lot more unified than before.
 - Player Model & Player Editor code has been heavily cleaned up.
 - Beware, some stuff might be broken and definitely will not be compatible with 1.7.x and below.
-- Reworked Prefab Objects to have their own runtime system.
+- Reworked Prefab Objects to have their own runtime system. Using prefabs should now be a whole lot more optimized.
 - Modifier JSON format has been tweaked. 1.7.x should still be compatible with this change as it was accounted for a while ago.
+- Some group modifiers should now be compatible with more object types.
+- The "Object Group" value in modifiers can be left empty to specify the object the modifier is stored in.
 
 ------------------------------------------------------------------------------------------
 
