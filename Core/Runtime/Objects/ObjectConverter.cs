@@ -405,7 +405,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var renderers = new List<Renderer>();
 
-            var parent = BackgroundManager.inst.backgroundParent;
+            var parent = runtimeLevel.Parent;
 
             if (!string.IsNullOrEmpty(backgroundObject.layer) &&
                 runtimeLevel.backgroundLayers.TryFind(x => x.backgroundLayer && x.backgroundLayer.id == backgroundObject.layer, out BackgroundLayerObject backgroundLayerObject) &&
@@ -477,7 +477,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public BackgroundLayerObject ToBackgroundLayerObject(BackgroundLayer backgroundLayer)
         {
-            var gameObject = Creator.NewGameObject("Background Layer", BackgroundManager.inst.backgroundParent);
+            var gameObject = Creator.NewGameObject("Background Layer", runtimeLevel.Parent);
             gameObject.transform.localPosition = new Vector3(0f, 0f, backgroundLayer.depth);
 
             var backgroundLayerObject = new BackgroundLayerObject()
