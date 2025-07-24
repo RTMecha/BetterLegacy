@@ -926,7 +926,7 @@ namespace BetterLegacy.Core.Runtime
 
         public virtual void OnBackgroundObjectsTick()
         {
-            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel) && BackgroundManager.inst?.backgroundParent?.gameObject)
+            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && ArcadeHelper.ReplayLevel))
                 backgroundEngine?.Update(CurrentTime);
         }
 
