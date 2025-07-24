@@ -53,7 +53,6 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public virtual void Interpolate(float time)
         {
-            variables.Clear();
             if (orderMatters)
                 ModifiersHelper.RunModifiersLoop(modifiers, reference, variables);
             else
