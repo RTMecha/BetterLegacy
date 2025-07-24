@@ -1,4 +1,19 @@
-﻿# snapshot-2025.7.2 - (pre-1.8.0) [Jul 24, 2025]
+﻿# snapshot-2025.7.3 - (pre-1.8.0) [Jul 24, 2025]
+
+## Features
+### Core
+- Prefabs should now support recursive prefabs. This means prefabs can be contained in other prefabs.
+
+### Editor
+- Default Prefab Object instance data can now be saved to and loaded from Prefabs. If you have copied instance data, that will be priotized over the saved instance data.
+
+## Fixes
+- Variables passed from Prefab Object modifiers now should work as intended.
+- Fixed the labels in the global Prefab section of the Prefab Object editor not displaying.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.7.2 - (pre-1.8.0) [Jul 24, 2025]
 
 ## Features
 ### Core
