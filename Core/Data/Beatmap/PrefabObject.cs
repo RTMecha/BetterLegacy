@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using UnityEngine;
 
 using LSFunctions;
+
+using ILMath;
 
 using SimpleJSON;
 
@@ -20,7 +21,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/> that spawns all objects contained in the Prefab.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable, IModifierReference, IEditable, IPrefabable
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable, IModifierReference, IEditable, IPrefabable, IEvaluatable
     {
         public PrefabObject() : base()
         {
@@ -836,6 +837,93 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public IRTObject GetRuntimeObject() => runtimeObject;
+
+        #region Evaluation
+
+        public void SetOtherObjectVariables(Dictionary<string, float> variables)
+        {
+            variables["otherRuntimeFixedTime"] = this.GetParentRuntime().FixedTime;
+            variables["otherRuntimeTime"] = this.GetParentRuntime().CurrentTime;
+
+            variables["otherIntVariable"] = integerVariable;
+
+            variables["otherObjectStartTime"] = StartTime;
+            variables["otherObjectKillTime"] = SpawnDuration;
+
+            variables["otherPositionOffsetX"] = positionOffset.x;
+            variables["otherPositionOffsetY"] = positionOffset.y;
+            variables["otherPositionOffsetZ"] = positionOffset.z;
+
+            variables["otherScaleOffsetX"] = scaleOffset.x;
+            variables["otherScaleOffsetY"] = scaleOffset.y;
+            variables["otherScaleOffsetZ"] = scaleOffset.z;
+
+            variables["otherRotationOffsetX"] = rotationOffset.x;
+            variables["otherRotationOffsetY"] = rotationOffset.y;
+            variables["otherRotationOffsetZ"] = rotationOffset.z;
+
+            if (!runtimeObject)
+                return;
+
+            var transform = runtimeObject.Parent;
+            if (!transform)
+                return;
+
+            variables["otherVisualPosX"] = transform.position.x;
+            variables["otherVisualPosY"] = transform.position.y;
+            variables["otherVisualPosZ"] = transform.position.z;
+
+            variables["otherVisualScaX"] = transform.lossyScale.x;
+            variables["otherVisualScaY"] = transform.lossyScale.y;
+            variables["otherVisualScaZ"] = transform.lossyScale.z;
+
+            variables["otherVisualRotX"] = transform.rotation.eulerAngles.x;
+            variables["otherVisualRotY"] = transform.rotation.eulerAngles.y;
+            variables["otherVisualRotZ"] = transform.rotation.eulerAngles.z;
+        }
+
+        public void SetObjectVariables(Dictionary<string, float> variables)
+        {
+            variables["runtimeFixedTime"] = this.GetParentRuntime().FixedTime;
+            variables["runtimeTime"] = this.GetParentRuntime().CurrentTime;
+
+            variables["intVariable"] = integerVariable;
+
+            variables["objectStartTime"] = StartTime;
+            variables["objectKillTime"] = SpawnDuration;
+
+            variables["positionOffsetX"] = positionOffset.x;
+            variables["positionOffsetY"] = positionOffset.y;
+            variables["positionOffsetZ"] = positionOffset.z;
+
+            variables["scaleOffsetX"] = scaleOffset.x;
+            variables["scaleOffsetY"] = scaleOffset.y;
+            variables["scaleOffsetZ"] = scaleOffset.z;
+
+            variables["rotationOffsetX"] = rotationOffset.x;
+            variables["rotationOffsetY"] = rotationOffset.y;
+            variables["rotationOffsetZ"] = rotationOffset.z;
+
+            var transform = runtimeObject.Parent;
+            if (!transform)
+                return;
+
+            variables["visualPosX"] = transform.position.x;
+            variables["visualPosY"] = transform.position.y;
+            variables["visualPosZ"] = transform.position.z;
+
+            variables["visualScaX"] = transform.lossyScale.x;
+            variables["visualScaY"] = transform.lossyScale.y;
+            variables["visualScaZ"] = transform.lossyScale.z;
+
+            variables["visualRotX"] = transform.rotation.eulerAngles.x;
+            variables["visualRotY"] = transform.rotation.eulerAngles.y;
+            variables["visualRotZ"] = transform.rotation.eulerAngles.z;
+        }
+
+        public void SetObjectFunctions(Dictionary<string, MathFunction> functions) { }
+
+        #endregion
 
         public bool TrySetParent(string beatmapObjectToParentTo, bool renderParent = true)
         {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using UnityEngine;
 
@@ -1766,6 +1765,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetOtherObjectVariables(Dictionary<string, float> variables)
         {
+            variables["otherRuntimeFixedTime"] = this.GetParentRuntime().FixedTime;
+            variables["otherRuntimeTime"] = this.GetParentRuntime().CurrentTime;
+
             variables["otherIntVariable"] = integerVariable;
 
             variables["otherObjectStartTime"] = StartTime;
@@ -1803,6 +1805,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetObjectVariables(Dictionary<string, float> variables)
         {
+            variables["runtimeFixedTime"] = this.GetParentRuntime().FixedTime;
+            variables["runtimeTime"] = this.GetParentRuntime().CurrentTime;
+
             variables["intVariable"] = integerVariable;
 
             variables["objectStartTime"] = StartTime;
