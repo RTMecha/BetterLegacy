@@ -1550,7 +1550,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                     backgroundObject.fadeHue = num;
 
-                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                LSHelpers.DeleteChildren(Dialog.FadeColorsParent);
                 ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
@@ -1560,7 +1560,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                     backgroundObject.fadeSaturation = num;
 
-                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                LSHelpers.DeleteChildren(Dialog.FadeColorsParent);
                 ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
@@ -1570,7 +1570,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float num))
                     backgroundObject.fadeValue = num;
 
-                LSHelpers.DeleteChildren(Dialog.ColorsParent);
+                LSHelpers.DeleteChildren(Dialog.FadeColorsParent);
                 ThemeManager.inst.Current.backgroundColors.ForLoop((color, index) => SetColorToggle(backgroundObject, color, backgroundObject.fadeColor, index, Dialog.FadeColorsParent, SetFadeColor));
             });
 
