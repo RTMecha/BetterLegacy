@@ -256,15 +256,15 @@ namespace BetterLegacy.Editor.Data
                 prefabObjectCopy.id = ids[i];
                 prefabObjectCopy.prefabID = prefabObject.prefabID;
 
-                //if (regen)
-                //    prefabObjectCopy.prefabInstanceID = string.Empty;
-                //else if (this.prefabObject)
-                //    prefabObjectCopy.SetPrefabReference(this.prefabObject);
-                //else
-                //{
-                //    prefabObjectCopy.prefabID = prefabObject.prefabID;
-                //    prefabObjectCopy.prefabInstanceID = prefabObject.prefabInstanceID;
-                //}
+                if (regen)
+                    prefabObjectCopy.prefabInstanceID = string.Empty;
+                else if (this.prefabObject)
+                    prefabObjectCopy.prefabInstanceID = this.prefabObject.id;
+                else
+                {
+                    prefabObjectCopy.prefabID = prefabObject.prefabID;
+                    prefabObjectCopy.prefabInstanceID = prefabObject.prefabInstanceID;
+                }
 
                 if (this.prefabObject)
                     prefabObjectCopy.StartTime += this.prefabObject.StartTime + prefab.offset;

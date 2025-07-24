@@ -17,33 +17,24 @@ namespace BetterLegacy.Core.Data.Beatmap
     {
         public Prefab() : base() { }
 
-        public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundLayer> backgroundLayers = null, List<BackgroundObject> backgroundObjects = null) : this()
+        public Prefab(string name, int type, float offset, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundLayer> backgroundLayers = null, List<BackgroundObject> backgroundObjects = null, List<Prefab> prefabs = null) : this()
         {
             this.name = name;
             this.type = type;
             typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
             this.offset = offset;
 
-            this.beatmapObjects.AddRange(beatmapObjects.Select(x => x.Copy(false)));
-            this.prefabObjects.AddRange(prefabObjects.Select(x => x.Copy(false)));
+            CopyObjects(beatmapObjects, prefabObjects, backgroundLayers, backgroundObjects, prefabs);
+        }
 
-            if (backgroundLayers != null)
-                this.backgroundLayers.AddRange(backgroundLayers.Select(x => x.Copy(false)));
-            
-            if (backgroundObjects != null)
-                this.backgroundObjects.AddRange(backgroundObjects.Select(x => x.Copy(false)));
+        public Prefab(string name, int type, float offset, IBeatmap beatmap) : this()
+        {
+            this.name = name;
+            this.type = type;
+            typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
+            this.offset = offset;
 
-            var collection = prefabObjects.Select(x => x.StartTime).Union(beatmapObjects.Select(x => x.StartTime));
-            if (backgroundObjects != null)
-                collection = collection.Union(backgroundObjects.Select(x => x.StartTime));
-
-            float num = collection.Min(x => x);
-            for (int i = 0; i < this.beatmapObjects.Count; i++)
-                this.beatmapObjects[i].StartTime -= num;
-            for (int i = 0; i < prefabObjects.Count; i++)
-                this.prefabObjects[i].StartTime -= num;
-            for (int i = 0; i < this.backgroundObjects.Count; i++)
-                this.backgroundObjects[i].StartTime -= num;
+            CopyObjects(beatmap);
         }
 
         #region Values
@@ -111,6 +102,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool FromPrefab { get => fromPrefab; set => fromPrefab = value; }
 
         public Prefab CachedPrefab { get; set; }
+
+        public PrefabObject defaultInstanceData;
 
         #endregion
 
@@ -187,6 +180,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (!orig.backgroundObjects.IsEmpty())
                 backgroundObjects.AddRange(orig.backgroundObjects.Select(x => x.Copy(false)));
 
+            if (orig.defaultInstanceData)
+                defaultInstanceData = orig.defaultInstanceData.Copy();
+
             foreach (var beatmapObject in beatmapObjects)
             {
                 if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && orig.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
@@ -245,6 +241,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (string.IsNullOrEmpty(typeID))
                 typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
+
+            if (jn["default"] != null)
+                defaultInstanceData = PrefabObject.Parse(jn["default"]);
 
             assets.Clear();
             if (jn["assets"] != null)
@@ -311,6 +310,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                     if (GameData.Current.assets.sprites.TryFind(x => x.name == obj.text, out SpriteAsset sprite) && !assets.sprites.Has(x => x.name == obj.text))
                         assets.sprites.Add(sprite);
 
+            if (defaultInstanceData)
+                jn["default"] = defaultInstanceData.ToJSON();
+
             if (assets && !assets.IsEmpty())
                 jn["assets"] = assets.ToJSON();
 
@@ -322,6 +324,52 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <returns>Returns the prefab type.</returns>
         public PrefabType GetPrefabType() => RTPrefabEditor.inst && RTPrefabEditor.inst.prefabTypes.TryFind(x => x.id == typeID, out PrefabType prefabType) ? prefabType : PrefabType.InvalidType;
+
+        /// <summary>
+        /// Copies an <see cref="IBeatmap"/>'s objects to this prefab.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        public void CopyObjects(IBeatmap beatmap) => CopyObjects(beatmap.BeatmapObjects, beatmap.PrefabObjects, beatmap.BackgroundLayers, beatmap.BackgroundObjects, beatmap.Prefabs);
+
+        /// <summary>
+        /// Copies objects to this prefab.
+        /// </summary>
+        /// <param name="beatmapObjects">List of Beatmap Objects.</param>
+        /// <param name="prefabObjects">List of Prefab Objects.</param>
+        /// <param name="backgroundLayers">List of Background Layers.</param>
+        /// <param name="backgroundObjects">List of Background Objects.</param>
+        /// <param name="prefabs">List of Prefabs.</param>
+        public void CopyObjects(List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, List<BackgroundLayer> backgroundLayers = null, List<BackgroundObject> backgroundObjects = null, List<Prefab> prefabs = null)
+        {
+            this.beatmapObjects.Clear();
+            this.beatmapObjects.AddRange(beatmapObjects.Select(x => x.Copy(false)));
+            this.prefabObjects.Clear();
+            this.prefabObjects.AddRange(prefabObjects.Select(x => x.Copy(false)));
+
+            this.backgroundLayers.Clear();
+            if (backgroundLayers != null)
+                this.backgroundLayers.AddRange(backgroundLayers.Select(x => x.Copy(false)));
+
+            this.backgroundObjects.Clear();
+            if (backgroundObjects != null)
+                this.backgroundObjects.AddRange(backgroundObjects.Select(x => x.Copy(false)));
+
+            this.prefabs.Clear();
+            if (prefabs != null)
+                this.prefabs.AddRange(prefabs.Select(x => x.Copy(false)));
+
+            var collection = prefabObjects.Select(x => x.StartTime).Union(beatmapObjects.Select(x => x.StartTime));
+            if (backgroundObjects != null)
+                collection = collection.Union(backgroundObjects.Select(x => x.StartTime));
+
+            float num = collection.Min(x => x);
+            for (int i = 0; i < this.beatmapObjects.Count; i++)
+                this.beatmapObjects[i].StartTime -= num;
+            for (int i = 0; i < prefabObjects.Count; i++)
+                this.prefabObjects[i].StartTime -= num;
+            for (int i = 0; i < this.backgroundObjects.Count; i++)
+                this.backgroundObjects[i].StartTime -= num;
+        }
 
         public Assets GetAssets() => assets;
 

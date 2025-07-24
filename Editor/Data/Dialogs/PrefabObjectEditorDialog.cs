@@ -135,6 +135,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public Text TimelineObjectCountText { get; set; }
 
+        public FunctionButtonStorage DefaultInstanceDataButton { get; set; }
         public FunctionButtonStorage InspectPrefab { get; set; }
 
         #endregion
@@ -822,13 +823,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #endregion
 
-            #region Save Prefab
+            #region Save to a Prefab
 
-            var savePrefabLabel = new Labels(Labels.InitSettings.Default.Name("save prefab label"), new Label("Apply to an External Prefab"));
+            var savePrefabLabel = new Labels(Labels.InitSettings.Default.Name("save prefab label").Parent(Right), new Label("Overwrite External Prefab") { horizontalWrap = HorizontalWrapMode.Overflow });
 
             var savePrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "save prefab");
             SavePrefabButton = savePrefab.GetComponent<FunctionButtonStorage>();
-            SavePrefabButton.label.text = "Select Prefab";
+            SavePrefabButton.label.text = "Save to a Prefab";
 
             EditorHelper.SetComplexity(savePrefabLabel.GameObject, Complexity.Normal);
             EditorHelper.SetComplexity(savePrefab, Complexity.Normal);
@@ -837,11 +838,26 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #endregion
 
+            #region Default Instance Data
+
+            var defaultInstanceDataLabel = new Labels(Labels.InitSettings.Default.Name("default instance data label").Parent(Right), new Label("Default Instance Data"));
+
+            var defaultInstanceData = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "default instance data");
+            DefaultInstanceDataButton = defaultInstanceData.GetComponent<FunctionButtonStorage>();
+            DefaultInstanceDataButton.label.text = "Null";
+
+            EditorHelper.SetComplexity(defaultInstanceDataLabel.GameObject, Complexity.Advanced);
+            EditorHelper.SetComplexity(defaultInstanceData, Complexity.Advanced);
+            EditorThemeManager.AddSelectable(DefaultInstanceDataButton.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(DefaultInstanceDataButton.label, ThemeGroup.Function_2_Text);
+
+            #endregion
+
             #region Inspect
 
             if (ModCompatibility.UnityExplorerInstalled)
             {
-                var inspectPrefabLabel = new Labels(Labels.InitSettings.Default.Name("inspect prefab label"), new Label("Unity Explorer"));
+                var inspectPrefabLabel = new Labels(Labels.InitSettings.Default.Name("inspect prefab label").Parent(Right), new Label("Unity Explorer"));
 
                 var inspectPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(Right, "inspect prefab");
                 InspectPrefab = inspectPrefab.GetComponent<FunctionButtonStorage>();
@@ -852,6 +868,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddSelectable(InspectPrefab.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(InspectPrefab.label, ThemeGroup.Function_2_Text);
             }
+
+
 
             #endregion
 
