@@ -1674,6 +1674,13 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Gets the parent runtime of the object.
+        /// </summary>
+        /// <param name="reference">Modifier object reference.</param>
+        /// <returns>Returns the parent runtime.</returns>
+        public static Runtime.RTLevelBase GetParentRuntime(this IModifierReference reference) => (reference.ParentRuntime ?? Runtime.RTLevel.Current);
+
+        /// <summary>
         /// Gets a <see cref="ObjectTransform"/> from a transformable object.
         /// </summary>
         /// <param name="transformable">Transformable reference.</param>
