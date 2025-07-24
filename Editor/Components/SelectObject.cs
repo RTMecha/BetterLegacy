@@ -243,7 +243,7 @@ namespace BetterLegacy.Editor.Components
             if (firstDirection == Axis.Static || firstDirection == Axis.PosY || firstDirection == Axis.NegY)
                 selectedKeyframe.values[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
-            if (prefabObjectToDrag != null)
+            if (prefabObjectToDrag)
                 RTLevel.Current?.UpdatePrefab(prefabObjectToDrag, PrefabObjectContext.TRANSFORM_OFFSET);
             else
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
@@ -332,7 +332,7 @@ namespace BetterLegacy.Editor.Components
 
             if (!beatmapObject.fromPrefab)
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-            else if (beatmapObject.fromPrefab && prefabObjectToDrag != null)
+            else if (beatmapObject.fromPrefab && prefabObjectToDrag)
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObjectToDrag);
         }
 
