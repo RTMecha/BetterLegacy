@@ -1682,7 +1682,12 @@ namespace BetterLegacy.Editor.Managers
                 var index = i;
                 var tab = new PlayerEditorObjectTab();
                 Dialog.SetupObjectTab(tab, $"Tail Part {i + 1}", Tab.Tail, doRemove: true);
-                tab.Remove.Button.onClick.NewListener(() => currentModel.RemoveTail(index));
+                tab.Remove.Button.onClick.NewListener(() =>
+                {
+                    currentModel.RemoveTail(index);
+                    PlayerManager.UpdatePlayerModels();
+                    RenderTailTab(currentModel);
+                });
                 Dialog.TailTab.TailParts.Add(tab);
                 RenderObject(tab, currentModel.tailParts[i]);
             }
