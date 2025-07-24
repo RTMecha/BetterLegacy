@@ -666,6 +666,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<Modifier> modifiers = new List<Modifier>();
 
+        public List<ModifierBlock<IModifierReference>> modifierBlocks = new List<ModifierBlock<IModifierReference>>();
+
         public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 
         public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
@@ -1175,6 +1177,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                         gameData.modifiers.Add(modifier);
                 }
 
+            if (jn["modifier_blocks"] != null)
+                for (int i = 0; i < jn["modifier_blocks"].Count; i++)
+                    gameData.modifierBlocks.Add(ModifierBlock<IModifierReference>.Parse(jn["modifier_blocks"][i]));
+
             gameData.data = BeatmapData.Parse(jn);
 
             for (int i = 0; i < jn["prefabs"].Count; i++)
@@ -1574,6 +1580,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             for (int i = 0; i < modifiers.Count; i++)
                 jn["modifiers"][i] = modifiers[i].ToJSON();
+
+            for (int i = 0; i < modifierBlocks.Count; i++)
+                jn["modifier_blocks"][i] = modifierBlocks[i].ToJSON();
 
             if (assets && !assets.IsEmpty())
                 jn["assets"] = assets.ToJSON();

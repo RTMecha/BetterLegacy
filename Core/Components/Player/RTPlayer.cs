@@ -1247,6 +1247,8 @@ namespace BetterLegacy.Core.Components.Player
 
             timeOffset = Time.time;
 
+            Core?.GetControl()?.TickModifierBlock?.Run(Core);
+
             if (!isColliderTrigger)
                 SetTriggerCollision(false);
 
@@ -2319,6 +2321,8 @@ namespace BetterLegacy.Core.Components.Player
                 animatingBoost = true;
                 boostTail.parent.DOScale(Vector3.zero, 0.05f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[2].Animation);
             }
+
+            Core?.GetControl()?.BoostModifierBlock?.Run(Core);
         }
 
         /// <summary>
@@ -2672,13 +2676,7 @@ namespace BetterLegacy.Core.Components.Player
             if (CanTakeDamage && (!stay || !isBoosting) && CollisionCheck(other))
                 Hit();
 
-            if (!Core)
-                return;
-
-            var control = Core.GetControl();
-            var modifierBlock = control.CollideModifierBlock;
-            if (modifierBlock)
-                ModifiersHelper.RunModifiersLoop(modifierBlock.Modifiers, Core, new Dictionary<string, string>());
+            Core?.GetControl().CollideModifierBlock?.Run(Core);
         }
 
         bool CollisionCheck(Component other) => other.tag != Tags.HELPER && (other.tag == Tags.PLAYER && AllowPlayersToHitOthers || other.tag != Tags.PLAYER) && other.name != $"bullet (Player {playerIndex + 1})";
@@ -2719,6 +2717,7 @@ namespace BetterLegacy.Core.Components.Player
         {
             if (RTBeatmap.Current)
                 RTBeatmap.Current.playerDied = true;
+            Core?.GetControl()?.DeathModifierBlock?.Run(Core);
             isDead = true;
             playerDeathEvent?.Invoke(rb.position);
             Core.active = false;
