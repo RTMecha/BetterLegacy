@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             StartTime = prefabObject.StartTime + prefab.offset;
             KillTime = prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration;
 
-            var gameObject = Creator.NewGameObject(prefab.name, RTLevel.Current.Parent);
+            var gameObject = Creator.NewGameObject(prefab.name, parentRuntime.Parent);
             Parent = gameObject.transform;
 
             prefabObject.cachedTransform = null;
@@ -153,6 +153,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override void Clear()
         {
+            CoreHelper.Log($"Cleaning up runtime prefab {Prefab}");
             base.Clear();
             CoreHelper.Delete(Parent);
             Spawner?.Clear();

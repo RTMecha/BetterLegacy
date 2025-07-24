@@ -60,16 +60,20 @@ namespace BetterLegacy.Core.Runtime
         public virtual void Load(IBeatmap beatmap, bool checkPrefab = true)
         {
             converter = new ObjectConverter(this);
-            var beatmapObjects = beatmap.BeatmapObjects.Where(x => !checkPrefab || !x.fromPrefab).ToList();
+            var beatmapObjects = !checkPrefab ? beatmap.BeatmapObjects : beatmap.BeatmapObjects.Where(x => !x.FromPrefab).ToList();
+            var prefabObjects = !checkPrefab ? beatmap.PrefabObjects : beatmap.PrefabObjects.Where(x => !x.FromPrefab).ToList();
+            var backgroundLayers = !checkPrefab ? beatmap.BackgroundLayers : beatmap.BackgroundLayers.Where(x => !x.FromPrefab).ToList();
+            var backgroundObjects = !checkPrefab ? beatmap.BackgroundObjects : beatmap.BackgroundObjects.Where(x => !x.FromPrefab);
+
             for (int i = 0; i < beatmapObjects.Count; i++)
                 converter.CacheSequence(beatmapObjects[i]);
 
-            IEnumerable<IRTObject> runtimePrefabObjects = converter.ToRuntimePrefabObjects(beatmap.PrefabObjects);
+            IEnumerable<IRTObject> runtimePrefabObjects = converter.ToRuntimePrefabObjects(prefabObjects);
 
-            prefabObjects = runtimePrefabObjects.ToList();
+            this.prefabObjects = runtimePrefabObjects.ToList();
             prefabEngine = new ObjectEngine(PrefabObjects);
 
-            IEnumerable<IRTObject> runtimePrefabModifiers = converter.ToRuntimePrefabModifiers(beatmap.PrefabObjects);
+            IEnumerable<IRTObject> runtimePrefabModifiers = converter.ToRuntimePrefabModifiers(prefabObjects);
 
             prefabModifiers = runtimePrefabModifiers.ToList();
             prefabModifiersEngine = new ObjectEngine(PrefabModifiers);
@@ -79,20 +83,20 @@ namespace BetterLegacy.Core.Runtime
             objects = runtimeObjects.ToList();
             objectEngine = new ObjectEngine(Objects);
 
-            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers(beatmap.BeatmapObjects.Where(x => !checkPrefab || !x.fromPrefab));
+            IEnumerable<IRTObject> runtimeModifiers = converter.ToRuntimeModifiers(beatmapObjects);
 
             modifiers = runtimeModifiers.ToList();
             objectModifiersEngine = new ObjectEngine(Modifiers);
 
-            IEnumerable<BackgroundLayerObject> backgroundLayerObjects = converter.ToBackgroundLayerObjects(beatmap.BackgroundLayers.Where(x => !checkPrefab || !x.FromPrefab));
-            backgroundLayers = backgroundLayerObjects.ToList();
+            IEnumerable<BackgroundLayerObject> backgroundLayerObjects = converter.ToBackgroundLayerObjects(backgroundLayers);
+            this.backgroundLayers = backgroundLayerObjects.ToList();
 
-            IEnumerable<IRTObject> runtimeBGObjects = converter.ToRuntimeBGObjects(beatmap.BackgroundObjects.Where(x => !checkPrefab || !x.fromPrefab));
+            IEnumerable<IRTObject> runtimeBGObjects = converter.ToRuntimeBGObjects(backgroundObjects);
 
             bgObjects = runtimeBGObjects.ToList();
             backgroundEngine = new ObjectEngine(BGObjects);
 
-            IEnumerable<IRTObject> runtimeBGModifiers = converter.ToRuntimeBGModifiers(beatmap.BackgroundObjects.Where(x => !checkPrefab || !x.fromPrefab));
+            IEnumerable<IRTObject> runtimeBGModifiers = converter.ToRuntimeBGModifiers(backgroundObjects);
 
             bgModifiers = runtimeBGModifiers.ToList();
             bgModifiersEngine = new ObjectEngine(BGModifiers);
@@ -1349,12 +1353,6 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="prefabObject">Prefab Object to remove.</param>
         public void RemovePrefab(PrefabObject prefabObject)
         {
-            GameData.Current.beatmapObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.backgroundLayers.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.backgroundObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.prefabObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-            GameData.Current.prefabs.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
-
             var runtimeObject = prefabObject.runtimeObject;
 
             if (runtimeObject)
@@ -1372,12 +1370,12 @@ namespace BetterLegacy.Core.Runtime
                         runtimeObject.ReinitObject(backgroundLayer, false);
 
                     foreach (var subPrefabObject in spawner.PrefabObjects)
-                        runtimeObject.UpdatePrefab(subPrefabObject, false, recalculate: false);
+                        runtimeObject.RemovePrefab(subPrefabObject);
                 }
 
-                runtimeObject.Clear();
                 prefabEngine?.spawner?.RemoveObject(runtimeObject, false);
                 prefabObjects.Remove(runtimeObject);
+                runtimeObject.Clear();
 
                 runtimeObject = null;
                 prefabObject.runtimeObject = null;
@@ -1432,6 +1430,12 @@ namespace BetterLegacy.Core.Runtime
             prefabObject.rotationOffset = Vector3.zero;
 
             RemovePrefab(prefabObject);
+
+            GameData.Current.beatmapObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.backgroundLayers.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.backgroundObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.prefabObjects.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
+            GameData.Current.prefabs.RemoveAll(x => x.PrefabInstanceID == prefabObject.id);
 
             if (reinsert)
                 AddPrefab(prefabObject);
