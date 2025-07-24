@@ -1370,7 +1370,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
                             {
-                                RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
 
                                 GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -1382,7 +1382,7 @@ namespace BetterLegacy.Core.Helpers
                     case nameof(ModifierActions.spawnPrefabCopy): {
                             if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
                             {
-                                RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
 
                                 GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -2489,7 +2489,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
                             {
-                                RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
 
                                 GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -2501,7 +2501,7 @@ namespace BetterLegacy.Core.Helpers
                     case nameof(ModifierActions.spawnPrefabCopy): {
                             if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
                             {
-                                RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
 
                                 GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -3370,7 +3370,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
                             {
-                                RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
 
                                 GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -3382,7 +3382,7 @@ namespace BetterLegacy.Core.Helpers
                     case nameof(ModifierActions.spawnPrefabCopy): {
                             if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
                             {
-                                RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
 
                                 GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -3753,20 +3753,20 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static float GetAnimation(BeatmapObject bm, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
+        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
         {
-            var time = RTLevel.Current.CurrentTime;
+            var time = reference.GetParentRuntime().CurrentTime;
 
-            if (!visual && bm.cachedSequences)
+            if (!visual && reference.cachedSequences)
                 return fromType switch
                 {
-                    0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
+                    0 => Mathf.Clamp((reference.cachedSequences.PositionSequence.Interpolate(time - reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    1 => Mathf.Clamp((reference.cachedSequences.ScaleSequence.Interpolate(time - reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.Interpolate(time - reference.StartTime - delay) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 };
-            else if (visual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
-                return Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
+            else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+                return Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max);
 
             return 0f;
         }

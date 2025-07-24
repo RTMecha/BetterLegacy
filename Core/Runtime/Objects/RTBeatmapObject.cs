@@ -10,10 +10,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTBeatmapObject : Exists, IRTObject, ICustomActivatable
     {
-        public RTBeatmapObject(BeatmapObject beatmapObject, List<ParentObject> parentObjects, VisualObject visualObject)
+        public RTBeatmapObject(BeatmapObject beatmapObject, List<ParentObject> parentObjects, VisualObject visualObject, RTLevelBase parentRuntime)
         {
             this.beatmapObject = beatmapObject;
 
+            ParentRuntime = parentRuntime;
             StartTime = beatmapObject.StartTime;
             KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
             depth = beatmapObject.Depth;
@@ -51,6 +52,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         }
 
         #region Values
+
+        public RTLevelBase ParentRuntime { get; set; }
 
         public float StartTime { get; set; }
         public float KillTime { get; set; }

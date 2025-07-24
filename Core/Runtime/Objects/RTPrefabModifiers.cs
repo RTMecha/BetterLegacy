@@ -12,12 +12,13 @@ namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTPrefabModifiers : RTModifiers
     {
-        public RTPrefabModifiers(List<Modifier> modifiers, PrefabObject prefabObject, bool orderMatters, float startTime, float killTime)
+        public RTPrefabModifiers(List<Modifier> modifiers, PrefabObject prefabObject, bool orderMatters, float startTime, float killTime, RTLevelBase parentRuntime)
         {
             this.modifiers = modifiers;
             this.reference = prefabObject;
             this.orderMatters = orderMatters;
 
+            ParentRuntime = parentRuntime;
             StartTime = startTime;
             KillTime = killTime;
 

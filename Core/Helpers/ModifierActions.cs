@@ -3865,7 +3865,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var time = RTLevel.Current.CurrentTime - beatmapObject.StartTime;
+                var time = reference.GetParentRuntime().CurrentTime - beatmapObject.StartTime;
                 Color color;
                 Color secondColor;
                 {
@@ -4279,7 +4279,7 @@ namespace BetterLegacy.Core.Helpers
 
             shapeable.SetCustomShape(modifier.GetInt(0, 0, variables), modifier.GetInt(1, 0, variables));
             if (shapeable is BeatmapObject beatmapObject)
-                RTLevel.Current.UpdateObject(beatmapObject, ObjectContext.SHAPE);
+                reference.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.SHAPE);
             else if (shapeable is BackgroundObject backgroundObject)
                 backgroundObject.runtimeObject?.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
         }
@@ -5458,7 +5458,7 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.TryGetResult(out BeatmapObject bm))
                 return;
 
-            var time = RTLevel.Current.CurrentTime;
+            var time = reference.GetParentRuntime().CurrentTime;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
@@ -5519,7 +5519,7 @@ namespace BetterLegacy.Core.Helpers
                 if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                     return;
 
-                var time = RTLevel.Current.CurrentTime;
+                var time = reference.GetParentRuntime().CurrentTime;
 
                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
                 fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
@@ -5634,7 +5634,7 @@ namespace BetterLegacy.Core.Helpers
                 var beatmapObjects = GameData.Current.beatmapObjects;
                 var prefabObjects = GameData.Current.prefabObjects;
 
-                var time = RTLevel.Current.CurrentTime;
+                var time = reference.GetParentRuntime().CurrentTime;
                 var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(variables, numberVariables);
 
@@ -5801,7 +5801,7 @@ namespace BetterLegacy.Core.Helpers
             var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
 
             if (!modifier.HasResult())
-                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
             var time = modifier.GetResult<float>();
 
             var animatePos = modifier.GetBool(1, true, variables);
@@ -5842,7 +5842,7 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, RTLevel.Current.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
             }
         }
         
@@ -5855,7 +5855,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             if (!modifier.HasResult())
-                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
             var time = modifier.GetResult<float>();
 
             var animatePos = modifier.GetBool(1, true, variables);
@@ -5891,7 +5891,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, RTLevel.Current.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
         }
         
         public static void applyAnimationTo(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -5902,7 +5902,7 @@ namespace BetterLegacy.Core.Helpers
             var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
 
             if (!modifier.HasResult())
-                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
             var time = modifier.GetResult<float>();
 
             var animatePos = modifier.GetBool(1, true, variables);
@@ -5943,7 +5943,7 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
-                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, RTLevel.Current.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
             }
         }
         
@@ -5958,7 +5958,7 @@ namespace BetterLegacy.Core.Helpers
             var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
 
             if (!modifier.HasResult())
-                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
             var time = modifier.GetResult<float>();
 
             var numberVariables = beatmapObject.GetObjectVariables();
@@ -6017,7 +6017,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             if (!modifier.HasResult())
-                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
             var time = modifier.GetResult<float>();
 
             var numberVariables = beatmapObject.GetObjectVariables();
@@ -6069,7 +6069,7 @@ namespace BetterLegacy.Core.Helpers
             var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
 
             if (!modifier.HasResult())
-                modifier.Result = RTLevel.Current?.CurrentTime ?? 0f;
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
             var time = modifier.GetResult<float>();
 
             var numberVariables = beatmapObject.GetObjectVariables();
@@ -6150,7 +6150,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
 
@@ -6183,7 +6183,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
         
@@ -6219,7 +6219,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
 
@@ -6248,7 +6248,7 @@ namespace BetterLegacy.Core.Helpers
 
             modifier.Result = prefabObject;
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
 
@@ -6285,7 +6285,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
         
@@ -6324,7 +6324,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
         
@@ -6366,7 +6366,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
 
@@ -6401,7 +6401,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = list;
 
             GameData.Current.prefabObjects.Add(prefabObject);
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
             runtimeLevel?.UpdatePrefab(prefabObject);
         }
 
@@ -6412,7 +6412,7 @@ namespace BetterLegacy.Core.Helpers
 
             var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(0, variables));
 
-            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : RTLevel.Current;
+            RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
 
             foreach (var modifyable in modifyables)
             {
@@ -6569,11 +6569,11 @@ namespace BetterLegacy.Core.Helpers
             foreach (var other in prefabables)
             {
                 if (other is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                    beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, recalculate: false);
                 if (other is BackgroundObject backgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                    backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, recalculate: false);
                 if (other is PrefabObject prefabObject)
-                    RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, recalculate: false);
             }
             RTLevel.Current?.RecalculateObjectStates();
         }
@@ -6694,7 +6694,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var checkpoint = new Checkpoint();
-            checkpoint.time = modifier.GetBool(1, true, variables) ? RTLevel.Current.FixedTime + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
+            checkpoint.time = modifier.GetBool(1, true, variables) ? reference.GetParentRuntime().FixedTime + modifier.GetFloat(0, 0f, variables) : modifier.GetFloat(0, 0f, variables);
             checkpoint.pos = new Vector2(modifier.GetFloat(2, 0f, variables), modifier.GetFloat(3, 0f, variables));
             checkpoint.heal = modifier.GetBool(4, false, variables);
             checkpoint.respawn = modifier.GetBool(5, true, variables);

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -595,7 +596,7 @@ namespace BetterLegacy.Configs
 
             var list = GameData.Current.beatmapObjects.FindAll(x => x.LDM);
             for (int i = 0; i < list.Count; i++)
-                RTLevel.Current?.UpdateObject(list[i]);
+                list[i].GetParentRuntime()?.UpdateObject(list[i]);
         }
 
         void ChallengeModeChanged()

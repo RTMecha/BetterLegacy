@@ -418,13 +418,13 @@ namespace BetterLegacy.Editor.Managers
             GameData.Current.prefabObjects.RemoveAll(x => prefabIDs.Contains(x.id));
             GameData.Current.backgroundObjects.RemoveAll(x => bgIDs.Contains(x.id));
 
-            foreach (var bm in GameData.Current.beatmapObjects)
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
             {
-                if (objectIDs.Contains(bm.Parent))
+                if (objectIDs.Contains(beatmapObject.Parent))
                 {
-                    bm.Parent = string.Empty;
+                    beatmapObject.Parent = string.Empty;
 
-                    RTLevel.Current?.UpdateObject(bm, ObjectContext.PARENT_CHAIN);
+                    beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
                 }
             }
 
@@ -474,17 +474,17 @@ namespace BetterLegacy.Editor.Managers
                 if (remove)
                     GameData.Current.beatmapObjects.Remove(x => x.id == beatmapObject.id);
 
-                RTLevel.Current?.UpdateObject(beatmapObject, reinsert: false, recursive: false, recalculate: false);
+                beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: false, recursive: false, recalculate: false);
 
                 if (update)
                 {
-                    foreach (var bm in GameData.Current.beatmapObjects)
+                    foreach (var other in GameData.Current.beatmapObjects)
                     {
-                        if (bm.Parent == beatmapObject.id)
+                        if (other.Parent == beatmapObject.id)
                         {
-                            bm.Parent = string.Empty;
+                            other.Parent = string.Empty;
 
-                            RTLevel.Current?.UpdateObject(bm, ObjectContext.PARENT_CHAIN);
+                            other.GetParentRuntime()?.UpdateObject(other, ObjectContext.PARENT_CHAIN);
                         }
                     }
                 }
@@ -495,7 +495,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (remove)
                     GameData.Current.prefabObjects.Remove(x => x.id == prefabObject.id);
-                RTLevel.Current?.UpdatePrefab(prefabObject, false, false);
+                prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, false, false);
             }
             if (timelineObject.isBackgroundObject)
             {
@@ -503,7 +503,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (remove)
                     GameData.Current.backgroundObjects.Remove(x => x.id == backgroundObject.id);
-                RTLevel.Current?.UpdateBackgroundObject(backgroundObject, false);
+                backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, false);
                 if (RTBackgroundEditor.inst.Dialog.IsCurrent)
                     RTBackgroundEditor.inst.UpdateBackgroundList();
             }
@@ -914,7 +914,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                             prefabObject.Parent = timelineObject.ID;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
+                            prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
                             RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
                             success = true;
@@ -937,7 +937,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var prefabObject = CurrentSelection.GetData<PrefabObject>();
                     prefabObject.Parent = timelineObject.ID;
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
+                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
                     RTEditor.inst.parentPickerEnabled = false;
 

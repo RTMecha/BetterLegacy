@@ -14,6 +14,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -668,6 +669,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 
         public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
+
+        public RTLevelBase ParentRuntime { get; set; }
 
         #endregion
 

@@ -1300,7 +1300,7 @@ namespace BetterLegacy.Core.Helpers
                 time = timer.time;
             }
             else
-                time = RTLevel.Current.FixedTime;
+                time = reference.GetParentRuntime().FixedTime;
 
             return time > modifier.GetFloat(0, 0f, variables);
         }

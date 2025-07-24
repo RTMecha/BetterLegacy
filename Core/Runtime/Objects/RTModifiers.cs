@@ -10,12 +10,13 @@ namespace BetterLegacy.Core.Runtime.Objects
     {
         public RTModifiers() { }
 
-        public RTModifiers(List<Modifier> modifiers, IModifierReference reference, bool orderMatters, float startTime, float killTime)
+        public RTModifiers(List<Modifier> modifiers, IModifierReference reference, bool orderMatters, float startTime, float killTime, RTLevelBase parentRuntime)
         {
             this.modifiers = modifiers;
             this.reference = reference;
             this.orderMatters = orderMatters;
 
+            ParentRuntime = parentRuntime;
             StartTime = startTime;
             KillTime = killTime;
 
@@ -27,6 +28,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         public List<Modifier> modifiers;
 
         public bool orderMatters;
+
+        public RTLevelBase ParentRuntime { get; set; }
 
         public float StartTime { get; set; }
 

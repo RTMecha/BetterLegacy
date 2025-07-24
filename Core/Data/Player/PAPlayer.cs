@@ -8,6 +8,7 @@ using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Data.Player
@@ -112,6 +113,8 @@ namespace BetterLegacy.Core.Data.Player
                     RuntimePlayer.UpdateTail(health, RuntimePlayer.rb.position);
             }
         }
+
+        public RTLevelBase ParentRuntime { get; set; }
 
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PAPlayer;
 

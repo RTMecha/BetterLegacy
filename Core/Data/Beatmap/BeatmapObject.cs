@@ -492,6 +492,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public SelectObject selector;
 
+        public RTLevelBase ParentRuntime { get; set; }
+
         /// <summary>
         /// Cached runtime object.
         /// </summary>
@@ -1492,7 +1494,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </param>
         /// <param name="valueIndex">Axis index to interpolate.</param>
         /// <returns>Returns a single value based on the event.</returns>
-        public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, RTLevel.Current.CurrentTime - StartTime);
+        public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, this.GetParentRuntime().CurrentTime - StartTime);
 
         /// <summary>
         /// Interpolates an animation from the object.
@@ -1601,7 +1603,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="includeDepth">If depth should be considered.</param>
         /// <returns>Returns an accurate object position.</returns>
-        public Vector3 InterpolateChainPosition(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChainPosition(RTLevel.Current.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+        public Vector3 InterpolateChainPosition(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChainPosition(this.GetParentRuntime().CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
 
         /// <summary>
         /// Gets the accurate object position regardless of whether it's empty or not. (does not include homing nor random)
@@ -1647,7 +1649,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(RTLevel.Current.CurrentTime - StartTime, includeOffsets, includeSelf);
+        public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(this.GetParentRuntime().CurrentTime - StartTime, includeOffsets, includeSelf);
 
         public Vector2 InterpolateChainScale(float time, bool includeOffsets = true, bool includeSelf = true)
         {
@@ -1676,7 +1678,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(RTLevel.Current.CurrentTime - StartTime, includeOffsets, includeSelf);
+        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(this.GetParentRuntime().CurrentTime - StartTime, includeOffsets, includeSelf);
 
         public float InterpolateChainRotation(float time, bool includeOffsets = true, bool includeSelf = true)
         {
@@ -1705,7 +1707,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public ObjectTransform InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(RTLevel.Current.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+        public ObjectTransform InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
 
         public ObjectTransform InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
         {
@@ -1977,7 +1979,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (shouldParent)
             {
                 Parent = beatmapObjectToParentTo;
-                RTLevel.Current?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
+                this.GetParentRuntime()?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
 
                 if (renderParent)
                     ObjectEditor.inst.RenderParent(this);
@@ -2008,7 +2010,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return canParent;
         }
 
-        public void UpdateParentChain() => RTLevel.Current?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
+        public void UpdateParentChain() => this.GetParentRuntime()?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
 
         #endregion
 

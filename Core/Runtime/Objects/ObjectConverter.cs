@@ -171,10 +171,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             visual.colorSequence = beatmapObject.cachedSequences.ColorSequence;
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
 
-            var runtimeObject = new RTBeatmapObject(beatmapObject, parentObjects, visual);
+            var runtimeObject = new RTBeatmapObject(beatmapObject, parentObjects, visual, runtimeLevel);
 
             runtimeObject.SetActive(false);
 
+            beatmapObject.ParentRuntime = runtimeLevel;
             beatmapObject.runtimeObject = runtimeObject;
 
             return runtimeObject;
@@ -326,8 +327,10 @@ namespace BetterLegacy.Core.Runtime.Objects
             var runtimeModifiers = new RTModifiers(
                     beatmapObject.modifiers, beatmapObject, beatmapObject.orderModifiers,
                     beatmapObject.ignoreLifespan ? -SoundManager.inst.MusicLength : beatmapObject.StartTime,
-                    beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration
+                    beatmapObject.ignoreLifespan ? SoundManager.inst.MusicLength : beatmapObject.StartTime + beatmapObject.SpawnDuration,
+                    runtimeLevel
                 );
+            beatmapObject.ParentRuntime = runtimeLevel;
             beatmapObject.runtimeModifiers = runtimeModifiers;
             return runtimeModifiers;
         }
@@ -405,7 +408,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             var parent = BackgroundManager.inst.backgroundParent;
 
             if (!string.IsNullOrEmpty(backgroundObject.layer) &&
-                RTLevel.Current.backgroundLayers.TryFind(x => x.backgroundLayer && x.backgroundLayer.id == backgroundObject.layer, out BackgroundLayerObject backgroundLayerObject) &&
+                runtimeLevel.backgroundLayers.TryFind(x => x.backgroundLayer && x.backgroundLayer.id == backgroundObject.layer, out BackgroundLayerObject backgroundLayerObject) &&
                 backgroundLayerObject.gameObject)
             {
                 parent = backgroundLayerObject.gameObject.transform;
@@ -447,7 +450,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 }
             }
 
-            var runtimeObject = new RTBackgroundObject(backgroundObject, renderers);
+            var runtimeObject = new RTBackgroundObject(backgroundObject, renderers, runtimeLevel);
 
             runtimeObject.SetActive(false);
             runtimeObject.UpdateShape(backgroundObject.Shape, backgroundObject.ShapeOption);
@@ -455,6 +458,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (CoreHelper.InEditor)
                 runtimeObject.hidden = backgroundObject.editorData.hidden;
 
+            backgroundObject.ParentRuntime = runtimeLevel;
             backgroundObject.runtimeObject = runtimeObject;
 
             return runtimeObject;
@@ -519,8 +523,10 @@ namespace BetterLegacy.Core.Runtime.Objects
             var runtimeModifiers = new RTModifiers(
                     backgroundObject.modifiers, backgroundObject, backgroundObject.orderModifiers,
                     backgroundObject.ignoreLifespan ? -SoundManager.inst.MusicLength : backgroundObject.StartTime,
-                    backgroundObject.ignoreLifespan ? SoundManager.inst.MusicLength : backgroundObject.StartTime + backgroundObject.SpawnDuration
+                    backgroundObject.ignoreLifespan ? SoundManager.inst.MusicLength : backgroundObject.StartTime + backgroundObject.SpawnDuration,
+                    runtimeLevel
                 );
+            backgroundObject.ParentRuntime = runtimeLevel;
             backgroundObject.runtimeModifiers = runtimeModifiers;
             return runtimeModifiers;
         }
@@ -560,6 +566,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var runtimeObject = new RTPrefabObject(prefab, prefabObject, runtimeLevel);
             runtimeObject.Load();
+            prefabObject.ParentRuntime = runtimeLevel;
             prefabObject.runtimeObject = runtimeObject;
 
             return runtimeObject;
@@ -597,8 +604,10 @@ namespace BetterLegacy.Core.Runtime.Objects
             var runtimeModifiers = new RTPrefabModifiers(
                     prefabObject.modifiers, prefabObject, prefabObject.orderModifiers,
                     prefabObject.ignoreLifespan ? -SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset,
-                    prefabObject.ignoreLifespan ? SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration
+                    prefabObject.ignoreLifespan ? SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration,
+                    runtimeLevel
                 );
+            prefabObject.ParentRuntime = runtimeLevel;
             prefabObject.runtimeModifiers = runtimeModifiers;
             return runtimeModifiers;
         }

@@ -242,7 +242,7 @@ namespace BetterLegacy.Core.Helpers
                                 }
                             }
 
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
@@ -250,7 +250,7 @@ namespace BetterLegacy.Core.Helpers
                             prefabObject.events[0].values[0] = -prefabObject.events[0].values[0];
                             prefabObject.events[1].values[0] = -prefabObject.events[1].values[0];
                             prefabObject.events[2].values[0] = -prefabObject.events[2].values[0];
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                            prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
@@ -286,14 +286,14 @@ namespace BetterLegacy.Core.Helpers
                                 }
                             }
 
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
                             prefabObject.events[0].values[1] = -prefabObject.events[0].values[1];
                             prefabObject.events[1].values[1] = -prefabObject.events[1].values[1];
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                            prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
                             break;
                         }
                     case TimelineObject.TimelineReferenceType.BackgroundObject: {
@@ -314,7 +314,7 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
 
             return true;
         }
@@ -369,8 +369,9 @@ namespace BetterLegacy.Core.Helpers
 
                 if (ObjectEditor.UpdateObjects)
                 {
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                    var runtime = beatmapObject.GetParentRuntime();
+                    runtime?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    runtime?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                 }
             }
         }
@@ -421,8 +422,9 @@ namespace BetterLegacy.Core.Helpers
 
                 if (ObjectEditor.UpdateObjects)
                 {
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
+                    var runtime = beatmapObject.GetParentRuntime();
+                    runtime?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    runtime?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
                 }
             }
         }

@@ -6,6 +6,11 @@
     public interface IRTObject
     {
         /// <summary>
+        /// The runtime that spawned this object.
+        /// </summary>
+        public RTLevelBase ParentRuntime { get; set; }
+
+        /// <summary>
         /// Time the object spawns at.
         /// </summary>
         public float StartTime { get; set; }

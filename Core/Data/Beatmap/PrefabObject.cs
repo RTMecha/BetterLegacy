@@ -226,9 +226,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var st = StartTime + prefab.offset;
                 return autoKillType switch
                 {
-                    PrefabAutoKillType.Regular => Runtime.RTLevel.Current.FixedTime >= st && Runtime.RTLevel.Current.FixedTime <= st + GetObjectLifeLength(prefab, noAutokill: true),
-                    PrefabAutoKillType.SongTime => Runtime.RTLevel.Current.FixedTime >= st && Runtime.RTLevel.Current.FixedTime <= autoKillOffset,
-                    PrefabAutoKillType.StartTimeOffset => Runtime.RTLevel.Current.FixedTime >= st && Runtime.RTLevel.Current.FixedTime <= st + autoKillOffset,
+                    PrefabAutoKillType.Regular => this.GetParentRuntime().FixedTime >= st && this.GetParentRuntime().FixedTime <= st + GetObjectLifeLength(prefab, noAutokill: true),
+                    PrefabAutoKillType.SongTime => this.GetParentRuntime().FixedTime >= st && this.GetParentRuntime().FixedTime <= autoKillOffset,
+                    PrefabAutoKillType.StartTimeOffset => this.GetParentRuntime().FixedTime >= st && this.GetParentRuntime().FixedTime <= st + autoKillOffset,
                     _ => false,
                 };
             }
@@ -323,6 +323,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         #endregion
 
         #region Runtime
+
+        public RTLevelBase ParentRuntime { get; set; }
 
         /// <summary>
         /// Cached runtime object.
@@ -850,7 +852,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (shouldParent)
             {
                 Parent = beatmapObjectToParentTo;
-                RTLevel.Current?.UpdatePrefab(this, PrefabObjectContext.PARENT);
+                this.GetParentRuntime()?.UpdatePrefab(this, PrefabObjectContext.PARENT);
 
                 if (renderParent)
                     RTPrefabEditor.inst.RenderPrefabObjectParent(this);
@@ -861,7 +863,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool CanParent(BeatmapObject obj, List<BeatmapObject> beatmapObjects) => true;
 
-        public void UpdateParentChain() => RTLevel.Current?.UpdatePrefab(this, PrefabObjectContext.PARENT);
+        public void UpdateParentChain() => this.GetParentRuntime()?.UpdatePrefab(this, PrefabObjectContext.PARENT);
 
         public override string ToString() => id;
 

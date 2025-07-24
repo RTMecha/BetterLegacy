@@ -53,9 +53,6 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public PrefabSpawner Spawner { get; set; } = new PrefabSpawner();
 
-        /// <summary>
-        /// The runtime that spawned this prefab.
-        /// </summary>
         public RTLevelBase ParentRuntime { get; set; }
 
         public override Transform Parent { get; }

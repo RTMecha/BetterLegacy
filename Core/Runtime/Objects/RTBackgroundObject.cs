@@ -12,10 +12,11 @@ namespace BetterLegacy.Core.Runtime.Objects
 {
     public class RTBackgroundObject : Exists, IRTObject, ICustomActivatable
     {
-        public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers)
+        public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers, RTLevelBase parentRuntime)
         {
             this.backgroundObject = backgroundObject;
 
+            ParentRuntime = parentRuntime;
             StartTime = backgroundObject.StartTime;
             KillTime = backgroundObject.StartTime + backgroundObject.SpawnDuration;
 
@@ -25,6 +26,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (baseObject)
                 top = baseObject.transform.parent;
         }
+
+        public RTLevelBase ParentRuntime { get; set; }
 
         public float StartTime { get; set; }
         public float KillTime { get; set; }

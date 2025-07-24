@@ -11,6 +11,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data;
 
@@ -269,6 +270,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Runtime
 
         public bool Enabled { get; set; } = true;
+        public RTLevelBase ParentRuntime { get; set; }
 
         public RTBackgroundObject runtimeObject;
 
