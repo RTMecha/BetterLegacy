@@ -536,6 +536,7 @@ namespace BetterLegacy.Core.Helpers
             #region Player
 
             nameof(ModifierTriggers.playerCollide) => ModifierTriggers.playerCollide,
+            nameof(ModifierTriggers.playerCollideIndex) => ModifierTriggers.playerCollideIndex,
             nameof(ModifierTriggers.playerHealthEquals) => ModifierTriggers.playerHealthEquals,
             nameof(ModifierTriggers.playerHealthLesserEquals) => ModifierTriggers.playerHealthLesserEquals,
             nameof(ModifierTriggers.playerHealthGreaterEquals) => ModifierTriggers.playerHealthGreaterEquals,
@@ -1210,6 +1211,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.spawnMultiPrefabOffsetOther) => ModifierActions.spawnMultiPrefabOffsetOther,
             nameof(ModifierActions.spawnMultiPrefabCopy) => ModifierActions.spawnMultiPrefabCopy,
             nameof(ModifierActions.clearSpawnedPrefabs) => ModifierActions.clearSpawnedPrefabs,
+            nameof(ModifierActions.setPrefabTime) => ModifierActions.setPrefabTime,
 
             #endregion
 
@@ -2377,6 +2379,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.spawnMultiPrefabOffsetOther) => ModifierActions.spawnMultiPrefabOffsetOther,
             nameof(ModifierActions.spawnMultiPrefabCopy) => ModifierActions.spawnMultiPrefabCopy,
             nameof(ModifierActions.clearSpawnedPrefabs) => ModifierActions.clearSpawnedPrefabs,
+            nameof(ModifierActions.setPrefabTime) => ModifierActions.setPrefabTime,
 
             #endregion
 
@@ -2397,13 +2400,13 @@ namespace BetterLegacy.Core.Helpers
 
             // update
             nameof(ModifierActions.updateObjects) => ModifierActions.updateObjects,
-            //nameof(ModifierActions.updateObject) => ModifierActions.updateObject,
+            nameof(ModifierActions.updateObject) => ModifierActions.updateObject,
 
             // parent
-            //nameof(ModifierActions.setParent) => ModifierActions.setParent,
-            //nameof(ModifierActions.setParentOther) => ModifierActions.setParentOther,
-            //nameof(ModifierActions.detachParent) => ModifierActions.detachParent,
-            //nameof(ModifierActions.detachParentOther) => ModifierActions.detachParentOther,
+            nameof(ModifierActions.setParent) => ModifierActions.setParent,
+            nameof(ModifierActions.setParentOther) => ModifierActions.setParentOther,
+            nameof(ModifierActions.detachParent) => ModifierActions.detachParent,
+            nameof(ModifierActions.detachParentOther) => ModifierActions.detachParentOther,
 
             #endregion
 
@@ -3257,6 +3260,7 @@ namespace BetterLegacy.Core.Helpers
             nameof(ModifierActions.spawnMultiPrefabOffsetOther) => ModifierActions.spawnMultiPrefabOffsetOther,
             nameof(ModifierActions.spawnMultiPrefabCopy) => ModifierActions.spawnMultiPrefabCopy,
             nameof(ModifierActions.clearSpawnedPrefabs) => ModifierActions.clearSpawnedPrefabs,
+            nameof(ModifierActions.setPrefabTime) => ModifierActions.setPrefabTime,
 
             #endregion
 
@@ -3277,13 +3281,13 @@ namespace BetterLegacy.Core.Helpers
 
             // update
             nameof(ModifierActions.updateObjects) => ModifierActions.updateObjects,
-            //nameof(ModifierActions.updateObject) => ModifierActions.updateObject,
+            nameof(ModifierActions.updateObject) => ModifierActions.updateObject,
 
             // parent
-            //nameof(ModifierActions.setParent) => ModifierActions.setParent,
-            //nameof(ModifierActions.setParentOther) => ModifierActions.setParentOther,
-            //nameof(ModifierActions.detachParent) => ModifierActions.detachParent,
-            //nameof(ModifierActions.detachParentOther) => ModifierActions.detachParentOther,
+            nameof(ModifierActions.setParent) => ModifierActions.setParent,
+            nameof(ModifierActions.setParentOther) => ModifierActions.setParentOther,
+            nameof(ModifierActions.detachParent) => ModifierActions.detachParent,
+            nameof(ModifierActions.detachParentOther) => ModifierActions.detachParentOther,
 
             #endregion
 
@@ -3812,13 +3816,23 @@ namespace BetterLegacy.Core.Helpers
             _ => null,
         };
 
-        public static void SetParent(BeatmapObject child, string parent)
+        public static void SetParent(IParentable child, BeatmapObject parent) => SetParent(child, parent.id);
+
+        public static void SetParent(IParentable child, string parent)
         {
-            child.customParent = parent;
-            RTLevel.Current?.UpdateObject(child, ObjectContext.PARENT_CHAIN);
+            child.CustomParent = parent;
+            child.UpdateParentChain();
 
             if (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 ObjectEditor.inst.RenderParent(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+            if (RTPrefabEditor.inst && RTPrefabEditor.inst.PrefabObjectEditor && RTPrefabEditor.inst.PrefabObjectEditor.IsCurrent && EditorTimeline.inst.CurrentSelection.isPrefabObject)
+                RTPrefabEditor.inst.RenderPrefabObjectParent(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
+        }
+
+        public static void SetObjectActive(IPrefabable prefabable, bool active)
+        {
+            if (prefabable != null && prefabable.GetRuntimeObject() is ICustomActivatable customActivatable)
+                customActivatable.SetCustomActive(active);
         }
 
         #endregion

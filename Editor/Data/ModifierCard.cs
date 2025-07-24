@@ -3378,6 +3378,12 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.setPrefabTime): {
+                        SingleGenerator(modifier, reference, "Time", 0);
+                        BoolGenerator(modifier, reference, "Use Custom Time", 1);
+
+                        break;
+                    }
 
                 #endregion
 
@@ -3983,6 +3989,12 @@ namespace BetterLegacy.Editor.Data
                 #endregion
 
                 #region Misc
+
+                case nameof(ModifierTriggers.playerCollideIndex): {
+                        IntegerGenerator(modifier, reference, "Index", 0);
+
+                        break;
+                    }
 
                 case nameof(ModifierTriggers.containsTag): {
                         StringGenerator(modifier, reference, "Tag", 0);
