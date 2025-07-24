@@ -96,15 +96,16 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void Interpolate(float time)
         {
-            if (backgroundObject.active && top && top.gameObject.activeSelf != backgroundObject.Enabled)
-                top.gameObject.SetActive(backgroundObject.Enabled);
+            var enabled = backgroundObject.Enabled && RTLevel.Current.eventEngine.bgActive;
+            if (backgroundObject.active && top && top.gameObject.activeSelf != enabled)
+                top.gameObject.SetActive(enabled);
 
             if (hidden)
                 top.gameObject.SetActive(false);
 
             var gameObject = BaseObject;
 
-            if (!backgroundObject.active || !backgroundObject.Enabled || hidden || !gameObject)
+            if (!backgroundObject.active || !enabled || hidden || !gameObject)
                 return;
 
             var beatmapTheme = CoreHelper.CurrentBeatmapTheme;

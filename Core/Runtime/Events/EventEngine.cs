@@ -1443,14 +1443,9 @@ namespace BetterLegacy.Core.Runtime.Events
         // 20 - 1
         void UpdateCameraBGActive(float x)
         {
-            bgActive = x;
-
             var i = (int)x;
-
-            BackgroundManager.inst?.backgroundParent?.gameObject?.SetActive(i == 0);
+            bgActive = i == 0;
         }
-
-        float bgActive = 0f;
 
         // 20 - 2
         void UpdateCameraBGHue(float x) => bgHue = x;
@@ -1791,6 +1786,8 @@ namespace BetterLegacy.Core.Runtime.Events
         #endregion
 
         #region Variables
+
+        public bool bgActive;
 
         public float previousAudioTime;
 
