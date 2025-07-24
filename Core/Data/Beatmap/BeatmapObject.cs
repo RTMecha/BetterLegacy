@@ -55,15 +55,18 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Parent
 
+        public string ID { get => id; set => id = value; }
+
         /// <summary>
         /// ID of the object to parent this to. This value is not saved and is temporarily used for swapping parents.
         /// </summary>
         public string customParent;
+        public string CustomParent { get => customParent; set => customParent = value; }
 
-        public string parent = string.Empty;
         /// <summary>
-        /// ID of the object to parent this to.
+        /// ID of the object to parent all spawned base objects to.
         /// </summary>
+        public string parent = string.Empty;
         public string Parent
         {
             get => customParent ?? parent;
@@ -125,6 +128,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Temporary detatches the parent (similar to <see cref="desync"/>).
         /// </summary>
         public bool detatched;
+
+        public bool ParentDetatched { get => detatched; set => detatched = value; }
 
         #endregion
 
@@ -1951,15 +1956,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a list of the objects' children.</returns>
         public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.Parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
 
-        public void SetParent(BeatmapObject beatmapObjectToParentTo, bool renderParent = true) => TrySetParent(beatmapObjectToParentTo, renderParent);
-
         /// <summary>
         /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
         /// </summary>
         /// <param name="beatmapObjectToParentTo">Object to try parenting to.</param>
         /// <param name="renderParent">If parent editor should render.</param>
         /// <returns>Returns true if the <see cref="BeatmapObject"/> was successfully parented, otherwise returns false.</returns>
-        public bool TrySetParent(BeatmapObject beatmapObjectToParentTo, bool renderParent = true)
+        public bool TrySetParent(string beatmapObjectToParentTo, bool renderParent = true)
         {
             var dictionary = new Dictionary<string, bool>();
             var beatmapObjects = GameData.Current.beatmapObjects;
@@ -1969,11 +1972,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             dictionary[id] = false;
 
-            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo.id, out bool value) && value;
+            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo, out bool value) && value;
 
             if (shouldParent)
             {
-                Parent = beatmapObjectToParentTo.id;
+                Parent = beatmapObjectToParentTo;
                 RTLevel.Current?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
 
                 if (renderParent)
@@ -1982,20 +1985,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return shouldParent;
         }
-
-        /// <summary>
-        /// Checks if another object can be parented to this object.
-        /// </summary>
-        /// <param name="obj">Object to check the parent compatibility of.</param>
-        /// <returns>Returns true if <paramref name="obj"/> can be parented to this.</returns>
-        public bool CanParent(BeatmapObject obj) => CanParent(obj, GameData.Current.beatmapObjects);
-
-        /// <summary>
-        /// Checks if another object can be parented to this object.
-        /// </summary>
-        /// <param name="obj">Object to check the parent compatibility of.</param>
-        /// <param name="beatmapObjects">Beatmap objects to search through.</param>
-        /// <returns>Returns true if <paramref name="obj"/> can be parented to this.</returns>
+        
         public bool CanParent(BeatmapObject obj, List<BeatmapObject> beatmapObjects)
         {
             if (string.IsNullOrEmpty(obj.Parent))
@@ -2017,6 +2007,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return canParent;
         }
+
+        public void UpdateParentChain() => RTLevel.Current?.UpdateObject(this, ObjectContext.PARENT_CHAIN);
 
         #endregion
 

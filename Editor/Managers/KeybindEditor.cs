@@ -1069,6 +1069,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case TimelineObject.TimelineReferenceType.PrefabObject: {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
+                            prefabObject.customParent = null;
                             RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
                             prefabObject.modifiers.ForEach(modifier =>
                             {

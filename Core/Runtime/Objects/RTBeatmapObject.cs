@@ -8,7 +8,7 @@ using BetterLegacy.Core.Runtime.Objects.Visual;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
-    public class RTBeatmapObject : Exists, IRTObject
+    public class RTBeatmapObject : Exists, IRTObject, ICustomActivatable
     {
         public RTBeatmapObject(BeatmapObject beatmapObject, List<ParentObject> parentObjects, VisualObject visualObject)
         {
@@ -174,7 +174,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// Sets the top object active.
         /// </summary>
         /// <param name="active">Active state to set.</param>
-        public virtual void SetBaseActive(bool active)
+        public void SetCustomActive(bool active)
         {
             if (!top)
                 return;

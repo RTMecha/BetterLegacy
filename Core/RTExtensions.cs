@@ -454,6 +454,27 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Tries to find a match in the list and outputs the first occurance of the match.
         /// </summary>
+        /// <typeparam name="T">Type of the <see cref="IEnumerable{T}"/>.</typeparam>
+        /// <param name="match">Match to find.</param>
+        /// <param name="result">The item found.</param>
+        /// <returns>Returns true if any matches were found, otherwise returns false.</returns>
+        public static bool TryFind<T>(this IEnumerable<T> collection, Predicate<T> match, out T result)
+        {
+            foreach (var item in collection)
+            {
+                if (match(item))
+                {
+                    result = item;
+                    return true;
+                }
+            }
+            result = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to find a match in the list and outputs the first occurance of the match.
+        /// </summary>
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
         /// <param name="match">Match to find.</param>
         /// <param name="result">The item found.</param>
@@ -1616,6 +1637,43 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
+        /// </summary>
+        /// <param name="beatmapObjectToParentTo">Object to try parenting to.</param>
+        /// <param name="renderParent">If parent editor should render.</param>
+        /// <returns>Returns true if the <see cref="BeatmapObject"/> was successfully parented, otherwise returns false.</returns>
+        public static bool TrySetParent(this IParentable parentable, BeatmapObject beatmapObjectToParentTo, bool renderParent = true) => parentable.TrySetParent(beatmapObjectToParentTo.id, renderParent);
+
+        /// <summary>
+        /// Sets the parent of the object.
+        /// </summary>
+        /// <param name="parentable">Parentable reference.</param>
+        /// <param name="beatmapObjectToParentTo">Beatmap Object to parent <paramref name="parentable"/> to.</param>
+        /// <param name="renderParent">If the editor should render.</param>
+        public static void SetParent(this IParentable parentable, string beatmapObjectToParentTo, bool renderParent = true) => parentable.TrySetParent(beatmapObjectToParentTo, renderParent);
+
+        /// <summary>
+        /// Sets the parent of the object.
+        /// </summary>
+        /// <param name="parentable">Parentable reference.</param>
+        /// <param name="beatmapObjectToParentTo">Beatmap Object to parent <paramref name="parentable"/> to.</param>
+        /// <param name="renderParent">If the editor should render.</param>
+        public static void SetParent(this IParentable parentable, BeatmapObject beatmapObjectToParentTo, bool renderParent = true) => parentable.TrySetParent(beatmapObjectToParentTo.id, renderParent);
+
+        /// <summary>
+        /// Checks if another object can be parented to this object.
+        /// </summary>
+        /// <param name="obj">Object to check the parent compatibility of.</param>
+        /// <returns>Returns true if <paramref name="obj"/> can be parented to <paramref name="parentable"/>.</returns>
+        public static bool CanParent(this IParentable parentable, BeatmapObject obj)
+        {
+            if (string.IsNullOrEmpty(obj.Parent))
+                return true;
+
+            return parentable.CanParent(obj, GameData.Current.beatmapObjects);
+        }
+
+        /// <summary>
         /// Gets a <see cref="ObjectTransform"/> from a transformable object.
         /// </summary>
         /// <param name="transformable">Transformable reference.</param>
@@ -1687,6 +1745,19 @@ namespace BetterLegacy.Core
                 yield return prefabObject;
             foreach (var prefab in beatmap.Prefabs)
                 yield return prefab;
+        }
+
+        /// <summary>
+        /// Gets all parentables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of parentables.</returns>
+        public static IEnumerable<IParentable> GetParentables(this IBeatmap beatmap)
+        {
+            foreach (var beatmapObject in beatmap.BeatmapObjects)
+                yield return beatmapObject;
+            foreach (var prefabObject in beatmap.PrefabObjects)
+                yield return prefabObject;
         }
 
         /// <summary>

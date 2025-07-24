@@ -603,6 +603,19 @@ namespace BetterLegacy.Editor.Managers
             return backgroundObject.timelineObject;
         }
 
+        /// <summary>
+        /// Gets the timeline object.
+        /// </summary>
+        /// <param name="editable">Editable Object to get a timeline object from.</param>
+        /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
+        public TimelineObject GetTimelineObject(IEditable editable)
+        {
+            if (!editable.TimelineObject)
+                editable.TimelineObject = new TimelineObject(editable);
+
+            return editable.TimelineObject;
+        }
+
         public void RenderTimelineObject(TimelineObject timelineObject)
         {
             if (!timelineObject.GameObject)
@@ -790,6 +803,13 @@ namespace BetterLegacy.Editor.Managers
                 if (backgroundObject.fromPrefab && backgroundObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
                     return;
             }
+            
+            if (timelineObject.isPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                if (prefabObject.fromPrefab && prefabObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
+                    return;
+            }
 
             if (onSelectTimelineObject != null)
             {
@@ -837,6 +857,8 @@ namespace BetterLegacy.Editor.Managers
                         ObjectEditor.inst.OpenDialog(CurrentSelection.GetData<BeatmapObject>());
                     if (CurrentSelection.isBackgroundObject)
                         RTBackgroundEditor.inst.OpenDialog(CurrentSelection.GetData<BackgroundObject>());
+                    if (CurrentSelection.isPrefabObject)
+                        RTPrefabEditor.inst.OpenPrefabObjectDialog(CurrentSelection.GetData<PrefabObject>());
                 }
 
                 RTEditor.inst.prefabPickerEnabled = false;
@@ -871,6 +893,8 @@ namespace BetterLegacy.Editor.Managers
                         ObjectEditor.inst.OpenDialog(CurrentSelection.GetData<BeatmapObject>());
                     if (CurrentSelection.isBackgroundObject)
                         RTBackgroundEditor.inst.OpenDialog(CurrentSelection.GetData<BackgroundObject>());
+                    if (CurrentSelection.isPrefabObject)
+                        RTPrefabEditor.inst.OpenPrefabObjectDialog(CurrentSelection.GetData<PrefabObject>());
                 }
 
                 RTEditor.inst.prefabPickerEnabled = false;
@@ -889,7 +913,7 @@ namespace BetterLegacy.Editor.Managers
                         if (otherTimelineObject.isPrefabObject)
                         {
                             var prefabObject = otherTimelineObject.GetData<PrefabObject>();
-                            prefabObject.parent = timelineObject.ID;
+                            prefabObject.Parent = timelineObject.ID;
                             RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT, false);
                             RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
@@ -912,7 +936,7 @@ namespace BetterLegacy.Editor.Managers
                 if (CurrentSelection.isPrefabObject)
                 {
                     var prefabObject = CurrentSelection.GetData<PrefabObject>();
-                    prefabObject.parent = timelineObject.ID;
+                    prefabObject.Parent = timelineObject.ID;
                     RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.PARENT);
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
                     RTEditor.inst.parentPickerEnabled = false;

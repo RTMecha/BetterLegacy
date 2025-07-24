@@ -10,7 +10,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
-    public class RTBackgroundObject : Exists, IRTObject
+    public class RTBackgroundObject : Exists, IRTObject, ICustomActivatable
     {
         public RTBackgroundObject(BackgroundObject backgroundObject, List<Renderer> renderers)
         {
@@ -83,6 +83,12 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             if (gameObject)
                 gameObject.SetActive(active);
+        }
+
+        public void SetCustomActive(bool active)
+        {
+            if (backgroundObject)
+                backgroundObject.Enabled = active;
         }
 
         public void Interpolate(float time)

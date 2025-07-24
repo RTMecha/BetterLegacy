@@ -3113,20 +3113,14 @@ namespace BetterLegacy.Core.Helpers
 
         public static void enableObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is PrefabObject prefabObject)
-            {
-                prefabObject.runtimeObject?.SetPrefabActive(modifier.GetBool(0, true, variables));
-                return;
-            }
-
-            if (reference is not BeatmapObject beatmapObject)
+            if (reference is not IPrefabable prefabable)
                 return;
 
             var value = modifier.GetValue(0, variables);
             if (value == "0")
                 value = "True";
 
-            beatmapObject.runtimeObject?.SetBaseActive(Parser.TryParse(value, true));
+            ModifiersHelper.SetObjectActive(prefabable, Parser.TryParse(value, true));
         }
         
         public static void enableObjectTree(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3150,7 +3144,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-                list[i].runtimeObject?.SetBaseActive(enabled);
+                list[i].runtimeObject?.SetCustomActive(enabled);
         }
         
         public static void enableObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3160,11 +3154,13 @@ namespace BetterLegacy.Core.Helpers
 
             var enabled = modifier.GetBool(2, true, variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
-            if (!list.IsEmpty())
-                foreach (var beatmapObject in list)
-                    beatmapObject.runtimeObject?.SetBaseActive(enabled);
+            if (prefabables.IsEmpty())
+                return;
+
+            foreach (var other in prefabables)
+                ModifiersHelper.SetObjectActive(other, enabled);
         }
         
         public static void enableObjectTreeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3192,7 +3188,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-                list[i].runtimeObject?.SetBaseActive(enabled);
+                list[i].runtimeObject?.SetCustomActive(enabled);
         }
 
         // if this ever needs to be updated, add a "version" int number to modifiers that increment each time a major change was done to the modifier.
@@ -3214,19 +3210,19 @@ namespace BetterLegacy.Core.Helpers
                 if (string.IsNullOrEmpty(tag))
                     continue;
 
-                var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, tag);
+                var list = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, tag);
                 if (list.IsEmpty())
                     continue;
 
-                foreach (var beatmapObject in list)
-                    beatmapObject.runtimeObject?.SetBaseActive(innerEnabled);
+                foreach (var other in list)
+                    ModifiersHelper.SetObjectActive(other, innerEnabled);
             }
         }
 
         public static void disableObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is BeatmapObject beatmapObject)
-                beatmapObject.runtimeObject?.SetBaseActive(false);
+                beatmapObject.runtimeObject?.SetCustomActive(false);
         }
 
         public static void disableObjectTree(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3247,7 +3243,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-                list[i].runtimeObject?.SetBaseActive(false);
+                list[i].runtimeObject?.SetCustomActive(false);
         }
 
         public static void disableObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3259,7 +3255,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!list.IsEmpty())
                 foreach (var beatmapObject in list)
-                    beatmapObject.runtimeObject?.SetBaseActive(false);
+                    beatmapObject.runtimeObject?.SetCustomActive(false);
         }
 
         public static void disableObjectTreeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3285,7 +3281,7 @@ namespace BetterLegacy.Core.Helpers
             var list = modifier.GetResult<List<BeatmapObject>>();
 
             for (int i = 0; i < list.Count; i++)
-                list[i].runtimeObject?.SetBaseActive(false);
+                list[i].runtimeObject?.SetCustomActive(false);
         }
 
         public static void setActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6441,6 +6437,15 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void setPrefabTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is PrefabObject prefabObject && prefabObject.runtimeObject)
+            {
+                prefabObject.runtimeObject.CustomTime = modifier.GetFloat(0, 0f, variables);
+                prefabObject.runtimeObject.UseCustomTime = modifier.GetBool(1, false, variables);
+            }
+        }
+
         #endregion
 
         #region Ranking
@@ -6543,69 +6548,84 @@ namespace BetterLegacy.Core.Helpers
         
         public static void updateObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
+            if (modifier.constant || reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0));
+            var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0));
 
-            if (modifier.constant || list.IsEmpty())
+            if (prefabables.IsEmpty())
                 return;
 
-            foreach (var bm in list)
-                RTLevel.Current?.UpdateObject(bm, recalculate: false);
+            foreach (var other in prefabables)
+            {
+                if (other is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                if (other is BackgroundObject backgroundObject)
+                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                if (other is PrefabObject prefabObject)
+                    RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+            }
             RTLevel.Current?.RecalculateObjectStates();
         }
         
         public static void setParent(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (modifier.constant || reference is not IPrefabable prefabable || reference is not IParentable child)
                 return;
 
             var group = modifier.GetValue(0, variables);
             if (group == string.Empty)
-                ModifiersHelper.SetParent(beatmapObject, string.Empty);
-            else if (GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, group, out BeatmapObject target) && beatmapObject.CanParent(target))
-                ModifiersHelper.SetParent(beatmapObject, target.id);
+                ModifiersHelper.SetParent(child, string.Empty);
+            else if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target) && child.CanParent(target))
+                ModifiersHelper.SetParent(child, target);
             else
-                CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {beatmapObject.name}\nID: {beatmapObject.id}");
+                CoreHelper.LogError($"CANNOT PARENT OBJECT!\nID: {child.ID}");
         }
         
         public static void setParentOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || reference is not BeatmapObject beatmapObject)
+            if (modifier.constant || reference is not IPrefabable prefabable || reference is not BeatmapObject parent)
                 return;
 
             var group = modifier.GetValue(2, variables);
 
             BeatmapObject target = null;
-            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, group, out BeatmapObject targetAAA))
+            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject targetAAA))
                 target = targetAAA;
-            if (!target)
-                target = beatmapObject;
+            if (target == null)
+                target = parent;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+            var parentables = GameData.Current.FindParentables(modifier, prefabable, modifier.GetValue(0, variables));
 
             var isEmpty = modifier.GetBool(1, false, variables);
 
             bool failed = false;
-            list.ForLoop(beatmapObject =>
+            foreach (var parentable in parentables)
             {
                 if (isEmpty)
-                    ModifiersHelper.SetParent(beatmapObject, string.Empty);
-                else if (beatmapObject.CanParent(target))
-                    ModifiersHelper.SetParent(beatmapObject, target.id);
+                    ModifiersHelper.SetParent(parentable, string.Empty);
+                else if (parentable.CanParent(target))
+                    ModifiersHelper.SetParent(parentable, target);
                 else
                     failed = true;
-            });
+            }
 
             if (failed)
-                CoreHelper.LogError($"CANNOT PARENT OBJECT!\nName: {beatmapObject.name}\nID: {beatmapObject.id}");
+                CoreHelper.LogError($"CANNOT PARENT OBJECT!\nID: {parent.ID}");
         }
         
         public static void detachParent(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (!modifier.constant && reference is BeatmapObject beatmapObject)
-                beatmapObject.detatched = modifier.GetBool(0, true, variables);
+            if (modifier.constant || reference is not IParentable parentable)
+                return;
+
+            parentable.ParentDetatched = modifier.GetBool(0, true, variables);
+
+            if (reference is not PrefabObject prefabObject || !prefabObject.runtimeObject)
+                return;
+
+            foreach (var beatmapObject in prefabObject.runtimeObject.Spawner.BeatmapObjects)
+                beatmapObject.detatched = prefabObject.detatched;
         }
         
         public static void detachParentOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -6613,13 +6633,18 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+            var parentables = GameData.Current.FindParentables(modifier, prefabable, modifier.GetValue(1));
             var detach = modifier.GetBool(0, true);
 
-            for (int i = 0; i < list.Count; i++)
+            foreach (var other in parentables)
             {
-                var beatmapObject = list[i];
-                beatmapObject.detatched = detach;
+                other.ParentDetatched = detach;
+
+                if (other is not PrefabObject prefabObject || !prefabObject.runtimeObject)
+                    continue;
+
+                foreach (var beatmapObject in prefabObject.runtimeObject.Spawner.BeatmapObjects)
+                    beatmapObject.detatched = prefabObject.detatched;
             }
         }
 

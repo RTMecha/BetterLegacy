@@ -14,10 +14,8 @@ namespace BetterLegacy.Core.Runtime.Objects
     /// <summary>
     /// Controls spawned objects from a Prefab Object at runtime.
     /// </summary>
-    public class RTPrefabObject : RTLevelBase, IRTObject
+    public class RTPrefabObject : RTLevelBase, IRTObject, ICustomActivatable
     {
-        #region Core
-
         public RTPrefabObject(Prefab prefab, PrefabObject prefabObject, RTLevelBase parentRuntime)
         {
             Prefab = prefab;
@@ -60,7 +58,17 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override Transform Parent { get; }
 
-        public override float FixedTime => (AudioManager.inst.CurrentAudioSource.time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
+        public override float FixedTime => UseCustomTime ? CustomTime : GetFixedTime(ParentRuntime.FixedTime);
+
+        /// <summary>
+        /// Custom interpolation time.
+        /// </summary>
+        public float CustomTime { get; set; }
+
+        /// <summary>
+        /// If the runtime should use the parent's fixed time.
+        /// </summary>
+        public bool UseCustomTime { get; set; }
 
         /// <summary>
         /// If the Runtime Prefab Object is currently active.
@@ -180,7 +188,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// Sets the active state of the prefab object. Used for modifiers.
         /// </summary>
         /// <param name="active">Active state.</param>
-        public void SetPrefabActive(bool active)
+        public void SetCustomActive(bool active)
         {
             if (Active == active)
                 return;
@@ -378,6 +386,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     subPrefabObjectCopy.StartTime += timeToAdd;
 
                     subPrefabObjectCopy.originalID = subPrefabObject.id;
+                    GameData.Current.prefabObjects.Add(subPrefabObjectCopy);
                     prefabObject.expandedObjects.Add(subPrefabObjectCopy);
                     Spawner.PrefabObjects.Add(subPrefabObjectCopy);
                 }
@@ -386,6 +395,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Calculates the runtimes' current time.
+        /// </summary>
+        /// <param name="time">Current time.</param>
+        /// <returns>Returns the calculated runtime time.</returns>
+        public float GetFixedTime(float time) => (time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
     }
 }

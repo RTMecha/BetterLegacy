@@ -1259,7 +1259,7 @@ namespace BetterLegacy.Core.Runtime
                             if (!beatmapObject || !beatmapObject.fromPrefabBase)
                                 continue;
 
-                            beatmapObject.Parent = prefabObject.parent;
+                            beatmapObject.Parent = prefabObject.Parent;
                             beatmapObject.parentType = prefabObject.parentType;
                             beatmapObject.parentOffsets = prefabObject.parentOffsets;
                             beatmapObject.parentAdditive = prefabObject.parentAdditive;

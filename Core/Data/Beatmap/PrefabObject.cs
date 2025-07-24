@@ -10,8 +10,10 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -90,12 +92,27 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Parent
 
+        public string ID { get => id; set => id = value; }
+
+        /// <summary>
+        /// ID of the object to parent this to. This value is not saved and is temporarily used for swapping parents.
+        /// </summary>
+        public string customParent;
+        public string CustomParent { get => customParent; set => customParent = value; }
+
         /// <summary>
         /// ID of the object to parent all spawned base objects to.
         /// </summary>
         public string parent;
-
-        public string Parent { get => parent; set => parent = value; }
+        public string Parent
+        {
+            get => customParent ?? parent;
+            set
+            {
+                customParent = null;
+                parent = value;
+            }
+        }
 
         /// <summary>
         /// Parent delay values.
@@ -143,6 +160,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool ParentDesync { get => desync; set => desync = value; }
 
         public float ParentDesyncOffset { get; set; }
+
+        /// <summary>
+        /// Temporary detatches the parent (similar to <see cref="desync"/>).
+        /// </summary>
+        public bool detatched;
+
+        public bool ParentDetatched { get => detatched; set => detatched = value; }
 
         #endregion
 
@@ -359,6 +383,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             id = newID ? LSText.randomString(16) : orig.id;
             prefabID = orig.prefabID;
             startTime = orig.StartTime;
+            prefabInstanceID = orig.prefabInstanceID;
 
             autoKillOffset = orig.autoKillOffset;
             autoKillType = orig.autoKillType;
@@ -809,6 +834,34 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public IRTObject GetRuntimeObject() => runtimeObject;
+
+        public bool TrySetParent(string beatmapObjectToParentTo, bool renderParent = true)
+        {
+            var dictionary = new Dictionary<string, bool>();
+            var beatmapObjects = GameData.Current.beatmapObjects;
+
+            foreach (var obj in beatmapObjects)
+                dictionary[obj.id] = CanParent(obj, beatmapObjects);
+
+            dictionary[id] = false;
+
+            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo, out bool value) && value;
+
+            if (shouldParent)
+            {
+                Parent = beatmapObjectToParentTo;
+                RTLevel.Current?.UpdatePrefab(this, PrefabObjectContext.PARENT);
+
+                if (renderParent)
+                    RTPrefabEditor.inst.RenderPrefabObjectParent(this);
+            }
+
+            return shouldParent;
+        }
+
+        public bool CanParent(BeatmapObject obj, List<BeatmapObject> beatmapObjects) => true;
+
+        public void UpdateParentChain() => RTLevel.Current?.UpdatePrefab(this, PrefabObjectContext.PARENT);
 
         public override string ToString() => id;
 
