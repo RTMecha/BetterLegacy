@@ -1305,7 +1305,11 @@ namespace BetterLegacy.Core.Helpers
             return time > modifier.GetFloat(0, 0f, variables);
         }
 
-        public static bool containsTag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => reference is IModifyable modifyable && modifyable.Tags.Contains(modifier.GetValue(0, variables));
+        public static bool containsTag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is IPrefabable prefabable && prefabable.FromPrefab && prefabable.TryGetPrefabObject(out PrefabObject prefabObject) &&
+                prefabObject.Tags.Contains(modifier.GetValue(0, variables)) || reference is IModifyable modifyable && modifyable.Tags.Contains(modifier.GetValue(0, variables));
+        }
 
         public static bool inEditor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => CoreHelper.InEditor;
         
