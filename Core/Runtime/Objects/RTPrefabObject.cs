@@ -152,7 +152,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override void Clear()
         {
-            CoreHelper.Log($"Cleaning up runtime prefab {Prefab}");
+            //CoreHelper.Log($"Cleaning up runtime prefab {Prefab}");
             base.Clear();
             CoreHelper.Delete(Parent);
             Spawner?.Clear();
