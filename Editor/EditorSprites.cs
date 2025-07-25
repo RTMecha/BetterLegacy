@@ -19,6 +19,11 @@ namespace BetterLegacy.Editor
         {
             try
             {
+                DownArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_down{FileFormat.PNG.Dot()}"));
+                LeftArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_left{FileFormat.PNG.Dot()}"));
+                RightArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_right{FileFormat.PNG.Dot()}"));
+                UpArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_up{FileFormat.PNG.Dot()}"));
+
                 AddSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_add{FileFormat.PNG.Dot()}"));
                 EditSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_edit{FileFormat.PNG.Dot()}"));
                 CloseSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_close{FileFormat.PNG.Dot()}"));
@@ -37,6 +42,9 @@ namespace BetterLegacy.Editor
                 FlagEndSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_end{FileFormat.PNG.Dot()}"));
 
                 CircleSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_circle{FileFormat.PNG.Dot()}"));
+
+                QuestionSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_question{FileFormat.PNG.Dot()}"));
+                ExclaimSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_exclaim{FileFormat.PNG.Dot()}"));
             }
             catch (Exception ex)
             {
@@ -45,6 +53,15 @@ namespace BetterLegacy.Editor
         }
 
         #region Sprites
+
+        #region Directions
+
+        public static Sprite DownArrow { get; set; }
+        public static Sprite LeftArrow { get; set; }
+        public static Sprite RightArrow { get; set; }
+        public static Sprite UpArrow { get; set; }
+
+        #endregion
 
         public static Sprite AddSprite { get; set; }
 
@@ -75,6 +92,9 @@ namespace BetterLegacy.Editor
         public static Sprite FlagEndSprite { get; set; }
 
         public static Sprite CircleSprite { get; set; }
+
+        public static Sprite QuestionSprite { get; set; }
+        public static Sprite ExclaimSprite { get; set; }
 
         #endregion
     }
