@@ -2525,19 +2525,20 @@ namespace BetterLegacy.Core.Helpers
             float offset = modifier.GetFloat(5, 0f, variables);
             float min = modifier.GetFloat(6, -9999f, variables);
             float max = modifier.GetFloat(7, 9999f, variables);
-            bool visual = modifier.GetBool(8, false, variables);
+            bool useVisual = modifier.GetBool(8, false, variables);
             float loop = modifier.GetFloat(9, 9999f, variables);
 
             if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(10, variables), out BeatmapObject bm))
                 return;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
             if (fromType < 0 || fromType > 2)
                 return;
 
-            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
+            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
         }
 
         public static void getMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -5836,7 +5837,8 @@ namespace BetterLegacy.Core.Helpers
             var time = ModifiersHelper.GetTime(prefabable, bm);
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
             if (toType < 0 || toType > 3)
                 return;
@@ -5862,8 +5864,8 @@ namespace BetterLegacy.Core.Helpers
                     _ => 0f,
                 });
             }
-            else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
-                transformable.SetTransform(toType, toAxis, Mathf.Clamp((levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
+            else if (useVisual && bm.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+                transformable.SetTransform(toType, toAxis, Mathf.Clamp((runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis) - offset) * multiply % loop, min, max));
             else if (useVisual)
                 transformable.SetTransform(toType, toAxis, Mathf.Clamp(fromType switch
                 {
@@ -5897,7 +5899,8 @@ namespace BetterLegacy.Core.Helpers
                 var time = ModifiersHelper.GetTime(prefabable, bm);
 
                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+                if (!useVisual)
+                    fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
                 if (toType < 0 || toType > 3)
                     return;
@@ -5952,9 +5955,9 @@ namespace BetterLegacy.Core.Helpers
                         transformable.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                     }
                 }
-                else if (useVisual && bm.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
+                else if (useVisual && bm.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
                 {
-                    var axis = levelObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
+                    var axis = runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
 
                     var numberVariables = evaluatable.GetObjectVariables();
                     ModifiersHelper.SetVariables(variables, numberVariables);

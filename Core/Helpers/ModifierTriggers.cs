@@ -845,17 +845,17 @@ namespace BetterLegacy.Core.Helpers
             float min = modifier.GetFloat(6, -9999f, variables);
             float max = modifier.GetFloat(7, 9999f, variables);
             float equals = modifier.GetFloat(8, 0f, variables);
-            bool visual = modifier.GetBool(9, false, variables);
+            bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
             if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
-
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) == equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) == equals;
         }
         
         public static bool axisLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -872,17 +872,17 @@ namespace BetterLegacy.Core.Helpers
             float min = modifier.GetFloat(6, -9999f, variables);
             float max = modifier.GetFloat(7, 9999f, variables);
             float equals = modifier.GetFloat(8, 0f, variables);
-            bool visual = modifier.GetBool(9, false, variables);
+            bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
             if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
-
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) <= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) <= equals;
         }
         
         public static bool axisGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -899,17 +899,17 @@ namespace BetterLegacy.Core.Helpers
             float min = modifier.GetFloat(6, -9999f, variables);
             float max = modifier.GetFloat(7, 9999f, variables);
             float equals = modifier.GetFloat(8, 0f, variables);
-            bool visual = modifier.GetBool(9, false, variables);
+            bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
             if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
-
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) >= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) >= equals;
         }
         
         public static bool axisLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -926,17 +926,17 @@ namespace BetterLegacy.Core.Helpers
             float min = modifier.GetFloat(6, -9999f, variables);
             float max = modifier.GetFloat(7, 9999f, variables);
             float equals = modifier.GetFloat(8, 0f, variables);
-            bool visual = modifier.GetBool(9, false, variables);
+            bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
             if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
-
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) < equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) < equals;
         }
         
         public static bool axisGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -953,17 +953,17 @@ namespace BetterLegacy.Core.Helpers
             float min = modifier.GetFloat(6, -9999f, variables);
             float max = modifier.GetFloat(7, 9999f, variables);
             float equals = modifier.GetFloat(8, 0f, variables);
-            bool visual = modifier.GetBool(9, false, variables);
+            bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
             if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                 return false;
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-            fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
-
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) > equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) > equals;
         }
 
         public static bool eventEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
