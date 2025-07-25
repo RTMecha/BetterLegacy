@@ -3,17 +3,23 @@
 ## Features
 ### Core
 - Added storeLocalVariables modifiers. This stores the current local modifier variables to this modifier and passes it to other modifiers in future tick updates.
-- Added playerDrag modifiers. This drags the player with the object but allows it to move.
+- Added playerDrag modifiers. This drags the player with the object but allows it to move. Currently the "Use Rotation" value does not work.
+- Added eventEquals modifiers. These compare an event keyframes' value at a specified time or the current time if the "Time" value is left empty.
+- Added onLevelStart and onLevelRewind modifiers.
 
 ## Changes
 ### Core
 - containsTag modifier now checks for prefab object tags if the object was spawned from a prefab.
+
+### Editor
+- Reorganized the default modifiers list and added icons that display the type of the modifier. 
 
 ## Fixes
 - Fixed some issues related to recursive prefabs. Objects spawned from the prefab should now reference the prefabs' runtime instead of the main runtime.
 - Optimized hidden prefab objects in editor.
 - Fixed the Fade Colors list in the Background Object editor.
 - Fixed spawnPrefabs modifiers being broken.
+- Fixed objects stored in a Prefab Object rendering in the editor timeline on level reload.
 
 # snapshot-2025.7.3 - (pre-1.8.0) [Jul 24, 2025]
 
