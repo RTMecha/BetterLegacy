@@ -1327,7 +1327,7 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var other in prefabObjects)
                 {
                     var otherPefab = other.GetPrefab();
-                    if (otherPefab && !newPrefab.prefabs.Has(x => x.id == otherPefab.id))
+                    if (otherPefab && otherPefab.id != originalPrefab.id && !newPrefab.prefabs.Has(x => x.id == otherPefab.id))
                         newPrefab.prefabs.Add(otherPefab.Copy(false));
                 }
 
