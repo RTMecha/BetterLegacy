@@ -3958,6 +3958,19 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
 
+                case nameof(ModifierTriggers.eventEquals):
+                case nameof(ModifierTriggers.eventLesserEquals):
+                case nameof(ModifierTriggers.eventGreaterEquals):
+                case nameof(ModifierTriggers.eventLesser):
+                case nameof(ModifierTriggers.eventGreater): {
+                        DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                        IntegerGenerator(modifier, reference, "Value Index", 2, 0);
+                        SingleGenerator(modifier, reference, "Time", 0, 0f);
+                        SingleGenerator(modifier, reference, "Equals", 3, 0f);
+
+                        break;
+                    }
+
                 #endregion
 
                 #region Level Rank
