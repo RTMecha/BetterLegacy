@@ -468,15 +468,15 @@ namespace BetterLegacy.Core.Runtime
                                 var child = childTree[i];
                                 var childLevelObject = child.runtimeObject;
 
-                                childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+                                childLevelObject.CameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
-                                childLevelObject.positionParent = beatmapParent.GetParentType(0);
-                                childLevelObject.scaleParent = beatmapParent.GetParentType(1);
-                                childLevelObject.rotationParent = beatmapParent.GetParentType(2);
+                                childLevelObject.PositionParent = beatmapParent.GetParentType(0);
+                                childLevelObject.ScaleParent = beatmapParent.GetParentType(1);
+                                childLevelObject.RotationParent = beatmapParent.GetParentType(2);
 
-                                childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-                                childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-                                childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
+                                childLevelObject.PositionParentOffset = beatmapParent.parallaxSettings[0];
+                                childLevelObject.ScaleParentOffset = beatmapParent.parallaxSettings[1];
+                                childLevelObject.RotationParentOffset = beatmapParent.parallaxSettings[2];
                             }
                         }
                         else
@@ -496,15 +496,15 @@ namespace BetterLegacy.Core.Runtime
                                 var child = childTree[i];
                                 var childLevelObject = child.runtimeObject;
 
-                                childLevelObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+                                childLevelObject.CameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
-                                childLevelObject.positionParent = beatmapParent.GetParentType(0);
-                                childLevelObject.scaleParent = beatmapParent.GetParentType(1);
-                                childLevelObject.rotationParent = beatmapParent.GetParentType(2);
+                                childLevelObject.PositionParent = beatmapParent.GetParentType(0);
+                                childLevelObject.ScaleParent = beatmapParent.GetParentType(1);
+                                childLevelObject.RotationParent = beatmapParent.GetParentType(2);
 
-                                childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-                                childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-                                childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
+                                childLevelObject.PositionParentOffset = beatmapParent.parallaxSettings[0];
+                                childLevelObject.ScaleParentOffset = beatmapParent.parallaxSettings[1];
+                                childLevelObject.RotationParentOffset = beatmapParent.parallaxSettings[2];
                             }
                         }
 
@@ -535,7 +535,7 @@ namespace BetterLegacy.Core.Runtime
                         if (!runtimeObject)
                             break;
 
-                        runtimeObject.depth = beatmapObject.Depth;
+                        runtimeObject.Depth = beatmapObject.Depth;
                         if (runtimeObject.visualObject)
                             runtimeObject.visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f));
 
@@ -656,9 +656,9 @@ namespace BetterLegacy.Core.Runtime
 
             if (runtimeObject)
             {
-                var top = runtimeObject.top;
+                var top = runtimeObject.Parent;
                 CoreHelper.Delete(top);
-                runtimeObject.top = null;
+                runtimeObject.Parent = null;
 
                 objectEngine?.spawner?.RemoveObject(runtimeObject, false);
                 objects.Remove(runtimeObject);
@@ -761,7 +761,7 @@ namespace BetterLegacy.Core.Runtime
                 return;
 
             var baseObject = runtimeObject.visualObject.gameObject.transform.parent;
-            baseObject.SetParent(runtimeObject.top);
+            baseObject.SetParent(runtimeObject.Parent);
 
             for (int i = 1; i < runtimeObject.parentObjects.Count; i++)
                 CoreHelper.Destroy(runtimeObject.parentObjects[i].gameObject);
@@ -783,7 +783,7 @@ namespace BetterLegacy.Core.Runtime
             var top = !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
                 parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
 
-            top.SetParent(runtimeObject.top);
+            top.SetParent(runtimeObject.Parent);
             top.localScale = Vector3.one;
 
             if (lastParent)
@@ -798,15 +798,15 @@ namespace BetterLegacy.Core.Runtime
 
             var beatmapParent = pc[pc.Count - 1];
 
-            runtimeObject.cameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+            runtimeObject.CameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
-            runtimeObject.positionParent = beatmapParent.GetParentType(0);
-            runtimeObject.scaleParent = beatmapParent.GetParentType(1);
-            runtimeObject.rotationParent = beatmapParent.GetParentType(2);
+            runtimeObject.PositionParent = beatmapParent.GetParentType(0);
+            runtimeObject.ScaleParent = beatmapParent.GetParentType(1);
+            runtimeObject.RotationParent = beatmapParent.GetParentType(2);
 
-            runtimeObject.positionParentOffset = beatmapParent.parallaxSettings[0];
-            runtimeObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
-            runtimeObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
+            runtimeObject.PositionParentOffset = beatmapParent.parallaxSettings[0];
+            runtimeObject.ScaleParentOffset = beatmapParent.parallaxSettings[1];
+            runtimeObject.RotationParentOffset = beatmapParent.parallaxSettings[2];
         }
 
         public virtual void UpdateVisualObject(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject)
