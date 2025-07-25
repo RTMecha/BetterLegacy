@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive
     {
         public BeatmapObject() : base() { }
 
@@ -390,9 +390,22 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string stringVariable = string.Empty;
 
+        /// <summary>
+        /// Position reacts to the audio.
+        /// </summary>
         public Vector3 reactivePositionOffset = Vector3.zero;
+        /// <summary>
+        /// Scale reacts to the audio.
+        /// </summary>
         public Vector3 reactiveScaleOffset = Vector3.zero;
+        /// <summary>
+        /// Rotation reacts to the audio.
+        /// </summary>
         public float reactiveRotationOffset = 0f;
+
+        public Vector3 ReactivePositionOffset { get => reactivePositionOffset; set => reactivePositionOffset = value; }
+        public Vector3 ReactiveScaleOffset { get => reactiveScaleOffset; set => reactiveScaleOffset = value; }
+        public float ReactiveRotationOffset { get => reactiveRotationOffset; set => reactiveRotationOffset = value; }
 
         /// <summary>
         /// Moves the objects' associated parent objects at this offset.
@@ -530,6 +543,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public TimelineObject timelineObject;
 
         public TimelineObject TimelineObject { get => timelineObject; set => timelineObject = value; }
+
+        public bool CanRenderInTimeline => !string.IsNullOrEmpty(id) && !FromPrefab;
 
         #endregion
 

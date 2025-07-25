@@ -553,7 +553,8 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Creating timeline objects...");
             RTEditor.inst.InfoPopup.SetInfo($"Setting first object of [ {name} ]");
-            StartCoroutine(EditorTimeline.inst.ICreateTimelineObjects());
+            EditorTimeline.inst.ClearTimelineObjects();
+            EditorTimeline.inst.timelineObjects = EditorTimeline.inst.ToTimelineObjects().ToList();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.SetCurrentCheckpoint(0);

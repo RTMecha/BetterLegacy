@@ -31,6 +31,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string layer = string.Empty;
 
+        public string ID { get => id; set => id = value; }
+
         #region Timing
 
         float startTime;
@@ -293,6 +295,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public TimelineObject timelineObject;
 
         public TimelineObject TimelineObject { get => timelineObject; set => timelineObject = value; }
+
+        public bool CanRenderInTimeline => !string.IsNullOrEmpty(id) && !FromPrefab;
 
         #endregion
 

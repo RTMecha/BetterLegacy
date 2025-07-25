@@ -375,6 +375,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public TimelineObject TimelineObject { get => timelineObject; set => timelineObject = value; }
 
+        public bool CanRenderInTimeline => !string.IsNullOrEmpty(id) && !fromModifier && !FromPrefab;
+
         #endregion
 
         #endregion

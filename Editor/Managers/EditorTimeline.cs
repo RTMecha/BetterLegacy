@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -561,55 +562,13 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// Gets the timeline object.
         /// </summary>
-        /// <param name="beatmapObject">Beatmap Object to get a timeline object from.</param>
-        /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
-        public TimelineObject GetTimelineObject(BeatmapObject beatmapObject)
-        {
-            if (beatmapObject.fromPrefab && timelineObjects.TryFind(x => x.isPrefabObject && x.ID == beatmapObject.prefabInstanceID, out TimelineObject timelineObject))
-                return timelineObject;
-
-            if (!beatmapObject.timelineObject)
-                beatmapObject.timelineObject = new TimelineObject(beatmapObject);
-
-            return beatmapObject.timelineObject;
-        }
-
-        /// <summary>
-        /// Gets the timeline object.
-        /// </summary>
-        /// <param name="prefabObject">Prefab Object to get a timeline object from.</param>
-        /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
-        public TimelineObject GetTimelineObject(PrefabObject prefabObject)
-        {
-            if (!prefabObject.timelineObject)
-                prefabObject.timelineObject = new TimelineObject(prefabObject);
-
-            return prefabObject.timelineObject;
-        }
-
-        /// <summary>
-        /// Gets the timeline object.
-        /// </summary>
-        /// <param name="backgroundObject">Background Object to get a timeline object from.</param>
-        /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
-        public TimelineObject GetTimelineObject(BackgroundObject backgroundObject)
-        {
-            if (backgroundObject.fromPrefab && timelineObjects.TryFind(x => x.isPrefabObject && x.ID == backgroundObject.prefabInstanceID, out TimelineObject timelineObject))
-                return timelineObject;
-
-            if (!backgroundObject.timelineObject)
-                backgroundObject.timelineObject = new TimelineObject(backgroundObject);
-
-            return backgroundObject.timelineObject;
-        }
-
-        /// <summary>
-        /// Gets the timeline object.
-        /// </summary>
         /// <param name="editable">Editable Object to get a timeline object from.</param>
         /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
         public TimelineObject GetTimelineObject(IEditable editable)
         {
+            if (editable is IPrefabable prefabable && prefabable.FromPrefab && timelineObjects.TryFind(x => x.isPrefabObject && x.ID == prefabable.PrefabInstanceID, out TimelineObject timelineObject))
+                return timelineObject;
+
             if (!editable.TimelineObject)
                 editable.TimelineObject = new TimelineObject(editable);
 
@@ -642,49 +601,44 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public IEnumerator ICreateTimelineObjects()
+        public void ClearTimelineObjects()
         {
             if (timelineObjects.Count > 0)
                 timelineObjects.ForEach(x => Destroy(x.GameObject));
             timelineObjects.Clear();
+        }
 
+        public IEnumerable<TimelineObject> ToTimelineObjects()
+        {
             if (!GameData.Current)
                 yield break;
 
-            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+            var editables = GameData.Current.GetEditables();
+            foreach (var editable in editables)
             {
-                var beatmapObject = GameData.Current.beatmapObjects[i];
-                if (!string.IsNullOrEmpty(beatmapObject.id) && !beatmapObject.FromPrefab)
+                if (!editable.CanRenderInTimeline)
+                    continue;
+
+                TimelineObject timelineObject = null;
+
+                try
                 {
-                    var timelineObject = GetTimelineObject(beatmapObject);
-                    timelineObject.AddToList(true);
+                    timelineObject = GetTimelineObject(editable);
+                    timelineObject.verified = true;
                     timelineObject.Init(true);
                 }
-            }
-
-            for (int i = 0; i < GameData.Current.backgroundObjects.Count; i++)
-            {
-                var backgroundObject = GameData.Current.backgroundObjects[i];
-                if (!string.IsNullOrEmpty(backgroundObject.id) && !backgroundObject.FromPrefab)
+                catch (Exception e)
                 {
-                    var timelineObject = GetTimelineObject(backgroundObject);
-                    timelineObject.AddToList(true);
-                    timelineObject.Init(true);
-                }
-            }
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine($"{RTLevel.className}Failed to convert object '{editable.ID}' to {nameof(TimelineObject)}.");
+                    stringBuilder.AppendLine($"Exception: {e.Message}");
+                    stringBuilder.AppendLine(e.StackTrace);
 
-            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
-            {
-                var prefabObject = GameData.Current.prefabObjects[i];
-                if (!string.IsNullOrEmpty(prefabObject.id))
-                {
-                    var timelineObject = GetTimelineObject(prefabObject);
-                    timelineObject.AddToList(true);
-                    timelineObject.Init(true);
+                    Debug.LogError(stringBuilder.ToString());
                 }
+                if (timelineObject)
+                    yield return timelineObject;
             }
-
-            yield break;
         }
 
         public void CreateTimelineObjects()
@@ -699,34 +653,34 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
             {
                 var beatmapObject = GameData.Current.beatmapObjects[i];
-                if (!string.IsNullOrEmpty(beatmapObject.id) && !beatmapObject.fromPrefab)
-                {
-                    var timelineObject = GetTimelineObject(beatmapObject);
-                    timelineObject.AddToList(true);
-                    timelineObject.Init(true);
-                }
+                if (string.IsNullOrEmpty(beatmapObject.id) || beatmapObject.fromPrefab)
+                    continue;
+
+                var timelineObject = GetTimelineObject(beatmapObject);
+                timelineObject.AddToList(true);
+                timelineObject.Init(true);
             }
 
             for (int i = 0; i < GameData.Current.backgroundObjects.Count; i++)
             {
                 var backgroundObject = GameData.Current.backgroundObjects[i];
-                if (!string.IsNullOrEmpty(backgroundObject.id) && !backgroundObject.fromPrefab)
-                {
-                    var timelineObject = GetTimelineObject(backgroundObject);
-                    timelineObject.AddToList(true);
-                    timelineObject.Init(true);
-                }
+                if (string.IsNullOrEmpty(backgroundObject.id) || backgroundObject.fromPrefab)
+                    continue;
+
+                var timelineObject = GetTimelineObject(backgroundObject);
+                timelineObject.AddToList(true);
+                timelineObject.Init(true);
             }
 
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
             {
                 var prefabObject = GameData.Current.prefabObjects[i];
-                if (!string.IsNullOrEmpty(prefabObject.id))
-                {
-                    var timelineObject = GetTimelineObject(prefabObject);
-                    timelineObject.AddToList(true);
-                    timelineObject.Init(true);
-                }
+                if (string.IsNullOrEmpty(prefabObject.id) || prefabObject.fromModifier || prefabObject.fromPrefab)
+                    continue;
+
+                var timelineObject = GetTimelineObject(prefabObject);
+                timelineObject.AddToList(true);
+                timelineObject.Init(true);
             }
         }
 
@@ -771,7 +725,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
             {
                 var prefabObject = GameData.Current.prefabObjects[i];
-                if (prefabObject.fromModifier)
+                if (prefabObject.fromModifier || prefabObject.fromPrefab)
                     continue;
                 var timelineObject = GetTimelineObject(prefabObject);
                 if (!timelineObject || !timelineObject.GameObject)
