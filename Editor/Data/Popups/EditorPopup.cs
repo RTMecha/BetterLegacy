@@ -95,6 +95,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string TEXT_EDITOR = "Text Editor";
         public const string FONT_SELECTOR_POPUP = "Font Selector Popup";
         public const string PINNED_EDITOR_LAYER_POPUP = "Pinned Editor Layer Popup";
+        public const string DEFAULT_TAGS_POPUP = "Default Tags Popup";
 
         #endregion
 

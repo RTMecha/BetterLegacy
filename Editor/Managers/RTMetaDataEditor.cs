@@ -25,6 +25,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -44,6 +45,8 @@ namespace BetterLegacy.Editor.Managers
 
         public MetaDataEditorDialog Dialog { get; set; }
 
+        public ContentPopup TagPopup { get; set; }
+
         #endregion
 
         #region Init
@@ -61,6 +64,16 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog = new MetaDataEditorDialog();
                 Dialog.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
+
+            try
+            {
+                TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
+                    refreshSearch: _val => RenderTagPopup());
             }
             catch (Exception ex)
             {
@@ -501,9 +514,8 @@ namespace BetterLegacy.Editor.Managers
                     var tag = metadata.song.tags[i];
                     var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
                     var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                    input.onValueChanged.ClearAll();
-                    input.text = tag;
-                    input.onValueChanged.AddListener(_val =>
+                    input.SetTextWithoutNotify(tag);
+                    input.onValueChanged.NewListener(_val =>
                     {
                         _val = RTString.ReplaceSpace(_val);
                         var oldVal = metadata.song.tags[index];
@@ -521,8 +533,7 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                    deleteStorage.button.onClick.ClearAll();
-                    deleteStorage.button.onClick.AddListener(() =>
+                    deleteStorage.button.onClick.NewListener(() =>
                     {
                         var list = metadata.song.tags.ToList();
                         var oldTag = list[index];
@@ -559,30 +570,100 @@ namespace BetterLegacy.Editor.Managers
             var addText = add.transform.Find("Text").GetComponent<Text>();
             addText.text = "Add Tag";
             var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            addButton.onClick.ClearAll();
+            var contextClickable = add.GetOrAddComponent<ContextClickable>();
+            contextClickable.onClick = pointerEventData =>
             {
+                if (pointerEventData.button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new Data.ButtonFunction("Add a Default Tag", () =>
+                        {
+                            TagPopup.Open();
+                            RenderTagPopup();
+                        }),
+                        new Data.ButtonFunction("Clear Tags", () =>
+                        {
+                            metadata.song.tags = null;
+                            RenderTags(metadata);
+                        }));
+                    return;
+                }
+
                 var list = metadata.song.tags?.ToList() ?? new List<string>();
-                list.Add("New Tag");
+                list.Add(DEFAULT_NEW_TAG);
                 metadata.song.tags = list.ToArray();
                 RenderTags(metadata);
 
-                EditorManager.inst.history.Add(new History.Command("Add MetaData Tag", () =>
-                {
-                    var list = metadata.song.tags.ToList();
-                    list.Add("New Tag");
-                    metadata.song.tags = list.ToArray();
-                    MetadataEditor.inst.OpenDialog();
-                }, () =>
-                {
-                    var list = metadata.song.tags.ToList();
-                    list.RemoveAt(list.Count - 1);
-                    metadata.song.tags = list.ToArray();
-                    MetadataEditor.inst.OpenDialog();
-                }));
-            });
+                EditorManager.inst.history.Add(new History.Command("Add MetaData Tag",
+                    () =>
+                    {
+                        var list = metadata.song.tags.ToList();
+                        list.Add(DEFAULT_NEW_TAG);
+                        metadata.song.tags = list.ToArray();
+                        MetadataEditor.inst.OpenDialog();
+                    },
+                    () =>
+                    {
+                        var list = metadata.song.tags.ToList();
+                        list.RemoveAt(list.Count - 1);
+                        metadata.song.tags = list.ToArray();
+                        MetadataEditor.inst.OpenDialog();
+                    }));
+            };
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+        }
+
+        #endregion
+
+        #region Tags
+
+        public const string DEFAULT_NEW_TAG = "new_tag";
+
+        public List<string> defaultTags = new List<string>()
+        {
+            "boss_level",
+            "joke_level",
+            "meme",
+            "flashing_lights",
+            "high_detail",
+            "reupload",
+            "remake",
+            "wip",
+            "old",
+            "experimental",
+            "feature_window",
+            "feature_video_bg",
+            "story",
+            "horror",
+        };
+
+        public void RenderTagPopup()
+        {
+            TagPopup.ClearContent();
+            foreach (var tag in defaultTags)
+            {
+                if (!RTString.SearchString(TagPopup.SearchTerm, tag))
+                    continue;
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(TagPopup.Content, "tag");
+                var storage = gameObject.GetComponent<FunctionButtonStorage>();
+
+                storage.label.text = tag;
+                storage.button.onClick.NewListener(() =>
+                {
+                    var metadata = MetaData.Current;
+                    var list = metadata.song.tags?.ToList() ?? new List<string>();
+                    list.Add(tag);
+                    metadata.song.tags = list.ToArray();
+                    RenderTags(metadata);
+                });
+
+                EditorThemeManager.ApplyLightText(storage.label);
+                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+            }
         }
 
         #endregion
