@@ -1,4 +1,14 @@
-﻿# snapshot-2025.7.4 - (pre-1.8.0) [Jul 25, 2025]
+﻿# ???
+
+## Changes
+### Editor
+- The "Create Objects Modifier Order Default" setting now applies to imported Prefab Objects.
+
+## Fixes
+- Fixed use visual values in axis modifiers not allowing rotation axis other than the first.
+- Prefab Name doesn't wrap now.
+
+# snapshot-2025.7.4 - (pre-1.8.0) [Jul 25, 2025]
 
 ## Features
 ### Core
