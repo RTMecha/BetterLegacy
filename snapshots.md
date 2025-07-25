@@ -7,6 +7,9 @@
 - Added eventEquals modifiers. These compare an event keyframes' value at a specified time or the current time if the "Time" value is left empty.
 - Added onLevelStart and onLevelRewind modifiers.
 
+### Editor
+- You can now add a default tag to the levels' metadata by right clicking the "Add Tag" button and selecting "Add a Default Tag".
+
 ## Changes
 ### Core
 - containsTag modifier now checks for prefab object tags if the object was spawned from a prefab.
