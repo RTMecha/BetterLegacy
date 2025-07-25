@@ -345,6 +345,8 @@ namespace BetterLegacy.Core.Managers
             GameManager.inst.introTitle.text = level.metadata.song.title;
             GameManager.inst.introArtist.text = level.metadata.artist.name;
 
+            RTBeatmap.Current.LevelStarted = true;
+
             #endregion
 
             #region Music

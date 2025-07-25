@@ -246,6 +246,7 @@ namespace BetterLegacy.Core.Runtime
             {
                 RTBeatmap.Current.playerHit = false;
                 RTBeatmap.Current.playerDied = false;
+                RTBeatmap.Current.LevelStarted = false;
             }
 
             PostTick();

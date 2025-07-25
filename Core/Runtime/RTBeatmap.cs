@@ -418,6 +418,11 @@ namespace BetterLegacy.Core.Runtime
         #region Game State Checks
 
         /// <summary>
+        /// True if frame the level has started on is the current frame.
+        /// </summary>
+        public bool LevelStarted { get; set; }
+
+        /// <summary>
         /// Players take damage but lose health and don't die.
         /// </summary>
         public bool IsPractice => challengeMode == ChallengeMode.Practice;
