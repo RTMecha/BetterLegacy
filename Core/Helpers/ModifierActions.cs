@@ -1089,6 +1089,23 @@ namespace BetterLegacy.Core.Helpers
                 PlayerManager.RespawnPlayers();
         }
         
+        // todo: implement these
+        public static void playerLockXAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+
+        }
+        
+        public static void playerLockYAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+
+        }
+
+        public static void playerLockBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
+                RTPlayer.LockBoost = lockBoost;
+        }
+
         public static void playerMove(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not BeatmapObject beatmapObject)
@@ -3186,7 +3203,7 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        #region Enable / Disable
+        #region Enable
 
         public static void enableObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
@@ -3399,8 +3416,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void saveVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is IModifyable modifyable)
-                ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifyable.IntVariable);
+            ModifiersHelper.SaveProgress(modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), reference.IntVariable);
         }
         
         public static void loadVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3509,7 +3525,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void reactivePosChain(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (reference is not IReactive reactive)
                 return;
 
             var val = modifier.GetFloat(0, 0f, variables);
@@ -3521,12 +3537,12 @@ namespace BetterLegacy.Core.Helpers
             float reactivePositionX = RTLevel.Current.GetSample(sampleX, intensityX * val);
             float reactivePositionY = RTLevel.Current.GetSample(sampleY, intensityY * val);
 
-            beatmapObject.reactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
+            reactive.ReactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
         }
         
         public static void reactiveScaChain(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (reference is not IReactive reactive)
                 return;
 
             var val = modifier.GetFloat(0, 0f, variables);
@@ -3538,13 +3554,13 @@ namespace BetterLegacy.Core.Helpers
             float reactiveScaleX = RTLevel.Current.GetSample(sampleX, intensityX * val);
             float reactiveScaleY = RTLevel.Current.GetSample(sampleY, intensityY * val);
 
-            beatmapObject.reactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
+            reactive.ReactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
         }
         
         public static void reactiveRotChain(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is BeatmapObject beatmapObject)
-                beatmapObject.reactiveRotationOffset = RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables));
+            if (reference is IReactive reactive)
+                reactive.ReactiveRotationOffset = RTLevel.Current.GetSample(modifier.GetInt(1, 0, variables), modifier.GetFloat(0, 0f, variables));
         }
 
         #endregion
@@ -4349,6 +4365,48 @@ namespace BetterLegacy.Core.Helpers
 
         #region Shape
 
+        public static void translateShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject.gameObject)
+                return;
+
+            var pos = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
+            var sca = new Vector2(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
+            var rot = modifier.GetFloat(5, 0f, variables);
+
+            if (!modifier.HasResult())
+            {
+                var meshFilter = runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>();
+                var collider2D = runtimeObject.visualObject.collider as PolygonCollider2D;
+                var mesh = meshFilter.mesh;
+
+                var translateShapeCache = new TranslateShapeCache
+                {
+                    meshFilter = meshFilter,
+                    collider2D = collider2D,
+                    vertices = mesh?.vertices ?? null,
+                    points = collider2D?.points ?? null,
+
+                    pos = pos,
+                    sca = sca,
+                    rot = rot,
+                };
+                modifier.Result = translateShapeCache;
+                // force translate for first frame
+                translateShapeCache.Translate(pos, sca, rot, true);
+
+                runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+                return;
+            }
+
+            if (modifier.TryGetResult(out TranslateShapeCache shapeCache))
+                shapeCache.Translate(pos, sca, rot);
+        }
+
         public static void setShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not IShapeable shapeable)
@@ -4813,48 +4871,6 @@ namespace BetterLegacy.Core.Helpers
             runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
             modifier.Result = "frick";
             runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-        }
-
-        public static void translateShape(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
-            var runtimeObject = beatmapObject.runtimeObject;
-            if (!runtimeObject || !runtimeObject.visualObject.gameObject)
-                return;
-
-            var pos = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
-            var sca = new Vector2(modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
-            var rot = modifier.GetFloat(5, 0f, variables);
-
-            if (!modifier.HasResult())
-            {
-                var meshFilter = runtimeObject.visualObject.gameObject.GetComponent<MeshFilter>();
-                var collider2D = runtimeObject.visualObject.collider as PolygonCollider2D;
-                var mesh = meshFilter.mesh;
-
-                var translateShapeCache = new TranslateShapeCache
-                {
-                    meshFilter = meshFilter,
-                    collider2D = collider2D,
-                    vertices = mesh?.vertices ?? null,
-                    points = collider2D?.points ?? null,
-
-                    pos = pos,
-                    sca = sca,
-                    rot = rot,
-                };
-                modifier.Result = translateShapeCache;
-                // force translate for first frame
-                translateShapeCache.Translate(pos, sca, rot, true);
-
-                runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-                return;
-            }
-
-            if (modifier.TryGetResult(out TranslateShapeCache shapeCache))
-                shapeCache.Translate(pos, sca, rot);
         }
 
         #endregion
@@ -5461,54 +5477,336 @@ namespace BetterLegacy.Core.Helpers
                 transformable.SetTransform(type, setVector);
             }
         }
-        
-        public static void gravity(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+
+        public static void applyAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ITransformable transformable)
+            if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var gravityX = modifier.GetFloat(1, 0f, variables);
-            var gravityY = modifier.GetFloat(2, 0f, variables);
-            var time = modifier.GetFloat(3, 1f, variables);
-            var curve = modifier.GetInt(4, 2, variables);
-
-            if (modifier.Result == null)
-            {
-                modifier.Result = Vector2.zero;
-                modifier.ResultTimer = Time.time;
-            }
-            else
-                modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
-
-            var vector = modifier.GetResult<Vector2>();
-            transformable.PositionOffset = RTMath.Rotate(vector, -transformable.GetFullRotation(false).z);
-        }
-        
-        public static void gravityOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not IPrefabable prefabable)
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(0, variables));
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
 
-            var gravityX = modifier.GetFloat(1, 0f, variables);
-            var gravityY = modifier.GetFloat(2, 0f, variables);
-            var time = modifier.GetFloat(3, 1f, variables);
-            var curve = modifier.GetInt(4, 2, variables);
+            if (!modifier.HasResult())
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
 
-            if (modifier.Result == null)
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = modifier.GetFloat(4, 0f, variables);
+            var delaySca = modifier.GetFloat(5, 0f, variables);
+            var delayRot = modifier.GetFloat(6, 0f, variables);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = modifier.GetFloat(8, 1f, variables);
+            var speed = modifier.GetFloat(9, 1f, variables);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
+
+            for (int i = 0; i < list.Count; i++)
             {
-                modifier.Result = Vector2.zero;
-                modifier.ResultTimer = Time.time;
-            }
-            else
-                modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
+                var bm = list[i];
 
-            var vector = modifier.GetResult<Vector2>();
-            foreach (var transformable in transformables)
-                transformable.PositionOffset = RTMath.Rotate(vector, -transformable.GetFullRotation(false).z);
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                        }, x => ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                    };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
         }
-        
+
+        public static void applyAnimationFrom(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject bm))
+                return;
+
+            if (!modifier.HasResult())
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = modifier.GetFloat(4, 0f, variables);
+            var delaySca = modifier.GetFloat(5, 0f, variables);
+            var delayRot = modifier.GetFloat(6, 0f, variables);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = modifier.GetFloat(8, 1f, variables);
+            var speed = modifier.GetFloat(9, 1f, variables);
+
+            if (!modifier.constant)
+            {
+                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
+
+                var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                    };
+                animation.onComplete = () =>
+                {
+                    AnimationManager.inst.Remove(animation.id);
+                    animation = null;
+                    modifier.Result = null;
+                };
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+        }
+
+        public static void applyAnimationTo(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+
+            if (!modifier.HasResult())
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = modifier.GetFloat(4, 0f, variables);
+            var delaySca = modifier.GetFloat(5, 0f, variables);
+            var delayRot = modifier.GetFloat(6, 0f, variables);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = modifier.GetFloat(8, 1f, variables);
+            var speed = modifier.GetFloat(9, 1f, variables);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var bm = list[i];
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                            }, x => ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
+        }
+
+        public static void applyAnimationMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
+
+            if (!modifier.HasResult())
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var numberVariables = beatmapObject.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+            var functions = beatmapObject.GetObjectFunctions();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(11, variables), numberVariables, functions);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var bm = list[i];
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                            }, x => ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    return;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
+        }
+
+        public static void applyAnimationFromMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.value, out BeatmapObject bm))
+                return;
+
+            if (!modifier.HasResult())
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var numberVariables = beatmapObject.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+            var functions = beatmapObject.GetObjectFunctions();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
+
+            if (!modifier.constant)
+            {
+                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
+
+                var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                    {
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                    };
+                animation.onComplete = () =>
+                {
+                    AnimationManager.inst.Remove(animation.id);
+                    animation = null;
+                    modifier.Result = null;
+                };
+                AnimationManager.inst.Play(animation);
+                return;
+            }
+
+            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+        }
+
+        public static void applyAnimationToMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+
+            if (!modifier.HasResult())
+                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+            var time = modifier.GetResult<float>();
+
+            var numberVariables = beatmapObject.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+            var functions = beatmapObject.GetObjectFunctions();
+
+            var animatePos = modifier.GetBool(1, true, variables);
+            var animateSca = modifier.GetBool(2, true, variables);
+            var animateRot = modifier.GetBool(3, true, variables);
+            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
+            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
+            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
+            var useVisual = modifier.GetBool(7, false, variables);
+            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
+            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
+            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
+
+            if (!modifier.constant)
+                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var bm = list[i];
+
+                if (!modifier.constant)
+                {
+                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
+                    animation.animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                            }, x => ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        };
+                    animation.onComplete = () =>
+                    {
+                        AnimationManager.inst.Remove(animation.id);
+                        animation = null;
+                        modifier.Result = null;
+                    };
+                    AnimationManager.inst.Play(animation);
+                    continue;
+                }
+
+                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            }
+        }
+
         public static void copyAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not ITransformable transformable)
@@ -5866,334 +6164,52 @@ namespace BetterLegacy.Core.Helpers
                 tracker.beatmapObject.rotationOffset = tracker.rot.eulerAngles;
             }
         }
-        
-        public static void applyAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+
+        public static void gravity(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (reference is not ITransformable transformable)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
-                return;
+            var gravityX = modifier.GetFloat(1, 0f, variables);
+            var gravityY = modifier.GetFloat(2, 0f, variables);
+            var time = modifier.GetFloat(3, 1f, variables);
+            var curve = modifier.GetInt(4, 2, variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
-
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
-
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = modifier.GetFloat(4, 0f, variables);
-            var delaySca = modifier.GetFloat(5, 0f, variables);
-            var delayRot = modifier.GetFloat(6, 0f, variables);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = modifier.GetFloat(8, 1f, variables);
-            var speed = modifier.GetFloat(9, 1f, variables);
-
-            if (!modifier.constant)
-                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
-
-            for (int i = 0; i < list.Count; i++)
+            if (modifier.Result == null)
             {
-                var bm = list[i];
-
-                if (!modifier.constant)
-                {
-                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
-                    animation.animationHandlers = new List<AnimationHandlerBase>
-                    {
-                        new AnimationHandler<float>(new List<IKeyframe<float>>
-                        {
-                            new FloatKeyframe(0f, 0f, Ease.Linear),
-                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                        }, x => ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
-                    };
-                    animation.onComplete = () =>
-                    {
-                        AnimationManager.inst.Remove(animation.id);
-                        animation = null;
-                        modifier.Result = null;
-                    };
-                    AnimationManager.inst.Play(animation);
-                    continue;
-                }
-
-                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                modifier.Result = Vector2.zero;
+                modifier.ResultTimer = Time.time;
             }
+            else
+                modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
+
+            var vector = modifier.GetResult<Vector2>();
+            transformable.PositionOffset = RTMath.Rotate(vector, -transformable.GetFullRotation(false).z);
         }
-        
-        public static void applyAnimationFrom(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+
+        public static void gravityOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (reference is not IPrefabable prefabable)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject bm))
-                return;
+            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(0, variables));
 
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
+            var gravityX = modifier.GetFloat(1, 0f, variables);
+            var gravityY = modifier.GetFloat(2, 0f, variables);
+            var time = modifier.GetFloat(3, 1f, variables);
+            var curve = modifier.GetInt(4, 2, variables);
 
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = modifier.GetFloat(4, 0f, variables);
-            var delaySca = modifier.GetFloat(5, 0f, variables);
-            var delayRot = modifier.GetFloat(6, 0f, variables);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = modifier.GetFloat(8, 1f, variables);
-            var speed = modifier.GetFloat(9, 1f, variables);
-
-            if (!modifier.constant)
+            if (modifier.Result == null)
             {
-                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
-
-                var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
-                animation.animationHandlers = new List<AnimationHandlerBase>
-                    {
-                        new AnimationHandler<float>(new List<IKeyframe<float>>
-                        {
-                            new FloatKeyframe(0f, 0f, Ease.Linear),
-                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
-                    };
-                animation.onComplete = () =>
-                {
-                    AnimationManager.inst.Remove(animation.id);
-                    animation = null;
-                    modifier.Result = null;
-                };
-                AnimationManager.inst.Play(animation);
-                return;
+                modifier.Result = Vector2.zero;
+                modifier.ResultTimer = Time.time;
             }
+            else
+                modifier.Result = RTMath.Lerp(Vector2.zero, new Vector2(gravityX, gravityY), (RTMath.Recursive(Time.time - modifier.ResultTimer, curve)) * (time * CoreHelper.TimeFrame));
 
-            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
-        }
-        
-        public static void applyAnimationTo(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
-
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = modifier.GetFloat(4, 0f, variables);
-            var delaySca = modifier.GetFloat(5, 0f, variables);
-            var delayRot = modifier.GetFloat(6, 0f, variables);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = modifier.GetFloat(8, 1f, variables);
-            var speed = modifier.GetFloat(9, 1f, variables);
-
-            if (!modifier.constant)
-                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                var bm = list[i];
-
-                if (!modifier.constant)
-                {
-                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
-                    animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, 0f, Ease.Linear),
-                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                            }, x => ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
-                        };
-                    animation.onComplete = () =>
-                    {
-                        AnimationManager.inst.Remove(animation.id);
-                        animation = null;
-                        modifier.Result = null;
-                    };
-                    AnimationManager.inst.Play(animation);
-                    continue;
-                }
-
-                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
-            }
-        }
-        
-        public static void applyAnimationMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
-                return;
-
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
-
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
-
-            var numberVariables = beatmapObject.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
-            var functions = beatmapObject.GetObjectFunctions();
-
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(11, variables), numberVariables, functions);
-
-            if (!modifier.constant)
-                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                var bm = list[i];
-
-                if (!modifier.constant)
-                {
-                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
-                    animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, 0f, Ease.Linear),
-                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                            }, x => ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
-                        };
-                    animation.onComplete = () =>
-                    {
-                        AnimationManager.inst.Remove(animation.id);
-                        animation = null;
-                        modifier.Result = null;
-                    };
-                    AnimationManager.inst.Play(animation);
-                    return;
-                }
-
-                ModifiersHelper.ApplyAnimationTo(bm, from, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
-            }
-        }
-        
-        public static void applyAnimationFromMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.value, out BeatmapObject bm))
-                return;
-
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
-
-            var numberVariables = beatmapObject.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
-            var functions = beatmapObject.GetObjectFunctions();
-
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
-
-            if (!modifier.constant)
-            {
-                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
-
-                var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
-                animation.animationHandlers = new List<AnimationHandlerBase>
-                    {
-                        new AnimationHandler<float>(new List<IKeyframe<float>>
-                        {
-                            new FloatKeyframe(0f, 0f, Ease.Linear),
-                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
-                    };
-                animation.onComplete = () =>
-                {
-                    AnimationManager.inst.Remove(animation.id);
-                    animation = null;
-                    modifier.Result = null;
-                };
-                AnimationManager.inst.Play(animation);
-                return;
-            }
-
-            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
-        }
-        
-        public static void applyAnimationToMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
-
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
-
-            var numberVariables = beatmapObject.GetObjectVariables();
-            ModifiersHelper.SetVariables(variables, numberVariables);
-            var functions = beatmapObject.GetObjectFunctions();
-
-            var animatePos = modifier.GetBool(1, true, variables);
-            var animateSca = modifier.GetBool(2, true, variables);
-            var animateRot = modifier.GetBool(3, true, variables);
-            var delayPos = RTMath.Parse(modifier.GetValue(4, variables), numberVariables, functions);
-            var delaySca = RTMath.Parse(modifier.GetValue(5, variables), numberVariables, functions);
-            var delayRot = RTMath.Parse(modifier.GetValue(6, variables), numberVariables, functions);
-            var useVisual = modifier.GetBool(7, false, variables);
-            var length = RTMath.Parse(modifier.GetValue(8, variables), numberVariables, functions);
-            var speed = RTMath.Parse(modifier.GetValue(9, variables), numberVariables, functions);
-            var timeOffset = RTMath.Parse(modifier.GetValue(10, variables), numberVariables, functions);
-
-            if (!modifier.constant)
-                AnimationManager.inst.RemoveName("Apply Object Animation " + beatmapObject.id);
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                var bm = list[i];
-
-                if (!modifier.constant)
-                {
-                    var animation = new RTAnimation("Apply Object Animation " + beatmapObject.id);
-                    animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, 0f, Ease.Linear),
-                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                            }, x => ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
-                        };
-                    animation.onComplete = () =>
-                    {
-                        AnimationManager.inst.Remove(animation.id);
-                        animation = null;
-                        modifier.Result = null;
-                    };
-                    AnimationManager.inst.Play(animation);
-                    continue;
-                }
-
-                ModifiersHelper.ApplyAnimationTo(bm, beatmapObject, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
-            }
+            var vector = modifier.GetResult<Vector2>();
+            foreach (var transformable in transformables)
+                transformable.PositionOffset = RTMath.Rotate(vector, -transformable.GetFullRotation(false).z);
         }
 
         #endregion

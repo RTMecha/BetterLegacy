@@ -223,15 +223,13 @@ namespace BetterLegacy.Editor.Managers
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";
 
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
+                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(DefaultModifiersPopup.Content, name);
+                var spriteFunctionButton = gameObject.GetComponent<SpriteFunctionButtonStorage>();
 
                 TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {name}");
 
-                var modifierName = gameObject.transform.GetChild(0).GetComponent<Text>();
-                modifierName.text = name;
-
-                var button = gameObject.GetComponent<Button>();
-                button.onClick.NewListener(() =>
+                spriteFunctionButton.label.text = name;
+                spriteFunctionButton.button.onClick.NewListener(() =>
                 {
                     var name = defaultModifier.Name;
 
@@ -271,11 +269,14 @@ namespace BetterLegacy.Editor.Managers
                             }
                     }
                 });
+                spriteFunctionButton.image.sprite = GetSprite(defaultModifier);
 
-                EditorThemeManager.ApplyLightText(modifierName);
-                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(spriteFunctionButton.label);
+                EditorThemeManager.ApplySelectable(spriteFunctionButton.button, ThemeGroup.List_Button_1);
             }
         }
+
+        Sprite GetSprite(Modifier modifier) => modifier.Name.StartsWith("get") ? EditorSprites.DownArrow : modifier.type == Modifier.Type.Trigger ? EditorSprites.QuestionSprite : EditorSprites.ExclaimSprite;
 
         public string searchTerm;
 

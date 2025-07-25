@@ -76,69 +76,14 @@ namespace BetterLegacy.Core.Helpers
         {
             var name = modifier.Name;
 
-            switch (reference.ReferenceType)
-            {
-                case ModifierReferenceType.BeatmapObject: {
-                        // Only assign methods depending on modifier type.
-                        if (modifier.type == Modifier.Type.Action)
-                            modifier.Action = GetObjectAction(name);
-                        if (modifier.type == Modifier.Type.Trigger)
-                            modifier.Trigger = GetObjectTrigger(name);
+            if (modifier.type == Modifier.Type.Trigger && triggers.TryFind(x => x.name == name, out ModifierTrigger trigger) && trigger.compatibility.CompareType(reference.ReferenceType))
+                modifier.Trigger = trigger.function;
 
-                        modifier.Inactive = ObjectInactive;
+            if (modifier.type == Modifier.Type.Action && actions.TryFind(x => x.name == name, out ModifierAction action) && action.compatibility.CompareType(reference.ReferenceType))
+                modifier.Action = action.function;
 
-                        break;
-                    }
-                case ModifierReferenceType.BackgroundObject: {
-                        if (modifier.type == Modifier.Type.Action)
-                            modifier.Action = GetBGAction(name);
-                        if (modifier.type == Modifier.Type.Trigger)
-                            modifier.Trigger = GetBGTrigger(name);
-
-                        modifier.Inactive = BGInactive;
-
-                        break;
-                    }
-                case ModifierReferenceType.PrefabObject: {
-                        if (modifier.type == Modifier.Type.Action)
-                            modifier.Action = GetPrefabAction(name);
-                        if (modifier.type == Modifier.Type.Trigger)
-                            modifier.Trigger = GetPrefabTrigger(name);
-
-                        modifier.Inactive = PrefabInactive;
-
-                        break;
-                    }
-                case ModifierReferenceType.PAPlayer: {
-                        if (modifier.type == Modifier.Type.Action)
-                            modifier.Action = GetPlayerAction(name);
-                        if (modifier.type == Modifier.Type.Trigger)
-                            modifier.Trigger = GetPlayerTrigger(name);
-
-                        modifier.Inactive = PlayerInactive;
-
-                        break;
-                    }
-                case ModifierReferenceType.GameData: {
-                        // Only assign methods depending on modifier type.
-                        if (modifier.type == Modifier.Type.Action)
-                            modifier.Action = GetLevelAction(name);
-                        if (modifier.type == Modifier.Type.Trigger)
-                            modifier.Trigger = GetLevelTrigger(name);
-
-                        break;
-                    }
-                case ModifierReferenceType.Null: {
-                        if (modifier.type == Modifier.Type.Action)
-                            modifier.Action = GetObjectAction(name);
-                        if (modifier.type == Modifier.Type.Trigger)
-                            modifier.Trigger = GetObjectTrigger(name);
-
-                        modifier.Inactive = ObjectInactive;
-
-                        break;
-                    }
-            }
+            if (modifier.Inactive == null && inactives.TryFind(x => x.name == name, out ModifierInactive inactive) && inactive.compatibility.CompareType(reference.ReferenceType))
+                modifier.Inactive = inactive.function;
         }
 
         /// <summary>
@@ -430,17 +375,1400 @@ namespace BetterLegacy.Core.Helpers
             return !modifier.commands.IsEmpty();
         }
 
+        public static ModifierTrigger[] triggers = new ModifierTrigger[]
+        {
+            new ModifierTrigger("break", ModifierTriggers.breakModifier),
+            new ModifierTrigger(nameof(ModifierTriggers.disableModifier), (modifier, reference, variables) => false),
+
+            #region Player
+
+            new ModifierTrigger(nameof(ModifierTriggers.playerCollide), ModifierTriggers.playerCollide, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.playerCollideIndex), ModifierTriggers.playerCollideIndex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.playerHealthEquals), ModifierTriggers.playerHealthEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerHealthLesserEquals), ModifierTriggers.playerHealthLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerHealthGreaterEquals), ModifierTriggers.playerHealthGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerHealthLesser), ModifierTriggers.playerHealthLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.playerHealthGreater), ModifierTriggers.playerHealthGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.playerMoving), ModifierTriggers.playerMoving),
+            new ModifierTrigger(nameof(ModifierTriggers.playerBoosting), ModifierTriggers.playerBoosting, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.playerAlive), ModifierTriggers.playerAlive),
+            new ModifierTrigger(nameof(ModifierTriggers.playerDeathsEquals), ModifierTriggers.playerDeathsEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerDeathsLesserEquals), ModifierTriggers.playerDeathsLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerDeathsGreaterEquals), ModifierTriggers.playerDeathsGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerDeathsLesser), ModifierTriggers.playerDeathsLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.playerDeathsGreater), ModifierTriggers.playerDeathsGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.playerDistanceGreater), ModifierTriggers.playerDistanceGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.playerDistanceLesser), ModifierTriggers.playerDistanceLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.playerCountEquals), ModifierTriggers.playerCountEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerCountLesserEquals), ModifierTriggers.playerCountLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerCountGreaterEquals), ModifierTriggers.playerCountGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerCountLesser), ModifierTriggers.playerCountLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.playerCountGreater), ModifierTriggers.playerCountGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.onPlayerHit), ModifierTriggers.onPlayerHit),
+            new ModifierTrigger(nameof(ModifierTriggers.onPlayerDeath), ModifierTriggers.onPlayerDeath),
+            new ModifierTrigger(nameof(ModifierTriggers.playerBoostEquals), ModifierTriggers.playerBoostEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerBoostLesserEquals), ModifierTriggers.playerBoostLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerBoostGreaterEquals), ModifierTriggers.playerBoostGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.playerBoostLesser), ModifierTriggers.playerBoostLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.playerBoostGreater), ModifierTriggers.playerBoostGreater),
+
+            #endregion
+            
+            #region Collide
+
+            new ModifierTrigger(nameof(ModifierTriggers.bulletCollide), ModifierTriggers.bulletCollide, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.objectCollide), ModifierTriggers.objectCollide, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Controls
+
+            new ModifierTrigger(nameof(ModifierTriggers.keyPressDown), ModifierTriggers.keyPressDown),
+            new ModifierTrigger(nameof(ModifierTriggers.keyPress), ModifierTriggers.keyPress),
+            new ModifierTrigger(nameof(ModifierTriggers.keyPressUp), ModifierTriggers.keyPressUp),
+            new ModifierTrigger(nameof(ModifierTriggers.controlPressDown), ModifierTriggers.controlPressDown),
+            new ModifierTrigger(nameof(ModifierTriggers.controlPress), ModifierTriggers.controlPress),
+            new ModifierTrigger(nameof(ModifierTriggers.controlPressUp), ModifierTriggers.controlPressUp),
+            new ModifierTrigger(nameof(ModifierTriggers.mouseButtonDown), ModifierTriggers.mouseButtonDown),
+            new ModifierTrigger(nameof(ModifierTriggers.mouseButton), ModifierTriggers.mouseButton),
+            new ModifierTrigger(nameof(ModifierTriggers.mouseButtonUp), ModifierTriggers.mouseButtonUp),
+            new ModifierTrigger(nameof(ModifierTriggers.mouseOver), ModifierTriggers.mouseOver, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.mouseOverSignalModifier), ModifierTriggers.mouseOverSignalModifier, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region JSON
+
+            new ModifierTrigger(nameof(ModifierTriggers.loadEquals), ModifierTriggers.loadEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.loadLesserEquals), ModifierTriggers.loadLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.loadGreaterEquals), ModifierTriggers.loadGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.loadLesser), ModifierTriggers.loadLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.loadGreater), ModifierTriggers.loadGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.loadExists), ModifierTriggers.loadExists),
+
+            #endregion
+
+            #region Variable
+
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableEquals), ModifierTriggers.localVariableEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableLesserEquals), ModifierTriggers.localVariableLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableGreaterEquals), ModifierTriggers.localVariableGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableLesser), ModifierTriggers.localVariableLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableGreater), ModifierTriggers.localVariableGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableContains), ModifierTriggers.localVariableContains),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableStartsWith), ModifierTriggers.localVariableStartsWith),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableEndsWith), ModifierTriggers.localVariableEndsWith),
+            new ModifierTrigger(nameof(ModifierTriggers.localVariableExists), ModifierTriggers.localVariableExists),
+
+            // self
+            new ModifierTrigger(nameof(ModifierTriggers.variableEquals), ModifierTriggers.variableEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.variableLesserEquals), ModifierTriggers.variableLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.variableGreaterEquals), ModifierTriggers.variableGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.variableLesser), ModifierTriggers.variableLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.variableGreater), ModifierTriggers.variableGreater),
+
+            // other
+            new ModifierTrigger(nameof(ModifierTriggers.variableOtherEquals), ModifierTriggers.variableOtherEquals, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.variableOtherLesserEquals), ModifierTriggers.variableOtherLesserEquals, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.variableOtherGreaterEquals), ModifierTriggers.variableOtherGreaterEquals, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.variableOtherLesser), ModifierTriggers.variableOtherLesser, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.variableOtherGreater), ModifierTriggers.variableOtherGreater, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Audio
+
+            new ModifierTrigger(nameof(ModifierTriggers.pitchEquals), ModifierTriggers.pitchEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.pitchLesserEquals), ModifierTriggers.pitchLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.pitchGreaterEquals), ModifierTriggers.pitchGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.pitchLesser), ModifierTriggers.pitchLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.pitchGreater), ModifierTriggers.pitchGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.musicTimeGreater), ModifierTriggers.musicTimeGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.musicTimeLesser), ModifierTriggers.musicTimeLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.musicTimeInRange), ModifierTriggers.musicTimeInRange),
+            new ModifierTrigger(nameof(ModifierTriggers.musicPlaying), ModifierTriggers.musicPlaying),
+
+            new ModifierTrigger("timeLesserEquals", (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, variables)),
+            new ModifierTrigger("timeGreaterEquals", (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, variables)),
+            new ModifierTrigger("timeLesser", (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time<modifier.GetFloat(0, 0f, variables)),
+            new ModifierTrigger("timeGreater", (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, variables)),
+
+            #endregion
+
+            #region Game State
+
+            new ModifierTrigger(nameof(ModifierTriggers.inZenMode), ModifierTriggers.inZenMode),
+            new ModifierTrigger(nameof(ModifierTriggers.inNormal), ModifierTriggers.inNormal),
+            new ModifierTrigger(nameof(ModifierTriggers.in1Life), ModifierTriggers.in1Life),
+            new ModifierTrigger(nameof(ModifierTriggers.inNoHit), ModifierTriggers.inNoHit),
+            new ModifierTrigger(nameof(ModifierTriggers.inPractice), ModifierTriggers.inPractice),
+            new ModifierTrigger(nameof(ModifierTriggers.inEditor), ModifierTriggers.inEditor),
+            new ModifierTrigger(nameof(ModifierTriggers.isEditing), ModifierTriggers.isEditing),
+
+            #endregion
+
+            #region Random
+
+            new ModifierTrigger(nameof(ModifierTriggers.randomEquals), ModifierTriggers.randomEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.randomLesser), ModifierTriggers.randomLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.randomGreater), ModifierTriggers.randomGreater),
+
+            #endregion
+
+            #region Math
+
+            new ModifierTrigger(nameof(ModifierTriggers.mathEquals), ModifierTriggers.mathEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.mathLesserEquals), ModifierTriggers.mathLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.mathGreaterEquals), ModifierTriggers.mathGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.mathLesser), ModifierTriggers.mathLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.mathGreater), ModifierTriggers.mathGreater),
+
+            #endregion
+
+            #region Animation
+
+            new ModifierTrigger(nameof(ModifierTriggers.axisEquals), ModifierTriggers.axisEquals, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.axisLesserEquals), ModifierTriggers.axisLesserEquals, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.axisGreaterEquals), ModifierTriggers.axisGreaterEquals, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.axisLesser), ModifierTriggers.axisLesser, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.axisGreater), ModifierTriggers.axisGreater, ModifierCompatibility.BeatmapObjectCompatible),
+            
+            new ModifierTrigger(nameof(ModifierTriggers.eventEquals), ModifierTriggers.eventEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.eventLesserEquals), ModifierTriggers.eventLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.eventGreaterEquals), ModifierTriggers.eventGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.eventLesser), ModifierTriggers.eventLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.eventGreater), ModifierTriggers.eventGreater),
+
+            #endregion
+
+            #region Level
+            
+            // self
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankEquals), ModifierTriggers.levelRankEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankLesserEquals), ModifierTriggers.levelRankLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankGreaterEquals), ModifierTriggers.levelRankGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankLesser), ModifierTriggers.levelRankLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankGreater), ModifierTriggers.levelRankGreater),
+
+            // other
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankOtherEquals), ModifierTriggers.levelRankOtherEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankOtherLesserEquals), ModifierTriggers.levelRankOtherLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankOtherGreaterEquals), ModifierTriggers.levelRankOtherGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankOtherLesser), ModifierTriggers.levelRankOtherLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankOtherGreater), ModifierTriggers.levelRankOtherGreater),
+
+            // current
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankCurrentEquals), ModifierTriggers.levelRankCurrentEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankCurrentLesserEquals), ModifierTriggers.levelRankCurrentLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankCurrentGreaterEquals), ModifierTriggers.levelRankCurrentGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankCurrentLesser), ModifierTriggers.levelRankCurrentLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.levelRankCurrentGreater), ModifierTriggers.levelRankCurrentGreater),
+
+            // level state
+            new ModifierTrigger(nameof(ModifierTriggers.onLevelStart), ModifierTriggers.onLevelStart),
+            new ModifierTrigger(nameof(ModifierTriggers.onLevelRestart), ModifierTriggers.onLevelRestart),
+            new ModifierTrigger(nameof(ModifierTriggers.onLevelRewind), ModifierTriggers.onLevelRestart),
+            new ModifierTrigger(nameof(ModifierTriggers.levelUnlocked), ModifierTriggers.levelUnlocked),
+            new ModifierTrigger(nameof(ModifierTriggers.levelCompleted), ModifierTriggers.levelCompleted),
+            new ModifierTrigger(nameof(ModifierTriggers.levelCompletedOther), ModifierTriggers.levelCompletedOther),
+            new ModifierTrigger(nameof(ModifierTriggers.levelExists), ModifierTriggers.levelExists),
+            new ModifierTrigger(nameof(ModifierTriggers.levelPathExists), ModifierTriggers.levelPathExists),
+
+            #endregion
+
+            #region Real Time
+
+            // seconds
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeSecondEquals), ModifierTriggers.realTimeSecondEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeSecondLesserEquals), ModifierTriggers.realTimeSecondLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeSecondGreaterEquals), ModifierTriggers.realTimeSecondGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeSecondLesser), ModifierTriggers.realTimeSecondLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeSecondGreater), ModifierTriggers.realTimeSecondGreater),
+
+            // minutes
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMinuteEquals), ModifierTriggers.realTimeMinuteEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMinuteLesserEquals), ModifierTriggers.realTimeMinuteLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMinuteGreaterEquals), ModifierTriggers.realTimeMinuteGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMinuteLesser), ModifierTriggers.realTimeMinuteLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMinuteGreater), ModifierTriggers.realTimeMinuteGreater),
+
+            // 24 hours
+            new ModifierTrigger(nameof(ModifierTriggers.realTime24HourEquals), ModifierTriggers.realTime24HourEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime24HourLesserEquals), ModifierTriggers.realTime24HourLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime24HourGreaterEquals), ModifierTriggers.realTime24HourGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime24HourLesser), ModifierTriggers.realTime24HourLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime24HourGreater), ModifierTriggers.realTime24HourGreater),
+
+            // 12 hours
+            new ModifierTrigger(nameof(ModifierTriggers.realTime12HourEquals), ModifierTriggers.realTime12HourEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime12HourLesserEquals), ModifierTriggers.realTime12HourLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime12HourGreaterEquals), ModifierTriggers.realTime12HourGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime12HourLesser), ModifierTriggers.realTime12HourLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.realTime12HourGreater), ModifierTriggers.realTime12HourGreater),
+
+            // days
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeDayEquals), ModifierTriggers.realTimeDayEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeDayLesserEquals), ModifierTriggers.realTimeDayLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeDayGreaterEquals), ModifierTriggers.realTimeDayGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeDayLesser), ModifierTriggers.realTimeDayLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeDayGreater), ModifierTriggers.realTimeDayGreater),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeDayWeekEquals), ModifierTriggers.realTimeDayWeekEquals),
+
+            // months
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMonthEquals), ModifierTriggers.realTimeMonthEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMonthLesserEquals), ModifierTriggers.realTimeMonthLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMonthGreaterEquals), ModifierTriggers.realTimeMonthGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMonthLesser), ModifierTriggers.realTimeMonthLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeMonthGreater), ModifierTriggers.realTimeMonthGreater),
+
+            // years
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeYearEquals), ModifierTriggers.realTimeYearEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeYearLesserEquals), ModifierTriggers.realTimeYearLesserEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeYearGreaterEquals), ModifierTriggers.realTimeYearGreaterEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeYearLesser), ModifierTriggers.realTimeYearLesser),
+            new ModifierTrigger(nameof(ModifierTriggers.realTimeYearGreater), ModifierTriggers.realTimeYearGreater),
+
+            #endregion
+
+            #region Config
+
+            // main
+            new ModifierTrigger(nameof(ModifierTriggers.usernameEquals), ModifierTriggers.usernameEquals),
+            new ModifierTrigger(nameof(ModifierTriggers.languageEquals), ModifierTriggers.languageEquals),
+
+            // misc
+            new ModifierTrigger(nameof(ModifierTriggers.configLDM), ModifierTriggers.configLDM),
+            new ModifierTrigger(nameof(ModifierTriggers.configShowEffects), ModifierTriggers.configShowEffects),
+            new ModifierTrigger(nameof(ModifierTriggers.configShowPlayerGUI), ModifierTriggers.configShowPlayerGUI),
+            new ModifierTrigger(nameof(ModifierTriggers.configShowIntro), ModifierTriggers.configShowIntro),
+
+            #endregion
+
+            #region Misc
+
+            new ModifierTrigger(nameof(ModifierTriggers.containsTag), ModifierTriggers.containsTag),
+            new ModifierTrigger(nameof(ModifierTriggers.requireSignal), ModifierTriggers.requireSignal),
+            new ModifierTrigger(nameof(ModifierTriggers.isFullscreen), ModifierTriggers.isFullscreen),
+            new ModifierTrigger(nameof(ModifierTriggers.objectAlive), ModifierTriggers.objectAlive, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.objectSpawned), ModifierTriggers.objectSpawned, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.fromPrefab), ModifierTriggers.fromPrefab),
+
+            #endregion
+
+            #region Dev Only
+
+            new ModifierTrigger("storyLoadIntEqualsDEVONLY", (modifier, reference, variables) =>
+            {
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
+            }),
+            new ModifierTrigger("storyLoadIntLesserEqualsDEVONLY", (modifier, reference, variables) =>
+            {
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
+            }),
+            new ModifierTrigger("storyLoadIntGreaterEqualsDEVONLY", (modifier, reference, variables) =>
+            {
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
+            }),
+            new ModifierTrigger("storyLoadIntLesserDEVONLY", (modifier, reference, variables) =>
+            {
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
+            }),
+            new ModifierTrigger("storyLoadIntGreaterDEVONLY", (modifier, reference, variables) =>
+            {
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
+            }),
+            new ModifierTrigger("storyLoadBoolDEVONLY", (modifier, reference, variables) =>
+            {
+                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
+            }),
+
+            #endregion
+        };
+
+        public static ModifierAction[] actions = new ModifierAction[]
+        {
+            #region Audio
+
+            // pitch
+            new ModifierAction(nameof(ModifierActions.setPitch),  ModifierActions.setPitch),
+            new ModifierAction(nameof(ModifierActions.addPitch),  ModifierActions.addPitch),
+            new ModifierAction(nameof(ModifierActions.setPitchMath),  ModifierActions.setPitchMath),
+            new ModifierAction(nameof(ModifierActions.addPitchMath),  ModifierActions.addPitchMath),
+
+            // music playing states
+            new ModifierAction(nameof(ModifierActions.setMusicTime),  ModifierActions.setMusicTime),
+            new ModifierAction(nameof(ModifierActions.setMusicTimeMath),  ModifierActions.setMusicTimeMath),
+            new ModifierAction(nameof(ModifierActions.setMusicTimeStartTime),  ModifierActions.setMusicTimeStartTime),
+            new ModifierAction(nameof(ModifierActions.setMusicTimeAutokill),  ModifierActions.setMusicTimeAutokill),
+            new ModifierAction(nameof(ModifierActions.setMusicPlaying),  ModifierActions.setMusicPlaying),
+
+            // play sound
+            new ModifierAction(nameof(ModifierActions.playSound),  ModifierActions.playSound),
+            new ModifierAction(nameof(ModifierActions.playSoundOnline),  ModifierActions.playSoundOnline),
+            new ModifierAction(nameof(ModifierActions.playDefaultSound),  ModifierActions.playDefaultSound),
+            new ModifierAction(nameof(ModifierActions.audioSource),  ModifierActions.audioSource, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Level
+
+            new ModifierAction(nameof(ModifierActions.loadLevel),  ModifierActions.loadLevel),
+            new ModifierAction(nameof(ModifierActions.loadLevelID),  ModifierActions.loadLevelID),
+            new ModifierAction(nameof(ModifierActions.loadLevelInternal),  ModifierActions.loadLevelInternal),
+            new ModifierAction(nameof(ModifierActions.loadLevelPrevious),  ModifierActions.loadLevelPrevious),
+            new ModifierAction(nameof(ModifierActions.loadLevelHub),  ModifierActions.loadLevelHub),
+            new ModifierAction(nameof(ModifierActions.loadLevelInCollection),  ModifierActions.loadLevelInCollection),
+            new ModifierAction(nameof(ModifierActions.downloadLevel),  ModifierActions.downloadLevel),
+            new ModifierAction(nameof(ModifierActions.endLevel),  ModifierActions.endLevel),
+            new ModifierAction(nameof(ModifierActions.setAudioTransition),  ModifierActions.setAudioTransition),
+            new ModifierAction(nameof(ModifierActions.setIntroFade),  ModifierActions.setIntroFade),
+            new ModifierAction(nameof(ModifierActions.setLevelEndFunc),  ModifierActions.setLevelEndFunc),
+
+            #endregion
+
+            #region Component
+
+            new ModifierAction(nameof(ModifierActions.blur),  ModifierActions.blur, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.blurOther),  ModifierActions.blurOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.blurVariable),  ModifierActions.blurVariable, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.blurVariableOther),  ModifierActions.blurVariableOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.blurColored),  ModifierActions.blurColored, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.blurColoredOther),  ModifierActions.blurColoredOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.doubleSided),  ModifierActions.doubleSided, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.particleSystem),  ModifierActions.particleSystem, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.trailRenderer),  ModifierActions.trailRenderer, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.trailRendererHex),  ModifierActions.trailRendererHex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.rigidbody),  ModifierActions.rigidbody, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.rigidbodyOther),  ModifierActions.rigidbodyOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setRenderType),  ModifierActions.setRenderType, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setRenderTypeOther),  ModifierActions.setRenderTypeOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Player
+
+            // hit
+            new ModifierAction(nameof(ModifierActions.playerHit),  ModifierActions.playerHit, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerHitIndex),  ModifierActions.playerHitIndex),
+            new ModifierAction(nameof(ModifierActions.playerHitAll),  ModifierActions.playerHitAll),
+
+            // heal
+            new ModifierAction(nameof(ModifierActions.playerHeal),  ModifierActions.playerHeal, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerHealIndex),  ModifierActions.playerHealIndex),
+            new ModifierAction(nameof(ModifierActions.playerHealAll),  ModifierActions.playerHealAll),
+
+            // kill
+            new ModifierAction(nameof(ModifierActions.playerKill),  ModifierActions.playerKill, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerKillIndex),  ModifierActions.playerKillIndex),
+            new ModifierAction(nameof(ModifierActions.playerKillAll),  ModifierActions.playerKillAll),
+
+            // respawn
+            new ModifierAction(nameof(ModifierActions.playerRespawn),  ModifierActions.playerRespawn, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerRespawnIndex),  ModifierActions.playerRespawnIndex),
+            new ModifierAction(nameof(ModifierActions.playerRespawnAll),  ModifierActions.playerRespawnAll),
+
+            // lock
+            new ModifierAction(nameof(ModifierActions.playerLockXAll), ModifierActions.playerLockXAll),
+            new ModifierAction(nameof(ModifierActions.playerLockYAll), ModifierActions.playerLockYAll),
+            new ModifierAction(nameof(ModifierActions.playerLockBoostAll),  ModifierActions.playerLockBoostAll),
+
+            // player move
+            new ModifierAction(nameof(ModifierActions.playerMove),  ModifierActions.playerMove, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveIndex),  ModifierActions.playerMoveIndex),
+            new ModifierAction(nameof(ModifierActions.playerMoveAll),  ModifierActions.playerMoveAll),
+            new ModifierAction(nameof(ModifierActions.playerMoveX),  ModifierActions.playerMoveX, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveXIndex),  ModifierActions.playerMoveXIndex),
+            new ModifierAction(nameof(ModifierActions.playerMoveXAll),  ModifierActions.playerMoveXAll),
+            new ModifierAction(nameof(ModifierActions.playerMoveY),  ModifierActions.playerMoveY, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveYIndex),  ModifierActions.playerMoveYIndex),
+            new ModifierAction(nameof(ModifierActions.playerMoveYAll),  ModifierActions.playerMoveYAll),
+            new ModifierAction(nameof(ModifierActions.playerRotate),  ModifierActions.playerRotate, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerRotateIndex),  ModifierActions.playerRotateIndex),
+            new ModifierAction(nameof(ModifierActions.playerRotateAll),  ModifierActions.playerRotateAll),
+
+            // move to object
+            new ModifierAction(nameof(ModifierActions.playerMoveToObject),  ModifierActions.playerMoveToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveIndexToObject),  ModifierActions.playerMoveIndexToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveAllToObject),  ModifierActions.playerMoveAllToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveXToObject),  ModifierActions.playerMoveXToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveXIndexToObject),  ModifierActions.playerMoveXIndexToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveXAllToObject),  ModifierActions.playerMoveXAllToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveYToObject),  ModifierActions.playerMoveYToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveYIndexToObject),  ModifierActions.playerMoveYIndexToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveYAllToObject),  ModifierActions.playerMoveYAllToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerRotateToObject),  ModifierActions.playerRotateToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerRotateIndexToObject),  ModifierActions.playerRotateIndexToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerRotateAllToObject),  ModifierActions.playerRotateAllToObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerDrag),  ModifierActions.playerDrag, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // actions
+            new ModifierAction(nameof(ModifierActions.playerBoost),  ModifierActions.playerBoost, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerBoostIndex),  ModifierActions.playerBoostIndex),
+            new ModifierAction(nameof(ModifierActions.playerBoostAll),  ModifierActions.playerBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerCancelBoost),  ModifierActions.playerCancelBoost, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerCancelBoostIndex),  ModifierActions.playerCancelBoostIndex),
+            new ModifierAction(nameof(ModifierActions.playerCancelBoostAll),  ModifierActions.playerCancelBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerDisableBoost),  ModifierActions.playerDisableBoost, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerDisableBoostIndex),  ModifierActions.playerDisableBoostIndex),
+            new ModifierAction(nameof(ModifierActions.playerDisableBoostAll),  ModifierActions.playerDisableBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerEnableBoost),  ModifierActions.playerEnableBoost, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableBoostIndex),  ModifierActions.playerEnableBoostIndex),
+            new ModifierAction(nameof(ModifierActions.playerEnableBoostAll),  ModifierActions.playerEnableBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerEnableMove),  ModifierActions.playerEnableMove, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableMoveIndex),  ModifierActions.playerEnableMoveIndex),
+            new ModifierAction(nameof(ModifierActions.playerEnableMoveAll),  ModifierActions.playerEnableMoveAll),
+
+            // speed
+            new ModifierAction(nameof(ModifierActions.playerSpeed),  ModifierActions.playerSpeed),
+            new ModifierAction(nameof(ModifierActions.playerVelocity),  ModifierActions.playerVelocity, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerVelocityIndex),  ModifierActions.playerVelocityIndex),
+            new ModifierAction(nameof(ModifierActions.playerVelocityAll),  ModifierActions.playerVelocityAll),
+            new ModifierAction(nameof(ModifierActions.playerVelocityX),  ModifierActions.playerVelocityX, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerVelocityXIndex),  ModifierActions.playerVelocityXIndex),
+            new ModifierAction(nameof(ModifierActions.playerVelocityXAll),  ModifierActions.playerVelocityXAll),
+            new ModifierAction(nameof(ModifierActions.playerVelocityY),  ModifierActions.playerVelocityY, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.playerVelocityYIndex),  ModifierActions.playerVelocityYIndex),
+            new ModifierAction(nameof(ModifierActions.playerVelocityYAll),  ModifierActions.playerVelocityYAll),
+
+            new ModifierAction(nameof(ModifierActions.setPlayerModel),  ModifierActions.setPlayerModel),
+            new ModifierAction(nameof(ModifierActions.setGameMode),  ModifierActions.setGameMode),
+            new ModifierAction(nameof(ModifierActions.gameMode),  ModifierActions.setGameMode),
+
+            new ModifierAction(nameof(ModifierActions.blackHole),  ModifierActions.blackHole, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.whiteHole),  ModifierActions.whiteHole, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Mouse Cursor
+
+            new ModifierAction(nameof(ModifierActions.showMouse),  ModifierActions.showMouse),
+            new ModifierAction(nameof(ModifierActions.hideMouse),  ModifierActions.hideMouse),
+            new ModifierAction(nameof(ModifierActions.setMousePosition),  ModifierActions.setMousePosition),
+            new ModifierAction(nameof(ModifierActions.followMousePosition),  ModifierActions.followMousePosition),
+
+            #endregion
+
+            #region Variable
+
+            new ModifierAction(nameof(ModifierActions.getToggle),  ModifierActions.getToggle),
+            new ModifierAction(nameof(ModifierActions.getFloat),  ModifierActions.getFloat),
+            new ModifierAction(nameof(ModifierActions.getInt),  ModifierActions.getInt),
+            new ModifierAction(nameof(ModifierActions.getString),  ModifierActions.getString),
+            new ModifierAction(nameof(ModifierActions.getStringLower),  ModifierActions.getStringLower),
+            new ModifierAction(nameof(ModifierActions.getStringUpper),  ModifierActions.getStringUpper),
+            new ModifierAction(nameof(ModifierActions.getColor),  ModifierActions.getColor),
+            new ModifierAction(nameof(ModifierActions.getEnum),  ModifierActions.getEnum),
+            new ModifierAction(nameof(ModifierActions.getTag),  ModifierActions.getTag),
+            new ModifierAction(nameof(ModifierActions.getPitch),  ModifierActions.getPitch),
+            new ModifierAction(nameof(ModifierActions.getMusicTime),  ModifierActions.getMusicTime),
+            new ModifierAction(nameof(ModifierActions.getAxis),  ModifierActions.getAxis, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.getMath),  ModifierActions.getMath),
+            new ModifierAction(nameof(ModifierActions.getNearestPlayer),  ModifierActions.getNearestPlayer, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.getCollidingPlayers),  ModifierActions.getCollidingPlayers, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.getPlayerHealth),  ModifierActions.getPlayerHealth),
+            new ModifierAction(nameof(ModifierActions.getPlayerPosX),  ModifierActions.getPlayerPosX),
+            new ModifierAction(nameof(ModifierActions.getPlayerPosY),  ModifierActions.getPlayerPosY),
+            new ModifierAction(nameof(ModifierActions.getPlayerRot),  ModifierActions.getPlayerRot),
+            new ModifierAction(nameof(ModifierActions.getEventValue),  ModifierActions.getEventValue),
+            new ModifierAction(nameof(ModifierActions.getSample),  ModifierActions.getSample),
+            new ModifierAction(nameof(ModifierActions.getText),  ModifierActions.getText, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.getTextOther),  ModifierActions.getTextOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.getCurrentKey),  ModifierActions.getCurrentKey),
+            new ModifierAction(nameof(ModifierActions.getColorSlotHexCode),  ModifierActions.getColorSlotHexCode),
+            new ModifierAction(nameof(ModifierActions.getFloatFromHexCode),  ModifierActions.getFloatFromHexCode),
+            new ModifierAction(nameof(ModifierActions.getHexCodeFromFloat),  ModifierActions.getHexCodeFromFloat),
+            new ModifierAction(nameof(ModifierActions.getModifiedColor),  ModifierActions.getModifiedColor),
+            new ModifierAction(nameof(ModifierActions.getMixedColors),  ModifierActions.getMixedColors),
+            new ModifierAction(nameof(ModifierActions.getVisualColor),  ModifierActions.getVisualColor),
+            new ModifierAction(nameof(ModifierActions.getJSONString),  ModifierActions.getJSONString),
+            new ModifierAction(nameof(ModifierActions.getJSONFloat),  ModifierActions.getJSONFloat),
+            new ModifierAction(nameof(ModifierActions.getJSON),  ModifierActions.getJSON),
+            new ModifierAction(nameof(ModifierActions.getSubString),  ModifierActions.getSubString),
+            new ModifierAction(nameof(ModifierActions.getSplitString),  ModifierActions.getSplitString),
+            new ModifierAction(nameof(ModifierActions.getSplitStringAt),  ModifierActions.getSplitStringAt),
+            new ModifierAction(nameof(ModifierActions.getSplitStringCount),  ModifierActions.getSplitStringCount),
+            new ModifierAction(nameof(ModifierActions.getStringLength),  ModifierActions.getStringLength),
+            new ModifierAction(nameof(ModifierActions.getParsedString),  ModifierActions.getParsedString),
+            new ModifierAction(nameof(ModifierActions.getRegex),  ModifierActions.getRegex),
+            new ModifierAction(nameof(ModifierActions.getFormatVariable),  ModifierActions.getFormatVariable),
+            new ModifierAction(nameof(ModifierActions.getComparison),  ModifierActions.getComparison),
+            new ModifierAction(nameof(ModifierActions.getComparisonMath),  ModifierActions.getComparisonMath),
+            new ModifierAction(nameof(ModifierActions.getSignaledVariables),  ModifierActions.getSignaledVariables),
+            new ModifierAction(nameof(ModifierActions.signalLocalVariables),  ModifierActions.signalLocalVariables),
+            new ModifierAction(nameof(ModifierActions.clearLocalVariables),  ModifierActions.clearLocalVariables),
+            new ModifierAction(nameof(ModifierActions.storeLocalVariables),  ModifierActions.storeLocalVariables),
+
+            new ModifierAction(nameof(ModifierActions.addVariable),  ModifierActions.addVariable),
+            new ModifierAction(nameof(ModifierActions.addVariableOther),  ModifierActions.addVariableOther),
+            new ModifierAction(nameof(ModifierActions.subVariable),  ModifierActions.subVariable),
+            new ModifierAction(nameof(ModifierActions.subVariableOther),  ModifierActions.subVariableOther),
+            new ModifierAction(nameof(ModifierActions.setVariable),  ModifierActions.setVariable),
+            new ModifierAction(nameof(ModifierActions.setVariableOther),  ModifierActions.setVariableOther),
+            new ModifierAction(nameof(ModifierActions.setVariableRandom),  ModifierActions.setVariableRandom),
+            new ModifierAction(nameof(ModifierActions.setVariableRandomOther),  ModifierActions.setVariableRandomOther),
+            new ModifierAction(nameof(ModifierActions.animateVariableOther),  ModifierActions.animateVariableOther),
+            new ModifierAction(nameof(ModifierActions.clampVariable),  ModifierActions.clampVariable),
+            new ModifierAction(nameof(ModifierActions.clampVariableOther),  ModifierActions.clampVariableOther),
+
+            #endregion
+
+            #region Enable
+
+            // old bg modifiers
+            new ModifierAction(nameof(ModifierActions.setActive), ModifierActions.setActive, ModifierCompatibility.BackgroundObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setActiveOther), ModifierActions.setActiveOther, ModifierCompatibility.BackgroundObjectCompatible),
+
+            // enable
+            new ModifierAction(nameof(ModifierActions.enableObject),  ModifierActions.enableObject, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.enableObjectTree),  ModifierActions.enableObjectTree, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.enableObjectOther),  ModifierActions.enableObjectOther, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.enableObjectTreeOther),  ModifierActions.enableObjectTreeOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.enableObjectGroup),  ModifierActions.enableObjectGroup, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+
+            // disable
+            new ModifierAction(nameof(ModifierActions.disableObject),  ModifierActions.disableObject, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.disableObjectTree),  ModifierActions.disableObjectTree, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.disableObjectOther),  ModifierActions.disableObjectOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.disableObjectTreeOther),  ModifierActions.disableObjectTreeOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region JSON
+
+            new ModifierAction(nameof(ModifierActions.saveFloat),  ModifierActions.saveFloat),
+            new ModifierAction(nameof(ModifierActions.saveString),  ModifierActions.saveString),
+            new ModifierAction(nameof(ModifierActions.saveText),  ModifierActions.saveText),
+            new ModifierAction(nameof(ModifierActions.saveVariable),  ModifierActions.saveVariable),
+            new ModifierAction(nameof(ModifierActions.loadVariable),  ModifierActions.loadVariable),
+            new ModifierAction(nameof(ModifierActions.loadVariableOther),  ModifierActions.loadVariableOther),
+
+            #endregion
+
+            #region Reactive
+
+            // single
+            new ModifierAction(nameof(ModifierActions.reactivePos),  ModifierActions.reactivePos, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.reactiveSca),  ModifierActions.reactiveSca, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.reactiveRot),  ModifierActions.reactiveRot, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.reactiveCol),  ModifierActions.reactiveCol, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.reactiveColLerp),  ModifierActions.reactiveColLerp, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // chain
+            new ModifierAction(nameof(ModifierActions.reactivePosChain),  ModifierActions.reactivePosChain, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.reactiveScaChain),  ModifierActions.reactiveScaChain, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.reactiveRotChain),  ModifierActions.reactiveRotChain, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Events
+
+            new ModifierAction(nameof(ModifierActions.eventOffset),  ModifierActions.eventOffset),
+            new ModifierAction(nameof(ModifierActions.eventOffsetVariable),  ModifierActions.eventOffsetVariable),
+            new ModifierAction(nameof(ModifierActions.eventOffsetMath),  ModifierActions.eventOffsetMath),
+            new ModifierAction(nameof(ModifierActions.eventOffsetAnimate),  ModifierActions.eventOffsetAnimate),
+            new ModifierAction(nameof(ModifierActions.eventOffsetCopyAxis),  ModifierActions.eventOffsetCopyAxis, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.vignetteTracksPlayer),  ModifierActions.vignetteTracksPlayer),
+            new ModifierAction(nameof(ModifierActions.lensTracksPlayer),  ModifierActions.lensTracksPlayer),
+
+            #endregion
+
+            // todo: implement gradients and different color controls
+            #region Color
+
+            // color
+            new ModifierAction(nameof(ModifierActions.addColor),  ModifierActions.addColor, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.addColorOther),  ModifierActions.addColorOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.lerpColor),  ModifierActions.lerpColor, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.lerpColorOther),  ModifierActions.lerpColorOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.addColorPlayerDistance),  ModifierActions.addColorPlayerDistance, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.lerpColorPlayerDistance),  ModifierActions.lerpColorPlayerDistance, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // opacity
+            new ModifierAction("setAlpha",  ModifierActions.setOpacity, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setOpacity),  ModifierActions.setOpacity, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction("setAlphaOther",  ModifierActions.setOpacityOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setOpacityOther),  ModifierActions.setOpacityOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // copy
+            new ModifierAction(nameof(ModifierActions.copyColor),  ModifierActions.copyColor, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.copyColorOther),  ModifierActions.copyColorOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.applyColorGroup),  ModifierActions.applyColorGroup, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // hex code
+            new ModifierAction(nameof(ModifierActions.setColorHex),  ModifierActions.setColorHex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setColorHexOther),  ModifierActions.setColorHexOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // rgba
+            new ModifierAction(nameof(ModifierActions.setColorRGBA),  ModifierActions.setColorRGBA, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setColorRGBAOther),  ModifierActions.setColorRGBAOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            new ModifierAction(nameof(ModifierActions.animateColorKF),  ModifierActions.animateColorKF, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)),
+            new ModifierAction(nameof(ModifierActions.animateColorKFHex),  ModifierActions.animateColorKFHex, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)),
+
+            #endregion
+
+            // todo: figure out how to get actorFrameTexture to work
+            #region Shape
+            
+            new ModifierAction(nameof(ModifierActions.translateShape),  ModifierActions.translateShape, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setShape),  ModifierActions.setShape, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)),
+            new ModifierAction(nameof(ModifierActions.setPolygonShape),  ModifierActions.setPolygonShape, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setPolygonShapeOther),  ModifierActions.setPolygonShapeOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // image
+            new ModifierAction(nameof(ModifierActions.actorFrameTexture),  ModifierActions.actorFrameTexture, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setImage),  ModifierActions.setImage, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setImageOther),  ModifierActions.setImageOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // text (pain)
+            new ModifierAction(nameof(ModifierActions.setText),  ModifierActions.setText, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setTextOther),  ModifierActions.setTextOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.addText),  ModifierActions.addText, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.addTextOther),  ModifierActions.addTextOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.removeText),  ModifierActions.removeText, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.removeTextOther),  ModifierActions.removeTextOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.removeTextAt),  ModifierActions.removeTextAt, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.removeTextOtherAt),  ModifierActions.removeTextOtherAt, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.formatText),  ModifierActions.formatText, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.textSequence),  ModifierActions.textSequence, ModifierCompatibility.BeatmapObjectCompatible),
+
+            // modify shape
+            new ModifierAction(nameof(ModifierActions.backgroundShape),  ModifierActions.backgroundShape, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.sphereShape),  ModifierActions.sphereShape, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Animation
+
+            new ModifierAction(nameof(ModifierActions.animateObject),  ModifierActions.animateObject),
+            new ModifierAction(nameof(ModifierActions.animateObjectOther),  ModifierActions.animateObjectOther),
+            new ModifierAction(nameof(ModifierActions.animateObjectKF),  ModifierActions.animateObjectKF),
+            new ModifierAction(nameof(ModifierActions.animateSignal),  ModifierActions.animateSignal),
+            new ModifierAction(nameof(ModifierActions.animateSignalOther),  ModifierActions.animateSignalOther),
+
+            new ModifierAction(nameof(ModifierActions.animateObjectMath),  ModifierActions.animateObjectMath),
+            new ModifierAction(nameof(ModifierActions.animateObjectMathOther),  ModifierActions.animateObjectMathOther),
+            new ModifierAction(nameof(ModifierActions.animateSignalMath),  ModifierActions.animateSignalMath),
+            new ModifierAction(nameof(ModifierActions.animateSignalMathOther),  ModifierActions.animateSignalMathOther),
+
+            new ModifierAction(nameof(ModifierActions.applyAnimation),  ModifierActions.applyAnimation, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.applyAnimationFrom),  ModifierActions.applyAnimationFrom, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.applyAnimationTo),  ModifierActions.applyAnimationTo, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.applyAnimationMath),  ModifierActions.applyAnimationMath, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.applyAnimationFromMath),  ModifierActions.applyAnimationFromMath, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.applyAnimationToMath),  ModifierActions.applyAnimationToMath, ModifierCompatibility.BeatmapObjectCompatible),
+
+            new ModifierAction(nameof(ModifierActions.copyAxis),  ModifierActions.copyAxis),
+            new ModifierAction(nameof(ModifierActions.copyAxisMath),  ModifierActions.copyAxisMath),
+            new ModifierAction(nameof(ModifierActions.copyAxisGroup),  ModifierActions.copyAxisGroup),
+            new ModifierAction(nameof(ModifierActions.copyPlayerAxis),  ModifierActions.copyPlayerAxis),
+
+            new ModifierAction(nameof(ModifierActions.legacyTail),  ModifierActions.legacyTail, ModifierCompatibility.BeatmapObjectCompatible),
+
+            new ModifierAction(nameof(ModifierActions.gravity),  ModifierActions.gravity),
+            new ModifierAction(nameof(ModifierActions.gravityOther),  ModifierActions.gravityOther),
+
+            #endregion
+
+            #region Prefab
+
+            new ModifierAction(nameof(ModifierActions.spawnPrefab),  ModifierActions.spawnPrefab),
+            new ModifierAction(nameof(ModifierActions.spawnPrefabOffset),  ModifierActions.spawnPrefabOffset),
+            new ModifierAction(nameof(ModifierActions.spawnPrefabOffsetOther),  ModifierActions.spawnPrefabOffsetOther),
+            new ModifierAction(nameof(ModifierActions.spawnPrefabCopy),  ModifierActions.spawnPrefabCopy),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefab),  ModifierActions.spawnMultiPrefab),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabOffset),  ModifierActions.spawnMultiPrefabOffset),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabOffsetOther),  ModifierActions.spawnMultiPrefabOffsetOther),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabCopy),  ModifierActions.spawnMultiPrefabCopy),
+            new ModifierAction(nameof(ModifierActions.clearSpawnedPrefabs),  ModifierActions.clearSpawnedPrefabs),
+            new ModifierAction(nameof(ModifierActions.setPrefabTime),  ModifierActions.setPrefabTime, ModifierCompatibility.PrefabObjectCompatible),
+
+            #endregion
+
+            #region Ranking
+
+            new ModifierAction(nameof(ModifierActions.saveLevelRank),  ModifierActions.saveLevelRank),
+
+            new ModifierAction(nameof(ModifierActions.clearHits),  ModifierActions.clearHits),
+            new ModifierAction(nameof(ModifierActions.addHit),  ModifierActions.addHit),
+            new ModifierAction(nameof(ModifierActions.subHit),  ModifierActions.subHit),
+            new ModifierAction(nameof(ModifierActions.clearDeaths),  ModifierActions.clearDeaths),
+            new ModifierAction(nameof(ModifierActions.addDeath),  ModifierActions.addDeath),
+            new ModifierAction(nameof(ModifierActions.subDeath),  ModifierActions.subDeath),
+
+            #endregion
+
+            #region Updates
+
+            // update
+            new ModifierAction(nameof(ModifierActions.updateObjects),  ModifierActions.updateObjects),
+            new ModifierAction(nameof(ModifierActions.updateObject),  ModifierActions.updateObject, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+
+            // parent
+            new ModifierAction(nameof(ModifierActions.setParent),  ModifierActions.setParent, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.setParentOther),  ModifierActions.setParentOther, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.detachParent),  ModifierActions.detachParent, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.detachParentOther),  ModifierActions.detachParentOther, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
+
+            #endregion
+
+            #region Physics
+
+            // collision
+            new ModifierAction(nameof(ModifierActions.setCollision),  ModifierActions.setCollision, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.setCollisionOther),  ModifierActions.setCollisionOther, ModifierCompatibility.BeatmapObjectCompatible),
+
+            #endregion
+
+            #region Checkpoints
+
+            new ModifierAction(nameof(ModifierActions.createCheckpoint),  ModifierActions.createCheckpoint),
+            new ModifierAction(nameof(ModifierActions.resetCheckpoint),  ModifierActions.resetCheckpoint),
+
+            #endregion
+
+            #region Interfaces
+
+            new ModifierAction(nameof(ModifierActions.loadInterface),  ModifierActions.loadInterface),
+            new ModifierAction(nameof(ModifierActions.exitInterface),  ModifierActions.exitInterface),
+            new ModifierAction(nameof(ModifierActions.quitToMenu),  ModifierActions.quitToMenu),
+            new ModifierAction(nameof(ModifierActions.quitToArcade),  ModifierActions.quitToArcade),
+            new ModifierAction(nameof(ModifierActions.pauseLevel),  ModifierActions.pauseLevel),
+
+            #endregion
+
+            #region Misc
+
+            new ModifierAction(nameof(ModifierActions.setBGActive),  ModifierActions.setBGActive),
+
+            // activation
+            new ModifierAction(nameof(ModifierActions.signalModifier),  ModifierActions.signalModifier),
+            new ModifierAction(nameof(ModifierActions.activateModifier),  ModifierActions.activateModifier),
+
+            new ModifierAction(nameof(ModifierActions.editorNotify),  ModifierActions.editorNotify),
+
+            // external
+            new ModifierAction(nameof(ModifierActions.setWindowTitle),  ModifierActions.setWindowTitle),
+            new ModifierAction(nameof(ModifierActions.setDiscordStatus),  ModifierActions.setDiscordStatus),
+
+            new ModifierAction(nameof(ModifierActions.callModifierBlock),  ModifierActions.callModifierBlock),
+
+            #endregion
+
+            // dev only (story mode)
+            #region Dev Only
+
+            new ModifierAction(nameof(ModifierActions.loadSceneDEVONLY),  ModifierActions.loadSceneDEVONLY),
+            new ModifierAction(nameof(ModifierActions.loadStoryLevelDEVONLY),  ModifierActions.loadStoryLevelDEVONLY),
+            new ModifierAction(nameof(ModifierActions.storySaveBoolDEVONLY),  ModifierActions.storySaveBoolDEVONLY),
+            new ModifierAction(nameof(ModifierActions.storySaveIntDEVONLY),  ModifierActions.storySaveIntDEVONLY),
+            new ModifierAction(nameof(ModifierActions.storySaveFloatDEVONLY),  ModifierActions.storySaveFloatDEVONLY),
+            new ModifierAction(nameof(ModifierActions.storySaveStringDEVONLY),  ModifierActions.storySaveStringDEVONLY),
+            new ModifierAction(nameof(ModifierActions.storySaveIntVariableDEVONLY),  ModifierActions.storySaveIntVariableDEVONLY),
+            new ModifierAction(nameof(ModifierActions.getStorySaveBoolDEVONLY),  ModifierActions.getStorySaveBoolDEVONLY),
+            new ModifierAction(nameof(ModifierActions.getStorySaveIntDEVONLY),  ModifierActions.getStorySaveIntDEVONLY),
+            new ModifierAction(nameof(ModifierActions.getStorySaveFloatDEVONLY),  ModifierActions.getStorySaveFloatDEVONLY),
+            new ModifierAction(nameof(ModifierActions.getStorySaveStringDEVONLY),  ModifierActions.getStorySaveStringDEVONLY),
+            new ModifierAction(nameof(ModifierActions.exampleEnableDEVONLY),  ModifierActions.exampleEnableDEVONLY),
+            new ModifierAction(nameof(ModifierActions.exampleSayDEVONLY),  ModifierActions.exampleSayDEVONLY),
+
+            #endregion
+        };
+
+        public static ModifierInactive[] inactives = new ModifierInactive[]
+        {
+            #region Actions
+
+            #region Component
+
+            new ModifierInactive(nameof(ModifierActions.blur),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                        beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
+                        modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                    {
+                        runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                        solidObject.material = runtimeObject.visualObject.renderer.material;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.blurOther),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                        beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
+                        modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                    {
+                        runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                        solidObject.material = runtimeObject.visualObject.renderer.material;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.blurVariableOther),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                        beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
+                        modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                    {
+                        runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                        solidObject.material = runtimeObject.visualObject.renderer.material;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+
+            #endregion
+
+            #region Variables
+            
+            new ModifierInactive(nameof(ModifierActions.storeLocalVariables),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+
+            #endregion
+
+            #region Enable
+
+            new ModifierInactive(nameof(ModifierActions.enableObject),
+                (modifier, reference, variables) =>
+                {
+                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                        return;
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    if (prefabable.GetRuntimeObject() is ICustomActivatable activatable)
+                        activatable.SetCustomActive(false);
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.enableObjectOther),
+                (modifier, reference, variables) =>
+                {
+                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                        return;
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0));
+
+                    if (prefabables.IsEmpty())
+                        return;
+
+                    foreach (var other in prefabables)
+                    {
+                        if (other.GetRuntimeObject() is ICustomActivatable activatable)
+                            activatable.SetCustomActive(false);
+                    }
+
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.enableObjectTree),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.GetValue(0) == "0")
+                        modifier.SetValue(0, "False");
+
+                    if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], false))
+                    {
+                        modifier.Result = null;
+                        return;
+                    }
+
+                    if (reference is not BeatmapObject beatmapObject)
+                        return;
+
+                    if (modifier.Result == null)
+                        return;
+
+                    var list = (List<BeatmapObject>)modifier.Result;
+
+                    for (int i = 0; i < list.Count; i++)
+                        list[i].runtimeObject?.SetCustomActive(false);
+
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.enableObjectTreeOther),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                    {
+                        modifier.Result = null;
+                        return;
+                    }
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    if (modifier.Result == null)
+                    {
+                        var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+
+                        var resultList = new List<BeatmapObject>();
+                        foreach (var bm in beatmapObjects)
+                        {
+                            var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                            resultList.AddRange(beatmapObject.GetChildTree());
+                        }
+
+                        modifier.Result = resultList;
+                    }
+
+                    var list = (List<BeatmapObject>)modifier.Result;
+
+                    for (int i = 0; i < list.Count; i++)
+                        list[i].runtimeObject?.SetCustomActive(false);
+
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+
+            new ModifierInactive(nameof(ModifierActions.disableObject),
+                (modifier, reference, variables) =>
+                {
+                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                        return;
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    if (prefabable.GetRuntimeObject() is ICustomActivatable activatable)
+                        activatable.SetCustomActive(true);
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.disableObjectOther),
+                (modifier, reference, variables) =>
+                {
+                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                        return;
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0));
+
+                    if (prefabables.IsEmpty())
+                        return;
+
+                    foreach (var other in prefabables)
+                    {
+                        if (other.GetRuntimeObject() is ICustomActivatable activatable)
+                            activatable.SetCustomActive(true);
+                    }
+
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.disableObjectTree),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.GetValue(0) == "0")
+                        modifier.SetValue(0, "False");
+
+                    if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], false))
+                    {
+                        modifier.Result = null;
+                        return;
+                    }
+
+                    if (reference is not BeatmapObject beatmapObject)
+                        return;
+
+                    if (modifier.Result == null)
+                        return;
+
+                    var list = (List<BeatmapObject>)modifier.Result;
+
+                    for (int i = 0; i < list.Count; i++)
+                        list[i].runtimeObject?.SetCustomActive(true);
+
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.disableObjectTreeOther),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                    {
+                        modifier.Result = null;
+                        return;
+                    }
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    if (modifier.Result == null)
+                    {
+                        var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+
+                        var resultList = new List<BeatmapObject>();
+                        foreach (var bm in beatmapObjects)
+                        {
+                            var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                            resultList.AddRange(beatmapObject.GetChildTree());
+                        }
+
+                        modifier.Result = resultList;
+                    }
+
+                    var list = (List<BeatmapObject>)modifier.Result;
+
+                    for (int i = 0; i < list.Count; i++)
+                        list[i].runtimeObject?.SetCustomActive(true);
+
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+
+            #endregion
+
+            #region Reactive
+
+            new ModifierInactive(nameof(ModifierActions.reactivePosChain),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is IReactive reactive)
+                        reactive.ReactivePositionOffset = Vector3.zero;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.reactiveScaChain),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is IReactive reactive)
+                        reactive.ReactiveScaleOffset = Vector3.zero;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.reactiveRotChain),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is IReactive reactive)
+                        reactive.ReactiveRotationOffset = 0f;
+                }
+            ),
+
+            #endregion
+
+            #region Color
+
+            new ModifierInactive(nameof(ModifierActions.animateColorKF),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)
+            ),
+            new ModifierInactive(nameof(ModifierActions.animateColorKFHex),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)
+            ),
+
+            #endregion
+
+            #region Shape
+
+            new ModifierInactive(nameof(ModifierActions.setText),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.constant && reference is BeatmapObject beatmapObject && beatmapObject.ShapeType == ShapeType.Text && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
+                        beatmapObject.runtimeObject.visualObject is TextObject textObject)
+                        textObject.text = beatmapObject.text;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.setTextOther),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+
+                    if (modifier.constant && !list.IsEmpty())
+                        foreach (var bm in list)
+                            if (bm.ShapeType == ShapeType.Text && bm.runtimeObject && bm.runtimeObject.visualObject &&
+                                bm.runtimeObject.visualObject is TextObject textObject)
+                                textObject.text = bm.text;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.textSequence),
+                (modifier, reference, variables) =>
+                {
+                    modifier.setTimer = false;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+
+            #endregion
+
+            #region Animation
+
+            new ModifierInactive(nameof(ModifierActions.animateSignal),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.constant || !Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
+                        return;
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex));
+
+                    foreach (var modifyable in modifyables)
+                    {
+                        if (!modifyable.Modifiers.IsEmpty() && modifyable.Modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
+                            m.Result = null;
+                    }
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.animateSignalOther),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.constant || !Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
+                        return;
+
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex));
+
+                    foreach (var modifyable in modifyables)
+                    {
+                        if (!modifyable.Modifiers.IsEmpty() && modifyable.Modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
+                            m.Result = null;
+                    }
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.applyAnimation),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.applyAnimationFrom),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.applyAnimationTo),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierActions.copyAxis),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.copyAxisMath),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.copyAxisGroup),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.gravity),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.gravityOther),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+
+            #endregion
+
+            #region Prefab
+
+            new ModifierInactive(nameof(ModifierActions.spawnPrefab),
+                (modifier, reference, variables) =>
+                {
+                    // value 9 is permanent
+
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
+                    {
+                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    }
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.spawnPrefabOffset),
+                (modifier, reference, variables) =>
+                {
+                    // value 9 is permanent
+
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
+                    {
+                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    }
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.spawnPrefabOffsetOther),
+                (modifier, reference, variables) =>
+                {
+                    // value 9 is permanent
+
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
+                    {
+                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    }
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.spawnMultiPrefabCopy),
+                (modifier, reference, variables) =>
+                {
+                    // value 5 is permanent
+
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
+                    {
+                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    }
+                }
+            ),
+            new ModifierInactive(nameof(ModifierActions.spawnPrefabCopy),
+                (modifier, reference, variables) =>
+                {
+                    // value 5 is permanent
+
+                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
+                    {
+                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    }
+                }
+            ),
+
+            #endregion
+
+            #region Misc
+
+            new ModifierInactive(nameof(ModifierActions.signalModifier),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(1));
+
+                    foreach (var modifyable in modifyables)
+                    {
+                        if (!modifyable.Modifiers.IsEmpty() && modifyable.Modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
+                            m.Result = null;
+                    }
+                }
+            ),
+
+            #endregion
+
+            #endregion
+
+            #region Triggers
+
+            #region Controls
+
+            new ModifierInactive(nameof(ModifierTriggers.mouseOverSignalModifier),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is not IPrefabable prefabable)
+                        return;
+
+                    var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(1));
+
+                    foreach (var modifyable in modifyables)
+                    {
+                        if (!modifyable.Modifiers.IsEmpty() && modifyable.Modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
+                            m.Result = null;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+
+            #endregion
+
+            #region Random
+            
+            new ModifierInactive(nameof(ModifierTriggers.randomEquals),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierTriggers.randomLesser),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+            new ModifierInactive(nameof(ModifierTriggers.randomGreater),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }
+            ),
+
+            #endregion
+
+            #region Misc
+            
+            new ModifierInactive(nameof(ModifierTriggers.objectSpawned),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = null;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+
+            #endregion
+
+            #endregion
+        };
+
         #region GameData
 
         public static int GetLevelTriggerType(string key) => key switch
         {
             "time" => 0,
             "timeInRange" => 0,
-            "onPlayerHit" => 1,
-            "onPlayerDeath" => 2,
-            "onLevelStart" => 3,
-            "onLevelRestart" => 4,
-            "onLevelRewind" => 5,
+            nameof(ModifierTriggers.onPlayerHit) => 1,
+            nameof(ModifierTriggers.onPlayerDeath) => 2,
+            nameof(ModifierTriggers.onLevelStart) => 3,
+            nameof(ModifierTriggers.onLevelRestart) => 4,
+            nameof(ModifierTriggers.onLevelRewind) => 5,
             _ => -1,
         };
         
@@ -449,26 +1777,26 @@ namespace BetterLegacy.Core.Helpers
             "vnInk" => 0,
             "vnTimeline" => 1,
             "playerBubble" => 2,
-            "playerMoveAll" => 3,
-            "playerBoostLock" => 4,
-            "playerXLock" => 5,
-            "playerYLock" => 6,
+            nameof(ModifierActions.playerMoveAll) => 3,
+            nameof(ModifierActions.playerLockBoostAll) => 4,
+            nameof(ModifierActions.playerLockXAll) => 5,
+            nameof(ModifierActions.playerLockYAll) => 6,
             "bgSpin" => 7,
             "bgMove" => 8,
-            "playerBoost" => 9,
-            "setMusicTime" => 10,
-            "setPitch" => 11,
+            nameof(ModifierActions.playerBoostAll) => 9,
+            nameof(ModifierActions.setMusicTime) => 10,
+            nameof(ModifierActions.setPitch) => 11,
             _ => -1,
         };
 
         public static string GetLevelTriggerName(int type) => type switch
         {
             0 => "timeInRange",
-            1 => "onPlayerHit",
-            2 => "onPlayerDeath",
-            3 => "onLevelStart",
-            4 => "onLevelRestart",
-            5 => "onLevelRewind",
+            1 => nameof(ModifierTriggers.onPlayerHit),
+            2 => nameof(ModifierTriggers.onPlayerDeath),
+            3 => nameof(ModifierTriggers.onLevelStart),
+            4 => nameof(ModifierTriggers.onLevelRestart),
+            5 => nameof(ModifierTriggers.onLevelRewind),
             _ => string.Empty,
         };
 
@@ -477,3010 +1805,17 @@ namespace BetterLegacy.Core.Helpers
             0 => "vnInk",
             1 => "vnTimeline",
             2 => "playerBubble",
-            3 => "playerMoveAll",
-            4 => "playerBoostLock",
-            5 => "playerXLock",
-            6 => "playerYLock",
+            3 => nameof(ModifierActions.playerMoveAll),
+            4 => nameof(ModifierActions.playerLockBoostAll),
+            5 => nameof(ModifierActions.playerLockXAll),
+            6 => nameof(ModifierActions.playerLockYAll),
             7 => "bgSpin",
             8 => "bgMove",
-            9 => "playerBoost",
-            10 => "setMusicTime",
-            11 => "setPitch",
+            9 => nameof(ModifierActions.playerBoostAll),
+            10 => nameof(ModifierActions.setMusicTime),
+            11 => nameof(ModifierActions.setPitch),
             _ => string.Empty,
         };
-
-        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetLevelTrigger(string key) => key switch
-        {
-            "time" => (modifier, reference, variables) =>
-            {
-                var time = RTLevel.Current.FixedTime;
-                return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
-            },
-            "timeInRange" => (modifier, reference, variables) =>
-            {
-                var time = RTLevel.Current.FixedTime;
-                return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
-            },
-            "onPlayerHit" => (modifier, reference, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isTakingHit),
-            "onPlayerDeath" => (modifier, reference, variables) => PlayerManager.Players.Any(x => x.RuntimePlayer && x.RuntimePlayer.isDead),
-
-            "onLevelStart" => (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time < 0.1f,
-            "onLevelRestart" => (modifier, reference, variables) => false, // why is this here...?
-            "onLevelRewind" => (modifier, reference, variables) => CoreHelper.Reversing,
-            _ => (modifier, reference, variables) => false,
-        };
-
-        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetLevelAction(string key) => key switch
-        {
-            "playerMoveAll" => ModifierActions.playerMoveAll,
-            "playerBoostLock" => (modifier, reference, variables) =>
-            {
-                if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
-                    RTPlayer.LockBoost = lockBoost;
-            },
-            "playerXLock" => (modifier, reference, variables) =>
-            {
-
-            },
-            "playerYLock" => (modifier, reference, variables) =>
-            {
-
-            },
-            "playerBoost" => ModifierActions.playerBoostAll,
-            "setMusicTime" => ModifierActions.setMusicTime,
-            "setPitch" => ModifierActions.setPitch,
-            _ => (modifier, reference, variables) => { },
-        };
-
-        #endregion
-
-        #region BeatmapObject
-
-        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetObjectTrigger(string key) => key switch
-        {
-            #region Player
-
-            nameof(ModifierTriggers.playerCollide) => ModifierTriggers.playerCollide,
-            nameof(ModifierTriggers.playerCollideIndex) => ModifierTriggers.playerCollideIndex,
-            nameof(ModifierTriggers.playerHealthEquals) => ModifierTriggers.playerHealthEquals,
-            nameof(ModifierTriggers.playerHealthLesserEquals) => ModifierTriggers.playerHealthLesserEquals,
-            nameof(ModifierTriggers.playerHealthGreaterEquals) => ModifierTriggers.playerHealthGreaterEquals,
-            nameof(ModifierTriggers.playerHealthLesser) => ModifierTriggers.playerHealthLesser,
-            nameof(ModifierTriggers.playerHealthGreater) => ModifierTriggers.playerHealthGreater,
-            nameof(ModifierTriggers.playerMoving) => ModifierTriggers.playerMoving,
-            nameof(ModifierTriggers.playerBoosting) => ModifierTriggers.playerBoosting,
-            nameof(ModifierTriggers.playerAlive) => ModifierTriggers.playerAlive,
-            nameof(ModifierTriggers.playerDeathsEquals) => ModifierTriggers.playerDeathsEquals,
-            nameof(ModifierTriggers.playerDeathsLesserEquals) => ModifierTriggers.playerDeathsLesserEquals,
-            nameof(ModifierTriggers.playerDeathsGreaterEquals) => ModifierTriggers.playerDeathsGreaterEquals,
-            nameof(ModifierTriggers.playerDeathsLesser) => ModifierTriggers.playerDeathsLesser,
-            nameof(ModifierTriggers.playerDeathsGreater) => ModifierTriggers.playerDeathsGreater,
-            nameof(ModifierTriggers.playerDistanceGreater) => ModifierTriggers.playerDistanceGreater,
-            nameof(ModifierTriggers.playerDistanceLesser) => ModifierTriggers.playerDistanceLesser,
-            nameof(ModifierTriggers.playerCountEquals) => ModifierTriggers.playerCountEquals,
-            nameof(ModifierTriggers.playerCountLesserEquals) => ModifierTriggers.playerCountLesserEquals,
-            nameof(ModifierTriggers.playerCountGreaterEquals) => ModifierTriggers.playerCountGreaterEquals,
-            nameof(ModifierTriggers.playerCountLesser) => ModifierTriggers.playerCountLesser,
-            nameof(ModifierTriggers.playerCountGreater) => ModifierTriggers.playerCountGreater,
-            nameof(ModifierTriggers.onPlayerHit) => ModifierTriggers.onPlayerHit,
-            nameof(ModifierTriggers.onPlayerDeath) => ModifierTriggers.onPlayerDeath,
-            nameof(ModifierTriggers.playerBoostEquals) => ModifierTriggers.playerBoostEquals,
-            nameof(ModifierTriggers.playerBoostLesserEquals) => ModifierTriggers.playerBoostLesserEquals,
-            nameof(ModifierTriggers.playerBoostGreaterEquals) => ModifierTriggers.playerBoostGreaterEquals,
-            nameof(ModifierTriggers.playerBoostLesser) => ModifierTriggers.playerBoostLesser,
-            nameof(ModifierTriggers.playerBoostGreater) => ModifierTriggers.playerBoostGreater,
-
-            #endregion
-
-            #region Controls
-
-            nameof(ModifierTriggers.keyPressDown) => ModifierTriggers.keyPressDown,
-            nameof(ModifierTriggers.keyPress) => ModifierTriggers.keyPress,
-            nameof(ModifierTriggers.keyPressUp) => ModifierTriggers.keyPressUp,
-            nameof(ModifierTriggers.mouseButtonDown) => ModifierTriggers.mouseButtonDown,
-            nameof(ModifierTriggers.mouseButton) => ModifierTriggers.mouseButton,
-            nameof(ModifierTriggers.mouseButtonUp) => ModifierTriggers.mouseButtonUp,
-            nameof(ModifierTriggers.mouseOver) => ModifierTriggers.mouseOver,
-            nameof(ModifierTriggers.mouseOverSignalModifier) => ModifierTriggers.mouseOverSignalModifier,
-            nameof(ModifierTriggers.controlPressDown) => ModifierTriggers.controlPressDown,
-            nameof(ModifierTriggers.controlPress) => ModifierTriggers.controlPress,
-            nameof(ModifierTriggers.controlPressUp) => ModifierTriggers.controlPressUp,
-
-            #endregion
-
-            #region Collide
-
-            nameof(ModifierTriggers.bulletCollide) => ModifierTriggers.bulletCollide,
-            nameof(ModifierTriggers.objectCollide) => ModifierTriggers.objectCollide,
-
-            #endregion
-
-            #region JSON
-
-            nameof(ModifierTriggers.loadEquals) => ModifierTriggers.loadEquals,
-            nameof(ModifierTriggers.loadLesserEquals) => ModifierTriggers.loadLesserEquals,
-            nameof(ModifierTriggers.loadGreaterEquals) => ModifierTriggers.loadGreaterEquals,
-            nameof(ModifierTriggers.loadLesser) => ModifierTriggers.loadLesser,
-            nameof(ModifierTriggers.loadGreater) => ModifierTriggers.loadGreater,
-            nameof(ModifierTriggers.loadExists) => ModifierTriggers.loadExists,
-
-            #endregion
-
-            #region Variable
-
-            nameof(ModifierTriggers.localVariableEquals) => ModifierTriggers.localVariableEquals,
-            nameof(ModifierTriggers.localVariableLesserEquals) => ModifierTriggers.localVariableLesserEquals,
-            nameof(ModifierTriggers.localVariableGreaterEquals) => ModifierTriggers.localVariableGreaterEquals,
-            nameof(ModifierTriggers.localVariableLesser) => ModifierTriggers.localVariableLesser,
-            nameof(ModifierTriggers.localVariableGreater) => ModifierTriggers.localVariableGreater,
-            nameof(ModifierTriggers.localVariableContains) => ModifierTriggers.localVariableContains,
-            nameof(ModifierTriggers.localVariableStartsWith) => ModifierTriggers.localVariableStartsWith,
-            nameof(ModifierTriggers.localVariableEndsWith) => ModifierTriggers.localVariableEndsWith,
-            nameof(ModifierTriggers.localVariableExists) => ModifierTriggers.localVariableExists,
-
-            // self
-            nameof(ModifierTriggers.variableEquals) => ModifierTriggers.variableEquals,
-            nameof(ModifierTriggers.variableLesserEquals) => ModifierTriggers.variableLesserEquals,
-            nameof(ModifierTriggers.variableGreaterEquals) => ModifierTriggers.variableGreaterEquals,
-            nameof(ModifierTriggers.variableLesser) => ModifierTriggers.variableLesser,
-            nameof(ModifierTriggers.variableGreater) => ModifierTriggers.variableGreater,
-
-            // other
-            nameof(ModifierTriggers.variableOtherEquals) => ModifierTriggers.variableOtherEquals,
-            nameof(ModifierTriggers.variableOtherLesserEquals) => ModifierTriggers.variableOtherLesserEquals,
-            nameof(ModifierTriggers.variableOtherGreaterEquals) => ModifierTriggers.variableOtherGreaterEquals,
-            nameof(ModifierTriggers.variableOtherLesser) => ModifierTriggers.variableOtherLesser,
-            nameof(ModifierTriggers.variableOtherGreater) => ModifierTriggers.variableOtherGreater,
-
-            #endregion
-
-            #region Audio
-
-            nameof(ModifierTriggers.pitchEquals) => ModifierTriggers.pitchEquals,
-            nameof(ModifierTriggers.pitchLesserEquals) => ModifierTriggers.pitchLesserEquals,
-            nameof(ModifierTriggers.pitchGreaterEquals) => ModifierTriggers.pitchGreaterEquals,
-            nameof(ModifierTriggers.pitchLesser) => ModifierTriggers.pitchLesser,
-            nameof(ModifierTriggers.pitchGreater) => ModifierTriggers.pitchGreater,
-            nameof(ModifierTriggers.musicTimeGreater) => ModifierTriggers.musicTimeGreater,
-            nameof(ModifierTriggers.musicTimeLesser) => ModifierTriggers.musicTimeLesser,
-            nameof(ModifierTriggers.musicPlaying) => ModifierTriggers.musicPlaying,
-
-            #endregion
-
-            #region Challenge Mode
-
-            nameof(ModifierTriggers.inZenMode) => ModifierTriggers.inZenMode,
-            nameof(ModifierTriggers.inNormal) => ModifierTriggers.inNormal,
-            nameof(ModifierTriggers.in1Life) => ModifierTriggers.in1Life,
-            nameof(ModifierTriggers.inNoHit) => ModifierTriggers.inNoHit,
-            nameof(ModifierTriggers.inPractice) => ModifierTriggers.inPractice,
-
-            #endregion
-
-            #region Random
-
-            nameof(ModifierTriggers.randomEquals) => ModifierTriggers.randomEquals,
-            nameof(ModifierTriggers.randomLesser) => ModifierTriggers.randomLesser,
-            nameof(ModifierTriggers.randomGreater) => ModifierTriggers.randomGreater,
-
-            #endregion
-
-            #region Math
-
-            nameof(ModifierTriggers.mathEquals) => ModifierTriggers.mathEquals,
-            nameof(ModifierTriggers.mathLesserEquals) => ModifierTriggers.mathLesserEquals,
-            nameof(ModifierTriggers.mathGreaterEquals) => ModifierTriggers.mathGreaterEquals,
-            nameof(ModifierTriggers.mathLesser) => ModifierTriggers.mathLesser,
-            nameof(ModifierTriggers.mathGreater) => ModifierTriggers.mathGreater,
-
-            #endregion
-
-            #region Axis
-
-            nameof(ModifierTriggers.axisEquals) => ModifierTriggers.axisEquals,
-            nameof(ModifierTriggers.axisLesserEquals) => ModifierTriggers.axisLesserEquals,
-            nameof(ModifierTriggers.axisGreaterEquals) => ModifierTriggers.axisGreaterEquals,
-            nameof(ModifierTriggers.axisLesser) => ModifierTriggers.axisLesser,
-            nameof(ModifierTriggers.axisGreater) => ModifierTriggers.axisGreater,
-
-            #endregion
-
-            #region Level Rank
-
-            // self
-            nameof(ModifierTriggers.levelRankEquals) => ModifierTriggers.levelRankEquals,
-            nameof(ModifierTriggers.levelRankLesserEquals) => ModifierTriggers.levelRankLesserEquals,
-            nameof(ModifierTriggers.levelRankGreaterEquals) => ModifierTriggers.levelRankGreaterEquals,
-            nameof(ModifierTriggers.levelRankLesser) => ModifierTriggers.levelRankLesser,
-            nameof(ModifierTriggers.levelRankGreater) => ModifierTriggers.levelRankGreater,
-
-            // other
-            nameof(ModifierTriggers.levelRankOtherEquals) => ModifierTriggers.levelRankOtherEquals,
-            nameof(ModifierTriggers.levelRankOtherLesserEquals) => ModifierTriggers.levelRankOtherLesserEquals,
-            nameof(ModifierTriggers.levelRankOtherGreaterEquals) => ModifierTriggers.levelRankOtherGreaterEquals,
-            nameof(ModifierTriggers.levelRankOtherLesser) => ModifierTriggers.levelRankOtherLesser,
-            nameof(ModifierTriggers.levelRankOtherGreater) => ModifierTriggers.levelRankOtherGreater,
-
-            // current
-            nameof(ModifierTriggers.levelRankCurrentEquals) => ModifierTriggers.levelRankCurrentEquals,
-            nameof(ModifierTriggers.levelRankCurrentLesserEquals) => ModifierTriggers.levelRankCurrentLesserEquals,
-            nameof(ModifierTriggers.levelRankCurrentGreaterEquals) => ModifierTriggers.levelRankCurrentGreaterEquals,
-            nameof(ModifierTriggers.levelRankCurrentLesser) => ModifierTriggers.levelRankCurrentLesser,
-            nameof(ModifierTriggers.levelRankCurrentGreater) => ModifierTriggers.levelRankCurrentGreater,
-
-            #endregion
-
-            #region Level
-
-            nameof(ModifierTriggers.levelUnlocked) => ModifierTriggers.levelUnlocked,
-            nameof(ModifierTriggers.levelCompleted) => ModifierTriggers.levelCompleted,
-            nameof(ModifierTriggers.levelCompletedOther) => ModifierTriggers.levelCompletedOther,
-            nameof(ModifierTriggers.levelExists) => ModifierTriggers.levelExists,
-            nameof(ModifierTriggers.levelPathExists) => ModifierTriggers.levelPathExists,
-
-            #endregion
-
-            #region Real Time
-
-            // seconds
-            nameof(ModifierTriggers.realTimeSecondEquals) => ModifierTriggers.realTimeSecondEquals,
-            nameof(ModifierTriggers.realTimeSecondLesserEquals) => ModifierTriggers.realTimeSecondLesserEquals,
-            nameof(ModifierTriggers.realTimeSecondGreaterEquals) => ModifierTriggers.realTimeSecondGreaterEquals,
-            nameof(ModifierTriggers.realTimeSecondLesser) => ModifierTriggers.realTimeSecondLesser,
-            nameof(ModifierTriggers.realTimeSecondGreater) => ModifierTriggers.realTimeSecondGreater,
-
-            // minutes
-            nameof(ModifierTriggers.realTimeMinuteEquals) => ModifierTriggers.realTimeMinuteEquals,
-            nameof(ModifierTriggers.realTimeMinuteLesserEquals) => ModifierTriggers.realTimeMinuteLesserEquals,
-            nameof(ModifierTriggers.realTimeMinuteGreaterEquals) => ModifierTriggers.realTimeMinuteGreaterEquals,
-            nameof(ModifierTriggers.realTimeMinuteLesser) => ModifierTriggers.realTimeMinuteLesser,
-            nameof(ModifierTriggers.realTimeMinuteGreater) => ModifierTriggers.realTimeMinuteGreater,
-
-            // 24 hours
-            nameof(ModifierTriggers.realTime24HourEquals) => ModifierTriggers.realTime24HourEquals,
-            nameof(ModifierTriggers.realTime24HourLesserEquals) => ModifierTriggers.realTime24HourLesserEquals,
-            nameof(ModifierTriggers.realTime24HourGreaterEquals) => ModifierTriggers.realTime24HourGreaterEquals,
-            nameof(ModifierTriggers.realTime24HourLesser) => ModifierTriggers.realTime24HourLesser,
-            nameof(ModifierTriggers.realTime24HourGreater) => ModifierTriggers.realTime24HourGreater,
-
-            // 12 hours
-            nameof(ModifierTriggers.realTime12HourEquals) => ModifierTriggers.realTime12HourEquals,
-            nameof(ModifierTriggers.realTime12HourLesserEquals) => ModifierTriggers.realTime12HourLesserEquals,
-            nameof(ModifierTriggers.realTime12HourGreaterEquals) => ModifierTriggers.realTime12HourGreaterEquals,
-            nameof(ModifierTriggers.realTime12HourLesser) => ModifierTriggers.realTime12HourLesser,
-            nameof(ModifierTriggers.realTime12HourGreater) => ModifierTriggers.realTime12HourGreater,
-
-            // days
-            nameof(ModifierTriggers.realTimeDayEquals) => ModifierTriggers.realTimeDayEquals,
-            nameof(ModifierTriggers.realTimeDayLesserEquals) => ModifierTriggers.realTimeDayLesserEquals,
-            nameof(ModifierTriggers.realTimeDayGreaterEquals) => ModifierTriggers.realTimeDayGreaterEquals,
-            nameof(ModifierTriggers.realTimeDayLesser) => ModifierTriggers.realTimeDayLesser,
-            nameof(ModifierTriggers.realTimeDayGreater) => ModifierTriggers.realTimeDayGreater,
-            nameof(ModifierTriggers.realTimeDayWeekEquals) => ModifierTriggers.realTimeDayWeekEquals,
-
-            // months
-            nameof(ModifierTriggers.realTimeMonthEquals) => ModifierTriggers.realTimeMonthEquals,
-            nameof(ModifierTriggers.realTimeMonthLesserEquals) => ModifierTriggers.realTimeMonthLesserEquals,
-            nameof(ModifierTriggers.realTimeMonthGreaterEquals) => ModifierTriggers.realTimeMonthGreaterEquals,
-            nameof(ModifierTriggers.realTimeMonthLesser) => ModifierTriggers.realTimeMonthLesser,
-            nameof(ModifierTriggers.realTimeMonthGreater) => ModifierTriggers.realTimeMonthGreater,
-
-            // years
-            nameof(ModifierTriggers.realTimeYearEquals) => ModifierTriggers.realTimeYearEquals,
-            nameof(ModifierTriggers.realTimeYearLesserEquals) => ModifierTriggers.realTimeYearLesserEquals,
-            nameof(ModifierTriggers.realTimeYearGreaterEquals) => ModifierTriggers.realTimeYearGreaterEquals,
-            nameof(ModifierTriggers.realTimeYearLesser) => ModifierTriggers.realTimeYearLesser,
-            nameof(ModifierTriggers.realTimeYearGreater) => ModifierTriggers.realTimeYearGreater,
-
-            #endregion
-
-            #region Config
-
-            // main
-            nameof(ModifierTriggers.usernameEquals) => ModifierTriggers.usernameEquals,
-            nameof(ModifierTriggers.languageEquals) => ModifierTriggers.languageEquals,
-
-            // misc
-            nameof(ModifierTriggers.configLDM) => ModifierTriggers.configLDM,
-            nameof(ModifierTriggers.configShowEffects) => ModifierTriggers.configShowEffects,
-            nameof(ModifierTriggers.configShowPlayerGUI) => ModifierTriggers.configShowPlayerGUI,
-            nameof(ModifierTriggers.configShowIntro) => ModifierTriggers.configShowIntro,
-
-            #endregion
-
-            #region Misc
-
-            nameof(ModifierTriggers.containsTag) => ModifierTriggers.containsTag,
-            nameof(ModifierTriggers.inEditor) => ModifierTriggers.inEditor,
-            nameof(ModifierTriggers.isEditing) => ModifierTriggers.isEditing,
-            nameof(ModifierTriggers.requireSignal) => ModifierTriggers.requireSignal,
-            nameof(ModifierTriggers.isFullscreen) => ModifierTriggers.isFullscreen,
-            nameof(ModifierTriggers.objectAlive) => ModifierTriggers.objectAlive,
-            nameof(ModifierTriggers.objectSpawned) => ModifierTriggers.objectSpawned,
-
-            #endregion
-
-            #region Dev Only
-
-            "storyLoadIntEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntLesserEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntGreaterEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntLesserDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntGreaterDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadBoolDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave && Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
-            },
-
-            #endregion
-
-            "break" => (modifier, reference, variables) => true,
-            _ => (modifier, reference, variables) => false,
-        };
-
-        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetObjectAction(string key) => key switch
-        {
-            #region Audio
-
-            // pitch
-            nameof(ModifierActions.setPitch) => ModifierActions.setPitch,
-            nameof(ModifierActions.addPitch) => ModifierActions.addPitch,
-            nameof(ModifierActions.setPitchMath) => ModifierActions.setPitchMath,
-            nameof(ModifierActions.addPitchMath) => ModifierActions.addPitchMath,
-
-            // music playing states
-            nameof(ModifierActions.setMusicTime) => ModifierActions.setMusicTime,
-            nameof(ModifierActions.setMusicTimeMath) => ModifierActions.setMusicTimeMath,
-            nameof(ModifierActions.setMusicTimeStartTime) => ModifierActions.setMusicTimeStartTime,
-            nameof(ModifierActions.setMusicTimeAutokill) => ModifierActions.setMusicTimeAutokill,
-            nameof(ModifierActions.setMusicPlaying) => ModifierActions.setMusicPlaying,
-
-            // play sound
-            nameof(ModifierActions.playSound) => ModifierActions.playSound,
-            nameof(ModifierActions.playSoundOnline) => ModifierActions.playSoundOnline,
-            nameof(ModifierActions.playDefaultSound) => ModifierActions.playDefaultSound,
-            nameof(ModifierActions.audioSource) => ModifierActions.audioSource,
-
-            #endregion
-
-            #region Level
-
-            nameof(ModifierActions.loadLevel) => ModifierActions.loadLevel,
-            nameof(ModifierActions.loadLevelID) => ModifierActions.loadLevelID,
-            nameof(ModifierActions.loadLevelInternal) => ModifierActions.loadLevelInternal,
-            nameof(ModifierActions.loadLevelPrevious) => ModifierActions.loadLevelPrevious,
-            nameof(ModifierActions.loadLevelHub) => ModifierActions.loadLevelHub,
-            nameof(ModifierActions.loadLevelInCollection) => ModifierActions.loadLevelInCollection,
-            nameof(ModifierActions.downloadLevel) => ModifierActions.downloadLevel,
-            nameof(ModifierActions.endLevel) => ModifierActions.endLevel,
-            nameof(ModifierActions.setAudioTransition) => ModifierActions.setAudioTransition,
-            nameof(ModifierActions.setIntroFade) => ModifierActions.setIntroFade,
-            nameof(ModifierActions.setLevelEndFunc) => ModifierActions.setLevelEndFunc,
-
-            #endregion
-
-            #region Component
-
-            nameof(ModifierActions.blur) => ModifierActions.blur,
-            nameof(ModifierActions.blurOther) => ModifierActions.blurOther,
-            nameof(ModifierActions.blurVariable) => ModifierActions.blurVariable,
-            nameof(ModifierActions.blurVariableOther) => ModifierActions.blurVariableOther,
-            nameof(ModifierActions.blurColored) => ModifierActions.blurColored,
-            nameof(ModifierActions.blurColoredOther) => ModifierActions.blurColoredOther,
-            nameof(ModifierActions.doubleSided) => ModifierActions.doubleSided,
-            nameof(ModifierActions.particleSystem) => ModifierActions.particleSystem,
-            nameof(ModifierActions.trailRenderer) => ModifierActions.trailRenderer,
-            nameof(ModifierActions.trailRendererHex) => ModifierActions.trailRendererHex,
-            nameof(ModifierActions.rigidbody) => ModifierActions.rigidbody,
-            nameof(ModifierActions.rigidbodyOther) => ModifierActions.rigidbodyOther,
-            nameof(ModifierActions.setRenderType) => ModifierActions.setRenderType,
-            nameof(ModifierActions.setRenderTypeOther) => ModifierActions.setRenderTypeOther,
-
-            #endregion
-
-            #region Player
-
-            // hit
-            nameof(ModifierActions.playerHit) => ModifierActions.playerHit,
-            nameof(ModifierActions.playerHitIndex) => ModifierActions.playerHitIndex,
-            nameof(ModifierActions.playerHitAll) => ModifierActions.playerHitAll,
-
-            // heal
-            nameof(ModifierActions.playerHeal) => ModifierActions.playerHeal,
-            nameof(ModifierActions.playerHealIndex) => ModifierActions.playerHealIndex,
-            nameof(ModifierActions.playerHealAll) => ModifierActions.playerHealAll,
-
-            // kill
-            nameof(ModifierActions.playerKill) => ModifierActions.playerKill,
-            nameof(ModifierActions.playerKillIndex) => ModifierActions.playerKillIndex,
-            nameof(ModifierActions.playerKillAll) => ModifierActions.playerKillAll,
-
-            // respawn
-            nameof(ModifierActions.playerRespawn) => ModifierActions.playerRespawn,
-            nameof(ModifierActions.playerRespawnIndex) => ModifierActions.playerRespawnIndex,
-            nameof(ModifierActions.playerRespawnAll) => ModifierActions.playerRespawnAll,
-
-            // player move
-            nameof(ModifierActions.playerMove) => ModifierActions.playerMove,
-            nameof(ModifierActions.playerMoveIndex) => ModifierActions.playerMoveIndex,
-            nameof(ModifierActions.playerMoveAll) => ModifierActions.playerMoveAll,
-            nameof(ModifierActions.playerMoveX) => ModifierActions.playerMoveX,
-            nameof(ModifierActions.playerMoveXIndex) => ModifierActions.playerMoveXIndex,
-            nameof(ModifierActions.playerMoveXAll) => ModifierActions.playerMoveXAll,
-            nameof(ModifierActions.playerMoveY) => ModifierActions.playerMoveY,
-            nameof(ModifierActions.playerMoveYIndex) => ModifierActions.playerMoveYIndex,
-            nameof(ModifierActions.playerMoveYAll) => ModifierActions.playerMoveYAll,
-            nameof(ModifierActions.playerRotate) => ModifierActions.playerRotate,
-            nameof(ModifierActions.playerRotateIndex) => ModifierActions.playerRotateIndex,
-            nameof(ModifierActions.playerRotateAll) => ModifierActions.playerRotateAll,
-
-            // move to object
-            nameof(ModifierActions.playerMoveToObject) => ModifierActions.playerMoveToObject,
-            nameof(ModifierActions.playerMoveIndexToObject) => ModifierActions.playerMoveIndexToObject,
-            nameof(ModifierActions.playerMoveAllToObject) => ModifierActions.playerMoveAllToObject,
-            nameof(ModifierActions.playerMoveXToObject) => ModifierActions.playerMoveXToObject,
-            nameof(ModifierActions.playerMoveXIndexToObject) => ModifierActions.playerMoveXIndexToObject,
-            nameof(ModifierActions.playerMoveXAllToObject) => ModifierActions.playerMoveXAllToObject,
-            nameof(ModifierActions.playerMoveYToObject) => ModifierActions.playerMoveYToObject,
-            nameof(ModifierActions.playerMoveYIndexToObject) => ModifierActions.playerMoveYIndexToObject,
-            nameof(ModifierActions.playerMoveYAllToObject) => ModifierActions.playerMoveYAllToObject,
-            nameof(ModifierActions.playerRotateToObject) => ModifierActions.playerRotateToObject,
-            nameof(ModifierActions.playerRotateIndexToObject) => ModifierActions.playerRotateIndexToObject,
-            nameof(ModifierActions.playerRotateAllToObject) => ModifierActions.playerRotateAllToObject,
-            nameof(ModifierActions.playerDrag) => ModifierActions.playerDrag,
-
-            // actions
-            nameof(ModifierActions.playerBoost) => ModifierActions.playerBoost,
-            nameof(ModifierActions.playerBoostIndex) => ModifierActions.playerBoostIndex,
-            nameof(ModifierActions.playerBoostAll) => ModifierActions.playerBoostAll,
-            nameof(ModifierActions.playerCancelBoost) => ModifierActions.playerCancelBoost,
-            nameof(ModifierActions.playerCancelBoostIndex) => ModifierActions.playerCancelBoostIndex,
-            nameof(ModifierActions.playerCancelBoostAll) => ModifierActions.playerCancelBoostAll,
-            nameof(ModifierActions.playerDisableBoost) => ModifierActions.playerDisableBoost,
-            nameof(ModifierActions.playerDisableBoostIndex) => ModifierActions.playerDisableBoostIndex,
-            nameof(ModifierActions.playerDisableBoostAll) => ModifierActions.playerDisableBoostAll,
-            nameof(ModifierActions.playerEnableBoost) => ModifierActions.playerEnableBoost,
-            nameof(ModifierActions.playerEnableBoostIndex) => ModifierActions.playerEnableBoostIndex,
-            nameof(ModifierActions.playerEnableBoostAll) => ModifierActions.playerEnableBoostAll,
-            nameof(ModifierActions.playerEnableMove) => ModifierActions.playerEnableMove,
-            nameof(ModifierActions.playerEnableMoveIndex) => ModifierActions.playerEnableMoveIndex,
-            nameof(ModifierActions.playerEnableMoveAll) => ModifierActions.playerEnableMoveAll,
-
-            // speed
-            nameof(ModifierActions.playerSpeed) => ModifierActions.playerSpeed,
-            nameof(ModifierActions.playerVelocity) => ModifierActions.playerVelocity,
-            nameof(ModifierActions.playerVelocityIndex) => ModifierActions.playerVelocityIndex,
-            nameof(ModifierActions.playerVelocityAll) => ModifierActions.playerVelocityAll,
-            nameof(ModifierActions.playerVelocityX) => ModifierActions.playerVelocityX,
-            nameof(ModifierActions.playerVelocityXIndex) => ModifierActions.playerVelocityXIndex,
-            nameof(ModifierActions.playerVelocityXAll) => ModifierActions.playerVelocityXAll,
-            nameof(ModifierActions.playerVelocityY) => ModifierActions.playerVelocityY,
-            nameof(ModifierActions.playerVelocityYIndex) => ModifierActions.playerVelocityYIndex,
-            nameof(ModifierActions.playerVelocityYAll) => ModifierActions.playerVelocityYAll,
-
-            nameof(ModifierActions.setPlayerModel) => ModifierActions.setPlayerModel,
-            nameof(ModifierActions.setGameMode) => ModifierActions.setGameMode,
-            nameof(ModifierActions.gameMode) => ModifierActions.gameMode,
-
-            nameof(ModifierActions.blackHole) => ModifierActions.blackHole,
-
-            #endregion
-
-            #region Mouse Cursor
-
-            nameof(ModifierActions.showMouse) => ModifierActions.showMouse,
-            nameof(ModifierActions.hideMouse) => ModifierActions.hideMouse,
-            nameof(ModifierActions.setMousePosition) => ModifierActions.setMousePosition,
-            nameof(ModifierActions.followMousePosition) => ModifierActions.followMousePosition,
-
-            #endregion
-
-            #region Variable
-
-            nameof(ModifierActions.getToggle) => ModifierActions.getToggle,
-            nameof(ModifierActions.getFloat) => ModifierActions.getFloat,
-            nameof(ModifierActions.getInt) => ModifierActions.getInt,
-            nameof(ModifierActions.getString) => ModifierActions.getString,
-            nameof(ModifierActions.getStringLower) => ModifierActions.getStringLower,
-            nameof(ModifierActions.getStringUpper) => ModifierActions.getStringUpper,
-            nameof(ModifierActions.getColor) => ModifierActions.getColor,
-            nameof(ModifierActions.getEnum) => ModifierActions.getEnum,
-            nameof(ModifierActions.getTag) => ModifierActions.getTag,
-            nameof(ModifierActions.getPitch) => ModifierActions.getPitch,
-            nameof(ModifierActions.getMusicTime) => ModifierActions.getMusicTime,
-            nameof(ModifierActions.getAxis) => ModifierActions.getAxis,
-            nameof(ModifierActions.getMath) => ModifierActions.getMath,
-            nameof(ModifierActions.getNearestPlayer) => ModifierActions.getNearestPlayer,
-            nameof(ModifierActions.getCollidingPlayers) => ModifierActions.getCollidingPlayers,
-            nameof(ModifierActions.getPlayerHealth) => ModifierActions.getPlayerHealth,
-            nameof(ModifierActions.getPlayerPosX) => ModifierActions.getPlayerPosX,
-            nameof(ModifierActions.getPlayerPosY) => ModifierActions.getPlayerPosY,
-            nameof(ModifierActions.getPlayerRot) => ModifierActions.getPlayerRot,
-            nameof(ModifierActions.getEventValue) => ModifierActions.getEventValue,
-            nameof(ModifierActions.getSample) => ModifierActions.getSample,
-            nameof(ModifierActions.getText) => ModifierActions.getText,
-            nameof(ModifierActions.getTextOther) => ModifierActions.getTextOther,
-            nameof(ModifierActions.getCurrentKey) => ModifierActions.getCurrentKey,
-            nameof(ModifierActions.getColorSlotHexCode) => ModifierActions.getColorSlotHexCode,
-            nameof(ModifierActions.getFloatFromHexCode) => ModifierActions.getFloatFromHexCode,
-            nameof(ModifierActions.getHexCodeFromFloat) => ModifierActions.getHexCodeFromFloat,
-            nameof(ModifierActions.getModifiedColor) => ModifierActions.getModifiedColor,
-            nameof(ModifierActions.getMixedColors) => ModifierActions.getMixedColors,
-            nameof(ModifierActions.getVisualColor) => ModifierActions.getVisualColor,
-            nameof(ModifierActions.getJSONString) => ModifierActions.getJSONString,
-            nameof(ModifierActions.getJSONFloat) => ModifierActions.getJSONFloat,
-            nameof(ModifierActions.getJSON) => ModifierActions.getJSON,
-            nameof(ModifierActions.getSubString) => ModifierActions.getSubString,
-            nameof(ModifierActions.getSplitString) => ModifierActions.getSplitString,
-            nameof(ModifierActions.getSplitStringAt) => ModifierActions.getSplitStringAt,
-            nameof(ModifierActions.getSplitStringCount) => ModifierActions.getSplitStringCount,
-            nameof(ModifierActions.getStringLength) => ModifierActions.getStringLength,
-            nameof(ModifierActions.getParsedString) => ModifierActions.getParsedString,
-            nameof(ModifierActions.getRegex) => ModifierActions.getRegex,
-            nameof(ModifierActions.getFormatVariable) => ModifierActions.getFormatVariable,
-            nameof(ModifierActions.getComparison) => ModifierActions.getComparison,
-            nameof(ModifierActions.getComparisonMath) => ModifierActions.getComparisonMath,
-            nameof(ModifierActions.getSignaledVariables) => ModifierActions.getSignaledVariables,
-            nameof(ModifierActions.signalLocalVariables) => ModifierActions.signalLocalVariables,
-            nameof(ModifierActions.clearLocalVariables) => ModifierActions.clearLocalVariables,
-            nameof(ModifierActions.storeLocalVariables) => ModifierActions.storeLocalVariables,
-
-            nameof(ModifierActions.addVariable) => ModifierActions.addVariable,
-            nameof(ModifierActions.addVariableOther) => ModifierActions.addVariableOther,
-            nameof(ModifierActions.subVariable) => ModifierActions.subVariable,
-            nameof(ModifierActions.subVariableOther) => ModifierActions.subVariableOther,
-            nameof(ModifierActions.setVariable) => ModifierActions.setVariable,
-            nameof(ModifierActions.setVariableOther) => ModifierActions.setVariableOther,
-            nameof(ModifierActions.setVariableRandom) => ModifierActions.setVariableRandom,
-            nameof(ModifierActions.setVariableRandomOther) => ModifierActions.setVariableRandomOther,
-            nameof(ModifierActions.animateVariableOther) => ModifierActions.animateVariableOther,
-            nameof(ModifierActions.clampVariable) => ModifierActions.clampVariable,
-            nameof(ModifierActions.clampVariableOther) => ModifierActions.clampVariableOther,
-
-            #endregion
-
-            #region Enable / Disable
-
-            // enable
-            nameof(ModifierActions.enableObject) => ModifierActions.enableObject,
-            nameof(ModifierActions.enableObjectTree) => ModifierActions.enableObjectTree,
-            nameof(ModifierActions.enableObjectOther) => ModifierActions.enableObjectOther,
-            nameof(ModifierActions.enableObjectTreeOther) => ModifierActions.enableObjectTreeOther,
-            nameof(ModifierActions.enableObjectGroup) => ModifierActions.enableObjectGroup,
-
-            // disable
-            nameof(ModifierActions.disableObject) => ModifierActions.disableObject,
-            nameof(ModifierActions.disableObjectTree) => ModifierActions.disableObjectTree,
-            nameof(ModifierActions.disableObjectOther) => ModifierActions.disableObjectOther,
-            nameof(ModifierActions.disableObjectTreeOther) => ModifierActions.disableObjectTreeOther,
-
-            #endregion
-
-            #region JSON
-
-            nameof(ModifierActions.saveFloat) => ModifierActions.saveFloat,
-            nameof(ModifierActions.saveString) => ModifierActions.saveString,
-            nameof(ModifierActions.saveText) => ModifierActions.saveText,
-            nameof(ModifierActions.saveVariable) => ModifierActions.saveVariable,
-            nameof(ModifierActions.loadVariable) => ModifierActions.loadVariable,
-            nameof(ModifierActions.loadVariableOther) => ModifierActions.loadVariableOther,
-
-            #endregion
-
-            #region Reactive
-
-            // single
-            nameof(ModifierActions.reactivePos) => ModifierActions.reactivePos,
-            nameof(ModifierActions.reactiveSca) => ModifierActions.reactiveSca,
-            nameof(ModifierActions.reactiveRot) => ModifierActions.reactiveRot,
-            nameof(ModifierActions.reactiveCol) => ModifierActions.reactiveCol,
-            nameof(ModifierActions.reactiveColLerp) => ModifierActions.reactiveColLerp,
-
-            // chain
-            nameof(ModifierActions.reactivePosChain) => ModifierActions.reactivePosChain,
-            nameof(ModifierActions.reactiveScaChain) => ModifierActions.reactiveScaChain,
-            nameof(ModifierActions.reactiveRotChain) => ModifierActions.reactiveRotChain,
-
-            #endregion
-
-            #region Events
-
-            nameof(ModifierActions.eventOffset) => ModifierActions.eventOffset,
-            nameof(ModifierActions.eventOffsetVariable) => ModifierActions.eventOffsetVariable,
-            nameof(ModifierActions.eventOffsetMath) => ModifierActions.eventOffsetMath,
-            nameof(ModifierActions.eventOffsetAnimate) => ModifierActions.eventOffsetAnimate,
-            nameof(ModifierActions.eventOffsetCopyAxis) => ModifierActions.eventOffsetCopyAxis,
-            nameof(ModifierActions.vignetteTracksPlayer) => ModifierActions.vignetteTracksPlayer,
-            nameof(ModifierActions.lensTracksPlayer) => ModifierActions.lensTracksPlayer,
-
-            #endregion
-
-            // todo: implement gradients and different color controls
-            #region Color
-
-            // color
-            nameof(ModifierActions.addColor) => ModifierActions.addColor,
-            nameof(ModifierActions.addColorOther) => ModifierActions.addColorOther,
-            nameof(ModifierActions.lerpColor) => ModifierActions.lerpColor,
-            nameof(ModifierActions.lerpColorOther) => ModifierActions.lerpColorOther,
-            nameof(ModifierActions.addColorPlayerDistance) => ModifierActions.addColorPlayerDistance,
-            nameof(ModifierActions.lerpColorPlayerDistance) => ModifierActions.lerpColorPlayerDistance,
-
-            // opacity
-            "setAlpha" => ModifierActions.setOpacity,
-            nameof(ModifierActions.setOpacity) => ModifierActions.setOpacity,
-            "setAlphaOther" => ModifierActions.setOpacityOther,
-            nameof(ModifierActions.setOpacityOther) => ModifierActions.setOpacityOther,
-
-            // copy
-            nameof(ModifierActions.copyColor) => ModifierActions.copyColor,
-            nameof(ModifierActions.copyColorOther) => ModifierActions.copyColorOther,
-            nameof(ModifierActions.applyColorGroup) => ModifierActions.applyColorGroup,
-
-            // hex code
-            nameof(ModifierActions.setColorHex) => ModifierActions.setColorHex,
-            nameof(ModifierActions.setColorHexOther) => ModifierActions.setColorHexOther,
-
-            // rgba
-            nameof(ModifierActions.setColorRGBA) => ModifierActions.setColorRGBA,
-            nameof(ModifierActions.setColorRGBAOther) => ModifierActions.setColorRGBAOther,
-
-            nameof(ModifierActions.animateColorKF) => ModifierActions.animateColorKF,
-            nameof(ModifierActions.animateColorKFHex) => ModifierActions.animateColorKFHex,
-
-            #endregion
-
-            // todo: figure out how to get actorFrameTexture to work
-            #region Shape
-
-            nameof(ModifierActions.setShape) => ModifierActions.setShape,
-            nameof(ModifierActions.setPolygonShape) => ModifierActions.setPolygonShape,
-            nameof(ModifierActions.setPolygonShapeOther) => ModifierActions.setPolygonShapeOther,
-
-            // image
-            nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
-            nameof(ModifierActions.setImage) => ModifierActions.setImage,
-            nameof(ModifierActions.setImageOther) => ModifierActions.setImageOther,
-
-            // text (pain)
-            nameof(ModifierActions.setText) => ModifierActions.setText,
-            nameof(ModifierActions.setTextOther) => ModifierActions.setTextOther,
-            nameof(ModifierActions.addText) => ModifierActions.addText,
-            nameof(ModifierActions.addTextOther) => ModifierActions.addTextOther,
-            nameof(ModifierActions.removeText) => ModifierActions.removeText,
-            nameof(ModifierActions.removeTextOther) => ModifierActions.removeTextOther,
-            nameof(ModifierActions.removeTextAt) => ModifierActions.removeTextAt,
-            nameof(ModifierActions.removeTextOtherAt) => ModifierActions.removeTextOtherAt,
-            nameof(ModifierActions.formatText) => ModifierActions.formatText,
-            nameof(ModifierActions.textSequence) => ModifierActions.textSequence,
-
-            // modify shape
-            nameof(ModifierActions.backgroundShape) => ModifierActions.backgroundShape,
-            nameof(ModifierActions.sphereShape) => ModifierActions.sphereShape,
-            nameof(ModifierActions.translateShape) => ModifierActions.translateShape,
-
-            #endregion
-
-            #region Animation
-
-            nameof(ModifierActions.animateObject) => ModifierActions.animateObject,
-            nameof(ModifierActions.animateObjectOther) => ModifierActions.animateObjectOther,
-            nameof(ModifierActions.animateObjectKF) => ModifierActions.animateObjectKF,
-            nameof(ModifierActions.animateSignal) => ModifierActions.animateSignal,
-            nameof(ModifierActions.animateSignalOther) => ModifierActions.animateSignalOther,
-
-            nameof(ModifierActions.animateObjectMath) => ModifierActions.animateObjectMath,
-            nameof(ModifierActions.animateObjectMathOther) => ModifierActions.animateObjectMathOther,
-            nameof(ModifierActions.animateSignalMath) => ModifierActions.animateSignalMath,
-            nameof(ModifierActions.animateSignalMathOther) => ModifierActions.animateSignalMathOther,
-
-            nameof(ModifierActions.gravity) => ModifierActions.gravity,
-            nameof(ModifierActions.gravityOther) => ModifierActions.gravityOther,
-
-            nameof(ModifierActions.copyAxis) => ModifierActions.copyAxis,
-            nameof(ModifierActions.copyAxisMath) => ModifierActions.copyAxisMath,
-            nameof(ModifierActions.copyAxisGroup) => ModifierActions.copyAxisGroup,
-            nameof(ModifierActions.copyPlayerAxis) => ModifierActions.copyPlayerAxis,
-            nameof(ModifierActions.legacyTail) => ModifierActions.legacyTail,
-
-            nameof(ModifierActions.applyAnimation) => ModifierActions.applyAnimation,
-            nameof(ModifierActions.applyAnimationFrom) => ModifierActions.applyAnimationFrom,
-            nameof(ModifierActions.applyAnimationTo) => ModifierActions.applyAnimationTo,
-            nameof(ModifierActions.applyAnimationMath) => ModifierActions.applyAnimationMath,
-            nameof(ModifierActions.applyAnimationFromMath) => ModifierActions.applyAnimationFromMath,
-            nameof(ModifierActions.applyAnimationToMath) => ModifierActions.applyAnimationToMath,
-
-            #endregion
-
-            #region Prefab
-
-            nameof(ModifierActions.spawnPrefab) => ModifierActions.spawnPrefab,
-            nameof(ModifierActions.spawnPrefabOffset) => ModifierActions.spawnPrefabOffset,
-            nameof(ModifierActions.spawnPrefabOffsetOther) => ModifierActions.spawnPrefabOffsetOther,
-            nameof(ModifierActions.spawnPrefabCopy) => ModifierActions.spawnPrefabCopy,
-            nameof(ModifierActions.spawnMultiPrefab) => ModifierActions.spawnMultiPrefab,
-            nameof(ModifierActions.spawnMultiPrefabOffset) => ModifierActions.spawnMultiPrefabOffset,
-            nameof(ModifierActions.spawnMultiPrefabOffsetOther) => ModifierActions.spawnMultiPrefabOffsetOther,
-            nameof(ModifierActions.spawnMultiPrefabCopy) => ModifierActions.spawnMultiPrefabCopy,
-            nameof(ModifierActions.clearSpawnedPrefabs) => ModifierActions.clearSpawnedPrefabs,
-            nameof(ModifierActions.setPrefabTime) => ModifierActions.setPrefabTime,
-
-            #endregion
-
-            #region Ranking
-
-            nameof(ModifierActions.saveLevelRank) => ModifierActions.saveLevelRank,
-
-            nameof(ModifierActions.clearHits) => ModifierActions.clearHits,
-            nameof(ModifierActions.addHit) => ModifierActions.addHit,
-            nameof(ModifierActions.subHit) => ModifierActions.subHit,
-            nameof(ModifierActions.clearDeaths) => ModifierActions.clearDeaths,
-            nameof(ModifierActions.addDeath) => ModifierActions.addDeath,
-            nameof(ModifierActions.subDeath) => ModifierActions.subDeath,
-
-            #endregion
-
-            #region Updates
-
-            // update
-            nameof(ModifierActions.updateObjects) => ModifierActions.updateObjects,
-            nameof(ModifierActions.updateObject) => ModifierActions.updateObject,
-
-            // parent
-            nameof(ModifierActions.setParent) => ModifierActions.setParent,
-            nameof(ModifierActions.setParentOther) => ModifierActions.setParentOther,
-            nameof(ModifierActions.detachParent) => ModifierActions.detachParent,
-            nameof(ModifierActions.detachParentOther) => ModifierActions.detachParentOther,
-
-            #endregion
-
-            #region Physics
-
-            // collision
-            nameof(ModifierActions.setCollision) => ModifierActions.setCollision,
-            nameof(ModifierActions.setCollisionOther) => ModifierActions.setCollisionOther,
-
-            #endregion
-
-            #region Checkpoints
-
-            nameof(ModifierActions.createCheckpoint) => ModifierActions.createCheckpoint,
-            nameof(ModifierActions.resetCheckpoint) => ModifierActions.resetCheckpoint,
-
-            #endregion
-
-            #region Interfaces
-
-            nameof(ModifierActions.loadInterface) => ModifierActions.loadInterface,
-            nameof(ModifierActions.exitInterface) => ModifierActions.exitInterface,
-            nameof(ModifierActions.quitToMenu) => ModifierActions.quitToMenu,
-            nameof(ModifierActions.quitToArcade) => ModifierActions.quitToArcade,
-            nameof(ModifierActions.pauseLevel) => ModifierActions.pauseLevel,
-
-            #endregion
-
-            #region Misc
-
-            nameof(ModifierActions.setBGActive) => ModifierActions.setBGActive,
-
-            // activation
-            nameof(ModifierActions.signalModifier) => ModifierActions.signalModifier,
-            nameof(ModifierActions.activateModifier) => ModifierActions.activateModifier,
-
-            nameof(ModifierActions.editorNotify) => ModifierActions.editorNotify,
-
-            // external
-            nameof(ModifierActions.setWindowTitle) => ModifierActions.setWindowTitle,
-            nameof(ModifierActions.setDiscordStatus) => ModifierActions.setDiscordStatus,
-
-            nameof(ModifierActions.callModifierBlock) => ModifierActions.callModifierBlock,
-
-            #endregion
-
-            // dev only (story mode)
-            #region Dev Only
-
-            nameof(ModifierActions.loadSceneDEVONLY) => ModifierActions.loadSceneDEVONLY,
-            nameof(ModifierActions.loadStoryLevelDEVONLY) => ModifierActions.loadStoryLevelDEVONLY,
-            nameof(ModifierActions.storySaveBoolDEVONLY) => ModifierActions.storySaveBoolDEVONLY,
-            nameof(ModifierActions.storySaveIntDEVONLY) => ModifierActions.storySaveIntDEVONLY,
-            nameof(ModifierActions.storySaveFloatDEVONLY) => ModifierActions.storySaveFloatDEVONLY,
-            nameof(ModifierActions.storySaveStringDEVONLY) => ModifierActions.storySaveStringDEVONLY,
-            nameof(ModifierActions.storySaveIntVariableDEVONLY) => ModifierActions.storySaveIntVariableDEVONLY,
-            nameof(ModifierActions.getStorySaveBoolDEVONLY) => ModifierActions.getStorySaveBoolDEVONLY,
-            nameof(ModifierActions.getStorySaveIntDEVONLY) => ModifierActions.getStorySaveIntDEVONLY,
-            nameof(ModifierActions.getStorySaveFloatDEVONLY) => ModifierActions.getStorySaveFloatDEVONLY,
-            nameof(ModifierActions.getStorySaveStringDEVONLY) => ModifierActions.getStorySaveStringDEVONLY,
-            nameof(ModifierActions.exampleEnableDEVONLY) => ModifierActions.exampleEnableDEVONLY,
-            nameof(ModifierActions.exampleSayDEVONLY) => ModifierActions.exampleSayDEVONLY,
-
-            #endregion
-
-            _ => (modifier, reference, variables) => { },
-        };
-
-        /// <summary>
-        /// The function to run when a modifier is inactive and has a reference of <see cref="BeatmapObject"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void ObjectInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables = null)
-        {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.inst.modifiers);
-            }
-
-            if (modifier.commands.IsEmpty())
-                return;
-
-            try
-            {
-                switch (modifier.Name)
-                {
-                    case nameof(ModifierActions.animateColorKF): {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case nameof(ModifierActions.animateColorKFHex): {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case nameof(ModifierActions.storeLocalVariables): {
-                            modifier.Result = null;
-                            break;
-                        }
-
-                    case "blur":
-                    case "blurOther":
-                    case "blurVariableOther": {
-                            if (reference is BeatmapObject beatmapObject &&
-                                beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
-                                beatmapObject.runtimeObject is RTBeatmapObject runtimeObject &&
-                                runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                                modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
-                            {
-                                runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
-                                solidObject.material = runtimeObject.visualObject.renderer.material;
-                            }
-
-                            break;
-                        }
-                    case "blurVariable": {
-                            if (reference is BeatmapObject beatmapObject &&
-                                beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
-                                beatmapObject.runtimeObject is RTBeatmapObject runtimeObject &&
-                                runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                                modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool setNormal) && setNormal)
-                            {
-                                runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
-
-                                solidObject.material = runtimeObject.visualObject.renderer.material;
-                            }
-
-                            break;
-                        }
-                        
-                    case "spawnPrefab":
-                    case "spawnPrefabOffset":
-                    case "spawnPrefabOffsetOther": {
-                            // value 9 is permanent
-
-                            if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
-                            {
-                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
-
-                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                                modifier.Result = null;
-                            }
-                            break;
-                        }
-                    case nameof(ModifierActions.spawnMultiPrefabCopy):
-                    case nameof(ModifierActions.spawnPrefabCopy): {
-                            if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
-                            {
-                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
-
-                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                                modifier.Result = null;
-                            }
-                            break;
-                        }
-
-                    case "enableObject": {
-                            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
-                                runtimeObject.top.gameObject.SetActive(false);
-
-                            break;
-                        }
-                    case "enableObjectOther": {
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0));
-
-                            if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
-                            {
-                                foreach (var beatmapObject in list)
-                                {
-                                    var levelObject = beatmapObject.runtimeObject;
-                                    if (levelObject && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(false);
-                                }
-                            }
-
-                            break;
-                        }
-                    case "enableObjectTree": {
-                            if (reference is not BeatmapObject beatmapObject)
-                                return;
-
-                            if (modifier.GetValue(0) == "0")
-                                modifier.SetValue(0, "False");
-
-                            if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], false))
-                            {
-                                modifier.Result = null;
-                                return;
-                            }
-
-                            if (modifier.Result == null)
-                            {
-                                var root = Parser.TryParse(modifier.value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
-
-                                modifier.Result = root.GetChildTree();
-                            }
-
-                            var list = (List<BeatmapObject>)modifier.Result;
-
-                            for (int i = 0; i < list.Count; i++)
-                            {
-                                var child = list[i];
-                                var runtimeObject = child.runtimeObject;
-                                if (runtimeObject && runtimeObject.top)
-                                    runtimeObject.top.gameObject.SetActive(false);
-                            }
-
-                            break;
-                        }
-                    case "enableObjectTreeOther": {
-                            if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
-                            {
-                                modifier.Result = null;
-                                return;
-                            }
-
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            if (modifier.Result == null)
-                            {
-                                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
-
-                                var resultList = new List<BeatmapObject>();
-                                foreach (var bm in beatmapObjects)
-                                {
-                                    var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                    resultList.AddRange(beatmapObject.GetChildTree());
-                                }
-
-                                modifier.Result = resultList;
-                            }
-
-                            var list = (List<BeatmapObject>)modifier.Result;
-
-                            for (int i = 0; i < list.Count; i++)
-                            {
-                                var beatmapObject = list[i];
-                                var runtimeObject = beatmapObject.runtimeObject;
-                                if (runtimeObject && runtimeObject.top)
-                                    runtimeObject.top.gameObject.SetActive(false);
-                            }
-
-                            modifier.Result = null;
-
-                            break;
-                        }
-                    case "disableObject": {
-                            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
-                                runtimeObject.top.gameObject.SetActive(true);
-
-                            break;
-                        }
-                    case "disableObjectOther": {
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0));
-
-                            if (!list.IsEmpty() && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
-                            {
-                                foreach (var beatmapObject in list)
-                                {
-                                    var levelObject = beatmapObject.runtimeObject;
-                                    if (levelObject && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(true);
-                                }
-                            }
-
-                            break;
-                        }
-                    case "disableObjectTree": {
-                            if (modifier.GetValue(0) == "0")
-                                modifier.SetValue(0, "False");
-
-                            if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], true))
-                            {
-                                modifier.Result = null;
-                                return;
-                            }
-
-                            if (reference is not BeatmapObject beatmapObject)
-                                return;
-
-                            if (modifier.Result == null)
-                            {
-                                var root = Parser.TryParse(modifier.value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
-
-                                modifier.Result = beatmapObject.GetChildTree();
-                            }
-
-                            var list = (List<BeatmapObject>)modifier.Result;
-
-                            for (int i = 0; i < list.Count; i++)
-                            {
-                                var child = list[i];
-                                var runtimeObject = child.runtimeObject;
-                                if (runtimeObject && runtimeObject.top)
-                                    runtimeObject.top.gameObject.SetActive(true);
-                            }
-
-                            break;
-                        }
-                    case "disableObjectTreeOther": {
-                            if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
-                            {
-                                modifier.Result = null;
-                                return;
-                            }
-
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            if (modifier.Result == null)
-                            {
-                                var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
-
-                                var resultList = new List<BeatmapObject>();
-                                foreach (var bm in beatmapObjects)
-                                {
-                                    var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                    resultList.AddRange(beatmapObject.GetChildTree());
-                                }
-
-                                modifier.Result = resultList;
-                            }
-
-                            var list = (List<BeatmapObject>)modifier.Result;
-
-                            for (int i = 0; i < list.Count; i++)
-                            {
-                                var beatmapObject = list[i];
-                                var runtimeObject = beatmapObject.runtimeObject;
-                                if (runtimeObject && runtimeObject.top)
-                                    runtimeObject.top.gameObject.SetActive(true);
-                            }
-
-                            modifier.Result = null;
-
-                            break;
-                        }
-
-                    case "reactivePosChain": {
-                            if (reference is BeatmapObject beatmapObject)
-                                beatmapObject.reactivePositionOffset = Vector3.zero;
-
-                            break;
-                        }
-                    case "reactiveScaChain": {
-                            if (reference is BeatmapObject beatmapObject)
-                                beatmapObject.reactiveScaleOffset = Vector3.zero;
-
-                            break;
-                        }
-                    case "reactiveRotChain": {
-                            if (reference is BeatmapObject beatmapObject)
-                                beatmapObject.reactiveRotationOffset = 0f;
-
-                            break;
-                        }
-                    case "signalModifier":
-                    case "mouseOverSignalModifier": {
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
-
-                            if (!list.IsEmpty() && list.Any(x => x.modifiers.Any(y => y.Result != null)))
-                                foreach (var bm in list)
-                                {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
-                                        m.Result = null;
-                                }
-
-                            break;
-                        }
-                    case "animateSignal":
-                    case "animateSignalOther": {
-                            if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
-                                return;
-
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(groupIndex));
-
-                            if (!list.IsEmpty() && !modifier.constant)
-                                foreach (var bm in list)
-                                {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
-                                        m.Result = null;
-                                }
-
-                            break;
-                        }
-                    case "randomGreater":
-                    case "randomLesser":
-                    case "randomEquals":
-                    case "gravity":
-                    case "gravityOther": {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case "setText": {
-                            if (modifier.constant && reference is BeatmapObject beatmapObject && beatmapObject.ShapeType == ShapeType.Text && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject &&
-                                beatmapObject.runtimeObject.visualObject is TextObject textObject)
-                                textObject.text = beatmapObject.text;
-                            break;
-                        }
-                    case "setTextOther": {
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
-
-                            if (modifier.constant && !list.IsEmpty())
-                                foreach (var bm in list)
-                                    if (bm.ShapeType == ShapeType.Text && bm.runtimeObject && bm.runtimeObject.visualObject &&
-                                        bm.runtimeObject.visualObject is TextObject textObject)
-                                        textObject.text = bm.text;
-                            break;
-                        }
-                    case "textSequence": {
-                            modifier.setTimer = false;
-                            break;
-                        }
-                    case "copyAxis":
-                    case "copyAxisMath":
-                    case "copyAxisGroup":
-                    case "objectSpawned": {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case "applyAnimation":
-                    case "applyAnimationFrom":
-                    case "applyAnimationTo": {
-                            if (modifier.constant)
-                                modifier.Result = null;
-
-                            break;
-                        }
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Modifier ({modifier.commands[0]}) had an error. {ex}");
-            }
-        }
-
-        #endregion
-
-        #region BackgroundObject
-
-        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetBGTrigger(string key) => key switch
-        {
-            "timeLesserEquals" => (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time <= modifier.GetFloat(0, 0f, variables),
-            "timeGreaterEquals" => (modifier, reference, variables) => AudioManager.inst.CurrentAudioSource.time >= modifier.GetFloat(0, 0f, variables),
-            "timeLesser" => (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time < modifier.GetFloat(0, 0f, variables),
-            "timeGreater" => (modifier, reference, variables)  => AudioManager.inst.CurrentAudioSource.time > modifier.GetFloat(0, 0f, variables),
-
-            #region Player
-
-            //nameof(ModifierTriggers.playerCollide) => ModifierTriggers.playerCollide,
-            nameof(ModifierTriggers.playerHealthEquals) => ModifierTriggers.playerHealthEquals,
-            nameof(ModifierTriggers.playerHealthLesserEquals) => ModifierTriggers.playerHealthLesserEquals,
-            nameof(ModifierTriggers.playerHealthGreaterEquals) => ModifierTriggers.playerHealthGreaterEquals,
-            nameof(ModifierTriggers.playerHealthLesser) => ModifierTriggers.playerHealthLesser,
-            nameof(ModifierTriggers.playerHealthGreater) => ModifierTriggers.playerHealthGreater,
-            nameof(ModifierTriggers.playerMoving) => ModifierTriggers.playerMoving,
-            //nameof(ModifierTriggers.playerBoosting) => ModifierTriggers.playerBoosting,
-            nameof(ModifierTriggers.playerAlive) => ModifierTriggers.playerAlive,
-            nameof(ModifierTriggers.playerDeathsEquals) => ModifierTriggers.playerDeathsEquals,
-            nameof(ModifierTriggers.playerDeathsLesserEquals) => ModifierTriggers.playerDeathsLesserEquals,
-            nameof(ModifierTriggers.playerDeathsGreaterEquals) => ModifierTriggers.playerDeathsGreaterEquals,
-            nameof(ModifierTriggers.playerDeathsLesser) => ModifierTriggers.playerDeathsLesser,
-            nameof(ModifierTriggers.playerDeathsGreater) => ModifierTriggers.playerDeathsGreater,
-            nameof(ModifierTriggers.playerDistanceGreater) => ModifierTriggers.playerDistanceGreater,
-            nameof(ModifierTriggers.playerDistanceLesser) => ModifierTriggers.playerDistanceLesser,
-            nameof(ModifierTriggers.playerCountEquals) => ModifierTriggers.playerCountEquals,
-            nameof(ModifierTriggers.playerCountLesserEquals) => ModifierTriggers.playerCountLesserEquals,
-            nameof(ModifierTriggers.playerCountGreaterEquals) => ModifierTriggers.playerCountGreaterEquals,
-            nameof(ModifierTriggers.playerCountLesser) => ModifierTriggers.playerCountLesser,
-            nameof(ModifierTriggers.playerCountGreater) => ModifierTriggers.playerCountGreater,
-            nameof(ModifierTriggers.onPlayerHit) => ModifierTriggers.onPlayerHit,
-            nameof(ModifierTriggers.onPlayerDeath) => ModifierTriggers.onPlayerDeath,
-            nameof(ModifierTriggers.playerBoostEquals) => ModifierTriggers.playerBoostEquals,
-            nameof(ModifierTriggers.playerBoostLesserEquals) => ModifierTriggers.playerBoostLesserEquals,
-            nameof(ModifierTriggers.playerBoostGreaterEquals) => ModifierTriggers.playerBoostGreaterEquals,
-            nameof(ModifierTriggers.playerBoostLesser) => ModifierTriggers.playerBoostLesser,
-            nameof(ModifierTriggers.playerBoostGreater) => ModifierTriggers.playerBoostGreater,
-
-            #endregion
-
-            #region Controls
-
-            nameof(ModifierTriggers.keyPressDown) => ModifierTriggers.keyPressDown,
-            nameof(ModifierTriggers.keyPress) => ModifierTriggers.keyPress,
-            nameof(ModifierTriggers.keyPressUp) => ModifierTriggers.keyPressUp,
-            nameof(ModifierTriggers.mouseButtonDown) => ModifierTriggers.mouseButtonDown,
-            nameof(ModifierTriggers.mouseButton) => ModifierTriggers.mouseButton,
-            nameof(ModifierTriggers.mouseButtonUp) => ModifierTriggers.mouseButtonUp,
-            //nameof(ModifierTriggers.mouseOver) => ModifierTriggers.mouseOver,
-            //nameof(ModifierTriggers.mouseOverSignalModifier) => ModifierTriggers.mouseOverSignalModifier,
-            nameof(ModifierTriggers.controlPressDown) => ModifierTriggers.controlPressDown,
-            nameof(ModifierTriggers.controlPress) => ModifierTriggers.controlPress,
-            nameof(ModifierTriggers.controlPressUp) => ModifierTriggers.controlPressUp,
-
-            #endregion
-
-            #region Collide
-
-            //nameof(ModifierTriggers.bulletCollide) => ModifierTriggers.bulletCollide,
-            //nameof(ModifierTriggers.objectCollide) => ModifierTriggers.objectCollide,
-
-            #endregion
-
-            #region JSON
-
-            nameof(ModifierTriggers.loadEquals) => ModifierTriggers.loadEquals,
-            nameof(ModifierTriggers.loadLesserEquals) => ModifierTriggers.loadLesserEquals,
-            nameof(ModifierTriggers.loadGreaterEquals) => ModifierTriggers.loadGreaterEquals,
-            nameof(ModifierTriggers.loadLesser) => ModifierTriggers.loadLesser,
-            nameof(ModifierTriggers.loadGreater) => ModifierTriggers.loadGreater,
-            nameof(ModifierTriggers.loadExists) => ModifierTriggers.loadExists,
-
-            #endregion
-
-            #region Variable
-
-            nameof(ModifierTriggers.localVariableEquals) => ModifierTriggers.localVariableEquals,
-            nameof(ModifierTriggers.localVariableLesserEquals) => ModifierTriggers.localVariableLesserEquals,
-            nameof(ModifierTriggers.localVariableGreaterEquals) => ModifierTriggers.localVariableGreaterEquals,
-            nameof(ModifierTriggers.localVariableLesser) => ModifierTriggers.localVariableLesser,
-            nameof(ModifierTriggers.localVariableGreater) => ModifierTriggers.localVariableGreater,
-            nameof(ModifierTriggers.localVariableContains) => ModifierTriggers.localVariableContains,
-            nameof(ModifierTriggers.localVariableStartsWith) => ModifierTriggers.localVariableStartsWith,
-            nameof(ModifierTriggers.localVariableEndsWith) => ModifierTriggers.localVariableEndsWith,
-            nameof(ModifierTriggers.localVariableExists) => ModifierTriggers.localVariableExists,
-
-            // self
-            nameof(ModifierTriggers.variableEquals) => ModifierTriggers.variableEquals,
-            nameof(ModifierTriggers.variableLesserEquals) => ModifierTriggers.variableLesserEquals,
-            nameof(ModifierTriggers.variableGreaterEquals) => ModifierTriggers.variableGreaterEquals,
-            nameof(ModifierTriggers.variableLesser) => ModifierTriggers.variableLesser,
-            nameof(ModifierTriggers.variableGreater) => ModifierTriggers.variableGreater,
-
-            // other
-            //nameof(ModifierTriggers.variableOtherEquals) => ModifierTriggers.variableOtherEquals,
-            //nameof(ModifierTriggers.variableOtherLesserEquals) => ModifierTriggers.variableOtherLesserEquals,
-            //nameof(ModifierTriggers.variableOtherGreaterEquals) => ModifierTriggers.variableOtherGreaterEquals,
-            //nameof(ModifierTriggers.variableOtherLesser) => ModifierTriggers.variableOtherLesser,
-            //nameof(ModifierTriggers.variableOtherGreater) => ModifierTriggers.variableOtherGreater,
-
-            #endregion
-
-            #region Audio
-
-            nameof(ModifierTriggers.pitchEquals) => ModifierTriggers.pitchEquals,
-            nameof(ModifierTriggers.pitchLesserEquals) => ModifierTriggers.pitchLesserEquals,
-            nameof(ModifierTriggers.pitchGreaterEquals) => ModifierTriggers.pitchGreaterEquals,
-            nameof(ModifierTriggers.pitchLesser) => ModifierTriggers.pitchLesser,
-            nameof(ModifierTriggers.pitchGreater) => ModifierTriggers.pitchGreater,
-            nameof(ModifierTriggers.musicTimeGreater) => ModifierTriggers.musicTimeGreater,
-            nameof(ModifierTriggers.musicTimeLesser) => ModifierTriggers.musicTimeLesser,
-            nameof(ModifierTriggers.musicPlaying) => ModifierTriggers.musicPlaying,
-
-            #endregion
-
-            #region Challenge Mode
-
-            nameof(ModifierTriggers.inZenMode) => ModifierTriggers.inZenMode,
-            nameof(ModifierTriggers.inNormal) => ModifierTriggers.inNormal,
-            nameof(ModifierTriggers.in1Life) => ModifierTriggers.in1Life,
-            nameof(ModifierTriggers.inNoHit) => ModifierTriggers.inNoHit,
-            nameof(ModifierTriggers.inPractice) => ModifierTriggers.inPractice,
-
-            #endregion
-
-            #region Random
-
-            nameof(ModifierTriggers.randomEquals) => ModifierTriggers.randomEquals,
-            nameof(ModifierTriggers.randomLesser) => ModifierTriggers.randomLesser,
-            nameof(ModifierTriggers.randomGreater) => ModifierTriggers.randomGreater,
-
-            #endregion
-
-            #region Math
-
-            nameof(ModifierTriggers.mathEquals) => ModifierTriggers.mathEquals,
-            nameof(ModifierTriggers.mathLesserEquals) => ModifierTriggers.mathLesserEquals,
-            nameof(ModifierTriggers.mathGreaterEquals) => ModifierTriggers.mathGreaterEquals,
-            nameof(ModifierTriggers.mathLesser) => ModifierTriggers.mathLesser,
-            nameof(ModifierTriggers.mathGreater) => ModifierTriggers.mathGreater,
-
-            #endregion
-
-            #region Axis
-
-            nameof(ModifierTriggers.axisEquals) => ModifierTriggers.axisEquals,
-            nameof(ModifierTriggers.axisLesserEquals) => ModifierTriggers.axisLesserEquals,
-            nameof(ModifierTriggers.axisGreaterEquals) => ModifierTriggers.axisGreaterEquals,
-            nameof(ModifierTriggers.axisLesser) => ModifierTriggers.axisLesser,
-            nameof(ModifierTriggers.axisGreater) => ModifierTriggers.axisGreater,
-
-            #endregion
-
-            #region Level Rank
-
-            // self
-            nameof(ModifierTriggers.levelRankEquals) => ModifierTriggers.levelRankEquals,
-            nameof(ModifierTriggers.levelRankLesserEquals) => ModifierTriggers.levelRankLesserEquals,
-            nameof(ModifierTriggers.levelRankGreaterEquals) => ModifierTriggers.levelRankGreaterEquals,
-            nameof(ModifierTriggers.levelRankLesser) => ModifierTriggers.levelRankLesser,
-            nameof(ModifierTriggers.levelRankGreater) => ModifierTriggers.levelRankGreater,
-
-            // other
-            nameof(ModifierTriggers.levelRankOtherEquals) => ModifierTriggers.levelRankOtherEquals,
-            nameof(ModifierTriggers.levelRankOtherLesserEquals) => ModifierTriggers.levelRankOtherLesserEquals,
-            nameof(ModifierTriggers.levelRankOtherGreaterEquals) => ModifierTriggers.levelRankOtherGreaterEquals,
-            nameof(ModifierTriggers.levelRankOtherLesser) => ModifierTriggers.levelRankOtherLesser,
-            nameof(ModifierTriggers.levelRankOtherGreater) => ModifierTriggers.levelRankOtherGreater,
-
-            // current
-            nameof(ModifierTriggers.levelRankCurrentEquals) => ModifierTriggers.levelRankCurrentEquals,
-            nameof(ModifierTriggers.levelRankCurrentLesserEquals) => ModifierTriggers.levelRankCurrentLesserEquals,
-            nameof(ModifierTriggers.levelRankCurrentGreaterEquals) => ModifierTriggers.levelRankCurrentGreaterEquals,
-            nameof(ModifierTriggers.levelRankCurrentLesser) => ModifierTriggers.levelRankCurrentLesser,
-            nameof(ModifierTriggers.levelRankCurrentGreater) => ModifierTriggers.levelRankCurrentGreater,
-
-            #endregion
-
-            #region Level
-
-            nameof(ModifierTriggers.levelUnlocked) => ModifierTriggers.levelUnlocked,
-            nameof(ModifierTriggers.levelCompleted) => ModifierTriggers.levelCompleted,
-            nameof(ModifierTriggers.levelCompletedOther) => ModifierTriggers.levelCompletedOther,
-            nameof(ModifierTriggers.levelExists) => ModifierTriggers.levelExists,
-            nameof(ModifierTriggers.levelPathExists) => ModifierTriggers.levelPathExists,
-
-            #endregion
-
-            #region Real Time
-
-            // seconds
-            nameof(ModifierTriggers.realTimeSecondEquals) => ModifierTriggers.realTimeSecondEquals,
-            nameof(ModifierTriggers.realTimeSecondLesserEquals) => ModifierTriggers.realTimeSecondLesserEquals,
-            nameof(ModifierTriggers.realTimeSecondGreaterEquals) => ModifierTriggers.realTimeSecondGreaterEquals,
-            nameof(ModifierTriggers.realTimeSecondLesser) => ModifierTriggers.realTimeSecondLesser,
-            nameof(ModifierTriggers.realTimeSecondGreater) => ModifierTriggers.realTimeSecondGreater,
-
-            // minutes
-            nameof(ModifierTriggers.realTimeMinuteEquals) => ModifierTriggers.realTimeMinuteEquals,
-            nameof(ModifierTriggers.realTimeMinuteLesserEquals) => ModifierTriggers.realTimeMinuteLesserEquals,
-            nameof(ModifierTriggers.realTimeMinuteGreaterEquals) => ModifierTriggers.realTimeMinuteGreaterEquals,
-            nameof(ModifierTriggers.realTimeMinuteLesser) => ModifierTriggers.realTimeMinuteLesser,
-            nameof(ModifierTriggers.realTimeMinuteGreater) => ModifierTriggers.realTimeMinuteGreater,
-
-            // 24 hours
-            nameof(ModifierTriggers.realTime24HourEquals) => ModifierTriggers.realTime24HourEquals,
-            nameof(ModifierTriggers.realTime24HourLesserEquals) => ModifierTriggers.realTime24HourLesserEquals,
-            nameof(ModifierTriggers.realTime24HourGreaterEquals) => ModifierTriggers.realTime24HourGreaterEquals,
-            nameof(ModifierTriggers.realTime24HourLesser) => ModifierTriggers.realTime24HourLesser,
-            nameof(ModifierTriggers.realTime24HourGreater) => ModifierTriggers.realTime24HourGreater,
-
-            // 12 hours
-            nameof(ModifierTriggers.realTime12HourEquals) => ModifierTriggers.realTime12HourEquals,
-            nameof(ModifierTriggers.realTime12HourLesserEquals) => ModifierTriggers.realTime12HourLesserEquals,
-            nameof(ModifierTriggers.realTime12HourGreaterEquals) => ModifierTriggers.realTime12HourGreaterEquals,
-            nameof(ModifierTriggers.realTime12HourLesser) => ModifierTriggers.realTime12HourLesser,
-            nameof(ModifierTriggers.realTime12HourGreater) => ModifierTriggers.realTime12HourGreater,
-
-            // days
-            nameof(ModifierTriggers.realTimeDayEquals) => ModifierTriggers.realTimeDayEquals,
-            nameof(ModifierTriggers.realTimeDayLesserEquals) => ModifierTriggers.realTimeDayLesserEquals,
-            nameof(ModifierTriggers.realTimeDayGreaterEquals) => ModifierTriggers.realTimeDayGreaterEquals,
-            nameof(ModifierTriggers.realTimeDayLesser) => ModifierTriggers.realTimeDayLesser,
-            nameof(ModifierTriggers.realTimeDayGreater) => ModifierTriggers.realTimeDayGreater,
-            nameof(ModifierTriggers.realTimeDayWeekEquals) => ModifierTriggers.realTimeDayWeekEquals,
-
-            // months
-            nameof(ModifierTriggers.realTimeMonthEquals) => ModifierTriggers.realTimeMonthEquals,
-            nameof(ModifierTriggers.realTimeMonthLesserEquals) => ModifierTriggers.realTimeMonthLesserEquals,
-            nameof(ModifierTriggers.realTimeMonthGreaterEquals) => ModifierTriggers.realTimeMonthGreaterEquals,
-            nameof(ModifierTriggers.realTimeMonthLesser) => ModifierTriggers.realTimeMonthLesser,
-            nameof(ModifierTriggers.realTimeMonthGreater) => ModifierTriggers.realTimeMonthGreater,
-
-            // years
-            nameof(ModifierTriggers.realTimeYearEquals) => ModifierTriggers.realTimeYearEquals,
-            nameof(ModifierTriggers.realTimeYearLesserEquals) => ModifierTriggers.realTimeYearLesserEquals,
-            nameof(ModifierTriggers.realTimeYearGreaterEquals) => ModifierTriggers.realTimeYearGreaterEquals,
-            nameof(ModifierTriggers.realTimeYearLesser) => ModifierTriggers.realTimeYearLesser,
-            nameof(ModifierTriggers.realTimeYearGreater) => ModifierTriggers.realTimeYearGreater,
-
-            #endregion
-
-            #region Config
-
-            // main
-            nameof(ModifierTriggers.usernameEquals) => ModifierTriggers.usernameEquals,
-            nameof(ModifierTriggers.languageEquals) => ModifierTriggers.languageEquals,
-
-            // misc
-            nameof(ModifierTriggers.configLDM) => ModifierTriggers.configLDM,
-            nameof(ModifierTriggers.configShowEffects) => ModifierTriggers.configShowEffects,
-            nameof(ModifierTriggers.configShowPlayerGUI) => ModifierTriggers.configShowPlayerGUI,
-            nameof(ModifierTriggers.configShowIntro) => ModifierTriggers.configShowIntro,
-
-            #endregion
-
-            #region Misc
-
-            nameof(ModifierTriggers.containsTag) => ModifierTriggers.containsTag,
-            nameof(ModifierTriggers.inEditor) => ModifierTriggers.inEditor,
-            nameof(ModifierTriggers.isEditing) => ModifierTriggers.isEditing,
-            nameof(ModifierTriggers.requireSignal) => ModifierTriggers.requireSignal,
-            nameof(ModifierTriggers.isFullscreen) => ModifierTriggers.isFullscreen,
-            //nameof(ModifierTriggers.objectAlive) => ModifierTriggers.objectAlive,
-            //nameof(ModifierTriggers.objectSpawned) => ModifierTriggers.objectSpawned,
-
-            #endregion
-
-            #region Dev Only
-
-            "storyLoadIntEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntLesserEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntGreaterEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntLesserDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntGreaterDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadBoolDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
-            },
-
-            #endregion
-
-            "break" => (modifier, reference, variables) => true,
-            _ => (modifier, reference, variables) => false,
-        };
-
-        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetBGAction(string key) => key switch
-        {
-            nameof(ModifierActions.setActive) => ModifierActions.setActive,
-            nameof(ModifierActions.setActiveOther) => ModifierActions.setActiveOther,
-
-            #region Audio
-
-            // pitch
-            nameof(ModifierActions.setPitch) => ModifierActions.setPitch,
-            nameof(ModifierActions.addPitch) => ModifierActions.addPitch,
-            nameof(ModifierActions.setPitchMath) => ModifierActions.setPitchMath,
-            nameof(ModifierActions.addPitchMath) => ModifierActions.addPitchMath,
-
-            // music playing states
-            nameof(ModifierActions.setMusicTime) => ModifierActions.setMusicTime,
-            nameof(ModifierActions.setMusicTimeMath) => ModifierActions.setMusicTimeMath,
-            nameof(ModifierActions.setMusicTimeStartTime) => ModifierActions.setMusicTimeStartTime,
-            nameof(ModifierActions.setMusicTimeAutokill) => ModifierActions.setMusicTimeAutokill,
-            nameof(ModifierActions.setMusicPlaying) => ModifierActions.setMusicPlaying,
-
-            // play sound
-            nameof(ModifierActions.playSound) => ModifierActions.playSound,
-            nameof(ModifierActions.playSoundOnline) => ModifierActions.playSoundOnline,
-            nameof(ModifierActions.playDefaultSound) => ModifierActions.playDefaultSound,
-            //nameof(ModifierActions.audioSource) => ModifierActions.audioSource,
-
-            #endregion
-
-            #region Level
-
-            nameof(ModifierActions.loadLevel) => ModifierActions.loadLevel,
-            nameof(ModifierActions.loadLevelID) => ModifierActions.loadLevelID,
-            nameof(ModifierActions.loadLevelInternal) => ModifierActions.loadLevelInternal,
-            nameof(ModifierActions.loadLevelPrevious) => ModifierActions.loadLevelPrevious,
-            nameof(ModifierActions.loadLevelHub) => ModifierActions.loadLevelHub,
-            nameof(ModifierActions.loadLevelInCollection) => ModifierActions.loadLevelInCollection,
-            nameof(ModifierActions.downloadLevel) => ModifierActions.downloadLevel,
-            nameof(ModifierActions.endLevel) => ModifierActions.endLevel,
-            nameof(ModifierActions.setAudioTransition) => ModifierActions.setAudioTransition,
-            nameof(ModifierActions.setIntroFade) => ModifierActions.setIntroFade,
-            nameof(ModifierActions.setLevelEndFunc) => ModifierActions.setLevelEndFunc,
-
-            #endregion
-
-            #region Component
-
-            //nameof(ModifierActions.blur) => ModifierActions.blur,
-            //nameof(ModifierActions.blurOther) => ModifierActions.blurOther,
-            //nameof(ModifierActions.blurVariable) => ModifierActions.blurVariable,
-            //nameof(ModifierActions.blurVariableOther) => ModifierActions.blurVariableOther,
-            //nameof(ModifierActions.blurColored) => ModifierActions.blurColored,
-            //nameof(ModifierActions.blurColoredOther) => ModifierActions.blurColoredOther,
-            //nameof(ModifierActions.doubleSided) => ModifierActions.doubleSided,
-            //nameof(ModifierActions.particleSystem) => ModifierActions.particleSystem,
-            //nameof(ModifierActions.trailRenderer) => ModifierActions.trailRenderer,
-            //nameof(ModifierActions.rigidbody) => ModifierActions.rigidbody,
-            //nameof(ModifierActions.rigidbodyOther) => ModifierActions.rigidbodyOther,
-            //nameof(ModifierActions.setRenderType) => ModifierActions.setRenderType,
-            //nameof(ModifierActions.setRenderTypeOther) => ModifierActions.setRenderTypeOther,
-
-            #endregion
-
-            #region Player
-
-            // hit
-            //nameof(ModifierActions.playerHit) => ModifierActions.playerHit,
-            nameof(ModifierActions.playerHitIndex) => ModifierActions.playerHitIndex,
-            nameof(ModifierActions.playerHitAll) => ModifierActions.playerHitAll,
-
-            // heal
-            //nameof(ModifierActions.playerHeal) => ModifierActions.playerHeal,
-            nameof(ModifierActions.playerHealIndex) => ModifierActions.playerHealIndex,
-            nameof(ModifierActions.playerHealAll) => ModifierActions.playerHealAll,
-
-            // kill
-            //nameof(ModifierActions.playerKill) => ModifierActions.playerKill,
-            nameof(ModifierActions.playerKillIndex) => ModifierActions.playerKillIndex,
-            nameof(ModifierActions.playerKillAll) => ModifierActions.playerKillAll,
-
-            // respawn
-            //nameof(ModifierActions.playerRespawn) => ModifierActions.playerRespawn,
-            nameof(ModifierActions.playerRespawnIndex) => ModifierActions.playerRespawnIndex,
-            nameof(ModifierActions.playerRespawnAll) => ModifierActions.playerRespawnAll,
-
-            // player move
-            //nameof(ModifierActions.playerMove) => ModifierActions.playerMove,
-            nameof(ModifierActions.playerMoveIndex) => ModifierActions.playerMoveIndex,
-            nameof(ModifierActions.playerMoveAll) => ModifierActions.playerMoveAll,
-            //nameof(ModifierActions.playerMoveX) => ModifierActions.playerMoveX,
-            nameof(ModifierActions.playerMoveXIndex) => ModifierActions.playerMoveXIndex,
-            nameof(ModifierActions.playerMoveXAll) => ModifierActions.playerMoveXAll,
-            //nameof(ModifierActions.playerMoveY) => ModifierActions.playerMoveY,
-            nameof(ModifierActions.playerMoveYIndex) => ModifierActions.playerMoveYIndex,
-            nameof(ModifierActions.playerMoveYAll) => ModifierActions.playerMoveYAll,
-            //nameof(ModifierActions.playerRotate) => ModifierActions.playerRotate,
-            nameof(ModifierActions.playerRotateIndex) => ModifierActions.playerRotateIndex,
-            nameof(ModifierActions.playerRotateAll) => ModifierActions.playerRotateAll,
-
-            // move to object
-            //nameof(ModifierActions.playerMoveToObject) => ModifierActions.playerMoveToObject,
-            //nameof(ModifierActions.playerMoveIndexToObject) => ModifierActions.playerMoveIndexToObject,
-            //nameof(ModifierActions.playerMoveAllToObject) => ModifierActions.playerMoveAllToObject,
-            //nameof(ModifierActions.playerMoveXToObject) => ModifierActions.playerMoveXToObject,
-            //nameof(ModifierActions.playerMoveXIndexToObject) => ModifierActions.playerMoveXIndexToObject,
-            //nameof(ModifierActions.playerMoveXAllToObject) => ModifierActions.playerMoveXAllToObject,
-            //nameof(ModifierActions.playerMoveYToObject) => ModifierActions.playerMoveYToObject,
-            //nameof(ModifierActions.playerMoveYIndexToObject) => ModifierActions.playerMoveYIndexToObject,
-            //nameof(ModifierActions.playerMoveYAllToObject) => ModifierActions.playerMoveYAllToObject,
-            //nameof(ModifierActions.playerRotateToObject) => ModifierActions.playerRotateToObject,
-            //nameof(ModifierActions.playerRotateIndexToObject) => ModifierActions.playerRotateIndexToObject,
-            //nameof(ModifierActions.playerRotateAllToObject) => ModifierActions.playerRotateAllToObject,
-
-            // actions
-            //nameof(ModifierActions.playerBoost) => ModifierActions.playerBoost,
-            nameof(ModifierActions.playerBoostIndex) => ModifierActions.playerBoostIndex,
-            nameof(ModifierActions.playerBoostAll) => ModifierActions.playerBoostAll,
-            //nameof(ModifierActions.playerCancelBoost) => ModifierActions.playerCancelBoost,
-            nameof(ModifierActions.playerCancelBoostIndex) => ModifierActions.playerCancelBoostIndex,
-            nameof(ModifierActions.playerCancelBoostAll) => ModifierActions.playerCancelBoostAll,
-            //nameof(ModifierActions.playerDisableBoost) => ModifierActions.playerDisableBoost,
-            nameof(ModifierActions.playerDisableBoostIndex) => ModifierActions.playerDisableBoostIndex,
-            nameof(ModifierActions.playerDisableBoostAll) => ModifierActions.playerDisableBoostAll,
-            //nameof(ModifierActions.playerEnableBoost) => ModifierActions.playerEnableBoost,
-            nameof(ModifierActions.playerEnableBoostIndex) => ModifierActions.playerEnableBoostIndex,
-            nameof(ModifierActions.playerEnableBoostAll) => ModifierActions.playerEnableBoostAll,
-            //nameof(ModifierActions.playerEnableMove) => ModifierActions.playerEnableMove,
-            nameof(ModifierActions.playerEnableMoveIndex) => ModifierActions.playerEnableMoveIndex,
-            nameof(ModifierActions.playerEnableMoveAll) => ModifierActions.playerEnableMoveAll,
-
-            // speed
-            nameof(ModifierActions.playerSpeed) => ModifierActions.playerSpeed,
-            //nameof(ModifierActions.playerVelocity) => ModifierActions.playerVelocity,
-            nameof(ModifierActions.playerVelocityIndex) => ModifierActions.playerVelocityIndex,
-            nameof(ModifierActions.playerVelocityAll) => ModifierActions.playerVelocityAll,
-            //nameof(ModifierActions.playerVelocityX) => ModifierActions.playerVelocityX,
-            nameof(ModifierActions.playerVelocityXIndex) => ModifierActions.playerVelocityXIndex,
-            nameof(ModifierActions.playerVelocityXAll) => ModifierActions.playerVelocityXAll,
-            //nameof(ModifierActions.playerVelocityY) => ModifierActions.playerVelocityY,
-            nameof(ModifierActions.playerVelocityYIndex) => ModifierActions.playerVelocityYIndex,
-            nameof(ModifierActions.playerVelocityYAll) => ModifierActions.playerVelocityYAll,
-
-            nameof(ModifierActions.setPlayerModel) => ModifierActions.setPlayerModel,
-            nameof(ModifierActions.setGameMode) => ModifierActions.setGameMode,
-            nameof(ModifierActions.gameMode) => ModifierActions.gameMode,
-
-            //nameof(ModifierActions.blackHole) => ModifierActions.blackHole,
-
-            #endregion
-
-            #region Mouse Cursor
-
-            nameof(ModifierActions.showMouse) => ModifierActions.showMouse,
-            nameof(ModifierActions.hideMouse) => ModifierActions.hideMouse,
-            nameof(ModifierActions.setMousePosition) => ModifierActions.setMousePosition,
-            nameof(ModifierActions.followMousePosition) => ModifierActions.followMousePosition,
-
-            #endregion
-
-            #region Variable
-
-            nameof(ModifierActions.getToggle) => ModifierActions.getToggle,
-            nameof(ModifierActions.getFloat) => ModifierActions.getFloat,
-            nameof(ModifierActions.getInt) => ModifierActions.getInt,
-            nameof(ModifierActions.getString) => ModifierActions.getString,
-            nameof(ModifierActions.getStringLower) => ModifierActions.getStringLower,
-            nameof(ModifierActions.getStringUpper) => ModifierActions.getStringUpper,
-            nameof(ModifierActions.getColor) => ModifierActions.getColor,
-            nameof(ModifierActions.getEnum) => ModifierActions.getEnum,
-            nameof(ModifierActions.getTag) => ModifierActions.getTag,
-            nameof(ModifierActions.getPitch) => ModifierActions.getPitch,
-            nameof(ModifierActions.getMusicTime) => ModifierActions.getMusicTime,
-            //nameof(ModifierActions.getAxis) => ModifierActions.getAxis,
-            nameof(ModifierActions.getMath) => ModifierActions.getMath,
-            nameof(ModifierActions.getNearestPlayer) => ModifierActions.getNearestPlayer,
-            //nameof(ModifierActions.getCollidingPlayers) => ModifierActions.getCollidingPlayers,
-            nameof(ModifierActions.getPlayerHealth) => ModifierActions.getPlayerHealth,
-            nameof(ModifierActions.getPlayerPosX) => ModifierActions.getPlayerPosX,
-            nameof(ModifierActions.getPlayerPosY) => ModifierActions.getPlayerPosY,
-            nameof(ModifierActions.getPlayerRot) => ModifierActions.getPlayerRot,
-            nameof(ModifierActions.getEventValue) => ModifierActions.getEventValue,
-            nameof(ModifierActions.getSample) => ModifierActions.getSample,
-            //nameof(ModifierActions.getText) => ModifierActions.getText,
-            //nameof(ModifierActions.getTextOther) => ModifierActions.getTextOther,
-            nameof(ModifierActions.getCurrentKey) => ModifierActions.getCurrentKey,
-            nameof(ModifierActions.getColorSlotHexCode) => ModifierActions.getColorSlotHexCode,
-            nameof(ModifierActions.getFloatFromHexCode) => ModifierActions.getFloatFromHexCode,
-            nameof(ModifierActions.getHexCodeFromFloat) => ModifierActions.getHexCodeFromFloat,
-            nameof(ModifierActions.getModifiedColor) => ModifierActions.getModifiedColor,
-            nameof(ModifierActions.getMixedColors) => ModifierActions.getMixedColors,
-            //nameof(ModifierActions.getVisualColor) => ModifierActions.getVisualColor,
-            nameof(ModifierActions.getJSONString) => ModifierActions.getJSONString,
-            nameof(ModifierActions.getJSONFloat) => ModifierActions.getJSONFloat,
-            nameof(ModifierActions.getJSON) => ModifierActions.getJSON,
-            nameof(ModifierActions.getSubString) => ModifierActions.getSubString,
-            nameof(ModifierActions.getSplitString) => ModifierActions.getSplitString,
-            nameof(ModifierActions.getSplitStringAt) => ModifierActions.getSplitStringAt,
-            nameof(ModifierActions.getSplitStringCount) => ModifierActions.getSplitStringCount,
-            nameof(ModifierActions.getStringLength) => ModifierActions.getStringLength,
-            nameof(ModifierActions.getParsedString) => ModifierActions.getParsedString,
-            nameof(ModifierActions.getRegex) => ModifierActions.getRegex,
-            nameof(ModifierActions.getFormatVariable) => ModifierActions.getFormatVariable,
-            nameof(ModifierActions.getComparison) => ModifierActions.getComparison,
-            nameof(ModifierActions.getComparisonMath) => ModifierActions.getComparisonMath,
-            nameof(ModifierActions.getSignaledVariables) => ModifierActions.getSignaledVariables,
-            nameof(ModifierActions.signalLocalVariables) => ModifierActions.signalLocalVariables,
-            nameof(ModifierActions.clearLocalVariables) => ModifierActions.clearLocalVariables,
-            nameof(ModifierActions.storeLocalVariables) => ModifierActions.storeLocalVariables,
-
-            nameof(ModifierActions.addVariable) => ModifierActions.addVariable,
-            nameof(ModifierActions.addVariableOther) => ModifierActions.addVariableOther,
-            nameof(ModifierActions.subVariable) => ModifierActions.subVariable,
-            nameof(ModifierActions.subVariableOther) => ModifierActions.subVariableOther,
-            nameof(ModifierActions.setVariable) => ModifierActions.setVariable,
-            nameof(ModifierActions.setVariableOther) => ModifierActions.setVariableOther,
-            nameof(ModifierActions.setVariableRandom) => ModifierActions.setVariableRandom,
-            nameof(ModifierActions.setVariableRandomOther) => ModifierActions.setVariableRandomOther,
-            nameof(ModifierActions.animateVariableOther) => ModifierActions.animateVariableOther,
-            nameof(ModifierActions.clampVariable) => ModifierActions.clampVariable,
-            nameof(ModifierActions.clampVariableOther) => ModifierActions.clampVariableOther,
-
-            #endregion
-
-            #region Enable / Disable
-
-            //// enable
-            //nameof(ModifierActions.enableObject) => ModifierActions.enableObject,
-            //nameof(ModifierActions.enableObjectTree) => ModifierActions.enableObjectTree,
-            //nameof(ModifierActions.enableObjectOther) => ModifierActions.enableObjectOther,
-            //nameof(ModifierActions.enableObjectTreeOther) => ModifierActions.enableObjectTreeOther,
-            //nameof(ModifierActions.enableObjectGroup) => ModifierActions.enableObjectGroup,
-
-            //// disable
-            //nameof(ModifierActions.disableObject) => ModifierActions.disableObject,
-            //nameof(ModifierActions.disableObjectTree) => ModifierActions.disableObjectTree,
-            //nameof(ModifierActions.disableObjectOther) => ModifierActions.disableObjectOther,
-            //nameof(ModifierActions.disableObjectTreeOther) => ModifierActions.disableObjectTreeOther,
-
-            #endregion
-
-            #region JSON
-
-            nameof(ModifierActions.saveFloat) => ModifierActions.saveFloat,
-            nameof(ModifierActions.saveString) => ModifierActions.saveString,
-            //nameof(ModifierActions.saveText) => ModifierActions.saveText,
-            //nameof(ModifierActions.saveVariable) => ModifierActions.saveVariable,
-            //nameof(ModifierActions.loadVariable) => ModifierActions.loadVariable,
-            //nameof(ModifierActions.loadVariableOther) => ModifierActions.loadVariableOther,
-
-            #endregion
-
-            #region Reactive
-
-            //// single
-            //nameof(ModifierActions.reactivePos) => ModifierActions.reactivePos,
-            //nameof(ModifierActions.reactiveSca) => ModifierActions.reactiveSca,
-            //nameof(ModifierActions.reactiveRot) => ModifierActions.reactiveRot,
-            //nameof(ModifierActions.reactiveCol) => ModifierActions.reactiveCol,
-            //nameof(ModifierActions.reactiveColLerp) => ModifierActions.reactiveColLerp,
-
-            //// chain
-            //nameof(ModifierActions.reactivePosChain) => ModifierActions.reactivePosChain,
-            //nameof(ModifierActions.reactiveScaChain) => ModifierActions.reactiveScaChain,
-            //nameof(ModifierActions.reactiveRotChain) => ModifierActions.reactiveRotChain,
-
-            #endregion
-
-            #region Events
-
-            nameof(ModifierActions.eventOffset) => ModifierActions.eventOffset,
-            nameof(ModifierActions.eventOffsetVariable) => ModifierActions.eventOffsetVariable,
-            nameof(ModifierActions.eventOffsetMath) => ModifierActions.eventOffsetMath,
-            nameof(ModifierActions.eventOffsetAnimate) => ModifierActions.eventOffsetAnimate,
-            //nameof(ModifierActions.eventOffsetCopyAxis) => ModifierActions.eventOffsetCopyAxis,
-            nameof(ModifierActions.vignetteTracksPlayer) => ModifierActions.vignetteTracksPlayer,
-            nameof(ModifierActions.lensTracksPlayer) => ModifierActions.lensTracksPlayer,
-
-            #endregion
-
-            // todo: implement gradients and different color controls
-            #region Color
-
-            //// color
-            //nameof(ModifierActions.addColor) => ModifierActions.addColor,
-            //nameof(ModifierActions.addColorOther) => ModifierActions.addColorOther,
-            //nameof(ModifierActions.lerpColor) => ModifierActions.lerpColor,
-            //nameof(ModifierActions.lerpColorOther) => ModifierActions.lerpColorOther,
-            //nameof(ModifierActions.addColorPlayerDistance) => ModifierActions.addColorPlayerDistance,
-            //nameof(ModifierActions.lerpColorPlayerDistance) => ModifierActions.lerpColorPlayerDistance,
-
-            //// opacity
-            //nameof(ModifierActions.setAlpha) => ModifierActions.setOpacity,
-            //nameof(ModifierActions.setOpacity) => ModifierActions.setOpacity,
-            //nameof(ModifierActions.setAlphaOther) => ModifierActions.setOpacityOther,
-            //nameof(ModifierActions.setOpacityOther) => ModifierActions.setOpacityOther,
-
-            //// copy
-            //nameof(ModifierActions.copyColor) => ModifierActions.copyColor,
-            //nameof(ModifierActions.copyColorOther) => ModifierActions.copyColorOther,
-            //nameof(ModifierActions.applyColorGroup) => ModifierActions.applyColorGroup,
-
-            //// hex code
-            //nameof(ModifierActions.setColorHex) => ModifierActions.setColorHex,
-            //nameof(ModifierActions.setColorHexOther) => ModifierActions.setColorHexOther,
-
-            //// rgba
-            //nameof(ModifierActions.setColorRGBA) => ModifierActions.setColorRGBA,
-            //nameof(ModifierActions.setColorRGBAOther) => ModifierActions.setColorRGBAOther,
-
-            nameof(ModifierActions.animateColorKF) => ModifierActions.animateColorKF,
-            nameof(ModifierActions.animateColorKFHex) => ModifierActions.animateColorKFHex,
-
-            #endregion
-
-            // todo: figure out how to get actorFrameTexture to work
-            #region Shape
-
-            nameof(ModifierActions.setShape) => ModifierActions.setShape,
-            //nameof(ModifierActions.setPolygonShape) => ModifierActions.setPolygonShape,
-            //nameof(ModifierActions.setPolygonShapeOther) => ModifierActions.setPolygonShapeOther,
-
-            //nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
-
-            //// image
-            //nameof(ModifierActions.setImage) => ModifierActions.setImage,
-            //nameof(ModifierActions.setImageOther) => ModifierActions.setImageOther,
-
-            //// text (pain)
-            //nameof(ModifierActions.setText) => ModifierActions.setText,
-            //nameof(ModifierActions.setTextOther) => ModifierActions.setTextOther,
-            //nameof(ModifierActions.addText) => ModifierActions.addText,
-            //nameof(ModifierActions.addTextOther) => ModifierActions.addTextOther,
-            //nameof(ModifierActions.removeText) => ModifierActions.removeText,
-            //nameof(ModifierActions.removeTextOther) => ModifierActions.removeTextOther,
-            //nameof(ModifierActions.removeTextAt) => ModifierActions.removeTextAt,
-            //nameof(ModifierActions.removeTextOtherAt) => ModifierActions.removeTextOtherAt,
-            //nameof(ModifierActions.formatText) => ModifierActions.formatText,
-            //nameof(ModifierActions.textSequence) => ModifierActions.textSequence,
-
-            //// modify shape
-            //nameof(ModifierActions.backgroundShape) => ModifierActions.backgroundShape,
-            //nameof(ModifierActions.sphereShape) => ModifierActions.sphereShape,
-            //nameof(ModifierActions.translateShape) => ModifierActions.translateShape,
-
-            #endregion
-
-            #region Animation
-
-            nameof(ModifierActions.animateObject) => ModifierActions.animateObject,
-            nameof(ModifierActions.animateObjectOther) => ModifierActions.animateObjectOther,
-            nameof(ModifierActions.animateObjectKF) => ModifierActions.animateObjectKF,
-            nameof(ModifierActions.animateSignal) => ModifierActions.animateSignal,
-            nameof(ModifierActions.animateSignalOther) => ModifierActions.animateSignalOther,
-
-            nameof(ModifierActions.animateObjectMath) => ModifierActions.animateObjectMath,
-            nameof(ModifierActions.animateObjectMathOther) => ModifierActions.animateObjectMathOther,
-            nameof(ModifierActions.animateSignalMath) => ModifierActions.animateSignalMath,
-            nameof(ModifierActions.animateSignalMathOther) => ModifierActions.animateSignalMathOther,
-
-            nameof(ModifierActions.gravity) => ModifierActions.gravity,
-            nameof(ModifierActions.gravityOther) => ModifierActions.gravityOther,
-
-            nameof(ModifierActions.copyAxis) => ModifierActions.copyAxis,
-            nameof(ModifierActions.copyAxisMath) => ModifierActions.copyAxisMath,
-            nameof(ModifierActions.copyAxisGroup) => ModifierActions.copyAxisGroup,
-            nameof(ModifierActions.copyPlayerAxis) => ModifierActions.copyPlayerAxis,
-            //nameof(ModifierActions.legacyTail) => ModifierActions.legacyTail,
-
-            //nameof(ModifierActions.applyAnimation) => ModifierActions.applyAnimation,
-            //nameof(ModifierActions.applyAnimationFrom) => ModifierActions.applyAnimationFrom,
-            //nameof(ModifierActions.applyAnimationTo) => ModifierActions.applyAnimationTo,
-            //nameof(ModifierActions.applyAnimationMath) => ModifierActions.applyAnimationMath,
-            //nameof(ModifierActions.applyAnimationFromMath) => ModifierActions.applyAnimationFromMath,
-            //nameof(ModifierActions.applyAnimationToMath) => ModifierActions.applyAnimationToMath,
-
-            #endregion
-
-            #region Prefab
-
-            nameof(ModifierActions.spawnPrefab) => ModifierActions.spawnPrefab,
-            nameof(ModifierActions.spawnPrefabOffset) => ModifierActions.spawnPrefabOffset,
-            nameof(ModifierActions.spawnPrefabOffsetOther) => ModifierActions.spawnPrefabOffsetOther,
-            nameof(ModifierActions.spawnPrefabCopy) => ModifierActions.spawnPrefabCopy,
-            nameof(ModifierActions.spawnMultiPrefab) => ModifierActions.spawnMultiPrefab,
-            nameof(ModifierActions.spawnMultiPrefabOffset) => ModifierActions.spawnMultiPrefabOffset,
-            nameof(ModifierActions.spawnMultiPrefabOffsetOther) => ModifierActions.spawnMultiPrefabOffsetOther,
-            nameof(ModifierActions.spawnMultiPrefabCopy) => ModifierActions.spawnMultiPrefabCopy,
-            nameof(ModifierActions.clearSpawnedPrefabs) => ModifierActions.clearSpawnedPrefabs,
-            nameof(ModifierActions.setPrefabTime) => ModifierActions.setPrefabTime,
-
-            #endregion
-
-            #region Ranking
-
-            nameof(ModifierActions.saveLevelRank) => ModifierActions.saveLevelRank,
-
-            nameof(ModifierActions.clearHits) => ModifierActions.clearHits,
-            nameof(ModifierActions.addHit) => ModifierActions.addHit,
-            nameof(ModifierActions.subHit) => ModifierActions.subHit,
-            nameof(ModifierActions.clearDeaths) => ModifierActions.clearDeaths,
-            nameof(ModifierActions.addDeath) => ModifierActions.addDeath,
-            nameof(ModifierActions.subDeath) => ModifierActions.subDeath,
-
-            #endregion
-
-            #region Updates
-
-            // update
-            nameof(ModifierActions.updateObjects) => ModifierActions.updateObjects,
-            nameof(ModifierActions.updateObject) => ModifierActions.updateObject,
-
-            // parent
-            nameof(ModifierActions.setParent) => ModifierActions.setParent,
-            nameof(ModifierActions.setParentOther) => ModifierActions.setParentOther,
-            nameof(ModifierActions.detachParent) => ModifierActions.detachParent,
-            nameof(ModifierActions.detachParentOther) => ModifierActions.detachParentOther,
-
-            #endregion
-
-            #region Physics
-
-            // collision
-            //nameof(ModifierActions.setCollision) => ModifierActions.setCollision,
-            //nameof(ModifierActions.setCollisionOther) => ModifierActions.setCollisionOther,
-
-            #endregion
-
-            #region Checkpoints
-
-            nameof(ModifierActions.createCheckpoint) => ModifierActions.createCheckpoint,
-            nameof(ModifierActions.resetCheckpoint) => ModifierActions.resetCheckpoint,
-
-            #endregion
-
-            #region Interfaces
-
-            nameof(ModifierActions.loadInterface) => ModifierActions.loadInterface,
-            nameof(ModifierActions.exitInterface) => ModifierActions.exitInterface,
-            nameof(ModifierActions.quitToMenu) => ModifierActions.quitToMenu,
-            nameof(ModifierActions.quitToArcade) => ModifierActions.quitToArcade,
-            nameof(ModifierActions.pauseLevel) => ModifierActions.pauseLevel,
-
-            #endregion
-
-            #region Misc
-
-            nameof(ModifierActions.setBGActive) => ModifierActions.setBGActive,
-
-            // activation
-            nameof(ModifierActions.signalModifier) => ModifierActions.signalModifier,
-            nameof(ModifierActions.activateModifier) => ModifierActions.activateModifier,
-
-            nameof(ModifierActions.editorNotify) => ModifierActions.editorNotify,
-
-            // external
-            nameof(ModifierActions.setWindowTitle) => ModifierActions.setWindowTitle,
-            nameof(ModifierActions.setDiscordStatus) => ModifierActions.setDiscordStatus,
-
-            nameof(ModifierActions.callModifierBlock) => ModifierActions.callModifierBlock,
-
-            #endregion
-
-            _ => (modifier, reference, variables) => { },
-        };
-
-        /// <summary>
-        /// The function to run when a modifier is inactive and has a reference of <see cref="BackgroundObject"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void BGInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables = null)
-        {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.inst.modifiers);
-            }
-
-            if (modifier.commands.IsEmpty())
-                return;
-
-            try
-            {
-                switch (modifier.Name)
-                {
-                    case nameof(ModifierActions.animateColorKF): {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case nameof(ModifierActions.animateColorKFHex): {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case nameof(ModifierActions.storeLocalVariables): {
-                            modifier.Result = null;
-                            break;
-                        }
-                        
-                    case "spawnPrefab":
-                    case "spawnPrefabOffset":
-                    case "spawnPrefabOffsetOther": {
-                            // value 9 is permanent
-
-                            if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
-                            {
-                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
-
-                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                                modifier.Result = null;
-                            }
-                            break;
-                        }
-                    case nameof(ModifierActions.spawnMultiPrefabCopy):
-                    case nameof(ModifierActions.spawnPrefabCopy): {
-                            if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
-                            {
-                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
-
-                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                                modifier.Result = null;
-                            }
-                            break;
-                        }
-
-                    case "signalModifier":
-                    case "mouseOverSignalModifier": {
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
-
-                            if (!list.IsEmpty() && list.Any(x => x.modifiers.Any(y => y.Result != null)))
-                                foreach (var bm in list)
-                                {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
-                                        m.Result = null;
-                                }
-
-                            break;
-                        }
-                    case "animateSignal":
-                    case "animateSignalOther": {
-                            if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
-                                return;
-
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(groupIndex));
-
-                            if (!list.IsEmpty() && !modifier.constant)
-                                foreach (var bm in list)
-                                {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
-                                        m.Result = null;
-                                }
-
-                            break;
-                        }
-                    case "randomGreater":
-                    case "randomLesser":
-                    case "randomEquals":
-                    case "gravity":
-                    case "gravityOther": {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case "copyAxis":
-                    case "copyAxisMath":
-                    case "copyAxisGroup":
-                    case "objectSpawned": {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case "applyAnimation":
-                    case "applyAnimationFrom":
-                    case "applyAnimationTo": {
-                            if (modifier.constant)
-                                modifier.Result = null;
-
-                            break;
-                        }
-                }
-            }
-            catch { }
-        }
-
-        #endregion
-
-        #region PrefabObject
-        
-        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetPrefabTrigger(string key) => key switch
-        {
-            #region Player
-
-            //nameof(ModifierTriggers.playerCollide) => ModifierTriggers.playerCollide,
-            nameof(ModifierTriggers.playerHealthEquals) => ModifierTriggers.playerHealthEquals,
-            nameof(ModifierTriggers.playerHealthLesserEquals) => ModifierTriggers.playerHealthLesserEquals,
-            nameof(ModifierTriggers.playerHealthGreaterEquals) => ModifierTriggers.playerHealthGreaterEquals,
-            nameof(ModifierTriggers.playerHealthLesser) => ModifierTriggers.playerHealthLesser,
-            nameof(ModifierTriggers.playerHealthGreater) => ModifierTriggers.playerHealthGreater,
-            nameof(ModifierTriggers.playerMoving) => ModifierTriggers.playerMoving,
-            //nameof(ModifierTriggers.playerBoosting) => ModifierTriggers.playerBoosting,
-            nameof(ModifierTriggers.playerAlive) => ModifierTriggers.playerAlive,
-            nameof(ModifierTriggers.playerDeathsEquals) => ModifierTriggers.playerDeathsEquals,
-            nameof(ModifierTriggers.playerDeathsLesserEquals) => ModifierTriggers.playerDeathsLesserEquals,
-            nameof(ModifierTriggers.playerDeathsGreaterEquals) => ModifierTriggers.playerDeathsGreaterEquals,
-            nameof(ModifierTriggers.playerDeathsLesser) => ModifierTriggers.playerDeathsLesser,
-            nameof(ModifierTriggers.playerDeathsGreater) => ModifierTriggers.playerDeathsGreater,
-            nameof(ModifierTriggers.playerDistanceGreater) => ModifierTriggers.playerDistanceGreater,
-            nameof(ModifierTriggers.playerDistanceLesser) => ModifierTriggers.playerDistanceLesser,
-            nameof(ModifierTriggers.playerCountEquals) => ModifierTriggers.playerCountEquals,
-            nameof(ModifierTriggers.playerCountLesserEquals) => ModifierTriggers.playerCountLesserEquals,
-            nameof(ModifierTriggers.playerCountGreaterEquals) => ModifierTriggers.playerCountGreaterEquals,
-            nameof(ModifierTriggers.playerCountLesser) => ModifierTriggers.playerCountLesser,
-            nameof(ModifierTriggers.playerCountGreater) => ModifierTriggers.playerCountGreater,
-            nameof(ModifierTriggers.onPlayerHit) => ModifierTriggers.onPlayerHit,
-            nameof(ModifierTriggers.onPlayerDeath) => ModifierTriggers.onPlayerDeath,
-            nameof(ModifierTriggers.playerBoostEquals) => ModifierTriggers.playerBoostEquals,
-            nameof(ModifierTriggers.playerBoostLesserEquals) => ModifierTriggers.playerBoostLesserEquals,
-            nameof(ModifierTriggers.playerBoostGreaterEquals) => ModifierTriggers.playerBoostGreaterEquals,
-            nameof(ModifierTriggers.playerBoostLesser) => ModifierTriggers.playerBoostLesser,
-            nameof(ModifierTriggers.playerBoostGreater) => ModifierTriggers.playerBoostGreater,
-
-            #endregion
-
-            #region Controls
-
-            nameof(ModifierTriggers.keyPressDown) => ModifierTriggers.keyPressDown,
-            nameof(ModifierTriggers.keyPress) => ModifierTriggers.keyPress,
-            nameof(ModifierTriggers.keyPressUp) => ModifierTriggers.keyPressUp,
-            nameof(ModifierTriggers.mouseButtonDown) => ModifierTriggers.mouseButtonDown,
-            nameof(ModifierTriggers.mouseButton) => ModifierTriggers.mouseButton,
-            nameof(ModifierTriggers.mouseButtonUp) => ModifierTriggers.mouseButtonUp,
-            //nameof(ModifierTriggers.mouseOver) => ModifierTriggers.mouseOver,
-            //nameof(ModifierTriggers.mouseOverSignalModifier) => ModifierTriggers.mouseOverSignalModifier,
-            nameof(ModifierTriggers.controlPressDown) => ModifierTriggers.controlPressDown,
-            nameof(ModifierTriggers.controlPress) => ModifierTriggers.controlPress,
-            nameof(ModifierTriggers.controlPressUp) => ModifierTriggers.controlPressUp,
-
-            #endregion
-
-            #region Collide
-
-            //nameof(ModifierTriggers.bulletCollide) => ModifierTriggers.bulletCollide,
-            //nameof(ModifierTriggers.objectCollide) => ModifierTriggers.objectCollide,
-
-            #endregion
-
-            #region JSON
-
-            nameof(ModifierTriggers.loadEquals) => ModifierTriggers.loadEquals,
-            nameof(ModifierTriggers.loadLesserEquals) => ModifierTriggers.loadLesserEquals,
-            nameof(ModifierTriggers.loadGreaterEquals) => ModifierTriggers.loadGreaterEquals,
-            nameof(ModifierTriggers.loadLesser) => ModifierTriggers.loadLesser,
-            nameof(ModifierTriggers.loadGreater) => ModifierTriggers.loadGreater,
-            nameof(ModifierTriggers.loadExists) => ModifierTriggers.loadExists,
-
-            #endregion
-
-            #region Variable
-
-            nameof(ModifierTriggers.localVariableEquals) => ModifierTriggers.localVariableEquals,
-            nameof(ModifierTriggers.localVariableLesserEquals) => ModifierTriggers.localVariableLesserEquals,
-            nameof(ModifierTriggers.localVariableGreaterEquals) => ModifierTriggers.localVariableGreaterEquals,
-            nameof(ModifierTriggers.localVariableLesser) => ModifierTriggers.localVariableLesser,
-            nameof(ModifierTriggers.localVariableGreater) => ModifierTriggers.localVariableGreater,
-            nameof(ModifierTriggers.localVariableContains) => ModifierTriggers.localVariableContains,
-            nameof(ModifierTriggers.localVariableStartsWith) => ModifierTriggers.localVariableStartsWith,
-            nameof(ModifierTriggers.localVariableEndsWith) => ModifierTriggers.localVariableEndsWith,
-            nameof(ModifierTriggers.localVariableExists) => ModifierTriggers.localVariableExists,
-
-            // self
-            nameof(ModifierTriggers.variableEquals) => ModifierTriggers.variableEquals,
-            nameof(ModifierTriggers.variableLesserEquals) => ModifierTriggers.variableLesserEquals,
-            nameof(ModifierTriggers.variableGreaterEquals) => ModifierTriggers.variableGreaterEquals,
-            nameof(ModifierTriggers.variableLesser) => ModifierTriggers.variableLesser,
-            nameof(ModifierTriggers.variableGreater) => ModifierTriggers.variableGreater,
-
-            // other
-            //nameof(ModifierTriggers.variableOtherEquals) => ModifierTriggers.variableOtherEquals,
-            //nameof(ModifierTriggers.variableOtherLesserEquals) => ModifierTriggers.variableOtherLesserEquals,
-            //nameof(ModifierTriggers.variableOtherGreaterEquals) => ModifierTriggers.variableOtherGreaterEquals,
-            //nameof(ModifierTriggers.variableOtherLesser) => ModifierTriggers.variableOtherLesser,
-            //nameof(ModifierTriggers.variableOtherGreater) => ModifierTriggers.variableOtherGreater,
-
-            #endregion
-
-            #region Audio
-
-            nameof(ModifierTriggers.pitchEquals) => ModifierTriggers.pitchEquals,
-            nameof(ModifierTriggers.pitchLesserEquals) => ModifierTriggers.pitchLesserEquals,
-            nameof(ModifierTriggers.pitchGreaterEquals) => ModifierTriggers.pitchGreaterEquals,
-            nameof(ModifierTriggers.pitchLesser) => ModifierTriggers.pitchLesser,
-            nameof(ModifierTriggers.pitchGreater) => ModifierTriggers.pitchGreater,
-            nameof(ModifierTriggers.musicTimeGreater) => ModifierTriggers.musicTimeGreater,
-            nameof(ModifierTriggers.musicTimeLesser) => ModifierTriggers.musicTimeLesser,
-            nameof(ModifierTriggers.musicPlaying) => ModifierTriggers.musicPlaying,
-
-            #endregion
-
-            #region Challenge Mode
-
-            nameof(ModifierTriggers.inZenMode) => ModifierTriggers.inZenMode,
-            nameof(ModifierTriggers.inNormal) => ModifierTriggers.inNormal,
-            nameof(ModifierTriggers.in1Life) => ModifierTriggers.in1Life,
-            nameof(ModifierTriggers.inNoHit) => ModifierTriggers.inNoHit,
-            nameof(ModifierTriggers.inPractice) => ModifierTriggers.inPractice,
-
-            #endregion
-
-            #region Random
-
-            nameof(ModifierTriggers.randomEquals) => ModifierTriggers.randomEquals,
-            nameof(ModifierTriggers.randomLesser) => ModifierTriggers.randomLesser,
-            nameof(ModifierTriggers.randomGreater) => ModifierTriggers.randomGreater,
-
-            #endregion
-
-            #region Math
-
-            nameof(ModifierTriggers.mathEquals) => ModifierTriggers.mathEquals,
-            nameof(ModifierTriggers.mathLesserEquals) => ModifierTriggers.mathLesserEquals,
-            nameof(ModifierTriggers.mathGreaterEquals) => ModifierTriggers.mathGreaterEquals,
-            nameof(ModifierTriggers.mathLesser) => ModifierTriggers.mathLesser,
-            nameof(ModifierTriggers.mathGreater) => ModifierTriggers.mathGreater,
-
-            #endregion
-
-            #region Axis
-
-            nameof(ModifierTriggers.axisEquals) => ModifierTriggers.axisEquals,
-            nameof(ModifierTriggers.axisLesserEquals) => ModifierTriggers.axisLesserEquals,
-            nameof(ModifierTriggers.axisGreaterEquals) => ModifierTriggers.axisGreaterEquals,
-            nameof(ModifierTriggers.axisLesser) => ModifierTriggers.axisLesser,
-            nameof(ModifierTriggers.axisGreater) => ModifierTriggers.axisGreater,
-
-            #endregion
-
-            #region Level Rank
-
-            // self
-            nameof(ModifierTriggers.levelRankEquals) => ModifierTriggers.levelRankEquals,
-            nameof(ModifierTriggers.levelRankLesserEquals) => ModifierTriggers.levelRankLesserEquals,
-            nameof(ModifierTriggers.levelRankGreaterEquals) => ModifierTriggers.levelRankGreaterEquals,
-            nameof(ModifierTriggers.levelRankLesser) => ModifierTriggers.levelRankLesser,
-            nameof(ModifierTriggers.levelRankGreater) => ModifierTriggers.levelRankGreater,
-
-            // other
-            nameof(ModifierTriggers.levelRankOtherEquals) => ModifierTriggers.levelRankOtherEquals,
-            nameof(ModifierTriggers.levelRankOtherLesserEquals) => ModifierTriggers.levelRankOtherLesserEquals,
-            nameof(ModifierTriggers.levelRankOtherGreaterEquals) => ModifierTriggers.levelRankOtherGreaterEquals,
-            nameof(ModifierTriggers.levelRankOtherLesser) => ModifierTriggers.levelRankOtherLesser,
-            nameof(ModifierTriggers.levelRankOtherGreater) => ModifierTriggers.levelRankOtherGreater,
-
-            // current
-            nameof(ModifierTriggers.levelRankCurrentEquals) => ModifierTriggers.levelRankCurrentEquals,
-            nameof(ModifierTriggers.levelRankCurrentLesserEquals) => ModifierTriggers.levelRankCurrentLesserEquals,
-            nameof(ModifierTriggers.levelRankCurrentGreaterEquals) => ModifierTriggers.levelRankCurrentGreaterEquals,
-            nameof(ModifierTriggers.levelRankCurrentLesser) => ModifierTriggers.levelRankCurrentLesser,
-            nameof(ModifierTriggers.levelRankCurrentGreater) => ModifierTriggers.levelRankCurrentGreater,
-
-            #endregion
-
-            #region Level
-
-            nameof(ModifierTriggers.levelUnlocked) => ModifierTriggers.levelUnlocked,
-            nameof(ModifierTriggers.levelCompleted) => ModifierTriggers.levelCompleted,
-            nameof(ModifierTriggers.levelCompletedOther) => ModifierTriggers.levelCompletedOther,
-            nameof(ModifierTriggers.levelExists) => ModifierTriggers.levelExists,
-            nameof(ModifierTriggers.levelPathExists) => ModifierTriggers.levelPathExists,
-
-            #endregion
-
-            #region Real Time
-
-            // seconds
-            nameof(ModifierTriggers.realTimeSecondEquals) => ModifierTriggers.realTimeSecondEquals,
-            nameof(ModifierTriggers.realTimeSecondLesserEquals) => ModifierTriggers.realTimeSecondLesserEquals,
-            nameof(ModifierTriggers.realTimeSecondGreaterEquals) => ModifierTriggers.realTimeSecondGreaterEquals,
-            nameof(ModifierTriggers.realTimeSecondLesser) => ModifierTriggers.realTimeSecondLesser,
-            nameof(ModifierTriggers.realTimeSecondGreater) => ModifierTriggers.realTimeSecondGreater,
-
-            // minutes
-            nameof(ModifierTriggers.realTimeMinuteEquals) => ModifierTriggers.realTimeMinuteEquals,
-            nameof(ModifierTriggers.realTimeMinuteLesserEquals) => ModifierTriggers.realTimeMinuteLesserEquals,
-            nameof(ModifierTriggers.realTimeMinuteGreaterEquals) => ModifierTriggers.realTimeMinuteGreaterEquals,
-            nameof(ModifierTriggers.realTimeMinuteLesser) => ModifierTriggers.realTimeMinuteLesser,
-            nameof(ModifierTriggers.realTimeMinuteGreater) => ModifierTriggers.realTimeMinuteGreater,
-
-            // 24 hours
-            nameof(ModifierTriggers.realTime24HourEquals) => ModifierTriggers.realTime24HourEquals,
-            nameof(ModifierTriggers.realTime24HourLesserEquals) => ModifierTriggers.realTime24HourLesserEquals,
-            nameof(ModifierTriggers.realTime24HourGreaterEquals) => ModifierTriggers.realTime24HourGreaterEquals,
-            nameof(ModifierTriggers.realTime24HourLesser) => ModifierTriggers.realTime24HourLesser,
-            nameof(ModifierTriggers.realTime24HourGreater) => ModifierTriggers.realTime24HourGreater,
-
-            // 12 hours
-            nameof(ModifierTriggers.realTime12HourEquals) => ModifierTriggers.realTime12HourEquals,
-            nameof(ModifierTriggers.realTime12HourLesserEquals) => ModifierTriggers.realTime12HourLesserEquals,
-            nameof(ModifierTriggers.realTime12HourGreaterEquals) => ModifierTriggers.realTime12HourGreaterEquals,
-            nameof(ModifierTriggers.realTime12HourLesser) => ModifierTriggers.realTime12HourLesser,
-            nameof(ModifierTriggers.realTime12HourGreater) => ModifierTriggers.realTime12HourGreater,
-
-            // days
-            nameof(ModifierTriggers.realTimeDayEquals) => ModifierTriggers.realTimeDayEquals,
-            nameof(ModifierTriggers.realTimeDayLesserEquals) => ModifierTriggers.realTimeDayLesserEquals,
-            nameof(ModifierTriggers.realTimeDayGreaterEquals) => ModifierTriggers.realTimeDayGreaterEquals,
-            nameof(ModifierTriggers.realTimeDayLesser) => ModifierTriggers.realTimeDayLesser,
-            nameof(ModifierTriggers.realTimeDayGreater) => ModifierTriggers.realTimeDayGreater,
-            nameof(ModifierTriggers.realTimeDayWeekEquals) => ModifierTriggers.realTimeDayWeekEquals,
-
-            // months
-            nameof(ModifierTriggers.realTimeMonthEquals) => ModifierTriggers.realTimeMonthEquals,
-            nameof(ModifierTriggers.realTimeMonthLesserEquals) => ModifierTriggers.realTimeMonthLesserEquals,
-            nameof(ModifierTriggers.realTimeMonthGreaterEquals) => ModifierTriggers.realTimeMonthGreaterEquals,
-            nameof(ModifierTriggers.realTimeMonthLesser) => ModifierTriggers.realTimeMonthLesser,
-            nameof(ModifierTriggers.realTimeMonthGreater) => ModifierTriggers.realTimeMonthGreater,
-
-            // years
-            nameof(ModifierTriggers.realTimeYearEquals) => ModifierTriggers.realTimeYearEquals,
-            nameof(ModifierTriggers.realTimeYearLesserEquals) => ModifierTriggers.realTimeYearLesserEquals,
-            nameof(ModifierTriggers.realTimeYearGreaterEquals) => ModifierTriggers.realTimeYearGreaterEquals,
-            nameof(ModifierTriggers.realTimeYearLesser) => ModifierTriggers.realTimeYearLesser,
-            nameof(ModifierTriggers.realTimeYearGreater) => ModifierTriggers.realTimeYearGreater,
-
-            #endregion
-
-            #region Config
-
-            // main
-            nameof(ModifierTriggers.usernameEquals) => ModifierTriggers.usernameEquals,
-            nameof(ModifierTriggers.languageEquals) => ModifierTriggers.languageEquals,
-
-            // misc
-            nameof(ModifierTriggers.configLDM) => ModifierTriggers.configLDM,
-            nameof(ModifierTriggers.configShowEffects) => ModifierTriggers.configShowEffects,
-            nameof(ModifierTriggers.configShowPlayerGUI) => ModifierTriggers.configShowPlayerGUI,
-            nameof(ModifierTriggers.configShowIntro) => ModifierTriggers.configShowIntro,
-
-            #endregion
-
-            #region Misc
-
-            nameof(ModifierTriggers.containsTag) => ModifierTriggers.containsTag,
-            nameof(ModifierTriggers.inEditor) => ModifierTriggers.inEditor,
-            nameof(ModifierTriggers.isEditing) => ModifierTriggers.isEditing,
-            nameof(ModifierTriggers.requireSignal) => ModifierTriggers.requireSignal,
-            nameof(ModifierTriggers.isFullscreen) => ModifierTriggers.isFullscreen,
-            //nameof(ModifierTriggers.objectAlive) => ModifierTriggers.objectAlive,
-            //nameof(ModifierTriggers.objectSpawned) => ModifierTriggers.objectSpawned,
-
-            #endregion
-
-            #region Dev Only
-
-            "storyLoadIntEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) == modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntLesserEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) <= modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntGreaterEqualsDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) >= modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntLesserDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) < modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadIntGreaterDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadInt(modifier.GetValue(0, variables), modifier.GetInt(1, 0, variables)) > modifier.GetInt(2, 0, variables);
-            },
-            "storyLoadBoolDEVONLY" => (modifier, reference, variables) =>
-            {
-                return Story.StoryManager.inst.CurrentSave.LoadBool(modifier.GetValue(0, variables), modifier.GetBool(1, false));
-            },
-
-            #endregion
-
-            "break" => (modifier, reference, variables) => true,
-            _ => (modifier, reference, variables) => false,
-        };
-
-        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetPrefabAction(string key) => key switch
-        {
-            nameof(ModifierActions.setActive) => ModifierActions.setActive,
-            nameof(ModifierActions.setActiveOther) => ModifierActions.setActiveOther,
-
-            #region Audio
-
-            // pitch
-            nameof(ModifierActions.setPitch) => ModifierActions.setPitch,
-            nameof(ModifierActions.addPitch) => ModifierActions.addPitch,
-            nameof(ModifierActions.setPitchMath) => ModifierActions.setPitchMath,
-            nameof(ModifierActions.addPitchMath) => ModifierActions.addPitchMath,
-
-            // music playing states
-            nameof(ModifierActions.setMusicTime) => ModifierActions.setMusicTime,
-            nameof(ModifierActions.setMusicTimeMath) => ModifierActions.setMusicTimeMath,
-            nameof(ModifierActions.setMusicTimeStartTime) => ModifierActions.setMusicTimeStartTime,
-            nameof(ModifierActions.setMusicTimeAutokill) => ModifierActions.setMusicTimeAutokill,
-            nameof(ModifierActions.setMusicPlaying) => ModifierActions.setMusicPlaying,
-
-            // play sound
-            nameof(ModifierActions.playSound) => ModifierActions.playSound,
-            nameof(ModifierActions.playSoundOnline) => ModifierActions.playSoundOnline,
-            nameof(ModifierActions.playDefaultSound) => ModifierActions.playDefaultSound,
-            //nameof(ModifierActions.audioSource) => ModifierActions.audioSource,
-
-            #endregion
-
-            #region Level
-
-            nameof(ModifierActions.loadLevel) => ModifierActions.loadLevel,
-            nameof(ModifierActions.loadLevelID) => ModifierActions.loadLevelID,
-            nameof(ModifierActions.loadLevelInternal) => ModifierActions.loadLevelInternal,
-            nameof(ModifierActions.loadLevelPrevious) => ModifierActions.loadLevelPrevious,
-            nameof(ModifierActions.loadLevelHub) => ModifierActions.loadLevelHub,
-            nameof(ModifierActions.loadLevelInCollection) => ModifierActions.loadLevelInCollection,
-            nameof(ModifierActions.downloadLevel) => ModifierActions.downloadLevel,
-            nameof(ModifierActions.endLevel) => ModifierActions.endLevel,
-            nameof(ModifierActions.setAudioTransition) => ModifierActions.setAudioTransition,
-            nameof(ModifierActions.setIntroFade) => ModifierActions.setIntroFade,
-            nameof(ModifierActions.setLevelEndFunc) => ModifierActions.setLevelEndFunc,
-
-            #endregion
-
-            #region Component
-
-            //nameof(ModifierActions.blur) => ModifierActions.blur,
-            //nameof(ModifierActions.blurOther) => ModifierActions.blurOther,
-            //nameof(ModifierActions.blurVariable) => ModifierActions.blurVariable,
-            //nameof(ModifierActions.blurVariableOther) => ModifierActions.blurVariableOther,
-            //nameof(ModifierActions.blurColored) => ModifierActions.blurColored,
-            //nameof(ModifierActions.blurColoredOther) => ModifierActions.blurColoredOther,
-            //nameof(ModifierActions.doubleSided) => ModifierActions.doubleSided,
-            //nameof(ModifierActions.particleSystem) => ModifierActions.particleSystem,
-            //nameof(ModifierActions.trailRenderer) => ModifierActions.trailRenderer,
-            //nameof(ModifierActions.rigidbody) => ModifierActions.rigidbody,
-            //nameof(ModifierActions.rigidbodyOther) => ModifierActions.rigidbodyOther,
-            //nameof(ModifierActions.setRenderType) => ModifierActions.setRenderType,
-            //nameof(ModifierActions.setRenderTypeOther) => ModifierActions.setRenderTypeOther,
-
-            #endregion
-
-            #region Player
-
-            // hit
-            //nameof(ModifierActions.playerHit) => ModifierActions.playerHit,
-            nameof(ModifierActions.playerHitIndex) => ModifierActions.playerHitIndex,
-            nameof(ModifierActions.playerHitAll) => ModifierActions.playerHitAll,
-
-            // heal
-            //nameof(ModifierActions.playerHeal) => ModifierActions.playerHeal,
-            nameof(ModifierActions.playerHealIndex) => ModifierActions.playerHealIndex,
-            nameof(ModifierActions.playerHealAll) => ModifierActions.playerHealAll,
-
-            // kill
-            //nameof(ModifierActions.playerKill) => ModifierActions.playerKill,
-            nameof(ModifierActions.playerKillIndex) => ModifierActions.playerKillIndex,
-            nameof(ModifierActions.playerKillAll) => ModifierActions.playerKillAll,
-
-            // respawn
-            //nameof(ModifierActions.playerRespawn) => ModifierActions.playerRespawn,
-            nameof(ModifierActions.playerRespawnIndex) => ModifierActions.playerRespawnIndex,
-            nameof(ModifierActions.playerRespawnAll) => ModifierActions.playerRespawnAll,
-
-            // player move
-            //nameof(ModifierActions.playerMove) => ModifierActions.playerMove,
-            nameof(ModifierActions.playerMoveIndex) => ModifierActions.playerMoveIndex,
-            nameof(ModifierActions.playerMoveAll) => ModifierActions.playerMoveAll,
-            //nameof(ModifierActions.playerMoveX) => ModifierActions.playerMoveX,
-            nameof(ModifierActions.playerMoveXIndex) => ModifierActions.playerMoveXIndex,
-            nameof(ModifierActions.playerMoveXAll) => ModifierActions.playerMoveXAll,
-            //nameof(ModifierActions.playerMoveY) => ModifierActions.playerMoveY,
-            nameof(ModifierActions.playerMoveYIndex) => ModifierActions.playerMoveYIndex,
-            nameof(ModifierActions.playerMoveYAll) => ModifierActions.playerMoveYAll,
-            //nameof(ModifierActions.playerRotate) => ModifierActions.playerRotate,
-            nameof(ModifierActions.playerRotateIndex) => ModifierActions.playerRotateIndex,
-            nameof(ModifierActions.playerRotateAll) => ModifierActions.playerRotateAll,
-
-            // move to object
-            //nameof(ModifierActions.playerMoveToObject) => ModifierActions.playerMoveToObject,
-            //nameof(ModifierActions.playerMoveIndexToObject) => ModifierActions.playerMoveIndexToObject,
-            //nameof(ModifierActions.playerMoveAllToObject) => ModifierActions.playerMoveAllToObject,
-            //nameof(ModifierActions.playerMoveXToObject) => ModifierActions.playerMoveXToObject,
-            //nameof(ModifierActions.playerMoveXIndexToObject) => ModifierActions.playerMoveXIndexToObject,
-            //nameof(ModifierActions.playerMoveXAllToObject) => ModifierActions.playerMoveXAllToObject,
-            //nameof(ModifierActions.playerMoveYToObject) => ModifierActions.playerMoveYToObject,
-            //nameof(ModifierActions.playerMoveYIndexToObject) => ModifierActions.playerMoveYIndexToObject,
-            //nameof(ModifierActions.playerMoveYAllToObject) => ModifierActions.playerMoveYAllToObject,
-            //nameof(ModifierActions.playerRotateToObject) => ModifierActions.playerRotateToObject,
-            //nameof(ModifierActions.playerRotateIndexToObject) => ModifierActions.playerRotateIndexToObject,
-            //nameof(ModifierActions.playerRotateAllToObject) => ModifierActions.playerRotateAllToObject,
-
-            // actions
-            //nameof(ModifierActions.playerBoost) => ModifierActions.playerBoost,
-            nameof(ModifierActions.playerBoostIndex) => ModifierActions.playerBoostIndex,
-            nameof(ModifierActions.playerBoostAll) => ModifierActions.playerBoostAll,
-            //nameof(ModifierActions.playerCancelBoost) => ModifierActions.playerCancelBoost,
-            nameof(ModifierActions.playerCancelBoostIndex) => ModifierActions.playerCancelBoostIndex,
-            nameof(ModifierActions.playerCancelBoostAll) => ModifierActions.playerCancelBoostAll,
-            //nameof(ModifierActions.playerDisableBoost) => ModifierActions.playerDisableBoost,
-            nameof(ModifierActions.playerDisableBoostIndex) => ModifierActions.playerDisableBoostIndex,
-            nameof(ModifierActions.playerDisableBoostAll) => ModifierActions.playerDisableBoostAll,
-            //nameof(ModifierActions.playerEnableBoost) => ModifierActions.playerEnableBoost,
-            nameof(ModifierActions.playerEnableBoostIndex) => ModifierActions.playerEnableBoostIndex,
-            nameof(ModifierActions.playerEnableBoostAll) => ModifierActions.playerEnableBoostAll,
-            //nameof(ModifierActions.playerEnableMove) => ModifierActions.playerEnableMove,
-            nameof(ModifierActions.playerEnableMoveIndex) => ModifierActions.playerEnableMoveIndex,
-            nameof(ModifierActions.playerEnableMoveAll) => ModifierActions.playerEnableMoveAll,
-
-            // speed
-            nameof(ModifierActions.playerSpeed) => ModifierActions.playerSpeed,
-            //nameof(ModifierActions.playerVelocity) => ModifierActions.playerVelocity,
-            nameof(ModifierActions.playerVelocityIndex) => ModifierActions.playerVelocityIndex,
-            nameof(ModifierActions.playerVelocityAll) => ModifierActions.playerVelocityAll,
-            //nameof(ModifierActions.playerVelocityX) => ModifierActions.playerVelocityX,
-            nameof(ModifierActions.playerVelocityXIndex) => ModifierActions.playerVelocityXIndex,
-            nameof(ModifierActions.playerVelocityXAll) => ModifierActions.playerVelocityXAll,
-            //nameof(ModifierActions.playerVelocityY) => ModifierActions.playerVelocityY,
-            nameof(ModifierActions.playerVelocityYIndex) => ModifierActions.playerVelocityYIndex,
-            nameof(ModifierActions.playerVelocityYAll) => ModifierActions.playerVelocityYAll,
-
-            nameof(ModifierActions.setPlayerModel) => ModifierActions.setPlayerModel,
-            nameof(ModifierActions.setGameMode) => ModifierActions.setGameMode,
-            nameof(ModifierActions.gameMode) => ModifierActions.gameMode,
-
-            //nameof(ModifierActions.blackHole) => ModifierActions.blackHole,
-
-            #endregion
-
-            #region Mouse Cursor
-
-            nameof(ModifierActions.showMouse) => ModifierActions.showMouse,
-            nameof(ModifierActions.hideMouse) => ModifierActions.hideMouse,
-            nameof(ModifierActions.setMousePosition) => ModifierActions.setMousePosition,
-            nameof(ModifierActions.followMousePosition) => ModifierActions.followMousePosition,
-
-            #endregion
-
-            #region Variable
-
-            nameof(ModifierActions.getToggle) => ModifierActions.getToggle,
-            nameof(ModifierActions.getFloat) => ModifierActions.getFloat,
-            nameof(ModifierActions.getInt) => ModifierActions.getInt,
-            nameof(ModifierActions.getString) => ModifierActions.getString,
-            nameof(ModifierActions.getStringLower) => ModifierActions.getStringLower,
-            nameof(ModifierActions.getStringUpper) => ModifierActions.getStringUpper,
-            nameof(ModifierActions.getColor) => ModifierActions.getColor,
-            nameof(ModifierActions.getEnum) => ModifierActions.getEnum,
-            nameof(ModifierActions.getTag) => ModifierActions.getTag,
-            nameof(ModifierActions.getPitch) => ModifierActions.getPitch,
-            nameof(ModifierActions.getMusicTime) => ModifierActions.getMusicTime,
-            //nameof(ModifierActions.getAxis) => ModifierActions.getAxis,
-            nameof(ModifierActions.getMath) => ModifierActions.getMath,
-            nameof(ModifierActions.getNearestPlayer) => ModifierActions.getNearestPlayer,
-            //nameof(ModifierActions.getCollidingPlayers) => ModifierActions.getCollidingPlayers,
-            nameof(ModifierActions.getPlayerHealth) => ModifierActions.getPlayerHealth,
-            nameof(ModifierActions.getPlayerPosX) => ModifierActions.getPlayerPosX,
-            nameof(ModifierActions.getPlayerPosY) => ModifierActions.getPlayerPosY,
-            nameof(ModifierActions.getPlayerRot) => ModifierActions.getPlayerRot,
-            nameof(ModifierActions.getEventValue) => ModifierActions.getEventValue,
-            nameof(ModifierActions.getSample) => ModifierActions.getSample,
-            //nameof(ModifierActions.getText) => ModifierActions.getText,
-            //nameof(ModifierActions.getTextOther) => ModifierActions.getTextOther,
-            nameof(ModifierActions.getCurrentKey) => ModifierActions.getCurrentKey,
-            nameof(ModifierActions.getColorSlotHexCode) => ModifierActions.getColorSlotHexCode,
-            nameof(ModifierActions.getFloatFromHexCode) => ModifierActions.getFloatFromHexCode,
-            nameof(ModifierActions.getHexCodeFromFloat) => ModifierActions.getHexCodeFromFloat,
-            nameof(ModifierActions.getModifiedColor) => ModifierActions.getModifiedColor,
-            nameof(ModifierActions.getMixedColors) => ModifierActions.getMixedColors,
-            //nameof(ModifierActions.getVisualColor) => ModifierActions.getVisualColor,
-            nameof(ModifierActions.getJSONString) => ModifierActions.getJSONString,
-            nameof(ModifierActions.getJSONFloat) => ModifierActions.getJSONFloat,
-            nameof(ModifierActions.getJSON) => ModifierActions.getJSON,
-            nameof(ModifierActions.getSubString) => ModifierActions.getSubString,
-            nameof(ModifierActions.getSplitString) => ModifierActions.getSplitString,
-            nameof(ModifierActions.getSplitStringAt) => ModifierActions.getSplitStringAt,
-            nameof(ModifierActions.getSplitStringCount) => ModifierActions.getSplitStringCount,
-            nameof(ModifierActions.getStringLength) => ModifierActions.getStringLength,
-            nameof(ModifierActions.getParsedString) => ModifierActions.getParsedString,
-            nameof(ModifierActions.getRegex) => ModifierActions.getRegex,
-            nameof(ModifierActions.getFormatVariable) => ModifierActions.getFormatVariable,
-            nameof(ModifierActions.getComparison) => ModifierActions.getComparison,
-            nameof(ModifierActions.getComparisonMath) => ModifierActions.getComparisonMath,
-            nameof(ModifierActions.getSignaledVariables) => ModifierActions.getSignaledVariables,
-            nameof(ModifierActions.signalLocalVariables) => ModifierActions.signalLocalVariables,
-            nameof(ModifierActions.clearLocalVariables) => ModifierActions.clearLocalVariables,
-            nameof(ModifierActions.storeLocalVariables) => ModifierActions.storeLocalVariables,
-
-            nameof(ModifierActions.addVariable) => ModifierActions.addVariable,
-            nameof(ModifierActions.addVariableOther) => ModifierActions.addVariableOther,
-            nameof(ModifierActions.subVariable) => ModifierActions.subVariable,
-            nameof(ModifierActions.subVariableOther) => ModifierActions.subVariableOther,
-            nameof(ModifierActions.setVariable) => ModifierActions.setVariable,
-            nameof(ModifierActions.setVariableOther) => ModifierActions.setVariableOther,
-            nameof(ModifierActions.setVariableRandom) => ModifierActions.setVariableRandom,
-            nameof(ModifierActions.setVariableRandomOther) => ModifierActions.setVariableRandomOther,
-            nameof(ModifierActions.animateVariableOther) => ModifierActions.animateVariableOther,
-            nameof(ModifierActions.clampVariable) => ModifierActions.clampVariable,
-            nameof(ModifierActions.clampVariableOther) => ModifierActions.clampVariableOther,
-
-            #endregion
-
-            #region Enable / Disable
-
-            // enable
-            nameof(ModifierActions.enableObject) => ModifierActions.enableObject,
-            //nameof(ModifierActions.enableObjectTree) => ModifierActions.enableObjectTree,
-            //nameof(ModifierActions.enableObjectOther) => ModifierActions.enableObjectOther,
-            //nameof(ModifierActions.enableObjectTreeOther) => ModifierActions.enableObjectTreeOther,
-            //nameof(ModifierActions.enableObjectGroup) => ModifierActions.enableObjectGroup,
-
-            // disable
-            //nameof(ModifierActions.disableObject) => ModifierActions.disableObject,
-            //nameof(ModifierActions.disableObjectTree) => ModifierActions.disableObjectTree,
-            //nameof(ModifierActions.disableObjectOther) => ModifierActions.disableObjectOther,
-            //nameof(ModifierActions.disableObjectTreeOther) => ModifierActions.disableObjectTreeOther,
-
-            #endregion
-
-            #region JSON
-
-            nameof(ModifierActions.saveFloat) => ModifierActions.saveFloat,
-            nameof(ModifierActions.saveString) => ModifierActions.saveString,
-            //nameof(ModifierActions.saveText) => ModifierActions.saveText,
-            //nameof(ModifierActions.saveVariable) => ModifierActions.saveVariable,
-            //nameof(ModifierActions.loadVariable) => ModifierActions.loadVariable,
-            //nameof(ModifierActions.loadVariableOther) => ModifierActions.loadVariableOther,
-
-            #endregion
-
-            #region Reactive
-
-            //// single
-            //nameof(ModifierActions.reactivePos) => ModifierActions.reactivePos,
-            //nameof(ModifierActions.reactiveSca) => ModifierActions.reactiveSca,
-            //nameof(ModifierActions.reactiveRot) => ModifierActions.reactiveRot,
-            //nameof(ModifierActions.reactiveCol) => ModifierActions.reactiveCol,
-            //nameof(ModifierActions.reactiveColLerp) => ModifierActions.reactiveColLerp,
-
-            //// chain
-            //nameof(ModifierActions.reactivePosChain) => ModifierActions.reactivePosChain,
-            //nameof(ModifierActions.reactiveScaChain) => ModifierActions.reactiveScaChain,
-            //nameof(ModifierActions.reactiveRotChain) => ModifierActions.reactiveRotChain,
-
-            #endregion
-
-            #region Events
-
-            nameof(ModifierActions.eventOffset) => ModifierActions.eventOffset,
-            nameof(ModifierActions.eventOffsetVariable) => ModifierActions.eventOffsetVariable,
-            nameof(ModifierActions.eventOffsetMath) => ModifierActions.eventOffsetMath,
-            nameof(ModifierActions.eventOffsetAnimate) => ModifierActions.eventOffsetAnimate,
-            //nameof(ModifierActions.eventOffsetCopyAxis) => ModifierActions.eventOffsetCopyAxis,
-            nameof(ModifierActions.vignetteTracksPlayer) => ModifierActions.vignetteTracksPlayer,
-            nameof(ModifierActions.lensTracksPlayer) => ModifierActions.lensTracksPlayer,
-
-            #endregion
-
-            // todo: implement gradients and different color controls
-            #region Color
-
-            //// color
-            //nameof(ModifierActions.addColor) => ModifierActions.addColor,
-            //nameof(ModifierActions.addColorOther) => ModifierActions.addColorOther,
-            //nameof(ModifierActions.lerpColor) => ModifierActions.lerpColor,
-            //nameof(ModifierActions.lerpColorOther) => ModifierActions.lerpColorOther,
-            //nameof(ModifierActions.addColorPlayerDistance) => ModifierActions.addColorPlayerDistance,
-            //nameof(ModifierActions.lerpColorPlayerDistance) => ModifierActions.lerpColorPlayerDistance,
-
-            //// opacity
-            //nameof(ModifierActions.setAlpha) => ModifierActions.setOpacity,
-            //nameof(ModifierActions.setOpacity) => ModifierActions.setOpacity,
-            //nameof(ModifierActions.setAlphaOther) => ModifierActions.setOpacityOther,
-            //nameof(ModifierActions.setOpacityOther) => ModifierActions.setOpacityOther,
-
-            //// copy
-            //nameof(ModifierActions.copyColor) => ModifierActions.copyColor,
-            //nameof(ModifierActions.copyColorOther) => ModifierActions.copyColorOther,
-            //nameof(ModifierActions.applyColorGroup) => ModifierActions.applyColorGroup,
-
-            //// hex code
-            //nameof(ModifierActions.setColorHex) => ModifierActions.setColorHex,
-            //nameof(ModifierActions.setColorHexOther) => ModifierActions.setColorHexOther,
-
-            //// rgba
-            //nameof(ModifierActions.setColorRGBA) => ModifierActions.setColorRGBA,
-            //nameof(ModifierActions.setColorRGBAOther) => ModifierActions.setColorRGBAOther,
-
-            nameof(ModifierActions.animateColorKF) => ModifierActions.animateColorKF,
-            nameof(ModifierActions.animateColorKFHex) => ModifierActions.animateColorKFHex,
-
-            #endregion
-
-            // todo: figure out how to get actorFrameTexture to work
-            #region Shape
-
-            nameof(ModifierActions.setShape) => ModifierActions.setShape,
-            //nameof(ModifierActions.setPolygonShape) => ModifierActions.setPolygonShape,
-            //nameof(ModifierActions.setPolygonShapeOther) => ModifierActions.setPolygonShapeOther,
-
-            //nameof(ModifierActions.actorFrameTexture) => ModifierActions.actorFrameTexture,
-
-            //// image
-            //nameof(ModifierActions.setImage) => ModifierActions.setImage,
-            //nameof(ModifierActions.setImageOther) => ModifierActions.setImageOther,
-
-            //// text (pain)
-            //nameof(ModifierActions.setText) => ModifierActions.setText,
-            //nameof(ModifierActions.setTextOther) => ModifierActions.setTextOther,
-            //nameof(ModifierActions.addText) => ModifierActions.addText,
-            //nameof(ModifierActions.addTextOther) => ModifierActions.addTextOther,
-            //nameof(ModifierActions.removeText) => ModifierActions.removeText,
-            //nameof(ModifierActions.removeTextOther) => ModifierActions.removeTextOther,
-            //nameof(ModifierActions.removeTextAt) => ModifierActions.removeTextAt,
-            //nameof(ModifierActions.removeTextOtherAt) => ModifierActions.removeTextOtherAt,
-            //nameof(ModifierActions.formatText) => ModifierActions.formatText,
-            //nameof(ModifierActions.textSequence) => ModifierActions.textSequence,
-
-            //// modify shape
-            //nameof(ModifierActions.backgroundShape) => ModifierActions.backgroundShape,
-            //nameof(ModifierActions.sphereShape) => ModifierActions.sphereShape,
-            //nameof(ModifierActions.translateShape) => ModifierActions.translateShape,
-
-            #endregion
-
-            #region Animation
-
-            nameof(ModifierActions.animateObject) => ModifierActions.animateObject,
-            nameof(ModifierActions.animateObjectOther) => ModifierActions.animateObjectOther,
-            nameof(ModifierActions.animateObjectKF) => ModifierActions.animateObjectKF,
-            nameof(ModifierActions.animateSignal) => ModifierActions.animateSignal,
-            nameof(ModifierActions.animateSignalOther) => ModifierActions.animateSignalOther,
-
-            nameof(ModifierActions.animateObjectMath) => ModifierActions.animateObjectMath,
-            nameof(ModifierActions.animateObjectMathOther) => ModifierActions.animateObjectMathOther,
-            nameof(ModifierActions.animateSignalMath) => ModifierActions.animateSignalMath,
-            nameof(ModifierActions.animateSignalMathOther) => ModifierActions.animateSignalMathOther,
-
-            nameof(ModifierActions.gravity) => ModifierActions.gravity,
-            nameof(ModifierActions.gravityOther) => ModifierActions.gravityOther,
-
-            nameof(ModifierActions.copyAxis) => ModifierActions.copyAxis,
-            nameof(ModifierActions.copyAxisMath) => ModifierActions.copyAxisMath,
-            nameof(ModifierActions.copyAxisGroup) => ModifierActions.copyAxisGroup,
-            nameof(ModifierActions.copyPlayerAxis) => ModifierActions.copyPlayerAxis,
-            //nameof(ModifierActions.legacyTail) => ModifierActions.legacyTail,
-
-            //nameof(ModifierActions.applyAnimation) => ModifierActions.applyAnimation,
-            //nameof(ModifierActions.applyAnimationFrom) => ModifierActions.applyAnimationFrom,
-            //nameof(ModifierActions.applyAnimationTo) => ModifierActions.applyAnimationTo,
-            //nameof(ModifierActions.applyAnimationMath) => ModifierActions.applyAnimationMath,
-            //nameof(ModifierActions.applyAnimationFromMath) => ModifierActions.applyAnimationFromMath,
-            //nameof(ModifierActions.applyAnimationToMath) => ModifierActions.applyAnimationToMath,
-
-            #endregion
-
-            #region Prefab
-
-            nameof(ModifierActions.spawnPrefab) => ModifierActions.spawnPrefab,
-            nameof(ModifierActions.spawnPrefabOffset) => ModifierActions.spawnPrefabOffset,
-            nameof(ModifierActions.spawnPrefabOffsetOther) => ModifierActions.spawnPrefabOffsetOther,
-            nameof(ModifierActions.spawnPrefabCopy) => ModifierActions.spawnPrefabCopy,
-            nameof(ModifierActions.spawnMultiPrefab) => ModifierActions.spawnMultiPrefab,
-            nameof(ModifierActions.spawnMultiPrefabOffset) => ModifierActions.spawnMultiPrefabOffset,
-            nameof(ModifierActions.spawnMultiPrefabOffsetOther) => ModifierActions.spawnMultiPrefabOffsetOther,
-            nameof(ModifierActions.spawnMultiPrefabCopy) => ModifierActions.spawnMultiPrefabCopy,
-            nameof(ModifierActions.clearSpawnedPrefabs) => ModifierActions.clearSpawnedPrefabs,
-            nameof(ModifierActions.setPrefabTime) => ModifierActions.setPrefabTime,
-
-            #endregion
-
-            #region Ranking
-
-            nameof(ModifierActions.saveLevelRank) => ModifierActions.saveLevelRank,
-
-            nameof(ModifierActions.clearHits) => ModifierActions.clearHits,
-            nameof(ModifierActions.addHit) => ModifierActions.addHit,
-            nameof(ModifierActions.subHit) => ModifierActions.subHit,
-            nameof(ModifierActions.clearDeaths) => ModifierActions.clearDeaths,
-            nameof(ModifierActions.addDeath) => ModifierActions.addDeath,
-            nameof(ModifierActions.subDeath) => ModifierActions.subDeath,
-
-            #endregion
-
-            #region Updates
-
-            // update
-            nameof(ModifierActions.updateObjects) => ModifierActions.updateObjects,
-            nameof(ModifierActions.updateObject) => ModifierActions.updateObject,
-
-            // parent
-            nameof(ModifierActions.setParent) => ModifierActions.setParent,
-            nameof(ModifierActions.setParentOther) => ModifierActions.setParentOther,
-            nameof(ModifierActions.detachParent) => ModifierActions.detachParent,
-            nameof(ModifierActions.detachParentOther) => ModifierActions.detachParentOther,
-
-            #endregion
-
-            #region Physics
-
-            // collision
-            //nameof(ModifierActions.setCollision) => ModifierActions.setCollision,
-            //nameof(ModifierActions.setCollisionOther) => ModifierActions.setCollisionOther,
-
-            #endregion
-
-            #region Checkpoints
-
-            nameof(ModifierActions.createCheckpoint) => ModifierActions.createCheckpoint,
-            nameof(ModifierActions.resetCheckpoint) => ModifierActions.resetCheckpoint,
-
-            #endregion
-
-            #region Interfaces
-
-            nameof(ModifierActions.loadInterface) => ModifierActions.loadInterface,
-            nameof(ModifierActions.exitInterface) => ModifierActions.exitInterface,
-            nameof(ModifierActions.quitToMenu) => ModifierActions.quitToMenu,
-            nameof(ModifierActions.quitToArcade) => ModifierActions.quitToArcade,
-            nameof(ModifierActions.pauseLevel) => ModifierActions.pauseLevel,
-
-            #endregion
-
-            #region Misc
-
-            nameof(ModifierActions.setBGActive) => ModifierActions.setBGActive,
-
-            // activation
-            nameof(ModifierActions.signalModifier) => ModifierActions.signalModifier,
-            nameof(ModifierActions.activateModifier) => ModifierActions.activateModifier,
-
-            nameof(ModifierActions.editorNotify) => ModifierActions.editorNotify,
-
-            // external
-            nameof(ModifierActions.setWindowTitle) => ModifierActions.setWindowTitle,
-            nameof(ModifierActions.setDiscordStatus) => ModifierActions.setDiscordStatus,
-
-            nameof(ModifierActions.callModifierBlock) => ModifierActions.callModifierBlock,
-
-            #endregion
-
-            _ => (modifier, reference, variables) => { },
-        };
-
-        /// <summary>
-        /// The function to run when a modifier is inactive and has a reference of <see cref="BackgroundObject"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void PrefabInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables = null)
-        {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.inst.modifiers);
-            }
-
-            if (modifier.commands.IsEmpty())
-                return;
-
-            try
-            {
-                switch (modifier.Name)
-                {
-                    case nameof(ModifierActions.animateColorKF): {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case nameof(ModifierActions.animateColorKFHex): {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case nameof(ModifierActions.storeLocalVariables): {
-                            modifier.Result = null;
-                            break;
-                        }
-
-                    case "spawnPrefab":
-                    case "spawnPrefabOffset":
-                    case "spawnPrefabOffsetOther": {
-                            // value 9 is permanent
-
-                            if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
-                            {
-                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
-
-                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                                modifier.Result = null;
-                            }
-                            break;
-                        }
-                    case nameof(ModifierActions.spawnMultiPrefabCopy):
-                    case nameof(ModifierActions.spawnPrefabCopy): {
-                            if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
-                            {
-                                reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
-
-                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                                modifier.Result = null;
-                            }
-                            break;
-                        }
-
-                    case "signalModifier":
-                    case "mouseOverSignalModifier": {
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
-
-                            if (!list.IsEmpty() && list.Any(x => x.modifiers.Any(y => y.Result != null)))
-                                foreach (var bm in list)
-                                {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
-                                        m.Result = null;
-                                }
-
-                            break;
-                        }
-                    case "animateSignal":
-                    case "animateSignalOther": {
-                            if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
-                                return;
-
-                            if (reference is not IPrefabable prefabable)
-                                return;
-
-                            int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
-                            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(groupIndex));
-
-                            if (!list.IsEmpty() && !modifier.constant)
-                                foreach (var bm in list)
-                                {
-                                    if (!bm.modifiers.IsEmpty() && bm.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier m))
-                                        m.Result = null;
-                                }
-
-                            break;
-                        }
-                    case "randomGreater":
-                    case "randomLesser":
-                    case "randomEquals":
-                    case "gravity":
-                    case "gravityOther": {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case "copyAxis":
-                    case "copyAxisMath":
-                    case "copyAxisGroup":
-                    case "objectSpawned": {
-                            modifier.Result = null;
-                            break;
-                        }
-                    case "applyAnimation":
-                    case "applyAnimationFrom":
-                    case "applyAnimationTo": {
-                            if (modifier.constant)
-                                modifier.Result = null;
-
-                            break;
-                        }
-                }
-            }
-            catch { }
-        }
 
         #endregion
 
@@ -3953,5 +2288,71 @@ namespace BetterLegacy.Core.Helpers
             Mathf.Approximately(rot, this.rot);
 
         #endregion
+    }
+
+    public class ModifierTrigger
+    {
+        public ModifierTrigger(string name, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function)
+        {
+            this.name = name;
+            this.function = function;
+        }
+
+        public ModifierTrigger(string name, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function, ModifierCompatibility compatibility) : this(name, function)
+        {
+            this.compatibility = compatibility;
+        }
+
+        public ModifierCompatibility compatibility = ModifierCompatibility.AllCompatible;
+        public string name;
+        public Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function;
+
+        public static implicit operator ModifierTrigger(Func<Modifier, IModifierReference, Dictionary<string, string>, bool> function) => new ModifierTrigger(string.Empty, function);
+
+        public static implicit operator ModifierTrigger(KeyValuePair<string, Func<Modifier, IModifierReference, Dictionary<string, string>, bool>> keyValuePair) => new ModifierTrigger(keyValuePair.Key, keyValuePair.Value);
+    }
+
+    public class ModifierAction
+    {
+        public ModifierAction(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function)
+        {
+            this.name = name;
+            this.function = function;
+        }
+        
+        public ModifierAction(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function, ModifierCompatibility compatibility) : this(name, function)
+        {
+            this.compatibility = compatibility;
+        }
+
+        public ModifierCompatibility compatibility = ModifierCompatibility.AllCompatible;
+        public string name;
+        public Action<Modifier, IModifierReference, Dictionary<string, string>> function;
+
+        public static implicit operator ModifierAction(Action<Modifier, IModifierReference, Dictionary<string, string>> function) => new ModifierAction(string.Empty, function);
+
+        public static implicit operator ModifierAction(KeyValuePair<string, Action<Modifier, IModifierReference, Dictionary<string, string>>> keyValuePair) => new ModifierAction(keyValuePair.Key, keyValuePair.Value);
+    }
+
+    public class ModifierInactive
+    {
+        public ModifierInactive(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function)
+        {
+            this.name = name;
+            this.function = function;
+        }
+
+        public ModifierInactive(string name, Action<Modifier, IModifierReference, Dictionary<string, string>> function, ModifierCompatibility compatibility) : this(name, function)
+        {
+            this.compatibility = compatibility;
+        }
+
+        public ModifierCompatibility compatibility = ModifierCompatibility.AllCompatible;
+        public string name;
+        public Action<Modifier, IModifierReference, Dictionary<string, string>> function;
+
+        public static implicit operator ModifierInactive(Action<Modifier, IModifierReference, Dictionary<string, string>> function) => new ModifierInactive(string.Empty, function);
+
+        public static implicit operator ModifierInactive(KeyValuePair<string, Action<Modifier, IModifierReference, Dictionary<string, string>>> keyValuePair) => new ModifierInactive(keyValuePair.Key, keyValuePair.Value);
     }
 }

@@ -24,6 +24,9 @@ namespace BetterLegacy.Core.Helpers
     /// </summary>
     public static class ModifierTriggers
     {
+        public static bool breakModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => true;
+        public static bool disableModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => false;
+
         #region Player
 
         public static bool playerCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -267,6 +270,42 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
+        #region Collide
+
+        public static bool bulletCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
+                return false;
+
+            if (!beatmapObject.detector)
+            {
+                var op = runtimeObject.visualObject.gameObject.GetOrAddComponent<Detector>();
+                op.beatmapObject = beatmapObject;
+                beatmapObject.detector = op;
+            }
+
+            return beatmapObject.detector && beatmapObject.detector.bulletOver;
+        }
+
+        public static bool objectCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return false;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
+                return false;
+
+            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0)).FindAll(x => x.runtimeObject.visualObject && x.runtimeObject.visualObject.collider);
+            return !list.IsEmpty() && list.Any(x => x.runtimeObject.visualObject.collider.IsTouching(runtimeObject.visualObject.collider));
+        }
+
+        #endregion
+
         #region Controls
 
         public static bool keyPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -396,42 +435,6 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
-        }
-
-        #endregion
-
-        #region Collide
-
-        public static bool bulletCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not BeatmapObject beatmapObject)
-                return false;
-
-            var runtimeObject = beatmapObject.runtimeObject;
-            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.gameObject)
-                return false;
-
-            if (!beatmapObject.detector)
-            {
-                var op = runtimeObject.visualObject.gameObject.GetOrAddComponent<Detector>();
-                op.beatmapObject = beatmapObject;
-                beatmapObject.detector = op;
-            }
-
-            return beatmapObject.detector && beatmapObject.detector.bulletOver;
-        }
-
-        public static bool objectCollide(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            if (reference is not BeatmapObject beatmapObject)
-                return false;
-
-            var runtimeObject = beatmapObject.runtimeObject;
-            if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
-                return false;
-
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0)).FindAll(x => x.runtimeObject.visualObject && x.runtimeObject.visualObject.collider);
-            return !list.IsEmpty() && list.Any(x => x.runtimeObject.visualObject.collider.IsTouching(runtimeObject.visualObject.collider));
         }
 
         #endregion
@@ -692,6 +695,12 @@ namespace BetterLegacy.Core.Helpers
             return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime<AutoKillType> lifetime ? lifetime.StartTime : 0f) < modifier.GetFloat(0, 0f, variables);
         }
 
+        public static bool musicTimeInRange(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var time = reference.GetParentRuntime().FixedTime;
+            return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
+        }
+
         public static bool musicPlaying(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             return AudioManager.inst.CurrentAudioSource.isPlaying;
@@ -699,7 +708,7 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        #region Challenge Mode
+        #region Game State
 
         public static bool inZenMode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
@@ -820,7 +829,7 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        #region Axis
+        #region Animation
 
         public static bool axisEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
@@ -957,93 +966,135 @@ namespace BetterLegacy.Core.Helpers
             return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) > equals;
         }
 
-        #endregion
+        public static bool eventEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var str = modifier.GetValue(0, variables);
+            var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
 
-        #region Level Rank
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) == modifier.GetFloat(3, 0f, variables);
+        }
+        
+        public static bool eventLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var str = modifier.GetValue(0, variables);
+            var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
 
-        public static bool levelRankEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) <= modifier.GetFloat(3, 0f, variables);
         }
         
-        public static bool levelRankLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
+            var str = modifier.GetValue(0, variables);
+            var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
+
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) >= modifier.GetFloat(3, 0f, variables);
         }
         
-        public static bool levelRankGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
+            var str = modifier.GetValue(0, variables);
+            var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
+
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) < modifier.GetFloat(3, 0f, variables);
         }
         
-        public static bool levelRankLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static bool eventGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankOtherEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankOtherLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankOtherGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankOtherLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankOtherGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            var id = modifier.GetValue(1, variables);
-            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankCurrentEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) == modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankCurrentLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) <= modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankCurrentGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) >= modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankCurrentLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) < modifier.GetInt(0, 0, variables);
-        }
-        
-        public static bool levelRankCurrentGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) > modifier.GetInt(0, 0, variables);
+            var str = modifier.GetValue(0, variables);
+            var time = Parser.TryParse(str, RTLevel.Current.FixedTime);
+
+            return RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.Interpolate(modifier.GetInt(1, 0, variables), modifier.GetInt(2, 0, variables), time) > modifier.GetFloat(3, 0f, variables);
         }
 
         #endregion
 
         #region Level
+
+        public static bool levelRankEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return ModifiersHelper.GetLevelRank(LevelManager.CurrentLevel, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankOtherEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(1, variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex == modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankOtherLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(1, variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex <= modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankOtherGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(1, variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex >= modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankOtherLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(1, variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex < modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankOtherGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(1, variables);
+            return LevelManager.Levels.TryFind(x => x.id == id, out Level level) && ModifiersHelper.GetLevelRank(level, out int levelRankIndex) && levelRankIndex > modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankCurrentEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) == modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankCurrentLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) <= modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankCurrentGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) >= modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankCurrentLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) < modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool levelRankCurrentGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return LevelManager.GetLevelRank(RTBeatmap.Current.hits) > modifier.GetInt(0, 0, variables);
+        }
+
+        public static bool onLevelStart(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTBeatmap.Current && RTBeatmap.Current.LevelStarted;
+
+        public static bool onLevelRestart(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => false;
+
+        public static bool onLevelRewind(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => CoreHelper.Reversing;
 
         public static bool levelUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
@@ -1362,6 +1413,8 @@ namespace BetterLegacy.Core.Helpers
 
             return false;
         }
+
+        public static bool fromPrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => reference is IPrefabable prefabable && prefabable.FromPrefab;
 
         #endregion
 

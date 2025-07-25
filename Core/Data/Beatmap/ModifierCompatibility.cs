@@ -118,6 +118,36 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
+        public ModifierCompatibility WithBeatmapObject(bool compat)
+        {
+            BeatmapObject = compat;
+            return this;
+        }
+        
+        public ModifierCompatibility WithBackgroundObject(bool compat)
+        {
+            BackgroundObject = compat;
+            return this;
+        }
+        
+        public ModifierCompatibility WithPrefabObject(bool compat)
+        {
+            PrefabObject = compat;
+            return this;
+        }
+        
+        public ModifierCompatibility WithPAPlayer(bool compat)
+        {
+            PAPlayer = compat;
+            return this;
+        }
+        
+        public ModifierCompatibility WithGameData(bool compat)
+        {
+            GameData = compat;
+            return this;
+        }
+
         /// <summary>
         /// Sets the compatibility value.
         /// </summary>
