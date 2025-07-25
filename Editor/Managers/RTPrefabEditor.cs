@@ -1343,6 +1343,8 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.editorData.Layer = editorData.Layer;
             }
 
+            prefabObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
+
             if (copiedInstanceData)
                 prefabObject.PasteInstanceData(copiedInstanceData);
             else if (newPrefab.defaultInstanceData)
@@ -1458,6 +1460,8 @@ namespace BetterLegacy.Editor.Managers
             // Set default scale
             prefabObject.events[1].values[0] = 1f;
             prefabObject.events[1].values[1] = 1f;
+
+            prefabObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
             if (copiedInstanceData)
                 prefabObject.PasteInstanceData(copiedInstanceData);
