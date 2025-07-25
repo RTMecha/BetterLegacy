@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.7.4 - (pre-1.8.0) [Jul 25, 2025]
 
 ## Features
 ### Core
@@ -23,6 +23,8 @@
 - Fixed the Fade Colors list in the Background Object editor.
 - Fixed spawnPrefabs modifiers being broken.
 - Fixed objects stored in a Prefab Object rendering in the editor timeline on level reload.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.7.3 - (pre-1.8.0) [Jul 24, 2025]
 
