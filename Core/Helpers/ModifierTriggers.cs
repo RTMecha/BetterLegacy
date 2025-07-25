@@ -855,7 +855,7 @@ namespace BetterLegacy.Core.Helpers
             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) == equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) == equals;
         }
         
         public static bool axisLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -882,7 +882,7 @@ namespace BetterLegacy.Core.Helpers
             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) <= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) <= equals;
         }
         
         public static bool axisGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -909,7 +909,7 @@ namespace BetterLegacy.Core.Helpers
             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) >= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) >= equals;
         }
         
         public static bool axisLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -936,7 +936,7 @@ namespace BetterLegacy.Core.Helpers
             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) < equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) < equals;
         }
         
         public static bool axisGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -963,7 +963,7 @@ namespace BetterLegacy.Core.Helpers
             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
 
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) > equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual) > equals;
         }
 
         public static bool eventEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

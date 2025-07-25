@@ -1829,13 +1829,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             return 0;
         }
 
-        public IBeatmap GetBeatmap(Modifier modifier, IPrefabable prefabable)
-        {
-            if (modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject)
-                return prefabObject.runtimeObject.Spawner;
-
-            return modifier.prefabInstanceOnly && !string.IsNullOrEmpty(prefabable.PrefabInstanceID) && prefabable.FromPrefab && prefabable.GetPrefab() is Prefab prefab ? prefab : this;
-        }
+        /// <summary>
+        /// Gets the objects' associated object package.
+        /// </summary>
+        /// <param name="modifier">Modifier reference.</param>
+        /// <param name="prefabable">Prefabable reference.</param>
+        /// <returns>Returns the <see cref="IBeatmap"/> associated with the <paramref name="prefabable"/>.</returns>
+        public IBeatmap GetBeatmap(Modifier modifier, IPrefabable prefabable) => modifier.subPrefab && prefabable is PrefabObject prefabObject && prefabObject.runtimeObject ? prefabObject.runtimeObject.Spawner : this;
 
         /// <summary>
         /// Tries to get an object with a modifier's tag group.

@@ -2115,9 +2115,9 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
+        public static float GetAnimation(IPrefabable prefabable, BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
         {
-            var time = reference.GetParentRuntime().CurrentTime;
+            var time = GetTime(prefabable, reference);
 
             if (!visual && reference.cachedSequences)
                 return fromType switch
@@ -2132,6 +2132,8 @@ namespace BetterLegacy.Core.Helpers
 
             return 0f;
         }
+
+        public static float GetTime(IPrefabable prefabable, IModifierReference reference) => prefabable.FromPrefab && prefabable.GetRuntimeObject() != null ? prefabable.GetRuntimeObject().ParentRuntime.CurrentTime : reference.GetParentRuntime().CurrentTime;
 
         public static void CopyColor(RTBeatmapObject applyTo, RTBeatmapObject takeFrom, bool applyColor1, bool applyColor2)
         {

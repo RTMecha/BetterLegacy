@@ -182,6 +182,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             EngineActive = active;
             UpdateActive();
+            Tick();
         }
 
         /// <summary>
@@ -258,6 +259,8 @@ namespace BetterLegacy.Core.Runtime.Objects
             foreach (var subPrefab in prefab.prefabs)
             {
                 var subPrefabCopy = subPrefab.Copy(false);
+                subPrefabCopy.CachedPrefab = Prefab;
+                subPrefabCopy.CachedPrefabObject = PrefabObject;
 
                 subPrefabCopy.fromPrefab = true;
                 subPrefabCopy.SetPrefabReference(prefabObject);
@@ -278,6 +281,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 {
                     var beatmapObjectCopy = beatmapObject.Copy(false);
                     beatmapObjectCopy.CachedPrefab = beatmapObjectCopy.GetPrefab(Spawner.Prefabs);
+                    beatmapObjectCopy.CachedPrefabObject = PrefabObject;
 
                     try
                     {
@@ -333,6 +337,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 {
                     var backgroundObjectCopy = backgroundObject.Copy();
                     backgroundObjectCopy.CachedPrefab = backgroundObjectCopy.GetPrefab(Spawner.Prefabs);
+                    backgroundObjectCopy.CachedPrefabObject = PrefabObject;
 
                     backgroundObjectCopy.fromPrefab = true;
                     backgroundObjectCopy.SetPrefabReference(prefabObject);
@@ -361,10 +366,12 @@ namespace BetterLegacy.Core.Runtime.Objects
                 for (int j = 0; j < prefab.prefabObjects.Count; j++)
                     objectIDs.Add(new IDPair(prefab.prefabObjects[j].id));
 
+                num = 0;
                 foreach (var subPrefabObject in prefab.prefabObjects)
                 {
                     var subPrefabObjectCopy = subPrefabObject.Copy(false);
                     subPrefabObjectCopy.CachedPrefab = subPrefabObjectCopy.GetPrefab(Spawner.Prefabs);
+                    subPrefabObjectCopy.CachedPrefabObject = PrefabObject;
 
                     try
                     {
@@ -380,6 +387,17 @@ namespace BetterLegacy.Core.Runtime.Objects
                         Debug.LogError($"{RTLevel.className}Failed to set object ID.\n{ex}");
                     }
 
+                    subPrefabObjectCopy.fromPrefabBase = string.IsNullOrEmpty(subPrefabObjectCopy.Parent);
+                    if (subPrefabObjectCopy.fromPrefabBase && !string.IsNullOrEmpty(prefabObject.parent))
+                    {
+                        subPrefabObjectCopy.Parent = prefabObject.parent;
+                        subPrefabObjectCopy.parentType = prefabObject.parentType;
+                        subPrefabObjectCopy.parentOffsets = prefabObject.parentOffsets;
+                        subPrefabObjectCopy.parentAdditive = prefabObject.parentAdditive;
+                        subPrefabObjectCopy.parentParallax = prefabObject.parentParallax;
+                        subPrefabObjectCopy.desync = prefabObject.desync;
+                    }
+
                     subPrefabObjectCopy.fromPrefab = true;
                     subPrefabObjectCopy.SetPrefabReference(prefabObject);
 
@@ -389,6 +407,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     GameData.Current.prefabObjects.Add(subPrefabObjectCopy);
                     prefabObject.expandedObjects.Add(subPrefabObjectCopy);
                     Spawner.PrefabObjects.Add(subPrefabObjectCopy);
+                    num++;
                 }
 
                 timeToAdd += t;

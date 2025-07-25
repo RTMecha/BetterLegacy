@@ -21,6 +21,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 
 using Object = UnityEngine.Object;
 
@@ -1545,7 +1546,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Gets the prefab object reference.
         /// </summary>
-        public static PrefabObject GetPrefabObject(this IPrefabable instance) => GameData.Current.prefabObjects.Find(x => x.id == instance.PrefabInstanceID);
+        public static PrefabObject GetPrefabObject(this IPrefabable instance) => instance.CachedPrefabObject ? instance.CachedPrefabObject : GameData.Current.prefabObjects.Find(x => x.id == instance.PrefabInstanceID);
 
         /// <summary>
         /// Checks if a prefabable object is from the same Prefab.
@@ -1559,7 +1560,7 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="prefabable">Prefabable object.</param>
         /// <returns>Returns true if the Prefab instance is the same.</returns>
-        public static bool SamePrefabInstance(this IPrefabable instance, IPrefabable prefabable) => instance.SamePrefab(prefabable) && instance.PrefabInstanceID == prefabable.PrefabInstanceID;
+        public static bool SamePrefabInstance(this IPrefabable instance, IPrefabable prefabable) => instance.PrefabInstanceID == prefabable.PrefabInstanceID;
 
         /// <summary>
         /// Checks if a prefabable object is from the same Prefab and same spawned Prefab instance.
@@ -1701,7 +1702,7 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="reference">Modifier object reference.</param>
         /// <returns>Returns the parent runtime.</returns>
-        public static Runtime.RTLevelBase GetParentRuntime(this IModifierReference reference) => (reference.ParentRuntime ?? Runtime.RTLevel.Current);
+        public static RTLevelBase GetParentRuntime(this IModifierReference reference) => (reference.ParentRuntime ?? RTLevel.Current);
 
         /// <summary>
         /// Gets a <see cref="ObjectTransform"/> from a transformable object.

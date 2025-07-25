@@ -2537,7 +2537,7 @@ namespace BetterLegacy.Core.Helpers
             if (fromType < 0 || fromType > 2)
                 return;
 
-            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
+            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, visual).ToString();
         }
 
         public static void getMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -5809,7 +5809,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void copyAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ITransformable transformable)
+            if (reference is not ITransformable transformable || reference is not IPrefabable prefabable)
                 return;
 
             var fromType = modifier.GetInt(1, 0, variables);
@@ -5826,14 +5826,14 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.HasResult())
             {
-                if (reference is IPrefabable prefabable && GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0), out BeatmapObject result))
+                if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0), out BeatmapObject result))
                     modifier.Result = result;
             }
 
             if (!modifier.TryGetResult(out BeatmapObject bm))
                 return;
 
-            var time = reference.GetParentRuntime().CurrentTime;
+            var time = ModifiersHelper.GetTime(prefabable, bm);
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
             fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
@@ -5894,7 +5894,7 @@ namespace BetterLegacy.Core.Helpers
                 if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                     return;
 
-                var time = reference.GetParentRuntime().CurrentTime;
+                var time = ModifiersHelper.GetTime(prefabable, bm);
 
                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
                 fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
