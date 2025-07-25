@@ -475,6 +475,29 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Tries to find a match in the list and outputs the first occurance of the match.
         /// </summary>
+        /// <typeparam name="T">Type of the <see cref="IEnumerable{T}"/>.</typeparam>
+        /// <param name="match">Match to find.</param>
+        /// <param name="result">The item found.</param>
+        /// <returns>Returns true if any matches were found, otherwise returns false.</returns>
+        public static bool TryFind<T>(this T[] array, Predicate<T> match, out T result)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                var item = array[i];
+                if (match(item))
+                {
+                    result = item;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to find a match in the list and outputs the first occurance of the match.
+        /// </summary>
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
         /// <param name="match">Match to find.</param>
         /// <param name="result">The item found.</param>
@@ -1763,6 +1786,21 @@ namespace BetterLegacy.Core
         {
             foreach (var beatmapObject in beatmap.BeatmapObjects)
                 yield return beatmapObject;
+            foreach (var prefabObject in beatmap.PrefabObjects)
+                yield return prefabObject;
+        }
+
+        /// <summary>
+        /// Gets all editables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of editables.</returns>
+        public static IEnumerable<IEditable> GetEditables(this IBeatmap beatmap)
+        {
+            foreach (var beatmapObject in beatmap.BeatmapObjects)
+                yield return beatmapObject;
+            foreach (var backgroundObject in beatmap.BackgroundObjects)
+                yield return backgroundObject;
             foreach (var prefabObject in beatmap.PrefabObjects)
                 yield return prefabObject;
         }
