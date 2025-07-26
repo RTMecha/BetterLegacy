@@ -304,10 +304,10 @@ namespace BetterLegacy.Core.Data.Player
             boostTailPart.CopyData(orig.boostTailPart);
             tailParts.Clear();
             for (int i = 0; i < orig.tailParts.Count; i++)
-                tailParts.Add(orig.tailParts[i].Copy(newID));
+                tailParts.Add(orig.tailParts[i].Copy(false));
             customObjects.Clear();
             for (int i = 0; i < orig.customObjects.Count; i++)
-                customObjects.Add(orig.customObjects[i].Copy());
+                customObjects.Add(orig.customObjects[i].Copy(false));
             this.CopyModifyableData(orig);
         }
 
