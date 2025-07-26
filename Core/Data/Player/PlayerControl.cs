@@ -100,22 +100,22 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// Modifier block to run per player tick.
         /// </summary>
-        public ModifierBlock<PAPlayer> TickModifierBlock { get; set; }
+        public ModifierBlock<PAPlayer> TickModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
 
         /// <summary>
         /// Modifier block to run per player boost.
         /// </summary>
-        public ModifierBlock<PAPlayer> BoostModifierBlock { get; set; }
+        public ModifierBlock<PAPlayer> BoostModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
 
         /// <summary>
         /// Modifier block to run per player collision.
         /// </summary>
-        public ModifierBlock<PAPlayer> CollideModifierBlock { get; set; }
+        public ModifierBlock<PAPlayer> CollideModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
 
         /// <summary>
         /// Modifier block to run per player death.
         /// </summary>
-        public ModifierBlock<PAPlayer> DeathModifierBlock { get; set; }
+        public ModifierBlock<PAPlayer> DeathModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
 
         #endregion
 
@@ -183,13 +183,25 @@ namespace BetterLegacy.Core.Data.Player
                 canBoost = jn["can_boost"].AsBool;
 
             if (jn["tick_modifier_block"] != null)
+            {
                 TickModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["tick_modifier_block"]);
+                TickModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
+            }
             if (jn["boost_modifier_block"] != null)
+            {
                 BoostModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["boost_modifier_block"]);
+                BoostModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
+            }
             if (jn["collide_modifier_block"] != null)
+            {
                 CollideModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["collide_modifier_block"]);
+                CollideModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
+            }
             if (jn["death_modifier_block"] != null)
+            {
                 DeathModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["death_modifier_block"]);
+                DeathModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
+            }
         }
 
         public override JSONNode ToJSON()
@@ -235,13 +247,13 @@ namespace BetterLegacy.Core.Data.Player
             if (canBoost)
                 jn["can_boost"] = canBoost;
 
-            if (TickModifierBlock)
+            if (TickModifierBlock && !TickModifierBlock.Modifiers.IsEmpty())
                 jn["tick_modifier_block"] = TickModifierBlock.ToJSON();
-            if (BoostModifierBlock)
+            if (BoostModifierBlock && !BoostModifierBlock.Modifiers.IsEmpty())
                 jn["boost_modifier_block"] = BoostModifierBlock.ToJSON();
-            if (CollideModifierBlock)
+            if (CollideModifierBlock && !CollideModifierBlock.Modifiers.IsEmpty())
                 jn["collide_modifier_block"] = CollideModifierBlock.ToJSON();
-            if (DeathModifierBlock)
+            if (DeathModifierBlock && !DeathModifierBlock.Modifiers.IsEmpty())
                 jn["death_modifier_block"] = DeathModifierBlock.ToJSON();
 
             return jn;

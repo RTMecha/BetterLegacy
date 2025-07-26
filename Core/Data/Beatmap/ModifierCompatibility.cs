@@ -14,12 +14,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             bool backgroundObject,
             bool prefabObject,
             bool paPlayer,
+            bool playerModel,
             bool gameData)
         {
             BeatmapObject = beatmapObject;
             BackgroundObject = backgroundObject;
             PrefabObject = prefabObject;
             PAPlayer = paPlayer;
+            PlayerModel = playerModel;
             GameData = gameData;
         }
 
@@ -59,6 +61,13 @@ namespace BetterLegacy.Core.Data.Beatmap
         public static ModifierCompatibility PAPlayerCompatible => new ModifierCompatibility()
         {
             PAPlayer = true,
+        };
+        /// <summary>
+        /// The modifier is only compatible with <see cref="Player.PlayerModel"/>.
+        /// </summary>
+        public static ModifierCompatibility PlayerModelCompatible => new ModifierCompatibility()
+        {
+            PlayerModel = true,
         };
         /// <summary>
         /// The modifier is only compatible with <see cref="Beatmap.GameData"/>.
@@ -104,6 +113,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool PAPlayer { get; set; }
         /// <summary>
+        /// If the modifier is only compatible with <see cref="Player.PlayerModel"/>.
+        /// </summary>
+        public bool PlayerModel { get; set; }
+        /// <summary>
         /// If the modifier is only compatible with <see cref="Beatmap.GameData"/>.
         /// </summary>
         public bool GameData { get; set; }
@@ -112,6 +125,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public const string BG_OBJ = "bg_obj";
         public const string PREFAB_OBJ = "prefab_obj";
         public const string PLAYER = "player";
+        public const string PLAYER_MODEL = "player_model";
         public const string GAME = "game";
 
         #endregion
@@ -142,6 +156,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             return this;
         }
         
+        public ModifierCompatibility WithPlayerModel(bool compat)
+        {
+            PlayerModel = compat;
+            return this;
+        }
+
         public ModifierCompatibility WithGameData(bool compat)
         {
             GameData = compat;
@@ -158,6 +178,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             BackgroundObject = value == BG_OBJ;
             PrefabObject = value == PREFAB_OBJ;
             PAPlayer = value == PLAYER;
+            PlayerModel = value == PLAYER_MODEL;
             GameData = value == GAME;
         }
 
@@ -183,7 +204,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                     compatibility.BackgroundObject = value.Length > 1 && value[1] == '1';
                     compatibility.PrefabObject = value.Length > 2 && value[2] == '1';
                     compatibility.PAPlayer = value.Length > 3 && value[3] == '1';
-                    compatibility.GameData = value.Length > 4 && value[4] == '1';
+                    compatibility.PlayerModel = value.Length > 4 && value[4] == '1';
+                    compatibility.GameData = value.Length > 5 && value[5] == '1';
                 }
                 else
                     compatibility.SetCompat(value);
@@ -197,7 +219,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 compatibility.BackgroundObject = jn[1].AsBool;
                 compatibility.PrefabObject = jn[2].AsBool;
                 compatibility.PAPlayer = jn[3].AsBool;
-                compatibility.GameData = jn[4].AsBool;
+                compatibility.PlayerModel = jn[4].AsBool;
+                compatibility.GameData = jn[5].AsBool;
                 return compatibility;
             }
 
@@ -212,6 +235,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             
             if (jn[PLAYER] != null)
                 compatibility.PAPlayer = jn[PLAYER].AsBool;
+            
+            if (jn[PLAYER_MODEL] != null)
+                compatibility.PlayerModel = jn[PLAYER_MODEL].AsBool;
             
             if (jn[GAME] != null)
                 compatibility.GameData = jn[GAME].AsBool;
@@ -230,6 +256,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             ModifierReferenceType.BackgroundObject => BackgroundObject,
             ModifierReferenceType.PrefabObject => PrefabObject,
             ModifierReferenceType.PAPlayer => PAPlayer,
+            ModifierReferenceType.PlayerModel => PlayerModel,
             ModifierReferenceType.GameData => GameData,
             _ => false,
         };
@@ -245,17 +272,19 @@ namespace BetterLegacy.Core.Data.Beatmap
             ModifierReferenceType.BackgroundObject => BackgroundObjectCompatible,
             ModifierReferenceType.PrefabObject => PrefabObjectCompatible,
             ModifierReferenceType.PAPlayer => PAPlayerCompatible,
+            ModifierReferenceType.PlayerModel => PlayerModelCompatible,
             ModifierReferenceType.GameData => GameDataCompatible,
             _ => AllCompatible,
         };
 
-        public override int GetHashCode() => CoreHelper.CombineHashCodes(BeatmapObject, BackgroundObject, PrefabObject, PAPlayer, GameData);
+        public override int GetHashCode() => CoreHelper.CombineHashCodes(BeatmapObject, BackgroundObject, PrefabObject, PAPlayer, PlayerModel, GameData);
 
         public override bool Equals(object obj) => obj is ModifierCompatibility compatibility &&
             BeatmapObject == compatibility.BeatmapObject &&
             BackgroundObject == compatibility.BackgroundObject &&
             PrefabObject == compatibility.PrefabObject &&
             PAPlayer == compatibility.PAPlayer &&
+            PlayerModel == compatibility.PlayerModel &&
             GameData == compatibility.GameData;
 
         #endregion

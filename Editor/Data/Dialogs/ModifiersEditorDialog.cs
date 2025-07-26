@@ -84,9 +84,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// Initializes the Modifier Editor UI.
         /// </summary>
         /// <param name="parent">Parent to set the Modifier Editor UI to.</param>
-        public void Init(Transform parent)
+        public void Init(Transform parent, bool doLabel = true, bool doIntegerVariable = true, bool doIgnoreLifespan = true)
         {
             // Label
+            if (doLabel)
             {
                 var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "label");
 
@@ -96,6 +97,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             // Integer variable
+            if (doIntegerVariable)
             {
                 var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "int_variable");
 
@@ -108,6 +110,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             // Ignored Lifespan
+            if (doIgnoreLifespan)
             {
                 var ignoreLifespan = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "ignore life");
                 var ignoreLifespanToggleButton = ignoreLifespan.GetComponent<ToggleButtonStorage>();
@@ -162,51 +165,61 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// <param name="modifyable">Object that is modifyable.</param>
         public IEnumerator RenderModifiers(IModifyable modifyable)
         {
-            Label.gameObject.SetActive(RTEditor.ShowModdedUI);
-            IntVariableUI.gameObject.SetActive(RTEditor.ShowModdedUI);
-            IgnoreToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
-            OrderToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+            if (Label)
+                Label.gameObject.SetActive(RTEditor.ShowModdedUI);
+            if (IntVariableUI)
+                IntVariableUI.gameObject.SetActive(RTEditor.ShowModdedUI);
+            if (IgnoreToggle)
+                IgnoreToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+            if (OrderToggle)
+                OrderToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
 
             if (!RTEditor.ShowModdedUI)
                 showModifiers = false;
 
             ScrollView.gameObject.SetActive(showModifiers);
 
-            ActiveToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
-            ActiveToggle.onValueChanged.ClearAll();
-            ActiveToggle.isOn = showModifiers;
-            ActiveToggle.onValueChanged.AddListener(_val =>
+            if (ActiveToggle)
             {
-                showModifiers = _val;
-                CoroutineHelper.StartCoroutine(RenderModifiers(modifyable));
-            });
+                ActiveToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+                ActiveToggle.SetIsOnWithoutNotify(showModifiers);
+                ActiveToggle.onValueChanged.NewListener(_val =>
+                {
+                    showModifiers = _val;
+                    CoroutineHelper.StartCoroutine(RenderModifiers(modifyable));
+                });
+            }
 
             if (!RTEditor.ShowModdedUI)
                 yield break;
 
-            IgnoreToggle.onValueChanged.ClearAll();
-            IgnoreToggle.isOn = modifyable.IgnoreLifespan;
-            IgnoreToggle.onValueChanged.AddListener(_val =>
+            if (IgnoreToggle)
             {
-                modifyable.IgnoreLifespan = _val;
-                if (modifyable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
-                if (modifyable is BackgroundObject backgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
-                if (modifyable is PrefabObject prefabObject)
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.MODIFIERS);
-            });
+                IgnoreToggle.SetIsOnWithoutNotify(modifyable.IgnoreLifespan);
+                IgnoreToggle.onValueChanged.NewListener(_val =>
+                {
+                    modifyable.IgnoreLifespan = _val;
+                    if (modifyable is BeatmapObject beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                    if (modifyable is BackgroundObject backgroundObject)
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
+                    if (modifyable is PrefabObject prefabObject)
+                        RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.MODIFIERS);
+                });
+            }
 
-            OrderToggle.onValueChanged.ClearAll();
-            OrderToggle.isOn = modifyable.OrderModifiers;
-            OrderToggle.onValueChanged.AddListener(_val =>
+            if (OrderToggle)
             {
-                modifyable.OrderModifiers = _val;
-                if (modifyable is BeatmapObject beatmapObject)
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
-                if (modifyable is BackgroundObject backgroundObject)
-                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
-            });
+                OrderToggle.SetIsOnWithoutNotify(modifyable.OrderModifiers);
+                OrderToggle.onValueChanged.NewListener(_val =>
+                {
+                    modifyable.OrderModifiers = _val;
+                    if (modifyable is BeatmapObject beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
+                    if (modifyable is BackgroundObject backgroundObject)
+                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.MODIFIERS);
+                });
+            }
 
             if (!showModifiers)
                 yield break;
@@ -234,14 +247,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 TooltipHelper.AssignTooltip(gameObject, "Add Modifier");
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.NewListener(() => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable));
+                button.onClick.NewListener(() => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, dialog: this));
 
                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(gameObject.transform.GetChild(0).GetComponent<Text>());
             }
 
             // Paste Modifier
-            ModifiersEditor.inst.PasteGenerator(modifyable);
+            ModifiersEditor.inst.PasteGenerator(modifyable, this);
             LayoutRebuilder.ForceRebuildLayoutImmediate(Content.AsRT());
 
             CoroutineHelper.PerformAtNextFrame(() =>

@@ -130,57 +130,6 @@ namespace BetterLegacy.Editor.Managers
             }, placeholderText: "Search for default Modifier...");
         }
 
-        public Transform GetContent(ModifierReferenceType referenceType) => referenceType switch
-        {
-            ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog.Content,
-            ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog.Content,
-            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.Content,
-            _ => null,
-        };
-
-        public Scrollbar GetScrollbar(ModifierReferenceType referenceType) => referenceType switch
-        {
-            ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog.Scrollbar,
-            ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog.Scrollbar,
-            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.Scrollbar,
-            _ => null,
-        };
-
-        public GameObject GetPasteModifierButton(ModifierReferenceType referenceType) => referenceType switch
-        {
-            ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog.pasteModifier,
-            ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog.pasteModifier,
-            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.pasteModifier,
-            _ => null,
-        };
-
-        public void SetPasteModifierButton(ModifierReferenceType referenceType, GameObject gameObject)
-        {
-            switch (referenceType)
-            {
-                case ModifierReferenceType.BeatmapObject: {
-                        ObjectEditor.inst.Dialog.ModifiersDialog.pasteModifier = gameObject;
-                        break;
-                    }
-                case ModifierReferenceType.BackgroundObject: {
-                        RTBackgroundEditor.inst.Dialog.ModifiersDialog.pasteModifier = gameObject;
-                        break;
-                    }
-                case ModifierReferenceType.PrefabObject: {
-                        RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog.pasteModifier = gameObject;
-                        break;
-                    }
-            }
-        }
-
-        public ModifiersEditorDialog GetModifiersDialog(ModifierReferenceType referenceType) => referenceType switch
-        {
-            ModifierReferenceType.BeatmapObject => ObjectEditor.inst.Dialog.ModifiersDialog,
-            ModifierReferenceType.BackgroundObject => RTBackgroundEditor.inst.Dialog.ModifiersDialog,
-            ModifierReferenceType.PrefabObject => RTPrefabEditor.inst.PrefabObjectEditor.ModifiersDialog,
-            _ => null,
-        };
-
         public List<Modifier> GetCopiedModifiers(ModifierReferenceType referenceType) => copiedModifiers.TryGetValue(referenceType, out List<Modifier> list) ? list : null;
 
         public Dictionary<ModifierReferenceType, List<Modifier>> copiedModifiers = new Dictionary<ModifierReferenceType, List<Modifier>>()
@@ -196,25 +145,25 @@ namespace BetterLegacy.Editor.Managers
 
         public ContentPopup DefaultModifiersPopup { get; set; }
 
-        public void OpenDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1)
+        public void OpenDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1, ModifiersEditorDialog dialog = null)
         {
             DefaultModifiersPopup.Open();
-            RefreshDefaultModifiersList(referenceType, modifyable, addIndex);
+            RefreshDefaultModifiersList(referenceType, modifyable, addIndex, dialog);
         }
 
-        public void RefreshDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1)
+        public void RefreshDefaultModifiersList(ModifierReferenceType referenceType, IModifyable modifyable, int addIndex = -1, ModifiersEditorDialog dialog = null)
         {
             DefaultModifiersPopup.SearchField.onValueChanged.NewListener(_val =>
             {
                 searchTerm = _val;
-                RefreshDefaultModifiersList(referenceType, modifyable, addIndex);
+                RefreshDefaultModifiersList(referenceType, modifyable, addIndex, dialog);
             });
 
             int shape = modifyable is IShapeable shapeable ? shapeable.Shape : 0;
 
             DefaultModifiersPopup.ClearContent();
 
-            var modifiersEditorDialog = GetModifiersDialog(referenceType);
+            var modifiersEditorDialog = dialog;
 
             foreach (var defaultModifier in ModifiersManager.inst.modifiers)
             {
@@ -290,7 +239,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region UI Part Handlers
 
-        public void PasteGenerator(IModifyable modifyable)
+        public void PasteGenerator(IModifyable modifyable, ModifiersEditorDialog dialog)
         {
             var referenceType = modifyable.ReferenceType;
 
@@ -304,14 +253,12 @@ namespace BetterLegacy.Editor.Managers
             if (copiedModifiers == null || copiedModifiers.IsEmpty())
                 return;
 
-            var modifiersEditorDialog = GetModifiersDialog(referenceType);
-
-            var pasteModifier = modifiersEditorDialog.pasteModifier;
+            var pasteModifier = dialog.pasteModifier;
 
             if (pasteModifier)
                 CoreHelper.Destroy(pasteModifier);
 
-            var content = GetContent(referenceType);
+            var content = dialog.Content;
 
             pasteModifier = EditorPrefabHolder.Instance.Function1Button.Duplicate(content, "paste modifier");
             pasteModifier.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
@@ -321,7 +268,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
 
-                CoroutineHelper.StartCoroutine(modifiersEditorDialog.RenderModifiers(modifyable));
+                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                 if (modifyable is BeatmapObject beatmapObject)
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.MODIFIERS);
                 if (modifyable is BackgroundObject backgroundObject)
@@ -334,7 +281,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(buttonStorage.button.image, ThemeGroup.Paste, true);
             EditorThemeManager.ApplyGraphic(buttonStorage.label, ThemeGroup.Paste_Text);
 
-            modifiersEditorDialog.pasteModifier = pasteModifier;
+            dialog.pasteModifier = pasteModifier;
         }
 
         public GameObject booleanBar;

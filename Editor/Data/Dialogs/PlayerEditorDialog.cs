@@ -203,6 +203,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Base
 
             BaseTab.ID = SetupButton("Base ID", PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.ID.ShowInDefault = true;
             BaseTab.Name = SetupString("Base Name", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.Health = SetupNumber("Base Health", PlayerEditor.Tab.Base, ValueType.Int, editorTab: BaseTab);
             BaseTab.MoveSpeed = SetupNumber("Base Move Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
@@ -228,6 +229,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             BaseTab.FacePosition = SetupVector2("Face Position", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.FaceControlActive = SetupBool("Face Control Active", PlayerEditor.Tab.Base, editorTab: BaseTab);
+
+            BaseTab.TickModifiers = SetupModifiers("  Modifiers Per Tick", PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.TickModifiers.ShowInDefault = true;
 
             #endregion
 
@@ -388,38 +392,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             visibilityScrollRectSR.content = visibilityContentGO.transform.AsRT();
 
             #endregion
-
-            // todo: figure out how adding / removing tail model elements works with the health system. maybe consider also reworking the UI a little too?
-            // Misc
-            {
-                // Add Tail
-                //{
-                //    var gameObject = Creator.NewUIObject("Add Tail", Content);
-                //    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
-
-                //    var label = labelPrefab.Duplicate(gameObject.transform, "label");
-                //    var labelText = label.GetComponent<Text>();
-                //    labelText.text = name;
-                //    EditorThemeManager.AddLightText(labelText);
-                //    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
-
-                //    var image = gameObject.AddComponent<Image>();
-
-                //    var button = gameObject.AddComponent<Button>();
-                //    button.image = image;
-
-                //    EditorThemeManager.AddSelectable(button, ThemeGroup.List_Button_1);
-
-                //    editorUIs.Add(new PlayerEditorUI
-                //    {
-                //        Name = name,
-                //        GameObject = gameObject,
-                //        Tab = Tab.Tail,
-                //        ValueType = ValueType.Function,
-                //        Index = -1,
-                //    });
-                //}
-            }
 
             // Functions
             {
@@ -815,6 +787,35 @@ namespace BetterLegacy.Editor.Data.Dialogs
             return ui;
         }
 
+        public PlayerEditorModifiers SetupModifiers(string name, PlayerEditor.Tab tab, PlayerEditorTab editorTab = null)
+        {
+            var gameObject = SetupPart(name);
+            gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 620f);
+            RectValues.Default.AnchoredPosition(32f, 0f).SizeDelta(750f, 32f).AssignToRectTransform(gameObject.transform.GetChild(0).AsRT());
+
+            var layout = gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.childControlHeight = false;
+            layout.childForceExpandHeight = false;
+            layout.spacing = 8f;
+
+            var image = gameObject.AddComponent<Image>();
+            EditorThemeManager.AddGraphic(image, ThemeGroup.Background_2, true);
+
+            var dialog = new ModifiersEditorDialog();
+            dialog.Init(gameObject.transform, false, false, false);
+
+            var ui = new PlayerEditorModifiers
+            {
+                Name = name,
+                GameObject = gameObject,
+                Modifiers = dialog,
+                Tab = tab,
+                ValueType = ValueType.Function,
+            };
+            AddElement(ui, tab, editorTab);
+            return ui;
+        }
+
         public void SetupObjectTab(PlayerEditorObjectTab objectTab, string name, PlayerEditor.Tab tab, bool doActive = true, bool doTrail = true, bool doParticles = true, bool doRemove = false)
         {
             if (!string.IsNullOrEmpty(name))
@@ -933,6 +934,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public PlayerEditorVector2 FacePosition { get; set; }
         public PlayerEditorToggle FaceControlActive { get; set; }
+
+        public PlayerEditorModifiers TickModifiers { get; set; }
     }
 
     public class PlayerEditorGUITab : PlayerEditorTab
@@ -1176,6 +1179,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
     #region Element Classes
 
+    public class PlayerEditorModifiers : PlayerEditorElement
+    {
+        public ModifiersEditorDialog Modifiers { get; set; }
+    }
+
     public class PlayerEditorToggle : PlayerEditorElement
     {
         public Toggle Toggle { get; set; }
@@ -1225,8 +1233,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public GameObject GameObject { get; set; }
         public PlayerEditor.Tab Tab { get; set; }
         public ValueType ValueType { get; set; }
+        public bool ShowInDefault { get; set; }
 
-        public bool IsActive(bool isDefault) => (!isDefault || Name == "Base ID" || Tab == PlayerEditor.inst.CurrentTab && PlayerEditor.inst.CurrentTab == PlayerEditor.Tab.Global) && RTString.SearchString(PlayerEditor.inst.Dialog.SearchTerm, Name) && Tab == PlayerEditor.inst.CurrentTab;
+        public bool IsActive(bool isDefault) => (!isDefault || ShowInDefault) && RTString.SearchString(PlayerEditor.inst.Dialog.SearchTerm, Name) && Tab == PlayerEditor.inst.CurrentTab;
 
         public override string ToString() => $"{Tab} - {Name}";
     }

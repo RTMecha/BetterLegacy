@@ -4908,18 +4908,7 @@ namespace BetterLegacy.Core.Helpers
 
             var applyDeltaTime = modifier.GetBool(7, true, variables);
 
-            ITransformable transformable;
-            if (reference.ReferenceType == ModifierReferenceType.PAPlayer)
-            {
-                var id = modifier.GetValue(7, variables);
-                if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
-                    transformable = customObject;
-                else
-                    transformable = null;
-            }
-            else
-                transformable = reference.AsTransformable();
-
+            var transformable = reference.AsTransformable();
             if (transformable == null)
                 return;
 
@@ -7174,11 +7163,31 @@ namespace BetterLegacy.Core.Helpers
 
         public static class PlayerActions
         {
-            public static void setCustomActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+            public static void setCustomObjectActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 var id = modifier.GetValue(1, variables);
                 if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
                     customObject.active = modifier.GetBool(0, false, variables);
+            }
+
+            public static void setIdleAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+            {
+                var id = modifier.GetValue(0, variables);
+                var referenceID = modifier.GetValue(1, variables);
+                if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+                    customObject.currentIdleAnimation = animation.ReferenceID;
+            }
+
+            public static void playAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+            {
+                var id = modifier.GetValue(0, variables);
+                var referenceID = modifier.GetValue(1, variables);
+                if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+                {
+                    var runtimeAnimation = new RTAnimation("Custom Animation");
+                    player.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
+                    player.RuntimePlayer.animationController.Play(runtimeAnimation);
+                }
             }
 
             public static void kill(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -7189,8 +7198,14 @@ namespace BetterLegacy.Core.Helpers
 
             public static void hit(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                if (reference is PAPlayer player)
+                if (reference is not PAPlayer player)
+                    return;
+
+                var damage = modifier.GetInt(0, 0, variables);
+                if (damage <= 1)
                     player.RuntimePlayer?.Hit();
+                else
+                    player.RuntimePlayer?.Hit(damage);
             }
 
             public static void boost(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -7217,33 +7232,28 @@ namespace BetterLegacy.Core.Helpers
                     player.RuntimePlayer?.Jump();
             }
 
-            public static void signalModifier(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+            public static void getHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var list = GameData.Current.FindObjectsWithTag(modifier.GetValue(1, variables));
-                var delay = modifier.GetFloat(0, 0f, variables);
+                if (reference is not PAPlayer player)
+                    return;
 
-                foreach (var bm in list)
-                    CoroutineHelper.StartCoroutine(ModifiersHelper.ActivateModifier(bm, delay));
+                variables[modifier.GetValue(0)] = player.Health.ToString();
             }
-
-            public static void playAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+            
+            public static void getMaxHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var id = modifier.GetValue(0, variables);
-                var referenceID = modifier.GetValue(1, variables);
-                if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
-                {
-                    var runtimeAnimation = new RTAnimation("Custom Animation");
-                    player.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
-                    player.RuntimePlayer.animationController.Play(runtimeAnimation);
-                }
+                if (reference is not PAPlayer player)
+                    return;
+
+                variables[modifier.GetValue(0)] = player.GetControl().Health.ToString();
             }
-
-            public static void setIdleAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+            
+            public static void getIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
-                var id = modifier.GetValue(0, variables);
-                var referenceID = modifier.GetValue(1, variables);
-                if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
-                    customObject.currentIdleAnimation = animation.ReferenceID;
+                if (reference is not PAPlayer player)
+                    return;
+
+                variables[modifier.GetValue(0)] = player.index.ToString();
             }
         }
     }

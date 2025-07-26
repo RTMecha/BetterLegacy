@@ -13,13 +13,15 @@ namespace BetterLegacy.Core.Data
         public ModifierBlock() { }
 
         public ModifierBlock(string name) => Name = name;
+        public ModifierBlock(string name, ModifierReferenceType referenceType) : this(name) => ReferenceType = referenceType;
+        public ModifierBlock(ModifierReferenceType referenceType) => ReferenceType = referenceType;
 
         public string Name { get; set; }
 
-        public ModifierReferenceType ReferenceType => ModifierReferenceType.Null;
+        public ModifierReferenceType ReferenceType { get; set; }
 
-        public List<string> Tags { get; set; }
-        public List<Modifier> Modifiers { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
+        public List<Modifier> Modifiers { get; set; } = new List<Modifier>();
         public bool IgnoreLifespan { get; set; }
         public bool OrderModifiers { get; set; }
         public int IntVariable { get; set; }

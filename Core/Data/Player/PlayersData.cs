@@ -193,6 +193,14 @@ namespace BetterLegacy.Core.Data.Player
             playerModelData.AssignDefaultModels();
             for (int i = 0; i < jn["indexes"].Count; i++)
                 playerModelData.SetPlayerModel(i, jn["indexes"][i]);
+            for (int i = 0; i < jn["controls"].Count; i++)
+            {
+                var control = PlayerControl.Parse(jn["controls"][i]);
+                if (i < playerModelData.playerControls.Count)
+                    playerModelData.playerControls[i] = control;
+                else
+                    playerModelData.playerControls.Add(control);
+            }
             return playerModelData;
         }
 
@@ -202,11 +210,14 @@ namespace BetterLegacy.Core.Data.Player
         /// <returns>Returns a JSON object representing the <see cref="PlayersData"/>.</returns>
         public JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
             if (maxBehavior != MaxBehavior.Loop)
                 jn["max"] = (int)maxBehavior;
             for (int i = 0; i < playerModelsIndex.Count; i++)
                 jn["indexes"][i] = playerModelsIndex[i];
+            for (int i = 0; i < playerControls.Count; i++)
+                jn["controls"][i] = playerControls[i].ToJSON();
+
             int index = 0;
             foreach (var keyValuePair in playerModels)
             {

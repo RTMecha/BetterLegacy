@@ -114,9 +114,9 @@ namespace BetterLegacy.Editor.Data
 
                 var buttonFunctions = new List<ButtonFunction>()
                 {
-                    new ButtonFunction("Add", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable)),
-                    new ButtonFunction("Add Above", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index)),
-                    new ButtonFunction("Add Below", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index + 1)),
+                    new ButtonFunction("Add", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, dialog: dialog)),
+                    new ButtonFunction("Add Above", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index, dialog)),
+                    new ButtonFunction("Add Below", () => ModifiersEditor.inst.OpenDefaultModifiersList(modifyable.ReferenceType, modifyable, index + 1, dialog)),
                     new ButtonFunction("Delete", () => Delete(reference)),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy", () => Copy(reference)),
@@ -128,7 +128,7 @@ namespace BetterLegacy.Editor.Data
                         copiedModifiers.Clear();
                         copiedModifiers.AddRange(modifyable.Modifiers.Select(x => x.Copy()));
 
-                        ModifiersEditor.inst.PasteGenerator(modifyable);
+                        ModifiersEditor.inst.PasteGenerator(modifyable, dialog);
                         EditorManager.inst.DisplayNotification("Copied Modifiers!", 1.5f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction("Paste", () =>
@@ -3563,6 +3563,67 @@ namespace BetterLegacy.Editor.Data
 
                 #endregion
 
+                #region Player Only
+
+                case nameof(ModifierActions.PlayerActions.setCustomObjectActive): {
+                        StringGenerator(modifier, reference, "ID", 1);
+                        BoolGenerator(modifier, reference, "Enabled", 0);
+                        BoolGenerator(modifier, reference, "Reset", 2);
+
+                        break;
+                    }
+                case nameof(ModifierActions.PlayerActions.setIdleAnimation): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Reference ID", 1);
+
+                        break;
+                    }
+                case nameof(ModifierActions.PlayerActions.playAnimation): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "Reference ID", 1);
+
+                        break;
+                    }
+                //case nameof(ModifierActions.PlayerActions.kill): {
+                //        break;
+                //    }
+                case nameof(ModifierActions.PlayerActions.hit): {
+                        IntegerGenerator(modifier, reference, "Hit Amount", 0);
+                        break;
+                    }
+                case nameof(ModifierActions.PlayerActions.boost): {
+                        SingleGenerator(modifier, reference, "X", 0);
+                        SingleGenerator(modifier, reference, "Y", 1);
+
+                        break;
+                    }
+                //case nameof(ModifierActions.PlayerActions.shoot): {
+                //        break;
+                //    }
+                //case nameof(ModifierActions.PlayerActions.pulse): {
+                //        break;
+                //    }
+                //case nameof(ModifierActions.PlayerActions.jump): {
+                //        break;
+                //    }
+                case nameof(ModifierActions.PlayerActions.getHealth): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.PlayerActions.getMaxHealth): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.PlayerActions.getIndex): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+
+                #endregion
+
                 #region Misc
 
                 case nameof(ModifierActions.setBGActive): {
@@ -4208,7 +4269,7 @@ namespace BetterLegacy.Editor.Data
             copiedModifiers.Clear();
             copiedModifiers.Add(modifier.Copy());
 
-            ModifiersEditor.inst.PasteGenerator(modifyable);
+            ModifiersEditor.inst.PasteGenerator(modifyable, dialog);
             EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
         }
 

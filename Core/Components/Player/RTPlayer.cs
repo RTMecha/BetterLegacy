@@ -33,7 +33,7 @@ namespace BetterLegacy.Core.Components.Player
     /// <summary>
     /// Modded player component.
     /// </summary>
-    public class RTPlayer : MonoBehaviour, IRTObject
+    public class RTPlayer : MonoBehaviour, IRTObject, ITransformable
     {
         //Player Parent Tree (original):
         //player-complete (has Player component)
@@ -285,6 +285,104 @@ namespace BetterLegacy.Core.Components.Player
         public float stretchAmount = 0.1f;
         public int stretchEasing = 6;
         public Vector2 stretchVector = Vector2.zero;
+
+        public Vector3 positionOffset;
+        public Vector3 scaleOffset;
+        public Vector3 rotationOffset;
+        
+        public Vector3 PositionOffset { get; set; }
+        public Vector3 ScaleOffset { get; set; }
+        public Vector3 RotationOffset { get; set; }
+
+        public void ResetOffsets()
+        {
+            PositionOffset = Vector3.zero;
+            ScaleOffset = Vector3.zero;
+            RotationOffset = Vector3.zero;
+        }
+
+        public Vector3 GetFullPosition() => rb.position;
+
+        public Vector3 GetFullScale() => rb.transform.lossyScale;
+
+        public Vector3 GetFullRotation(bool includeSelf) => rb.transform.eulerAngles;
+
+        public Vector3 GetTransformOffset(int type) => type switch
+        {
+            0 => PositionOffset,
+            1 => ScaleOffset,
+            2 => RotationOffset,
+            _ => Vector3.zero,
+        };
+
+        public void SetTransform(int type, Vector3 value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        PositionOffset = value;
+                        rb.position = value;
+                        break;
+                    }
+                case 1: {
+                        ScaleOffset = value;
+                        break;
+                    }
+                case 2: {
+                        RotationOffset = value;
+                        rb.transform.eulerAngles = new Vector3(0f, 0f, value.z);
+                        break;
+                    }
+            }
+        }
+
+        public void SetTransform(int type, int axis, float value)
+        {
+            switch (type)
+            {
+                case 0: {
+                        positionOffset[axis] = value;
+                        SetPosition(axis, value);
+                        break;
+                    }
+                case 1: {
+                        scaleOffset[axis] = value;
+                        break;
+                    }
+                case 2: {
+                        rotationOffset[axis] = value;
+                        break;
+                    }
+            }
+        }
+
+        public void SetPosition(Vector3 pos)
+        {
+            if (rb)
+                rb.position = pos;
+        }
+
+        public void SetPosition(int axis, float value)
+        {
+            if (!rb)
+                return;
+
+            switch (axis)
+            {
+                case 0: {
+                        var pos = rb.position;
+                        pos.x = value;
+                        rb.position = pos;
+                        break;
+                    }
+                case 1: {
+                        var pos = rb.position;
+                        pos.y = value;
+                        rb.position = pos;
+                        break;
+                    }
+            }
+        }
 
         #endregion
 

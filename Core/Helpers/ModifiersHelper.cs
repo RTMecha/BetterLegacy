@@ -661,6 +661,20 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
+            #region Player Only
+            
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.healthEquals), ModifierTriggers.PlayerTriggers.healthEquals, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.healthGreaterEquals), ModifierTriggers.PlayerTriggers.healthGreaterEquals, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.healthLesserEquals), ModifierTriggers.PlayerTriggers.healthLesserEquals, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.healthGreater), ModifierTriggers.PlayerTriggers.healthGreater, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.healthLesser), ModifierTriggers.PlayerTriggers.healthLesser, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.isDead), ModifierTriggers.PlayerTriggers.isDead, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.isBoosting), ModifierTriggers.PlayerTriggers.isBoosting, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.isColliding), ModifierTriggers.PlayerTriggers.isColliding, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.PlayerTriggers.isSolidColliding), ModifierTriggers.PlayerTriggers.isSolidColliding, ModifierCompatibility.PAPlayerCompatible),
+
+            #endregion
+
             #region Dev Only
 
             new ModifierTrigger("storyLoadIntEqualsDEVONLY", (modifier, reference, variables) =>
@@ -1158,6 +1172,24 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.setDiscordStatus),  ModifierActions.setDiscordStatus),
 
             new ModifierAction(nameof(ModifierActions.callModifierBlock),  ModifierActions.callModifierBlock),
+
+            #endregion
+
+            #region Player Only
+            
+            new ModifierAction(nameof(ModifierActions.PlayerActions.setCustomObjectActive),  ModifierActions.PlayerActions.setCustomObjectActive, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.setIdleAnimation),  ModifierActions.PlayerActions.setIdleAnimation, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.playAnimation),  ModifierActions.PlayerActions.playAnimation, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.kill),  ModifierActions.PlayerActions.kill, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.hit),  ModifierActions.PlayerActions.hit, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.boost),  ModifierActions.PlayerActions.boost, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.shoot),  ModifierActions.PlayerActions.shoot, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.pulse),  ModifierActions.PlayerActions.pulse, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.jump),  ModifierActions.PlayerActions.jump, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.jump),  ModifierActions.PlayerActions.jump, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.getHealth),  ModifierActions.PlayerActions.getHealth, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.getMaxHealth),  ModifierActions.PlayerActions.getMaxHealth, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.PlayerActions.getIndex),  ModifierActions.PlayerActions.getIndex, ModifierCompatibility.PAPlayerCompatible),
 
             #endregion
 
@@ -1683,6 +1715,17 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
+            #region Player Only
+
+            new ModifierInactive(nameof(ModifierActions.PlayerActions.setCustomObjectActive),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.GetBool(2, true) && reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.RTCustomPlayerObject customObject))
+                        customObject.active = !Parser.TryParse(modifier.value, false);
+                }, ModifierCompatibility.PAPlayerCompatible),
+
+            #endregion
+
             #region Misc
 
             new ModifierInactive(nameof(ModifierActions.signalModifier),
@@ -1848,81 +1891,6 @@ namespace BetterLegacy.Core.Helpers
             11 => nameof(ModifierActions.setPitch),
             _ => string.Empty,
         };
-
-        #endregion
-
-        #region Player
-
-        public static Func<Modifier, IModifierReference, Dictionary<string, string>, bool> GetPlayerTrigger(string key) => key switch
-        {
-            "keyPressDown" => ModifierTriggers.PlayerTriggers.keyPressDown,
-            "keyPress" => ModifierTriggers.PlayerTriggers.keyPress,
-            "keyPressUp" => ModifierTriggers.PlayerTriggers.keyPressUp,
-            "mouseButtonDown" => ModifierTriggers.PlayerTriggers.mouseButtonDown,
-            "mouseButton" => ModifierTriggers.PlayerTriggers.mouseButton,
-            "mouseButtonUp" => ModifierTriggers.PlayerTriggers.mouseButtonUp,
-            "controlPressDown" => ModifierTriggers.PlayerTriggers.controlPressDown,
-            "controlPress" => ModifierTriggers.PlayerTriggers.controlPress,
-            "controlPressUp" => ModifierTriggers.PlayerTriggers.controlPressUp,
-            "healthEquals" => ModifierTriggers.PlayerTriggers.healthEquals,
-            "healthGreaterEquals" => ModifierTriggers.PlayerTriggers.healthGreaterEquals,
-            "healthLesserEquals" => ModifierTriggers.PlayerTriggers.healthLesserEquals,
-            "healthGreater" => ModifierTriggers.PlayerTriggers.healthGreater,
-            "healthLesser" => ModifierTriggers.PlayerTriggers.healthLesser,
-            "healthPerEquals" => ModifierTriggers.PlayerTriggers.healthPerEquals,
-            "healthPerGreaterEquals" => ModifierTriggers.PlayerTriggers.healthPerGreaterEquals,
-            "healthPerLesserEquals" => ModifierTriggers.PlayerTriggers.healthPerLesserEquals,
-            "healthPerGreater" => ModifierTriggers.PlayerTriggers.healthPerGreater,
-            "healthPerLesser" => ModifierTriggers.PlayerTriggers.healthPerLesser,
-            "isDead" => ModifierTriggers.PlayerTriggers.isDead,
-            "isBoosting" => ModifierTriggers.PlayerTriggers.isBoosting,
-            "isColliding" => ModifierTriggers.PlayerTriggers.isColliding,
-            "isSolidColliding" => ModifierTriggers.PlayerTriggers.isSolidColliding,
-            _ => (modifier, reference, variables) => false,
-        };
-
-        public static Action<Modifier, IModifierReference, Dictionary<string, string>> GetPlayerAction(string key) => key switch
-        {
-            "setCustomActive" => ModifierActions.PlayerActions.setCustomActive,
-            "kill" => ModifierActions.PlayerActions.kill,
-            "hit" => ModifierActions.PlayerActions.hit,
-            "boost" => ModifierActions.PlayerActions.boost,
-            "shoot" => ModifierActions.PlayerActions.shoot,
-            "pulse" => ModifierActions.PlayerActions.pulse,
-            "jump" => ModifierActions.PlayerActions.jump,
-            "signalModifier" => ModifierActions.PlayerActions.signalModifier,
-            "playAnimation" => ModifierActions.PlayerActions.playAnimation,
-            "setIdleAnimation" => ModifierActions.PlayerActions.setIdleAnimation,
-            "playDefaultSound" => ModifierActions.playDefaultSound,
-            "animateObject" => ModifierActions.animateObject,
-            _ => (modifier, reference, variables) => { },
-        };
-
-        /// <summary>
-        /// The function to run when a modifier is inactive and has a reference of <see cref="PAPlayer"/>.
-        /// </summary>
-        /// <param name="modifier">Modifier to run the inactive function of.</param>
-        public static void PlayerInactive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables = null)
-        {
-            if (!modifier.verified)
-            {
-                modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
-            }
-
-            if (modifier.commands.IsEmpty() || reference == null)
-                return;
-
-            switch (modifier.Name)
-            {
-                case "setCustomActive": {
-                        if (modifier.GetBool(2, true) && reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.RTCustomPlayerObject customObject))
-                            customObject.active = !Parser.TryParse(modifier.value, false);
-
-                        break;
-                    }
-            }
-        }
 
         #endregion
 

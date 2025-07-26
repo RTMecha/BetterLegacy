@@ -1012,6 +1012,15 @@ namespace BetterLegacy.Editor.Managers
                 currentModel.faceControlActive = _val;
                 PlayerManager.UpdatePlayerModels();
             });
+
+            try
+            {
+                CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playerControls.GetAt(playerModelIndex).TickModifierBlock));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Error: {ex}");
+            }
         }
 
         public void RenderGUITab(PlayerModel currentModel)

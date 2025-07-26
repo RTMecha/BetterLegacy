@@ -393,10 +393,8 @@ namespace BetterLegacy.Core.Helpers
         {
             var type = modifier.GetInt(0, 0, variables);
 
-            if (reference is not ITransformable transformable)
-                return false;
-
-            var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
+            var transformable = reference.AsTransformable();
+            var player = reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
             var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
             if (device == null)
@@ -409,10 +407,8 @@ namespace BetterLegacy.Core.Helpers
         {
             var type = modifier.GetInt(0, 0, variables);
 
-            if (reference is not ITransformable transformable)
-                return false;
-
-            var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
+            var transformable = reference.AsTransformable();
+            var player = reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
             var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
             if (device == null)
@@ -425,10 +421,8 @@ namespace BetterLegacy.Core.Helpers
         {
             var type = modifier.GetInt(0, 0, variables);
 
-            if (reference is not ITransformable transformable)
-                return false;
-
-            var player = PlayerManager.GetClosestPlayer(transformable.GetFullPosition());
+            var transformable = reference.AsTransformable();
+            var player = reference is PAPlayer p ? p : PlayerManager.GetClosestPlayer(transformable?.GetFullPosition() ?? Vector3.zero);
             var device = player?.device ?? InControl.InputManager.ActiveDevice;
 
             if (device == null)
@@ -1434,69 +1428,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static class PlayerTriggers
         {
-            public static bool keyPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return Input.GetKeyDown((KeyCode)modifier.GetInt(0, 0, variables));
-            }
-
-            public static bool keyPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return Input.GetKey((KeyCode)modifier.GetInt(0, 0, variables));
-            }
-
-            public static bool keyPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return Input.GetKeyUp((KeyCode)modifier.GetInt(0, 0, variables));
-            }
-
-            public static bool mouseButtonDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return Input.GetMouseButtonDown(modifier.GetInt(0, 0, variables));
-            }
-
-            public static bool mouseButton(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return Input.GetMouseButton(modifier.GetInt(0, 0, variables));
-            }
-
-            public static bool mouseButtonUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return Input.GetMouseButtonUp(modifier.GetInt(0, 0, variables));
-            }
-
-            public static bool controlPressDown(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var type = modifier.GetInt(0, 0, variables);
-                var device = player.device;
-
-                return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
-            }
-
-            public static bool controlPress(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var type = modifier.GetInt(0, 0, variables);
-                var device = player.device;
-
-                return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
-            }
-
-            public static bool controlPressUp(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var type = modifier.GetInt(0, 0, variables);
-                var device = player.device;
-
-                return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
-            }
-
             public static bool healthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return reference is PAPlayer player && player.Health == modifier.GetInt(0, 3, variables);
@@ -1520,56 +1451,6 @@ namespace BetterLegacy.Core.Helpers
             public static bool healthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
             {
                 return reference is PAPlayer player && player.Health < modifier.GetInt(0, 3, variables);
-            }
-
-            public static bool healthPerEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var health = ((float)player.Health / player.GetControl().Health) * 100f;
-
-                return health == modifier.GetFloat(0, 50f, variables);
-            }
-
-            public static bool healthPerGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var health = ((float)player.Health / player.GetControl().Health) * 100f;
-
-                return health >= modifier.GetFloat(0, 50f, variables);
-            }
-
-            public static bool healthPerLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var health = ((float)player.Health / player.GetControl().Health) * 100f;
-
-                return health <= modifier.GetFloat(0, 50f, variables);
-            }
-
-            public static bool healthPerGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var health = ((float)player.Health / player.GetControl().Health) * 100f;
-
-                return health > modifier.GetFloat(0, 50f, variables);
-            }
-
-            public static bool healthPerLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                if (reference is not PAPlayer player)
-                    return false;
-
-                var health = ((float)player.Health / player.GetControl().Health) * 100f;
-
-                return health < modifier.GetFloat(0, 50f, variables);
             }
 
             public static bool isDead(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
