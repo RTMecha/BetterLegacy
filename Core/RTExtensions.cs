@@ -17,6 +17,7 @@ using SimpleJSON;
 using SteamworksFacepunch.Ugc;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -2101,6 +2102,169 @@ namespace BetterLegacy.Core
             for (int i = 0; i < modifyable.Modifiers.Count; i++)
                 jn["modifiers"][i] = modifyable.Modifiers[i].ToJSON();
         }
+
+        #region Animation
+
+        /// <summary>
+        /// Updates all animation controllers.
+        /// </summary>
+        public static void UpdateAnimations(this IAnimationController animationController)
+        {
+            var animations = animationController.Animations;
+            var speed = animationController.Speed;
+            for (int i = 0; i < animations.Count; i++)
+            {
+                if (animations[i].playing)
+                {
+                    animations[i].globalSpeed = speed;
+                    animations[i].Update();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds an animation to the update list and plays it.
+        /// </summary>
+        /// <param name="animation">The animation to play.</param>
+        public static void Play(this IAnimationController animationController, RTAnimation animation)
+        {
+            var animations = animationController.Animations;
+            if (!animations.Has(x => x.id == animation.id))
+                animations.Add(animation);
+            animation.Start();
+        }
+
+        /// <summary>
+        /// Stops all the animations in the animation list and clears it.
+        /// </summary>
+        public static void StopAll(this IAnimationController animationController)
+        {
+            var animations = animationController.Animations;
+            for (int i = 0; i < animations.Count; i++)
+            {
+                var anim = animations[i];
+                anim.Stop();
+            }
+            animations.Clear();
+        }
+
+        #region Remove
+
+        /// <summary>
+        /// Removes all animations with a matching name.
+        /// </summary>
+        /// <param name="name">Name of the animations to remove.</param>
+        public static void RemoveName(this IAnimationController animationController, string name) => animationController.Animations.RemoveAll(x => x.name == name);
+
+        /// <summary>
+        /// Removes all animations with a matching ID.
+        /// </summary>
+        /// <param name="id">ID of the animations to remove.</param>
+        public static void Remove(this IAnimationController animationController, string id) => animationController.Animations.RemoveAll(x => x.id == id);
+
+        /// <summary>
+        /// Removes all animations via a predicate.
+        /// </summary>
+        /// <param name="predicate">Animations to match.</param>
+        public static void Remove(this IAnimationController animationController, Predicate<RTAnimation> predicate) => animationController.Animations.RemoveAll(predicate);
+
+        #endregion
+
+        #region Search methods
+
+        /// <summary>
+        /// Finds an animation with a matching name.
+        /// </summary>
+        /// <param name="name">Name of the animation to find.</param>
+        /// <returns>Returns an animation if found, otherwise returns null.</returns>
+        public static RTAnimation FindAnimationByName(this IAnimationController animationController, string name) => animationController.Animations.Find(x => x.name == name);
+
+        /// <summary>
+        /// Finds an animation with a matching ID.
+        /// </summary>
+        /// <param name="id">ID of the animation to find.</param>
+        /// <returns>Returns an animation if found, otherwise returns null.</returns>
+        public static RTAnimation FindAnimation(this IAnimationController animationController, string id) => animationController.Animations.Find(x => x.id == id);
+
+        /// <summary>
+        /// Finds a list of all animations with a matching name.
+        /// </summary>
+        /// <param name="name">Name of the animations to find.</param>
+        /// <returns>Returns a list of animations.</returns>
+        public static List<RTAnimation> FindAnimationsByName(this IAnimationController animationController, string name) => animationController.Animations.FindAll(x => x.name == name);
+
+        /// <summary>
+        /// Finds a list of all animations with a matching ID.
+        /// </summary>
+        /// <param name="id">ID of the animations to find.</param>
+        /// <returns>Returns a list of animations.</returns>
+        public static List<RTAnimation> FindAnimations(this IAnimationController animationController, string id) => animationController.Animations.FindAll(x => x.id == id);
+
+        /// <summary>
+        /// Finds a list of all animations via a predicate.
+        /// </summary>
+        /// <param name="predicate">Animation to match.</param>
+        /// <returns>Returns an animation if found, otherwise returns null.</returns>
+        public static RTAnimation FindAnimation(this IAnimationController animationController, Predicate<RTAnimation> predicate) => animationController.Animations.Find(predicate);
+
+        /// <summary>
+        /// Finds a list of all animations via a predicate.
+        /// </summary>
+        /// <param name="predicate">Animations to match.</param>
+        /// <returns>Returns a list of animations.</returns>
+        public static List<RTAnimation> FindAnimations(this IAnimationController animationController, Predicate<RTAnimation> predicate) => animationController.Animations.FindAll(predicate);
+
+        /// <summary>
+        /// Tries to find an animation with a matching name.
+        /// </summary>
+        /// <param name="name">Name of the animation to find.</param>
+        /// <param name="animation">The animation result.</param>
+        /// <returns>Returns true if an animation is found, otherwise false.</returns>
+        public static bool TryFindAnimationByName(this IAnimationController animationController, string name, out RTAnimation animation) => animationController.Animations.TryFind(x => x.name == name, out animation);
+
+        /// <summary>
+        /// Tries to find an animation with a matching ID.
+        /// </summary>
+        /// <param name="id">ID of the animation to find.</param>
+        /// <param name="animation">The animation result.</param>
+        /// <returns>Returns true if an animation is found, otherwise false.</returns>
+        public static bool TryFindAnimation(this IAnimationController animationController, string id, out RTAnimation animation) => animationController.Animations.TryFind(x => x.id == id, out animation);
+
+        /// <summary>
+        /// Tries to find all animations with a matching name.
+        /// </summary>
+        /// <param name="name">Name of the animation to find.</param>
+        /// <param name="animations">The animations list result.</param>
+        /// <returns>Returns true if an amount of animations are found, otherwise false.</returns>
+        public static bool TryFindAnimationsByName(this IAnimationController animationController, string name, out List<RTAnimation> animations) => animationController.Animations.TryFindAll(x => x.name == name, out animations);
+
+        /// <summary>
+        /// Tries to find all animations with a matching ID.
+        /// </summary>
+        /// <param name="id">ID of the animation to find.</param>
+        /// <param name="animations">The animations list result.</param>
+        /// <returns>Returns true if an amount of animations are found, otherwise false.</returns>
+        public static bool TryFindAnimations(this IAnimationController animationController, string id, out List<RTAnimation> animations) => animationController.Animations.TryFindAll(x => x.id == id, out animations);
+
+        /// <summary>
+        /// Tries to find an animation via a predicate.
+        /// </summary>
+        /// <param name="predicate">Animation to match.</param>
+        /// <param name="animation">The animation result.</param>
+        /// <returns>Returns true if an animation is found, otherwise false.</returns>
+        public static bool TryFindAnimation(this IAnimationController animationController, Predicate<RTAnimation> predicate, out RTAnimation animation) => animationController.Animations.TryFind(predicate, out animation);
+
+        /// <summary>
+        /// Tries to find all animations via a predicate.
+        /// </summary>
+        /// <param name="predicate">Animations to match.</param>
+        /// <param name="animations">The animations list result.</param>
+        /// <returns>Returns true if an amount of animations are found, otherwise false.</returns>
+        public static bool TryFindAnimations(this IAnimationController animationController, Predicate<RTAnimation> predicate, out List<RTAnimation> animations) => animationController.Animations.TryFindAll(predicate, out animations);
+
+        #endregion
+
+        #endregion
 
         #endregion
 

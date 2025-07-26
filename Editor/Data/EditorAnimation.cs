@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Editor.Data.Popups;
