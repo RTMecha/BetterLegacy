@@ -26,6 +26,9 @@ namespace BetterLegacy.Core.Animation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T GetValue(float t) => t == Time ? Value : Interpolate(t);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Interpolate(float time)
         {
             if (keyframes.Length == 0)
