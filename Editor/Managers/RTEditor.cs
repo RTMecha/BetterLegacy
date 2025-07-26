@@ -6489,7 +6489,8 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.playerGUI.SetActive(true);
             CursorManager.inst.HideCursor();
             EditorManager.inst.GUI.SetActive(false);
-            AudioManager.inst.CurrentAudioSource.Play();
+            if (!AudioManager.inst.CurrentAudioSource.isPlaying)
+                AudioManager.inst.CurrentAudioSource.Play();
             EditorManager.inst.SetNormalRenderArea();
             GameManager.inst.UpdateTimeline();
             RTBeatmap.Current.ResetCheckpoint(true);
