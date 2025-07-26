@@ -33,7 +33,7 @@ namespace BetterLegacy.Core.Components.Player
     /// <summary>
     /// Modded player component.
     /// </summary>
-    public class RTPlayer : MonoBehaviour
+    public class RTPlayer : MonoBehaviour, IRTObject
     {
         //Player Parent Tree (original):
         //player-complete (has Player component)
@@ -161,6 +161,12 @@ namespace BetterLegacy.Core.Components.Player
         /// A list of temporary spawned objects.
         /// </summary>
         public List<EmittedObject> emitted = new List<EmittedObject>();
+
+        public RTLevelBase ParentRuntime { get; set; }
+
+        public float StartTime { get; set; }
+
+        public float KillTime { get; set; }
 
         #endregion
 
@@ -2167,6 +2173,12 @@ namespace BetterLegacy.Core.Components.Player
         #endregion
 
         #region Actions
+
+        public void Clear() { }
+
+        public void SetActive(bool active) => gameObject.SetActive(active);
+
+        public void Interpolate(float time) { }
 
         /// <summary>
         /// Spawns the player.

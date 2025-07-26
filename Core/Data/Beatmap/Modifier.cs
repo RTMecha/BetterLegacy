@@ -418,8 +418,19 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Result
 
+        /// <summary>
+        /// Gets the cached result of the modifier.
+        /// </summary>
+        /// <typeparam name="T">Type of the result.</typeparam>
+        /// <returns>Returns the modifiers' cache.</returns>
         public T GetResult<T>() => (T)Result;
 
+        /// <summary>
+        /// Tries to get the cached result of the modifier.
+        /// </summary>
+        /// <typeparam name="T">Type of the result.</typeparam>
+        /// <param name="result">Output cache.</param>
+        /// <returns>Returns true if the result matches the type, otherwise returns false.</returns>
         public bool TryGetResult<T>(out T result)
         {
             if (Result is T r)
@@ -431,6 +442,26 @@ namespace BetterLegacy.Core.Data.Beatmap
             return false;
         }
 
+        /// <summary>
+        /// Gets the modifiers' cache.
+        /// </summary>
+        /// <typeparam name="T">Type of the result</typeparam>
+        /// <param name="get">Get cache function.</param>
+        /// <returns>Returns the modifiers' cache if the type matches, otherwise uses <paramref name="get"/> to get the cache and store it.</returns>
+        public T GetResultOrDefault<T>(Func<T> get)
+        {
+            if (!TryGetResult(out T obj))
+            {
+                obj = get();
+                Result = obj;
+            }
+            return obj;
+        }
+
+        /// <summary>
+        /// If the modifier has a result.
+        /// </summary>
+        /// <returns>Returns true if the modifier has a result, otherwise returns false.</returns>
         public bool HasResult() => Result != null;
 
         #endregion

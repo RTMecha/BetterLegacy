@@ -22,6 +22,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 
 using Object = UnityEngine.Object;
 
@@ -1703,6 +1704,13 @@ namespace BetterLegacy.Core
         /// <param name="reference">Modifier object reference.</param>
         /// <returns>Returns the parent runtime.</returns>
         public static RTLevelBase GetParentRuntime(this IModifierReference reference) => (reference.ParentRuntime ?? RTLevel.Current);
+
+        /// <summary>
+        /// Gets the parent runtime of the object.
+        /// </summary>
+        /// <param name="reference">Runtime object reference.</param>
+        /// <returns>Returns the parent runtime.</returns>
+        public static RTLevelBase GetParentRuntime(this IRTObject reference) => (reference.ParentRuntime ?? RTLevel.Current);
 
         /// <summary>
         /// Gets a <see cref="ObjectTransform"/> from a transformable object.

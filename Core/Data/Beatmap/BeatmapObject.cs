@@ -1412,6 +1412,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public IRTObject GetRuntimeObject() => runtimeObject;
 
+        public IPrefabable AsPrefabable() => this;
+        public ITransformable AsTransformable() => this;
+
         #region Custom Interpolation
 
         public void ResetOffsets()

@@ -205,6 +205,9 @@ namespace BetterLegacy.Core.Runtime
 
         public override void Tick()
         {
+            var logTick = !CoreHelper.IsUsingInputField && Input.GetKeyDown(KeyCode.I);
+            System.Diagnostics.Stopwatch sw = logTick ? CoreHelper.StartNewStopwatch() : null;
+
             AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
 
             if (!CoreConfig.Instance.UseNewUpdateMethod.Value)
@@ -216,10 +219,16 @@ namespace BetterLegacy.Core.Runtime
                 previousAudioTime = smoothedTime;
             }
 
+            if (logTick)
+                Log($"Start pre-tick at: {sw.Elapsed}");
+
             PreTick();
 
             try
             {
+                if (logTick)
+                    Log($"Start modifier tick at: {sw.Elapsed}");
+
                 // gamedata modifiers update first
                 if (GameData.Current && !GameData.Current.modifiers.IsEmpty())
                     ModifiersHelper.RunModifiersLoop(GameData.Current.modifiers, GameData.Current, new Dictionary<string, string>());
@@ -232,14 +241,34 @@ namespace BetterLegacy.Core.Runtime
                 Debug.LogError($"Had an exception with modifier tick. Exception: {ex}");
             }
 
+            if (logTick)
+                Log($"Start event tick at: {sw.Elapsed}");
+
             OnEventsTick(); // events update fourth
+
+            if (logTick)
+                Log($"Start object tick at: {sw.Elapsed}");
+
             OnBeatmapObjectsTick(); // objects update fifth
+
+            if (logTick)
+                Log($"Start BG object tick at: {sw.Elapsed}");
+
             OnBackgroundObjectsTick(); // bgs update sixth
+
+            if (logTick)
+                Log($"Start prefab modifier tick at: {sw.Elapsed}");
+
             OnPrefabModifiersTick(); // prefab modifiers update seventh
+
+            if (logTick)
+                Log($"Start prefab object tick at: {sw.Elapsed}");
+
             OnPrefabObjectsTick(); // prefab objects update last
 
-            //for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
-            //    GameData.Current.prefabObjects[i].runtimeObject?.Tick();
+
+            if (logTick)
+                Log($"Reset beatmap tick cache tick at: {sw.Elapsed}");
 
             // reset player cache
             if (RTBeatmap.Current)
@@ -248,6 +277,12 @@ namespace BetterLegacy.Core.Runtime
                 RTBeatmap.Current.playerDied = false;
                 RTBeatmap.Current.LevelStarted = false;
             }
+
+
+            if (logTick)
+                Log($"Start post-tick at: {sw.Elapsed}");
+            sw?.Stop();
+            sw = null;
 
             PostTick();
         }
@@ -291,6 +326,8 @@ namespace BetterLegacy.Core.Runtime
             RandomHelper.UpdateSeed();
             //RecacheAllSequences();
         }
+
+        static void Log(string message) => Debug.Log($"{className}{message}");
 
         #endregion
 

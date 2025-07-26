@@ -63,6 +63,13 @@ namespace BetterLegacy.Core.Helpers
                     result = false;
 
                 trigger.triggered = innerResult;
+
+                if (!trigger.running)
+                    trigger.runCount++;
+                if (!trigger.constant)
+                    trigger.active = true;
+
+                trigger.running = true;
             });
             return result;
         }
@@ -112,30 +119,35 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersAll(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null)
+        public static void RunModifiersAll(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null) => RunModifiersAll(null, null, modifiers, reference, variables);
+
+        /// <summary>
+        /// The original way modifiers run.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <param name="modifiers">The list of modifiers to run.</param>
+        /// <param name="active">If the object is active.</param>
+        public static void RunModifiersAll(List<Modifier> triggers, List<Modifier> actions, List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null)
         {
-            var actions = new List<Modifier>();
-            var triggers = new List<Modifier>();
-            modifiers.ForLoop(modifier =>
+            if (triggers == null || actions == null)
             {
-                switch (modifier.type)
+                triggers = new List<Modifier>();
+                actions = new List<Modifier>();
+                modifiers.ForLoop(modifier =>
                 {
-                    case Modifier.Type.Action: {
-                            if (modifier.Action == null || modifier.Inactive == null)
-                                AssignModifierActions(modifier, reference);
-
-                            actions.Add(modifier);
-                            break;
-                        }
-                    case Modifier.Type.Trigger: {
-                            if (modifier.Trigger == null || modifier.Inactive == null)
-                                AssignModifierActions(modifier, reference);
-
-                            triggers.Add(modifier);
-                            break;
-                        }
-                }
-            });
+                    switch (modifier.type)
+                    {
+                        case Modifier.Type.Trigger: {
+                                triggers.Add(modifier);
+                                break;
+                            }
+                        case Modifier.Type.Action: {
+                                actions.Add(modifier);
+                                break;
+                            }
+                    }
+                });
+            }
 
             if (!triggers.IsEmpty())
             {
@@ -154,21 +166,11 @@ namespace BetterLegacy.Core.Helpers
                             act.active = true;
 
                         act.running = true;
+                        if (act.Action == null && TryGetAction(act, reference, out ModifierAction action))
+                            act.Action = action.function;
                         act.RunAction(act, reference, variables);
                         if (act.Name == "return")
                             returned = true;
-                    });
-                    triggers.ForLoop(trig =>
-                    {
-                        if (trig.triggerCount > 0 && trig.runCount >= trig.triggerCount)
-                            return;
-
-                        if (!trig.running)
-                            trig.runCount++;
-                        if (!trig.constant)
-                            trig.active = true;
-
-                        trig.running = true;
                     });
                     return;
                 }
@@ -181,6 +183,8 @@ namespace BetterLegacy.Core.Helpers
 
                     modifier.active = false;
                     modifier.running = false;
+                    if (modifier.Inactive == null && TryGetInactive(modifier, reference, out ModifierInactive action))
+                        modifier.Inactive = action.function;
                     modifier.RunInactive(modifier, reference, variables);
                 });
                 return;
@@ -197,6 +201,8 @@ namespace BetterLegacy.Core.Helpers
                     act.active = true;
 
                 act.running = true;
+                if (act.Action == null && TryGetAction(act, reference, out ModifierAction action))
+                    act.Action = action.function;
                 act.RunAction(act, reference, variables);
             });
         }
@@ -1758,6 +1764,32 @@ namespace BetterLegacy.Core.Helpers
             #endregion
         };
 
+        public static bool TryGetTrigger(Modifier modifier, IModifierReference reference, out ModifierTrigger trigger)
+        {
+            var name = modifier.Name;
+            ModifierTrigger result = null;
+            var check = modifier.type == Modifier.Type.Trigger && triggers.TryFind(x => x.name == name, out result) && result.compatibility.CompareType(reference.ReferenceType);
+            trigger = result;
+            return check;
+        }
+
+        public static bool TryGetAction(Modifier modifier, IModifierReference reference, out ModifierAction action)
+        {
+            var name = modifier.Name;
+            ModifierAction result = null;
+            var check = modifier.type == Modifier.Type.Action && actions.TryFind(x => x.name == name, out result) && result.compatibility.CompareType(reference.ReferenceType);
+            action = result;
+            return check;
+        }
+        
+        public static bool TryGetInactive(Modifier modifier, IModifierReference reference, out ModifierInactive inactive)
+        {
+            var name = modifier.Name;
+            var check = inactives.TryFind(x => x.name == name, out ModifierInactive result) && result.compatibility.CompareType(reference.ReferenceType);
+            inactive = result;
+            return check;
+        }
+
         #region GameData
 
         public static int GetLevelTriggerType(string key) => key switch
@@ -2118,13 +2150,14 @@ namespace BetterLegacy.Core.Helpers
         public static float GetAnimation(IPrefabable prefabable, BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
         {
             var time = GetTime(prefabable, reference);
+            var t = time - reference.StartTime - delay;
 
             if (!visual && reference.cachedSequences)
                 return fromType switch
                 {
-                    0 => Mathf.Clamp((reference.cachedSequences.PositionSequence.Interpolate(time - reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    1 => Mathf.Clamp((reference.cachedSequences.ScaleSequence.Interpolate(time - reference.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.Interpolate(time - reference.StartTime - delay) - offset) * multiply % loop, min, max),
+                    0 => Mathf.Clamp((reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
+                    1 => Mathf.Clamp((reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((reference.cachedSequences.RotationSequence.GetValue(t) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 };
             else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
@@ -2202,8 +2235,10 @@ namespace BetterLegacy.Core.Helpers
         #endregion
     }
 
+    #region Caches
+
     /// <summary>
-    /// Cache struct for translate shape.
+    /// Cache for <see cref="ModifierActions.translateShape(Modifier, IModifierReference, Dictionary{string, string})"/>.
     /// </summary>
     public class TranslateShapeCache
     {
@@ -2291,6 +2326,113 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
     }
+
+    /// <summary>
+    /// Cache for <see cref="ModifierActions.enableObjectGroup(Modifier, IModifierReference, Dictionary{string, string})"/>.
+    /// </summary>
+    public class EnableObjectGroupCache
+    {
+        public EnableObjectGroupCache() { }
+
+        int currentState = -1;
+
+        /// <summary>
+        /// List of object groups.
+        /// </summary>
+        public List<IPrefabable>[] objects;
+        /// <summary>
+        /// List of all objects in the cache.
+        /// </summary>
+        public List<IPrefabable> allObjects = new List<IPrefabable>();
+
+        readonly HashSet<IPrefabable> activeObjects = new HashSet<IPrefabable>();
+
+        /// <summary>
+        /// Initializes the cache.
+        /// </summary>
+        /// <param name="objects">List of object groups.</param>
+        /// <param name="enabled">Enabled / disabled state.</param>
+        public void Init(List<IPrefabable>[] objects, bool enabled)
+        {
+            this.objects = objects;
+            foreach (var obj in allObjects)
+                ModifiersHelper.SetObjectActive(obj, !enabled);
+        }
+
+        /// <summary>
+        /// Recalculates the currently active objects.
+        /// </summary>
+        /// <param name="enabled">Enabled / disabled state.</param>
+        /// <param name="state">Currently active group.</param>
+        public void RecalculateActiveObjects(bool enabled, int state)
+        {
+            int groupIndex = 0;
+            foreach (var obj in activeObjects)
+            {
+                ModifiersHelper.SetObjectActive(obj, !enabled);
+                groupIndex++;
+            }
+
+            activeObjects.Clear();
+            if (state == 0)
+            {
+                foreach (var obj in allObjects)
+                    activeObjects.Add(obj);
+                return;
+            }
+
+            var current = objects.GetAt(state - 1);
+            foreach (var obj in current)
+                activeObjects.Add(obj);
+        }
+
+        /// <summary>
+        /// Sets a group active.
+        /// </summary>
+        /// <param name="enabled">Enabled / disabled state.</param>
+        /// <param name="state">Currently active group.</param>
+        public void SetGroupActive(bool enabled, int state)
+        {
+            if (currentState == state)
+                return;
+
+            RecalculateActiveObjects(enabled, state);
+
+            foreach (var obj in activeObjects)
+                ModifiersHelper.SetObjectActive(obj, enabled);
+
+            currentState = state;
+        }
+
+        /// <summary>
+        /// Gets the active state for an object group. If <paramref name="state"/> is 0, then all should have their active state the same as <paramref name="enabled"/>. Otherwise if the state equals the modifier group, set only that object group to <paramref name="enabled"/>.
+        /// </summary>
+        /// <param name="enabled">If the active group should be enabled / disabled.</param>
+        /// <param name="state">The currently active group.</param>
+        /// <param name="groupIndex">The group index.</param>
+        /// <returns>Returns true if the group is active, otherwise returns false.</returns>
+        public bool GetState(bool enabled, int state, int groupIndex)
+        {
+            // if state is 0, then all should be active / inactive. otherwise if state equals the modifier group, set only that object group active / inactive.
+            var innerEnabled = state == 0 || state == groupIndex - 1;
+            if (!enabled)
+                innerEnabled = !innerEnabled;
+
+            return innerEnabled;
+        }
+    }
+
+    /// <summary>
+    /// Cache for applyAnimation modifiers.
+    /// </summary>
+    public class ApplyAnimationCache
+    {
+        public BeatmapObject from;
+        public List<BeatmapObject> to = new List<BeatmapObject>();
+        public float startTime;
+    }
+
+    #endregion
 
     public class ModifierTrigger
     {

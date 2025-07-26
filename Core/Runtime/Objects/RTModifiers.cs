@@ -15,6 +15,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             this.modifiers = modifiers;
             this.reference = reference;
             this.orderMatters = orderMatters;
+            UpdateCache();
 
             ParentRuntime = parentRuntime;
             StartTime = startTime;
@@ -34,6 +35,33 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float StartTime { get; set; }
 
         public float KillTime { get; set; }
+
+        public List<Modifier> triggers;
+
+        public List<Modifier> actions;
+
+        public void UpdateCache()
+        {
+            if (orderMatters)
+                return;
+
+            triggers = new List<Modifier>();
+            actions = new List<Modifier>();
+            modifiers.ForLoop(modifier =>
+            {
+                switch (modifier.type)
+                {
+                    case Modifier.Type.Trigger: {
+                            triggers.Add(modifier);
+                            break;
+                        }
+                    case Modifier.Type.Action: {
+                            actions.Add(modifier);
+                            break;
+                        }
+                }
+            });
+        }
 
 
         public Dictionary<string, string> variables = new Dictionary<string, string>();
@@ -59,7 +87,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (orderMatters)
                 ModifiersHelper.RunModifiersLoop(modifiers, reference, variables);
             else
-                ModifiersHelper.RunModifiersAll(modifiers, reference, variables);
+                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, reference, variables);
         }
     }
 }

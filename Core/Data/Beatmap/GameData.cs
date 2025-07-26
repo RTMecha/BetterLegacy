@@ -15,6 +15,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
@@ -1771,6 +1772,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         public Assets GetAssets() => assets;
+
+        public IRTObject GetRuntimeObject() => null;
+
+        public IPrefabable AsPrefabable() => null;
+        public ITransformable AsTransformable() => null;
 
         #region Helpers
 

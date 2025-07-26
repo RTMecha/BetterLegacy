@@ -108,6 +108,9 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override void Tick()
         {
+            if (!IsActive)
+                return;
+
             if (!CoreConfig.Instance.UseNewUpdateMethod.Value)
                 CurrentTime = FixedTime;
             else
@@ -127,12 +130,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             catch (Exception ex)
             {
                 Debug.LogError($"Had an exception with modifier tick. Exception: {ex}");
-            }
-
-            if (!Active)
-            {
-                PostTick();
-                return;
             }
 
             OnBeatmapObjectsTick(); // objects update third

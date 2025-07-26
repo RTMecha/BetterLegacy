@@ -9,6 +9,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Data.Player
@@ -119,6 +120,11 @@ namespace BetterLegacy.Core.Data.Player
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PAPlayer;
 
         public int IntVariable { get; set; }
+
+        public IRTObject GetRuntimeObject() => RuntimePlayer;
+
+        public IPrefabable AsPrefabable() => null;
+        public ITransformable AsTransformable() => null;
 
         #endregion
 

@@ -2514,7 +2514,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
                 return;
 
             int fromType = modifier.GetInt(1, 0, variables);
@@ -2528,17 +2529,18 @@ namespace BetterLegacy.Core.Helpers
             bool useVisual = modifier.GetBool(8, false, variables);
             float loop = modifier.GetFloat(9, 9999f, variables);
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(10, variables), out BeatmapObject bm))
+            var beatmapObject = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(10, variables)));
+            if (!beatmapObject)
                 return;
 
-            fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
+            fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
             if (!useVisual)
-                fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].values.Length);
+                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
             if (fromType < 0 || fromType > 2)
                 return;
 
-            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(prefabable, bm, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
+            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(prefabable, beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
         }
 
         public static void getMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3289,29 +3291,35 @@ namespace BetterLegacy.Core.Helpers
         // if this ever needs to be updated, add a "version" int number to modifiers that increment each time a major change was done to the modifier.
         public static void enableObjectGroup(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
                 return;
 
             var enabled = modifier.GetBool(0, true, variables);
             var state = modifier.GetInt(1, 0, variables);
 
-            for (int i = 2; i < modifier.commands.Count; i++)
+            EnableObjectGroupCache enableObjectGroupCache = modifier.GetResultOrDefault(() =>
             {
-                var innerEnabled = state == 0 || state == i - 1; // if state is 0, then all should be active / inactive. otherwise if state equals the modifier group, set only that object group active / inactive.
-                if (!enabled)
-                    innerEnabled = !innerEnabled;
+                enableObjectGroupCache = new EnableObjectGroupCache();
+                var groups = new List<List<IPrefabable>>();
+                int count = 0;
+                for (int i = 2; i < modifier.commands.Count; i++)
+                {
+                    var tag = modifier.commands[i];
+                    if (string.IsNullOrEmpty(tag))
+                        continue;
 
-                var tag = modifier.commands[i];
-                if (string.IsNullOrEmpty(tag))
-                    continue;
+                    var list = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, tag);
+                    groups.Add(list);
+                    enableObjectGroupCache.allObjects.AddRange(list);
 
-                var list = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, tag);
-                if (list.IsEmpty())
-                    continue;
+                    count++;
+                }
+                enableObjectGroupCache.Init(groups.ToArray(), enabled);
+                return enableObjectGroupCache;
+            });
 
-                foreach (var other in list)
-                    ModifiersHelper.SetObjectActive(other, innerEnabled);
-            }
+            enableObjectGroupCache?.SetGroupActive(enabled, state);
         }
 
         public static void disableObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3723,7 +3731,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1)));
 
             if (list.IsEmpty())
                 return;
@@ -3768,7 +3776,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1)));
 
             if (list.IsEmpty())
                 return;
@@ -3877,7 +3885,7 @@ namespace BetterLegacy.Core.Helpers
 
             var opacity = modifier.GetFloat(0, 1f, variables);
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables)));
 
             if (list.IsEmpty())
                 return;
@@ -3895,20 +3903,19 @@ namespace BetterLegacy.Core.Helpers
         
         public static void copyColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
                 return;
 
             var applyColor1 = modifier.GetBool(1, true, variables);
             var applyColor2 = modifier.GetBool(2, true, variables);
 
-            if (GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject other) && beatmapObject.runtimeObject && other.runtimeObject)
-            {
-                // queue post tick so the color overrides the sequence color
-                RTLevel.Current.postTick.Enqueue(() =>
-                {
-                    ModifiersHelper.CopyColor(beatmapObject.runtimeObject, other.runtimeObject, applyColor1, applyColor2);
-                });
-            }
+            var other = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables)));
+
+            if (!other || !other.runtimeObject)
+                return;
+
+            // queue post tick so the color overrides the sequence color
+            RTLevel.Current.postTick.Enqueue(() => ModifiersHelper.CopyColor(beatmapObject.runtimeObject, other.runtimeObject, applyColor1, applyColor2));
         }
         
         public static void copyColorOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3916,7 +3923,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables)));
 
             if (list.IsEmpty())
                 return;
@@ -3947,7 +3954,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables)));
 
             var cachedSequences = beatmapObject.cachedSequences;
             if (list.IsEmpty() || !cachedSequences)
@@ -4100,7 +4107,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
+            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables)));
 
             if (list.IsEmpty())
                 return;
@@ -4903,7 +4910,7 @@ namespace BetterLegacy.Core.Helpers
                     transformable = null;
             }
             else
-                transformable = reference as ITransformable;
+                transformable = reference.AsTransformable();
 
             if (transformable == null)
                 return;
@@ -5267,7 +5274,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables));
+            var transformables = modifier.GetResultOrDefault(() => GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables)));
 
             var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -5484,14 +5491,21 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var applyAnimationCache = new ApplyAnimationCache();
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
+                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                return applyAnimationCache;
+            });
+
+            if (!cache.from)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
-
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
+            var from = cache.from;
+            var list = cache.to;
+            var time = cache.startTime;
 
             var animatePos = modifier.GetBool(1, true, variables);
             var animateSca = modifier.GetBool(2, true, variables);
@@ -5540,12 +5554,19 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject bm))
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var applyAnimationCache = new ApplyAnimationCache();
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                return applyAnimationCache;
+            });
+
+            if (!cache.from)
                 return;
 
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
+            var from = cache.from;
+            var time = cache.startTime;
 
             var animatePos = modifier.GetBool(1, true, variables);
             var animateSca = modifier.GetBool(2, true, variables);
@@ -5568,7 +5589,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             new FloatKeyframe(0f, 0f, Ease.Linear),
                             new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
                     };
                 animation.onComplete = () =>
                 {
@@ -5580,7 +5601,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            ModifiersHelper.ApplyAnimationTo(beatmapObject, from, useVisual, time, reference.GetParentRuntime().CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
         }
 
         public static void applyAnimationTo(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -5588,11 +5609,16 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var applyAnimationCache = new ApplyAnimationCache();
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                return applyAnimationCache;
+            });
 
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
+            var list = cache.to;
+            var time = cache.startTime;
 
             var animatePos = modifier.GetBool(1, true, variables);
             var animateSca = modifier.GetBool(2, true, variables);
@@ -5641,14 +5667,21 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables), out BeatmapObject from))
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var applyAnimationCache = new ApplyAnimationCache();
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
+                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                return applyAnimationCache;
+            });
+
+            if (!cache.from)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(10, variables));
-
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
+            var from = cache.from;
+            var list = cache.to;
+            var time = cache.startTime;
 
             var numberVariables = beatmapObject.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -5702,12 +5735,19 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (!GameData.Current.TryFindObjectWithTag(modifier, beatmapObject, modifier.value, out BeatmapObject bm))
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var applyAnimationCache = new ApplyAnimationCache();
+                applyAnimationCache.from = GameData.Current.FindObjectWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                return applyAnimationCache;
+            });
+
+            if (!cache.from)
                 return;
 
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
+            var from = cache.from;
+            var time = cache.startTime;
 
             var numberVariables = beatmapObject.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -5735,7 +5775,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             new FloatKeyframe(0f, 0f, Ease.Linear),
                             new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
-                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
+                        }, x => ModifiersHelper.ApplyAnimationTo(beatmapObject, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot), interpolateOnComplete: true)
                     };
                 animation.onComplete = () =>
                 {
@@ -5747,7 +5787,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            ModifiersHelper.ApplyAnimationTo(beatmapObject, bm, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+            ModifiersHelper.ApplyAnimationTo(beatmapObject, from, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
         }
 
         public static void applyAnimationToMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -5755,11 +5795,16 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+            var cache = modifier.GetResultOrDefault(() =>
+            {
+                var applyAnimationCache = new ApplyAnimationCache();
+                applyAnimationCache.to = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(0, variables));
+                applyAnimationCache.startTime = reference.GetParentRuntime()?.CurrentTime ?? 0f;
+                return applyAnimationCache;
+            });
 
-            if (!modifier.HasResult())
-                modifier.Result = reference.GetParentRuntime()?.CurrentTime ?? 0f;
-            var time = modifier.GetResult<float>();
+            var list = cache.to;
+            var time = cache.startTime;
 
             var numberVariables = beatmapObject.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -5810,7 +5855,11 @@ namespace BetterLegacy.Core.Helpers
 
         public static void copyAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ITransformable transformable || reference is not IPrefabable prefabable)
+            var transformable = reference.AsTransformable();
+            if (transformable == null)
+                return;
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
                 return;
 
             var fromType = modifier.GetInt(1, 0, variables);
@@ -5825,15 +5874,7 @@ namespace BetterLegacy.Core.Helpers
             var loop = modifier.GetFloat(10, 9999f, variables);
             var useVisual = modifier.GetBool(11, false, variables);
 
-            if (!modifier.HasResult())
-            {
-                if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0), out BeatmapObject result))
-                    modifier.Result = result;
-            }
-
-            if (!modifier.TryGetResult(out BeatmapObject bm))
-                return;
-
+            var bm = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0)));
             var time = ModifiersHelper.GetTime(prefabable, bm);
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
@@ -5845,22 +5886,23 @@ namespace BetterLegacy.Core.Helpers
 
             if (!useVisual && bm.cachedSequences)
             {
+                var t = time - bm.StartTime - delay;
                 if (fromType == 3)
                 {
-                    if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null &&
-                        reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
-                    {
-                        var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
-                        var visualObject = beatmapObject.runtimeObject.visualObject;
-                        visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
-                    }
+                    if (toType == 3 && toAxis == 0 && bm.cachedSequences.ColorSequence != null && reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
+                        RTLevel.Current.postTick.Enqueue(() =>
+                        {
+                            var sequence = bm.cachedSequences.ColorSequence.GetValue(t);
+                            var visualObject = beatmapObject.runtimeObject.visualObject;
+                            visualObject.SetColor(RTMath.Lerp(visualObject.GetPrimaryColor(), sequence, multiply));
+                        });
                     return;
                 }
                 transformable.SetTransform(toType, toAxis, fromType switch
                 {
-                    0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop, min, max),
+                    0 => Mathf.Clamp((bm.cachedSequences.PositionSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
+                    1 => Mathf.Clamp((bm.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((bm.cachedSequences.RotationSequence.GetValue(t) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 });
             }
@@ -5878,7 +5920,14 @@ namespace BetterLegacy.Core.Helpers
         
         public static void copyAxisMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable || reference is not ITransformable transformable)
+            var transformable = reference.AsTransformable();
+            if (transformable == null)
+                return;
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
+                return;
+
+            if (reference is not IEvaluatable evaluatable)
                 return;
 
             try
@@ -5916,7 +5965,7 @@ namespace BetterLegacy.Core.Helpers
                             // queue post tick so the color overrides the sequence color
                             RTLevel.Current.postTick.Enqueue(() =>
                             {
-                                var sequence = bm.cachedSequences.ColorSequence.Interpolate(time - bm.StartTime - delay);
+                                var sequence = bm.cachedSequences.ColorSequence.GetValue(time - bm.StartTime - delay);
 
                                 var renderer = beatmapObject.runtimeObject.visualObject.renderer;
 
@@ -5943,9 +5992,9 @@ namespace BetterLegacy.Core.Helpers
                         if (bm.cachedSequences)
                             numberVariables["axis"] = fromType switch
                             {
-                                0 => bm.cachedSequences.PositionSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
-                                1 => bm.cachedSequences.ScaleSequence.Interpolate(time - bm.StartTime - delay).At(fromAxis),
-                                2 => bm.cachedSequences.RotationSequence.Interpolate(time - bm.StartTime - delay),
+                                0 => bm.cachedSequences.PositionSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
+                                1 => bm.cachedSequences.ScaleSequence.GetValue(time - bm.StartTime - delay).At(fromAxis),
+                                2 => bm.cachedSequences.RotationSequence.GetValue(time - bm.StartTime - delay),
                                 _ => 0f,
                             };
                         bm.SetOtherObjectVariables(numberVariables);
@@ -5996,7 +6045,14 @@ namespace BetterLegacy.Core.Helpers
         
         public static void copyAxisGroup(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable || reference is not ITransformable transformable || reference is not IEvaluatable evaluatable)
+            var transformable = reference.AsTransformable();
+            if (transformable == null)
+                return;
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
+                return;
+
+            if (reference is not IEvaluatable evaluatable)
                 return;
 
             var evaluation = modifier.GetValue(0, variables);
@@ -6016,7 +6072,7 @@ namespace BetterLegacy.Core.Helpers
                 var numberVariables = evaluatable.GetObjectVariables();
                 ModifiersHelper.SetVariables(variables, numberVariables);
 
-                if (!modifier.HasResult())
+                var list = modifier.GetResultOrDefault(() =>
                 {
                     var result = new List<BeatmapObject>();
 
@@ -6028,11 +6084,8 @@ namespace BetterLegacy.Core.Helpers
                             result.Add(beatmapObject);
                     }
 
-                    modifier.Result = result;
-                }
-
-                if (!modifier.TryGetResult(out List<BeatmapObject> list))
-                    return;
+                    return result;
+                });
 
                 int groupIndex = 0;
                 for (int i = 3; i < modifier.commands.Count; i += 8)
@@ -6057,9 +6110,9 @@ namespace BetterLegacy.Core.Helpers
                     if (!useVisual && beatmapObject.cachedSequences)
                         numberVariables[name] = fromType switch
                         {
-                            0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                            1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
-                            2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay), min, max),
+                            0 => Mathf.Clamp(beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                            1 => Mathf.Clamp(beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis), min, max),
+                            2 => Mathf.Clamp(beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay), min, max),
                             _ => 0f,
                         };
                     else if (useVisual && beatmapObject.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject && levelObject.visualObject.gameObject)
@@ -6089,7 +6142,8 @@ namespace BetterLegacy.Core.Helpers
         
         public static void copyPlayerAxis(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ITransformable transformable)
+            var transformable = reference.AsTransformable();
+            if (transformable == null)
                 return;
 
             var fromType = modifier.GetInt(1, 0, variables);
@@ -7010,19 +7064,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static void setDiscordStatus(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            string[] discordSubIcons = new string[]
-            {
-                "arcade",
-                "editor",
-                "play",
-                "menu",
-            };
-
-            string[] discordIcons = new string[]
-            {
-                "pa_logo_white",
-                "pa_logo_black",
-            };
+            var discordSubIcons = CoreHelper.discordSubIcons;
+            var discordIcons = CoreHelper.discordIcons;
 
             if (int.TryParse(modifier.commands[2], out int discordSubIcon) && int.TryParse(modifier.commands[3], out int discordIcon))
                 CoreHelper.UpdateDiscordStatus(

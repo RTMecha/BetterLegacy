@@ -17,6 +17,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             this.modifiers = modifiers;
             this.reference = prefabObject;
             this.orderMatters = orderMatters;
+            UpdateCache();
 
             ParentRuntime = parentRuntime;
             StartTime = startTime;
@@ -34,7 +35,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (orderMatters)
                 ModifiersHelper.RunModifiersLoop(modifiers, reference, variables);
             else
-                ModifiersHelper.RunModifiersAll(modifiers, reference, variables);
+                ModifiersHelper.RunModifiersAll(triggers, actions, modifiers, reference, variables);
 
             if (!runtimePrefabObject)
                 return;

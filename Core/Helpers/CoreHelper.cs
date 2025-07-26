@@ -1091,13 +1091,29 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static string discordLevel = "";
-        public static string discordDetails = "";
-        public static string discordIcon = "";
-        public static string discordArt = "";
-        public static void UpdateDiscordStatus(string level, string details, string icon, string art = "pa_logo_white")
+        public static string[] discordSubIcons = new string[]
         {
-            DiscordController.inst.OnStateChange(CoreConfig.Instance.DiscordShowLevel.Value ? level : "");
+            "arcade",
+            "editor",
+            "play",
+            "menu",
+        };
+
+        public static string[] discordIcons = new string[]
+        {
+            PA_LOGO_WHITE,
+            PA_LOGO_BLACK,
+        };
+
+        public const string PA_LOGO_WHITE = "pa_logo_white";
+        public const string PA_LOGO_BLACK = "pa_logo_black";
+        public static string discordLevel = string.Empty;
+        public static string discordDetails = string.Empty;
+        public static string discordIcon = string.Empty;
+        public static string discordArt = string.Empty;
+        public static void UpdateDiscordStatus(string level, string details, string icon, string art = PA_LOGO_WHITE)
+        {
+            DiscordController.inst.OnStateChange(CoreConfig.Instance.DiscordShowLevel.Value ? level : string.Empty);
             DiscordController.inst.OnArtChange(art);
             DiscordController.inst.OnIconChange(icon);
             DiscordController.inst.OnDetailsChange(details);
