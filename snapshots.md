@@ -1,4 +1,10 @@
-﻿# snapshot-2025.7.5 - (pre-1.8.0) [Jul 26, 2025]
+﻿# ???
+
+## Features
+### Core
+- Started implementing Player Modifiers. Keep in mind, this is only a small part of the full thing and is subject to change.
+
+# snapshot-2025.7.5 - (pre-1.8.0) [Jul 26, 2025]
 
 ## Changes
 ### Editor
