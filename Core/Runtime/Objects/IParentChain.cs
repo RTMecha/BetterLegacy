@@ -36,10 +36,18 @@ namespace BetterLegacy.Core.Runtime.Objects
 
     public static class ParentChainExtension
     {
-        public static void InterpolateParentChain(this IParentChain parentChain, float time, bool fromPrefab = false, bool inBackground = false)
+        public static void UpdateCameraParent(this IParentChain parentChain, bool inBackground = false)
         {
+            if (!parentChain.CameraParent)
+            {
+                parentChain.Parent.localPosition = new Vector3(0f, 0f, inBackground ? 20f : 0f) + parentChain.TopPositionOffset;
+                parentChain.Parent.localScale = Vector3.one + parentChain.TopScaleOffset;
+                parentChain.Parent.localRotation = Quaternion.Euler(parentChain.TopRotationOffset);
+                return;
+            }
+
             // Update Camera Parent
-            if (parentChain.PositionParent && parentChain.CameraParent)
+            if (parentChain.PositionParent)
             {
                 var x = EventManager.inst.cam.transform.position.x;
                 var y = EventManager.inst.cam.transform.position.y;
@@ -49,10 +57,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                     + parentChain.TopPositionOffset;
             }
             else
-                parentChain.Parent.localPosition = new Vector3(0f, 0f, inBackground ? 20f : 0f)
-                    + parentChain.TopPositionOffset;
+                parentChain.Parent.localPosition = new Vector3(0f, 0f, inBackground ? 20f : 0f) + parentChain.TopPositionOffset;
 
-            if (parentChain.ScaleParent && parentChain.CameraParent)
+            if (parentChain.ScaleParent)
             {
                 float camOrthoZoom = EventManager.inst.cam.orthographicSize / 20f - 1f;
 
@@ -61,7 +68,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             else
                 parentChain.Parent.localScale = Vector3.one + parentChain.TopScaleOffset;
 
-            if (parentChain.RotationParent && parentChain.CameraParent)
+            if (parentChain.RotationParent)
             {
                 var camRot = EventManager.inst.camParent.transform.rotation.eulerAngles;
 
@@ -69,6 +76,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
             else
                 parentChain.Parent.localRotation = Quaternion.Euler(parentChain.TopRotationOffset);
+        }
+
+        public static void InterpolateParentChain(this IParentChain parentChain, float time, bool fromPrefab = false, bool inBackground = false)
+        {
+            UpdateCameraParent(parentChain, inBackground);
 
             // Update parents
             float positionOffset = 0.0f;
@@ -123,7 +135,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (animatePosition)
                 {
                     var value =
-                        parentObject.positionSequence.Interpolate(desync ? syncOffset - timeOffset - (positionOffset + positionAddedOffset) : localTime - timeOffset - (positionOffset + positionAddedOffset)) +
+                        parentObject.positionSequence.GetValue(desync ? syncOffset - timeOffset - (positionOffset + positionAddedOffset) : localTime - timeOffset - (positionOffset + positionAddedOffset)) +
                         parentObject.beatmapObject.reactivePositionOffset +
                         parentObject.beatmapObject.positionOffset;
 
@@ -136,7 +148,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (animateScale)
                 {
                     var r = parentObject.beatmapObject.reactiveScaleOffset + parentObject.beatmapObject.scaleOffset;
-                    var value = parentObject.scaleSequence.Interpolate(desync ? syncOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
+                    var value = parentObject.scaleSequence.GetValue(desync ? syncOffset - timeOffset - (scaleOffset + scaleAddedOffset) : localTime - timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
                     var scale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.beatmapObject.scaleOffset.z);
                     parentObject.transform.localScale = scale;
                     totalScale = RTMath.Scale(totalScale, scale);
@@ -146,7 +158,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 if (animateRotation)
                 {
                     var value = Quaternion.AngleAxis(
-                        (parentObject.rotationSequence.Interpolate(desync ? syncOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
+                        (parentObject.rotationSequence.GetValue(desync ? syncOffset - timeOffset - (rotationOffset + rotationAddedOffset) : localTime - timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.beatmapObject.reactiveRotationOffset) * rotationParallax,
                         Vector3.forward);
                     parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.beatmapObject.rotationOffset);
                 }
