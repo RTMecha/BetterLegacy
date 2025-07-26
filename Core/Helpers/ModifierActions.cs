@@ -3222,23 +3222,20 @@ namespace BetterLegacy.Core.Helpers
         
         public static void enableObjectTree(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
             var value = modifier.GetValue(0, variables);
             if (value == "0")
                 value = "False";
 
-            if (!modifier.HasResult())
-            {
-                var root = Parser.TryParse(value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
-
-                modifier.Result = root.GetChildTree();
-            }
-
             var enabled = modifier.GetBool(2, true, variables);
 
-            var list = modifier.GetResult<List<BeatmapObject>>();
+            var list = modifier.GetResultOrDefault(() =>
+            {
+                if (reference is not BeatmapObject beatmapObject)
+                    return new List<BeatmapObject>();
+
+                var root = Parser.TryParse(value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
+                return root.GetChildTree();
+            });
 
             for (int i = 0; i < list.Count; i++)
                 list[i].runtimeObject?.SetCustomActive(enabled);
@@ -3246,12 +3243,16 @@ namespace BetterLegacy.Core.Helpers
         
         public static void enableObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
-                return;
-
             var enabled = modifier.GetBool(2, true, variables);
 
-            var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            var prefabables = modifier.GetResultOrDefault(() =>
+            {
+                var prefabable = reference.AsPrefabable();
+                if (prefabable == null)
+                    return new List<IPrefabable>();
+
+                return GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            });
 
             if (prefabables.IsEmpty())
                 return;
@@ -3262,27 +3263,26 @@ namespace BetterLegacy.Core.Helpers
         
         public static void enableObjectTreeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
-                return;
+            var enabled = modifier.GetBool(3, true, variables);
 
-            if (!modifier.HasResult())
+            var list = modifier.GetResultOrDefault(() =>
             {
+                var resultList = new List<BeatmapObject>();
+
+                var prefabable = reference.AsPrefabable();
+                if (prefabable == null)
+                    return resultList;
+
                 var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
                 var useSelf = modifier.GetBool(0, true, variables);
 
-                var resultList = new List<BeatmapObject>();
                 foreach (var bm in beatmapObjects)
                 {
                     var beatmapObject = useSelf ? bm : bm.GetParentChain().Last();
                     resultList.AddRange(beatmapObject.GetChildTree());
                 }
-
-                modifier.Result = resultList;
-            }
-
-            var enabled = modifier.GetBool(3, true, variables);
-
-            var list = modifier.GetResult<List<BeatmapObject>>();
+                return resultList;
+            });
 
             for (int i = 0; i < list.Count; i++)
                 list[i].runtimeObject?.SetCustomActive(enabled);
@@ -3291,16 +3291,16 @@ namespace BetterLegacy.Core.Helpers
         // if this ever needs to be updated, add a "version" int number to modifiers that increment each time a major change was done to the modifier.
         public static void enableObjectGroup(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var prefabable = reference.AsPrefabable();
-            if (prefabable == null)
-                return;
-
             var enabled = modifier.GetBool(0, true, variables);
             var state = modifier.GetInt(1, 0, variables);
 
-            EnableObjectGroupCache enableObjectGroupCache = modifier.GetResultOrDefault(() =>
+            var enableObjectGroupCache = modifier.GetResultOrDefault(() =>
             {
-                enableObjectGroupCache = new EnableObjectGroupCache();
+                var cache = new EnableObjectGroupCache();
+                var prefabable = reference.AsPrefabable();
+                if (prefabable == null)
+                    return cache;
+
                 var groups = new List<List<IPrefabable>>();
                 int count = 0;
                 for (int i = 2; i < modifier.commands.Count; i++)
@@ -3311,14 +3311,13 @@ namespace BetterLegacy.Core.Helpers
 
                     var list = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, tag);
                     groups.Add(list);
-                    enableObjectGroupCache.allObjects.AddRange(list);
+                    cache.allObjects.AddRange(list);
 
                     count++;
                 }
-                enableObjectGroupCache.Init(groups.ToArray(), enabled);
-                return enableObjectGroupCache;
+                cache.Init(groups.ToArray(), enabled);
+                return cache;
             });
-
             enableObjectGroupCache?.SetGroupActive(enabled, state);
         }
 
@@ -3333,17 +3332,15 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject)
                 return;
 
-            if (modifier.GetValue(0) == "0")
-                modifier.SetValue(0, "False");
+            var value = modifier.GetValue(0, variables);
+            if (value == "0")
+                value = "False";
 
-            if (!modifier.HasResult())
+            var list = modifier.GetResultOrDefault(() =>
             {
-                var root = modifier.GetBool(0, true, variables) ? beatmapObject : beatmapObject.GetParentChain().Last();
-
-                modifier.Result = root.GetChildTree();
-            }
-
-            var list = modifier.GetResult<List<BeatmapObject>>();
+                var root = Parser.TryParse(value, true) ? beatmapObject : beatmapObject.GetParentChain().Last();
+                return root.GetChildTree();
+            });
 
             for (int i = 0; i < list.Count; i++)
                 list[i].runtimeObject?.SetCustomActive(false);
@@ -3351,10 +3348,14 @@ namespace BetterLegacy.Core.Helpers
 
         public static void disableObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
-                return;
+            var list = modifier.GetResultOrDefault(() =>
+            {
+                var prefabable = reference.AsPrefabable();
+                if (prefabable == null)
+                    return new List<BeatmapObject>();
 
-            var list = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+                return GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables));
+            });
 
             if (!list.IsEmpty())
                 foreach (var beatmapObject in list)
@@ -3363,25 +3364,24 @@ namespace BetterLegacy.Core.Helpers
 
         public static void disableObjectTreeOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
-                return;
-
-            if (!modifier.HasResult())
+            var list = modifier.GetResultOrDefault(() =>
             {
+                var resultList = new List<BeatmapObject>();
+
+                var prefabable = reference.AsPrefabable();
+                if (prefabable == null)
+                    return resultList;
+
                 var beatmapObjects = GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1, variables));
                 var useSelf = modifier.GetBool(0, true, variables);
 
-                var resultList = new List<BeatmapObject>();
                 foreach (var bm in beatmapObjects)
                 {
                     var beatmapObject = useSelf ? bm : bm.GetParentChain().Last();
                     resultList.AddRange(beatmapObject.GetChildTree());
                 }
-
-                modifier.Result = resultList;
-            }
-
-            var list = modifier.GetResult<List<BeatmapObject>>();
+                return resultList;
+            });
 
             for (int i = 0; i < list.Count; i++)
                 list[i].runtimeObject?.SetCustomActive(false);
@@ -3728,10 +3728,14 @@ namespace BetterLegacy.Core.Helpers
         
         public static void addColorOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
-                return;
+            var list = modifier.GetResultOrDefault(() =>
+            {
+                var prefabable = reference.AsPrefabable();
+                if (prefabable == null)
+                    return new List<BeatmapObject>();
 
-            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1)));
+                return GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+            });
 
             if (list.IsEmpty())
                 return;
@@ -3773,10 +3777,14 @@ namespace BetterLegacy.Core.Helpers
         
         public static void lerpColorOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not IPrefabable prefabable)
-                return;
+            var list = modifier.GetResultOrDefault(() =>
+            {
+                var prefabable = reference.AsPrefabable();
+                if (prefabable == null)
+                    return new List<BeatmapObject>();
 
-            var list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1)));
+                return GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(1));
+            });
 
             if (list.IsEmpty())
                 return;
@@ -5875,7 +5883,10 @@ namespace BetterLegacy.Core.Helpers
             var useVisual = modifier.GetBool(11, false, variables);
 
             var bm = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0)));
-            var time = ModifiersHelper.GetTime(prefabable, bm);
+            if (!bm)
+                return;
+
+            var time = ModifiersHelper.GetTime(bm);
 
             fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
             if (!useVisual)
@@ -5945,7 +5956,7 @@ namespace BetterLegacy.Core.Helpers
                 if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
                     return;
 
-                var time = ModifiersHelper.GetTime(prefabable, bm);
+                var time = ModifiersHelper.GetTime(bm);
 
                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
                 if (!useVisual)

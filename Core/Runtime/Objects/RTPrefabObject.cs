@@ -57,7 +57,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override Transform Parent { get; }
 
-        public override float FixedTime => UseCustomTime ? CustomTime : GetFixedTime(ParentRuntime.FixedTime);
+        public override float FixedTime => UseCustomTime ? CustomTime : GetTime(ParentRuntime.FixedTime);
 
         /// <summary>
         /// Custom interpolation time.
@@ -111,14 +111,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (!IsActive)
                 return;
 
-            if (!CoreConfig.Instance.UseNewUpdateMethod.Value)
-                CurrentTime = FixedTime;
-            else
-            {
-                var smoothedTime = Mathf.SmoothDamp(previousAudioTime, FixedTime, ref audioTimeVelocity, 1.0f / 50.0f);
-                CurrentTime = smoothedTime;
-                previousAudioTime = smoothedTime;
-            }
+            CurrentTime = UseCustomTime ? CustomTime : GetTime(ParentRuntime.CurrentTime);
 
             PreTick();
 
@@ -160,14 +153,6 @@ namespace BetterLegacy.Core.Runtime.Objects
             PrefabObject = null;
         }
 
-        public override void RecalculateObjectStates()
-        {
-            objectEngine?.spawner?.RecalculateObjectStates();
-            objectModifiersEngine?.spawner?.RecalculateObjectStates();
-            backgroundEngine?.spawner?.RecalculateObjectStates();
-            bgModifiersEngine?.spawner?.RecalculateObjectStates();
-        }
-
         public float StartTime { get; set; }
 
         public float KillTime { get; set; }
@@ -179,7 +164,6 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             EngineActive = active;
             UpdateActive();
-            Tick();
         }
 
         /// <summary>
@@ -416,6 +400,6 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         /// <param name="time">Current time.</param>
         /// <returns>Returns the calculated runtime time.</returns>
-        public float GetFixedTime(float time) => (time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
+        public float GetTime(float time) => (time * PrefabObject.Speed) - ((PrefabObject.StartTime * PrefabObject.Speed) + Prefab.offset);
     }
 }
