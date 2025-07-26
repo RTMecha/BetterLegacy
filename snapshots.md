@@ -1,14 +1,16 @@
-﻿# ???
+﻿# snapshot-2025.7.5 - (pre-1.8.0) [Jul 26, 2025]
 
 ## Changes
 ### Editor
-- The "Create Objects Modifier Order Default" setting now applies to imported Prefab Objects.
+- The "Create Objects Modifier Order Default" setting now applies to imported Prefab Objects and new Background Objects.
 
 ## Fixes
 - Fixed use visual values in axis modifiers not allowing rotation axis other than the first.
 - Prefab Name doesn't wrap now.
 - Optimized modifiers and prefabs (FPS should be doubled for enableObjectGroup modifiers).
 - Fixed entering editor preview taking the song time to the last seeked time.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.7.4 - (pre-1.8.0) [Jul 25, 2025]
 
