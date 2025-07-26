@@ -65,6 +65,7 @@ namespace BetterLegacy.Editor.Managers
                 StartTime = AudioManager.inst.CurrentAudioSource.time,
             };
             backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
+            backgroundObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
 
             GameData.Current.backgroundObjects.Add(backgroundObject);
 
