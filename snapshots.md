@@ -3,6 +3,10 @@
 ## Features
 ### Core
 - Started implementing Player Modifiers. Keep in mind, this is only a small part of the full thing and is subject to change.
+- Implemented seed based random. Can be turned off by going to Config Manager > Core > Level > Use Seed Based Random and turning the setting off if anything breaks or you prefer the original randomization method.
+
+### Editor
+- If you want to refresh an objects' randomization, you can go to the Object Editor, right click the ID and click "Shuffle ID".
 
 ## Fixes
 - Fixed some issues with the Player face parent.
