@@ -502,6 +502,19 @@ namespace BetterLegacy.Core.Helpers
             RTBeatmap.Current.endLevelUpdateProgress = modifier.GetBool(2, true, variables);
         }
 
+        public static void getCurrentLevelID(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (LevelManager.CurrentLevel)
+                variables[modifier.GetValue(0)] = LevelManager.CurrentLevel.id;
+            if (CoreHelper.InEditor && EditorLevelManager.inst.CurrentLevel)
+                variables[modifier.GetValue(0)] = EditorLevelManager.inst.CurrentLevel.id;
+        }
+
+        public static void getCurrentLevelRank(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = LevelManager.GetLevelRank(RTBeatmap.Current.hits).Ordinal.ToString();
+        }
+
         #endregion
 
         #region Component
@@ -6729,6 +6742,16 @@ namespace BetterLegacy.Core.Helpers
                 RTBeatmap.Current.deaths.RemoveAt(RTBeatmap.Current.deaths.Count - 1);
         }
 
+        public static void getHitCount(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = RTBeatmap.Current.hits.Count.ToString();
+        }
+        
+        public static void getDeathCount(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            variables[modifier.GetValue(0)] = RTBeatmap.Current.deaths.Count.ToString();
+        }
+
         #endregion
 
         #region Updates
@@ -6839,6 +6862,12 @@ namespace BetterLegacy.Core.Helpers
                 foreach (var beatmapObject in prefabObject.runtimeObject.Spawner.BeatmapObjects)
                     beatmapObject.detatched = prefabObject.detatched;
             }
+        }
+
+        public static void setSeed(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (!modifier.constant)
+                RTLevel.Current?.InitSeed(modifier.GetValue(0, variables));
         }
 
         #endregion

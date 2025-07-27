@@ -711,6 +711,16 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.getCurrentLevelID): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getCurrentLevelRank): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
 
                 #endregion
 
@@ -3425,6 +3435,17 @@ namespace BetterLegacy.Editor.Data
                 //        break;
                 //    }
 
+                case nameof(ModifierActions.getHitCount): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getDeathCount): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+
                 #endregion
 
                 #region Updates
@@ -3468,6 +3489,11 @@ namespace BetterLegacy.Editor.Data
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        break;
+                    }
+                case nameof(ModifierActions.setSeed): {
+                        StringGenerator(modifier, reference, "Seed", 0);
 
                         break;
                     }
