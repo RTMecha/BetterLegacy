@@ -241,8 +241,6 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public static bool tryCatch;
 
-        public bool hideInEditor;
-
         #endregion
 
         #endregion

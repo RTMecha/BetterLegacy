@@ -169,7 +169,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var defaultModifier in ModifiersManager.inst.modifiers)
             {
-                if (!SearchModifier(searchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.hideInEditor)
+                if (!SearchModifier(searchTerm, defaultModifier) || !defaultModifier.compatibility.CompareType(referenceType) || defaultModifier.compatibility.StoryOnly && !ModifiersHelper.development)
                     continue;
 
                 var name = $"{defaultModifier.Name} ({defaultModifier.type})";

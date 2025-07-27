@@ -1174,7 +1174,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     }
 
                     var modifier = Modifier.Parse(jnModifier);
-                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultLevelModifiers))
+                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.defaultLevelModifiers))
                         gameData.modifiers.Add(modifier);
                 }
 

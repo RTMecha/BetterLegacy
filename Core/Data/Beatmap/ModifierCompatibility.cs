@@ -16,7 +16,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             bool paPlayer,
             bool playerModel,
             bool playerObject,
-            bool gameData)
+            bool gameData,
+            bool storyOnly = false)
         {
             BeatmapObject = beatmapObject;
             BackgroundObject = backgroundObject;
@@ -25,6 +26,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             PlayerModel = playerModel;
             PlayerObject = playerObject;
             GameData = gameData;
+            StoryOnly = storyOnly;
         }
 
         #region Defaults
@@ -79,6 +81,13 @@ namespace BetterLegacy.Core.Data.Beatmap
             PlayerObject = true,
         };
         /// <summary>
+        /// The modifier is only compatible with <see cref="Beatmap.GameData"/>.
+        /// </summary>
+        public static ModifierCompatibility GameDataCompatible => new ModifierCompatibility()
+        {
+            GameData = true,
+        };
+        /// <summary>
         /// The modifier is only compatible with <see cref="Player.PAPlayer"/> and <see cref="Player.PlayerModel"/>.
         /// </summary>
         public static ModifierCompatibility FullPlayerCompatible => new ModifierCompatibility()
@@ -88,11 +97,31 @@ namespace BetterLegacy.Core.Data.Beatmap
             PlayerObject = true,
         };
         /// <summary>
-        /// The modifier is only compatible with <see cref="Beatmap.GameData"/>.
+        /// The modifier is only compatible with all objects in a beatmap.
         /// </summary>
-        public static ModifierCompatibility GameDataCompatible => new ModifierCompatibility()
+        public static ModifierCompatibility FullBeatmapCompatible => new ModifierCompatibility()
         {
+            BeatmapObject = true,
+            BackgroundObject = true,
+            PrefabObject = true,
+        };
+        /// <summary>
+        /// The modifier is only compatible with all objects in a beatmap.
+        /// </summary>
+        public static ModifierCompatibility LevelControlCompatible => new ModifierCompatibility()
+        {
+            BeatmapObject = true,
+            BackgroundObject = true,
+            PrefabObject = true,
+            PAPlayer = true,
             GameData = true,
+        };
+        /// <summary>
+        /// If the modifier can only run in the story mode.
+        /// </summary>
+        public static ModifierCompatibility StoryOnlyCompatible => new ModifierCompatibility()
+        {
+            StoryOnly = true,
         };
 
         #endregion
@@ -145,6 +174,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool GameData { get; set; }
 
+        /// <summary>
+        /// If the modifier can only run in the story mode.
+        /// </summary>
+        public bool StoryOnly { get; set; }
+
         public const string OBJ = "obj";
         public const string BG_OBJ = "bg_obj";
         public const string PREFAB_OBJ = "prefab_obj";
@@ -157,49 +191,57 @@ namespace BetterLegacy.Core.Data.Beatmap
         public const string FULL_BEATMAP = "full_beatmap";
         public const string LEVEL_CONTROL = "level_control";
 
+        public const string STORY_ONLY = "story_only";
+
         #endregion
 
         #region Methods
 
-        public ModifierCompatibility WithBeatmapObject(bool compat)
+        public ModifierCompatibility WithBeatmapObject(bool compat = true)
         {
             BeatmapObject = compat;
             return this;
         }
         
-        public ModifierCompatibility WithBackgroundObject(bool compat)
+        public ModifierCompatibility WithBackgroundObject(bool compat = true)
         {
             BackgroundObject = compat;
             return this;
         }
         
-        public ModifierCompatibility WithPrefabObject(bool compat)
+        public ModifierCompatibility WithPrefabObject(bool compat = true)
         {
             PrefabObject = compat;
             return this;
         }
         
-        public ModifierCompatibility WithPAPlayer(bool compat)
+        public ModifierCompatibility WithPAPlayer(bool compat = true)
         {
             PAPlayer = compat;
             return this;
         }
         
-        public ModifierCompatibility WithPlayerModel(bool compat)
+        public ModifierCompatibility WithPlayerModel(bool compat = true)
         {
             PlayerModel = compat;
             return this;
         }
 
-        public ModifierCompatibility WithPlayerObject(bool compat)
+        public ModifierCompatibility WithPlayerObject(bool compat = true)
         {
             PlayerObject = compat;
             return this;
         }
 
-        public ModifierCompatibility WithGameData(bool compat)
+        public ModifierCompatibility WithGameData(bool compat = true)
         {
             GameData = compat;
+            return this;
+        }
+
+        public ModifierCompatibility WithStoryOnly(bool compat = true)
+        {
+            StoryOnly = compat;
             return this;
         }
 
@@ -236,6 +278,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 PAPlayer = true;
                 GameData = true;
             }
+
+            StoryOnly = value == STORY_ONLY;
         }
 
         /// <summary>
@@ -265,6 +309,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     compatibility.PlayerModel = value.Length > 4 && value[4] == '1';
                     compatibility.PlayerObject = value.Length > 5 && value[5] == '1';
                     compatibility.GameData = value.Length > 6 && value[6] == '1';
+                    compatibility.StoryOnly = value.Length > 7 && value[7] == '1';
                 }
                 else
                     compatibility.SetCompat(value);
@@ -312,6 +357,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                                 }
                             case 6: {
                                     compatibility.GameData = jn[6].AsBool;
+                                    break;
+                                }
+                            case 7: {
+                                    compatibility.StoryOnly = jn[7].AsBool;
                                     break;
                                 }
                         }
@@ -366,6 +415,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 compatibility.PAPlayer = compat;
                 compatibility.GameData = compat;
             }
+
+            if (jn[STORY_ONLY] != null)
+                compatibility.StoryOnly = jn[STORY_ONLY].AsBool;
 
             return compatibility;
         }

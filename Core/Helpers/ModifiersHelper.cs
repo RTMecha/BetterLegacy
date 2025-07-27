@@ -15,7 +15,6 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Editor.Managers;
@@ -34,6 +33,13 @@ namespace BetterLegacy.Core.Helpers
 
         public const string DEPRECATED_MESSAGE = "Deprecated.";
 
+        public static void ToggleDevelopment()
+        {
+            development = !development;
+            if (ModifiersEditor.inst.DefaultModifiersPopup.IsOpen)
+                ModifiersEditor.inst.DefaultModifiersPopup.SearchField.onValueChanged.Invoke(ModifiersEditor.inst.DefaultModifiersPopup.SearchTerm);
+        }
+
         #region Running
 
         /// <summary>
@@ -47,7 +53,7 @@ namespace BetterLegacy.Core.Helpers
             bool result = true;
             triggers.ForLoop(trigger =>
             {
-                if (trigger.active || trigger.triggerCount > 0 && trigger.runCount >= trigger.triggerCount)
+                if (trigger.compatibility.StoryOnly && !CoreHelper.InStory || trigger.active || trigger.triggerCount > 0 && trigger.runCount >= trigger.triggerCount)
                 {
                     trigger.triggered = false;
                     result = false;
@@ -157,7 +163,7 @@ namespace BetterLegacy.Core.Helpers
                     bool returned = false;
                     actions.ForLoop(act =>
                     {
-                        if (returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
+                        if (act.compatibility.StoryOnly && !CoreHelper.InStory || returned || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount) // Continue if modifier is not constant and was already activated
                             return;
 
                         if (!act.running)
@@ -178,7 +184,7 @@ namespace BetterLegacy.Core.Helpers
                 // Deactivate both action and trigger modifiers
                 modifiers.ForLoop(modifier =>
                 {
-                    if (!modifier.active && !modifier.running)
+                    if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
                         return;
 
                     modifier.active = false;
@@ -192,7 +198,7 @@ namespace BetterLegacy.Core.Helpers
 
             actions.ForLoop(act =>
             {
-                if (act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
+                if (act.compatibility.StoryOnly && !CoreHelper.InStory || act.active || act.triggerCount > 0 && act.runCount >= act.triggerCount)
                     return;
 
                 if (!act.running)
@@ -222,6 +228,12 @@ namespace BetterLegacy.Core.Helpers
             while (index < modifiers.Count)
             {
                 var modifier = modifiers[index];
+                if (modifier.compatibility.StoryOnly && !CoreHelper.InStory)
+                {
+                    index++;
+                    continue;
+                }
+
                 var name = modifier.Name;
 
                 var isAction = modifier.type == Modifier.Type.Action;
@@ -714,17 +726,17 @@ namespace BetterLegacy.Core.Helpers
             #region Audio
 
             // pitch
-            new ModifierAction(nameof(ModifierActions.setPitch),  ModifierActions.setPitch),
-            new ModifierAction(nameof(ModifierActions.addPitch),  ModifierActions.addPitch),
-            new ModifierAction(nameof(ModifierActions.setPitchMath),  ModifierActions.setPitchMath),
-            new ModifierAction(nameof(ModifierActions.addPitchMath),  ModifierActions.addPitchMath),
+            new ModifierAction(nameof(ModifierActions.setPitch),  ModifierActions.setPitch, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.addPitch),  ModifierActions.addPitch, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setPitchMath),  ModifierActions.setPitchMath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.addPitchMath),  ModifierActions.addPitchMath, ModifierCompatibility.LevelControlCompatible),
 
             // music playing states
-            new ModifierAction(nameof(ModifierActions.setMusicTime),  ModifierActions.setMusicTime),
-            new ModifierAction(nameof(ModifierActions.setMusicTimeMath),  ModifierActions.setMusicTimeMath),
-            new ModifierAction(nameof(ModifierActions.setMusicTimeStartTime),  ModifierActions.setMusicTimeStartTime),
-            new ModifierAction(nameof(ModifierActions.setMusicTimeAutokill),  ModifierActions.setMusicTimeAutokill),
-            new ModifierAction(nameof(ModifierActions.setMusicPlaying),  ModifierActions.setMusicPlaying),
+            new ModifierAction(nameof(ModifierActions.setMusicTime),  ModifierActions.setMusicTime, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setMusicTimeMath),  ModifierActions.setMusicTimeMath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setMusicTimeStartTime),  ModifierActions.setMusicTimeStartTime, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setMusicTimeAutokill),  ModifierActions.setMusicTimeAutokill, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setMusicPlaying),  ModifierActions.setMusicPlaying, ModifierCompatibility.LevelControlCompatible),
 
             // play sound
             new ModifierAction(nameof(ModifierActions.playSound),  ModifierActions.playSound),
@@ -736,17 +748,19 @@ namespace BetterLegacy.Core.Helpers
 
             #region Level
 
-            new ModifierAction(nameof(ModifierActions.loadLevel),  ModifierActions.loadLevel),
-            new ModifierAction(nameof(ModifierActions.loadLevelID),  ModifierActions.loadLevelID),
-            new ModifierAction(nameof(ModifierActions.loadLevelInternal),  ModifierActions.loadLevelInternal),
-            new ModifierAction(nameof(ModifierActions.loadLevelPrevious),  ModifierActions.loadLevelPrevious),
-            new ModifierAction(nameof(ModifierActions.loadLevelHub),  ModifierActions.loadLevelHub),
-            new ModifierAction(nameof(ModifierActions.loadLevelInCollection),  ModifierActions.loadLevelInCollection),
-            new ModifierAction(nameof(ModifierActions.downloadLevel),  ModifierActions.downloadLevel),
-            new ModifierAction(nameof(ModifierActions.endLevel),  ModifierActions.endLevel),
-            new ModifierAction(nameof(ModifierActions.setAudioTransition),  ModifierActions.setAudioTransition),
-            new ModifierAction(nameof(ModifierActions.setIntroFade),  ModifierActions.setIntroFade),
-            new ModifierAction(nameof(ModifierActions.setLevelEndFunc),  ModifierActions.setLevelEndFunc),
+            new ModifierAction(nameof(ModifierActions.loadLevel),  ModifierActions.loadLevel, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadLevelID),  ModifierActions.loadLevelID, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadLevelInternal),  ModifierActions.loadLevelInternal, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadLevelPrevious),  ModifierActions.loadLevelPrevious, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadLevelHub),  ModifierActions.loadLevelHub, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadLevelInCollection),  ModifierActions.loadLevelInCollection, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.downloadLevel),  ModifierActions.downloadLevel, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.endLevel),  ModifierActions.endLevel, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setAudioTransition),  ModifierActions.setAudioTransition, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setIntroFade),  ModifierActions.setIntroFade, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setLevelEndFunc),  ModifierActions.setLevelEndFunc, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.getCurrentLevelID),  ModifierActions.getCurrentLevelID),
+            new ModifierAction(nameof(ModifierActions.getCurrentLevelRank),  ModifierActions.getCurrentLevelRank),
 
             #endregion
 
@@ -773,42 +787,42 @@ namespace BetterLegacy.Core.Helpers
 
             // hit
             new ModifierAction(nameof(ModifierActions.playerHit),  ModifierActions.playerHit, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerHitIndex),  ModifierActions.playerHitIndex),
-            new ModifierAction(nameof(ModifierActions.playerHitAll),  ModifierActions.playerHitAll),
+            new ModifierAction(nameof(ModifierActions.playerHitIndex),  ModifierActions.playerHitIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerHitAll),  ModifierActions.playerHitAll, ModifierCompatibility.LevelControlCompatible),
 
             // heal
             new ModifierAction(nameof(ModifierActions.playerHeal),  ModifierActions.playerHeal, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerHealIndex),  ModifierActions.playerHealIndex),
-            new ModifierAction(nameof(ModifierActions.playerHealAll),  ModifierActions.playerHealAll),
+            new ModifierAction(nameof(ModifierActions.playerHealIndex),  ModifierActions.playerHealIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerHealAll),  ModifierActions.playerHealAll, ModifierCompatibility.LevelControlCompatible),
 
             // kill
             new ModifierAction(nameof(ModifierActions.playerKill),  ModifierActions.playerKill, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerKillIndex),  ModifierActions.playerKillIndex),
-            new ModifierAction(nameof(ModifierActions.playerKillAll),  ModifierActions.playerKillAll),
+            new ModifierAction(nameof(ModifierActions.playerKillIndex),  ModifierActions.playerKillIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerKillAll),  ModifierActions.playerKillAll, ModifierCompatibility.LevelControlCompatible),
 
             // respawn
             new ModifierAction(nameof(ModifierActions.playerRespawn),  ModifierActions.playerRespawn, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerRespawnIndex),  ModifierActions.playerRespawnIndex),
-            new ModifierAction(nameof(ModifierActions.playerRespawnAll),  ModifierActions.playerRespawnAll),
+            new ModifierAction(nameof(ModifierActions.playerRespawnIndex),  ModifierActions.playerRespawnIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerRespawnAll),  ModifierActions.playerRespawnAll, ModifierCompatibility.LevelControlCompatible),
 
             // lock
-            new ModifierAction(nameof(ModifierActions.playerLockXAll), ModifierActions.playerLockXAll),
-            new ModifierAction(nameof(ModifierActions.playerLockYAll), ModifierActions.playerLockYAll),
-            new ModifierAction(nameof(ModifierActions.playerLockBoostAll),  ModifierActions.playerLockBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerLockXAll), ModifierActions.playerLockXAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerLockYAll), ModifierActions.playerLockYAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerLockBoostAll),  ModifierActions.playerLockBoostAll, ModifierCompatibility.LevelControlCompatible),
 
             // player move
             new ModifierAction(nameof(ModifierActions.playerMove),  ModifierActions.playerMove, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerMoveIndex),  ModifierActions.playerMoveIndex),
-            new ModifierAction(nameof(ModifierActions.playerMoveAll),  ModifierActions.playerMoveAll),
+            new ModifierAction(nameof(ModifierActions.playerMoveIndex),  ModifierActions.playerMoveIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveAll),  ModifierActions.playerMoveAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerMoveX),  ModifierActions.playerMoveX, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerMoveXIndex),  ModifierActions.playerMoveXIndex),
-            new ModifierAction(nameof(ModifierActions.playerMoveXAll),  ModifierActions.playerMoveXAll),
+            new ModifierAction(nameof(ModifierActions.playerMoveXIndex),  ModifierActions.playerMoveXIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveXAll),  ModifierActions.playerMoveXAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerMoveY),  ModifierActions.playerMoveY, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerMoveYIndex),  ModifierActions.playerMoveYIndex),
-            new ModifierAction(nameof(ModifierActions.playerMoveYAll),  ModifierActions.playerMoveYAll),
+            new ModifierAction(nameof(ModifierActions.playerMoveYIndex),  ModifierActions.playerMoveYIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerMoveYAll),  ModifierActions.playerMoveYAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerRotate),  ModifierActions.playerRotate, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerRotateIndex),  ModifierActions.playerRotateIndex),
-            new ModifierAction(nameof(ModifierActions.playerRotateAll),  ModifierActions.playerRotateAll),
+            new ModifierAction(nameof(ModifierActions.playerRotateIndex),  ModifierActions.playerRotateIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerRotateAll),  ModifierActions.playerRotateAll, ModifierCompatibility.LevelControlCompatible),
 
             // move to object
             new ModifierAction(nameof(ModifierActions.playerMoveToObject),  ModifierActions.playerMoveToObject, ModifierCompatibility.BeatmapObjectCompatible),
@@ -827,36 +841,36 @@ namespace BetterLegacy.Core.Helpers
 
             // actions
             new ModifierAction(nameof(ModifierActions.playerBoost),  ModifierActions.playerBoost, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerBoostIndex),  ModifierActions.playerBoostIndex),
-            new ModifierAction(nameof(ModifierActions.playerBoostAll),  ModifierActions.playerBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerBoostIndex),  ModifierActions.playerBoostIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerBoostAll),  ModifierActions.playerBoostAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerCancelBoost),  ModifierActions.playerCancelBoost, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerCancelBoostIndex),  ModifierActions.playerCancelBoostIndex),
-            new ModifierAction(nameof(ModifierActions.playerCancelBoostAll),  ModifierActions.playerCancelBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerCancelBoostIndex),  ModifierActions.playerCancelBoostIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerCancelBoostAll),  ModifierActions.playerCancelBoostAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerDisableBoost),  ModifierActions.playerDisableBoost, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerDisableBoostIndex),  ModifierActions.playerDisableBoostIndex),
-            new ModifierAction(nameof(ModifierActions.playerDisableBoostAll),  ModifierActions.playerDisableBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerDisableBoostIndex),  ModifierActions.playerDisableBoostIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerDisableBoostAll),  ModifierActions.playerDisableBoostAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerEnableBoost),  ModifierActions.playerEnableBoost, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerEnableBoostIndex),  ModifierActions.playerEnableBoostIndex),
-            new ModifierAction(nameof(ModifierActions.playerEnableBoostAll),  ModifierActions.playerEnableBoostAll),
+            new ModifierAction(nameof(ModifierActions.playerEnableBoostIndex),  ModifierActions.playerEnableBoostIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableBoostAll),  ModifierActions.playerEnableBoostAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerEnableMove),  ModifierActions.playerEnableMove, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerEnableMoveIndex),  ModifierActions.playerEnableMoveIndex),
-            new ModifierAction(nameof(ModifierActions.playerEnableMoveAll),  ModifierActions.playerEnableMoveAll),
+            new ModifierAction(nameof(ModifierActions.playerEnableMoveIndex),  ModifierActions.playerEnableMoveIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableMoveAll),  ModifierActions.playerEnableMoveAll, ModifierCompatibility.LevelControlCompatible),
 
             // speed
-            new ModifierAction(nameof(ModifierActions.playerSpeed),  ModifierActions.playerSpeed),
+            new ModifierAction(nameof(ModifierActions.playerSpeed),  ModifierActions.playerSpeed, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerVelocity),  ModifierActions.playerVelocity, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerVelocityIndex),  ModifierActions.playerVelocityIndex),
-            new ModifierAction(nameof(ModifierActions.playerVelocityAll),  ModifierActions.playerVelocityAll),
+            new ModifierAction(nameof(ModifierActions.playerVelocityIndex),  ModifierActions.playerVelocityIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerVelocityAll),  ModifierActions.playerVelocityAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerVelocityX),  ModifierActions.playerVelocityX, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerVelocityXIndex),  ModifierActions.playerVelocityXIndex),
-            new ModifierAction(nameof(ModifierActions.playerVelocityXAll),  ModifierActions.playerVelocityXAll),
+            new ModifierAction(nameof(ModifierActions.playerVelocityXIndex),  ModifierActions.playerVelocityXIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerVelocityXAll),  ModifierActions.playerVelocityXAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerVelocityY),  ModifierActions.playerVelocityY, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.playerVelocityYIndex),  ModifierActions.playerVelocityYIndex),
-            new ModifierAction(nameof(ModifierActions.playerVelocityYAll),  ModifierActions.playerVelocityYAll),
+            new ModifierAction(nameof(ModifierActions.playerVelocityYIndex),  ModifierActions.playerVelocityYIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerVelocityYAll),  ModifierActions.playerVelocityYAll, ModifierCompatibility.LevelControlCompatible),
 
-            new ModifierAction(nameof(ModifierActions.setPlayerModel),  ModifierActions.setPlayerModel),
-            new ModifierAction(nameof(ModifierActions.setGameMode),  ModifierActions.setGameMode),
-            new ModifierAction(nameof(ModifierActions.gameMode),  ModifierActions.setGameMode),
+            new ModifierAction(nameof(ModifierActions.setPlayerModel),  ModifierActions.setPlayerModel, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setGameMode),  ModifierActions.setGameMode, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.gameMode),  ModifierActions.setGameMode, ModifierCompatibility.LevelControlCompatible),
 
             new ModifierAction(nameof(ModifierActions.blackHole),  ModifierActions.blackHole, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.whiteHole),  ModifierActions.whiteHole, ModifierCompatibility.BeatmapObjectCompatible),
@@ -865,10 +879,10 @@ namespace BetterLegacy.Core.Helpers
 
             #region Mouse Cursor
 
-            new ModifierAction(nameof(ModifierActions.showMouse),  ModifierActions.showMouse),
-            new ModifierAction(nameof(ModifierActions.hideMouse),  ModifierActions.hideMouse),
-            new ModifierAction(nameof(ModifierActions.setMousePosition),  ModifierActions.setMousePosition),
-            new ModifierAction(nameof(ModifierActions.followMousePosition),  ModifierActions.followMousePosition),
+            new ModifierAction(nameof(ModifierActions.showMouse),  ModifierActions.showMouse, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.hideMouse),  ModifierActions.hideMouse, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setMousePosition),  ModifierActions.setMousePosition, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.followMousePosition),  ModifierActions.followMousePosition, ModifierCompatibility.FullBeatmapCompatible),
 
             #endregion
 
@@ -923,16 +937,16 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.storeLocalVariables),  ModifierActions.storeLocalVariables),
 
             new ModifierAction(nameof(ModifierActions.addVariable),  ModifierActions.addVariable),
-            new ModifierAction(nameof(ModifierActions.addVariableOther),  ModifierActions.addVariableOther),
+            new ModifierAction(nameof(ModifierActions.addVariableOther),  ModifierActions.addVariableOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.subVariable),  ModifierActions.subVariable),
-            new ModifierAction(nameof(ModifierActions.subVariableOther),  ModifierActions.subVariableOther),
+            new ModifierAction(nameof(ModifierActions.subVariableOther),  ModifierActions.subVariableOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.setVariable),  ModifierActions.setVariable),
-            new ModifierAction(nameof(ModifierActions.setVariableOther),  ModifierActions.setVariableOther),
+            new ModifierAction(nameof(ModifierActions.setVariableOther),  ModifierActions.setVariableOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.setVariableRandom),  ModifierActions.setVariableRandom),
-            new ModifierAction(nameof(ModifierActions.setVariableRandomOther),  ModifierActions.setVariableRandomOther),
-            new ModifierAction(nameof(ModifierActions.animateVariableOther),  ModifierActions.animateVariableOther),
+            new ModifierAction(nameof(ModifierActions.setVariableRandomOther),  ModifierActions.setVariableRandomOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.animateVariableOther),  ModifierActions.animateVariableOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.clampVariable),  ModifierActions.clampVariable),
-            new ModifierAction(nameof(ModifierActions.clampVariableOther),  ModifierActions.clampVariableOther),
+            new ModifierAction(nameof(ModifierActions.clampVariableOther),  ModifierActions.clampVariableOther, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -943,11 +957,11 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.setActiveOther), ModifierActions.setActiveOther, ModifierCompatibility.BackgroundObjectCompatible),
 
             // enable
-            new ModifierAction(nameof(ModifierActions.enableObject),  ModifierActions.enableObject, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.enableObject),  ModifierActions.enableObject, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierActions.enableObjectTree),  ModifierActions.enableObjectTree, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.enableObjectOther),  ModifierActions.enableObjectOther, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.enableObjectOther),  ModifierActions.enableObjectOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierActions.enableObjectTreeOther),  ModifierActions.enableObjectTreeOther, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.enableObjectGroup),  ModifierActions.enableObjectGroup, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.enableObjectGroup),  ModifierActions.enableObjectGroup, ModifierCompatibility.FullBeatmapCompatible),
 
             // disable
             new ModifierAction(nameof(ModifierActions.disableObject),  ModifierActions.disableObject, ModifierCompatibility.BeatmapObjectCompatible),
@@ -959,12 +973,12 @@ namespace BetterLegacy.Core.Helpers
 
             #region JSON
 
-            new ModifierAction(nameof(ModifierActions.saveFloat),  ModifierActions.saveFloat),
-            new ModifierAction(nameof(ModifierActions.saveString),  ModifierActions.saveString),
-            new ModifierAction(nameof(ModifierActions.saveText),  ModifierActions.saveText),
-            new ModifierAction(nameof(ModifierActions.saveVariable),  ModifierActions.saveVariable),
-            new ModifierAction(nameof(ModifierActions.loadVariable),  ModifierActions.loadVariable),
-            new ModifierAction(nameof(ModifierActions.loadVariableOther),  ModifierActions.loadVariableOther),
+            new ModifierAction(nameof(ModifierActions.saveFloat),  ModifierActions.saveFloat, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.saveString),  ModifierActions.saveString, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.saveText),  ModifierActions.saveText, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.saveVariable),  ModifierActions.saveVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadVariable),  ModifierActions.loadVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadVariableOther),  ModifierActions.loadVariableOther, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -986,13 +1000,13 @@ namespace BetterLegacy.Core.Helpers
 
             #region Events
 
-            new ModifierAction(nameof(ModifierActions.eventOffset),  ModifierActions.eventOffset),
-            new ModifierAction(nameof(ModifierActions.eventOffsetVariable),  ModifierActions.eventOffsetVariable),
-            new ModifierAction(nameof(ModifierActions.eventOffsetMath),  ModifierActions.eventOffsetMath),
-            new ModifierAction(nameof(ModifierActions.eventOffsetAnimate),  ModifierActions.eventOffsetAnimate),
+            new ModifierAction(nameof(ModifierActions.eventOffset),  ModifierActions.eventOffset, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.eventOffsetVariable),  ModifierActions.eventOffsetVariable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.eventOffsetMath),  ModifierActions.eventOffsetMath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.eventOffsetAnimate),  ModifierActions.eventOffsetAnimate, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.eventOffsetCopyAxis),  ModifierActions.eventOffsetCopyAxis, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.vignetteTracksPlayer),  ModifierActions.vignetteTracksPlayer),
-            new ModifierAction(nameof(ModifierActions.lensTracksPlayer),  ModifierActions.lensTracksPlayer),
+            new ModifierAction(nameof(ModifierActions.vignetteTracksPlayer),  ModifierActions.vignetteTracksPlayer, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.lensTracksPlayer),  ModifierActions.lensTracksPlayer, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -1026,8 +1040,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.setColorRGBA),  ModifierActions.setColorRGBA, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.setColorRGBAOther),  ModifierActions.setColorRGBAOther, ModifierCompatibility.BeatmapObjectCompatible),
 
-            new ModifierAction(nameof(ModifierActions.animateColorKF),  ModifierActions.animateColorKF, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)),
-            new ModifierAction(nameof(ModifierActions.animateColorKFHex),  ModifierActions.animateColorKFHex, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)),
+            new ModifierAction(nameof(ModifierActions.animateColorKF),  ModifierActions.animateColorKF, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()),
+            new ModifierAction(nameof(ModifierActions.animateColorKFHex),  ModifierActions.animateColorKFHex, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()),
 
             #endregion
 
@@ -1035,7 +1049,7 @@ namespace BetterLegacy.Core.Helpers
             #region Shape
             
             new ModifierAction(nameof(ModifierActions.translateShape),  ModifierActions.translateShape, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierActions.setShape),  ModifierActions.setShape, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)),
+            new ModifierAction(nameof(ModifierActions.setShape),  ModifierActions.setShape, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()),
             new ModifierAction(nameof(ModifierActions.setPolygonShape),  ModifierActions.setPolygonShape, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.setPolygonShapeOther),  ModifierActions.setPolygonShapeOther, ModifierCompatibility.BeatmapObjectCompatible),
 
@@ -1065,15 +1079,15 @@ namespace BetterLegacy.Core.Helpers
             #region Animation
 
             new ModifierAction(nameof(ModifierActions.animateObject),  ModifierActions.animateObject),
-            new ModifierAction(nameof(ModifierActions.animateObjectOther),  ModifierActions.animateObjectOther),
+            new ModifierAction(nameof(ModifierActions.animateObjectOther),  ModifierActions.animateObjectOther, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.animateObjectKF),  ModifierActions.animateObjectKF),
-            new ModifierAction(nameof(ModifierActions.animateSignal),  ModifierActions.animateSignal),
-            new ModifierAction(nameof(ModifierActions.animateSignalOther),  ModifierActions.animateSignalOther),
+            new ModifierAction(nameof(ModifierActions.animateSignal),  ModifierActions.animateSignal, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.animateSignalOther),  ModifierActions.animateSignalOther, ModifierCompatibility.LevelControlCompatible),
 
             new ModifierAction(nameof(ModifierActions.animateObjectMath),  ModifierActions.animateObjectMath),
-            new ModifierAction(nameof(ModifierActions.animateObjectMathOther),  ModifierActions.animateObjectMathOther),
-            new ModifierAction(nameof(ModifierActions.animateSignalMath),  ModifierActions.animateSignalMath),
-            new ModifierAction(nameof(ModifierActions.animateSignalMathOther),  ModifierActions.animateSignalMathOther),
+            new ModifierAction(nameof(ModifierActions.animateObjectMathOther),  ModifierActions.animateObjectMathOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.animateSignalMath),  ModifierActions.animateSignalMath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.animateSignalMathOther),  ModifierActions.animateSignalMathOther, ModifierCompatibility.LevelControlCompatible),
 
             new ModifierAction(nameof(ModifierActions.applyAnimation),  ModifierActions.applyAnimation, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.applyAnimationFrom),  ModifierActions.applyAnimationFrom, ModifierCompatibility.BeatmapObjectCompatible),
@@ -1096,43 +1110,48 @@ namespace BetterLegacy.Core.Helpers
 
             #region Prefab
 
-            new ModifierAction(nameof(ModifierActions.spawnPrefab),  ModifierActions.spawnPrefab),
-            new ModifierAction(nameof(ModifierActions.spawnPrefabOffset),  ModifierActions.spawnPrefabOffset),
-            new ModifierAction(nameof(ModifierActions.spawnPrefabOffsetOther),  ModifierActions.spawnPrefabOffsetOther),
-            new ModifierAction(nameof(ModifierActions.spawnPrefabCopy),  ModifierActions.spawnPrefabCopy),
-            new ModifierAction(nameof(ModifierActions.spawnMultiPrefab),  ModifierActions.spawnMultiPrefab),
-            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabOffset),  ModifierActions.spawnMultiPrefabOffset),
-            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabOffsetOther),  ModifierActions.spawnMultiPrefabOffsetOther),
-            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabCopy),  ModifierActions.spawnMultiPrefabCopy),
-            new ModifierAction(nameof(ModifierActions.clearSpawnedPrefabs),  ModifierActions.clearSpawnedPrefabs),
+            new ModifierAction(nameof(ModifierActions.spawnPrefab),  ModifierActions.spawnPrefab, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.spawnPrefabOffset),  ModifierActions.spawnPrefabOffset, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.spawnPrefabOffsetOther),  ModifierActions.spawnPrefabOffsetOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.spawnPrefabCopy),  ModifierActions.spawnPrefabCopy, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefab),  ModifierActions.spawnMultiPrefab, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabOffset),  ModifierActions.spawnMultiPrefabOffset, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabOffsetOther),  ModifierActions.spawnMultiPrefabOffsetOther, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.spawnMultiPrefabCopy),  ModifierActions.spawnMultiPrefabCopy, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.clearSpawnedPrefabs),  ModifierActions.clearSpawnedPrefabs, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.setPrefabTime),  ModifierActions.setPrefabTime, ModifierCompatibility.PrefabObjectCompatible),
 
             #endregion
 
             #region Ranking
 
-            new ModifierAction(nameof(ModifierActions.saveLevelRank),  ModifierActions.saveLevelRank),
+            new ModifierAction(nameof(ModifierActions.saveLevelRank),  ModifierActions.saveLevelRank, ModifierCompatibility.LevelControlCompatible),
 
-            new ModifierAction(nameof(ModifierActions.clearHits),  ModifierActions.clearHits),
-            new ModifierAction(nameof(ModifierActions.addHit),  ModifierActions.addHit),
-            new ModifierAction(nameof(ModifierActions.subHit),  ModifierActions.subHit),
-            new ModifierAction(nameof(ModifierActions.clearDeaths),  ModifierActions.clearDeaths),
-            new ModifierAction(nameof(ModifierActions.addDeath),  ModifierActions.addDeath),
-            new ModifierAction(nameof(ModifierActions.subDeath),  ModifierActions.subDeath),
+            new ModifierAction(nameof(ModifierActions.clearHits),  ModifierActions.clearHits, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.addHit),  ModifierActions.addHit, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.subHit),  ModifierActions.subHit, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.clearDeaths),  ModifierActions.clearDeaths, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.addDeath),  ModifierActions.addDeath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.subDeath),  ModifierActions.subDeath, ModifierCompatibility.LevelControlCompatible),
+
+            new ModifierAction(nameof(ModifierActions.getHitCount),  ModifierActions.getHitCount),
+            new ModifierAction(nameof(ModifierActions.getDeathCount),  ModifierActions.getDeathCount),
 
             #endregion
 
             #region Updates
 
             // update
-            new ModifierAction(nameof(ModifierActions.updateObjects),  ModifierActions.updateObjects),
-            new ModifierAction(nameof(ModifierActions.updateObject),  ModifierActions.updateObject, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true).WithPrefabObject(true)),
+            new ModifierAction(nameof(ModifierActions.updateObjects),  ModifierActions.updateObjects, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.updateObject),  ModifierActions.updateObject, ModifierCompatibility.FullBeatmapCompatible),
 
             // parent
             new ModifierAction(nameof(ModifierActions.setParent),  ModifierActions.setParent, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
             new ModifierAction(nameof(ModifierActions.setParentOther),  ModifierActions.setParentOther, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
             new ModifierAction(nameof(ModifierActions.detachParent),  ModifierActions.detachParent, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
             new ModifierAction(nameof(ModifierActions.detachParentOther),  ModifierActions.detachParentOther, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
+
+            new ModifierAction(nameof(ModifierActions.setSeed),  ModifierActions.setSeed, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
 
             #endregion
 
@@ -1146,36 +1165,36 @@ namespace BetterLegacy.Core.Helpers
 
             #region Checkpoints
 
-            new ModifierAction(nameof(ModifierActions.createCheckpoint),  ModifierActions.createCheckpoint),
-            new ModifierAction(nameof(ModifierActions.resetCheckpoint),  ModifierActions.resetCheckpoint),
+            new ModifierAction(nameof(ModifierActions.createCheckpoint),  ModifierActions.createCheckpoint, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.resetCheckpoint),  ModifierActions.resetCheckpoint, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
             #region Interfaces
 
-            new ModifierAction(nameof(ModifierActions.loadInterface),  ModifierActions.loadInterface),
-            new ModifierAction(nameof(ModifierActions.exitInterface),  ModifierActions.exitInterface),
-            new ModifierAction(nameof(ModifierActions.quitToMenu),  ModifierActions.quitToMenu),
-            new ModifierAction(nameof(ModifierActions.quitToArcade),  ModifierActions.quitToArcade),
-            new ModifierAction(nameof(ModifierActions.pauseLevel),  ModifierActions.pauseLevel),
+            new ModifierAction(nameof(ModifierActions.loadInterface),  ModifierActions.loadInterface, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.exitInterface),  ModifierActions.exitInterface, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.quitToMenu),  ModifierActions.quitToMenu, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.quitToArcade),  ModifierActions.quitToArcade, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.pauseLevel),  ModifierActions.pauseLevel, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
             #region Misc
 
-            new ModifierAction(nameof(ModifierActions.setBGActive),  ModifierActions.setBGActive),
+            new ModifierAction(nameof(ModifierActions.setBGActive),  ModifierActions.setBGActive, ModifierCompatibility.LevelControlCompatible),
 
             // activation
-            new ModifierAction(nameof(ModifierActions.signalModifier),  ModifierActions.signalModifier),
-            new ModifierAction(nameof(ModifierActions.activateModifier),  ModifierActions.activateModifier),
+            new ModifierAction(nameof(ModifierActions.signalModifier),  ModifierActions.signalModifier, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.activateModifier),  ModifierActions.activateModifier, ModifierCompatibility.LevelControlCompatible),
 
-            new ModifierAction(nameof(ModifierActions.editorNotify),  ModifierActions.editorNotify),
+            new ModifierAction(nameof(ModifierActions.editorNotify),  ModifierActions.editorNotify, ModifierCompatibility.LevelControlCompatible),
 
             // external
-            new ModifierAction(nameof(ModifierActions.setWindowTitle),  ModifierActions.setWindowTitle),
-            new ModifierAction(nameof(ModifierActions.setDiscordStatus),  ModifierActions.setDiscordStatus),
+            new ModifierAction(nameof(ModifierActions.setWindowTitle),  ModifierActions.setWindowTitle, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.setDiscordStatus),  ModifierActions.setDiscordStatus, ModifierCompatibility.LevelControlCompatible),
 
-            new ModifierAction(nameof(ModifierActions.callModifierBlock),  ModifierActions.callModifierBlock),
+            new ModifierAction(nameof(ModifierActions.callModifierBlock),  ModifierActions.callModifierBlock, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 
@@ -1203,19 +1222,19 @@ namespace BetterLegacy.Core.Helpers
             // dev only (story mode)
             #region Dev Only
 
-            new ModifierAction(nameof(ModifierActions.loadSceneDEVONLY),  ModifierActions.loadSceneDEVONLY),
-            new ModifierAction(nameof(ModifierActions.loadStoryLevelDEVONLY),  ModifierActions.loadStoryLevelDEVONLY),
-            new ModifierAction(nameof(ModifierActions.storySaveBoolDEVONLY),  ModifierActions.storySaveBoolDEVONLY),
-            new ModifierAction(nameof(ModifierActions.storySaveIntDEVONLY),  ModifierActions.storySaveIntDEVONLY),
-            new ModifierAction(nameof(ModifierActions.storySaveFloatDEVONLY),  ModifierActions.storySaveFloatDEVONLY),
-            new ModifierAction(nameof(ModifierActions.storySaveStringDEVONLY),  ModifierActions.storySaveStringDEVONLY),
-            new ModifierAction(nameof(ModifierActions.storySaveIntVariableDEVONLY),  ModifierActions.storySaveIntVariableDEVONLY),
+            new ModifierAction(nameof(ModifierActions.loadSceneDEVONLY),  ModifierActions.loadSceneDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
+            new ModifierAction(nameof(ModifierActions.loadStoryLevelDEVONLY),  ModifierActions.loadStoryLevelDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
+            new ModifierAction(nameof(ModifierActions.storySaveBoolDEVONLY),  ModifierActions.storySaveBoolDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
+            new ModifierAction(nameof(ModifierActions.storySaveIntDEVONLY),  ModifierActions.storySaveIntDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
+            new ModifierAction(nameof(ModifierActions.storySaveFloatDEVONLY),  ModifierActions.storySaveFloatDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
+            new ModifierAction(nameof(ModifierActions.storySaveStringDEVONLY),  ModifierActions.storySaveStringDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
+            new ModifierAction(nameof(ModifierActions.storySaveIntVariableDEVONLY),  ModifierActions.storySaveIntVariableDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
             new ModifierAction(nameof(ModifierActions.getStorySaveBoolDEVONLY),  ModifierActions.getStorySaveBoolDEVONLY),
             new ModifierAction(nameof(ModifierActions.getStorySaveIntDEVONLY),  ModifierActions.getStorySaveIntDEVONLY),
             new ModifierAction(nameof(ModifierActions.getStorySaveFloatDEVONLY),  ModifierActions.getStorySaveFloatDEVONLY),
             new ModifierAction(nameof(ModifierActions.getStorySaveStringDEVONLY),  ModifierActions.getStorySaveStringDEVONLY),
-            new ModifierAction(nameof(ModifierActions.exampleEnableDEVONLY),  ModifierActions.exampleEnableDEVONLY),
-            new ModifierAction(nameof(ModifierActions.exampleSayDEVONLY),  ModifierActions.exampleSayDEVONLY),
+            new ModifierAction(nameof(ModifierActions.exampleEnableDEVONLY),  ModifierActions.exampleEnableDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
+            new ModifierAction(nameof(ModifierActions.exampleSayDEVONLY),  ModifierActions.exampleSayDEVONLY, ModifierCompatibility.LevelControlCompatible.WithStoryOnly()),
 
             #endregion
         };
@@ -1506,13 +1525,13 @@ namespace BetterLegacy.Core.Helpers
                 (modifier, reference, variables) =>
                 {
                     modifier.Result = null;
-                }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)
+                }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()
             ),
             new ModifierInactive(nameof(ModifierActions.animateColorKFHex),
                 (modifier, reference, variables) =>
                 {
                     modifier.Result = null;
-                }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject(true)
+                }, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()
             ),
 
             #endregion

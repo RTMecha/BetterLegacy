@@ -364,7 +364,7 @@ namespace BetterLegacy.Core.Data.Player
                 for (int i = 0; i < jn["modifiers"].Count; i++)
                 {
                     var modifier = Modifier.Parse(jn["modifiers"][i]);
-                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.defaultPlayerModifiers))
+                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
                         modifiers.Add(modifier);
                 }
 
