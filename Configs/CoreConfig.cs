@@ -583,7 +583,7 @@ namespace BetterLegacy.Configs
         void SeedChanged()
         {
             if (CoreHelper.InEditor)
-                RTLevel.Reinit();
+                RTLevel.Current.InitSeed();
         }
 
         void OnCursorChanged() => CursorManager.onScreenTime = CursorVisibleTime.Value;

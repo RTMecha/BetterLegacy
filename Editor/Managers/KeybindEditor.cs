@@ -937,6 +937,7 @@ namespace BetterLegacy.Editor.Managers
             HideSelection, // 67
             UnhideHiddenObjects, // 68
             ToggleHideSelection, // 69
+            UpdateSeed, // 70
         }
 
         public static List<Action<Keybind>> KeybinderMethods { get; } = new List<Action<Keybind>>
@@ -1011,6 +1012,7 @@ namespace BetterLegacy.Editor.Managers
             HideSelection, // 67
             UnhideHiddenObjects, // 68
             ToggleHideSelection, // 69
+            UpdateSeed, // 70
         };
 
         public static void CustomCode(Keybind keybind)
@@ -1993,6 +1995,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Toggled hidden state of [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
         }
 
+        public static void UpdateSeed(Keybind keybind) => RTLevel.Current.InitSeed();
+
         #endregion
 
         #region Settings
@@ -2132,6 +2136,7 @@ namespace BetterLegacy.Editor.Managers
             null, // 67
             null, // 68
             null, // 69
+            null, // 70
         };
 
         #endregion

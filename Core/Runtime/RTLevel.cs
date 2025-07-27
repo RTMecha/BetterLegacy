@@ -312,10 +312,7 @@ namespace BetterLegacy.Core.Runtime
         public void InitSeed(string seed)
         {
             RandomHelper.SetSeed(seed);
-            //RecacheAllSequences();
-            // todo: figure out how randomization is handled for single object updating.
-            // should it not update randomization? If so, that means the object can properly be updated and will not affect other objects.
-            // if it should update randomization, that means parent objects also need to be updated. but also, how will randomization work if the ID is the same as before? is randomization based on something else?
+            RecacheAllSequences();
         }
 
         /// <summary>
@@ -324,7 +321,7 @@ namespace BetterLegacy.Core.Runtime
         public void InitSeed()
         {
             RandomHelper.UpdateSeed();
-            //RecacheAllSequences();
+            RecacheAllSequences();
         }
 
         static void Log(string message) => Debug.Log($"{className}{message}");
@@ -396,10 +393,7 @@ namespace BetterLegacy.Core.Runtime
                     float strength = 3f;
                     int vibrato = 10;
                     float randomness = 90f;
-                    EventManager.inst.shakeSequence.Insert(0f, DOTween.Shake(() => Vector3.zero, delegate (Vector3 x)
-                    {
-                        EventManager.inst.shakeVector = x;
-                    }, AudioManager.inst.CurrentAudioSource.clip.length, strength, vibrato, randomness, true, false));
+                    EventManager.inst.shakeSequence.Insert(0f, DOTween.Shake(() => Vector3.zero, eventEngine.OverrideShake, AudioManager.inst.CurrentAudioSource.clip.length, strength, vibrato, randomness, true, false));
                 }
             }
 

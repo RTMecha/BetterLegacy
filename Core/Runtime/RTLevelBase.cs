@@ -199,9 +199,10 @@ namespace BetterLegacy.Core.Runtime
                 return;
 
             // currently this desyncs all animations... idk why
-            var beatmapObjects = GameData.Current.beatmapObjects;
-            for (int i = 0; i < beatmapObjects.Count; i++)
-                RecacheSequences(beatmapObjects[i], recursive: false);
+            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+                RecacheSequences(GameData.Current.beatmapObjects[i], recursive: false);
+            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+                UpdatePrefab(GameData.Current.prefabObjects[i], PrefabObjectContext.TRANSFORM_OFFSET);
         }
 
         /// <summary>
