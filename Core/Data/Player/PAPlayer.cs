@@ -77,7 +77,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public PlayerIndex playerIndex;
 
-        public float rumble;
+        public Vector2 rumble;
 
         /// <summary>
         /// If the player is currently alive.
@@ -124,7 +124,7 @@ namespace BetterLegacy.Core.Data.Player
         public IRTObject GetRuntimeObject() => RuntimePlayer;
 
         public IPrefabable AsPrefabable() => null;
-        public ITransformable AsTransformable() => null;
+        public ITransformable AsTransformable() => RuntimePlayer;
 
         #endregion
 
@@ -132,7 +132,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public void UpdatePlayerModel()
         {
-            PlayerModel = PlayersData.GetPlayerModel(CurrentModel).Copy(false);
+            PlayerModel = PlayersData.GetPlayerModel(CurrentModel);
             if (RuntimePlayer)
                 RuntimePlayer.Model = PlayerModel;
         }
@@ -168,7 +168,7 @@ namespace BetterLegacy.Core.Data.Player
             if (device.SortOrder != SortOrder || GetDeviceModel(device.Name) != deviceModel)
                 return;
 
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Input Select")
+            if (InputSelectMenu.Current)
             {
                 InputManager.OnDeviceAttached -= ControllerConnected;
                 InputManager.OnDeviceDetached -= ControllerDisconnected;
@@ -206,20 +206,6 @@ namespace BetterLegacy.Core.Data.Player
 
             ControllerDisconnectedMenu.Current?.Reconnected();
             Debug.LogFormat("{0}Connected Controller exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
-        }
-
-        public void ReconnectController(InputDevice __0)
-        {
-            var myGameActions = MyGameActions.CreateWithJoystickBindings();
-            myGameActions.Device = device;
-            if (RuntimePlayer)
-                RuntimePlayer.Actions = myGameActions;
-        }
-
-        public void UpdateModifiers()
-        {
-            if (!CoreHelper.Paused && PlayerModel && PlayerModel.modifiers != null && !PlayerModel.modifiers.IsEmpty())
-                ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, this, new System.Collections.Generic.Dictionary<string, string>());
         }
 
         public void ResetHealth() => Health = GetControl()?.Health ?? 3;

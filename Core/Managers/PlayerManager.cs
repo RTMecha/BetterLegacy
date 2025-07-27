@@ -32,9 +32,15 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(PlayerManager), SystemManager.inst.transform).AddComponent<PlayerManager>();
 
-        void Awake()
+        void Awake() => inst = this;
+
+        void Update()
         {
-            inst = this;
+            foreach (var player in Players)
+            {
+                var shake = !CoreConfig.Instance.ControllerRumble.Value ? Vector2.zero : ControllerRumble + player.rumble;
+                player.device?.Vibrate(Mathf.Clamp(shake.x, 0f, 0.5f), Mathf.Clamp(shake.y, 0f, 0.5f));
+            }
         }
 
         #endregion
@@ -72,6 +78,8 @@ namespace BetterLegacy.Core.Managers
         /// If other players should be considered in the level ranking.
         /// </summary>
         public static bool IncludeOtherPlayersInRank { get; set; }
+
+        public static Vector2 ControllerRumble { get; set; }
 
         #endregion
 

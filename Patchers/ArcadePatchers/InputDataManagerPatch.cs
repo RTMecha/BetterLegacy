@@ -6,10 +6,9 @@ using HarmonyLib;
 
 using InControl;
 
-using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {
@@ -30,12 +29,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetAllControllerRumble(float __0, float __1, bool __2 = true)
         {
-            if (CoreConfig.Instance.ControllerRumble.Value)
-            {
-                foreach (var customPlayer in PlayerManager.Players)
-                    customPlayer.device?.Vibrate(Mathf.Clamp(__0, 0f, 0.5f), Mathf.Clamp(__1, 0f, 0.5f));
+            PlayerManager.ControllerRumble = new Vector2(__0, __1);
 
-            }
             return false;
         }
 
@@ -43,14 +38,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetControllerRumble(int __0, float __1, float __2, bool __3 = true)
         {
-            if (!CoreConfig.Instance.ControllerRumble.Value)
-                return false;
+            if (PlayerManager.Players.TryGetAt(__0, out PAPlayer player))
+                player.rumble = new Vector2(__0, __1);
 
-            foreach (var customPlayer in PlayerManager.Players)
-            {
-                if (customPlayer && customPlayer.RuntimePlayer && customPlayer.RuntimePlayer.playerIndex == __0)
-                    customPlayer.device?.Vibrate(Mathf.Clamp(__1, 0f, 0.5f), Mathf.Clamp(__2, 0f, 0.5f));
-            }
             return false;
         }
 
@@ -62,22 +52,17 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            var inst = Instance;
-
-            if (CoreHelper.InGame && !CoreHelper.Paused)
-                for (int i = 0; i < PlayerManager.Players.Count; i++)
-                    PlayerManager.Players[i].UpdateModifiers();
-
-            if (!inst.playersCanJoin || PlayerManager.Players.Count >= 8)
+            if (!Instance.playersCanJoin || PlayerManager.Players.Count >= 8)
                 return false;
 
-            if (inst.joystickListener.Join.WasPressed)
+            if (Instance.joystickListener.Join.WasPressed)
             {
                 var activeDevice = InputManager.ActiveDevice;
                 if (PlayerManager.DeviceNotConnected(activeDevice))
                     PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, activeDevice));
             }
-            if (inst.JoinButtonWasPressedOnListener(inst.keyboardListener) && PlayerManager.KeyboardNotConnected())
+
+            if (Instance.keyboardListener.Join.WasPressed && PlayerManager.KeyboardNotConnected())
                 PlayerManager.Players.Add(new PAPlayer(true, PlayerManager.Players.Count, null));
 
             return false;
