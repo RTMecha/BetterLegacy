@@ -253,9 +253,12 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
             {
-                var objectIDs = new List<IDPair>();
+                var objectIDs = new List<IDPair>(prefab.beatmapObjects.Count);
                 for (int j = 0; j < prefab.beatmapObjects.Count; j++)
-                    objectIDs.Add(new IDPair(prefab.beatmapObjects[j].id));
+                {
+                    var beatmapObject = prefab.beatmapObjects[j];
+                    objectIDs.Add(new IDPair(beatmapObject.id, RandomHelper.RandomString(RandomHelper.GetHash(beatmapObject.id, j, RandomHelper.CurrentSeed), 16)));
+                }
 
                 int num = 0;
                 foreach (var beatmapObject in prefab.beatmapObjects)
@@ -343,9 +346,12 @@ namespace BetterLegacy.Core.Runtime.Objects
                     Spawner.BackgroundObjects.Add(backgroundObjectCopy);
                 }
 
-                objectIDs.Clear();
+                objectIDs = new List<IDPair>(prefab.prefabObjects.Count);
                 for (int j = 0; j < prefab.prefabObjects.Count; j++)
-                    objectIDs.Add(new IDPair(prefab.prefabObjects[j].id));
+                {
+                    var subPrefabObject = prefab.prefabObjects[j];
+                    objectIDs.Add(new IDPair(subPrefabObject.id, RandomHelper.RandomString(RandomHelper.GetHash(subPrefabObject.id, j, RandomHelper.CurrentSeed), 16)));
+                }
 
                 num = 0;
                 foreach (var subPrefabObject in prefab.prefabObjects)

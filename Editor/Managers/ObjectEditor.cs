@@ -1619,6 +1619,27 @@ namespace BetterLegacy.Editor.Managers
 
             clickable.onClick = pointerEventData =>
             {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Copy ID", () =>
+                        {
+                            EditorManager.inst.DisplayNotification($"Copied ID from {beatmapObject.name}!", 2f, EditorManager.NotificationType.Success);
+                            LSText.CopyToClipboard(beatmapObject.id);
+                        }),
+                        new ButtonFunction("Shuffle ID", () =>
+                        {
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the ID of this object?", () =>
+                            {
+                                EditorHelper.ShuffleID(beatmapObject);
+                                RenderID(beatmapObject);
+                                RenderParent(beatmapObject);
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup);
+                        }));
+                    return;
+                }
+
                 EditorManager.inst.DisplayNotification($"Copied ID from {beatmapObject.name}!", 2f, EditorManager.NotificationType.Success);
                 LSText.CopyToClipboard(beatmapObject.id);
             };

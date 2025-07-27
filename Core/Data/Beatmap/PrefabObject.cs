@@ -807,11 +807,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             try
             {
                 if (events[0].random != 0)
-                    transform.position = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(events[0]);
+                    transform.position = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(id, events[0]);
                 if (events[1].random != 0)
-                    transform.scale = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(events[1]);
+                    transform.scale = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(id, events[1]);
                 if (events[2].random != 0)
-                    transform.rotation = RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(events[2]);
+                    transform.rotation = RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(id, events[2]);
             }
             catch (System.Exception ex)
             {

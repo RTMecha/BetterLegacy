@@ -3340,7 +3340,7 @@ namespace BetterLegacy.Core.Components.Player
             if (animation.animatePosition)
                 for (int i = 0; i < animation.positionKeyframes.Count; i++)
                 {
-                    var positionKeyframes = ObjectConverter.GetVector3Keyframes(animation.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
+                    var positionKeyframes = ObjectConverter.GetVector3Keyframes(animation, animation.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
 
                     if (animation.transition && customObject.gameObject)
                         positionKeyframes[0].SetValue(customObject.gameObject.transform.localPosition);
@@ -3355,7 +3355,7 @@ namespace BetterLegacy.Core.Components.Player
             if (animation.animateScale)
                 for (int i = 0; i < animation.scaleKeyframes.Count; i++)
                 {
-                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
+                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation, animation.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
 
                     if (animation.transition && customObject.gameObject)
                         scaleKeyframes[0].SetValue(customObject.gameObject.transform.localScale);
@@ -3370,7 +3370,7 @@ namespace BetterLegacy.Core.Components.Player
             if (animation.animateRotation)
                 for (int i = 0; i < animation.rotationKeyframes.Count; i++)
                 {
-                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
+                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation, animation.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
 
                     if (animation.transition && customObject.gameObject)
                         rotationKeyframes[0].SetValue(customObject.gameObject.transform.localEulerAngles.z);

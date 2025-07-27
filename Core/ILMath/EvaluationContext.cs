@@ -125,14 +125,14 @@ namespace ILMath
             });
             RegisterFunction("randomRangeInt", parameters => parameters.Length switch
             {
-                2 => RandomHelper.FromRange(new System.Random().Next().ToString(), (int)parameters[0], (int)parameters[1]),
+                2 => RandomHelper.IntFromRange(new System.Random().Next().ToString(), (int)parameters[0], (int)parameters[1]),
                 3 => RandomHelper.FromIndexRange(parameters[0].ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
                 4 => RandomHelper.FromIndexRange(parameters[0].ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
                 _ => 0
             });
             RegisterFunction("randomSeedRangeInt", parameters => parameters.Length switch
             {
-                2 => RandomHelper.FromRange(RandomHelper.CurrentSeed, (int)parameters[0], (int)parameters[1]),
+                2 => RandomHelper.IntFromRange(RandomHelper.CurrentSeed, (int)parameters[0], (int)parameters[1]),
                 3 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), new System.Random().Next(), (int)parameters[1], (int)parameters[2]),
                 4 => RandomHelper.FromIndexRange(((int)parameters[0] ^ RandomHelper.CurrentSeed.GetHashCode()).ToString(), (int)parameters[1], (int)parameters[2], (int)parameters[3]),
                 _ => 0

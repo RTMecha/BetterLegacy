@@ -1048,7 +1048,6 @@ namespace BetterLegacy.Editor.Managers
 
         public static void UpdateObject(Keybind keybind)
         {
-            RTLevel.Current?.InitSeed();
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
             {
                 switch (timelineObject.TimelineReference)

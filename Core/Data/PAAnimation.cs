@@ -15,7 +15,7 @@ using BetterLegacy.Editor.Managers;
 namespace BetterLegacy.Core.Data
 {
     // TODO: figure out how to get this working properly
-    public class PAAnimation : Exists
+    public class PAAnimation : PAObject<PAAnimation>
     {
         public PAAnimation()
         {
@@ -125,86 +125,83 @@ namespace BetterLegacy.Core.Data
             _ => 0f,
         };
 
-        public static PAAnimation DeepCopy(PAAnimation orig, bool newID = true) => new PAAnimation
+        public override void CopyData(PAAnimation orig, bool newID = true)
         {
-            id = newID ? LSText.randomNumString(16) : orig.id,
-            name = orig.name,
-            desc = orig.desc,
-            markers = orig.markers.Select(x => x.Copy()).ToList(),
-            ReferenceID = orig.ReferenceID,
-            StartTime = orig.StartTime,
+            id = newID ? LSText.randomNumString(16) : orig.id;
+            name = orig.name;
+            desc = orig.desc;
+            markers = orig.markers.Select(x => x.Copy()).ToList();
+            ReferenceID = orig.ReferenceID;
+            StartTime = orig.StartTime;
 
-            positionKeyframes = orig.positionKeyframes.Select(x => x.Copy()).ToList(),
-            scaleKeyframes = orig.scaleKeyframes.Select(x => x.Copy()).ToList(),
-            rotationKeyframes = orig.rotationKeyframes.Select(x => x.Copy()).ToList(),
-            colorKeyframes = orig.colorKeyframes.Select(x => x.Copy()).ToList(),
+            positionKeyframes = orig.positionKeyframes.Select(x => x.Copy()).ToList();
+            scaleKeyframes = orig.scaleKeyframes.Select(x => x.Copy()).ToList();
+            rotationKeyframes = orig.rotationKeyframes.Select(x => x.Copy()).ToList();
+            colorKeyframes = orig.colorKeyframes.Select(x => x.Copy()).ToList();
 
-            animatePosition = orig.animatePosition,
-            animateScale = orig.animateScale,
-            animateRotation = orig.animateRotation,
-            animateColor = orig.animateColor,
-            transition = orig.transition,
-        };
-
-        public static PAAnimation Parse(JSONNode jn)
-        {
-            var animation = new PAAnimation(jn["name"], jn["desc"], jn["st"].AsFloat)
-            {
-                id = jn["id"] ?? LSText.randomNumString(16),
-            };
-
-            for (int i = 0; i < jn["markers"].Count; i++)
-                animation.markers.Add(Marker.Parse(jn["markers"][i]));
-
-            if (!string.IsNullOrEmpty(jn["ref_id"]))
-                animation.ReferenceID = jn["ref_id"];
-
-            if (jn["tr"] != null)
-                animation.transition = jn["tr"].AsBool;
-
-            if (jn["anim"]["pos"] != null)
-                animation.animatePosition = jn["anim"]["pos"].AsBool;
-            if (jn["anim"]["sca"] != null)
-                animation.animateScale = jn["anim"]["sca"].AsBool;
-            if (jn["anim"]["rot"] != null)
-                animation.animateRotation = jn["anim"]["rot"].AsBool;
-            if (jn["anim"]["col"] != null)
-                animation.animateColor = jn["anim"]["col"].AsBool;
-
-            if (jn["pos"] != null)
-            {
-                animation.positionKeyframes.Clear();
-                for (int i = 0; i < jn["pos"].Count; i++)
-                    animation.positionKeyframes.Add(EventKeyframe.Parse(jn["pos"][i], 0, 3));
-            }
-            if (jn["sca"] != null)
-            {
-                animation.scaleKeyframes.Clear();
-                for (int i = 0; i < jn["sca"].Count; i++)
-                    animation.scaleKeyframes.Add(EventKeyframe.Parse(jn["sca"][i], 0, 2));
-            }
-            if (jn["rot"] != null)
-            {
-                animation.rotationKeyframes.Clear();
-                for (int i = 0; i < jn["rot"].Count; i++)
-                    animation.rotationKeyframes.Add(EventKeyframe.Parse(jn["rot"][i], 0, 1));
-            }
-            if (jn["col"] != null)
-            {
-                animation.colorKeyframes.Clear();
-                for (int i = 0; i < jn["col"].Count; i++)
-                    animation.colorKeyframes.Add(EventKeyframe.Parse(jn["col"][i], 0, 5));
-            }
-
-            return animation;
+            animatePosition = orig.animatePosition;
+            animateScale = orig.animateScale;
+            animateRotation = orig.animateRotation;
+            animateColor = orig.animateColor;
+            transition = orig.transition;
         }
 
-        public JSONNode ToJSON()
+        public override void ReadJSON(JSONNode jn)
         {
-            var jn = JSON.Parse("{}");
+            id = jn["id"] ?? LSText.randomNumString(16);
+            name = jn["name"];
+            desc = jn["desc"];
+            StartTime = jn["st"].AsFloat;
+            markers = new List<Marker>();
+            positionKeyframes = new List<EventKeyframe>();
+            positionKeyframes.Add(EventKeyframe.DefaultPositionKeyframe);
+            scaleKeyframes = new List<EventKeyframe>();
+            scaleKeyframes.Add(EventKeyframe.DefaultScaleKeyframe);
+            rotationKeyframes = new List<EventKeyframe>();
+            rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
+            colorKeyframes = new List<EventKeyframe>();
+            colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
+
+            for (int i = 0; i < jn["markers"].Count; i++)
+                markers.Add(Marker.Parse(jn["markers"][i]));
+
+            if (!string.IsNullOrEmpty(jn["ref_id"]))
+                ReferenceID = jn["ref_id"];
+
+            if (jn["tr"] != null)
+                transition = jn["tr"].AsBool;
+
+            if (jn["anim"]["pos"] != null)
+                animatePosition = jn["anim"]["pos"].AsBool;
+            if (jn["anim"]["sca"] != null)
+                animateScale = jn["anim"]["sca"].AsBool;
+            if (jn["anim"]["rot"] != null)
+                animateRotation = jn["anim"]["rot"].AsBool;
+            if (jn["anim"]["col"] != null)
+                animateColor = jn["anim"]["col"].AsBool;
+
+            ReadKeyframesJSON(jn["pos"] ?? jn["e"]["pos"], positionKeyframes, 0, 3);
+            ReadKeyframesJSON(jn["sca"] ?? jn["e"]["sca"], scaleKeyframes, 1, 2);
+            ReadKeyframesJSON(jn["rot"] ?? jn["e"]["rot"], rotationKeyframes, 2, 1);
+            ReadKeyframesJSON(jn["col"] ?? jn["e"]["col"], colorKeyframes, 3, 5);
+        }
+
+        void ReadKeyframesJSON(JSONNode jn, List<EventKeyframe> eventKeyframes, int type, int valueCount, bool defaultRelative = false)
+        {
+            if (jn == null)
+                return;
+
+            eventKeyframes.Clear();
+            for (int i = 0; i < jn.Count; i++)
+                eventKeyframes.Add(EventKeyframe.Parse(jn[i], type, valueCount, defaultRelative));
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
             jn["id"] = id;
             jn["name"] = name;
-            jn["st"] = StartTime.ToString();
+            jn["st"] = StartTime;
             for (int i = 0; i < markers.Count; i++)
                 jn["markers"][i] = markers[i].ToJSON();
 
@@ -221,13 +218,13 @@ namespace BetterLegacy.Core.Data
                 jn["anim"]["col"] = animateColor;
 
             for (int i = 0; i < positionKeyframes.Count; i++)
-                jn["pos"][i] = (positionKeyframes[i] as EventKeyframe).ToJSON();
+                jn["pos"][i] = positionKeyframes[i].ToJSON();
             for (int i = 0; i < scaleKeyframes.Count; i++)
-                jn["sca"][i] = (scaleKeyframes[i] as EventKeyframe).ToJSON();
+                jn["sca"][i] = scaleKeyframes[i].ToJSON();
             for (int i = 0; i < rotationKeyframes.Count; i++)
-                jn["rot"][i] = (rotationKeyframes[i] as EventKeyframe).ToJSON();
+                jn["rot"][i] = rotationKeyframes[i].ToJSON(true);
             for (int i = 0; i < colorKeyframes.Count; i++)
-                jn["col"][i] = (colorKeyframes[i] as EventKeyframe).ToJSON();
+                jn["col"][i] = colorKeyframes[i].ToJSON();
 
             return jn;
         }
@@ -244,7 +241,7 @@ namespace BetterLegacy.Core.Data
             if (animatePosition)
                 for (int i = 0; i < positionKeyframes.Count; i++)
                 {
-                    var positionKeyframes = ObjectConverter.GetVector3Keyframes(this.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
+                    var positionKeyframes = ObjectConverter.GetVector3Keyframes(this, this.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
 
                     if (transition)
                         positionKeyframes[0].SetValue(transform.localPosition);
@@ -258,7 +255,7 @@ namespace BetterLegacy.Core.Data
             if (animateScale)
                 for (int i = 0; i < scaleKeyframes.Count; i++)
                 {
-                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(this.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
+                    var scaleKeyframes = ObjectConverter.GetVector2Keyframes(this, this.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
 
                     if (transition)
                         scaleKeyframes[0].SetValue(transform.localScale);
@@ -272,7 +269,7 @@ namespace BetterLegacy.Core.Data
             if (animateRotation)
                 for (int i = 0; i < rotationKeyframes.Count; i++)
                 {
-                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(this.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
+                    var rotationKeyframes = ObjectConverter.GetFloatKeyframes(this, this.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
 
                     if (transition)
                         rotationKeyframes[0].SetValue(transform.localEulerAngles.z);

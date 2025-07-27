@@ -195,7 +195,7 @@ namespace BetterLegacy.Core.Data.Player
             scaleParent = orig.scaleParent;
             requireAll = orig.requireAll;
             visibilitySettings = orig.visibilitySettings.Select(x => x.Copy()).ToList();
-            animations = orig.animations.Select(x => PAAnimation.DeepCopy(x)).ToList();
+            animations = orig.animations.Select(x => x.Copy()).ToList();
 
             this.CopyModifyableData(orig);
         }
