@@ -347,7 +347,7 @@ namespace BetterLegacy.Core.Runtime.Events
                 var speed = shakeSpeed < 0.001f ? 1f : shakeSpeed;
                 shakeTime += (time - previousAudioTime) * speed;
                 shakeTime = Mathf.Clamp(shakeTime, 0f, !AudioManager.inst.CurrentAudioSource.clip ? 0f : AudioManager.inst.CurrentAudioSource.clip.length);
-                EventManager.inst.shakeVector = shakeSequence.Interpolate(shakeTime % shakeLength);
+                OverrideShake(shakeSequence.Interpolate(shakeTime % shakeLength));
             }
 
             for (int i = 0; i < allEvents.Count; i++)
@@ -487,7 +487,7 @@ namespace BetterLegacy.Core.Runtime.Events
                 var speed = shakeSpeed < 0.001f ? 1f : shakeSpeed;
                 shakeTime += (time - previousAudioTime) * speed;
                 shakeTime = Mathf.Clamp(shakeTime, 0f, !AudioManager.inst.CurrentAudioSource.clip ? 0f : AudioManager.inst.CurrentAudioSource.clip.length);
-                EventManager.inst.shakeVector = shakeSequence.Interpolate(shakeTime % shakeLength);
+                OverrideShake(shakeSequence.Interpolate(shakeTime % shakeLength));
             }
 
             var eventFunctions = this.events;
@@ -1094,12 +1094,14 @@ namespace BetterLegacy.Core.Runtime.Events
         /// </summary>
         public Sequence<Vector2> shakeSequence;
 
+        public void OverrideShake(Vector3 shake) => Shake = shake;
+
         /// <summary>
         /// Renders the shake event.
         /// </summary>
         public void UpdateShake()
         {
-            var vector = EventManager.inst.shakeVector * EventManager.inst.shakeMultiplier;
+            var vector = Shake * EventManager.inst.shakeMultiplier;
             vector.x *= shakeX == 0f && shakeY == 0f ? 1f : shakeX;
             vector.y *= shakeX == 0f && shakeY == 0f ? 1f : shakeY;
             vector.z = 0f;
@@ -1786,6 +1788,8 @@ namespace BetterLegacy.Core.Runtime.Events
         #endregion
 
         #region Variables
+
+        public Vector3 Shake { get; set; }
 
         public bool bgActive;
 

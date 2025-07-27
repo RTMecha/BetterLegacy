@@ -138,11 +138,16 @@ namespace BetterLegacy.Core
                     }
 
                     if (RTLevel.Current)
+                    {
                         context.RegisterFunction("sampleAudio", parameters => RTLevel.Current.GetSample((int)parameters[0], (float)parameters[1]));
-                    if (RTLevel.Current && RTLevel.Current.eventEngine)
-                        context.RegisterFunction("copyEvent", parameters => RTLevel.Current.eventEngine.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
-                    if (RTLevel.Current && RTLevel.Current.eventEngine)
-                        context.RegisterFunction("copyEventOffset", parameters => RTLevel.Current.eventEngine.offsets[(int)parameters[0]][(int)parameters[1]]);
+                        if (RTLevel.Current.eventEngine)
+                        {
+                            context.RegisterVariable("shakeX", RTLevel.Current.eventEngine.Shake.x);
+                            context.RegisterVariable("shakeY", RTLevel.Current.eventEngine.Shake.y);
+                            context.RegisterFunction("copyEvent", parameters => RTLevel.Current.eventEngine.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
+                            context.RegisterFunction("copyEventOffset", parameters => RTLevel.Current.eventEngine.offsets[(int)parameters[0]][(int)parameters[1]]);
+                        }
+                    }
                 }
 
                 context.RegisterVariable("actionMoveX", InputDataManager.inst.menuActions.Move.X);
