@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data.Level
     /// </summary>
     public class LevelCollection : Exists
     {
-        public LevelCollection() => id = LSText.randomNumString(16);
+        public LevelCollection() => id = PAObjectBase.GetNumberID();
 
         /// <summary>
         /// Constructs a level collection from a pre-existing queue. This allows the creation of collections in the Arcade menu.
@@ -64,6 +64,11 @@ namespace BetterLegacy.Core.Data.Level
         /// Creator of the collection / levels within.
         /// </summary>
         public string creator;
+
+        /// <summary>
+        /// General difficutly of the collection.
+        /// </summary>
+        public int difficulty;
 
         /// <summary>
         /// Tags used to identify the collection.
@@ -108,6 +113,8 @@ namespace BetterLegacy.Core.Data.Level
         #endregion
 
         #region Properties
+
+        public DifficultyType Difficulty { get => difficulty; set => difficulty = value; }
 
         /// <summary>
         /// Gets the level that the player first enters when clicking Play.<br>Level is either a hub level or the first in the collection.</br>
@@ -200,11 +207,12 @@ namespace BetterLegacy.Core.Data.Level
         public static LevelCollection Parse(string path, JSONNode jn, bool loadLevels = true)
         {
             var collection = new LevelCollection();
-            collection.id = jn["id"];
-            collection.serverID = jn["server_id"];
-            collection.name = jn["name"];
-            collection.creator = jn["creator"];
-            collection.description = jn["desc"];
+            collection.id = jn["id"] ?? PAObjectBase.GetNumberID();
+            collection.serverID = jn["server_id"] ?? string.Empty;
+            collection.name = jn["name"] ?? string.Empty;
+            collection.creator = jn["creator"] ?? string.Empty;
+            collection.description = jn["desc"] ?? string.Empty;
+            collection.difficulty = jn["difficulty"].AsInt;
             collection.path = path;
 
             if (jn["tags"] != null)
@@ -220,47 +228,63 @@ namespace BetterLegacy.Core.Data.Level
                 var levelInfo = LevelInfo.Parse(jnLevel, i);
                 collection.levelInformation.Add(levelInfo);
 
-                if (!loadLevels)
-                    continue;
-
-                var jnPath = jnLevel["path"];
-
-                // load via path
-                if (jnPath != null && (RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, jnPath, Level.LEVEL_VGD))))
-                {
-                    var levelFolder = RTFile.CombinePaths(path, jnPath);
-
-                    MetaData metadata = null;
-
-                    if (RTFile.FileExists(RTFile.CombinePaths(levelFolder, Level.METADATA_VGM)))
-                        metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(levelFolder, Level.METADATA_VGM))));
-                    else if (RTFile.FileExists(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB)))
-                        metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB))));
-
-                    if (!metadata)
-                        continue;
-
-                    metadata.VerifyID(levelFolder);
-                    levelInfo.level = NewCollectionLevel(levelFolder);
-                }
-
-                // load via arcade ID
-                else if (jnLevel["arcade_id"] != null && LevelManager.Levels.TryFind(x => x.id == jnLevel["arcade_id"], out Level arcadeLevel))
-                    levelInfo.level = NewCollectionLevel(arcadeLevel.path);
-
-                // load via workshop ID
-                else if (jnLevel["workshop_id"] != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == jnLevel["workshop_id"], out Level steamLevel))
-                    levelInfo.level = NewCollectionLevel(steamLevel.path);
-
-                if (levelInfo.level)
-                    levelInfo.Overwrite(levelInfo.level);
-
-                collection.levels.Add(levelInfo.level);
+                if (loadLevels)
+                    collection.LoadLevel(levelInfo);
             }
 
             collection.UpdateIcons();
 
             return collection;
+        }
+
+        /// <summary>
+        /// Loads all levels from the level information.
+        /// </summary>
+        public void LoadLevels()
+        {
+            for (int i = 0; i < levelInformation.Count; i++)
+                LoadLevel(levelInformation[i]);
+        }
+
+        /// <summary>
+        /// Loads a level from level information.
+        /// </summary>
+        /// <param name="levelInfo">Level information to get the level from.</param>
+        public void LoadLevel(LevelInfo levelInfo)
+        {
+            var path = levelInfo.path;
+
+            // load via path
+            if (path != null && (RTFile.FileExists(RTFile.CombinePaths(path, path, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, path, Level.LEVEL_VGD))))
+            {
+                var levelFolder = RTFile.CombinePaths(path, path);
+
+                MetaData metadata = null;
+
+                if (RTFile.FileExists(RTFile.CombinePaths(levelFolder, Level.METADATA_VGM)))
+                    metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(levelFolder, Level.METADATA_VGM))));
+                else if (RTFile.FileExists(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB)))
+                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(levelFolder, Level.METADATA_LSB))));
+
+                if (!metadata)
+                    return;
+
+                metadata.VerifyID(levelFolder);
+                levelInfo.level = NewCollectionLevel(levelFolder);
+            }
+
+            // load via arcade ID
+            else if (levelInfo.arcadeID != null && LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out Level arcadeLevel))
+                levelInfo.level = NewCollectionLevel(arcadeLevel.path);
+
+            // load via workshop ID
+            else if (levelInfo.workshopID != null && SteamWorkshopManager.inst.Levels.TryFind(x => x.id == levelInfo.workshopID, out Level steamLevel))
+                levelInfo.level = NewCollectionLevel(steamLevel.path);
+
+            if (levelInfo.level)
+                levelInfo.Overwrite(levelInfo.level);
+
+            levels.Add(levelInfo.level);
         }
 
         static Level NewCollectionLevel(string path) => new Level(path) { fromCollection = true };
@@ -316,7 +340,7 @@ namespace BetterLegacy.Core.Data.Level
             }
             else if (!string.IsNullOrEmpty(levelInfo.serverID))
             {
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{levelInfo.serverID}", json =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{levelInfo.serverID}", json =>
                 {
                     ConfirmMenu.Init("Level does not exist in your level list. Do you want to download it off the Arcade server?", () =>
                     {
@@ -508,13 +532,19 @@ namespace BetterLegacy.Core.Data.Level
         /// <param name="jpg">If icons should be saved as JPG.</param>
         public void Save(bool saveIcons = true, bool jpg = true)
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
-            jn["server_id"] = serverID;
-            jn["name"] = name;
-            jn["creator"] = creator;
-            jn["desc"] = name;
+            if (!string.IsNullOrEmpty(serverID))
+                jn["server_id"] = serverID;
+            if (!string.IsNullOrEmpty(name))
+                jn["name"] = name;
+            if (!string.IsNullOrEmpty(creator))
+                jn["creator"] = creator;
+            if (!string.IsNullOrEmpty(description))
+                jn["desc"] = description;
+            if (difficulty != 0)
+                jn["difficulty"] = difficulty;
 
             if (tags != null)
                 for (int i = 0; i < tags.Length; i++)
