@@ -161,7 +161,7 @@ namespace BetterLegacy.Editor.Managers
 
         int page;
         string search;
-        static string SearchURL => $"{AlephNetwork.ARCADE_SERVER_URL}api/level/uploads";
+        static string SearchURL => $"{AlephNetwork.ArcadeServerURL}api/level/uploads";
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
@@ -193,7 +193,7 @@ namespace BetterLegacy.Editor.Managers
 			if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
 				headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/uploads", json =>
+			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/uploads", json =>
 			{
 				try
 				{

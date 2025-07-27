@@ -30,6 +30,11 @@ namespace BetterLegacy.Core
         /// </summary>
         public static string className = "[<color=#FC5F58>AlephNetwork</color>]\n";
 
+        /// <summary>
+        /// Link to the Arcade server.
+        /// </summary>
+        public static string ArcadeServerURL => !string.IsNullOrEmpty(Configs.CoreConfig.Instance.ArcadeServerURL.Value) ? Configs.CoreConfig.Instance.ArcadeServerURL.Value : ARCADE_SERVER_URL;
+
         #region Constants
 
         /// <summary>

@@ -705,7 +705,7 @@ namespace BetterLegacy.Editor.Managers
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{serverID}", json =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{serverID}", json =>
             {
                 EditorManager.inst.DisplayNotification($"Level is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
             }, (string onError, long responseCode, string errorMsg) =>
@@ -883,7 +883,7 @@ namespace BetterLegacy.Editor.Managers
                 if (authData != null && authData["access_token"] != null)
                     headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ARCADE_SERVER_URL}api/level", File.ReadAllBytes(path), id =>
+                CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ArcadeServerURL}api/level", File.ReadAllBytes(path), id =>
                 {
                     uploading = false;
                     MetaData.Current.serverID = id;
@@ -965,7 +965,7 @@ namespace BetterLegacy.Editor.Managers
                     if (authData != null && authData["access_token"] != null)
                         headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{id}", () =>
+                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ArcadeServerURL}api/level/{id}", () =>
                     {
                         uploading = false;
                         MetaData.Current.beatmap.datePublished = string.Empty;
@@ -1030,7 +1030,7 @@ namespace BetterLegacy.Editor.Managers
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ARCADE_SERVER_URL}api/level/{serverID}", json =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{serverID}", json =>
             {
                 var jn = JSON.Parse(json);
 
@@ -1074,7 +1074,7 @@ namespace BetterLegacy.Editor.Managers
         {
             RTEditor.inst.ShowWarningPopup("You are not logged in.", () =>
             {
-                Application.OpenURL($"{AlephNetwork.ARCADE_SERVER_URL}api/auth/login");
+                Application.OpenURL($"{AlephNetwork.ArcadeServerURL}api/auth/login");
                 CreateLoginListener(onLogin);
                 RTEditor.inst.HideWarningPopup();
             }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
@@ -1088,7 +1088,7 @@ namespace BetterLegacy.Editor.Managers
             form.AddField("AccessToken", authData["access_token"].Value);
             form.AddField("RefreshToken", authData["refresh_token"].Value);
 
-            using var www = UnityWebRequest.Post($"{AlephNetwork.ARCADE_SERVER_URL}api/auth/refresh", form);
+            using var www = UnityWebRequest.Post($"{AlephNetwork.ArcadeServerURL}api/auth/refresh", form);
             www.certificateHandler = new AlephNetwork.ForceAcceptAll();
             yield return www.SendWebRequest();
 
