@@ -430,6 +430,8 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> NotifyREPL { get; set; }
 
+        public Setting<string> ArcadeServerURL { get; set; }
+
         #endregion
 
         #endregion
@@ -536,6 +538,7 @@ namespace BetterLegacy.Configs
             DebugShowOnlyFPS = Bind(this, DEBUGGING, "Show Only FPS", true, "If the Debug Info menu should only display FPS.");
             DebugPosition = Bind(this, DEBUGGING, "Debug Info Position", new Vector2(10f, 1080f), "The position the Debug Info menu is at.");
             NotifyREPL = Bind(this, DEBUGGING, "Notify REPL", false, "If in editor, code ran will have their results be notified.");
+            ArcadeServerURL = Bind(this, DEBUGGING, "Arcade Server URL", "https://betterlegacy.net/", "The link to the Arcade Server. This is only for debugging purposes and as such is not to be changed unless you are debugging the Arcade server.");
 
             #endregion
 
