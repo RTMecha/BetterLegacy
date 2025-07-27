@@ -55,7 +55,7 @@ namespace BetterLegacy.Core.Data
 
         public override void CopyData(ModifierBlock<T> orig, bool newID = true) => this.CopyModifyableData(orig);
 
-        public override void ReadJSON(JSONNode jn) => this.ReadModifiersJSON(jn, ModifiersManager.inst.modifiers);
+        public override void ReadJSON(JSONNode jn) => this.ReadModifiersJSON(jn);
 
         public override JSONNode ToJSON()
         {

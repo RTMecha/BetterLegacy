@@ -520,7 +520,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
 
-            this.ReadModifiersJSON(jn, ModifiersManager.inst.modifiers, true);
+            this.ReadModifiersJSON(jn, true);
         }
 
         public override JSONNode ToJSONVG()

@@ -2022,7 +2022,7 @@ namespace BetterLegacy.Core
         /// <param name="modifyable">Modifyable object reference.</param>
         /// <param name="jn">JSON to read from.</param>
         /// <param name="defaultModifiers">Default modifiers list to validate from.</param>
-        public static void ReadModifiersJSON(this IModifyable modifyable, JSONNode jn, List<Modifier> defaultModifiers, bool handleOutdatedPageModifiers = false)
+        public static void ReadModifiersJSON(this IModifyable modifyable, JSONNode jn, bool handleOutdatedPageModifiers = false)
         {
             modifyable.Tags.Clear();
             if (jn["tags"] != null)
@@ -2053,7 +2053,7 @@ namespace BetterLegacy.Core
                         for (int j = 0; j < jn["modifiers"][i].Count; j++)
                         {
                             var modifier = Modifier.Parse(jn["modifiers"][i][j]);
-                            if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
+                            if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
                                 list.Add(modifier);
                         }
 
@@ -2067,7 +2067,7 @@ namespace BetterLegacy.Core
                     else
                     {
                         var modifier = Modifier.Parse(jn["modifiers"][i]);
-                        if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
+                        if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
                             modifyable.Modifiers.Add(modifier);
                     }
                 }
@@ -2078,7 +2078,7 @@ namespace BetterLegacy.Core
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
                 var modifier = Modifier.Parse(jn["modifiers"][i]);
-                if (ModifiersHelper.VerifyModifier(modifier, defaultModifiers))
+                if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
                     modifyable.Modifiers.Add(modifier);
             }
         }

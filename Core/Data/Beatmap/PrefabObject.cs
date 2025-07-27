@@ -558,7 +558,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 };
             }
 
-            this.ReadModifiersJSON(jn, ModifiersManager.inst.modifiers);
+            this.ReadModifiersJSON(jn);
         }
 
         public override JSONNode ToJSONVG()

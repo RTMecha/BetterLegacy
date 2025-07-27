@@ -15,6 +15,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             bool prefabObject,
             bool paPlayer,
             bool playerModel,
+            bool playerObject,
             bool gameData)
         {
             BeatmapObject = beatmapObject;
@@ -22,6 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             PrefabObject = prefabObject;
             PAPlayer = paPlayer;
             PlayerModel = playerModel;
+            PlayerObject = playerObject;
             GameData = gameData;
         }
 
@@ -70,6 +72,22 @@ namespace BetterLegacy.Core.Data.Beatmap
             PlayerModel = true,
         };
         /// <summary>
+        /// The modifier is only compatible with <see cref="Player.PlayerObject"/>.
+        /// </summary>
+        public static ModifierCompatibility PlayerObjectCompatible => new ModifierCompatibility()
+        {
+            PlayerObject = true,
+        };
+        /// <summary>
+        /// The modifier is only compatible with <see cref="Player.PAPlayer"/> and <see cref="Player.PlayerModel"/>.
+        /// </summary>
+        public static ModifierCompatibility FullPlayerCompatible => new ModifierCompatibility()
+        {
+            PAPlayer = true,
+            PlayerModel = true,
+            PlayerObject = true,
+        };
+        /// <summary>
         /// The modifier is only compatible with <see cref="Beatmap.GameData"/>.
         /// </summary>
         public static ModifierCompatibility GameDataCompatible => new ModifierCompatibility()
@@ -86,13 +104,15 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool All
         {
-            get => BeatmapObject && BackgroundObject && PrefabObject && PAPlayer && GameData;
+            get => BeatmapObject && BackgroundObject && PrefabObject && PAPlayer && PlayerModel && PlayerObject && GameData;
             set
             {
                 BeatmapObject = value;
                 BackgroundObject = value;
                 PrefabObject = value;
                 PAPlayer = value;
+                PlayerModel = value;
+                PlayerObject = value;
                 GameData = value;
             }
         }
@@ -117,6 +137,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool PlayerModel { get; set; }
         /// <summary>
+        /// If the modifier is only compatible with <see cref="Player.PlayerObject"/>.
+        /// </summary>
+        public bool PlayerObject { get; set; }
+        /// <summary>
         /// If the modifier is only compatible with <see cref="Beatmap.GameData"/>.
         /// </summary>
         public bool GameData { get; set; }
@@ -126,7 +150,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         public const string PREFAB_OBJ = "prefab_obj";
         public const string PLAYER = "player";
         public const string PLAYER_MODEL = "player_model";
+        public const string PLAYER_OBJ = "player_obj";
         public const string GAME = "game";
+
+        public const string FULL_PLAYER = "full_player";
+        public const string FULL_BEATMAP = "full_beatmap";
+        public const string LEVEL_CONTROL = "level_control";
 
         #endregion
 
@@ -162,6 +191,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             return this;
         }
 
+        public ModifierCompatibility WithPlayerObject(bool compat)
+        {
+            PlayerObject = compat;
+            return this;
+        }
+
         public ModifierCompatibility WithGameData(bool compat)
         {
             GameData = compat;
@@ -179,7 +214,28 @@ namespace BetterLegacy.Core.Data.Beatmap
             PrefabObject = value == PREFAB_OBJ;
             PAPlayer = value == PLAYER;
             PlayerModel = value == PLAYER_MODEL;
+            PlayerObject = value == PLAYER_OBJ;
             GameData = value == GAME;
+            if (value == FULL_PLAYER)
+            {
+                PAPlayer = true;
+                PlayerModel = true;
+                PlayerObject = true;
+            }
+            if (value == FULL_BEATMAP)
+            {
+                BeatmapObject = true;
+                BackgroundObject = true;
+                PrefabObject = true;
+            }
+            if (value == LEVEL_CONTROL)
+            {
+                BeatmapObject = true;
+                BackgroundObject = true;
+                PrefabObject = true;
+                PAPlayer = true;
+                GameData = true;
+            }
         }
 
         /// <summary>
@@ -194,6 +250,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn == null)
                 return compatibility;
 
+            compatibility.All = false;
+
             if (jn.IsString)
             {
                 var value = jn.Value;
@@ -205,7 +263,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                     compatibility.PrefabObject = value.Length > 2 && value[2] == '1';
                     compatibility.PAPlayer = value.Length > 3 && value[3] == '1';
                     compatibility.PlayerModel = value.Length > 4 && value[4] == '1';
-                    compatibility.GameData = value.Length > 5 && value[5] == '1';
+                    compatibility.PlayerObject = value.Length > 5 && value[5] == '1';
+                    compatibility.GameData = value.Length > 6 && value[6] == '1';
                 }
                 else
                     compatibility.SetCompat(value);
@@ -215,12 +274,50 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn.IsArray)
             {
-                compatibility.BeatmapObject = jn[0].AsBool;
-                compatibility.BackgroundObject = jn[1].AsBool;
-                compatibility.PrefabObject = jn[2].AsBool;
-                compatibility.PAPlayer = jn[3].AsBool;
-                compatibility.PlayerModel = jn[4].AsBool;
-                compatibility.GameData = jn[5].AsBool;
+                for (int i = 0; i < jn.Count; i++)
+                {
+                    if (jn[i].IsString)
+                    {
+                        compatibility.SetCompat(jn[i]);
+                        continue;
+                    }
+
+                    if (jn[i].IsBoolean)
+                    {
+                        switch (i)
+                        {
+                            case 0: {
+                                    compatibility.BeatmapObject = jn[0].AsBool;
+                                    break;
+                                }
+                            case 1: {
+                                    compatibility.BackgroundObject = jn[1].AsBool;
+                                    break;
+                                }
+                            case 2: {
+                                    compatibility.PrefabObject = jn[2].AsBool;
+                                    break;
+                                }
+                            case 3: {
+                                    compatibility.PAPlayer = jn[3].AsBool;
+                                    break;
+                                }
+                            case 4: {
+                                    compatibility.PlayerModel = jn[4].AsBool;
+                                    break;
+                                }
+                            case 5: {
+                                    compatibility.PlayerObject = jn[5].AsBool;
+                                    break;
+                                }
+                            case 6: {
+                                    compatibility.GameData = jn[6].AsBool;
+                                    break;
+                                }
+                        }
+                    }
+                }
+
                 return compatibility;
             }
 
@@ -239,8 +336,36 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn[PLAYER_MODEL] != null)
                 compatibility.PlayerModel = jn[PLAYER_MODEL].AsBool;
             
+            if (jn[PLAYER_OBJ] != null)
+                compatibility.PlayerObject = jn[PLAYER_OBJ].AsBool;
+
             if (jn[GAME] != null)
                 compatibility.GameData = jn[GAME].AsBool;
+
+            if (jn[FULL_PLAYER] != null)
+            {
+                var compat = jn[FULL_PLAYER].AsBool;
+                compatibility.PAPlayer = compat;
+                compatibility.PlayerModel = compat;
+            }
+            
+            if (jn[FULL_BEATMAP] != null)
+            {
+                var compat = jn[FULL_BEATMAP].AsBool;
+                compatibility.BeatmapObject = compat;
+                compatibility.BackgroundObject = compat;
+                compatibility.PrefabObject = compat;
+            }
+            
+            if (jn[LEVEL_CONTROL] != null)
+            {
+                var compat = jn[LEVEL_CONTROL].AsBool;
+                compatibility.BeatmapObject = compat;
+                compatibility.BackgroundObject = compat;
+                compatibility.PrefabObject = compat;
+                compatibility.PAPlayer = compat;
+                compatibility.GameData = compat;
+            }
 
             return compatibility;
         }
@@ -257,6 +382,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             ModifierReferenceType.PrefabObject => PrefabObject,
             ModifierReferenceType.PAPlayer => PAPlayer,
             ModifierReferenceType.PlayerModel => PlayerModel,
+            ModifierReferenceType.PlayerObject => PlayerObject,
             ModifierReferenceType.GameData => GameData,
             _ => false,
         };
@@ -273,11 +399,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             ModifierReferenceType.PrefabObject => PrefabObjectCompatible,
             ModifierReferenceType.PAPlayer => PAPlayerCompatible,
             ModifierReferenceType.PlayerModel => PlayerModelCompatible,
+            ModifierReferenceType.PlayerObject => PlayerObjectCompatible,
             ModifierReferenceType.GameData => GameDataCompatible,
             _ => AllCompatible,
         };
 
-        public override int GetHashCode() => CoreHelper.CombineHashCodes(BeatmapObject, BackgroundObject, PrefabObject, PAPlayer, PlayerModel, GameData);
+        public override int GetHashCode() => CoreHelper.CombineHashCodes(BeatmapObject, BackgroundObject, PrefabObject, PAPlayer, PlayerModel, PlayerObject, GameData);
 
         public override bool Equals(object obj) => obj is ModifierCompatibility compatibility &&
             BeatmapObject == compatibility.BeatmapObject &&
@@ -285,6 +412,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             PrefabObject == compatibility.PrefabObject &&
             PAPlayer == compatibility.PAPlayer &&
             PlayerModel == compatibility.PlayerModel &&
+            PlayerObject == compatibility.PlayerObject &&
             GameData == compatibility.GameData;
 
         #endregion
