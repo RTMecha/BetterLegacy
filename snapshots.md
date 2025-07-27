@@ -4,6 +4,9 @@
 ### Core
 - Started implementing Player Modifiers. Keep in mind, this is only a small part of the full thing and is subject to change.
 
+## Fixes
+- Fixed some issues with the Player face parent.
+
 ------------------------------------------------------------------------------------------
 
 # snapshot-2025.7.5 - (pre-1.8.0) [Jul 26, 2025]
