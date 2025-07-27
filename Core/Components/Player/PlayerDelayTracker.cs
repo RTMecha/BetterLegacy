@@ -19,15 +19,7 @@ namespace BetterLegacy.Core.Components.Player
             float pitch = RTPlayer.MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
             // If object should flip.
-            if (player.rotateMode == RTPlayer.RotateMode.FlipX || player.rotateMode == RTPlayer.RotateMode.RotateFlipX)
-            {
-                if (player.lastMovement.x > 0.01f)
-                    target = leader.position + offset * leader.transform.right;
-                if (player.lastMovement.x < 0.01f)
-                    target = leader.position + -offset * leader.transform.right;
-            }
-            else
-                target = leader.position + offset * leader.transform.right;
+            target = leader.position + offset * leader.transform.right;
 
             float p = Time.deltaTime * 60f * pitch;
             float po = 1f - Mathf.Pow(1f - Mathf.Clamp(positionOffset, 0.001f, 1f), p);
