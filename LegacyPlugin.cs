@@ -66,6 +66,7 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Patching failed.\n{ex}"); // Catch for cases where patchers fail to work.
+                System.Windows.Forms.MessageBox.Show($"Patching the game failed. This mod is only for the Legacy branch, which can be unlocked on Steam by using the code \"oldlegacy2020\". If you are using the Legacy branch, please send this log to RTMecha.");
                 throw;
             } // Patch initialization
 
@@ -80,6 +81,7 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Configs failed to load.\n{ex}");
+                System.Windows.Forms.MessageBox.Show($"Loading the configs failed. Is this because the files are corrupted? Check the profile folder to verify.");
                 throw;
             } // Config initializations
 
@@ -124,6 +126,7 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to initialize Editor Themes.\n{ex}");
+                System.Windows.Forms.MessageBox.Show($"Editor themes failed to load.");
                 throw;
             } // Editor themes loading
 
