@@ -23,6 +23,8 @@ namespace BetterLegacy.Core.Data
             beatmap = new BeatmapMetaData();
         }
 
+        #region Values
+
         #region Properties
 
         /// <summary>
@@ -49,6 +51,38 @@ namespace BetterLegacy.Core.Data
         /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
         /// </summary>
         public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.link) ? null : AlephNetwork.GetURL(URLSource.Song, song.linkType, song.linkType == 2 ? artist.link + "," + song.link : song.link);
+
+        #endregion
+
+        #region Fields
+
+        public ArtistMetaData artist;
+        public CreatorMetaData creator;
+        public SongMetaData song;
+        public BeatmapMetaData beatmap;
+
+        public string collectionID;
+        public int index;
+        public string uploaderName;
+        public string uploaderID;
+        public string serverID;
+        public string arcadeID;
+        public string prevID;
+        public string nextID;
+        public bool isHubLevel;
+        public bool requireUnlock;
+        public bool unlockAfterCompletion = true;
+        public ServerVisibility visibility;
+        public string changelog;
+        /// <summary>
+        /// Marks the level as requiring a specific version. This means levels made in a specific version with specific features can only be playable on that version.
+        /// </summary>
+        public bool requireVersion;
+        public DataManager.VersionComparison versionRange = DataManager.VersionComparison.EqualTo;
+
+        public Dictionary<Rank, string[]> customSayings = new Dictionary<Rank, string[]>();
+
+        #endregion
 
         #endregion
 
@@ -175,10 +209,6 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        /// <summary>
-        /// Writes the <see cref="MetaData"/> to a VG format JSON.
-        /// </summary>
-        /// <returns>Returns a JSON object representing the <see cref="MetaData"/>.</returns>
         public override JSONNode ToJSONVG()
         {
             var jn = Parser.NewJSONObject();
@@ -191,10 +221,6 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
-        /// <summary>
-        /// Writes the <see cref="MetaData"/> to a LS format JSON.
-        /// </summary>
-        /// <returns>Returns a JSON object representing the <see cref="MetaData"/>.</returns>
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
@@ -307,43 +333,9 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        #endregion
-
-        #region Fields
-
-        public ArtistMetaData artist;
-        public CreatorMetaData creator;
-        public SongMetaData song;
-        public BeatmapMetaData beatmap;
-
-        public string collectionID;
-        public int index;
-        public string uploaderName;
-        public string uploaderID;
-        public string serverID;
-        public string arcadeID;
-        public string prevID;
-        public string nextID;
-        public bool isHubLevel;
-        public bool requireUnlock;
-        public bool unlockAfterCompletion = true;
-        public ServerVisibility visibility;
-        public string changelog;
-        /// <summary>
-        /// Marks the level as requiring a specific version. This means levels made in a specific version with specific features can only be playable on that version.
-        /// </summary>
-        public bool requireVersion;
-        public DataManager.VersionComparison versionRange = DataManager.VersionComparison.EqualTo;
-
-        public Dictionary<Rank, string[]> customSayings = new Dictionary<Rank, string[]>();
-
-        #endregion
-
-        #region Operators
-
         public override int GetHashCode() => CoreHelper.CombineHashCodes(arcadeID);
 
-        public override bool Equals(object obj) => obj is MetaData && ID == (obj as MetaData).ID;
+        public override bool Equals(object obj) => obj is MetaData metaData && ID == metaData.ID;
 
         public override string ToString() => $"{ID}: {artist.name} - {song.title}";
 
@@ -400,8 +392,10 @@ namespace BetterLegacy.Core.Data
         {
             if (!string.IsNullOrEmpty(jn["artist"]["name"]))
                 name = jn["artist"]["name"];
-            if (!string.IsNullOrEmpty(jn["artist"]["linkType"]))
+            if (jn["artist"]["linkType"] != null)
                 linkType = jn["artist"]["linkType"].AsInt;
+            if (jn["artist"]["link_type"] != null)
+                linkType = jn["artist"]["link_type"].AsInt;
             if (!string.IsNullOrEmpty(jn["artist"]["link"]))
                 link = jn["artist"]["link"];
         }
@@ -422,7 +416,7 @@ namespace BetterLegacy.Core.Data
             var jn = Parser.NewJSONObject();
 
             jn["name"] = name;
-            jn["linkType"] = !string.IsNullOrEmpty(link) ? linkType.ToString() : 2;
+            jn["link_type"] = !string.IsNullOrEmpty(link) ? linkType : 2;
             jn["link"] = link ?? string.Empty;
 
             return jn;
@@ -484,7 +478,7 @@ namespace BetterLegacy.Core.Data
         {
             if (!string.IsNullOrEmpty(jn["creator"]["steam_name"]))
                 name = jn["creator"]["steam_name"];
-            if (!string.IsNullOrEmpty(jn["creator"]["steam_id"]))
+            if (jn["creator"]["steam_id"] != null)
                 steamID = jn["creator"]["steam_id"].AsLong;
             if (jn["creator"]["linkType"] != null)
                 linkType = jn["creator"]["linkType"].AsInt;
@@ -509,12 +503,13 @@ namespace BetterLegacy.Core.Data
             var jn = Parser.NewJSONObject();
 
             jn["steam_name"] = name ?? string.Empty;
-            jn["steam_id"] = steamID.ToString();
+            if (steamID != -1)
+                jn["steam_id"] = steamID;
 
             if (!string.IsNullOrEmpty(link))
             {
                 jn["link"] = link;
-                jn["link_type"] = linkType.ToString();
+                jn["link_type"] = linkType;
             }
 
             return jn;
@@ -611,7 +606,7 @@ namespace BetterLegacy.Core.Data
         {
             if (!string.IsNullOrEmpty(jn["song"]["title"]))
                 title = jn["song"]["title"];
-            if (!string.IsNullOrEmpty(jn["song"]["difficulty"]))
+            if (jn["song"]["difficulty"] != null)
                 difficulty = jn["song"]["difficulty"].AsInt;
             if (!string.IsNullOrEmpty(jn["song"]["description"]))
                 description = jn["song"]["description"];
@@ -621,13 +616,13 @@ namespace BetterLegacy.Core.Data
                 linkType = jn["song"]["linkType"].AsInt;
             if (jn["song"]["link_type"] != null)
                 linkType = jn["song"]["link_type"].AsInt;
-            if (!string.IsNullOrEmpty(jn["song"]["bpm"]))
+            if (jn["song"]["bpm"] != null)
                 bpm = jn["song"]["bpm"].AsFloat;
-            if (!string.IsNullOrEmpty(jn["song"]["t"]))
+            if (jn["song"]["t"] != null)
                 time = jn["song"]["t"].AsFloat;
-            if (!string.IsNullOrEmpty(jn["song"]["preview_start"]))
+            if (jn["song"]["preview_start"] != null)
                 previewStart = jn["song"]["preview_start"].AsFloat;
-            if (!string.IsNullOrEmpty(jn["song"]["preview_length"]))
+            if (jn["song"]["preview_length"] != null)
                 previewLength = jn["song"]["preview_length"].AsFloat;
 
             if (jn["song"]["tags"] != null)
@@ -662,19 +657,19 @@ namespace BetterLegacy.Core.Data
             var jn = Parser.NewJSONObject();
 
             jn["title"] = title ?? string.Empty;
-            jn["difficulty"] = difficulty.ToString();
+            jn["difficulty"] = difficulty;
             jn["description"] = description ?? string.Empty;
 
             if (!string.IsNullOrEmpty(link))
             {
                 jn["link"] = link;
-                jn["link_type"] = linkType.ToString();
+                jn["link_type"] = linkType;
             }
 
-            jn["bpm"] = bpm.ToString();
-            jn["t"] = time.ToString();
-            jn["preview_start"] = previewStart.ToString();
-            jn["preview_length"] = previewLength.ToString();
+            jn["bpm"] = bpm;
+            jn["t"] = time;
+            jn["preview_start"] = previewStart;
+            jn["preview_length"] = previewLength;
 
             if (tags != null)
                 for (int i = 0; i < tags.Length; i++)
@@ -834,7 +829,7 @@ namespace BetterLegacy.Core.Data
                 jn["workshop_id"] = workshopID;
 
             if (preferredPlayerCount != PreferredPlayerCount.Any)
-                jn["preferred_players"] = ((int)preferredPlayerCount).ToString();
+                jn["preferred_players"] = (int)preferredPlayerCount;
 
             return jn;
         }
