@@ -15,10 +15,6 @@
   Update: 1.8.0  
 - Online multiplayer.  
   Update: 1.10.0  
-- Seed-based random.  
-  Update: 1.8.0  
-- Player modifiers.  
-  Update: 1.8.0  
 - Level modifiers (supports VG triggers).  
   Update: 1.8.0  
 - 2D option for BG objects (VG parallax support?)
