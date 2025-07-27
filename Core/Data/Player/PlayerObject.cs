@@ -6,7 +6,7 @@ using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerObject : PAObject<PlayerObject>, IShapeable, IPlayerObject
+    public class PlayerObject : PAObject<PlayerObject>, IPlayerObject, IShapeable
     {
         public PlayerObject()
         {

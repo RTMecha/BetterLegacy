@@ -233,6 +233,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BaseTab.TickModifiers = SetupModifiers("  Modifiers Per Tick", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.TickModifiers.ShowInDefault = true;
 
+            BaseTab.ModelModifiers = SetupModifiers("  Model Modifiers", PlayerEditor.Tab.Base, editorTab: BaseTab);
+
             #endregion
 
             #region GUI
@@ -344,6 +346,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CustomObjectTab.SelectCustomObject = SetupButton("Custom Objects", PlayerEditor.Tab.Custom, "Select a custom object.", editorTab: CustomObjectTab);
             CustomObjectTab.ID = SetupButton("ID", PlayerEditor.Tab.Custom, editorTab: CustomObjectTab);
             CustomObjectTab.Name = SetupString("Name", PlayerEditor.Tab.Custom, editorTab: CustomObjectTab);
+            CustomObjectTab.Tags = SetupTags("Tags", PlayerEditor.Tab.Custom, editorTab: CustomObjectTab);
             SetupObjectTab(CustomObjectTab, string.Empty, PlayerEditor.Tab.Custom, false, false, false);
 
             CustomObjectTab.Parent = SetupDropdown("Parent", CoreHelper.StringToOptionData("Head", "Boost", "Boost Tail", "Tail 1", "Tail 2", "Tail 3", "Face"), PlayerEditor.Tab.Custom, editorTab: CustomObjectTab);
@@ -390,6 +393,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             visibilityContentLE.minWidth = 349;
 
             visibilityScrollRectSR.content = visibilityContentGO.transform.AsRT();
+
+            CustomObjectTab.Modifiers = SetupModifiers("  Modifiers", PlayerEditor.Tab.Tail, editorTab: CustomObjectTab);
 
             #endregion
 
@@ -790,7 +795,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorModifiers SetupModifiers(string name, PlayerEditor.Tab tab, PlayerEditorTab editorTab = null)
         {
             var gameObject = SetupPart(name);
-            gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 620f);
+            gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 128f);
             RectValues.Default.AnchoredPosition(32f, 0f).SizeDelta(750f, 32f).AssignToRectTransform(gameObject.transform.GetChild(0).AsRT());
 
             var layout = gameObject.AddComponent<VerticalLayoutGroup>();
@@ -803,12 +808,65 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var dialog = new ModifiersEditorDialog();
             dialog.Init(gameObject.transform, false, false, false);
+            dialog.showModifiersFunc = _val => gameObject.transform.AsRT().sizeDelta = new Vector2(750f, _val ? 620f : 128f);
 
             var ui = new PlayerEditorModifiers
             {
                 Name = name,
                 GameObject = gameObject,
                 Modifiers = dialog,
+                Tab = tab,
+                ValueType = ValueType.Function,
+            };
+            AddElement(ui, tab, editorTab);
+            return ui;
+        }
+
+        public PlayerEditorTags SetupTags(string name, PlayerEditor.Tab tab, PlayerEditorTab editorTab = null)
+        {
+            var gameObject = SetupPart(name);
+
+            // Tags Scroll View/Viewport/Content
+            var tagScrollView = Creator.NewUIObject("Tags Scroll View", gameObject.transform);
+            var tagsScrollView = tagScrollView.transform.AsRT();
+            tagsScrollView.sizeDelta = new Vector2(522f, 40f);
+
+            var scroll = tagScrollView.AddComponent<ScrollRect>();
+
+            scroll.horizontal = true;
+            scroll.vertical = false;
+
+            var image = tagScrollView.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.01f);
+
+            var mask = tagScrollView.AddComponent<Mask>();
+
+            var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+            RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
+
+            var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
+            var tagsContent = tagContent.transform.AsRT();
+
+            var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
+            tagContentGLG.cellSize = new Vector2(168f, 32f);
+            tagContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            tagContentGLG.constraintCount = 1;
+            tagContentGLG.childAlignment = TextAnchor.MiddleLeft;
+            tagContentGLG.spacing = new Vector2(8f, 0f);
+
+            var tagContentCSF = tagContent.AddComponent<ContentSizeFitter>();
+            tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+            scroll.viewport = tagViewport.transform.AsRT();
+            scroll.content = tagsContent;
+
+            var ui = new PlayerEditorTags
+            {
+                Name = name,
+                GameObject = gameObject,
+                TagsScrollView = tagsScrollView,
+                TagsContent = tagsContent,
                 Tab = tab,
                 ValueType = ValueType.Function,
             };
@@ -936,6 +994,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorToggle FaceControlActive { get; set; }
 
         public PlayerEditorModifiers TickModifiers { get; set; }
+
+        public PlayerEditorModifiers ModelModifiers { get; set; }
     }
 
     public class PlayerEditorGUITab : PlayerEditorTab
@@ -1108,6 +1168,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorButton SelectCustomObject { get; set; }
         public PlayerEditorButton ID { get; set; }
         public PlayerEditorString Name { get; set; }
+        public PlayerEditorTags Tags { get; set; }
         public PlayerEditorDropdown Parent { get; set; }
         public PlayerEditorString CustomParent { get; set; }
         public PlayerEditorNumber PositionOffset { get; set; }
@@ -1117,6 +1178,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorToggle RotationParent { get; set; }
         public PlayerEditorToggle RequireAll { get; set; }
         public PlayerEditorElement VisibilitySettings { get; set; }
+        public PlayerEditorModifiers Modifiers { get; set; }
     }
 
     public abstract class PlayerEditorTab : Exists
@@ -1178,6 +1240,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
     #endregion
 
     #region Element Classes
+
+    public class PlayerEditorTags : PlayerEditorElement, ITagDialog
+    {
+        public RectTransform TagsScrollView { get; set; }
+
+        public RectTransform TagsContent { get; set; }
+    }
 
     public class PlayerEditorModifiers : PlayerEditorElement
     {

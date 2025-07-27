@@ -1016,6 +1016,7 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 CoroutineHelper.StartCoroutine(Dialog.BaseTab.TickModifiers.Modifiers.RenderModifiers(PlayersData.Current.playerControls.GetAt(playerModelIndex).TickModifierBlock));
+                CoroutineHelper.StartCoroutine(Dialog.BaseTab.ModelModifiers.Modifiers.RenderModifiers(currentModel));
             }
             catch (Exception ex)
             {
@@ -1732,6 +1733,8 @@ namespace BetterLegacy.Editor.Managers
             Dialog.CustomObjectTab.Name.Field.SetTextWithoutNotify(customObject.name);
             Dialog.CustomObjectTab.Name.Field.onValueChanged.NewListener(_val => customObject.name = _val);
 
+            RTEditor.inst.RenderTags(customObject, Dialog.CustomObjectTab.Tags);
+
             Dialog.CustomObjectTab.Parent.Dropdown.SetValueWithoutNotify(customObject.parent);
             Dialog.CustomObjectTab.Parent.Dropdown.onValueChanged.NewListener(_val =>
             {
@@ -1894,6 +1897,8 @@ namespace BetterLegacy.Editor.Managers
             }
 
             RenderObject(Dialog.CustomObjectTab, customObject);
+
+            CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
         }
 
         public IEnumerator RefreshModels(Action<PlayerModel> onSelect = null)

@@ -1422,57 +1422,58 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        #region Dev Only
+        #region Player Only
+
+        public static bool healthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.Health == modifier.GetInt(0, 3, variables);
+        }
+
+        public static bool healthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.Health >= modifier.GetInt(0, 3, variables);
+        }
+
+        public static bool healthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.Health <= modifier.GetInt(0, 3, variables);
+        }
+
+        public static bool healthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.Health > modifier.GetInt(0, 3, variables);
+        }
+
+        public static bool healthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.Health < modifier.GetInt(0, 3, variables);
+        }
+
+        public static bool isDead(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isDead;
+        }
+
+        public static bool isBoosting(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isBoosting;
+        }
+
+        public static bool isColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.triggerColliding;
+        }
+
+        public static bool isSolidColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.colliding;
+        }
 
         #endregion
 
-        public static class PlayerTriggers
-        {
-            public static bool healthEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.Health == modifier.GetInt(0, 3, variables);
-            }
+        #region Dev Only
 
-            public static bool healthGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.Health >= modifier.GetInt(0, 3, variables);
-            }
-
-            public static bool healthLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.Health <= modifier.GetInt(0, 3, variables);
-            }
-
-            public static bool healthGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.Health > modifier.GetInt(0, 3, variables);
-            }
-
-            public static bool healthLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.Health < modifier.GetInt(0, 3, variables);
-            }
-
-            public static bool isDead(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isDead;
-            }
-
-            public static bool isBoosting(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.isBoosting;
-            }
-
-            public static bool isColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.triggerColliding;
-            }
-
-            public static bool isSolidColliding(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-            {
-                return reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.colliding;
-            }
-        }
+        #endregion
     }
 }
 

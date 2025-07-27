@@ -11,7 +11,7 @@ using BetterLegacy.Core.Data.Beatmap;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class CustomPlayerObject : PAObject<CustomPlayerObject>, IShapeable, IPlayerObject
+    public class CustomPlayerObject : PAObject<CustomPlayerObject>, IPlayerObject, IShapeable, IModifyable
     {
         public CustomPlayerObject()
         {
@@ -150,6 +150,20 @@ namespace BetterLegacy.Core.Data.Player
 
         public List<PAAnimation> animations = new List<PAAnimation>();
 
+        public ModifierReferenceType ReferenceType => ModifierReferenceType.PlayerObject;
+
+        public List<string> Tags { get; set; } = new List<string>();
+
+        public List<Modifier> Modifiers { get; set; } = new List<Modifier>();
+
+        public bool IgnoreLifespan { get; set; }
+
+        public bool OrderModifiers { get; set; }
+
+        public int IntVariable { get; set; }
+
+        public bool ModifiersActive => false;
+
         #endregion
 
         #endregion
@@ -182,6 +196,8 @@ namespace BetterLegacy.Core.Data.Player
             requireAll = orig.requireAll;
             visibilitySettings = orig.visibilitySettings.Select(x => x.Copy()).ToList();
             animations = orig.animations.Select(x => PAAnimation.DeepCopy(x)).ToList();
+
+            this.CopyModifyableData(orig);
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -350,6 +366,8 @@ namespace BetterLegacy.Core.Data.Player
                 for (int i = 0; i < jn["anims"].Count; i++)
                     animations.Add(PAAnimation.Parse(jn["anims"][i]));
             }
+
+            this.ReadModifiersJSON(jn);
         }
 
         public override JSONNode ToJSON()
@@ -418,6 +436,8 @@ namespace BetterLegacy.Core.Data.Player
 
             for (int i = 0; i < animations.Count; i++)
                 jn["anims"][i] = animations[i].ToJSON();
+
+            this.WriteModifiersJSON(jn);
 
             return jn;
         }

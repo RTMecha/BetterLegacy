@@ -1353,6 +1353,14 @@ namespace BetterLegacy.Core.Components.Player
 
             Core?.GetControl()?.TickModifierBlock?.Run(Core);
 
+            if (Model)
+            {
+                if (Model.OrderModifiers)
+                    ModifiersHelper.RunModifiersLoop(Model.modifiers, Core, new Dictionary<string, string>());
+                else
+                    ModifiersHelper.RunModifiersAll(Model.modifiers, Core, new Dictionary<string, string>());
+            }
+
             if (!isColliderTrigger)
                 SetTriggerCollision(false);
 
@@ -2173,6 +2181,13 @@ namespace BetterLegacy.Core.Components.Player
                 if (!Core || !customObject.gameObject)
                     return;
 
+                var reference = customObject.reference;
+
+                if (reference.OrderModifiers)
+                    ModifiersHelper.RunModifiersLoop(reference.Modifiers, customObject, new Dictionary<string, string>());
+                else
+                    ModifiersHelper.RunModifiersAll(reference.Modifiers, customObject, new Dictionary<string, string>());
+
                 var active = customObject.active &&
                     (customObject.reference.visibilitySettings.IsEmpty() ? customObject.reference.active :
                         customObject.reference.requireAll ?
@@ -2184,7 +2199,6 @@ namespace BetterLegacy.Core.Components.Player
                 if (!active)
                     return;
 
-                var reference = customObject.reference;
                 if (customObject.text)
                     customObject.text.color = RTColors.GetPlayerColor(index, reference.color, reference.opacity, reference.customColor);
                 else if (customObject.renderer)
@@ -3780,7 +3794,7 @@ namespace BetterLegacy.Core.Components.Player
         /// <summary>
         /// Represents a custom object from the model.
         /// </summary>
-        public class RTCustomPlayerObject : RTPlayerObject, ITransformable
+        public class RTCustomPlayerObject : RTPlayerObject, ITransformable, IModifierReference, ICustomActivatable
         {
             public RTCustomPlayerObject() => isCustom = true;
 
@@ -3855,6 +3869,20 @@ namespace BetterLegacy.Core.Components.Player
             public Vector3 GetFullScale() => gameObject.transform.lossyScale;
 
             public Vector3 GetFullRotation(bool includeSelf) => gameObject.transform.eulerAngles;
+
+            public RTLevelBase ParentRuntime { get; set; }
+
+            public ModifierReferenceType ReferenceType => ModifierReferenceType.PlayerObject;
+
+            public int IntVariable { get; set; }
+
+            public IRTObject GetRuntimeObject() => null;
+
+            public IPrefabable AsPrefabable() => null;
+
+            public ITransformable AsTransformable() => this;
+
+            public void SetCustomActive(bool active) => this.active = active;
         }
 
         /// <summary>

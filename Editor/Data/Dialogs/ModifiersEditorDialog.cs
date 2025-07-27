@@ -81,6 +81,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public GameObject pasteModifier;
 
         /// <summary>
+        /// Function to run when the modifiers list is toggled on.
+        /// </summary>
+        public Action<bool> showModifiersFunc;
+
+        /// <summary>
         /// Initializes the Modifier Editor UI.
         /// </summary>
         /// <param name="parent">Parent to set the Modifier Editor UI to.</param>
@@ -187,6 +192,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     showModifiers = _val;
                     CoroutineHelper.StartCoroutine(RenderModifiers(modifyable));
+                    showModifiersFunc?.Invoke(_val);
                 });
             }
 

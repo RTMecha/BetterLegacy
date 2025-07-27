@@ -3565,20 +3565,20 @@ namespace BetterLegacy.Editor.Data
 
                 #region Player Only
 
-                case nameof(ModifierActions.PlayerActions.setCustomObjectActive): {
+                case nameof(ModifierActions.setCustomObjectActive): {
                         StringGenerator(modifier, reference, "ID", 1);
                         BoolGenerator(modifier, reference, "Enabled", 0);
                         BoolGenerator(modifier, reference, "Reset", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.PlayerActions.setIdleAnimation): {
+                case nameof(ModifierActions.setIdleAnimation): {
                         StringGenerator(modifier, reference, "ID", 0);
                         StringGenerator(modifier, reference, "Reference ID", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.PlayerActions.playAnimation): {
+                case nameof(ModifierActions.playAnimation): {
                         StringGenerator(modifier, reference, "ID", 0);
                         StringGenerator(modifier, reference, "Reference ID", 1);
 
@@ -3587,37 +3587,56 @@ namespace BetterLegacy.Editor.Data
                 //case nameof(ModifierActions.PlayerActions.kill): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.PlayerActions.hit): {
+                case nameof(ModifierActions.hit): {
                         IntegerGenerator(modifier, reference, "Hit Amount", 0);
                         break;
                     }
-                case nameof(ModifierActions.PlayerActions.boost): {
+                case nameof(ModifierActions.boost): {
                         SingleGenerator(modifier, reference, "X", 0);
                         SingleGenerator(modifier, reference, "Y", 1);
 
                         break;
                     }
-                //case nameof(ModifierActions.PlayerActions.shoot): {
+                //case nameof(ModifierActions.shoot): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.PlayerActions.pulse): {
+                //case nameof(ModifierActions.pulse): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.PlayerActions.jump): {
+                //case nameof(ModifierActions.jump): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.PlayerActions.getHealth): {
+                case nameof(ModifierActions.getHealth): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.PlayerActions.getMaxHealth): {
+                case nameof(ModifierActions.getMaxHealth): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.PlayerActions.getIndex): {
+                case nameof(ModifierActions.getIndex): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getMove): {
+                        StringGenerator(modifier, reference, "X Variable Name", 0);
+                        StringGenerator(modifier, reference, "Y Variable Name", 1);
+                        BoolGenerator(modifier, reference, "Normalize", 2);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getMoveX): {
+                        StringGenerator(modifier, reference, "X Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Normalize", 1);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getMoveY): {
+                        StringGenerator(modifier, reference, "Y Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Normalize", 1);
 
                         break;
                     }

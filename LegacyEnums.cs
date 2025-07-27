@@ -1148,6 +1148,7 @@ namespace BetterLegacy
         PrefabObject,
         PAPlayer,
         PlayerModel,
+        PlayerObject,
         GameData,
     }
 

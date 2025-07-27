@@ -138,6 +138,8 @@ namespace BetterLegacy.Editor.Managers
             { ModifierReferenceType.BackgroundObject, new List<Modifier>() },
             { ModifierReferenceType.PrefabObject, new List<Modifier>() },
             { ModifierReferenceType.PAPlayer, new List<Modifier>() },
+            { ModifierReferenceType.PlayerModel, new List<Modifier>() },
+            { ModifierReferenceType.PlayerObject, new List<Modifier>() },
             { ModifierReferenceType.GameData, new List<Modifier>() },
         };
 
