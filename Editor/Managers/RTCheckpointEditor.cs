@@ -74,7 +74,7 @@ namespace BetterLegacy.Editor.Managers
 
         public CheckpointEditorDialog Dialog { get; set; }
 
-        public TimelineCheckpoint CurrentCheckpoint { get; set; }
+        public TimelineCheckpoint CurrentCheckpoint { get; set; } = new TimelineCheckpoint();
 
         public List<TimelineCheckpoint> timelineCheckpoints = new List<TimelineCheckpoint>();
 
@@ -354,7 +354,7 @@ namespace BetterLegacy.Editor.Managers
 
                 name.text = checkpoint.name;
                 time.text = RTString.SecondsToTime(checkpoint.time);
-                selected.enabled = checkpoint == CurrentCheckpoint;
+                selected.enabled = num == CurrentCheckpoint.Index;
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.NewListener(() => SetCurrentCheckpoint(index));
