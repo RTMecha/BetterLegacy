@@ -166,9 +166,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAObjectBase obj)
-                return;
-
             var path = modifier.GetValue(0, variables);
             var global = modifier.GetBool(1, false, variables);
             var pitch = modifier.GetFloat(2, 1f, variables);
@@ -176,13 +173,17 @@ namespace BetterLegacy.Core.Helpers
             var loop = modifier.GetBool(4, false, variables);
             var panStereo = modifier.GetFloat(5, 0f, variables);
 
+            var id = reference is PAObjectBase obj ? obj.id : reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
+            if (string.IsNullOrEmpty(id))
+                loop = false;
+
             if (GameData.Current && GameData.Current.assets.sounds.TryFind(x => x.name == path, out SoundAsset soundAsset) && soundAsset.audio)
             {
-                ModifiersHelper.PlaySound(obj.id, soundAsset.audio, pitch, vol, loop, panStereo);
+                ModifiersHelper.PlaySound(id, soundAsset.audio, pitch, vol, loop, panStereo);
                 return;
             }
 
-            ModifiersHelper.GetSoundPath(obj.id, path, global, pitch, vol, loop, panStereo);
+            ModifiersHelper.GetSoundPath(id, path, global, pitch, vol, loop, panStereo);
         }
 
         public static void playSoundOnline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -2610,7 +2611,13 @@ namespace BetterLegacy.Core.Helpers
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player))
                 variables[modifier.GetValue(0)] = player.Health.ToString();
         }
-        
+
+        public static void getPlayerLives(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player))
+                variables[modifier.GetValue(0)] = player.lives.ToString();
+        }
+
         public static void getPlayerPosX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(1, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.rb)
@@ -7127,7 +7134,9 @@ namespace BetterLegacy.Core.Helpers
         public static void setCustomObjectActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(1, variables);
-            if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+
+            if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject))
                 customObject.active = modifier.GetBool(0, false, variables);
         }
 
@@ -7135,7 +7144,9 @@ namespace BetterLegacy.Core.Helpers
         {
             var id = modifier.GetValue(0, variables);
             var referenceID = modifier.GetValue(1, variables);
-            if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+
+            if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
                 customObject.currentIdleAnimation = animation.ReferenceID;
         }
 
@@ -7143,7 +7154,9 @@ namespace BetterLegacy.Core.Helpers
         {
             var id = modifier.GetValue(0, variables);
             var referenceID = modifier.GetValue(1, variables);
-            if (reference is PAPlayer player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+
+            if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
             {
                 var runtimeAnimation = new RTAnimation("Custom Animation");
                 player.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
@@ -7195,23 +7208,44 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAPlayer player)
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
                 return;
 
             variables[modifier.GetValue(0)] = player.Health.ToString();
         }
 
-        public static void getMaxHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void getLives(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAPlayer player)
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
                 return;
 
-            variables[modifier.GetValue(0)] = player.GetControl().Health.ToString();
+            variables[modifier.GetValue(0)] = player.lives.ToString();
+        }
+
+        public static void getMaxHealth(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
+                return;
+
+            variables[modifier.GetValue(0)] = player.GetMaxHealth().ToString();
+        }
+
+        public static void getMaxLives(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
+                return;
+
+            variables[modifier.GetValue(0)] = player.GetMaxLives().ToString();
         }
 
         public static void getIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAPlayer player)
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
                 return;
 
             variables[modifier.GetValue(0)] = player.index.ToString();
@@ -7219,7 +7253,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getMove(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAPlayer player)
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
                 return;
 
             var move = player.RuntimePlayer.Actions.Move.Vector;
@@ -7231,7 +7266,8 @@ namespace BetterLegacy.Core.Helpers
         
         public static void getMoveX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAPlayer player)
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
                 return;
 
             var move = player.RuntimePlayer.Actions.Move.Vector;
@@ -7242,7 +7278,8 @@ namespace BetterLegacy.Core.Helpers
         
         public static void getMoveY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAPlayer player)
+            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            if (!player)
                 return;
 
             var move = player.RuntimePlayer.Actions.Move.Vector;

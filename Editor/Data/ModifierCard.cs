@@ -1544,6 +1544,12 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.getPlayerLives): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
+
+                        break;
+                    }
                 case nameof(ModifierActions.getPlayerPosX): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
@@ -3637,7 +3643,17 @@ namespace BetterLegacy.Editor.Data
 
                         break;
                     }
+                case nameof(ModifierActions.getLives): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
                 case nameof(ModifierActions.getMaxHealth): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getMaxLives): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;

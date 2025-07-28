@@ -1076,6 +1076,8 @@ namespace BetterLegacy.Core.Components.Player
 
             basePart = new RTPlayerObject
             {
+                Player = this,
+
                 id = "0",
                 parent = transform,
                 gameObject = rb,
@@ -1143,6 +1145,8 @@ namespace BetterLegacy.Core.Components.Player
 
             this.head = new RTPlayerObject
             {
+                Player = this,
+
                 id = "73362742",
                 parent = rb.transform,
                 gameObject = head,
@@ -1216,6 +1220,8 @@ namespace BetterLegacy.Core.Components.Player
 
             this.boost = new RTPlayerObject
             {
+                Player = this,
+
                 id = "1",
                 parent = boostBase.transform,
                 gameObject = boost,
@@ -1238,6 +1244,8 @@ namespace BetterLegacy.Core.Components.Player
 
             this.boostTail = new RTPlayerObject
             {
+                Player = this,
+
                 id = "2",
                 parent = boostTail.transform,
                 gameObject = child.gameObject,
@@ -1282,6 +1290,8 @@ namespace BetterLegacy.Core.Components.Player
 
                 var tailPart = new RTPlayerObject
                 {
+                    Player = this,
+
                     id = (i + 99).ToString(),
                     parent = tailBase.transform,
                     gameObject = tail.gameObject,
@@ -3160,6 +3170,8 @@ namespace BetterLegacy.Core.Components.Player
 
                 var customObj = new RTCustomPlayerObject()
                 {
+                    Player = this,
+
                     id = reference.id,
                     reference = reference,
                 };
@@ -3448,6 +3460,8 @@ namespace BetterLegacy.Core.Components.Player
 
                     tailPart = new RTPlayerObject
                     {
+                        Player = this,
+
                         id = (num + 99).ToString(),
                         parent = tailBase.transform,
                         gameObject = tail.gameObject,
@@ -3869,6 +3883,7 @@ namespace BetterLegacy.Core.Components.Player
 
             public bool isCustom;
 
+            public RTPlayer Player { get; set; }
             public RTPlayerObject Parent { get; set; }
         }
 
