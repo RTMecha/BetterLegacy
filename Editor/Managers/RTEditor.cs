@@ -723,6 +723,7 @@ namespace BetterLegacy.Editor.Managers
             RTThemeEditor.Init();
             RTPrefabEditor.Init();
             ObjectEditor.Init();
+            RTCheckpointEditor.Init();
 
             MultiObjectEditor.Init();
             RTTextEditor.Init();
@@ -760,23 +761,25 @@ namespace BetterLegacy.Editor.Managers
             SetNotificationProperties();
 
             EditorTimeline.inst.timelineSlider = EditorManager.inst.timelineSlider.GetComponent<Slider>();
-            TriggerHelper.AddEventTriggers(EditorTimeline.inst.timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
-            {
-                if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
-                    return;
+            TriggerHelper.AddEventTriggers(EditorTimeline.inst.timelineSlider.gameObject,
+                TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
+                {
+                    if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
+                        return;
 
-                EditorTimeline.inst.changingTime = true;
-                EditorTimeline.inst.newTime = EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom;
-                AudioManager.inst.SetMusicTime(Mathf.Clamp(EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-            }), TriggerHelper.CreateEntry(EventTriggerType.PointerUp, eventData =>
-            {
-                if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
-                    return;
+                    EditorTimeline.inst.changingTime = true;
+                    EditorTimeline.inst.newTime = EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom;
+                    AudioManager.inst.SetMusicTime(Mathf.Clamp(EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+                }),
+                TriggerHelper.CreateEntry(EventTriggerType.PointerUp, eventData =>
+                {
+                    if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
+                        return;
 
-                EditorTimeline.inst.newTime = EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom;
-                AudioManager.inst.SetMusicTime(Mathf.Clamp(EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-                EditorTimeline.inst.changingTime = false;
-            }));
+                    EditorTimeline.inst.newTime = EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom;
+                    AudioManager.inst.SetMusicTime(Mathf.Clamp(EditorTimeline.inst.timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+                    EditorTimeline.inst.changingTime = false;
+                }));
 
             DestroyImmediate(EditorManager.inst.mouseTooltip);
             mouseTooltip = EditorManager.inst.notificationPrefabs[0].Duplicate(EditorManager.inst.notification.transform.parent, "tooltip");
@@ -795,16 +798,6 @@ namespace BetterLegacy.Editor.Managers
             var timelineParent = Creator.NewUIObject("Timeline Objects", EditorManager.inst.timeline.transform, 1);
             EditorTimeline.inst.timelineObjectsParent = timelineParent.transform.AsRT();
             RectValues.FullAnchored.AssignToRectTransform(EditorTimeline.inst.timelineObjectsParent);
-
-            try
-            {
-                CheckpointEditorDialog = new EditorDialog(EditorDialog.CHECKPOINT_EDITOR);
-                CheckpointEditorDialog.Init();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init dialog
 
             SetupFileBrowser();
             CreateFolderCreator();
@@ -2165,12 +2158,18 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case EditorDialog.CHECKPOINT_EDITOR: {
-                        CheckpointEditor.inst.CopyCheckpoint();
+                        if (!RTCheckpointEditor.inst.CurrentCheckpoint)
+                        {
+                            EditorManager.inst.DisplayNotification("No Checkpoint.", 1f, EditorManager.NotificationType.Error);
+                            break;
+                        }
+
+                        RTCheckpointEditor.inst.CopyCheckpoint();
                         if (!cut)
                             EditorManager.inst.DisplayNotification("Copied Checkpoint", 1f, EditorManager.NotificationType.Success);
                         else
                         {
-                            CheckpointEditor.inst.DeleteCheckpoint(CheckpointEditor.inst.currentObj);
+                            RTCheckpointEditor.inst.DeleteCheckpoint(RTCheckpointEditor.inst.CurrentCheckpoint.Index);
                             EditorManager.inst.DisplayNotification("Cut Checkpoint", 1f, EditorManager.NotificationType.Success);
                         }
 
@@ -2230,7 +2229,7 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case EditorDialog.CHECKPOINT_EDITOR: {
-                        CheckpointEditor.inst.PasteCheckpoint();
+                        RTCheckpointEditor.inst.PasteCheckpoint();
                         EditorManager.inst.DisplayNotification("Pasted Checkpoint", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
@@ -2325,13 +2324,13 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case EditorDialog.CHECKPOINT_EDITOR: {
-                        if (CheckpointEditor.inst.currentObj == 0)
+                        if (!RTCheckpointEditor.inst.CurrentCheckpoint)
                         {
                             EditorManager.inst.DisplayNotification("Can't delete first Checkpoint.", 1f, EditorManager.NotificationType.Error);
                             break;
                         }
 
-                        CheckpointEditor.inst.DeleteCheckpoint(CheckpointEditor.inst.currentObj);
+                        RTCheckpointEditor.inst.DeleteCheckpoint(RTCheckpointEditor.inst.CurrentCheckpoint.Index);
                         EditorManager.inst.DisplayNotification("Deleted Checkpoint.", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
@@ -2699,20 +2698,20 @@ namespace BetterLegacy.Editor.Managers
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Open Checkpoint Editor", () =>
                     {
-                        if (Patchers.CheckpointEditorPatch.currentCheckpoint == null || !GameData.Current || CheckpointEditor.inst.currentObj < 0 || CheckpointEditor.inst.currentObj >= GameData.Current.data.checkpoints.Count)
+                        if (!RTCheckpointEditor.inst.CurrentCheckpoint)
                         {
                             EditorManager.inst.DisplayNotification("Select / create a Checkpoint first!", 1.5f, EditorManager.NotificationType.Warning);
                             return;
                         }
 
-                        CheckpointEditor.inst.OpenDialog(CheckpointEditor.inst.currentObj);
+                        RTCheckpointEditor.inst.OpenDialog(RTCheckpointEditor.inst.CurrentCheckpoint.Checkpoint);
                     }),
                     new ButtonFunction(true),
-                    new ButtonFunction("Create Checkpoint", CheckpointEditor.inst.CreateNewCheckpoint),
+                    new ButtonFunction("Create Checkpoint", RTCheckpointEditor.inst.CreateNewCheckpoint),
                     new ButtonFunction("Create Checkpoint at Object", () =>
                     {
                         if (EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.TimelineReference != TimelineObject.TimelineReferenceType.Null)
-                            CheckpointEditor.inst.CreateNewCheckpoint(EditorTimeline.inst.CurrentSelection.Time, Vector2.zero);
+                            RTCheckpointEditor.inst.CreateNewCheckpoint(EditorTimeline.inst.CurrentSelection.Time, Vector2.zero);
                     })
                     );
             };
@@ -4411,91 +4410,6 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupMiscEditorThemes()
         {
-            var checkpointEditor = CheckpointEditorDialog.GameObject.transform;
-            if (CheckpointEditor.inst.right == null)
-                CheckpointEditor.inst.right = checkpointEditor.Find("data/right");
-
-            if (CheckpointEditor.inst.left == null)
-                CheckpointEditor.inst.left = checkpointEditor.Find("data/left");
-
-            EditorThemeManager.AddGraphic(checkpointEditor.GetComponent<Image>(), ThemeGroup.Background_1);
-            EditorThemeManager.AddGraphic(CheckpointEditor.inst.right.GetComponent<Image>(), ThemeGroup.Background_3);
-
-            EditorThemeManager.AddInputField(CheckpointEditor.inst.right.Find("search").GetComponent<InputField>(), ThemeGroup.Search_Field_2);
-
-            var scrollbar = CheckpointEditor.inst.right.Find("checkpoints/Scrollbar Vertical").GetComponent<Scrollbar>();
-            EditorThemeManager.AddScrollbar(scrollbar, scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
-
-            var edit = CheckpointEditor.inst.left.Find("edit");
-            for (int i = 0; i < edit.childCount; i++)
-            {
-                var button = edit.GetChild(i);
-                var buttonComponent = button.GetComponent<Button>();
-
-                if (!buttonComponent)
-                    continue;
-
-                if (button.name == "del")
-                {
-                    var buttonBG = button.GetChild(0).GetComponent<Image>();
-
-                    EditorThemeManager.AddGraphic(buttonBG, ThemeGroup.Delete_Keyframe_BG);
-
-                    EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Delete_Keyframe_Button, false);
-
-                    continue;
-                }
-
-                Destroy(button.GetComponent<Animator>());
-                buttonComponent.transition = Selectable.Transition.ColorTint;
-
-                EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
-            }
-
-            // Labels
-            for (int i = 0; i < CheckpointEditor.inst.left.childCount; i++)
-            {
-                var label = CheckpointEditor.inst.left.GetChild(i);
-
-                if (!(label.name == "label" || label.name == "curves_label"))
-                    continue;
-
-                for (int j = 0; j < label.childCount; j++)
-                    EditorThemeManager.AddLightText(label.GetChild(j).GetComponent<Text>());
-            }
-
-            EditorThemeManager.AddInputField(CheckpointEditor.inst.left.Find("name").GetComponent<InputField>());
-            var time = CheckpointEditor.inst.left.Find("time");
-            EditorThemeManager.AddInputField(time.Find("time").GetComponent<InputField>());
-            for (int i = 1; i < time.childCount; i++)
-            {
-                var button = time.GetChild(i);
-                var buttonComponent = button.GetComponent<Button>();
-
-                Destroy(button.GetComponent<Animator>());
-                buttonComponent.transition = Selectable.Transition.ColorTint;
-
-                EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
-            }
-
-            var position = CheckpointEditor.inst.left.Find("position");
-            for (int i = 0; i < position.childCount; i++)
-            {
-                var child = position.GetChild(i);
-                EditorThemeManager.AddInputField(child.GetComponent<InputField>());
-
-                for (int j = 1; j < child.childCount; j++)
-                {
-                    var button = child.GetChild(j);
-                    var buttonComponent = button.GetComponent<Button>();
-
-                    Destroy(button.GetComponent<Animator>());
-                    buttonComponent.transition = Selectable.Transition.ColorTint;
-
-                    EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
-                }
-            }
-
             CoreHelper.Log($"Setting Object Options Popup");
             // Object Options
             {
@@ -4731,6 +4645,40 @@ namespace BetterLegacy.Editor.Managers
             text.text = "font";
         }
 
+        public void SetupIndexer(IIndexDialog dialog)
+        {
+            if (dialog == null || !dialog.Edit)
+            {
+                CoreHelper.LogError($"Failed to setup indexer.");
+                return;
+            }
+
+            try
+            {
+                dialog.JumpToStartButton = dialog.Edit.Find("<<").GetComponent<Button>();
+                dialog.JumpToPrevButton = dialog.Edit.Find("<").GetComponent<Button>();
+
+                if (dialog.Edit.TryFind("|/Text", out Transform textTransform))
+                    dialog.KeyframeIndexer = textTransform.GetComponent<Text>();
+                else if (dialog.Edit.TryFind("|/text", out Transform textLowerTransform))
+                    dialog.KeyframeIndexer = textLowerTransform.GetComponent<Text>();
+
+                dialog.JumpToNextButton = dialog.Edit.Find(">").GetComponent<Button>();
+                dialog.JumpToLastButton = dialog.Edit.Find(">>").GetComponent<Button>();
+
+                if (dialog.Edit.TryFind("copy", out Transform copyTransform))
+                    dialog.CopyButton = copyTransform.GetComponent<FunctionButtonStorage>();
+                if (dialog.Edit.TryFind("paste", out Transform pasteTransform))
+                    dialog.PasteButton = pasteTransform.GetComponent<FunctionButtonStorage>();
+                dialog.DeleteButton = dialog.Edit.Find("del").gameObject.AddComponent<DeleteButtonStorage>();
+                dialog.DeleteButton.Assign(dialog.DeleteButton.gameObject);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to set edit: {ex}");
+            }
+        }
+
         #endregion
 
         #endregion
@@ -4739,7 +4687,6 @@ namespace BetterLegacy.Editor.Managers
 
         public List<EditorDialog> editorDialogs = new List<EditorDialog>();
 
-        public EditorDialog CheckpointEditorDialog { get; set; }
         public EditorDialog ScreenshotsDialog { get; set; }
 
         #region Folder Creator / Name Editor

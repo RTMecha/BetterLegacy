@@ -4,6 +4,8 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Editor.Data;
+
 namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Checkpoint : PAObject<Checkpoint>
@@ -63,6 +65,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 		/// If the song should reverse at all when all players are dead.
 		/// </summary>
 		public bool reverse = true;
+
+        /// <summary>
+        /// Timeline Checkpoint reference.
+        /// </summary>
+        public TimelineCheckpoint timelineCheckpoint;
 
 		#region Global
 

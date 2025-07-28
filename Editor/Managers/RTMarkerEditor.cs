@@ -491,7 +491,7 @@ namespace BetterLegacy.Editor.Managers
             if (index - 1 >= 0)
                 SetCurrentMarker(timelineMarkers[index - 1]);
             else
-                CheckpointEditor.inst.SetCurrentCheckpoint(0);
+                RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
             CreateMarkers();
         }
 
@@ -757,7 +757,7 @@ namespace BetterLegacy.Editor.Managers
             CreateMarkers();
             RTEditor.inst.HideWarningPopup();
             Dialog.Close();
-            CheckpointEditor.inst.SetCurrentCheckpoint(0);
+            RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
         }, RTEditor.inst.HideWarningPopup);
 
         /// <summary>

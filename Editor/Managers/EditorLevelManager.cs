@@ -514,7 +514,7 @@ namespace BetterLegacy.Editor.Managers
             RTMetaDataEditor.inst.RenderDialog();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
-            CheckpointEditor.inst.CreateGhostCheckpoints();
+            RTCheckpointEditor.inst.CreateGhostCheckpoints();
 
             RTEditor.inst.InfoPopup.SetInfo($"Updating states for [ {name} ]");
             if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
@@ -557,7 +557,7 @@ namespace BetterLegacy.Editor.Managers
             EditorTimeline.inst.timelineObjects = EditorTimeline.inst.ToTimelineObjects().ToList();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
-            CheckpointEditor.inst.SetCurrentCheckpoint(0);
+            RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
 
             RTEditor.inst.InfoPopup.SetInfo("Done!");
             RTEditor.inst.InfoPopup.Close();

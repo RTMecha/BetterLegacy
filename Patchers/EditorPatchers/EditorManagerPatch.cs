@@ -334,12 +334,10 @@ namespace BetterLegacy.Patchers
 
                 CoreHelper.Log($"EDITOR START -> {nameof(RTEventEditor.CreateEventObjects)}");
                 RTEventEditor.inst.CreateEventObjects();
-                CoreHelper.Log($"EDITOR START -> {nameof(CheckpointEditor.CreateGhostCheckpoints)}");
-                CheckpointEditor.inst.CreateGhostCheckpoints();
+                CoreHelper.Log($"EDITOR START -> {nameof(RTCheckpointEditor.CreateGhostCheckpoints)}");
+                RTCheckpointEditor.inst.ClearTimelineCheckpoints();
                 CoreHelper.Log($"EDITOR START -> {nameof(GameManager.UpdateTimeline)}");
                 GameManager.inst.UpdateTimeline();
-                CoreHelper.Log($"EDITOR START -> {nameof(CheckpointEditor.SetCurrentCheckpoint)}");
-                CheckpointEditor.inst.SetCurrentCheckpoint(0);
                 if (!Seasons.IsAprilFools)
                     Instance.TogglePlayingSong();
                 else

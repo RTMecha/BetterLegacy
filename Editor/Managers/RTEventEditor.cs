@@ -1895,7 +1895,7 @@ namespace BetterLegacy.Editor.Managers
                     Debug.LogError($"{EventEditor.inst.className}Keyframe Type {EventEditor.inst.currentEventType} does not currently exist.");
             }
             else
-                CheckpointEditor.inst.SetCurrentCheckpoint(0);
+                RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
         }
 
         public void RenderMultiEventsDialog()

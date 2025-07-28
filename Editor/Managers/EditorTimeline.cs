@@ -86,11 +86,11 @@ namespace BetterLegacy.Editor.Managers
         public void RenderTimeline()
         {
             if (layerType == LayerType.Events)
-                EventEditor.inst.RenderEventObjects();
+                RTEventEditor.inst.RenderEventObjects();
             else
                 RenderTimelineObjectsPositions();
 
-            CheckpointEditor.inst.RenderCheckpoints();
+            RTCheckpointEditor.inst.RenderCheckpoints();
             RTMarkerEditor.inst.RenderMarkers();
 
             UpdateTimelineSizes();
@@ -307,18 +307,35 @@ namespace BetterLegacy.Editor.Managers
             });
 
             var selectedObjects = SelectedObjects;
-            var selectedCount = selectedObjects.Count;
-            if (selectedCount > 1)
-                MultiObjectEditor.inst.Dialog.Open();
+            HandleSelection(selectedObjects);
+            EditorManager.inst.DisplayNotification($"Selection includes {selectedObjects.Count} objects!", 1f, EditorManager.NotificationType.Success);
+            yield break;
+        }
 
-            if (selectedCount == 1)
-                SetCurrentObject(selectedObjects[0]);
+        /// <summary>
+        /// Handles multiple timeline objects in a list. If the list is empty, select the first checkpoint.
+        /// </summary>
+        /// <param name="selectedObjects">Selected objects.</param>
+        /// <param name="index">Index to select.</param>
+        /// <param name="multi">If multi selection should be considered.</param>
+        public void HandleSelection(List<TimelineObject> selectedObjects, int index = 0, bool multi = true)
+        {
+            var selectedCount = selectedObjects.Count;
 
             if (selectedCount <= 0)
-                CheckpointEditor.inst.SetCurrentCheckpoint(0);
+            {
+                RTCheckpointEditor.inst.SetCurrentCheckpoint(0);
+                return;
+            }
 
-            EditorManager.inst.DisplayNotification($"Selection includes {selectedCount} objects!", 1f, EditorManager.NotificationType.Success);
-            yield break;
+            if (multi && selectedCount > 1)
+            {
+                MultiObjectEditor.inst.Dialog.Open();
+                return;
+            }
+
+            if (!multi && selectedCount > 0 || selectedCount == 1)
+                SetCurrentObject(selectedObjects.GetAt(index));
         }
 
         /// <summary>
@@ -431,10 +448,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current?.RecalculateObjectStates();
 
-            if (timelineObjects.IsEmpty())
-                CheckpointEditor.inst.SetCurrentCheckpoint(0);
-            else
-                SetCurrentObject(timelineObjects.GetAt(minIndex));
+            HandleSelection(timelineObjects, minIndex, false);
 
             EditorManager.inst.DisplayNotification($"Deleted {count} objects!", 1f, EditorManager.NotificationType.Success);
         }
@@ -518,10 +532,7 @@ namespace BetterLegacy.Editor.Managers
             if (!select)
                 return;
 
-            if (timelineObjects.IsEmpty())
-                CheckpointEditor.inst.SetCurrentCheckpoint(0);
-            else
-                SetCurrentObject(timelineObjects.GetAt(index));
+            HandleSelection(timelineObjects, index, false);
         }
 
         /// <summary>
@@ -1564,9 +1575,6 @@ namespace BetterLegacy.Editor.Managers
                             RenderBins();
                             RenderTimelineObjectsPositions();
 
-                            if (prevLayerType != layerType)
-                                CheckpointEditor.inst.CreateGhostCheckpoints();
-
                             ClampTimeline(false);
 
                             break;
@@ -1580,8 +1588,6 @@ namespace BetterLegacy.Editor.Managers
                                 EditorManager.inst.timelineScrollRectBar.value = 0f;
 
                             RTEventEditor.inst.RenderEventObjects();
-                            CheckpointEditor.inst.CreateCheckpoints();
-
                             RTEventEditor.inst.RenderLayerBins();
 
                             ClampTimeline(true);
@@ -1590,6 +1596,9 @@ namespace BetterLegacy.Editor.Managers
                         }
                 }
             }
+
+            if (prevLayerType != layerType)
+                RTCheckpointEditor.inst.UpdateCheckpointTimeline();
 
             prevLayerType = layerType;
             prevLayer = layer;
