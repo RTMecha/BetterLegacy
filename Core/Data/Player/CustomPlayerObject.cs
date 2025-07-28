@@ -158,7 +158,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public bool IgnoreLifespan { get; set; }
 
-        public bool OrderModifiers { get; set; }
+        public bool OrderModifiers { get; set; } = true;
 
         public int IntVariable { get; set; }
 

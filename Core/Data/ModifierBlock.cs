@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data
         public List<string> Tags { get; set; } = new List<string>();
         public List<Modifier> Modifiers { get; set; } = new List<Modifier>();
         public bool IgnoreLifespan { get; set; }
-        public bool OrderModifiers { get; set; }
+        public bool OrderModifiers { get; set; } = true;
         public int IntVariable { get; set; }
 
         public bool ModifiersActive => true;
