@@ -16,7 +16,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents a dialog window in the editor used to edit a keyframe.
     /// </summary>
-    public class KeyframeDialog : Exists
+    public class KeyframeDialog : Exists, IIndexDialog
     {
         public KeyframeDialog() { }
 
@@ -102,33 +102,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 return;
 
             Edit = GameObject.transform.Find("edit");
-            if (Edit)
-            {
-                try
-                {
-                    JumpToStartButton = Edit.Find("<<").GetComponent<Button>();
-                    JumpToPrevButton = Edit.Find("<").GetComponent<Button>();
-
-                    if (Edit.TryFind("|/Text", out Transform textTransform))
-                        KeyframeIndexer = textTransform.GetComponent<Text>();
-                    else if (Edit.TryFind("|/text", out Transform textLowerTransform))
-                        KeyframeIndexer = textLowerTransform.GetComponent<Text>();
-
-                    JumpToNextButton = Edit.Find(">").GetComponent<Button>();
-                    JumpToLastButton = Edit.Find(">>").GetComponent<Button>();
-
-                    if (Edit.TryFind("copy", out Transform copyTransform))
-                        CopyButton = copyTransform.GetComponent<FunctionButtonStorage>();
-                    if (Edit.TryFind("paste", out Transform pasteTransform))
-                        PasteButton = pasteTransform.GetComponent<FunctionButtonStorage>();
-                    DeleteButton = Edit.Find("del").gameObject.AddComponent<DeleteButtonStorage>();
-                    DeleteButton.Assign(DeleteButton.gameObject);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogError($"Failed to set edit: {ex}");
-                }
-            }
+            RTEditor.inst.SetupIndexer(this);
 
             if (isMulti)
                 return;
