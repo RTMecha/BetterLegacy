@@ -2032,6 +2032,9 @@ namespace BetterLegacy.Core.Helpers
 
             prefabObject.StartTime = startTime;
 
+            if (prefab.defaultInstanceData)
+                prefabObject.PasteInstanceData(prefab.defaultInstanceData);
+
             prefabObject.events[0].values[0] = pos.x;
             prefabObject.events[0].values[1] = pos.y;
             prefabObject.events[1].values[0] = sca.x;
