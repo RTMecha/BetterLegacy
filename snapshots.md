@@ -13,7 +13,11 @@
 
 ### Editor
 - If you want to refresh an objects' randomization, you can go to the Object Editor, right click the ID and click "Shuffle ID".
-- "Pull Level" as now exists as a server button in the MetaData Editor.
+- "Pull Level" now exists as a server button in the MetaData Editor.
+
+## Changes
+### Core
+- spawnPrefab modifiers now use the Prefabs' default instance data.
 
 ## Fixes
 - Fixed some issues with the Player face parent.
