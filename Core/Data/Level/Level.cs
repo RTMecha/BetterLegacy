@@ -373,6 +373,7 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public void LoadAchievements()
         {
+            achievements.Clear();
             loadedAchievements = false;
             var achievementsPath = GetFile(ACHIEVEMENTS_LSA);
             if (!RTFile.FileExists(achievementsPath))
