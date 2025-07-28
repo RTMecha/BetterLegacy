@@ -280,16 +280,23 @@ namespace BetterLegacy.Core.Managers
             AssignPlayerModels();
 
             bool spawned = false;
-            foreach (var customPlayer in Players)
+            foreach (var player in Players)
             {
-                if (!customPlayer.RuntimePlayer)
+                // no lives? too bad.
+                if (player.OutOfLives)
                 {
-                    spawned = true;
-                    SpawnPlayer(customPlayer, pos);
+                    CoreHelper.Log($"Player {player.index} is out of lives.");
                     continue;
                 }
 
-                CoreHelper.Log($"Player {customPlayer.index} already exists!");
+                if (!player.RuntimePlayer)
+                {
+                    spawned = true;
+                    SpawnPlayer(player, pos);
+                    continue;
+                }
+
+                CoreHelper.Log($"Player {player.index} already exists!");
             }
 
             if (spawned && RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)

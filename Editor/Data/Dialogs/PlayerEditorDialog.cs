@@ -783,10 +783,38 @@ namespace BetterLegacy.Editor.Data.Dialogs
             textLayoutElement.ignoreLayout = true;
             UIManager.SetRectTransform(text.AsRT(), new Vector2(0f, -24f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(351f, 74f));
 
+            var shapeToggles = new List<Toggle>();
+            var shapeOptionToggles = new List<List<Toggle>>();
+
+            for (int i = 0; i < shape.transform.childCount; i++)
+            {
+                var toggle = shape.transform.GetChild(i).GetComponent<Toggle>();
+                if (toggle)
+                    shapeToggles.Add(toggle);
+            }
+            for (int i = 0; i < shapeSettings.transform.childCount; i++)
+            {
+                shapeOptionToggles.Add(new List<Toggle>());
+
+                var shapeType = (ShapeType)i;
+                if (shapeType == ShapeType.Text || shapeType == ShapeType.Image || shapeType == ShapeType.Polygon)
+                    continue;
+
+                var child = shapeSettings.transform.GetChild(i);
+                for (int j = 0; j < child.childCount; j++)
+                {
+                    var toggle = child.GetChild(j).GetComponent<Toggle>();
+                    if (toggle)
+                        shapeOptionToggles[i].Add(toggle);
+                }
+            }
+
             var ui = new PlayerEditorShape
             {
                 Name = name,
                 GameObject = gameObject,
+                ShapeToggles = shapeToggles,
+                ShapeOptionToggles = shapeOptionToggles,
                 Tab = tab,
                 ValueType = ValueType.Float,
             };

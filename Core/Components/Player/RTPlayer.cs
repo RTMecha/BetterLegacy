@@ -1034,23 +1034,19 @@ namespace BetterLegacy.Core.Components.Player
                     new Vector3Keyframe(0.2f, new Vector3(1.4f, 1.4f, 1f), Ease.SineOut),
                     new Vector3Keyframe(0.4f, Vector3.zero, Ease.SineOut),
                     new Vector3Keyframe(0.6f, Vector3.zero, Ease.Linear),
-                }, vector => { if (rb) rb.transform.localScale = vector; }), // rb
+                }, vector => { if (rb) rb.transform.localScale = vector; }, interpolateOnComplete: true), // rb
                 new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                 {
                     new Vector3Keyframe(0f, new Vector3(1f, 1f, 1f), Ease.Linear),
                     new Vector3Keyframe(0.2f, Vector3.zero, Ease.SineIn),
-                }, vector => { if (tailParent) tailParent.localScale = vector; }), // boost
+                }, vector => { if (tailParent) tailParent.localScale = vector; }, interpolateOnComplete: true), // boost
             };
             deathAnimation.events = new List<Animation.AnimationEvent>
             {
                 new Animation.AnimationEvent(0f, PlayDeathParticles),
                 new Animation.AnimationEvent(0.6f, ClearObjects),
             };
-            deathAnimation.onComplete = () =>
-            {
-                animationController.Remove(deathAnimation.id);
-                deathAnimation = null;
-            };
+            deathAnimation.onComplete = ClearObjects;
             animationController.Play(deathAnimation);
 
             if (deathAnimationCustom)
@@ -2483,9 +2479,8 @@ namespace BetterLegacy.Core.Components.Player
         /// </summary>
         public void ClearObjects()
         {
-            if (healthText)
-                DestroyImmediate(healthText.gameObject);
-            DestroyImmediate(gameObject);
+            CoreHelper.Delete(healthText);
+            CoreHelper.Delete(gameObject);
         }
 
         /// <summary>
@@ -2801,10 +2796,10 @@ namespace BetterLegacy.Core.Components.Player
                 RTBeatmap.Current.playerDied = true;
             Core?.GetControl()?.DeathModifierBlock?.Run(Core);
             isDead = true;
-            Core.RuntimePlayer = null;
             Core.active = false;
             Core.health = 0;
             playerDeathEvent?.Invoke(rb.position);
+            Core.RuntimePlayer = null;
             //anim.SetTrigger("kill");
             InitDeathAnimation();
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);

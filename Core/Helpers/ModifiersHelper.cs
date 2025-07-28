@@ -667,6 +667,7 @@ namespace BetterLegacy.Core.Helpers
 
             new ModifierTrigger(nameof(ModifierTriggers.containsTag), ModifierTriggers.containsTag),
             new ModifierTrigger(nameof(ModifierTriggers.requireSignal), ModifierTriggers.requireSignal),
+            new ModifierTrigger(nameof(ModifierTriggers.isFocused), ModifierTriggers.isFocused),
             new ModifierTrigger(nameof(ModifierTriggers.isFullscreen), ModifierTriggers.isFullscreen),
             new ModifierTrigger(nameof(ModifierTriggers.objectAlive), ModifierTriggers.objectAlive, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierTrigger(nameof(ModifierTriggers.objectSpawned), ModifierTriggers.objectSpawned, ModifierCompatibility.BeatmapObjectCompatible),

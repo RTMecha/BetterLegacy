@@ -383,12 +383,13 @@ namespace BetterLegacy.Core.Runtime
                     }),
                 };
 
-                animation.onComplete = () => AnimationManager.inst.Remove(animation.id);
-
-                AnimationManager.inst.Play(animation);
+                animation.onComplete = () => RTGameManager.inst.levelAnimationController.Remove(animation.id);
+                RTGameManager.inst.levelAnimationController.Play(animation);
                 SoundManager.inst.PlaySound(DefaultSounds.rewind);
                 yield return CoroutineHelper.Seconds(2f);
             }
+            else
+                yield return CoroutineHelper.Seconds(1f);
 
             float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
             if (!CoreHelper.InEditor && challengeMode.Lives > 0)
