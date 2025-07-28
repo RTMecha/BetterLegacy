@@ -10,7 +10,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data.Dialogs
+namespace BetterLegacy.Editor.Data
 {
     public class Labels : Exists
     {

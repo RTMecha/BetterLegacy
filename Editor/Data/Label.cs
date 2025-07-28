@@ -43,5 +43,6 @@ namespace BetterLegacy.Editor.Data
         }
 
         public static implicit operator string(Label labelSettings) => labelSettings.text;
+        public static implicit operator Label(string text) => new Label(text);
     }
 }
