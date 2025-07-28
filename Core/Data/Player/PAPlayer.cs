@@ -59,6 +59,12 @@ namespace BetterLegacy.Core.Data.Player
 
         public bool active;
 
+        public int lives = -1;
+        /// <summary>
+        /// If the player is out of lives.
+        /// </summary>
+        public bool OutOfLives => lives == 0;
+
         public int health = 3;
 
         public int index;

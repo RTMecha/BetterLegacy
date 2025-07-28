@@ -178,6 +178,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             GlobalTab.UpdateProperties = SetupButton("Update Properties", PlayerEditor.Tab.Global, editorTab: GlobalTab);
 
             GlobalTab.SpawnPlayers = SetupBool("Spawn Players", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.RespawnImmediately = SetupBool("Respawn Immediately", PlayerEditor.Tab.Global, editorTab: GlobalTab);
             GlobalTab.AllowCustomPlayerModels = SetupBool("Allow Custom Player Models", PlayerEditor.Tab.Global, editorTab: GlobalTab);
             GlobalTab.AllowPlayerModelControls = SetupBool("Allow Player Model Controls", PlayerEditor.Tab.Global, editorTab: GlobalTab);
 
@@ -206,6 +207,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BaseTab.ID.ShowInDefault = true;
             BaseTab.Name = SetupString("Base Name", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.Health = SetupNumber("Base Health", PlayerEditor.Tab.Base, ValueType.Int, editorTab: BaseTab);
+            BaseTab.Lives = SetupNumber("Base Lives", PlayerEditor.Tab.Base, ValueType.Int, editorTab: BaseTab);
             BaseTab.MoveSpeed = SetupNumber("Base Move Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.BoostSpeed = SetupNumber("Base Boost Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.BoostCooldown = SetupNumber("Base Boost Cooldown", PlayerEditor.Tab.Base, editorTab: BaseTab);
@@ -939,6 +941,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorButton UpdateProperties { get; set; }
 
         public PlayerEditorToggle SpawnPlayers { get; set; }
+        public PlayerEditorToggle RespawnImmediately { get; set; }
 
         public PlayerEditorToggle AllowCustomPlayerModels { get; set; }
         public PlayerEditorToggle AllowPlayerModelControls { get; set; }
@@ -969,6 +972,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorButton ID { get; set; }
         public PlayerEditorString Name { get; set; }
         public PlayerEditorNumber Health { get; set; }
+        public PlayerEditorNumber Lives { get; set; }
         public PlayerEditorNumber MoveSpeed { get; set; }
         public PlayerEditorNumber BoostSpeed { get; set; }
         public PlayerEditorNumber BoostCooldown { get; set; }

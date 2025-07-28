@@ -305,6 +305,8 @@ namespace BetterLegacy.Core.Managers
 
             CoreHelper.InStory = level.isStory;
             GameData.Current = level.LoadGameData();
+            if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
+                RTBeatmap.Current.respawnImmediately = GameData.Current.data.level.respawnImmediately;
 
             if (level.IsVG)
                 AchievementManager.inst.UnlockAchievement("time_traveler");

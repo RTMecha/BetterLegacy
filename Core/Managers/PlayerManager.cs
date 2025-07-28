@@ -248,16 +248,23 @@ namespace BetterLegacy.Core.Managers
             AssignPlayerModels();
             var positions = GetSpawnPositions(checkpoint);
             bool spawned = false;
-            foreach (var customPlayer in Players)
+            foreach (var player in Players)
             {
-                if (!customPlayer.RuntimePlayer)
+                // no lives? too bad.
+                if (player.OutOfLives)
                 {
-                    spawned = true;
-                    SpawnPlayer(customPlayer, positions[customPlayer.index]);
+                    CoreHelper.Log($"Player {player.index} is out of lives.");
                     continue;
                 }
 
-                CoreHelper.Log($"Player {customPlayer.index} already exists!");
+                if (!player.RuntimePlayer)
+                {
+                    spawned = true;
+                    SpawnPlayer(player, positions[player.index]);
+                    continue;
+                }
+
+                CoreHelper.Log($"Player {player.index} already exists!");
             }
 
             if (spawned && RTLevel.Current && RTLevel.Current.eventEngine && RTLevel.Current.eventEngine.playersActive && PlayerConfig.Instance.PlaySpawnSound.Value)
@@ -348,34 +355,31 @@ namespace BetterLegacy.Core.Managers
 
             runtimePlayer.SetPath(pos);
 
-            if (RTBeatmap.Current.challengeMode.Lives > 0)
+            runtimePlayer.playerDeathEvent += _val =>
             {
-                runtimePlayer.playerDeathEvent += _val =>
+                player.lives--;
+
+                if (RTBeatmap.Current.respawnImmediately && !player.OutOfLives)
                 {
-                    if (Players.All(x => x is PAPlayer player && (!player.Alive || !player.RuntimePlayer.Alive)))
-                    {
+                    var positions = GetSpawnPositions(RTBeatmap.Current.ActiveCheckpoint);
+                    SpawnPlayer(player, positions[player.index]);
+                    return;
+                }
+
+                if (Players.All(x => x is PAPlayer player && (!player.Alive || !player.RuntimePlayer.Alive)))
+                {
+                    if (RTBeatmap.Current.challengeMode.Lives > 0)
                         RTBeatmap.Current.lives--;
 
-                        if (RTBeatmap.Current.OutOfLives) // reset checkpoint and deaths when out of lives
-                        {
-                            RTBeatmap.Current.ResetCheckpoint();
-
-                            RTBeatmap.Current.hits.Clear();
-                            RTBeatmap.Current.deaths.Clear();
-                        }
-
-                        GameManager.inst.gameState = GameManager.State.Reversing;
+                    if (RTBeatmap.Current.OutOfLives) // reset checkpoint and deaths when out of lives
+                    {
+                        RTBeatmap.Current.ResetCheckpoint();
+                        RTBeatmap.Current.Reset(false);
                     }
-                };
-            }
-            else
-            {
-                runtimePlayer.playerDeathEvent += _val =>
-                {
-                    if (Players.All(x => x is PAPlayer player && (!player.Alive || !player.RuntimePlayer.Alive)))
-                        GameManager.inst.gameState = GameManager.State.Reversing;
-                };
-            }
+
+                    GameManager.inst.gameState = GameManager.State.Reversing;
+                }
+            };
 
             if (IncludeOtherPlayersInRank || runtimePlayer.playerIndex == 0)
             {
@@ -445,6 +449,12 @@ namespace BetterLegacy.Core.Managers
         {
             ValidatePlayers();
             DestroyPlayers();
+
+            for (int i = 0; i < Players.Count; i++)
+            {
+                var player = Players[i];
+                player.lives = RTBeatmap.Current.challengeMode.Lives > 0 ? RTBeatmap.Current.challengeMode.Lives : player.GetControl()?.lives ?? -1;
+            }
 
             if (GameData.Current && GameData.Current.data && (!GameData.Current.data.level || GameData.Current.data.level.spawnPlayers))
                 SpawnPlayers(GameData.Current.data.checkpoints[0]);
@@ -538,7 +548,7 @@ namespace BetterLegacy.Core.Managers
         public static Vector2[] GetSpawnPositions(Checkpoint checkpoint)
         {
             var players = Players;
-            int randomIndex = !checkpoint ? -1 : UnityEngine.Random.Range(-1, checkpoint.positions.Count);
+            int randomIndex = !checkpoint ? -1 : RandomHelper.IntFromRange(RandomHelper.GetHash(checkpoint.id ?? string.Empty, RandomHelper.CurrentSeed), -1, checkpoint.positions.Count - 1);
             var positions = new Vector2[players.Count];
 
             for (int i = 0; i < players.Count; i++)
@@ -559,13 +569,13 @@ namespace BetterLegacy.Core.Managers
                 {
                     Checkpoint.SpawnPositionType.Single => checkpoint.pos,
                     Checkpoint.SpawnPositionType.RandomSingle => randomIndex == -1 ? checkpoint.pos : checkpoint.positions[randomIndex],
-                    Checkpoint.SpawnPositionType.Random => checkpoint.positions[UnityEngine.Random.Range(0, checkpoint.positions.Count)],
+                    Checkpoint.SpawnPositionType.Random => checkpoint.positions[RandomHelper.IntFromRange(RandomHelper.GetHash(checkpoint.id, RandomHelper.CurrentSeed), -1, checkpoint.positions.Count - 1)],
                     _ => checkpoint.positions[i % checkpoint.positions.Count],
                 };
             }
 
             if (checkpoint && checkpoint.spawnType == Checkpoint.SpawnPositionType.RandomFillAll)
-                positions = positions.ToList().Shuffle().ToArray();
+                positions = positions.ToList().OrderBy(x => RandomHelper.GetHash(x.x, x.y, RandomHelper.CurrentSeed)).ToArray();
 
             return positions;
         }

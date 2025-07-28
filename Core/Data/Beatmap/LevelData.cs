@@ -41,6 +41,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Player Conditions
 
         /// <summary>
+        /// If players should respawn immediately when they die and not wait for other players to die.
+        /// </summary>
+        public bool respawnImmediately = false;
+
+        /// <summary>
         /// If the boost should be locked.
         /// </summary>
         public bool lockBoost = false;
@@ -189,6 +194,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             hideIntro = orig.hideIntro;
 
+            respawnImmediately = orig.allowCustomPlayerModels;
             lockBoost = orig.lockBoost;
             speedMultiplier = orig.speedMultiplier;
             gameMode = orig.gameMode;
@@ -235,6 +241,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             
             if (jn["hide_intro"] != null)
                 hideIntro = jn["hide_intro"].AsBool;
+
+            if (jn["respawn_now"] != null)
+                respawnImmediately = jn["respawn_now"].AsBool;
 
             if (jn["lock_boost"] != null)
                 lockBoost = jn["lock_boost"].AsBool;

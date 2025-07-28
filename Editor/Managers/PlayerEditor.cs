@@ -666,6 +666,9 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.GlobalTab.SpawnPlayers.Toggle.SetIsOnWithoutNotify(GameData.Current.data.level.spawnPlayers);
             Dialog.GlobalTab.SpawnPlayers.Toggle.onValueChanged.NewListener(_val => GameData.Current.data.level.spawnPlayers = _val);
+            
+            Dialog.GlobalTab.RespawnImmediately.Toggle.SetIsOnWithoutNotify(GameData.Current.data.level.respawnImmediately);
+            Dialog.GlobalTab.RespawnImmediately.Toggle.onValueChanged.NewListener(_val => GameData.Current.data.level.respawnImmediately = _val);
 
             Dialog.GlobalTab.AllowCustomPlayerModels.Toggle.SetIsOnWithoutNotify(GameData.Current.data.level.allowCustomPlayerModels);
             Dialog.GlobalTab.AllowCustomPlayerModels.Toggle.onValueChanged.NewListener(_val =>
@@ -822,6 +825,16 @@ namespace BetterLegacy.Editor.Managers
                     if (int.TryParse(_val, out int num))
                     {
                         currentModel.basePart.health = num;
+                        PlayerManager.UpdatePlayerModels();
+                    }
+                });
+            
+            RenderInteger(Dialog.BaseTab.Lives.Field, currentModel.basePart.lives,
+                onValueChanged: _val =>
+                {
+                    if (int.TryParse(_val, out int num))
+                    {
+                        currentModel.basePart.lives = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });

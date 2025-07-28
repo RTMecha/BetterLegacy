@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
-
-using SimpleJSON;
 
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
@@ -52,13 +51,19 @@ namespace BetterLegacy.Core.Runtime
             deaths.Clear();
             boosts.Clear();
 
+            if (GameData.Current && GameData.Current.data && GameData.Current.data.level)
+                respawnImmediately = GameData.Current.data.level.respawnImmediately;
+
             if (!apply)
+            {
+                UpdateLives(challengeMode.Lives);
                 return;
+            }
 
             challengeMode = CoreConfig.Instance.ChallengeModeSetting.Value;
             gameSpeed = CoreConfig.Instance.GameSpeedSetting.Value;
 
-            lives = challengeMode.Lives;
+            UpdateLives(challengeMode.Lives);
         }
 
         /// <summary>
@@ -382,15 +387,15 @@ namespace BetterLegacy.Core.Runtime
 
                 AnimationManager.inst.Play(animation);
                 SoundManager.inst.PlaySound(DefaultSounds.rewind);
+                yield return CoroutineHelper.Seconds(2f);
             }
-
-            yield return CoroutineHelper.Seconds(2f);
 
             float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
             if (!CoreHelper.InEditor && challengeMode.Lives > 0)
             {
                 time = 0.1f;
-                lives = challengeMode.Lives;
+                if (OutOfLives)
+                    UpdateLives(challengeMode.Lives);
             }
 
             if (checkpoint.setTime)
@@ -398,7 +403,8 @@ namespace BetterLegacy.Core.Runtime
 
             GameManager.inst.gameState = GameManager.State.Playing;
 
-            AudioManager.inst.CurrentAudioSource.Play();
+            if (!AudioManager.inst.CurrentAudioSource.isPlaying)
+                AudioManager.inst.CurrentAudioSource.Play();
             AudioManager.inst.SetPitch(1f); // resets the pitch offset
 
             GameManager.inst.UpdateEventSequenceTime();
@@ -457,6 +463,11 @@ namespace BetterLegacy.Core.Runtime
         #region Player Conditions
 
         /// <summary>
+        /// If players should respawn immediately when they die and not wait for other players to die.
+        /// </summary>
+        public bool respawnImmediately = false;
+
+        /// <summary>
         /// Amount of lives left until the level restarts.
         /// </summary>
         public int lives = -1;
@@ -464,7 +475,7 @@ namespace BetterLegacy.Core.Runtime
         /// <summary>
         /// If the player is out of lives.
         /// </summary>
-        public bool OutOfLives => lives <= 0;
+        public bool OutOfLives => lives == 0 || PlayerManager.Players.All(x => x is PAPlayer player && player.OutOfLives);
 
         /// <summary>
         /// Data points representing the times the players got hit.
@@ -490,6 +501,16 @@ namespace BetterLegacy.Core.Runtime
         /// If a player has died on a tick.
         /// </summary>
         public bool playerDied = false;
+
+        public void UpdateLives(int lives)
+        {
+            this.lives = lives;
+            for (int i = 0; i < PlayerManager.Players.Count; i++)
+            {
+                var player = PlayerManager.Players[i];
+                player.lives = lives > 0 ? lives : player.GetControl()?.lives ?? -1;
+            }
+        }
 
         #endregion
     }

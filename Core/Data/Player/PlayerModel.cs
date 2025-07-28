@@ -456,6 +456,7 @@ namespace BetterLegacy.Core.Data.Player
         public PlayerControl ToPlayerControl() => new PlayerControl
         {
             Health = basePart.health,
+            lives = basePart.lives,
             moveSpeed = basePart.moveSpeed,
             boostSpeed = basePart.boostSpeed,
             boostCooldown = basePart.boostCooldown,
@@ -486,6 +487,8 @@ namespace BetterLegacy.Core.Data.Player
             public string name;
 
             public int health = 3;
+
+            public int lives = -1;
 
             public float moveSpeed = 20f;
 
@@ -540,6 +543,7 @@ namespace BetterLegacy.Core.Data.Player
                 name = orig.name;
                 id = newID ? GetNumberID() : orig.id;
                 health = orig.health;
+                lives = orig.lives;
                 moveSpeed = orig.moveSpeed;
                 boostSpeed = orig.boostSpeed;
                 boostCooldown = orig.boostCooldown;
@@ -568,6 +572,8 @@ namespace BetterLegacy.Core.Data.Player
 
                 if (jn["health"] != null)
                     health = jn["health"].AsInt;
+                if (jn["lives"] != null)
+                    lives = jn["lives"].AsInt;
                 if (jn["move_speed"] != null)
                     moveSpeed = jn["move_speed"].AsFloat;
                 if (jn["boost_speed"] != null)
@@ -615,6 +621,8 @@ namespace BetterLegacy.Core.Data.Player
 
                 if (health != 3)
                     jn["health"] = health;
+                if (lives != -1)
+                    jn["lives"] = lives;
                 if (moveSpeed != 20f)
                     jn["move_speed"] = moveSpeed;
                 if (boostSpeed != 85f)

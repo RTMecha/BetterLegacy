@@ -2791,9 +2791,10 @@ namespace BetterLegacy.Core.Components.Player
                 RTBeatmap.Current.playerDied = true;
             Core?.GetControl()?.DeathModifierBlock?.Run(Core);
             isDead = true;
-            playerDeathEvent?.Invoke(rb.position);
+            Core.RuntimePlayer = null;
             Core.active = false;
             Core.health = 0;
+            playerDeathEvent?.Invoke(rb.position);
             //anim.SetTrigger("kill");
             InitDeathAnimation();
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);

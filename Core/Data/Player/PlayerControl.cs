@@ -23,6 +23,11 @@ namespace BetterLegacy.Core.Data.Player
         public int Health { get => RTMath.Clamp(health, 1, int.MaxValue); set => health = RTMath.Clamp(value, 1, int.MaxValue); }
 
         /// <summary>
+        /// Amount of lives the player has until the level requires a restart.
+        /// </summary>
+        public int lives = -1;
+
+        /// <summary>
         /// Default speed of the player.
         /// </summary>
         public float moveSpeed = 20f;
