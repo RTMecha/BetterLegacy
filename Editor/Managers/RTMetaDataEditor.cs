@@ -445,22 +445,19 @@ namespace BetterLegacy.Editor.Managers
 
             var submitBase = Dialog.Content.Find("submit");
 
-            var convert = submitBase.Find("convert").GetComponent<Button>();
-            convert.onClick.ClearAll();
-            convert.onClick.AddListener(ConvertLevel);
+            submitBase.Find("convert").GetComponent<Button>().onClick.NewListener(ConvertLevel);
 
-            var upload = submitBase.Find("upload").GetComponent<Button>();
-            upload.onClick.ClearAll();
-            upload.onClick.AddListener(UploadLevel);
+            submitBase.Find("upload").GetComponent<Button>().onClick.NewListener(UploadLevel);
+
+            var pull = submitBase.Find("pull").gameObject;
+            pull.SetActive(hasID);
+            if (hasID)
+                submitBase.Find("pull").GetComponent<Button>().onClick.NewListener(PullLevel);
 
             var delete = submitBase.Find("delete").gameObject;
             delete.SetActive(hasID);
             if (hasID)
-            {
-                var deleteButton = submitBase.Find("delete").GetComponent<Button>();
-                deleteButton.onClick.ClearAll();
-                deleteButton.onClick.AddListener(DeleteLevel);
-            }
+                submitBase.Find("delete").GetComponent<Button>().onClick.NewListener(DeleteLevel);
         }
 
         public void RenderDifficulty(MetaData metadata)

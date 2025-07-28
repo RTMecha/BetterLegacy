@@ -115,6 +115,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             var submitBase = Content.Find("submit");
+            var submitLayout = submitBase.gameObject.AddComponent<HorizontalLayoutGroup>();
+            submitLayout.spacing = 8f;
             var convert = submitBase.Find("submit").gameObject;
             convert.name = "convert";
 
@@ -122,10 +124,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             convertImage.sprite = null;
 
             convert.transform.AsRT().anchoredPosition = new Vector2(-240f, 0f);
-            convert.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
+            convert.transform.AsRT().sizeDelta = new Vector2(190f, 48f);
             var convertText = convert.transform.Find("Text").GetComponent<Text>();
             convertText.resizeTextForBestFit = false;
-            convertText.fontSize = 22;
+            convertText.fontSize = 18;
             convertText.text = "Convert to VG Format";
 
             var upload = convert.Duplicate(submitBase, "upload");
@@ -163,14 +165,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     );
             };
 
-            var zip = convert.Duplicate(submitBase, "delete");
+            var pull = convert.Duplicate(submitBase, "pull");
 
-            zip.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
-            zip.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
-            var zipText = zip.transform.Find("Text").GetComponent<Text>();
-            zipText.resizeTextForBestFit = false;
-            zipText.fontSize = 22;
-            zipText.text = "Delete Level";
+            pull.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
+            pull.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
+            var pullText = pull.transform.Find("Text").GetComponent<Text>();
+            pullText.resizeTextForBestFit = false;
+            pullText.fontSize = 22;
+            pullText.text = "Pull Level";
+            
+            var delete = convert.Duplicate(submitBase, "delete");
+
+            delete.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
+            delete.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
+            var deleteText = delete.transform.Find("Text").GetComponent<Text>();
+            deleteText.resizeTextForBestFit = false;
+            deleteText.fontSize = 22;
+            deleteText.text = "Delete Level";
 
             Content.Find("id").gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
 
@@ -255,8 +266,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddGraphic(convertText, ThemeGroup.Function_1_Text);
             EditorThemeManager.AddGraphic(upload.GetComponent<Image>(), ThemeGroup.Function_1, true);
             EditorThemeManager.AddGraphic(uploadText, ThemeGroup.Function_1_Text);
-            EditorThemeManager.AddGraphic(zip.GetComponent<Image>(), ThemeGroup.Delete, true);
-            EditorThemeManager.AddGraphic(zipText, ThemeGroup.Delete_Text);
+            EditorThemeManager.AddGraphic(pull.GetComponent<Image>(), ThemeGroup.Delete, true);
+            EditorThemeManager.AddGraphic(pullText, ThemeGroup.Delete_Text);
+            EditorThemeManager.AddGraphic(delete.GetComponent<Image>(), ThemeGroup.Delete, true);
+            EditorThemeManager.AddGraphic(deleteText, ThemeGroup.Delete_Text);
             EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
             EditorThemeManager.AddLightText(uploadInfoLabel);
