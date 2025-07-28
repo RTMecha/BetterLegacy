@@ -11,16 +11,11 @@
   - Preview song. (done)
   - Overall ranking (similar to regular ranking, except instead of hits it's the level ranks ordinal values)
   - Level collections can be uploaded with only level folders or only references to levels, or a mixture of both.
-- Custom Achievement system.  
-  Update: 1.8.0  
 - Online multiplayer.  
   Update: 1.10.0  
 - Level modifiers (supports VG triggers).  
   Update: 1.8.0  
 - 2D option for BG objects (VG parallax support?)
-- Checkpoint features. (Toggle for healing, multiplayer positions / random positions, triggerable via modifiers, respawnable)  
-  Update: 1.8.0  
-  Think about allowing players to respawn even if all players haven't died yet.
 - Level preview song.
 - Custom end level function defaults.
 - Controller Preferences metadata. [Keyboard, Controller, Mouse]
