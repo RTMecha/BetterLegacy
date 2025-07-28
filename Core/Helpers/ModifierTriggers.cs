@@ -1374,12 +1374,11 @@ namespace BetterLegacy.Core.Helpers
         {
             return modifier.HasResult();
         }
-        
-        public static bool isFullscreen(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
-        {
-            return Screen.fullScreen;
-        }
-        
+
+        public static bool isFocused(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => Application.isFocused;
+
+        public static bool isFullscreen(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => Screen.fullScreen;
+
         public static bool objectAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not IPrefabable prefabable)
