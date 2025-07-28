@@ -191,11 +191,14 @@ namespace BetterLegacy.Core.Data.Level
         /// <param name="achievement">Achievement to unlock.</param>
         public void UnlockAchievement(Achievement achievement)
         {
-            if (achievement && (UnlockedAchievements == null || !UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) || !unlocked))
-            {
-                if (UnlockedAchievements == null)
-                    UnlockedAchievements = new Dictionary<string, bool>();
+            if (!achievement)
+                return;
 
+            if (UnlockedAchievements == null)
+                UnlockedAchievements = new Dictionary<string, bool>();
+
+            if (!UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) || !unlocked)
+            {
                 UnlockedAchievements[achievement.id] = true;
                 LevelManager.SaveProgress();
                 AchievementManager.inst.ShowAchievement(achievement);
