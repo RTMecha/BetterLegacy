@@ -663,7 +663,7 @@ namespace BetterLegacy.Core.Helpers
                     b.Parent = newID;
             }
 
-            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+            for (int i = 0; i < prefabObjects.Count; i++)
             {
                 var po = prefabObjects[i];
                 if (po.parent == oldID)
