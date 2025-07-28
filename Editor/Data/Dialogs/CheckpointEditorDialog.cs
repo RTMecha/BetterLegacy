@@ -38,6 +38,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public Vector2InputFieldStorage PositionFields { get; set; }
 
+        public ToggleButtonStorage RespawnToggle { get; set; }
+        public ToggleButtonStorage HealToggle { get; set; }
+        public ToggleButtonStorage SetTimeToggle { get; set; }
+        public ToggleButtonStorage ReverseToggle { get; set; }
+
         #endregion
 
         #region Right
@@ -64,6 +69,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 return;
 
             base.Init();
+
+            #region Setup
 
             var dialog = GameObject.transform;
 
@@ -155,6 +162,32 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorThemeManager.AddSelectable(buttonComponent, ThemeGroup.Function_2, false);
                 }
             }
+
+            new Labels(Labels.InitSettings.Default.Parent(Left), "Respawn Dead Players");
+            var respawn = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            RespawnToggle = respawn.GetComponent<ToggleButtonStorage>();
+            RespawnToggle.label.text = "Respawn";
+            EditorThemeManager.AddToggle(RespawnToggle.toggle, graphic: RespawnToggle.label);
+
+            new Labels(Labels.InitSettings.Default.Parent(Left), "Heal Players");
+            var heal = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            HealToggle = heal.GetComponent<ToggleButtonStorage>();
+            HealToggle.label.text = "Heal";
+            EditorThemeManager.AddToggle(HealToggle.toggle, graphic: HealToggle.label);
+            
+            new Labels(Labels.InitSettings.Default.Parent(Left), "Set time on reverse");
+            var setTime = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            SetTimeToggle = setTime.GetComponent<ToggleButtonStorage>();
+            SetTimeToggle.label.text = "Set Time";
+            EditorThemeManager.AddToggle(SetTimeToggle.toggle, graphic: SetTimeToggle.label);
+            
+            new Labels(Labels.InitSettings.Default.Parent(Left), "Reverse level on death");
+            var reverse = EditorPrefabHolder.Instance.ToggleButton.Duplicate(Left);
+            ReverseToggle = reverse.GetComponent<ToggleButtonStorage>();
+            ReverseToggle.label.text = "Reverse";
+            EditorThemeManager.AddToggle(ReverseToggle.toggle, graphic: ReverseToggle.label);
+
+            #endregion
         }
     }
 }

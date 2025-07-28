@@ -10,9 +10,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 {
     public class Checkpoint : PAObject<Checkpoint>
 	{
-		public Checkpoint() : base() { }
+		public Checkpoint() => id = GetShortNumberID();
 
-		public Checkpoint(string name, float time, Vector2 pos) : this()
+        public Checkpoint(string name, float time, Vector2 pos) : this()
 		{
 			this.name = name ?? DEFAULT_CHECKPOINT_NAME;
 			this.time = time;
@@ -144,9 +144,24 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
+            if (jn["id"] != null)
+                id = jn["id"];
+            else
+                id = GetShortNumberID();
 			name = jn["name"] ?? string.Empty;
 			time = jn["t"].AsFloat;
 			pos = jn["pos"].AsVector2();
+            spawnType = (SpawnPositionType)jn["pos_type"].AsInt;
+            for (int i = 0; i < jn["pos_list"].Count; i++)
+                positions.Add(Parser.TryParse(jn["pos_list"][i], Vector2.zero));
+            if (jn["respawn"] != null)
+                respawn = jn["respawn"].AsBool;
+            if (jn["heal"] != null)
+                heal = jn["heal"].AsBool;
+            if (jn["set_time"] != null)
+                setTime = jn["set_time"].AsBool;
+            if (jn["reverse"] != null)
+                reverse = jn["reverse"].AsBool;
         }
 
         public override JSONNode ToJSONVG()
@@ -164,12 +179,25 @@ namespace BetterLegacy.Core.Data.Beatmap
 
 		public override JSONNode ToJSON()
 		{
-			var jn = JSON.Parse("{}");
+			var jn = Parser.NewJSONObject();
 
+            jn["id"] = id ?? GetShortNumberID();
 			jn["name"] = name ?? string.Empty;
 			if (time != 0f)
 				jn["t"] = time;
 			jn["pos"] = pos.ToJSON();
+            if (spawnType != SpawnPositionType.Single)
+                jn["pos_type"] = (int)spawnType;
+            for (int i = 0; i < positions.Count; i++)
+                jn["pos_list"][i] = positions[i].ToJSON();
+            if (!respawn)
+                jn["respawn"] = respawn;
+            if (heal)
+                jn["heal"] = heal;
+            if (!setTime)
+                jn["set_time"] = setTime;
+            if (!reverse)
+                jn["reverse"] = reverse;
 
 			return jn;
 		}

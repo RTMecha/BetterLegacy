@@ -241,6 +241,18 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.ScrollDelta(Dialog.PositionFields.y.inputField),
                 TriggerHelper.ScrollDeltaVector2(Dialog.PositionFields.x.inputField, Dialog.PositionFields.y.inputField));
 
+            Dialog.RespawnToggle.toggle.SetIsOnWithoutNotify(checkpoint.respawn);
+            Dialog.RespawnToggle.toggle.onValueChanged.NewListener(_val => checkpoint.respawn = _val);
+            
+            Dialog.HealToggle.toggle.SetIsOnWithoutNotify(checkpoint.heal);
+            Dialog.HealToggle.toggle.onValueChanged.NewListener(_val => checkpoint.heal = _val);
+            
+            Dialog.SetTimeToggle.toggle.SetIsOnWithoutNotify(checkpoint.setTime);
+            Dialog.SetTimeToggle.toggle.onValueChanged.NewListener(_val => checkpoint.setTime = _val);
+            
+            Dialog.ReverseToggle.toggle.SetIsOnWithoutNotify(checkpoint.reverse);
+            Dialog.ReverseToggle.toggle.onValueChanged.NewListener(_val => checkpoint.reverse = _val);
+
             RenderCheckpoints();
         }
 
@@ -249,7 +261,7 @@ namespace BetterLegacy.Editor.Managers
             if (timelineCheckpoints.IsEmpty())
                 return;
 
-            timelineCheckpoints.ForLoop((timelineCheckpoint, index) =>
+            timelineCheckpoints.ForLoopReverse((timelineCheckpoint, index) =>
             {
                 CoreHelper.Delete(timelineCheckpoint.GameObject);
                 timelineCheckpoints.RemoveAt(index);
