@@ -36,6 +36,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float KillTime { get; set; }
 
+        public bool active;
+
         public List<Modifier> triggers;
 
         public List<Modifier> actions;
@@ -70,6 +72,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
+            this.active = active;
             if (active)
                 return;
 

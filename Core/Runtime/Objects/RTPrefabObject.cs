@@ -257,7 +257,10 @@ namespace BetterLegacy.Core.Runtime.Objects
                 for (int j = 0; j < prefab.beatmapObjects.Count; j++)
                 {
                     var beatmapObject = prefab.beatmapObjects[j];
-                    objectIDs.Add(new IDPair(beatmapObject.id, RandomHelper.RandomString(RandomHelper.GetHash(beatmapObject.id, j, RandomHelper.CurrentSeed), 16)));
+                    //if (CoreConfig.Instance.UseSeedBasedRandom.Value)
+                        objectIDs.Add(new IDPair(beatmapObject.id, RandomHelper.RandomString(RandomHelper.GetHash(beatmapObject.id, prefabObject.id, i, RandomHelper.CurrentSeed), 16)));
+                    //else
+                    //    objectIDs.Add(new IDPair(beatmapObject.id));
                 }
 
                 int num = 0;
@@ -350,7 +353,10 @@ namespace BetterLegacy.Core.Runtime.Objects
                 for (int j = 0; j < prefab.prefabObjects.Count; j++)
                 {
                     var subPrefabObject = prefab.prefabObjects[j];
-                    objectIDs.Add(new IDPair(subPrefabObject.id, RandomHelper.RandomString(RandomHelper.GetHash(subPrefabObject.id, j, RandomHelper.CurrentSeed), 16)));
+                    //if (CoreConfig.Instance.UseSeedBasedRandom.Value)
+                        objectIDs.Add(new IDPair(subPrefabObject.id, RandomHelper.RandomString(RandomHelper.GetHash(subPrefabObject.id, prefabObject.id, i, RandomHelper.CurrentSeed), 16)));
+                    //else
+                    //    objectIDs.Add(new IDPair(subPrefabObject.id));
                 }
 
                 num = 0;

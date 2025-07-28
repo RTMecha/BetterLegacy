@@ -70,7 +70,8 @@ namespace BetterLegacy.Core.Helpers
             int num = 0;
             while (text.Length < length)
             {
-                var index = UnityEngine.Mathf.RoundToInt(RTMath.Lerp(0, array.Length - 1, Single(hash * num)));
+                hash *= GetHash(hash, num);
+                var index = UnityEngine.Mathf.RoundToInt(RTMath.Lerp(0, array.Length - 1, Single(hash))) % array.Length;
                 text += array[index].ToString();
                 num++;
             }
