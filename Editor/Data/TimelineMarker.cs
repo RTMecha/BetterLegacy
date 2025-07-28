@@ -17,7 +17,7 @@ using BetterLegacy.Editor.Managers;
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
-    /// Object for storing marker data.
+    /// Represents a marker in the editor.
     /// </summary>
     public class TimelineMarker : Exists
     {
@@ -92,6 +92,8 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
+        #region Fields
+
         /// <summary>
         /// If the timeline marker is being dragged.
         /// </summary>
@@ -101,6 +103,8 @@ namespace BetterLegacy.Editor.Data
         /// Marker button reference.
         /// </summary>
         public MarkerButton listButton;
+
+        #endregion
 
         #region Methods
 
@@ -213,15 +217,16 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
-        /// Renders the timeline markers position.
+        /// Renders the timeline marker position.
         /// </summary>
         public void RenderPosition() => RenderPosition(Marker.time, EditorManager.inst.Zoom);
 
         /// <summary>
-        /// Renders the timeline markers position.
+        /// Renders the timeline marker position.
         /// </summary>
         /// <param name="time">Time position.</param>
         /// <param name="zoom">Timeline zoom.</param>
+        /// <param name="offset">Position offset.</param>
         public void RenderPosition(float time, float zoom, float offset = 6f)
         {
             RectTransform.sizeDelta = new Vector2(12f, 12f);
@@ -248,12 +253,12 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
-        /// Renders the timeline markers' name.
+        /// Renders the timeline marker name.
         /// </summary>
         public void RenderName() => RenderName(Marker.name);
 
         /// <summary>
-        /// Renders the timeline markers' name.
+        /// Renders the timeline marker name.
         /// </summary>
         /// <param name="name">Name of the marker.</param>
         public void RenderName(string name)
@@ -267,12 +272,12 @@ namespace BetterLegacy.Editor.Data
         }
 
         /// <summary>
-        /// Renders the timeline markers' names' width.
+        /// Renders the timeline marker names' width.
         /// </summary>
         public void RenderTextWidth() => RenderTextWidth(EditorConfig.Instance.MarkerTextWidth.Value);
 
         /// <summary>
-        /// Renders the timeline markers' names' width.
+        /// Renders the timeline marker names' width.
         /// </summary>
         /// <param name="width">Width of the name text UI.</param>
         public void RenderTextWidth(float width) => Text.transform.AsRT().sizeDelta = new Vector2(width, 20f);

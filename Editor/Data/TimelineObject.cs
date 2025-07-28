@@ -21,11 +21,11 @@ using BetterLegacy.Editor.Managers;
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
-    /// Object for storing object data in the timeline.
+    /// Represents an object in the editor timeline.
     /// </summary>
     public class TimelineObject : Exists
     {
-        public TimelineObject(object data)
+        public TimelineObject(IEditable data)
         {
             this.data = data;
             TimelineReference = GetTimelineReferenceType(data);
@@ -376,7 +376,7 @@ namespace BetterLegacy.Editor.Data
 
         #region Internal
 
-        readonly object data;
+        readonly IEditable data;
         int index;
         bool selected;
 

@@ -15,7 +15,7 @@ using BetterLegacy.Editor.Managers;
 namespace BetterLegacy.Editor.Data
 {
     /// <summary>
-    /// Object for storing keyframe data in the timelines.
+    /// Represents a keyframe in an editor timeline.
     /// </summary>
     public class TimelineKeyframe : Exists
     {
