@@ -8,12 +8,15 @@
 - Implemented the new Checkpoint features to the Checkpoint Editor.
 - Added Lives count and Respawn Immediately toggle to the Player Editor.
 - Added getPlayerLives, getLives and getMaxLives modifiers.
+- Added isFocused trigger modifier.
 
 ### Editor
 - If you want to refresh an objects' randomization, you can go to the Object Editor, right click the ID and click "Shuffle ID".
+- "Pull Level" as now exists as a server button in the MetaData Editor.
 
 ## Fixes
 - Fixed some issues with the Player face parent.
+- Fixed polygon shape in Player Editor.
 
 ------------------------------------------------------------------------------------------
 
