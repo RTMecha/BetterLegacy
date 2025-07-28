@@ -188,17 +188,18 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playSoundOnline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not PAObjectBase obj)
-                return;
-
             var url = modifier.GetValue(0, variables);
             var pitch = modifier.GetFloat(1, 1f, variables);
             var vol = modifier.GetFloat(2, 1f, variables);
             var loop = modifier.GetBool(3, false, variables);
             var panStereo = modifier.GetFloat(4, 0f, variables);
 
+            var id = reference is PAObjectBase obj ? obj.id : reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
+            if (string.IsNullOrEmpty(id))
+                loop = false;
+
             if (!string.IsNullOrEmpty(url))
-                ModifiersHelper.DownloadSoundAndPlay(obj.id, url, pitch, vol, loop, panStereo);
+                ModifiersHelper.DownloadSoundAndPlay(id, url, pitch, vol, loop, panStereo);
         }
 
         public static void playDefaultSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -227,10 +228,14 @@ namespace BetterLegacy.Core.Helpers
             if (x < 0f)
                 x = -x;
 
+            var id = reference is PAObjectBase obj ? obj.id : reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
+            if (string.IsNullOrEmpty(id))
+                loop = false;
+
             if (!loop)
                 CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
-            else if (reference is PAObjectBase obj && !ModifiersManager.audioSources.ContainsKey(obj.id))
-                ModifiersManager.audioSources.Add(obj.id, audioSource);
+            else if (!ModifiersManager.audioSources.ContainsKey(id))
+                ModifiersManager.audioSources.Add(id, audioSource);
         }
 
         public static void audioSource(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
