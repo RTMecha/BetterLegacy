@@ -4914,6 +4914,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void animateObject(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            var transformable = reference.AsTransformable();
+            if (transformable == null)
+                return;
+
             var time = modifier.GetFloat(0, 0f, variables);
             var type = modifier.GetInt(1, 0, variables);
             var x = modifier.GetFloat(2, 0f, variables);
@@ -4926,10 +4930,6 @@ namespace BetterLegacy.Core.Helpers
                 easing = DataManager.inst.AnimationList[e].Name;
 
             var applyDeltaTime = modifier.GetBool(7, true, variables);
-
-            var transformable = reference.AsTransformable();
-            if (transformable == null)
-                return;
 
             Vector3 vector = transformable.GetTransformOffset(type);
 
@@ -5233,7 +5233,11 @@ namespace BetterLegacy.Core.Helpers
         
         public static void animateObjectMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ITransformable transformable || reference is not IEvaluatable evaluatable)
+            var transformable = reference.AsTransformable();
+            if (transformable == null)
+                return;
+
+            if (reference is not IEvaluatable evaluatable)
                 return;
 
             var numberVariables = evaluatable.GetObjectVariables();
