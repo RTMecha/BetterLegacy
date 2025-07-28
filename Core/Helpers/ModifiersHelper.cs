@@ -107,7 +107,7 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="action">Action function to set if <see cref="Modifier.type"/> is <see cref="Modifier.Type.Action"/>.</param>
         /// <param name="trigger">Trigger function to set if <see cref="Modifier.type"/> is <see cref="Modifier.Type.Trigger"/>.</param>
         /// <param name="inactive">Inactive function to set.</param>
-        public static void AssignModifierAction<T>(Modifier modifier, Action<Modifier, IModifierReference, Dictionary<string, string>> action, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger, Action<Modifier, IModifierReference, Dictionary<string, string>> inactive)
+        public static void AssignModifierAction(Modifier modifier, Action<Modifier, IModifierReference, Dictionary<string, string>> action, Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger, Action<Modifier, IModifierReference, Dictionary<string, string>> inactive)
         {
             // Only assign methods depending on modifier type.
             if (modifier.type == Modifier.Type.Action)
@@ -238,9 +238,6 @@ namespace BetterLegacy.Core.Helpers
 
                 var isAction = modifier.type == Modifier.Type.Action;
                 var isTrigger = modifier.type == Modifier.Type.Trigger;
-
-                if (isAction && modifier.Action == null || isTrigger && modifier.Trigger == null || modifier.Inactive == null)
-                    AssignModifierActions(modifier, reference);
 
                 if (returned)
                 {
@@ -899,7 +896,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.getTag),  ModifierActions.getTag),
             new ModifierAction(nameof(ModifierActions.getPitch),  ModifierActions.getPitch),
             new ModifierAction(nameof(ModifierActions.getMusicTime),  ModifierActions.getMusicTime),
-            new ModifierAction(nameof(ModifierActions.getAxis),  ModifierActions.getAxis, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.getAxis),  ModifierActions.getAxis),
             new ModifierAction(nameof(ModifierActions.getMath),  ModifierActions.getMath),
             new ModifierAction(nameof(ModifierActions.getNearestPlayer),  ModifierActions.getNearestPlayer, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.getCollidingPlayers),  ModifierActions.getCollidingPlayers, ModifierCompatibility.BeatmapObjectCompatible),

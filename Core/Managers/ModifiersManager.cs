@@ -32,6 +32,19 @@ namespace BetterLegacy.Core.Managers
             AddDevelopmentModifiers();
 
             modifiers.AddRange(defaultPlayerModifiers);
+            modifiers.ForLoop(modifier =>
+            {
+                var name = modifier.Name;
+
+                if (modifier.type == Modifier.Type.Trigger && ModifiersHelper.triggers.TryFind(x => x.name == name, out ModifierTrigger trigger))
+                    modifier.Trigger = trigger.function;
+
+                if (modifier.type == Modifier.Type.Action && ModifiersHelper.actions.TryFind(x => x.name == name, out ModifierAction action))
+                    modifier.Action = action.function;
+
+                if (ModifiersHelper.inactives.TryFind(x => x.name == name, out ModifierInactive inactive))
+                    modifier.Inactive = inactive.function;
+            });
         }
 
         void LoadFile(List<Modifier> modifiers, string path)
