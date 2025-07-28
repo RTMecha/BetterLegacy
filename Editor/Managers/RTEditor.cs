@@ -731,6 +731,7 @@ namespace BetterLegacy.Editor.Managers
             PlayerEditor.Init();
             ModifiersEditor.Init();
             LevelCombiner.Init();
+            AchievementEditor.Init();
             ProjectPlanner.Init();
             UploadedLevelsManager.Init();
             PinnedLayerEditor.Init();

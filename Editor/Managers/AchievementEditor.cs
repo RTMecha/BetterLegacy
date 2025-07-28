@@ -1,15 +1,355 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+using LSFunctions;
+
+using SimpleJSON;
+using Crosstales.FB;
+
+using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// Editor class that manages custom achievements.
+    /// </summary>
     public class AchievementEditor : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="AchievementEditor"/> global instance reference.
+        /// </summary>
         public static AchievementEditor inst;
+
+        /// <summary>
+        /// Initializes <see cref="AchievementEditor"/>.
+        /// </summary>
+        public static void Init() => Creator.NewGameObject(nameof(AchievementEditor), EditorManager.inst.transform.parent).AddComponent<AchievementEditor>();
 
         void Awake()
         {
+            inst = this;
 
+            try
+            {
+                Dialog = new AchievementEditorDialog();
+                Dialog.Init();
+
+                achievementListButtonPrefab = CheckpointEditor.inst.checkpointListButtonPrefab.Duplicate(transform);
+                CoreHelper.Delete(achievementListButtonPrefab.transform.Find("time"));
+
+                EditorHelper.AddEditorDropdown("Edit Achievements", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.ExclaimSprite, OpenDialog);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init dialog
         }
+
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
+        public AchievementEditorDialog Dialog { get; set; }
+
+        /// <summary>
+        /// The current achievement.
+        /// </summary>
+        public Achievement CurrentAchievement { get; set; }
+
+        /// <summary>
+        /// List of the current levels' achievements.
+        /// </summary>
+        public List<Achievement> achievements = new List<Achievement>();
+
+        /// <summary>
+        /// Achievement list button prefab.
+        /// </summary>
+        public GameObject achievementListButtonPrefab;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Loads the current levels' achievements.
+        /// </summary>
+        public void LoadAchievements()
+        {
+            achievements.Clear();
+            try
+            {
+                var path = EditorLevelManager.inst.CurrentLevel.GetFile(Level.ACHIEVEMENTS_LSA);
+                if (!RTFile.FileExists(path))
+                    return;
+
+                var jn = JSON.Parse(RTFile.ReadFromFile(path));
+                for (int i = 0; i < jn["achievements"].Count; i++)
+                {
+                    var achievement = Achievement.Parse(jn["achievements"][i]);
+                    if (jn["achievements"][i]["icon_path"] != null)
+                        achievement.CheckIconPath(EditorLevelManager.inst.CurrentLevel.GetFile(jn["achievements"][i]["icon_path"]));
+                    achievements.Add(achievement);
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Something went wrong with loading achievements. Is something corrupt?\nException: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Saves the current levels' achievements.
+        /// </summary>
+        public void SaveAchievements()
+        {
+            try
+            {
+                var jn = Parser.NewJSONObject();
+                for (int i = 0; i < achievements.Count; i++)
+                    jn["achievements"][i] = achievements[i].ToJSON();
+                RTFile.WriteToFile(EditorLevelManager.inst.CurrentLevel.GetFile(Level.ACHIEVEMENTS_LSA), jn.ToString());
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Something went wrong with saving achievements. Is something corrupt?\nException: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Creates a new achievement.
+        /// </summary>
+        public void CreateNewAchievement()
+        {
+            var achievement = new Achievement();
+            achievements.Add(achievement);
+            OpenDialog(achievement);
+        }
+
+        /// <summary>
+        /// Sets the currently editing achievement.
+        /// </summary>
+        /// <param name="index">Index of the achievement.</param>
+        public void SetCurrentAchievement(int index)
+        {
+            if (achievements.TryGetAt(index, out Achievement achievement))
+                OpenDialog(achievement);
+        }
+
+        /// <summary>
+        /// Opens the editor dialog.
+        /// </summary>
+        public void OpenDialog() => OpenDialog(null);
+
+        /// <summary>
+        /// Opens the editor dialog.
+        /// </summary>
+        /// <param name="achievement">Achievement to edit.</param>
+        public void OpenDialog(Achievement achievement)
+        {
+            CurrentAchievement = achievement;
+
+            Dialog.Open();
+            RenderDialog(achievement);
+        }
+
+        /// <summary>
+        /// Renders the editor dialog.
+        /// </summary>
+        /// <param name="achievement">Achievement to edit.</param>
+        public void RenderDialog(Achievement achievement)
+        {
+            RenderAchievementList();
+
+            Dialog.LeftContent.gameObject.SetActive(achievement);
+            if (!achievement)
+                return;
+
+            Dialog.IDText.text = achievement.id;
+
+
+            var clickable = Dialog.IDBase.gameObject.GetOrAddComponent<Clickable>();
+
+            clickable.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Copy ID", () =>
+                        {
+                            EditorManager.inst.DisplayNotification($"Copied ID from {achievement.name}!", 2f, EditorManager.NotificationType.Success);
+                            LSText.CopyToClipboard(achievement.id);
+                        }),
+                        new ButtonFunction("Shuffle ID", () =>
+                        {
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the ID of this achievement?", () =>
+                            {
+                                achievement.id = PAObjectBase.GetNumberID();
+                                RenderDialog(achievement);
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup);
+                        }));
+                    return;
+                }
+
+                EditorManager.inst.DisplayNotification($"Copied ID from {achievement.name}!", 2f, EditorManager.NotificationType.Success);
+                LSText.CopyToClipboard(achievement.id);
+            };
+
+            Dialog.NameField.SetTextWithoutNotify(achievement.name);
+            Dialog.NameField.onValueChanged.NewListener(_val => achievement.name = _val);
+
+            Dialog.DescriptionField.SetTextWithoutNotify(achievement.description);
+            Dialog.DescriptionField.onValueChanged.NewListener(_val => achievement.description = _val);
+
+            Dialog.IconImage.sprite = achievement.icon ?? LegacyPlugin.AtanPlaceholder;
+            Dialog.SelectIconButton.button.onClick.NewListener(() =>
+            {
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                    {
+                        string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
+                        if (string.IsNullOrEmpty(imageFile))
+                            return;
+
+                        achievement.icon = SpriteHelper.LoadSprite(imageFile);
+                        RenderDialog(achievement);
+                    }),
+                    new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                    {
+                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, imageFile =>
+                        {
+                            if (string.IsNullOrEmpty(imageFile))
+                                return;
+
+                            RTEditor.inst.BrowserPopup.Close();
+                            achievement.icon = SpriteHelper.LoadSprite(imageFile);
+                            RenderDialog(achievement);
+                        });
+                    }));
+            });
+            Dialog.HiddenToggle.toggle.SetIsOnWithoutNotify(achievement.hidden);
+            Dialog.HiddenToggle.toggle.onValueChanged.NewListener(_val => achievement.hidden = true);
+
+            RenderDifficulty(achievement);
+
+            Dialog.PreviewButton.button.onClick.NewListener(DisplayAchievement);
+        }
+
+        /// <summary>
+        /// Renders the difficulty of an achievement.
+        /// </summary>
+        /// <param name="achievement">Achievement to render.</param>
+        public void RenderDifficulty(Achievement achievement)
+        {
+            LSHelpers.DeleteChildren(Dialog.DifficultyParent);
+
+            var values = CustomEnumHelper.GetValues<DifficultyType>();
+            var count = values.Length - 1;
+
+            foreach (var difficulty in values)
+            {
+                if (difficulty.Ordinal < 0) // skip unknown difficulty
+                    continue;
+
+                var gameObject = RTMetaDataEditor.inst.difficultyToggle.Duplicate(Dialog.DifficultyParent, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
+                gameObject.transform.localScale = Vector3.one;
+
+                gameObject.transform.AsRT().sizeDelta = new Vector2(69f, 32f);
+
+                var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
+                text.color = LSColors.ContrastColor(difficulty.Color);
+                text.text = difficulty == count - 1 ? "Anim" : difficulty.DisplayName;
+                text.fontSize = 17;
+                var toggle = gameObject.GetComponent<Toggle>();
+                toggle.image.color = difficulty.Color;
+                toggle.group = null;
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = achievement.DifficultyType == difficulty;
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    achievement.DifficultyType = difficulty;
+                    RenderDifficulty(achievement);
+                });
+
+                EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
+            }
+        }
+
+        /// <summary>
+        /// Displays a preview of the achievement.
+        /// </summary>
+        public void DisplayAchievement()
+        {
+            var achievement = CurrentAchievement;
+            if (achievement)
+                AchievementManager.inst.ShowAchievement(achievement.name, achievement.description, achievement.icon ?? LegacyPlugin.AtanPlaceholder, achievement.DifficultyType.Color);
+        }
+
+        /// <summary>
+        /// Renders the achievements list.
+        /// </summary>
+        public void RenderAchievementList()
+        {
+            Dialog.ClearContent();
+
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.Content);
+            add.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Add new Achievement";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.NewListener(CreateNewAchievement);
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+
+            int num = 0;
+            foreach (var achievement in achievements)
+            {
+                if (!RTString.SearchString(Dialog.SearchTerm, achievement.name))
+                {
+                    num++;
+                    continue;
+                }
+
+                var index = num;
+                var gameObject = achievementListButtonPrefab.Duplicate(Dialog.Content, $"{achievement.name}_checkpoint");
+                gameObject.transform.AsRT().sizeDelta = new Vector2(350f, 38f);
+
+                var selected = gameObject.transform.Find("dot").GetComponent<Image>();
+                var name = gameObject.transform.Find("name").GetComponent<Text>();
+
+                name.text = achievement.name;
+                selected.enabled = achievement == CurrentAchievement;
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.NewListener(() => SetCurrentAchievement(index));
+
+                EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
+                EditorThemeManager.ApplyGraphic(selected, ThemeGroup.List_Button_2_Text);
+                EditorThemeManager.ApplyGraphic(name, ThemeGroup.List_Button_2_Text);
+
+                num++;
+            }
+        }
+
+        #endregion
     }
 }

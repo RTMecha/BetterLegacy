@@ -484,6 +484,8 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
+            AchievementEditor.inst.LoadAchievements();
+
             if (RTEditor.inst.PreviewCover != null && RTEditor.inst.PreviewCover.gameObject)
                 RTEditor.inst.PreviewCover.gameObject.SetActive(false);
 
@@ -641,6 +643,8 @@ namespace BetterLegacy.Editor.Managers
                 yield return CoroutineHelper.StartCoroutineAsync(gameData.ISaveData(CurrentLevel.GetFile(Level.LEVEL_LSB)));
             else
                 yield return CoroutineHelper.StartCoroutine(gameData.ISaveData(CurrentLevel.GetFile(Level.LEVEL_LSB)));
+
+            AchievementEditor.inst.SaveAchievements();
 
             yield return CoroutineHelper.Seconds(0.5f);
 

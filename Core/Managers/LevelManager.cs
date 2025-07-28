@@ -824,7 +824,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void SaveProgress()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
             int num = 0;
             for (int i = 0; i < Saves.Count; i++)
             {

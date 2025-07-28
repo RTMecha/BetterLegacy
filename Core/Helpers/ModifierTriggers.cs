@@ -1133,10 +1133,15 @@ namespace BetterLegacy.Core.Helpers
                 RTFile.FileExists(basePath + FileFormat.ASSET.Dot());
         }
 
+        public static bool achievementUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(1, variables));
+        }
+
         #endregion
 
         #region Real Time
-        
+
         // seconds
         public static bool realTimeSecondEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {

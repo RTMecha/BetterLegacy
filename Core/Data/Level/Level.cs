@@ -380,10 +380,12 @@ namespace BetterLegacy.Core.Data.Level
 
             try
             {
-                var ach = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
-                for (int i = 0; i < ach["achievements"].Count; i++)
+                var jn = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
+                for (int i = 0; i < jn["achievements"].Count; i++)
                 {
-                    var achievement = Achievement.Parse(ach["achievements"][i]);
+                    var achievement = Achievement.Parse(jn["achievements"][i]);
+                    if (jn["achievements"][i]["icon_path"] != null)
+                        achievement.CheckIconPath(RTFile.CombinePaths(path, jn["achievements"][i]["icon_path"]));
                     achievement.unlocked = saveData && saveData.UnlockedAchievements != null && saveData.UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) && unlocked;
                     achievements.Add(achievement);
                 }

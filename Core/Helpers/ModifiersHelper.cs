@@ -593,6 +593,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierTriggers.levelExists), ModifierTriggers.levelExists),
             new ModifierTrigger(nameof(ModifierTriggers.levelPathExists), ModifierTriggers.levelPathExists),
 
+            new ModifierTrigger(nameof(ModifierTriggers.achievementUnlocked), ModifierTriggers.achievementUnlocked, ModifierCompatibility.LevelControlCompatible),
+
             #endregion
 
             #region Real Time
@@ -1124,17 +1126,20 @@ namespace BetterLegacy.Core.Helpers
 
             #region Ranking
 
-            new ModifierAction(nameof(ModifierActions.saveLevelRank),  ModifierActions.saveLevelRank, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.saveLevelRank), ModifierActions.saveLevelRank, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.unlockAchievement), ModifierActions.unlockAchievement, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.lockAchievement), ModifierActions.lockAchievement, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.getAchievementUnlocked), ModifierActions.getAchievementUnlocked),
 
-            new ModifierAction(nameof(ModifierActions.clearHits),  ModifierActions.clearHits, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierActions.addHit),  ModifierActions.addHit, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierActions.subHit),  ModifierActions.subHit, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierActions.clearDeaths),  ModifierActions.clearDeaths, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierActions.addDeath),  ModifierActions.addDeath, ModifierCompatibility.LevelControlCompatible),
-            new ModifierAction(nameof(ModifierActions.subDeath),  ModifierActions.subDeath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.clearHits), ModifierActions.clearHits, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.addHit), ModifierActions.addHit, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.subHit), ModifierActions.subHit, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.clearDeaths), ModifierActions.clearDeaths, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.addDeath), ModifierActions.addDeath, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.subDeath), ModifierActions.subDeath, ModifierCompatibility.LevelControlCompatible),
 
-            new ModifierAction(nameof(ModifierActions.getHitCount),  ModifierActions.getHitCount),
-            new ModifierAction(nameof(ModifierActions.getDeathCount),  ModifierActions.getDeathCount),
+            new ModifierAction(nameof(ModifierActions.getHitCount), ModifierActions.getHitCount),
+            new ModifierAction(nameof(ModifierActions.getDeathCount), ModifierActions.getDeathCount),
 
             #endregion
 

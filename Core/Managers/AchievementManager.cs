@@ -76,49 +76,49 @@ namespace BetterLegacy.Core.Managers
 
         void LoadAchievements()
         {
-            CreateGlobalAchievement("welcome", "Welcome", "Welcome to BetterLegacy!", 0, "welcome");
-            CreateGlobalAchievement("editor", "Create Something Awesome!", "Open the Project Arrhythmia editor.", 1, "editor");
-            CreateGlobalAchievement("no_boost", "No Boosting!", "Do not boost once in a level.", 4, "no_boost");
-            CreateGlobalAchievement("complete_animation", "Masterpiece.", "Complete an animation level.", 1, "complete_animation");
-            CreateGlobalAchievement("costume_party", "Costume Party", "Play a level with a custom player model.", 2, "costume_party");
-            CreateGlobalAchievement("f_rank", "At least we made it...", "Complete a level with an F rank", 1, "f_rank");
-            CreateGlobalAchievement("expert_plus_ss_rank", "A true expert!", "Complete an expert+ difficulty level with an SS rank.", 5, "expert_plus_ss_rank");
-            CreateGlobalAchievement("master_ss_rank", "A true master!", "Complete a master difficulty level with an SS rank.", 6, "master_ss_rank");
-            CreateGlobalAchievement("editor_reverse_speed", "!yaw gnorw eht s'thaT", "Reverse the level in the editor.", 3, "editor_reverse_speed");
-            CreateGlobalAchievement("editor_layer_lol", "nice", "nice.", 4, "editor_layer_lol");
-            CreateGlobalAchievement("editor_layer_funny", "Thai Funny", "Go to editor layer 555.", 4, "editor_layer_funny");
-            CreateGlobalAchievement("example_chat", "Having a Conversation", "Talk with Example.", 4, "example_chat");
-            CreateGlobalAchievement("example_touch", "No touchie touchie!", "Do not the Example.", 4, "example_touch");
-            CreateGlobalAchievement("editor_zoom_break", "Breaking Boundaries", "Change the zoom keyframe to a value lower than 0.", 3, "editor_zoom_break");
-            CreateGlobalAchievement("no_volume", "Is the Sound Off?", "Complete a level with volume turned down to 0.", 4, "no_volume");
-            CreateGlobalAchievement("queue_ten", "Data Management", "Play 10 levels in a row in a Queue.", 4, "queue_ten");
-            CreateGlobalAchievement("friendship", "Friendship!", "Play with friends!", 4, "friendship");
-            CreateGlobalAchievement("holy_keyframes", "Holy Keyframes!", "Look at an object in the editor with over 1000 keyframes.", 6, "holy_keyframes");
-            CreateGlobalAchievement("serious_dedication", "Serious Dedication", "Spend 10 hours in a level in the editor.", 5, "serious_dedication");
-            CreateGlobalAchievement("true_dedication", "True Dedication", "Spend 24 hours in a level in the editor.", 6, "true_dedication");
-            CreateGlobalAchievement("upload_level", "Upload a Level!", "Publish a level to the arcade server.", 2, "upload_level");
-            CreateGlobalAchievement("youve_been_trolled", "You've Been Trolled", "Play a meme / joke level.", 3, "youve_been_trolled");
-            CreateGlobalAchievement("no_fps", "No FPS?", "Play a high detail level.", 4, "no_fps");
-            CreateGlobalAchievement("ten_levels", "That's some data.", "Complete 10 levels.", 2, "ten_levels");
-            CreateGlobalAchievement("fifty_levels", "That's more data!", "Complete 50 levels.", 3, "fifty_levels");
-            CreateGlobalAchievement("one_hundred_levels", "That's a lot of data!", "Complete 100 levels.", 4, "one_hundred_levels");
-            CreateGlobalAchievement("hackerman", "Hackerman", "Open UnityExplorer in the editor.", 0, "hackerman");
-            CreateGlobalAchievement("death_hd", "Death HD", "Die in the editor.", 3, "death_hd");
-            CreateGlobalAchievement("select_player", "This is not a clicker game!", "Select the player in the editor preview window.", 4, "select_player");
-            CreateGlobalAchievement("time_machine", "Time Machine", "Convert a VG file to an LS file, or the other way around.", 4, "time_machine");
-            CreateGlobalAchievement("time_traveler", "Time Traveler", "Play a level made in the modern (alpha / public) editor.", 2, "time_traveler");
-            CreateGlobalAchievement("discover_hidden_levels", "Still in Alpha", "Discover a secret.", 4, "discover_hidden_levels");
-            CreateGlobalAchievement("more_bins", "There's MORE?!", "Expand the editor timeline's bin count.", 3, "more_bins");
+            CreateGlobalAchievement("welcome", "Welcome", "Welcome to BetterLegacy!", DifficultyType.Animation, "welcome");
+            CreateGlobalAchievement("editor", "Create Something Awesome!", "Open the Project Arrhythmia editor.", DifficultyType.Easy, "editor");
+            CreateGlobalAchievement("no_boost", "No Boosting!", "Do not boost once in a level.", DifficultyType.Expert, "no_boost");
+            CreateGlobalAchievement("complete_animation", "Masterpiece.", "Complete an animation level.", DifficultyType.Easy, "complete_animation");
+            CreateGlobalAchievement("costume_party", "Costume Party", "Play a level with a custom player model.", DifficultyType.Normal, "costume_party");
+            CreateGlobalAchievement("f_rank", "At least we made it...", "Complete a level with an F rank", DifficultyType.Easy, "f_rank");
+            CreateGlobalAchievement("expert_plus_ss_rank", "A true expert!", "Complete an expert+ difficulty level with an SS rank.", DifficultyType.ExpertPlus, "expert_plus_ss_rank");
+            CreateGlobalAchievement("master_ss_rank", "A true master!", "Complete a master difficulty level with an SS rank.", DifficultyType.Master, "master_ss_rank");
+            CreateGlobalAchievement("editor_reverse_speed", "!yaw gnorw eht s'thaT", "Reverse the level in the editor.", DifficultyType.Hard, "editor_reverse_speed");
+            CreateGlobalAchievement("editor_layer_lol", "nice", "nice.", DifficultyType.Expert, "editor_layer_lol");
+            CreateGlobalAchievement("editor_layer_funny", "Thai Funny", "Go to editor layer 555.", DifficultyType.Expert, "editor_layer_funny");
+            CreateGlobalAchievement("example_chat", "Having a Conversation", "Talk with Example.", DifficultyType.Expert, "example_chat");
+            CreateGlobalAchievement("example_touch", "No touchie touchie!", "Do not the Example.", DifficultyType.Expert, "example_touch");
+            CreateGlobalAchievement("editor_zoom_break", "Breaking Boundaries", "Change the zoom keyframe to a value lower than 0.", DifficultyType.Hard, "editor_zoom_break");
+            CreateGlobalAchievement("no_volume", "Is the Sound Off?", "Complete a level with volume turned down to 0.", DifficultyType.Expert, "no_volume");
+            CreateGlobalAchievement("queue_ten", "Data Management", "Play 10 levels in a row in a Queue.", DifficultyType.Expert, "queue_ten");
+            CreateGlobalAchievement("friendship", "Friendship!", "Play with friends!", DifficultyType.Expert, "friendship");
+            CreateGlobalAchievement("holy_keyframes", "Holy Keyframes!", "Look at an object in the editor with over 1000 keyframes.", DifficultyType.Master, "holy_keyframes");
+            CreateGlobalAchievement("serious_dedication", "Serious Dedication", "Spend 10 hours in a level in the editor.", DifficultyType.ExpertPlus, "serious_dedication");
+            CreateGlobalAchievement("true_dedication", "True Dedication", "Spend 24 hours in a level in the editor.", DifficultyType.Master, "true_dedication");
+            CreateGlobalAchievement("upload_level", "Upload a Level!", "Publish a level to the arcade server.", DifficultyType.Normal, "upload_level");
+            CreateGlobalAchievement("youve_been_trolled", "You've Been Trolled", "Play a meme / joke level.", DifficultyType.Hard, "youve_been_trolled");
+            CreateGlobalAchievement("no_fps", "No FPS?", "Play a high detail level.", DifficultyType.Expert, "no_fps");
+            CreateGlobalAchievement("ten_levels", "That's some data.", "Complete 10 levels.", DifficultyType.Normal, "ten_levels");
+            CreateGlobalAchievement("fifty_levels", "That's more data!", "Complete 50 levels.", DifficultyType.Hard, "fifty_levels");
+            CreateGlobalAchievement("one_hundred_levels", "That's a lot of data!", "Complete 100 levels.", DifficultyType.Expert, "one_hundred_levels");
+            CreateGlobalAchievement("hackerman", "Hackerman", "Open UnityExplorer in the editor.", DifficultyType.Animation, "hackerman");
+            CreateGlobalAchievement("death_hd", "Death HD", "Die in the editor.", DifficultyType.Hard, "death_hd");
+            CreateGlobalAchievement("select_player", "This is not a clicker game!", "Select the player in the editor preview window.", DifficultyType.Expert, "select_player");
+            CreateGlobalAchievement("time_machine", "Time Machine", "Convert a VG file to an LS file, or the other way around.", DifficultyType.Expert, "time_machine");
+            CreateGlobalAchievement("time_traveler", "Time Traveler", "Play a level made in the modern (alpha / public) editor.", DifficultyType.Normal, "time_traveler");
+            CreateGlobalAchievement("discover_hidden_levels", "Still in Alpha", "Discover a secret.", DifficultyType.Expert, "discover_hidden_levels");
+            CreateGlobalAchievement("more_bins", "There's MORE?!", "Expand the editor timeline's bin count.", DifficultyType.Hard, "more_bins");
 
             // Story related
-            CreateGlobalAchievement("story_doc01_complete", "The Purpose", "Complete Story Mode chapter 1.", 1, "story_doc01_complete");
-            CreateGlobalAchievement("story_doc01_secret", "Fall into the Night", "Discover the first secret...", 2, "story_doc01_secret");
+            CreateGlobalAchievement("story_doc01_complete", "The Purpose", "Complete Story Mode chapter 1.", DifficultyType.Easy, "story_doc01_complete");
+            CreateGlobalAchievement("story_doc01_secret", "Fall into the Night", "Discover the first secret...", DifficultyType.Normal, "story_doc01_secret");
 
             // todo:
             // story_doc01_full
         }
 
-        void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
+        void CreateGlobalAchievement(string id, string name, string desc, DifficultyType difficulty, string iconFileName)
         {
             try
             {

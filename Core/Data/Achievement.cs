@@ -34,12 +34,12 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Name of the achievement.
         /// </summary>
-        public string name;
+        public string name = string.Empty;
 
         /// <summary>
         /// Short description on how to get the achievement (or not if achievement is hidden).
         /// </summary>
-        public string description;
+        public string description = string.Empty;
 
         /// <summary>
         /// Icon the achievement popup shows.
@@ -64,7 +64,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// The metadata difficulty type.
         /// </summary>
-        public DifficultyType DifficultyType => difficulty == 0 ? CustomEnumHelper.GetCount<DifficultyType>() - 1 : difficulty - 1;
+        public DifficultyType DifficultyType { get => difficulty; set => difficulty = value; }
 
         public void Unlock()
         {
@@ -83,6 +83,12 @@ namespace BetterLegacy.Core.Data
             unlocked = false;
         }
 
+        public void CheckIconPath(string file)
+        {
+            if (RTFile.FileExists(file))
+                icon = SpriteHelper.LoadSprite(file);
+        }
+
         public override void CopyData(Achievement orig, bool newID = true)
         {
             id = newID ? GetNumberID() : orig.id;
@@ -96,24 +102,30 @@ namespace BetterLegacy.Core.Data
 
         public override void ReadJSON(JSONNode jn)
         {
-            id = jn["id"];
-            name = jn["name"];
+            id = jn["id"] ?? GetNumberID();
+            name = jn["name"] ?? string.Empty;
+            description = jn["desc"] ?? string.Empty;
             difficulty = jn["difficulty"].AsInt;
-            icon = SpriteHelper.StringToSprite(jn["icon"]);
+            if (jn["icon"] != null)
+                icon = SpriteHelper.StringToSprite(jn["icon"]);
             hidden = jn["hidden"].AsBool;
         }
 
         public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
-            jn["id"] = id;
+            jn["id"] = id ?? GetNumberID();
             jn["name"] = name;
-            jn["desc"] = description;
-            jn["difficulty"] = difficulty.ToString();
-            jn["hidden"] = hidden.ToString();
+            if (!string.IsNullOrEmpty(description))
+                jn["desc"] = description;
+            if (difficulty != 0)
+                jn["difficulty"] = difficulty;
+            if (hidden)
+                jn["hidden"] = hidden;
 
-            jn["icon"] = SpriteHelper.SpriteToString(icon);
+            if (icon)
+                jn["icon"] = SpriteHelper.SpriteToString(icon);
 
             return jn;
         }

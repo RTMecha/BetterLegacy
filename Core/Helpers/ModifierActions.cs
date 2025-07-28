@@ -6672,6 +6672,30 @@ namespace BetterLegacy.Core.Helpers
 
         #region Ranking
 
+        public static void unlockAchievement(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (!LevelManager.CurrentLevel || !LevelManager.CurrentLevel.saveData)
+                return;
+
+            LevelManager.CurrentLevel.saveData.UnlockAchievement(modifier.GetValue(0, variables));
+        }
+        
+        public static void lockAchievement(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (!LevelManager.CurrentLevel || !LevelManager.CurrentLevel.saveData)
+                return;
+
+            LevelManager.CurrentLevel.saveData.LockAchievement(modifier.GetValue(0, variables));
+        }
+
+        public static void getAchievementUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (!LevelManager.CurrentLevel || !LevelManager.CurrentLevel.saveData)
+                return;
+
+            variables[modifier.GetValue(0)] = LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(1, variables)).ToString();
+        }
+
         public static void saveLevelRank(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)

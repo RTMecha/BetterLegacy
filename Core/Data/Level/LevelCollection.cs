@@ -496,11 +496,16 @@ namespace BetterLegacy.Core.Data.Level
         public void LoadAchievements()
         {
             var achievementsPath = RTFile.CombinePaths(path, Level.ACHIEVEMENTS_LSA);
-            if (RTFile.FileExists(achievementsPath))
+            if (!RTFile.FileExists(achievementsPath))
+                return;
+
+            var jn = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
+            for (int i = 0; i < jn["achievements"].Count; i++)
             {
-                var ach = JSON.Parse(RTFile.ReadFromFile(achievementsPath));
-                for (int i = 0; i < ach["achievements"].Count; i++)
-                    achievements.Add(Achievement.Parse(ach["achievements"][i]));
+                var achievement = Achievement.Parse(jn["achievements"][i]);
+                if (jn["achievements"][i]["icon_path"] != null)
+                    achievement.CheckIconPath(RTFile.CombinePaths(path, jn["achievements"][i]["icon_path"]));
+                achievements.Add(achievement);
             }
         }
 

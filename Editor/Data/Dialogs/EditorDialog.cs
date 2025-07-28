@@ -79,6 +79,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public const string DOCUMENTATION = "Documentation Dialog";
         public const string PREFAB_EXTERNAL_EDITOR = "Prefab External Dialog";
         public const string PINNED_EDITOR_LAYER_DIALOG = "Pinned Editor Layer Dialog";
+        public const string ACHIEVEMENT_EDITOR_DIALOG = "Achievement Editor Dialog";
 
         #endregion
 

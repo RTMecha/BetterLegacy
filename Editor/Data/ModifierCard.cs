@@ -3412,6 +3412,28 @@ namespace BetterLegacy.Editor.Data
                 #endregion
 
                 #region Ranking
+                    
+                case nameof(ModifierActions.unlockAchievement): {
+                        StringGenerator(modifier, reference, "ID", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.lockAchievement): {
+                        StringGenerator(modifier, reference, "ID", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getAchievementUnlocked): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "ID", 1);
+
+                        break;
+                    }
+                case nameof(ModifierTriggers.achievementUnlocked): {
+                        StringGenerator(modifier, reference, "ID", 0);
+
+                        break;
+                    }
 
                 //case "saveLevelRank): {
                 //        break;
