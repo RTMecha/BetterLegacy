@@ -7,6 +7,7 @@
 - Added getCurrentLevelID and getCurrentLevelRank modifiers.
 - Implemented the new Checkpoint features to the Checkpoint Editor.
 - Added Lives count and Respawn Immediately toggle to the Player Editor.
+- Added getPlayerLives, getLives and getMaxLives modifiers.
 
 ### Editor
 - If you want to refresh an objects' randomization, you can go to the Object Editor, right click the ID and click "Shuffle ID".
