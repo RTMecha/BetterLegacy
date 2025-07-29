@@ -47,6 +47,11 @@ namespace BetterLegacy.Core.Data
         public Sprite icon;
 
         /// <summary>
+        /// Icon to display if the achievement is locked. Can be left as default.
+        /// </summary>
+        public Sprite lockedIcon;
+
+        /// <summary>
         /// Difficulty of the achievement. Based on metadata difficulty.
         /// </summary>
         public int difficulty;
@@ -65,6 +70,11 @@ namespace BetterLegacy.Core.Data
         /// The metadata difficulty type.
         /// </summary>
         public DifficultyType DifficultyType { get => difficulty; set => difficulty = value; }
+
+        /// <summary>
+        /// If the achievements' unlocked state is shared across the game.
+        /// </summary>
+        public bool shared;
 
         public void Unlock()
         {
@@ -89,6 +99,12 @@ namespace BetterLegacy.Core.Data
                 icon = SpriteHelper.LoadSprite(file);
         }
 
+        public void CheckLockedIconPath(string file)
+        {
+            if (RTFile.FileExists(file))
+                lockedIcon = SpriteHelper.LoadSprite(file);
+        }
+
         public override void CopyData(Achievement orig, bool newID = true)
         {
             id = newID ? GetNumberID() : orig.id;
@@ -96,8 +112,10 @@ namespace BetterLegacy.Core.Data
             description = orig.description;
             difficulty = orig.difficulty;
             icon = orig.icon;
+            lockedIcon = orig.lockedIcon;
             hidden = orig.hidden;
             unlocked = orig.unlocked;
+            shared = orig.shared;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -108,7 +126,10 @@ namespace BetterLegacy.Core.Data
             difficulty = jn["difficulty"].AsInt;
             if (jn["icon"] != null)
                 icon = SpriteHelper.StringToSprite(jn["icon"]);
+            if (jn["locked_icon"] != null)
+                lockedIcon = SpriteHelper.StringToSprite(jn["locked_icon"]);
             hidden = jn["hidden"].AsBool;
+            shared = jn["shared"].AsBool;
         }
 
         public override JSONNode ToJSON()
@@ -121,11 +142,14 @@ namespace BetterLegacy.Core.Data
                 jn["desc"] = description;
             if (difficulty != 0)
                 jn["difficulty"] = difficulty;
-            if (hidden)
-                jn["hidden"] = hidden;
-
             if (icon)
                 jn["icon"] = SpriteHelper.SpriteToString(icon);
+            if (lockedIcon)
+                jn["locked_icon"] = SpriteHelper.SpriteToString(lockedIcon);
+            if (hidden)
+                jn["hidden"] = hidden;
+            if (shared)
+                jn["shared"] = shared;
 
             return jn;
         }
