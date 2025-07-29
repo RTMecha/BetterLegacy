@@ -38,9 +38,7 @@ namespace BetterLegacy.Editor.Managers
         bool uploading;
 
         public GameObject difficultyToggle;
-
-        JSONObject authData;
-
+        
         HttpListener _listener;
 
         public MetaDataEditorDialog Dialog { get; set; }
@@ -56,9 +54,6 @@ namespace BetterLegacy.Editor.Managers
         void Awake()
         {
             inst = this;
-
-            if (LegacyPlugin.authData != null)
-                authData = LegacyPlugin.authData;
 
             try
             {
@@ -396,10 +391,7 @@ namespace BetterLegacy.Editor.Managers
             var serverVisibility = Dialog.Content.Find("upload/server visibility/dropdown").GetComponent<Dropdown>();
             serverVisibility.options = CoreHelper.StringToOptionData("Public", "Unlisted", "Private");
             serverVisibility.value = (int)metadata.visibility;
-            serverVisibility.onValueChanged.AddListener(_val =>
-            {
-                metadata.visibility = (ServerVisibility)_val;
-            });
+            serverVisibility.onValueChanged.NewListener(_val => metadata.visibility = (ServerVisibility)_val);
 
             bool hasID = !string.IsNullOrEmpty(metadata.serverID); // Only check for server id.
 
@@ -408,12 +400,8 @@ namespace BetterLegacy.Editor.Managers
             if (hasID)
             {
                 var changelog = Dialog.Content.Find("upload/changelog/input").GetComponent<InputField>();
-                changelog.onValueChanged.ClearAll();
-                changelog.text = metadata.changelog;
-                changelog.onValueChanged.AddListener(_val =>
-                {
-                    metadata.changelog = _val;
-                });
+                changelog.SetTextWithoutNotify(metadata.changelog);
+                changelog.onValueChanged.NewListener(_val => metadata.changelog = _val);
             }
 
             Dialog.Content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click to copy)" : "No ID assigned.";
@@ -429,11 +417,26 @@ namespace BetterLegacy.Editor.Managers
             if (hasID)
             {
                 serverID.transform.Find("id").GetComponent<Text>().text = $"Server ID: {metadata.serverID} (Click to copy)";
-                var serverIDClickable = serverID.GetComponent<Clickable>() ?? serverID.gameObject.AddComponent<Clickable>();
+                var serverIDClickable = serverID.gameObject.GetOrAddComponent<Clickable>();
                 serverIDClickable.onClick = eventData =>
                 {
                     LSText.CopyToClipboard(metadata.serverID);
                     EditorManager.inst.DisplayNotification($"Copied ID: {metadata.serverID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                };
+            }
+
+            var uploaderID = Dialog.Content.Find("uploader id");
+            var hasUserID = !string.IsNullOrEmpty(LegacyPlugin.UserID);
+            uploaderID.gameObject.SetActive(hasUserID);
+            if (hasUserID)
+            {
+                var uploaderIDText = uploaderID.Find("id").GetComponent<Text>();
+                uploaderIDText.text = $"User ID: {LegacyPlugin.UserID} (Click to copy)";
+                var uploaderIDClickable = uploaderID.gameObject.GetOrAddComponent<Clickable>();
+                uploaderIDClickable.onClick = eventData =>
+                {
+                    LSText.CopyToClipboard(LegacyPlugin.UserID);
+                    EditorManager.inst.DisplayNotification($"Copied ID: {LegacyPlugin.UserID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
                 };
             }
 
@@ -445,19 +448,19 @@ namespace BetterLegacy.Editor.Managers
 
             var submitBase = Dialog.Content.Find("submit");
 
-            submitBase.Find("convert").GetComponent<Button>().onClick.NewListener(ConvertLevel);
+            var pull = submitBase.Find("pull").gameObject;
+            var delete = submitBase.Find("delete").gameObject;
+            pull.SetActive(hasID);
+            delete.SetActive(hasID);
 
+            submitBase.Find("convert").GetComponent<Button>().onClick.NewListener(ConvertLevel);
             submitBase.Find("upload").GetComponent<Button>().onClick.NewListener(UploadLevel);
 
-            var pull = submitBase.Find("pull").gameObject;
-            pull.SetActive(hasID);
-            if (hasID)
-                submitBase.Find("pull").GetComponent<Button>().onClick.NewListener(PullLevel);
+            if (!hasID)
+                return;
 
-            var delete = submitBase.Find("delete").gameObject;
-            delete.SetActive(hasID);
-            if (hasID)
-                submitBase.Find("delete").GetComponent<Button>().onClick.NewListener(DeleteLevel);
+            pull.GetComponent<Button>().onClick.NewListener(PullLevel);
+            delete.GetComponent<Button>().onClick.NewListener(DeleteLevel);
         }
 
         public void RenderDifficulty(MetaData metadata)
@@ -724,7 +727,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
                         }
                     case 401: {
-                            if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                             {
                                 CoroutineHelper.StartCoroutine(RefreshTokens(VerifyLevelIsOnServer));
                                 return;
@@ -846,8 +849,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 MetaData.Current.beatmap.datePublished = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
                 MetaData.Current.beatmap.versionNumber++;
-                if (authData != null && authData["id"] != null)
-                    MetaData.Current.uploaderID = authData["id"];
+                MetaData.Current.uploaderID = LegacyPlugin.UserID;
 
                 var jn = MetaData.Current.ToJSON();
                 RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
@@ -877,8 +879,8 @@ namespace BetterLegacy.Editor.Managers
                 RTFile.DeleteDirectory(tempDirectory);
 
                 var headers = new Dictionary<string, string>();
-                if (authData != null && authData["access_token"] != null)
-                    headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
+                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                    headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
                 CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ArcadeServerURL}api/level", File.ReadAllBytes(path), id =>
                 {
@@ -915,7 +917,7 @@ namespace BetterLegacy.Editor.Managers
                                 return;
                             }
                         case 401: {
-                                if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                                 {
                                     CoroutineHelper.StartCoroutine(RefreshTokens(UploadLevel));
                                     return;
@@ -959,8 +961,8 @@ namespace BetterLegacy.Editor.Managers
                     var id = MetaData.Current.serverID;
 
                     var headers = new Dictionary<string, string>();
-                    if (authData != null && authData["access_token"] != null)
-                        headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
+                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                        headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
                     CoroutineHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ArcadeServerURL}api/level/{id}", () =>
                     {
@@ -984,7 +986,7 @@ namespace BetterLegacy.Editor.Managers
                                     return;
                                 }
                             case 401: {
-                                    if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                                     {
                                         CoroutineHelper.StartCoroutine(RefreshTokens(DeleteLevel));
                                         return;
@@ -1044,7 +1046,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
                         }
                     case 401: {
-                            if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                             {
                                 CoroutineHelper.StartCoroutine(RefreshTokens(PullLevel));
                                 return;
@@ -1082,8 +1084,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Access token expired. Refreshing...", 5f, EditorManager.NotificationType.Warning);
 
             var form = new WWWForm();
-            form.AddField("AccessToken", authData["access_token"].Value);
-            form.AddField("RefreshToken", authData["refresh_token"].Value);
+            form.AddField("AccessToken", LegacyPlugin.authData["access_token"].Value);
+            form.AddField("RefreshToken", LegacyPlugin.authData["refresh_token"].Value);
 
             using var www = UnityWebRequest.Post($"{AlephNetwork.ArcadeServerURL}api/auth/refresh", form);
             www.certificateHandler = new AlephNetwork.ForceAcceptAll();
@@ -1107,11 +1109,11 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var jn = JSON.Parse(www.downloadHandler.text);
-            authData["access_token"] = jn["accessToken"].Value;
-            authData["refresh_token"] = jn["refreshToken"].Value;
-            authData["access_token_expiry_time"] = jn["accessTokenExpiryTime"].Value;
+            LegacyPlugin.authData["access_token"] = jn["accessToken"].Value;
+            LegacyPlugin.authData["refresh_token"] = jn["refreshToken"].Value;
+            LegacyPlugin.authData["access_token_expiry_time"] = jn["accessTokenExpiryTime"].Value;
 
-            RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
+            RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), LegacyPlugin.authData.ToString());
             EditorManager.inst.DisplayNotification("Refreshed tokens! Uploading...", 5f, EditorManager.NotificationType.Success);
             if (EditorConfig.Instance.UploadDeleteOnLogin.Value)
                 onRefreshed?.Invoke();
@@ -1162,7 +1164,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            authData = new JSONObject
+            LegacyPlugin.authData = new JSONObject
             {
                 ["id"] = id,
                 ["username"] = username,
@@ -1171,9 +1173,8 @@ namespace BetterLegacy.Editor.Managers
                 ["refresh_token"] = refreshToken,
                 ["access_token_expiry_time"] = accessTokenExpiryTime
             };
-            LegacyPlugin.authData = authData;
 
-            RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
+            RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), LegacyPlugin.authData.ToString());
             EditorManager.inst.DisplayNotification($"Successfully logged in as {username}!", 8f, EditorManager.NotificationType.Success);
             SendResponse(context.Response, HttpStatusCode.OK, "Success! You can close this page and go back to the game now.");
 

@@ -235,6 +235,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var serverID = Content.Find("id").gameObject.Duplicate(Content, "server id", 16);
             CoreHelper.Delete(serverID.transform.GetChild(1).gameObject);
 
+            var uploaderID = Content.Find("id").gameObject.Duplicate(Content, "uploader id", 17);
+            CoreHelper.Delete(uploaderID.transform.GetChild(1).gameObject);
+
             var uploadInfo = Content.Find("creator").gameObject.Duplicate(Content, "upload", 12);
 
             try
