@@ -112,8 +112,16 @@ namespace BetterLegacy.Story
         public void SaveProgress()
         {
             storySavesJSON["lvl"] = new JSONArray();
+            int num = 0;
             for (int i = 0; i < Saves.Count; i++)
-                storySavesJSON["lvl"][i] = Saves[i].ToJSON();
+            {
+                var save = Saves[i];
+                if (!save.ShouldSerialize)
+                    continue;
+
+                storySavesJSON["lvl"][num] = save.ToJSON();
+                num++;
+            }
 
             Save();
         }
