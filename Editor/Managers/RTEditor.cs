@@ -2179,6 +2179,18 @@ namespace BetterLegacy.Editor.Managers
 
                         break;
                     }
+                case EditorDialog.ACHIEVEMENT_EDITOR_DIALOG: {
+                        var currentAchievement = AchievementEditor.inst.CurrentAchievement;
+                        if (!currentAchievement)
+                            break;
+
+                        if (cut)
+                            AchievementEditor.inst.DeleteAchievement();
+                        AchievementEditor.inst.CopyAchievement(currentAchievement);
+                        if (dup)
+                            AchievementEditor.inst.PasteAchievements();
+                        break;
+                    }
             }
         }
 
@@ -2232,6 +2244,10 @@ namespace BetterLegacy.Editor.Managers
                 case EditorDialog.CHECKPOINT_EDITOR: {
                         RTCheckpointEditor.inst.PasteCheckpoint();
                         EditorManager.inst.DisplayNotification("Pasted Checkpoint", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
+                case EditorDialog.ACHIEVEMENT_EDITOR_DIALOG: {
+                        AchievementEditor.inst.PasteAchievements();
                         break;
                     }
             }
@@ -3038,11 +3054,11 @@ namespace BetterLegacy.Editor.Managers
                     var name = MetaData.Current.beatmap.name;
                     name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
                     name = RTFile.ValidateDirectory(name);
-                    var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{name} [{MetaData.Current.arcadeID}]");
+                    var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath, $"{name} [{MetaData.Current.arcadeID}]");
 
                     if (RTFile.DirectoryExists(directory))
                     {
-                        var backupDirectory = directory.Replace("beatmaps", "beatmaps/arcade backups");
+                        var backupDirectory = directory.Replace(LevelManager.ListPath, "beatmaps/arcade backups");
                         RTFile.DeleteDirectory(backupDirectory);
                         RTFile.MoveDirectory(directory, backupDirectory);
                     }

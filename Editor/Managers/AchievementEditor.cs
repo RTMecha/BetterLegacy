@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,6 +17,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 
@@ -49,6 +51,7 @@ namespace BetterLegacy.Editor.Managers
 
                 achievementListButtonPrefab = CheckpointEditor.inst.checkpointListButtonPrefab.Duplicate(transform);
                 CoreHelper.Delete(achievementListButtonPrefab.transform.Find("time"));
+                EditorPrefabHolder.Instance.DeleteButton.Duplicate(achievementListButtonPrefab.transform, "delete");
 
                 EditorHelper.AddEditorDropdown("Edit Achievements", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.ExclaimSprite, OpenDialog);
             }
@@ -82,6 +85,16 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public GameObject achievementListButtonPrefab;
 
+        /// <summary>
+        /// List of copied achievements.
+        /// </summary>
+        public List<Achievement> copiedAchievements = new List<Achievement>();
+
+        /// <summary>
+        /// The level ID from which the copied achievements were from. If the ID matches the current level, the achievements' IDs will be shuffled.
+        /// </summary>
+        public string copiedLevelID;
+
         #endregion
 
         #region Methods
@@ -104,6 +117,8 @@ namespace BetterLegacy.Editor.Managers
                     var achievement = Achievement.Parse(jn["achievements"][i]);
                     if (jn["achievements"][i]["icon_path"] != null)
                         achievement.CheckIconPath(EditorLevelManager.inst.CurrentLevel.GetFile(jn["achievements"][i]["icon_path"]));
+                    if (jn["achievements"][i]["locked_icon_path"] != null)
+                        achievement.CheckIconPath(EditorLevelManager.inst.CurrentLevel.GetFile(jn["achievements"][i]["locked_icon_path"]));
                     achievements.Add(achievement);
                 }
             }
@@ -136,9 +151,76 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void CreateNewAchievement()
         {
-            var achievement = new Achievement();
+            var achievement = new Achievement()
+            {
+                name = "NEW ACHIEVEMENT",
+                description = "This is the default description!",
+            };
             achievements.Add(achievement);
             OpenDialog(achievement);
+        }
+
+        /// <summary>
+        /// Copies the currently selected achievement.
+        /// </summary>
+        public void CopyAchievement() => CopyAchievement(CurrentAchievement);
+
+        /// <summary>
+        /// Copies an achievement.
+        /// </summary>
+        /// <param name="achievement">Achievement to copy.</param>
+        public void CopyAchievement(Achievement achievement)
+        {
+            if (!achievement)
+            {
+                EditorManager.inst.DisplayNotification($"Select an achievement to copy first.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            copiedAchievements.Clear();
+            copiedAchievements.Add(achievement.Copy(false));
+            copiedLevelID = EditorLevelManager.inst.CurrentLevel.id;
+            EditorManager.inst.DisplayNotification("Copied achievement.", 1f, EditorManager.NotificationType.Success);
+        }
+
+        /// <summary>
+        /// Pastes the copied achievements into the achievements list.
+        /// </summary>
+        public void PasteAchievements()
+        {
+            if (copiedAchievements.IsEmpty())
+            {
+                EditorManager.inst.DisplayNotification($"No copied achievements yet!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var newID = copiedLevelID == EditorLevelManager.inst.CurrentLevel.id;
+            achievements.AddRange(copiedAchievements.Select(x => x.Copy(newID)));
+            EditorManager.inst.DisplayNotification("Pasted achievements.", 1f, EditorManager.NotificationType.Success);
+            RenderAchievementList();
+        }
+
+        /// <summary>
+        /// Deletes the currently selected achievement.
+        /// </summary>
+        public void DeleteAchievement() => DeleteAchievement(CurrentAchievement);
+
+        /// <summary>
+        /// Deletes the currently selected achievement.
+        /// </summary>
+        /// <param name="achievement">Achievement to delete.</param>
+        public void DeleteAchievement(Achievement achievement)
+        {
+            if (!achievement)
+            {
+                EditorManager.inst.DisplayNotification($"Select an achievement to delete first.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var index = achievements.IndexOf(achievement);
+            achievements.RemoveAt(index);
+            EditorManager.inst.DisplayNotification("Deleted achievement.", 1f, EditorManager.NotificationType.Success);
+            OpenDialog(achievements.TryGetAt(index - 1, out Achievement prevAchievement) ? prevAchievement : null);
         }
 
         /// <summary>
@@ -212,12 +294,17 @@ namespace BetterLegacy.Editor.Managers
             };
 
             Dialog.NameField.SetTextWithoutNotify(achievement.name);
-            Dialog.NameField.onValueChanged.NewListener(_val => achievement.name = _val);
+            Dialog.NameField.onValueChanged.NewListener(_val =>
+            {
+                achievement.name = _val;
+                RenderAchievementList();
+            });
 
             Dialog.DescriptionField.SetTextWithoutNotify(achievement.description);
             Dialog.DescriptionField.onValueChanged.NewListener(_val => achievement.description = _val);
 
-            Dialog.IconImage.sprite = achievement.icon ?? LegacyPlugin.AtanPlaceholder;
+            var icon = achievement.icon ?? LegacyPlugin.AtanPlaceholder;
+            Dialog.IconImage.sprite = icon;
             Dialog.SelectIconButton.button.onClick.NewListener(() =>
             {
                 EditorContextMenu.inst.ShowContextMenu(
@@ -244,10 +331,46 @@ namespace BetterLegacy.Editor.Managers
                         });
                     }));
             });
+            Dialog.LockedIconImage.sprite = achievement.lockedIcon ?? icon;
+            Dialog.SelectLockedIconButton.button.onClick.NewListener(() =>
+            {
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction($"Select Icon ({RTEditor.SYSTEM_BROWSER})", () =>
+                    {
+                        string imageFile = FileBrowser.OpenSingleFile("Select an image!", RTEditor.inst.BasePath, new string[] { "png" });
+                        if (string.IsNullOrEmpty(imageFile))
+                            return;
+
+                        achievement.lockedIcon = SpriteHelper.LoadSprite(imageFile);
+                        RenderDialog(achievement);
+                    }),
+                    new ButtonFunction($"Select Icon ({RTEditor.EDITOR_BROWSER})", () =>
+                    {
+                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFile(new string[] { FileFormat.PNG.Dot(), FileFormat.JPG.Dot() }, imageFile =>
+                        {
+                            if (string.IsNullOrEmpty(imageFile))
+                                return;
+
+                            RTEditor.inst.BrowserPopup.Close();
+                            achievement.lockedIcon = SpriteHelper.LoadSprite(imageFile);
+                            RenderDialog(achievement);
+                        });
+                    }));
+            });
+            Dialog.RemoveLockedIconButton.button.onClick.NewListener(() =>
+            {
+                achievement.lockedIcon = null;
+                RenderDialog(achievement);
+            });
+
             Dialog.HiddenToggle.toggle.SetIsOnWithoutNotify(achievement.hidden);
             Dialog.HiddenToggle.toggle.onValueChanged.NewListener(_val => achievement.hidden = true);
 
             RenderDifficulty(achievement);
+
+            Dialog.SharedToggle.toggle.SetIsOnWithoutNotify(achievement.shared);
+            Dialog.SharedToggle.toggle.onValueChanged.NewListener(_val => achievement.shared = true);
 
             Dialog.PreviewButton.button.onClick.NewListener(DisplayAchievement);
         }
@@ -340,11 +463,40 @@ namespace BetterLegacy.Editor.Managers
                 selected.enabled = achievement == CurrentAchievement;
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.NewListener(() => SetCurrentAchievement(index));
+                button.onClick.ClearAll();
+                var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
+                contextClickable.onClick = pointerEventData =>
+                {
+                    if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    {
+                        SetCurrentAchievement(index);
+                        return;
+                    }
+
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Edit", () => SetCurrentAchievement(index)),
+                        new ButtonFunction("Delete", () => DeleteAchievement(achievement)),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () => CopyAchievement(achievement)),
+                        new ButtonFunction("Copy All", () =>
+                        {
+                            copiedAchievements.Clear();
+                            copiedAchievements.AddRange(achievements.Select(x => x.Copy(false)));
+                            copiedLevelID = EditorLevelManager.inst.CurrentLevel.id;
+                            EditorManager.inst.DisplayNotification("Copied achievements.", 1f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonFunction("Paste", PasteAchievements));
+                };
+
+                var deleteButton = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
+                deleteButton.button.onClick.NewListener(() => DeleteAchievement(achievement));
 
                 EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.ApplyGraphic(selected, ThemeGroup.List_Button_2_Text);
                 EditorThemeManager.ApplyGraphic(name, ThemeGroup.List_Button_2_Text);
+
+                EditorThemeManager.ApplyGraphic(deleteButton.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteButton.image, ThemeGroup.Delete_Text);
 
                 num++;
             }
