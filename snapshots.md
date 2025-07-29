@@ -1,4 +1,11 @@
-﻿# snapshot-2025.7.7 - (pre-1.8.0) [Jul 29, 2025]
+﻿# ???
+
+## Features
+### Editor
+- Added a way to view your user ID and copy it to the MetaData editor.
+- Fixed Upload Visibility dropdown having some issues.
+
+# snapshot-2025.7.7 - (pre-1.8.0) [Jul 29, 2025]
 
 ## Features
 ### Core
