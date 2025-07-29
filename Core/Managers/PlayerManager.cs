@@ -322,16 +322,15 @@ namespace BetterLegacy.Core.Managers
             gameObject.transform.Find("Player").localPosition = new Vector3(pos.x, pos.y, 0f);
             gameObject.transform.localRotation = Quaternion.identity;
 
-            var runtimePlayer = gameObject.GetComponent<RTPlayer>();
-
-            if (!runtimePlayer)
-                runtimePlayer = gameObject.AddComponent<RTPlayer>();
+            var runtimePlayer = gameObject.GetOrAddComponent<RTPlayer>();
 
             runtimePlayer.Core = player;
             runtimePlayer.Model = player.PlayerModel;
             runtimePlayer.playerIndex = player.index;
             runtimePlayer.initialHealthCount = player.Health;
             player.RuntimePlayer = runtimePlayer;
+
+            runtimePlayer.Init();
 
             if (GameManager.inst.players.activeSelf)
             {
@@ -428,13 +427,12 @@ namespace BetterLegacy.Core.Managers
             gameObject.transform.Find("Player").localPosition = new Vector3(pos.x, pos.y, 0f);
             gameObject.transform.localRotation = Quaternion.identity;
 
-            var player = gameObject.GetComponent<RTPlayer>();
-
-            if (!player)
-                player = gameObject.AddComponent<RTPlayer>();
+            var player = gameObject.GetOrAddComponent<RTPlayer>();
 
             player.Model = playerModel;
             player.playerIndex = index;
+
+            player.Init();
 
             if (transform.gameObject.activeInHierarchy)
             {
@@ -473,10 +471,7 @@ namespace BetterLegacy.Core.Managers
         public static void DestroyPlayers()
         {
             foreach (var player in Players)
-            {
-                player.RuntimePlayer?.ClearObjects();
-                player.RuntimePlayer = null;
-            }
+                DestroyPlayer(player);
         }
 
         /// <summary>
@@ -486,10 +481,20 @@ namespace BetterLegacy.Core.Managers
         public static void DestroyPlayer(int index)
         {
             var players = Players;
-            if (!players.TryGetAt(index, out PAPlayer player))
+            if (players.TryGetAt(index, out PAPlayer player))
+                DestroyPlayer(player);
+        }
+
+        /// <summary>
+        /// Destroys a players' game objects.
+        /// </summary>
+        /// <param name="player">Player to destroy.</param>
+        public static void DestroyPlayer(PAPlayer player)
+        {
+            if (!player)
                 return;
 
-            player.RuntimePlayer?.ClearObjects();
+            player.RuntimePlayer?.Clear();
             player.RuntimePlayer = null;
         }
 
@@ -526,7 +531,7 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             var player = Players[index];
-            player.RuntimePlayer?.ClearObjects();
+            player.RuntimePlayer?.Clear();
             player.CurrentModel = PlayersData.Current.GetPlayerModel(index).basePart.id;
 
             SpawnPlayers(pos);

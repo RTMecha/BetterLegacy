@@ -1044,9 +1044,9 @@ namespace BetterLegacy.Core.Components.Player
             deathAnimation.events = new List<Animation.AnimationEvent>
             {
                 new Animation.AnimationEvent(0f, PlayDeathParticles),
-                new Animation.AnimationEvent(0.6f, ClearObjects),
+                new Animation.AnimationEvent(0.6f, Clear),
             };
-            deathAnimation.onComplete = ClearObjects;
+            deathAnimation.onComplete = Clear;
             animationController.Play(deathAnimation);
 
             if (deathAnimationCustom)
@@ -1057,7 +1057,7 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Init
 
-        void Awake()
+        public void Init()
         {
             customObjectParent = Creator.NewGameObject("Custom Objects", transform).transform;
             customObjectParent.transform.localPosition = Vector3.zero;
@@ -2240,7 +2240,21 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Actions
 
-        public void Clear() { }
+        bool cleared;
+        public void Clear()
+        {
+            if (cleared)
+                return;
+
+            if (Core)
+                Core.RuntimePlayer = null;
+            Core = null;
+            Model = null;
+
+            CoreHelper.Delete(healthText);
+            CoreHelper.Delete(gameObject);
+            cleared = true;
+        }
 
         public void SetActive(bool active) => gameObject.SetActive(active);
 
@@ -2472,15 +2486,6 @@ namespace BetterLegacy.Core.Components.Player
             path[index].lastPos = new Vector3(pos.x, pos.y);
             if (path[index].transform)
                 path[index].transform.position = path[index].pos;
-        }
-
-        /// <summary>
-        /// Destroys the player objects.
-        /// </summary>
-        public void ClearObjects()
-        {
-            CoreHelper.Delete(healthText);
-            CoreHelper.Delete(gameObject);
         }
 
         /// <summary>
