@@ -97,6 +97,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public Vector3 Rotation { get; set; }
 
+        public Action<bool> onActiveChanged;
+
         public override void Load()
         {
             previousAudioTime = 0.0f;
@@ -184,9 +186,12 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public void UpdateActive()
         {
+            var isActive = IsActive;
+            onActiveChanged?.Invoke(isActive);
+
             var parent = Parent;
             if (parent)
-                parent.gameObject.SetActive(IsActive);
+                parent.gameObject.SetActive(isActive);
         }
 
         public void Interpolate(float time) => Tick();

@@ -6339,6 +6339,21 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(13, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    };
             });
         }
 
@@ -6375,6 +6390,21 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(13, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    };
             });
         }
         
@@ -6414,6 +6444,21 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(14, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    };
             });
         }
 
@@ -6446,6 +6491,21 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(6, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+
+                        modifier.Result = null;
+                    };
             });
         }
 
@@ -6486,6 +6546,19 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(12, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+                    };
             });
         }
         
@@ -6528,6 +6601,19 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(12, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+                    };
             });
         }
         
@@ -6573,6 +6659,19 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(13, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+                    };
             });
         }
 
@@ -6611,6 +6710,19 @@ namespace BetterLegacy.Core.Helpers
             {
                 RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
                 runtimeLevel?.UpdatePrefab(prefabObject);
+
+                var runtimePrefabObject = prefabObject.runtimeObject;
+                if (runtimePrefabObject && modifier.GetBool(5, false, variables))
+                    runtimePrefabObject.onActiveChanged = enabled =>
+                    {
+                        if (enabled)
+                            return;
+
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
+
+                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
+                    };
             });
         }
 

@@ -15,6 +15,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Editor.Managers;
@@ -1676,7 +1677,8 @@ namespace BetterLegacy.Core.Helpers
 
                     if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
                     {
-                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -1691,7 +1693,8 @@ namespace BetterLegacy.Core.Helpers
 
                     if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
                     {
-                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -1706,22 +1709,8 @@ namespace BetterLegacy.Core.Helpers
 
                     if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(9, false))
                     {
-                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
-
-                        GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
-
-                        modifier.Result = null;
-                    }
-                }
-            ),
-            new ModifierInactive(nameof(ModifierActions.spawnMultiPrefabCopy),
-                (modifier, reference, variables) =>
-                {
-                    // value 5 is permanent
-
-                    if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
-                    {
-                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 
@@ -1736,7 +1725,8 @@ namespace BetterLegacy.Core.Helpers
 
                     if (modifier.Result is PrefabObject prefabObject && !modifier.GetBool(5, false))
                     {
-                        reference.GetParentRuntime()?.UpdatePrefab(prefabObject, false);
+                        RTLevelBase runtimeLevel = reference is PrefabObject p && p.runtimeObject ? p.runtimeObject : reference.GetParentRuntime();
+                        runtimeLevel?.UpdatePrefab(prefabObject, false);
 
                         GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.id == prefabObject.id);
 

@@ -3371,6 +3371,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Time", valueIndex, 0f);
                         BoolGenerator(modifier, reference, "Time Relative", valueIndex + 1, true);
 
+                        BoolGenerator(modifier, reference, "Remove After Despawn", valueIndex + 3);
+
                         break;
                     }
 
@@ -3391,6 +3393,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Time", 2, 0f);
                         BoolGenerator(modifier, reference, "Time Relative", 3, true);
+
+                        BoolGenerator(modifier, reference, "Remove After Despawn", isMulti ? 5 : 6);
 
                         break;
                     }
