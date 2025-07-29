@@ -9,7 +9,7 @@
 - Added Lives count and Respawn Immediately toggle to the Player Editor.
 - Added getPlayerLives, getLives and getMaxLives modifiers.
 - Added isFocused trigger modifier.
-- Implemented custom achievements.
+- Implemented custom achievements. These can be edited via the Edit dropdown in the editor and via the View Achievements button in the Arcade's play level menu.
 
 ### Editor
 - If you want to refresh an objects' randomization, you can go to the Object Editor, right click the ID and click "Shuffle ID".
