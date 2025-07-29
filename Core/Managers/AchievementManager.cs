@@ -379,6 +379,11 @@ namespace BetterLegacy.Core.Managers
         }
 
         /// <summary>
+        /// Shared custom achievement unlocked states.
+        /// </summary>
+        public static Dictionary<string, bool> unlockedCustomAchievements = new Dictionary<string, bool>();
+
+        /// <summary>
         /// What <see cref="globalAchievements"/> are unlocked.
         /// </summary>
         public static Dictionary<string, bool> unlockedGlobalAchievements = new Dictionary<string, bool>();

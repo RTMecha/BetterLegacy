@@ -25,6 +25,11 @@ namespace BetterLegacy.Core.Data.Level
         #region Properties
 
         /// <summary>
+        /// If the saved data should write to JSON.
+        /// </summary>
+        public bool ShouldSerialize => !string.IsNullOrEmpty(ID) && ID != "0" && !ID.Contains("-") && (Hits >= 0 || Deaths >= 0 || Boosts >= 0 || Completed || Unlocked || UnlockedAchievements != null && !UnlockedAchievements.IsEmpty());
+
+        /// <summary>
         /// Level name for readable display.
         /// </summary>
         public string LevelName { get; set; }
@@ -194,15 +199,31 @@ namespace BetterLegacy.Core.Data.Level
             if (!achievement)
                 return;
 
+            achievement.unlocked = true;
+
+            bool showAchievement = false;
+
             if (UnlockedAchievements == null)
                 UnlockedAchievements = new Dictionary<string, bool>();
 
-            if (!UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) || !unlocked)
+            // don't save locally if the achievement is shared
+            if (!achievement.shared && (!UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) || !unlocked))
             {
                 UnlockedAchievements[achievement.id] = true;
                 LevelManager.SaveProgress();
-                AchievementManager.inst.ShowAchievement(achievement);
+                showAchievement = true;
             }
+
+            // if the achievement is shared across the game
+            if (achievement.shared && (!AchievementManager.unlockedCustomAchievements.TryGetValue(achievement.id, out bool customUnlocked) || !customUnlocked))
+            {
+                AchievementManager.unlockedCustomAchievements[achievement.id] = true;
+                LegacyPlugin.SaveProfile();
+                showAchievement = true;
+            }
+
+            if (showAchievement)
+                AchievementManager.inst.ShowAchievement(achievement);
         }
 
         /// <summary>
@@ -306,7 +327,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <returns>Returns a JSON representing the player data.</returns>
         public JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
             if (!string.IsNullOrEmpty(LevelName))
                 jn["n"] = LevelName;
             jn["id"] = ID;
@@ -316,7 +337,8 @@ namespace BetterLegacy.Core.Data.Level
                 jn["h"] = Hits;
             if (Deaths >= 0)
                 jn["d"] = Deaths;
-            jn["b"] = Boosts;
+            if (Boosts >= 0)
+                jn["b"] = Boosts;
             if (PlayedTimes != 0)
                 jn["pt"] = PlayedTimes;
             if (TimeInLevel != 0f)
@@ -333,7 +355,7 @@ namespace BetterLegacy.Core.Data.Level
                 int num = 0;
                 foreach (var keyValuePair in UnlockedAchievements)
                 {
-                    var ach = JSON.Parse("{}");
+                    var ach = Parser.NewJSONObject();
                     ach["id"] = keyValuePair.Key;
                     ach["u"] = keyValuePair.Value;
                     jn["ach"][num] = ach;

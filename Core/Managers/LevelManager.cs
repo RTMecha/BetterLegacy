@@ -222,9 +222,7 @@ namespace BetterLegacy.Core.Managers
             LoadingFromHere = true;
             LevelEnded = false;
 
-            if (!level.saveData && (level.isStory ? StoryManager.inst.CurrentSave.Saves : Saves).TryFind(x => x.ID == level.id, out SaveData saveData))
-                level.saveData = saveData;
-            level.LoadAchievements();
+            AssignSaveData(level);
 
             PreviousLevel = CurrentLevel;
             CurrentLevel = level;
@@ -736,16 +734,30 @@ namespace BetterLegacy.Core.Managers
         public static List<SaveData> Saves { get; set; } = new List<SaveData>();
 
         /// <summary>
+        /// The current save file for the Arcade.
+        /// </summary>
+        public static string CurrentSaveFile { get; set; } = $"arcade_saves{FileFormat.LSS.Dot()}";
+
+        /// <summary>
         /// Finds and sets the levels' save data.
         /// </summary>
         /// <param name="level">Level to assign to.</param>
         public static void AssignSaveData(Level level)
         {
-            if (!level || !Saves.TryFind(x => x.ID == level.id, out SaveData saveData))
+            if (!level)
                 return;
 
-            level.saveData = saveData;
-            saveData.LevelName = level.metadata?.beatmap?.name;
+            if (Saves.TryFind(x => x.ID == level.id, out SaveData saveData))
+            {
+                level.saveData = saveData;
+                saveData.LevelName = level.metadata?.beatmap?.name;
+            }
+            else
+            {
+                level.saveData = new SaveData(level);
+                Saves.Add(level.saveData);
+            }
+
             level.LoadAchievements();
         }
 
@@ -829,7 +841,7 @@ namespace BetterLegacy.Core.Managers
             for (int i = 0; i < Saves.Count; i++)
             {
                 var save = Saves[i];
-                if (string.IsNullOrEmpty(save.ID) || save.ID == "-1" || save.ID == "0")
+                if (!save.ShouldSerialize)
                     continue;
 
                 jn["lvl"][num] = save.ToJSON();
@@ -841,7 +853,7 @@ namespace BetterLegacy.Core.Managers
             RTFile.CreateDirectory(profilePath);
 
             var json = jn.ToString();
-            RTFile.WriteToFile(RTFile.CombinePaths(profilePath, $"arcade_saves{FileFormat.LSS.Dot()}"), json);
+            RTFile.WriteToFile(RTFile.CombinePaths(profilePath, CurrentSaveFile), json);
         }
 
         /// <summary>
@@ -853,10 +865,13 @@ namespace BetterLegacy.Core.Managers
 
             var profilePath = RTFile.ApplicationDirectory + "profile";
             JSONNode jn;
-            if (!RTFile.FileExists(RTFile.CombinePaths(profilePath, $"arcade_saves{FileFormat.LSS.Dot()}")))
+            if (!RTFile.FileExists(RTFile.CombinePaths(profilePath, CurrentSaveFile)))
             {
                 var modded = RTFile.FileExists(RTFile.CombinePaths(profilePath, "saves.les"));
                 var path = modded ? RTFile.CombinePaths(profilePath, "saves.les") : RTFile.ApplicationDirectory + $"settings/saves{FileFormat.LSS.Dot()}";
+                if (!RTFile.FileExists(path))
+                    return;
+
                 jn = JSON.Parse(LSEncryption.DecryptText(RTFile.ReadFromFile(path), SaveManager.inst.encryptionKey));
 
                 // parse old saves and then create a new save.
@@ -870,7 +885,7 @@ namespace BetterLegacy.Core.Managers
                 }
             }
             else
-                jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(profilePath, $"arcade_saves{FileFormat.LSS.Dot()}")));
+                jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(profilePath, CurrentSaveFile)));
 
             for (int i = 0; i < jn["lvl"].Count; i++)
                 Saves.Add(SaveData.Parse(jn["lvl"][i]));

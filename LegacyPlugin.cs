@@ -294,6 +294,20 @@ namespace BetterLegacy
                 jn["internal_achievements"][i]["id"] = AchievementManager.globalAchievements[i].id;
                 jn["internal_achievements"][i]["unlocked"] = AchievementManager.globalAchievements[i].unlocked;
             }
+            
+            for (int i = 0; i < AchievementManager.unlockedCustomAchievements.Count; i++)
+            {
+                jn["internal_achievements"][i]["id"] = AchievementManager.globalAchievements[i].id;
+                jn["internal_achievements"][i]["unlocked"] = AchievementManager.globalAchievements[i].unlocked;
+            }
+
+            int num = 0;
+            foreach (var keyValuePair in AchievementManager.unlockedCustomAchievements)
+            {
+                jn["custom_achievements"][num]["id"] = keyValuePair.Key;
+                jn["custom_achievements"][num]["unlocked"] = keyValuePair.Value;
+                num++;
+            }
 
             if (player.memory != null)
                 jn["memory"] = player.memory;
@@ -330,6 +344,10 @@ namespace BetterLegacy
                     for (int i = 0; i < jn["internal_achievements"].Count; i++)
                         AchievementManager.unlockedGlobalAchievements[jn["internal_achievements"][i]["id"]] = jn["internal_achievements"][i]["unlocked"].AsBool;
                 }
+                AchievementManager.unlockedCustomAchievements.Clear();
+                if (jn["custom_achievements"] != null)
+                    for (int i = 0; i < jn["custom_achievements"].Count; i++)
+                        AchievementManager.unlockedCustomAchievements[jn["custom_achievements"][i]["id"]] = jn["custom_achievements"][i]["unlocked"].AsBool;
             }
             catch (Exception ex)
             {
