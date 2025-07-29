@@ -1,4 +1,18 @@
-﻿# snapshot-2025.7.6 - (pre-1.8.0) [Jul 29, 2025]
+﻿# snapshot-2025.7.7 - (pre-1.8.0) [Jul 29, 2025]
+
+## Features
+### Core
+- Added rotation speed and curve type to player editor.
+- Added "Remove After Despawn" value to spawnPrefab modifiers.
+
+## Changes
+### Editor
+- Refractored some editor element code.
+
+## Fixed
+- Fixed player spawning duplicate players and not destroying the objects properly.
+
+# snapshot-2025.7.6 - (pre-1.8.0) [Jul 29, 2025]
 
 ## Features
 ### Core
