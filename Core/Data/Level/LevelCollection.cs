@@ -505,6 +505,8 @@ namespace BetterLegacy.Core.Data.Level
                 var achievement = Achievement.Parse(jn["achievements"][i]);
                 if (jn["achievements"][i]["icon_path"] != null)
                     achievement.CheckIconPath(RTFile.CombinePaths(path, jn["achievements"][i]["icon_path"]));
+                if (jn["achievements"][i]["locked_icon_path"] != null)
+                    achievement.CheckIconPath(RTFile.CombinePaths(path, jn["achievements"][i]["locked_icon_path"]));
                 achievements.Add(achievement);
             }
         }

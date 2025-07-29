@@ -386,8 +386,14 @@ namespace BetterLegacy.Core.Data.Level
                 {
                     var achievement = Achievement.Parse(jn["achievements"][i]);
                     if (jn["achievements"][i]["icon_path"] != null)
-                        achievement.CheckIconPath(RTFile.CombinePaths(path, jn["achievements"][i]["icon_path"]));
-                    achievement.unlocked = saveData && saveData.UnlockedAchievements != null && saveData.UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) && unlocked;
+                        achievement.CheckIconPath(GetFile(jn["achievements"][i]["icon_path"]));
+                    if (jn["achievements"][i]["locked_icon_path"] != null)
+                        achievement.CheckIconPath(GetFile(jn["achievements"][i]["locked_icon_path"]));
+
+                    achievement.unlocked =
+                        saveData && saveData.UnlockedAchievements != null && saveData.UnlockedAchievements.TryGetValue(achievement.id, out bool unlocked) && unlocked ||
+                        AchievementManager.unlockedCustomAchievements.TryGetValue(achievement.id, out bool customUnlocked) && customUnlocked;
+
                     achievements.Add(achievement);
                 }
 
