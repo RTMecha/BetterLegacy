@@ -641,10 +641,30 @@ namespace BetterLegacy.Arcade.Interfaces
                 },
             });
 
-            //if (RTFile.FileExists(CurrentLevel.GetFile(Level.ACHIEVEMENTS_LSA)))
-            //{
-            //     // todo: add AchievementsMenu
-            //}
+            if (!CurrentLevel.achievements.IsEmpty())
+            {
+                elements.Add(new MenuButton
+                {
+                    id = "3525734",
+                    name = "Achievements Button",
+                    text = $"<size=40><b><align=center>[ VIEW ACHIEVEMENTS ]",
+                    rect = RectValues.Default.AnchoredPosition(-500f, !LevelManager.CurrentLevelCollection ? -460f : 360f).SizeDelta(600f, 64f),
+                    selectionPosition = new Vector2Int(0, !LevelManager.CurrentLevelCollection ? 6 : 5),
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () =>
+                    {
+                        var currentLevel = CurrentLevel;
+                        AchievementListMenu.Init(CurrentLevel, 0, () => Init(currentLevel));
+                    },
+                });
+            }
 
             exitFunc = Close;
 
@@ -664,10 +684,13 @@ namespace BetterLegacy.Arcade.Interfaces
 
         static void InternalInit(Level level)
         {
-            AudioManager.inst.StopMusic();
+            var playMusic = AudioManager.inst.CurrentAudioSource.clip != level.music;
+            if (playMusic)
+                AudioManager.inst.StopMusic();
             CurrentLevel = level;
             Current = new PlayLevelMenu();
-            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
+            if (playMusic)
+                AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
             AudioManager.inst.SetPitch(CoreConfig.Instance.GameSpeedSetting.Value.Pitch);
         }
 

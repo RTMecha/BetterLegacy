@@ -351,6 +351,7 @@ namespace BetterLegacy.Menus
             EndLevelMenu.Current = null;
             ArcadeMenu.Current = null;
             PlayLevelMenu.Current = null;
+            AchievementListMenu.Current = null;
             DownloadLevelMenu.Current = null;
             SteamLevelMenu.Current = null;
             ProgressMenu.Current = null;
