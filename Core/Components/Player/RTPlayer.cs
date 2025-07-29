@@ -1918,7 +1918,7 @@ namespace BetterLegacy.Core.Components.Player
                                     new AnimationHandler<float>(new List<IKeyframe<float>>
                                     {
                                         new FloatKeyframe(0f, z, Ease.Linear),
-                                        new FloatKeyframe(0.2f, 0f, Ease.CircOut),
+                                        new FloatKeyframe(Model?.basePart?.rotationSpeed ?? 0.2f, 0f, Ease.GetEaseFunction(Model?.basePart?.rotationCurveType ?? Easing.OutCirc)),
                                     }, x =>
                                     {
                                         if (!player || !face.parent)

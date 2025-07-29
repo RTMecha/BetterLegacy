@@ -215,6 +215,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BaseTab.MaxBoostTime = SetupNumber("Base Max Boost Time", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.HitCooldown = SetupNumber("Base Hit Cooldown", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.RotateMode = SetupDropdown("Base Rotate Mode", CoreHelper.StringToOptionData("Face Direction", "None", "Flip X", "Flip Y", "Rotate Reset", "Rotate Flip X", "Rotate Flip Y"), PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.RotationSpeed = SetupNumber("Base Rotation Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.RotationCurve = SetupDropdown("Base Rotation Curve", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.CollisionAccurate = SetupBool("Base Collision Accurate", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.SprintSneakActive = SetupBool("Base Sprint Sneak Active", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.CanBoost = SetupBool("Base Can Boost", PlayerEditor.Tab.Base, editorTab: BaseTab);
@@ -1008,6 +1010,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorNumber MaxBoostTime { get; set; }
         public PlayerEditorNumber HitCooldown { get; set; }
         public PlayerEditorDropdown RotateMode { get; set; }
+        public PlayerEditorNumber RotationSpeed { get; set; }
+        public PlayerEditorDropdown RotationCurve { get; set; }
         public PlayerEditorToggle CollisionAccurate { get; set; }
         public PlayerEditorToggle SprintSneakActive { get; set; }
         public PlayerEditorToggle CanBoost { get; set; }

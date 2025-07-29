@@ -514,6 +514,10 @@ namespace BetterLegacy.Core.Data.Player
 
             public float hitCooldown = 2.5f;
 
+            public Easing rotationCurveType = Easing.OutCirc;
+
+            public float rotationSpeed = 0.2f;
+
             public BaseRotateMode rotateMode = BaseRotateMode.RotateToDirection;
 
             public bool collisionAccurate = false;
@@ -551,6 +555,8 @@ namespace BetterLegacy.Core.Data.Player
                 maxBoostTime = orig.maxBoostTime;
                 hitCooldown = orig.hitCooldown;
                 rotateMode = orig.rotateMode;
+                rotationSpeed = orig.rotationSpeed;
+                rotationCurveType = orig.rotationCurveType;
                 collisionAccurate = orig.collisionAccurate;
                 sprintSneakActive = orig.sprintSneakActive;
                 jumpGravity = orig.jumpGravity;
@@ -588,6 +594,10 @@ namespace BetterLegacy.Core.Data.Player
                     hitCooldown = jn["hit_cooldown"].AsFloat;
                 if (jn["rotate_mode"] != null)
                     rotateMode = (BaseRotateMode)jn["rotate_mode"].AsInt;
+                if (jn["rotate_ct"] != null)
+                    rotationCurveType = (Easing)jn["rotate_ct"].AsInt;
+                if (jn["rotate_s"] != null)
+                    rotationSpeed = jn["rotate_s"].AsFloat;
                 if (jn["collision_acc"] != null)
                     collisionAccurate = jn["collision_acc"].AsBool;
                 if (jn["sprsneak"] != null)
@@ -636,7 +646,11 @@ namespace BetterLegacy.Core.Data.Player
                 if (hitCooldown != 2.5f)
                     jn["hit_cooldown"] = hitCooldown;
                 if (rotateMode != BaseRotateMode.RotateToDirection)
-                    jn["rotate_mode"] = ((int)rotateMode);
+                    jn["rotate_mode"] = (int)rotateMode;
+                if (rotationCurveType != Easing.OutCirc)
+                    jn["rotate_ct"] = (int)rotationCurveType;
+                if (rotationSpeed != 0.2f)
+                    jn["rotate_s"] = rotationSpeed;
                 if (collisionAccurate)
                     jn["collision_acc"] = collisionAccurate;
                 if (sprintSneakActive)

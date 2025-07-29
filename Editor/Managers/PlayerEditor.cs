@@ -607,13 +607,6 @@ namespace BetterLegacy.Editor.Managers
             });
             TriggerHelper.AddEventTriggers(Dialog.GlobalTab.GameMode.Dropdown.gameObject, TriggerHelper.ScrollDelta(Dialog.GlobalTab.GameMode.Dropdown));
 
-            RenderDropdown(Dialog.BaseTab.RotateMode.Dropdown, GameData.Current.data.level.gameMode,
-                onValueChanged: _val =>
-                {
-                    GameData.Current.data.level.gameMode = _val;
-                    RTPlayer.SetGameDataProperties();
-                });
-
             RenderInteger(Dialog.GlobalTab.MaxJumpCount.Field, GameData.Current.data.level.maxJumpCount,
                 onValueChanged: _val =>
                 {
@@ -904,6 +897,23 @@ namespace BetterLegacy.Editor.Managers
                 {
                     currentModel.basePart.rotateMode = (PlayerModel.Base.BaseRotateMode)_val;
                     PlayerManager.UpdatePlayerModels();
+                });
+
+            RenderDropdown(Dialog.BaseTab.RotationCurve.Dropdown, (int)currentModel.basePart.rotationCurveType,
+                onValueChanged: _val =>
+                {
+                    currentModel.basePart.rotationCurveType = (Easing)_val;
+                    PlayerManager.UpdatePlayerModels();
+                });
+
+            RenderSingle(Dialog.BaseTab.RotationSpeed.Field, currentModel.basePart.rotationSpeed,
+                onValueChanged: _val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        currentModel.basePart.rotationSpeed = num;
+                        PlayerManager.UpdatePlayerModels();
+                    }
                 });
 
             Dialog.BaseTab.CollisionAccurate.Toggle.SetIsOnWithoutNotify(currentModel.basePart.collisionAccurate);
