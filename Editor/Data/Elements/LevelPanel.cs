@@ -22,23 +22,18 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Editor.Data.Elements
 {
     /// <summary>
     /// Object for storing level panel data.
     /// </summary>
-    public class LevelPanel : Exists
+    public class LevelPanel : EditorPanel<Level>
     {
         public LevelPanel() { }
 
-        #region Properties
+        #region Values
 
         #region UI
-
-        /// <summary>
-        /// The level panel game object.
-        /// </summary>
-        public GameObject GameObject { get; set; }
 
         /// <summary>
         /// Game object used for the level combiner.
@@ -46,24 +41,9 @@ namespace BetterLegacy.Editor.Data
         public GameObject CombinerGameObject { get; set; }
 
         /// <summary>
-        /// The hover scale component of the level panel.
-        /// </summary>
-        public HoverUI Hover { get; set; }
-
-        /// <summary>
-        /// The title of the level panel.
-        /// </summary>
-        public Text LevelTitle { get; set; }
-
-        /// <summary>
         /// The icon of the level panel.
         /// </summary>
         public Image IconImage { get; set; }
-
-        /// <summary>
-        /// The button of the level panel.
-        /// </summary>
-        public FolderButtonFunction Button { get; set; }
 
         /// <summary>
         /// The delete button of the level panel.
@@ -79,20 +59,7 @@ namespace BetterLegacy.Editor.Data
 
         #region Data
 
-        /// <summary>
-        /// The level reference.
-        /// </summary>
-        public Level Level { get; set; }
-
-        /// <summary>
-        /// Folder name of the level panel.
-        /// </summary>
-        public string Name => Path.GetFileName(RTFile.RemoveEndSlash(FolderPath));
-
-        /// <summary>
-        /// Direct path to the level panels' folder.
-        /// </summary>
-        public string FolderPath { get; set; }
+        public override float FocusSize => EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
 
         /// <summary>
         /// Formats the name to display.
@@ -101,7 +68,7 @@ namespace BetterLegacy.Editor.Data
         {
             get
             {
-                var metadata = Level.metadata;
+                var metadata = Item.metadata;
                 return string.Format(EditorConfig.Instance.OpenLevelTextFormatting.Value,
                     LSText.ClampString(Name, EditorConfig.Instance.OpenLevelFolderNameMax.Value),
                     LSText.ClampString(metadata.song.title, EditorConfig.Instance.OpenLevelSongNameMax.Value),
@@ -129,21 +96,10 @@ namespace BetterLegacy.Editor.Data
             }
         }
 
-        #endregion
-
-        #endregion
-
-        #region Fields
-
         /// <summary>
         /// If the level is selected in the editor.
         /// </summary>
         public bool combinerSelected;
-
-        /// <summary>
-        /// If the level panel is a folder button instead.
-        /// </summary>
-        public bool isFolder;
 
         /// <summary>
         /// Names of all the level difficulties
@@ -160,18 +116,15 @@ namespace BetterLegacy.Editor.Data
             "Unknown difficulty",
         };
 
-        JSONNode infoJN;
+        #endregion
 
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Initializes the level panel as a folder.
-        /// </summary>
-        public void Init(string directory)
+        public override void Init(string directory)
         {
-            FolderPath = directory;
+            Path = directory;
             isFolder = true;
 
             var gameObject = GameObject;
@@ -183,14 +136,14 @@ namespace BetterLegacy.Editor.Data
 
             Button = gameObject.AddComponent<FolderButtonFunction>();
 
-            Hover = gameObject.AddComponent<HoverUI>();
-            Hover.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
-            Hover.animatePos = false;
-            Hover.animateSca = true;
+            HoverFocus = gameObject.AddComponent<HoverUI>();
+            HoverFocus.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
+            HoverFocus.animatePos = false;
+            HoverFocus.animateSca = true;
 
             var folderButtonStorage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-            LevelTitle = folderButtonStorage.label;
-            LevelTitle.enabled = true;
+            Label = folderButtonStorage.label;
+            Label.enabled = true;
             folderButtonStorage.button.onClick.ClearAll();
             IconImage = folderButtonStorage.image;
 
@@ -200,13 +153,10 @@ namespace BetterLegacy.Editor.Data
             Render();
         }
 
-        /// <summary>
-        /// Initializes the level panel as an actual level.
-        /// </summary>
-        public void Init(Level level)
+        public override void Init(Level level)
         {
-            Level = level;
-            FolderPath = level.path;
+            Item = level;
+            Path = level.path;
             level.editorLevelPanel = this;
             level.isEditor = true;
 
@@ -218,13 +168,13 @@ namespace BetterLegacy.Editor.Data
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
-            Hover = gameObject.AddComponent<HoverUI>();
-            Hover.animatePos = false;
-            Hover.animateSca = true;
+            HoverFocus = gameObject.AddComponent<HoverUI>();
+            HoverFocus.animatePos = false;
+            HoverFocus.animateSca = true;
 
             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-            LevelTitle = folderButtonStorage.label;
-            LevelTitle.enabled = true;
+            Label = folderButtonStorage.label;
+            Label.enabled = true;
             folderButtonStorage.button.onClick.ClearAll();
             Button = folderButtonFunction;
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
@@ -242,7 +192,7 @@ namespace BetterLegacy.Editor.Data
             icon.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
 
             var iconImage = icon.AddComponent<Image>();
-            iconImage.sprite = Level.icon;
+            iconImage.sprite = Item.icon;
             IconImage = iconImage;
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "delete");
@@ -274,8 +224,8 @@ namespace BetterLegacy.Editor.Data
             if (isFolder)
                 return;
 
-            var folder = FolderPath;
-            var metadata = Level.metadata;
+            var folder = Path;
+            var metadata = Item.metadata;
 
             if (CombinerGameObject)
                 CoreHelper.Destroy(CombinerGameObject, true);
@@ -326,23 +276,20 @@ namespace BetterLegacy.Editor.Data
             icon.transform.AsRT().anchoredPosition = iconPosition;
             icon.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
 
-            iconImage.sprite = Level.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
+            iconImage.sprite = Item.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
 
             EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
             string difficultyName = difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)];
 
-            CombinerSetActive(RTString.SearchString(LevelCombiner.searchTerm, Path.GetFileName(folder), metadata.song.title, metadata.artist.name, metadata.creator.name, metadata.song.description, difficultyName));
+            CombinerSetActive(RTString.SearchString(LevelCombiner.searchTerm, Name, metadata.song.title, metadata.artist.name, metadata.creator.name, metadata.song.description, difficultyName));
         }
 
-        /// <summary>
-        /// Renders the whole level panel.
-        /// </summary>
-        public void Render()
+        public override void Render()
         {
             RenderIcon();
-            RenderTitle();
+            RenderLabel();
             RenderHover();
             RenderTooltip();
             UpdateFunction();
@@ -357,7 +304,7 @@ namespace BetterLegacy.Editor.Data
             if (isFolder)
                 return;
 
-            RenderIcon(Level?.icon);
+            RenderIcon(Item?.icon);
         }
 
         /// <summary>
@@ -370,68 +317,40 @@ namespace BetterLegacy.Editor.Data
                 IconImage.sprite = icon;
         }
 
-        /// <summary>
-        /// Renders the level panel title.
-        /// </summary>
-        public void RenderTitle()
+        public override void RenderLabel()
         {
             if (isFolder)
             {
-                RenderTitle(Name);
+                RenderLabel(Name);
                 return;
             }
 
-            RenderTitle(NameFormat);
+            RenderLabel(NameFormat);
         }
 
-        /// <summary>
-        /// Renders the level panel title.
-        /// </summary>
-        /// <param name="text">Title of the level panel.</param>
-        public void RenderTitle(string text)
+        public override void RenderLabel(string text)
         {
-            LevelTitle.text = text;
+            Label.text = text;
 
-            LevelTitle.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
-            LevelTitle.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
-            LevelTitle.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
+            Label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
+            Label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
+            Label.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
         }
 
-        /// <summary>
-        /// Renders the level panel hover component.
-        /// </summary>
-        public void RenderHover() => RenderHover(EditorConfig.Instance.OpenLevelButtonHoverSize.Value);
-
-        /// <summary>
-        /// Renders the level panel hover component.
-        /// </summary>
-        /// <param name="size">Size to grow when hovered.</param>
-        public void RenderHover(float size) => Hover.size = size;
-
-        /// <summary>
-        /// Renders the level panel tooltips.
-        /// </summary>
-        public void RenderTooltip()
+        public override void RenderTooltip()
         {
             TooltipHelper.AssignTooltip(GameObject, "Level Panel", 3f);
 
             if (isFolder)
             {
-                if (infoJN == null)
-                    GetInfo();
-
-                if (infoJN != null && !string.IsNullOrEmpty(infoJN["desc"]))
-                    TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Name}", infoJN["desc"], clear: true);
-                else
-                    TooltipHelper.AddHoverTooltip(GameObject, "Folder", Name, clear: true);
-
+                GetFolderTooltip();
                 return;
             }
 
-            var metadata = Level.metadata;
+            var metadata = Item.metadata;
 
             TooltipHelper.AddHoverTooltip(GameObject, "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.name + " - " + metadata.song.title,
-                $"</color><br>Folder: {Level.FolderName}<br>Date Edited: {metadata.beatmap.dateEdited}<br>Date Created: {metadata.beatmap.dateCreated}<br>Description: {metadata.song.description}");
+                $"</color><br>Folder: {Item.FolderName}<br>Date Edited: {metadata.beatmap.dateEdited}<br>Date Created: {metadata.beatmap.dateCreated}<br>Description: {metadata.song.description}");
         }
 
         /// <summary>
@@ -441,7 +360,7 @@ namespace BetterLegacy.Editor.Data
         {
             if (isFolder)
             {
-                var path = FolderPath;
+                var path = Path;
                 Button.onClick = eventData =>
                 {
                     if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
@@ -530,7 +449,7 @@ namespace BetterLegacy.Editor.Data
 
                                 RTTextEditor.inst.SetEditor("This is the default description.", val => { }, "Create", () =>
                                 {
-                                    var jn = JSON.Parse("{}");
+                                    var jn = Parser.NewJSONObject();
                                     jn["desc"] = RTTextEditor.inst.Text;
                                     infoJN = jn;
                                     RTFile.WriteToFile(filePath, jn.ToString());
@@ -588,7 +507,7 @@ namespace BetterLegacy.Editor.Data
             {
                 if (LevelTemplateEditor.inst.choosingLevelTemplate)
                 {
-                    LevelTemplateEditor.inst.CreateTemplate(Level.path);
+                    LevelTemplateEditor.inst.CreateTemplate(Item.path);
 
                     return;
                 }
@@ -635,16 +554,16 @@ namespace BetterLegacy.Editor.Data
                             new ButtonFunction("Convert to VG", () => EditorLevelManager.inst.ConvertLevel(this), "Convert Level VG"),
                             new ButtonFunction(true),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath), EndFolderCreation), "Level Panel Create Folder"),
-                            new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Level.path), "Level Panel Create Template"),
+                            new ButtonFunction("Create template", () => LevelTemplateEditor.inst.CreateTemplate(Item.path), "Level Panel Create Template"),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup, "Level Panel Create Level"),
                             new ButtonFunction("Create backup", () => EditorLevelManager.inst.SaveBackup(this), "Level Panel Create Backup"),
                             new ButtonFunction(true),
                             new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
                             {
-                                var destination = RTFile.ReplaceSlash(Level.path.Replace(Level.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
-                                RTFile.MoveDirectory(Level.path, destination);
-                                Level.metadata.beatmap.name = RTEditor.inst.folderCreatorName.text;
-                                RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), Level.metadata.ToJSON().ToString());
+                                var destination = RTFile.ReplaceSlash(Item.path.Replace(Item.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
+                                RTFile.MoveDirectory(Item.path, destination);
+                                Item.metadata.beatmap.name = RTEditor.inst.folderCreatorName.text;
+                                RTFile.WriteToFile(RTFile.CombinePaths(destination, Level.METADATA_LSB), Item.metadata.ToJSON().ToString());
 
                                 EditorLevelManager.inst.LoadLevels();
                                 RTEditor.inst.HideNameEditor();
@@ -652,15 +571,15 @@ namespace BetterLegacy.Editor.Data
                             new ButtonFunction("Cut", () =>
                             {
                                 EditorLevelManager.inst.shouldCutLevel = true;
-                                EditorLevelManager.inst.copiedLevelPath = Level.path;
-                                EditorManager.inst.DisplayNotification($"Cut {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
+                                EditorLevelManager.inst.copiedLevelPath = Item.path;
+                                EditorManager.inst.DisplayNotification($"Cut {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
                                 CoreHelper.Log($"Cut level: {EditorLevelManager.inst.copiedLevelPath}");
                             }, "Level Panel Cut"),
                             new ButtonFunction("Copy", () =>
                             {
                                 EditorLevelManager.inst.shouldCutLevel = false;
-                                EditorLevelManager.inst.copiedLevelPath = Level.path;
-                                EditorManager.inst.DisplayNotification($"Copied {Level.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
+                                EditorLevelManager.inst.copiedLevelPath = Item.path;
+                                EditorManager.inst.DisplayNotification($"Copied {Item.FolderName}!", 1.5f, EditorManager.NotificationType.Success);
                                 CoreHelper.Log($"Copied level: {EditorLevelManager.inst.copiedLevelPath}");
                             }, "Level Panel Copy"),
                             new ButtonFunction("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
@@ -668,7 +587,7 @@ namespace BetterLegacy.Editor.Data
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
                                 {
-                                    RTFile.DeleteDirectory(Level.path);
+                                    RTFile.DeleteDirectory(Item.path);
                                     EditorLevelManager.inst.LoadLevels();
                                     EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
                                     RTEditor.inst.HideWarningPopup();
@@ -677,7 +596,7 @@ namespace BetterLegacy.Editor.Data
                             new ButtonFunction(true),
                             new ButtonFunction("Copy Arcade ID", () =>
                             {
-                                var metadata = Level.metadata;
+                                var metadata = Item.metadata;
                                 if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
                                 {
                                     EditorManager.inst.DisplayNotification($"Level does not have an ID assigned to it yet. Open the level, save it and try again.", 3.3f, EditorManager.NotificationType.Warning);
@@ -689,7 +608,7 @@ namespace BetterLegacy.Editor.Data
                             }, "Copy Arcade ID"),
                             new ButtonFunction("Copy Server ID", () =>
                             {
-                                var metadata = Level.metadata;
+                                var metadata = Item.metadata;
                                 if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
                                 {
                                     EditorManager.inst.DisplayNotification($"Your level needs to be uploaded to the arcade server before you can copy the server ID.", 3.5f, EditorManager.NotificationType.Warning);
@@ -701,8 +620,8 @@ namespace BetterLegacy.Editor.Data
                             }, "Copy Server ID"),
                             new ButtonFunction(true),
                             new ButtonFunction("ZIP Level", () => EditorLevelManager.inst.ZipLevel(this), "Level Panel ZIP"),
-                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Level.path), "Level Panel Copy Folder"),
-                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Level.path), "Level Panel Open Explorer"),
+                            new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Item.path), "Level Panel Copy Folder"),
+                            new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
                             new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
                         };
 
@@ -760,8 +679,8 @@ namespace BetterLegacy.Editor.Data
         /// <param name="icon">Icon to set.</param>
         public void SetIcon(Sprite icon)
         {
-            if (Level)
-                Level.icon = icon;
+            if (Item)
+                Item.icon = icon;
             RenderIcon(icon);
         }
 
@@ -773,16 +692,6 @@ namespace BetterLegacy.Editor.Data
         {
             if (SelectedUI)
                 SelectedUI.SetActive(selected);
-        }
-
-        /// <summary>
-        /// Sets the level panel active state.
-        /// </summary>
-        /// <param name="active">Active state to set.</param>
-        public void SetActive(bool active)
-        {
-            if (GameObject)
-                GameObject.SetActive(active);
         }
 
         /// <summary>
@@ -801,7 +710,7 @@ namespace BetterLegacy.Editor.Data
         /// <param name="file">Image file to load.</param>
         /// <param name="onLoad">Action to run when the image is loaded.</param>
         /// <returns>Returns a generated coroutine.</returns>
-        public Coroutine LoadImageCoroutine(string file, Action<LevelPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(FolderPath, file)}", cover =>
+        public Coroutine LoadImageCoroutine(string file, Action<LevelPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(Path, file)}", cover =>
         {
             if (!cover)
             {
@@ -829,16 +738,7 @@ namespace BetterLegacy.Editor.Data
             RTEditor.inst.HideNameEditor();
         }
 
-        /// <summary>
-        /// Gets the info file.
-        /// </summary>
-        public void GetInfo()
-        {
-            if (RTFile.TryReadFromFile(RTFile.CombinePaths(FolderPath, $"folder_info{FileFormat.JSON.Dot()}"), out string file))
-                infoJN = JSON.Parse(file);
-        }
-
-        public override string ToString() => isFolder ? Path.GetFileName(FolderPath) : Level?.ToString();
+        public override string ToString() => isFolder ? Name : Item?.ToString();
 
         #endregion
     }

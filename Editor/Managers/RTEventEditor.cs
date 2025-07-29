@@ -21,6 +21,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -408,97 +409,56 @@ namespace BetterLegacy.Editor.Managers
 
         #region Deleting
 
-        public string DeleteKeyframe(int _type, int _event)
+        public void DeleteKeyframe(int _type, int _event)
         {
-            if (_event != 0)
+            if (_event == 0)
             {
-                string result = string.Format("Event [{0}][{1}]", _type, _event);
-                GameData.Current.events[_type].RemoveAt(_event);
-                CreateEventObjects();
-                RTLevel.Current?.UpdateEvents(_type);
-                SetCurrentEvent(_type, _type - 1);
-                return result;
+                EditorManager.inst.DisplayNotification("Can't delete first Keyframe", 2f, EditorManager.NotificationType.Error);
+                return;
             }
-            EditorManager.inst.DisplayNotification("Can't delete first Keyframe", 2f, EditorManager.NotificationType.Error, false);
-            return "";
+
+            GameData.Current.events[_type].RemoveAt(_event);
+            CreateEventObjects();
+            RTLevel.Current?.UpdateEvents(_type);
+            SetCurrentEvent(_type, _event - 1);
         }
 
-        public IEnumerator DeleteKeyframes()
+        public IEnumerator DeleteKeyframes() => DeleteKeyframes(SelectedKeyframes);
+
+        public IEnumerator DeleteKeyframes(List<TimelineKeyframe> list)
         {
-            var strs = new List<string>();
-            var list = SelectedKeyframes;
             var count = list.Count;
-            foreach (var timelineObject in list)
-                strs.Add(timelineObject.ID);
+            var types = list.Select(x => x.Type);
+            var typesCount = types.Count();
 
-            var types = SelectedKeyframes.Select(x => x.Type);
-
-            int num = 0;
-            foreach (var type in types)
-                num += type;
-
-            if (types.Count() > 0)
-                num /= types.Count();
-
+            int type = 0;
             int index = 0;
-            if (count == 1)
+            if (count > 0)
             {
-                index = SelectedKeyframes[0].Index - 1;
-                if (index < 0)
-                    index = 0;
+                if (typesCount == 1)
+                {
+                    type = list[0].Type;
+                    index = list[0].Index - 1;
+                    if (index < 0)
+                        index = 0;
+                }
+                else
+                    type = list[0].Type;
             }
 
-            SelectedKeyframes.ForEach(x => Destroy(x.GameObject));
-            EditorTimeline.inst.timelineKeyframes.RemoveAll(x => strs.Contains(x.ID));
+            EditorTimeline.inst.timelineKeyframes.ForLoopReverse((timelineKeyframe, index) =>
+            {
+                if (!timelineKeyframe.Selected || timelineKeyframe.Index == 0)
+                    return;
 
-            var allEvents = GameData.Current.events;
-            for (int i = 0; i < allEvents.Count; i++)
-                allEvents[i].RemoveAll(x => strs.Contains(x.id));
+                CoreHelper.Delete(timelineKeyframe.GameObject);
+                EditorTimeline.inst.timelineKeyframes.RemoveAt(index);
+                GameData.Current.events[timelineKeyframe.Type].Remove(timelineKeyframe.eventKeyframe);
+            });
 
             RTLevel.Current?.UpdateEvents();
 
-            SetCurrentEvent(num, index);
-
-            EditorManager.inst.DisplayNotification($"Deleted Event Keyframes [ {count} ]", 1f, EditorManager.NotificationType.Success);
-
-            yield break;
-        }
-
-        public IEnumerator DeleteKeyframes(List<TimelineKeyframe> kfs)
-        {
-            var strs = new List<string>();
-            var list = kfs;
-            var count = list.Count;
-            foreach (var timelineObject in list)
-                strs.Add(timelineObject.ID);
-
-            var types = SelectedKeyframes.Select(x => x.Type);
-
-            int num = 0;
-            foreach (var type in types)
-                num += type;
-
-            if (types.Count() > 0)
-                num /= types.Count();
-
-            int index = 0;
-            if (count == 1)
-            {
-                index = SelectedKeyframes[0].Index - 1;
-                if (index < 0)
-                    index = 0;
-            }
-
-            SelectedKeyframes.ForEach(x => Destroy(x.GameObject));
-            EditorTimeline.inst.timelineKeyframes.RemoveAll(x => strs.Contains(x.ID));
-
-            var allEvents = GameData.Current.events;
-            for (int i = 0; i < allEvents.Count; i++)
-                allEvents[i].RemoveAll(x => strs.Contains(x.id));
-
-            RTLevel.Current?.UpdateEvents();
-
-            SetCurrentEvent(num, index);
+            SetCurrentEvent(type, index);
 
             EditorManager.inst.DisplayNotification($"Deleted Event Keyframes [ {count} ]", 1f, EditorManager.NotificationType.Success);
 
@@ -533,7 +493,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                var jn = JSON.Parse("{}");
+                var jn = Parser.NewJSONObject();
 
                 for (int i = 0; i < GameData.Current.events.Count; i++)
                 {
@@ -657,7 +617,7 @@ namespace BetterLegacy.Editor.Managers
                     timelineObject.Selected = false;
         }
 
-        public void CreateNewEventObject(int type = 0) => CreateNewEventObject(EditorManager.inst.CurrentAudioPos, type);
+        public void CreateNewEventObject(int type = 0) => CreateNewEventObject(RTLevel.Current.FixedTime, type);
 
         public void CreateNewEventObject(float time, int type)
         {
@@ -666,11 +626,11 @@ namespace BetterLegacy.Editor.Managers
             if (RTEditor.inst.editorInfo.bpmSnapActive)
                 time = RTEditor.SnapToBPM(time);
 
-            int num = GameData.Current.events[type].FindLastIndex(x => x.time <= time);
+            int prevIndex = GameData.Current.events[type].FindLastIndex(x => x.time <= time);
 
-            if (num >= 0)
+            if (prevIndex >= 0)
             {
-                eventKeyframe = GameData.Current.events[type][num].Copy();
+                eventKeyframe = GameData.Current.events[type][prevIndex].Copy();
                 eventKeyframe.time = time;
             }
             else
@@ -684,7 +644,7 @@ namespace BetterLegacy.Editor.Managers
             if (type == 2 && EditorConfig.Instance.RotationEventKeyframeResets.Value)
                 eventKeyframe.SetValues(new float[1]);
 
-            GameData.Current.events[type].Add(eventKeyframe);
+            GameData.Current.events[type].Insert(prevIndex + 1, eventKeyframe);
 
             var kf = CreateEventObject(type, GameData.Current.events[type].IndexOf(eventKeyframe));
             kf.Render();

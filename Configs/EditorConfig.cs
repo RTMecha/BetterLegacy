@@ -3009,9 +3009,9 @@ namespace BetterLegacy.Configs
                 prefabPanel.DeleteButton.transform.AsRT().anchoredPosition = PrefabExternalDeleteButtonPos.Value;
                 prefabPanel.DeleteButton.transform.AsRT().sizeDelta = PrefabExternalDeleteButtonSca.Value;
 
-                prefabPanel.Name.fontSize = PrefabExternalNameFontSize.Value;
-                prefabPanel.Name.horizontalOverflow = PrefabExternalNameHorizontalWrap.Value;
-                prefabPanel.Name.verticalOverflow = PrefabExternalNameVerticalWrap.Value;
+                prefabPanel.Label.fontSize = PrefabExternalNameFontSize.Value;
+                prefabPanel.Label.horizontalOverflow = PrefabExternalNameHorizontalWrap.Value;
+                prefabPanel.Label.verticalOverflow = PrefabExternalNameVerticalWrap.Value;
 
                 prefabPanel.TypeText.fontSize = PrefabExternalTypeFontSize.Value;
                 prefabPanel.TypeText.horizontalOverflow = PrefabExternalTypeHorizontalWrap.Value;

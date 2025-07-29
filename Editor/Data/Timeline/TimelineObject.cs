@@ -18,7 +18,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Editor.Data.Timeline
 {
     /// <summary>
     /// Represents an object in the editor timeline.

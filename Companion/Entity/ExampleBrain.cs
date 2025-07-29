@@ -712,7 +712,7 @@ namespace BetterLegacy.Companion.Entity
                 {
                     if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
                     {
-                        CompanionManager.Log($"Picked level: {levelItem.FolderPath}");
+                        CompanionManager.Log($"Picked level: {levelItem.Path}");
                         reference?.chatBubble?.Say($"What's \"{levelItem.Name}\"?");
                         break; // only select one level
                     }

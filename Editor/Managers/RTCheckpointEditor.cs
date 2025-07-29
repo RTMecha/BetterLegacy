@@ -12,8 +12,8 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {

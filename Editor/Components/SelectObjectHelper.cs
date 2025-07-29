@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -15,6 +8,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 using Axis = BetterLegacy.Editor.Components.SelectObject.Axis;

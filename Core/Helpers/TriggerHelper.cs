@@ -6,8 +6,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using LSFunctions;
-
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
@@ -15,6 +13,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Helpers
 {

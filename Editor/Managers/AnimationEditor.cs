@@ -15,6 +15,7 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -190,7 +191,7 @@ namespace BetterLegacy.Editor.Managers
 
         public bool isOverTimeline;
 
-        public List<TimelineObject> timelineKeyframes = new List<TimelineObject>();
+        public List<TimelineKeyframe> timelineKeyframes = new List<TimelineKeyframe>();
         public List<TimelineMarker> timelineMarkers = new List<TimelineMarker>();
 
         public RectTransform timelineParent;

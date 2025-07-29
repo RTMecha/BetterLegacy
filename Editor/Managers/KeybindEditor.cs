@@ -22,6 +22,7 @@ using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
+using BetterLegacy.Editor.Data.Timeline;
 
 using SelectionType = ObjEditor.ObjectSelection.SelectionType;
 
@@ -1683,7 +1684,7 @@ namespace BetterLegacy.Editor.Managers
         public static void SpawnPrefab(Keybind keybind)
         {
             bool useExternal = keybind.settings.TryGetValue("External", out string external) && bool.TryParse(external, out useExternal);
-            var prefabs = (useExternal ? RTPrefabEditor.inst.PrefabPanels.Select(x => x.Prefab).ToList() : GameData.Current.prefabs);
+            var prefabs = (useExternal ? RTPrefabEditor.inst.PrefabPanels.Select(x => x.Item).ToList() : GameData.Current.prefabs);
 
             if (keybind.settings.TryGetValue("UseID", out string useIDSetting) && bool.TryParse(useIDSetting, out bool boolean) && keybind.settings.TryGetValue("ID", out string id) && boolean)
             {

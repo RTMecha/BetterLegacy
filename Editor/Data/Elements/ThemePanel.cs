@@ -22,30 +22,24 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Editor.Data.Elements
 {
     /// <summary>
     /// Object for storing theme panel data. Used for the themes in the theme keyframe.
     /// </summary>
-    public class ThemePanel : Exists
+    public class ThemePanel : EditorPanel<BeatmapTheme>
     {
         public ThemePanel() { }
 
-        public ThemePanel(int index) => this.index = index;
+        public ThemePanel(int index, bool isDuplicate = false)
+        {
+            this.index = index;
+            this.isDuplicate = isDuplicate;
+        }
 
-        #region Properties
+        #region Values
 
         #region UI
-
-        /// <summary>
-        /// The theme panel game object.
-        /// </summary>
-        public GameObject GameObject { get; set; }
-
-        /// <summary>
-        /// The name text of the theme panel.
-        /// </summary>
-        public Text Name { get; set; }
 
         /// <summary>
         /// The colors list of the theme panel.
@@ -78,11 +72,6 @@ namespace BetterLegacy.Editor.Data
         public Image BaseImage { get; set; }
 
         /// <summary>
-        /// The folder button function.
-        /// </summary>
-        public FolderButtonFunction FolderButton { get; set; }
-
-        /// <summary>
         /// The icon of the theme panel.
         /// </summary>
         public Image IconImage { get; set; }
@@ -92,25 +81,9 @@ namespace BetterLegacy.Editor.Data
         #region Data
 
         /// <summary>
-        /// The theme reference.
-        /// </summary>
-        public BeatmapTheme Theme { get; set; }
-
-        /// <summary>
-        /// The file path to the theme.
-        /// </summary>
-        public string FilePath { get; set; }
-
-        /// <summary>
         /// The original ID from the theme.
         /// </summary>
         public string OriginalID { get; set; }
-
-        #endregion
-
-        #endregion
-
-        #region Fields
 
         const string TOOLTIP_COLOR_BAR = "▓";
 
@@ -124,33 +97,19 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public bool isDuplicate;
 
-        /// <summary>
-        /// If the theme panel is a folder button instead.
-        /// </summary>
-        public bool isFolder;
-
-        /// <summary>
-        /// Index of the theme panel.
-        /// </summary>
-        public int index;
-
-        JSONNode infoJN;
+        #endregion
 
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Initializes the theme panel as a folder.
-        /// </summary>
-        /// <param name="directory">Directory to set to the theme panel.</param>
-        public void Init(string directory)
+        public override void Init(string directory)
         {
             var gameObject = GameObject;
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTThemeEditor.inst.Dialog.Content, $"Folder [{Path.GetFileName(directory)}]", index + 2);
+            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTThemeEditor.inst.Dialog.Content, $"Folder [{System.IO.Path.GetFileName(directory)}]", index + 2);
             var folderButtonStorageFolder = gameObjectFolder.GetComponent<SpriteFunctionButtonStorage>();
             var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -162,10 +121,10 @@ namespace BetterLegacy.Editor.Data
             folderButtonStorageFolder.button.onClick.ClearAll();
 
             GameObject = gameObjectFolder;
-            FilePath = directory;
+            Path = directory;
             isFolder = true;
-            Name = folderButtonStorageFolder.label;
-            FolderButton = folderButtonFunctionFolder;
+            Label = folderButtonStorageFolder.label;
+            Button = folderButtonFunctionFolder;
             IconImage = folderButtonStorageFolder.image;
 
             EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
@@ -175,13 +134,7 @@ namespace BetterLegacy.Editor.Data
             SetActive(false);
         }
 
-        /// <summary>
-        /// Initializes the theme panel as a beatmap theme panel.
-        /// </summary>
-        /// <param name="beatmapTheme"><see cref="BeatmapTheme"/> reference.</param>
-        /// <param name="defaultTheme">If the theme is a default theme.</param>
-        /// <param name="duplicate">If the theme is a duplicate.</param>
-        public void Init(BeatmapTheme beatmapTheme, bool defaultTheme = false, bool duplicate = false)
+        public override void Init(BeatmapTheme beatmapTheme)
         {
             var gameObject = GameObject;
             if (gameObject)
@@ -193,16 +146,15 @@ namespace BetterLegacy.Editor.Data
 
             GameObject = gameObject;
             UseButton = storage.button;
-            ContextClickable = gameObject.AddComponent<ContextClickable>();
+            Button = gameObject.AddComponent<FolderButtonFunction>();
             EditButton = storage.edit;
             DeleteButton = storage.delete;
-            Name = storage.text;
+            Label = storage.text;
             BaseImage = storage.baseImage;
 
-            Theme = beatmapTheme;
-            Theme.themePanel = this;
-            isDefault = defaultTheme;
-            isDuplicate = duplicate;
+            Item = beatmapTheme;
+            Item.themePanel = this;
+            isDefault = beatmapTheme.isDefault;
             OriginalID = beatmapTheme.id;
 
             Colors.Add(storage.color1);
@@ -213,28 +165,25 @@ namespace BetterLegacy.Editor.Data
             EditorThemeManager.ApplyGraphic(BaseImage, ThemeGroup.List_Button_2_Normal, true);
             EditorThemeManager.ApplyGraphic(UseButton.image, ThemeGroup.Null, true);
             EditorThemeManager.ApplyGraphic(EditButton.image, ThemeGroup.List_Button_2_Text);
-            EditorThemeManager.ApplyGraphic(Name, ThemeGroup.List_Button_2_Text);
+            EditorThemeManager.ApplyGraphic(Label, ThemeGroup.List_Button_2_Text);
             EditorThemeManager.ApplySelectable(DeleteButton, ThemeGroup.Delete_Keyframe_Button, false);
 
             Render();
             SetActive(false);
         }
 
-        /// <summary>
-        /// Renders the whole theme panel.
-        /// </summary>
-        public void Render()
+        public override void Render()
         {
             RenderIcon();
-            RenderName();
+            RenderLabel();
             RenderTooltip();
 
             if (isFolder)
             {
-                var directory = FilePath;
+                var directory = Path;
                 var path = RTFile.ReplaceSlash(directory);
-                Name.text = Path.GetFileName(directory);
-                FolderButton.onClick = eventData =>
+                Label.text = System.IO.Path.GetFileName(directory);
+                Button.onClick = eventData =>
                 {
                     if (!path.Contains(RTEditor.inst.BeatmapsPath + "/"))
                     {
@@ -365,15 +314,13 @@ namespace BetterLegacy.Editor.Data
                 return;
             }
 
-            if (!string.IsNullOrEmpty(Theme.filePath))
-                FilePath = RTFile.ReplaceSlash(Theme.filePath);
+            if (!string.IsNullOrEmpty(Item.filePath))
+                Path = RTFile.ReplaceSlash(Item.filePath);
 
             RenderColors();
 
-            UseButton.onClick.ClearAll();
-            UseButton.onClick.AddListener(Use);
-
-            ContextClickable.onClick = pointerEventData =>
+            UseButton.onClick.NewListener(Use);
+            Button.onClick = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                 {
@@ -383,58 +330,53 @@ namespace BetterLegacy.Editor.Data
 
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Use", Use),
-                    new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Theme)),
-                    new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Theme)),
+                    new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
+                    new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
                     new ButtonFunction(true),
                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
                     new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                     new ButtonFunction(true),
                     new ButtonFunction("Cut", () =>
                     {
-                        if (isDuplicate)
+                        if (isDefault)
                         {
                             EditorManager.inst.DisplayNotification($"Cannot cut a default theme!", 1.5f, EditorManager.NotificationType.Warning);
                             return;
                         }
 
                         RTThemeEditor.inst.shouldCutTheme = true;
-                        RTThemeEditor.inst.copiedThemePath = Theme.filePath;
-                        EditorManager.inst.DisplayNotification($"Cut {Theme.name}!", 1.5f, EditorManager.NotificationType.Success);
+                        RTThemeEditor.inst.copiedThemePath = Item.filePath;
+                        EditorManager.inst.DisplayNotification($"Cut {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
                         CoreHelper.Log($"Cut theme: {RTThemeEditor.inst.copiedThemePath}");
                     }),
                     new ButtonFunction("Copy", () =>
                     {
-                        if (isDuplicate)
+                        if (isDefault)
                         {
                             EditorManager.inst.DisplayNotification($"Cannot copy a default theme!", 1.5f, EditorManager.NotificationType.Warning);
                             return;
                         }
 
                         RTThemeEditor.inst.shouldCutTheme = false;
-                        RTThemeEditor.inst.copiedThemePath = Theme.filePath;
-                        EditorManager.inst.DisplayNotification($"Copied {Theme.name}!", 1.5f, EditorManager.NotificationType.Success);
+                        RTThemeEditor.inst.copiedThemePath = Item.filePath;
+                        EditorManager.inst.DisplayNotification($"Copied {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
                         CoreHelper.Log($"Copied theme: {RTThemeEditor.inst.copiedThemePath}");
                     }),
                     new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
                     new ButtonFunction("Delete", () =>
                     {
-                        if (!isDuplicate)
-                            RTThemeEditor.inst.DeleteTheme(Theme);
+                        if (!isDefault)
+                            RTThemeEditor.inst.DeleteTheme(Item);
                         else
                             EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
                     }),
                     new ButtonFunction(true),
-                    new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Theme))
+                    new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
                     );
             };
-
-            EditButton.onClick.ClearAll();
-            EditButton.onClick.AddListener(() => RTThemeEditor.inst.RenderThemeEditor(Theme));
-
-            DeleteButton.onClick.ClearAll();
+            EditButton.onClick.NewListener(() => RTThemeEditor.inst.RenderThemeEditor(Item));
             DeleteButton.interactable = !isDefault;
-            if (!isDefault)
-                DeleteButton.onClick.AddListener(() => RTThemeEditor.inst.DeleteTheme(Theme));
+            DeleteButton.onClick.NewListener(() => RTThemeEditor.inst.DeleteTheme(Item));
         }
 
         /// <summary>
@@ -445,41 +387,20 @@ namespace BetterLegacy.Editor.Data
             if (!isFolder || !IconImage)
                 return;
 
-            IconImage.sprite = RTFile.FileExists(RTFile.CombinePaths(FilePath, $"folder_icon{FileFormat.PNG.Dot()}")) ?
-                SpriteHelper.LoadSprite(RTFile.CombinePaths(FilePath, $"folder_icon{FileFormat.PNG.Dot()}")) :
+            IconImage.sprite = RTFile.FileExists(RTFile.CombinePaths(Path, $"folder_icon{FileFormat.PNG.Dot()}")) ?
+                SpriteHelper.LoadSprite(RTFile.CombinePaths(Path, $"folder_icon{FileFormat.PNG.Dot()}")) :
                 EditorSprites.OpenSprite;
         }
 
-        /// <summary>
-        /// Renders the theme panel name.
-        /// </summary>
-        public void RenderName() => RenderName(isFolder ? Path.GetFileName(FilePath) : Theme?.name);
+        public override void RenderLabel() => RenderLabel(isFolder ? System.IO.Path.GetFileName(Path) : Item?.name);
 
-        /// <summary>
-        /// Renders the theme panel name.
-        /// </summary>
-        /// <param name="name">Name of the theme.</param>
-        public void RenderName(string name) => Name.text = name;
+        public override void RenderLabel(string name) => Label.text = name;
 
-        public void RenderTooltip()
+        public override void RenderTooltip()
         {
             if (isFolder)
             {
-                try
-                {
-                    if (infoJN == null)
-                        GetInfo();
-
-                    if (infoJN != null && !string.IsNullOrEmpty(infoJN["desc"]))
-                        TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Path.GetFileName(FilePath)}", infoJN["desc"], clear: true);
-                    else
-                        TooltipHelper.AddHoverTooltip(GameObject, "Folder", Path.GetFileName(FilePath), clear: true);
-                }
-                catch (System.Exception ex)
-                {
-                    CoreHelper.LogError($"Had an exception with trying to add info to the {nameof(ThemePanel)}.\nGameObject: {GameObject}\nFilePath: {FilePath}\nException: {ex}");
-                }
-
+                GetFolderTooltip();
                 return;
             }
 
@@ -487,40 +408,40 @@ namespace BetterLegacy.Editor.Data
             {
                 var sb = new StringBuilder();
                 sb.AppendLine("Background Color:");
-                sb.AppendLine($"<#{RTColors.ColorToHexOptional(Theme.backgroundColor)}>{TOOLTIP_COLOR_BAR}</color>");
+                sb.AppendLine($"<#{RTColors.ColorToHexOptional(Item.backgroundColor)}>{TOOLTIP_COLOR_BAR}</color>");
 
                 sb.AppendLine("GUI Color | GUI Accent Color");
-                sb.AppendLine($"<#{RTColors.ColorToHexOptional(Theme.guiColor)}>{TOOLTIP_COLOR_BAR}</color> " + $"<#{RTColors.ColorToHexOptional(Theme.guiAccentColor)}>{TOOLTIP_COLOR_BAR}</color>");
+                sb.AppendLine($"<#{RTColors.ColorToHexOptional(Item.guiColor)}>{TOOLTIP_COLOR_BAR}</color> " + $"<#{RTColors.ColorToHexOptional(Item.guiAccentColor)}>{TOOLTIP_COLOR_BAR}</color>");
 
                 sb.AppendLine("Player Colors");
                 var playerColors = string.Empty;
-                for (int i = 0; i < Mathf.Clamp(Theme.playerColors.Count, 0, 4); i++)
-                    playerColors += $"<#{RTColors.ColorToHexOptional(Theme.GetPlayerColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                for (int i = 0; i < Mathf.Clamp(Item.playerColors.Count, 0, 4); i++)
+                    playerColors += $"<#{RTColors.ColorToHexOptional(Item.GetPlayerColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(playerColors);
 
                 sb.AppendLine("Beatmap Object Colors:");
                 var objectColors = string.Empty;
-                for (int i = 0; i < Mathf.Clamp(Theme.objectColors.Count, 0, 18); i++)
-                    objectColors += $"<#{RTColors.ColorToHexOptional(Theme.GetObjColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                for (int i = 0; i < Mathf.Clamp(Item.objectColors.Count, 0, 18); i++)
+                    objectColors += $"<#{RTColors.ColorToHexOptional(Item.GetObjColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(objectColors);
 
                 sb.AppendLine("BG Object Colors:");
                 var bgColors = string.Empty;
-                for (int i = 0; i < Mathf.Clamp(Theme.backgroundColors.Count, 0, 9); i++)
-                    bgColors += $"<#{RTColors.ColorToHexOptional(Theme.GetBGColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                for (int i = 0; i < Mathf.Clamp(Item.backgroundColors.Count, 0, 9); i++)
+                    bgColors += $"<#{RTColors.ColorToHexOptional(Item.GetBGColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(bgColors);
 
                 sb.AppendLine("Effect Colors:");
                 var fxColors = string.Empty;
-                for (int i = 0; i < Mathf.Clamp(Theme.effectColors.Count, 0, 18); i++)
-                    fxColors += $"<#{RTColors.ColorToHexOptional(Theme.GetFXColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
+                for (int i = 0; i < Mathf.Clamp(Item.effectColors.Count, 0, 18); i++)
+                    fxColors += $"<#{RTColors.ColorToHexOptional(Item.GetFXColor(i))}>{TOOLTIP_COLOR_BAR}</color>";
                 sb.AppendLine(fxColors);
 
-                TooltipHelper.AddHoverTooltip(GameObject, Theme.name, sb.ToString(), clear: true);
+                TooltipHelper.AddHoverTooltip(GameObject, Item.name, sb.ToString(), clear: true);
             }
             catch (System.Exception ex)
             {
-                CoreHelper.LogError($"Had an exception with trying to add info to the {nameof(ThemePanel)}.\nGameObject: {GameObject}\nFilePath: {FilePath}\nException: {ex}");
+                CoreHelper.LogError($"Had an exception with trying to add info to the {nameof(ThemePanel)}.\nGameObject: {GameObject}\nFilePath: {Path}\nException: {ex}");
             }
         }
 
@@ -530,14 +451,14 @@ namespace BetterLegacy.Editor.Data
         public void RenderColors()
         {
             for (int j = 0; j < Colors.Count; j++)
-                Colors[j].color = Theme.GetObjColor(j);
+                Colors[j].color = Item.GetObjColor(j);
         }
 
         /// <summary>
         /// Renders a color of the theme panel.
         /// </summary>
         /// <param name="i">Color index.</param>
-        public void RenderColor(int i) => RenderColor(i, Theme.GetObjColor(i));
+        public void RenderColor(int i) => RenderColor(i, Item.GetObjColor(i));
 
         /// <summary>
         /// Renders a color of the theme panel.
@@ -554,45 +475,26 @@ namespace BetterLegacy.Editor.Data
         public Image GetColorSlot(int i) => Colors[Mathf.Clamp(i, 0, Colors.Count - 1)];
 
         /// <summary>
-        /// Sets the theme panel active state.
-        /// </summary>
-        /// <param name="active">Active state to set.</param>
-        public void SetActive(bool active)
-        {
-            if (GameObject)
-                GameObject.SetActive(active);
-        }
-
-        /// <summary>
-        /// Gets the info file.
-        /// </summary>
-        public void GetInfo()
-        {
-            if (RTFile.TryReadFromFile(RTFile.CombinePaths(FilePath, $"folder_info{FileFormat.JSON.Dot()}"), out string file))
-                infoJN = JSON.Parse(file);
-        }
-
-        /// <summary>
         /// Uses the theme for the current selected theme keyframe.
         /// </summary>
         public void Use()
         {
             if (isDuplicate)
             {
-                var array = ThemeManager.inst.CustomThemes.Where(x => x.id == Theme.id).Select(x => x.name).ToArray();
+                var array = ThemeManager.inst.CustomThemes.Where(x => x.id == Item.id).Select(x => x.name).ToArray();
                 var str = RTString.ArrayToString(array);
 
-                EditorManager.inst.DisplayNotification($"Unable to use Theme [{Theme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
+                EditorManager.inst.DisplayNotification($"Unable to use Theme [{Item.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
                 return;
             }
 
             if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
             {
                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                    timelineObject.eventKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
+                    timelineObject.eventKeyframe.values[0] = Parser.TryParse(Item.id, 0);
             }
             else
-                RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Theme.id, 0);
+                RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Item.id, 0);
 
             RTLevel.Current?.UpdateEvents(4);
             RTThemeEditor.inst.RenderThemePreview();
@@ -600,7 +502,7 @@ namespace BetterLegacy.Editor.Data
             GameData.Current.UpdateUsedThemes();
         }
 
-        public override string ToString() => isFolder ? Path.GetFileName(FilePath) : Theme?.ToString();
+        public override string ToString() => isFolder ? System.IO.Path.GetFileName(Path) : Item?.ToString();
 
         #endregion
     }

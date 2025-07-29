@@ -20,7 +20,7 @@ using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Editor.Data.Elements
 {
     /// <summary>
     /// Represents a modifier in the editor.

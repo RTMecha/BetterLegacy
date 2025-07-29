@@ -14,7 +14,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Editor.Data.Timeline
 {
     /// <summary>
     /// Represents a marker in the editor.

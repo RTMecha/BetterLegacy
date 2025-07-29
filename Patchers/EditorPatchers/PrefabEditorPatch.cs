@@ -56,7 +56,7 @@ namespace BetterLegacy.Patchers
                 var storage = gameObject.AddComponent<PrefabPanelStorage>();
 
                 var tf = gameObject.transform;
-                storage.nameText = tf.Find("name").GetComponent<Text>();
+                storage.label = tf.Find("name").GetComponent<Text>();
                 storage.typeNameText = tf.Find("type-name").GetComponent<Text>();
                 storage.typeImage = tf.Find("category").GetComponent<Image>();
                 storage.typeImageShade = tf.Find("category/type").GetComponent<Image>();

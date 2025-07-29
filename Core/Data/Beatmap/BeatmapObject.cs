@@ -15,7 +15,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Components;
-using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap

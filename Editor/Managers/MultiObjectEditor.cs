@@ -23,6 +23,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {

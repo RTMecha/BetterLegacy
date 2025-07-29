@@ -7,9 +7,8 @@ using LSFunctions;
 
 using SimpleJSON;
 
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

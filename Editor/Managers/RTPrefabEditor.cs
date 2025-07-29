@@ -27,6 +27,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
@@ -1902,7 +1903,7 @@ namespace BetterLegacy.Editor.Managers
         #region Prefabs
 
         public BeatmapObject quickPrefabTarget;
-
+        public bool selectingQuickPrefab;
         public Prefab currentQuickPrefab;
 
         public bool shouldCutPrefab;
@@ -2101,7 +2102,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefabPanel"></param>
         public void RenderPrefabExternalDialog(PrefabPanel prefabPanel)
         {
-            var prefab = prefabPanel.Prefab;
+            var prefab = prefabPanel.Item;
             var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.Dialog == PrefabDialog.External;
 
@@ -2113,7 +2114,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (!isExternal)
                 {
-                    prefabPanel.RenderName();
+                    prefabPanel.RenderLabel();
                     prefabPanel.RenderTooltip();
                     EditorTimeline.inst.timelineObjects.ForLoop(timelineObject =>
                     {
@@ -2134,7 +2135,7 @@ namespace BetterLegacy.Editor.Managers
                 prefab.filePath = file;
                 RTFile.WriteToFile(file, prefab.ToJSON().ToString());
 
-                prefabPanel.RenderName();
+                prefabPanel.RenderLabel();
                 prefabPanel.RenderTooltip();
 
                 RTEditor.inst.EnablePrefabWatcher();
@@ -2295,7 +2296,7 @@ namespace BetterLegacy.Editor.Managers
         {
             RTEditor.inst.DisablePrefabWatcher();
 
-            RTFile.DeleteFile(prefabPanel.FilePath);
+            RTFile.DeleteFile(prefabPanel.Path);
 
             Destroy(prefabPanel.GameObject);
             PrefabPanels.RemoveAt(prefabPanel.index);
@@ -2611,6 +2612,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefab">Prefab to set. Can be null to clear the selection.</param>
         public void UpdateCurrentPrefab(Prefab prefab)
         {
+            selectingQuickPrefab = false;
             currentQuickPrefab = prefab;
 
             bool prefabExists = currentQuickPrefab != null;
@@ -2684,6 +2686,8 @@ namespace BetterLegacy.Editor.Managers
 
             yield return CoroutineHelper.Seconds(0.03f);
 
+            selectingQuickPrefab = updateCurrentPrefab;
+
             var searchFieldContextMenu = RTEditor.inst.PrefabPopups.InternalPrefabs.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
             searchFieldContextMenu.onClick = null;
             searchFieldContextMenu.onClick = pointerEventData =>
@@ -2728,7 +2732,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var prefab = prefabs[i];
                 if (ContainsName(prefab, PrefabDialog.Internal) && (!filterUsed || GameData.Current.prefabObjects.Any(x => x.prefabID == prefab.id)))
-                    new PrefabPanel(PrefabDialog.Internal, i).Init(prefab, updateCurrentPrefab);
+                    new PrefabPanel(PrefabDialog.Internal, i).Init(prefab);
             }
 
             yield break;
@@ -2775,8 +2779,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 prefabPanel.SetActive(
                     prefabPanel.isFolder ?
-                        RTString.SearchString(PrefabEditor.inst.externalSearchStr, Path.GetFileName(prefabPanel.FilePath)) :
-                        ContainsName(prefabPanel.Prefab, PrefabDialog.External));
+                        RTString.SearchString(PrefabEditor.inst.externalSearchStr, Path.GetFileName(prefabPanel.Path)) :
+                        ContainsName(prefabPanel.Item, PrefabDialog.External));
             }
 
             yield break;

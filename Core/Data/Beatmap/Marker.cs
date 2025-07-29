@@ -4,7 +4,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
-using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

@@ -28,6 +28,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -297,7 +298,7 @@ namespace BetterLegacy.Editor.Managers
         /// Loads a level in the editor.
         /// </summary>
         /// <param name="levelPanel">Level to load and edit.</param>
-        public void LoadLevel(LevelPanel levelPanel) => CoroutineHelper.StartCoroutine(ILoadLevel(levelPanel.Level));
+        public void LoadLevel(LevelPanel levelPanel) => CoroutineHelper.StartCoroutine(ILoadLevel(levelPanel.Item));
 
         /// <summary>
         /// Loads a level in the editor.
@@ -806,14 +807,14 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var autosavesDirectory = RTFile.CombinePaths(levelPanel.FolderPath, "autosaves");
+            var autosavesDirectory = RTFile.CombinePaths(levelPanel.Path, "autosaves");
             var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);
 
             EditorManager.inst.DisplayNotification("Saving backup...", 2f, EditorManager.NotificationType.Warning);
 
-            RTFile.CopyFile(levelPanel.Level.GetFile(levelPanel.Level.CurrentFile), autosavePath);
+            RTFile.CopyFile(levelPanel.Item.GetFile(levelPanel.Item.CurrentFile), autosavePath);
 
             EditorManager.inst.DisplayNotification("Saved backup!", 2f, EditorManager.NotificationType.Success);
 
@@ -1001,28 +1002,28 @@ namespace BetterLegacy.Editor.Managers
 
             var levelPanels = RTEditor.inst.levelSort switch
             {
-                LevelSort.Cover => LevelPanels.Order(x => x.Level && x.Level.icon != SteamWorkshop.inst.defaultSteamImageSprite, !RTEditor.inst.levelAscend),
-                LevelSort.Artist => LevelPanels.Order(x => x.Level?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.Creator => LevelPanels.Order(x => x.Level?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.File => LevelPanels.Order(x => x.FolderPath, !RTEditor.inst.levelAscend),
-                LevelSort.Title => LevelPanels.Order(x => x.Level?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.Difficulty => LevelPanels.Order(x => x.Level?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
-                LevelSort.DateEdited => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.DateCreated => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.DatePublished => LevelPanels.Order(x => x.Level?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.Cover => LevelPanels.Order(x => x.Item && x.Item.icon != SteamWorkshop.inst.defaultSteamImageSprite, !RTEditor.inst.levelAscend),
+                LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.File => LevelPanels.Order(x => x.Path, !RTEditor.inst.levelAscend),
+                LevelSort.Title => LevelPanels.Order(x => x.Item?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.Difficulty => LevelPanels.Order(x => x.Item?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
+                LevelSort.DateEdited => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.DateCreated => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
+                LevelSort.DatePublished => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
                 _ => LevelPanels,
             };
 
             levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
 
             int num = 0;
-            foreach (var editorWrapper in levelPanels)
+            foreach (var levelPanel in levelPanels)
             {
-                var folder = editorWrapper.FolderPath;
-                var metadata = editorWrapper.Level?.metadata;
+                var folder = levelPanel.Path;
+                var metadata = levelPanel.Item?.metadata;
 
-                editorWrapper.SetActive(editorWrapper.isFolder && RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
-                    !editorWrapper.isFolder && (RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                levelPanel.SetActive(levelPanel.isFolder && RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                    !levelPanel.isFolder && (RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
                         metadata == null || metadata != null &&
                         (RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
                         RTString.SearchString(EditorManager.inst.openFileSearch, metadata.artist.name) ||
@@ -1030,7 +1031,7 @@ namespace BetterLegacy.Editor.Managers
                         RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
                         RTString.SearchString(EditorManager.inst.openFileSearch, LevelPanel.difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, LevelPanel.difficultyNames.Length - 1)]))));
 
-                editorWrapper.GameObject.transform.SetSiblingIndex(num);
+                levelPanel.GameObject.transform.SetSiblingIndex(num);
                 num++;
             }
 
@@ -1068,8 +1069,8 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var files =
-                Directory.GetFiles(levelPanel.FolderPath, $"autosave_{FileFormat.LSB.ToPattern()}", SearchOption.AllDirectories)
-                .Union(Directory.GetFiles(levelPanel.FolderPath, $"backup_{FileFormat.LSB.ToPattern()}", SearchOption.AllDirectories));
+                Directory.GetFiles(levelPanel.Path, $"autosave_{FileFormat.LSB.ToPattern()}", SearchOption.AllDirectories)
+                .Union(Directory.GetFiles(levelPanel.Path, $"backup_{FileFormat.LSB.ToPattern()}", SearchOption.AllDirectories));
 
             foreach (var file in files)
             {
@@ -1090,7 +1091,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         // just realized I could collapse the switch case blocks like this
                         case PointerEventData.InputButton.Left: {
-                                levelPanel.Level.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.FolderPath));
+                                levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
 
                                 LoadLevel(levelPanel);
                                 RTEditor.inst.OpenLevelPopup.Close();
@@ -1100,7 +1101,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Open", () =>
                                     {
-                                        levelPanel.Level.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.FolderPath));
+                                        levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
 
                                         LoadLevel(levelPanel);
                                         RTEditor.inst.OpenLevelPopup.Close();
@@ -1171,8 +1172,8 @@ namespace BetterLegacy.Editor.Managers
             if (levelPanel.isFolder)
                 return;
 
-            var currentPath = levelPanel.FolderPath;
-            var fileName = levelPanel.Level.FolderName;
+            var currentPath = levelPanel.Path;
+            var fileName = levelPanel.Item.FolderName;
 
             var exportPath = EditorConfig.Instance.ConvertLevelLSToVGExportPath.Value;
 
@@ -1239,7 +1240,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelPanel">Level to zip.</param>
         public void ZipLevel(LevelPanel levelPanel)
         {
-            EditorManager.inst.DisplayNotification($"Zipping {Path.GetFileName(RTFile.RemoveEndSlash(levelPanel.FolderPath))}...", 2f, EditorManager.NotificationType.Warning);
+            EditorManager.inst.DisplayNotification($"Zipping {Path.GetFileName(RTFile.RemoveEndSlash(levelPanel.Path))}...", 2f, EditorManager.NotificationType.Warning);
 
             IZipLevel(levelPanel).StartAsync();
         }
@@ -1250,7 +1251,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="levelPanel">Level to zip.</param>
         public IEnumerator IZipLevel(LevelPanel levelPanel)
         {
-            var currentPath = levelPanel.FolderPath;
+            var currentPath = levelPanel.Path;
             bool failed;
             var zipPath = RTFile.RemoveEndSlash(currentPath) + FileFormat.ZIP.Dot();
             try
@@ -1281,7 +1282,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="level">Level to remove.</param>
         public void RecycleLevel(LevelPanel levelPanel)
         {
-            var folderPath = levelPanel.FolderPath;
+            var folderPath = levelPanel.Path;
             var recyclingPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, "recycling");
             RTFile.CreateDirectory(recyclingPath);
             RTFile.MoveDirectory(folderPath, RTFile.CombinePaths(recyclingPath, Path.GetFileName(folderPath)));

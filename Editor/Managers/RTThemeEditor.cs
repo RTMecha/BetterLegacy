@@ -20,8 +20,8 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
@@ -135,7 +135,7 @@ namespace BetterLegacy.Editor.Managers
         public int CurrentEventThemePage => eventThemePage + 1;
         public int MinEventTheme => MaxEventTheme - eventThemesPerPage;
         public int MaxEventTheme => CurrentEventThemePage * eventThemesPerPage;
-        public int ThemesCount => ThemePanels.FindAll(x => RTString.SearchString(searchTerm, x.isFolder ? Path.GetFileName(x.FilePath) : x.Theme.name)).Count;
+        public int ThemesCount => ThemePanels.FindAll(x => RTString.SearchString(searchTerm, x.isFolder ? Path.GetFileName(x.Path) : x.Item.name)).Count;
 
         public bool filterUsed;
 
@@ -710,16 +710,16 @@ namespace BetterLegacy.Editor.Managers
                     var themePanel = ThemePanels[i];
                     var isFolder = themePanel.isFolder;
                     var searchBool = (!themePanel.isDefault || EditorConfig.Instance.ShowDefaultThemes.Value) &&
-                        RTString.SearchString(search, isFolder ? Path.GetFileName(themePanel.FilePath) : themePanel.Theme.name);
+                        RTString.SearchString(search, isFolder ? Path.GetFileName(themePanel.Path) : themePanel.Item.name);
 
-                    if (filterUsed && !isFolder && !GameData.Current.events[4].Any(x => x.values[0] == Parser.TryParse(themePanel.Theme.id, -1)))
+                    if (filterUsed && !isFolder && !GameData.Current.events[4].Any(x => x.values[0] == Parser.TryParse(themePanel.Item.id, -1)))
                         searchBool = false;
 
                     if (searchBool)
                         num++;
 
                     if (!themePanel.GameObject)
-                        ThemePanels[i] = isFolder ? SetupThemePanel(themePanel.FilePath, false, i) : SetupThemePanel(themePanel.Theme, Parser.TryParse(themePanel.Theme.id, 0) < 10, themePanel.isDuplicate, false, i);
+                        ThemePanels[i] = isFolder ? SetupThemePanel(themePanel.Path, false, i) : SetupThemePanel(themePanel.Item, Parser.TryParse(themePanel.Item.id, 0) < 10, themePanel.isDuplicate, false, i);
 
                     ThemePanels[i].SetActive(num >= MinEventTheme && num < MaxEventTheme && searchBool);
                 }
@@ -748,8 +748,8 @@ namespace BetterLegacy.Editor.Managers
 
         public ThemePanel SetupThemePanel(BeatmapTheme beatmapTheme, bool defaultTheme, bool duplicate = false, bool add = true, int index = -1)
         {
-            var themePanel = new ThemePanel(index);
-            themePanel.Init(beatmapTheme, defaultTheme, duplicate);
+            var themePanel = new ThemePanel(index, duplicate);
+            themePanel.Init(beatmapTheme);
 
             if (add)
                 ThemePanels.Add(themePanel);
@@ -829,7 +829,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTFile.DeleteFile(theme.filePath);
 
-            if (ThemePanels.TryFindIndex(x => x.Theme != null && x.Theme.id == theme.id, out int themePanelIndex))
+            if (ThemePanels.TryFindIndex(x => x.Item != null && x.Item.id == theme.id, out int themePanelIndex))
             {
                 var themePanel = ThemePanels[themePanelIndex];
                 Destroy(themePanel.GameObject);
@@ -923,10 +923,10 @@ namespace BetterLegacy.Editor.Managers
             {
                 var beatmapTheme = PreviewTheme.Copy(false);
 
-                if (ThemePanels.TryFind(x => x.Theme && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel) && RTFile.FileExists(themePanel.FilePath))
+                if (ThemePanels.TryFind(x => x.Item && x.Item.id == beatmapTheme.id, out ThemePanel themePanel) && RTFile.FileExists(themePanel.Path))
                 {
                     CoreHelper.Log($"Deleting original theme...");
-                    RTFile.DeleteFile(themePanel.FilePath);
+                    RTFile.DeleteFile(themePanel.Path);
                 }
 
                 SaveTheme(beatmapTheme);
@@ -937,7 +937,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (themePanel)
                 {
-                    themePanel.Theme = beatmapTheme;
+                    themePanel.Item = beatmapTheme;
                     themePanel.Render();
 
                     CoroutineHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
@@ -960,10 +960,10 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapTheme = PreviewTheme.Copy(false);
 
-                    if (ThemePanels.TryFind(x => x.Theme && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel1) && RTFile.FileExists(themePanel1.FilePath))
+                    if (ThemePanels.TryFind(x => x.Item && x.Item.id == beatmapTheme.id, out ThemePanel themePanel1) && RTFile.FileExists(themePanel1.Path))
                     {
                         CoreHelper.Log($"Deleting original theme...");
-                        RTFile.DeleteFile(themePanel1.FilePath);
+                        RTFile.DeleteFile(themePanel1.Path);
                     }
                 }
 
@@ -976,11 +976,11 @@ namespace BetterLegacy.Editor.Managers
 
                 ThemeManager.inst.UpdateAllThemes();
 
-                if (ThemePanels.TryFind(x => x.Theme && x.Theme.id == beatmapTheme.id, out ThemePanel themePanel))
+                if (ThemePanels.TryFind(x => x.Item && x.Item.id == beatmapTheme.id, out ThemePanel themePanel))
                 {
                     if (!isDefaultTheme)
                     {
-                        themePanel.Theme = beatmapTheme;
+                        themePanel.Item = beatmapTheme;
                         themePanel.Render();
                         CoroutineHelper.StartCoroutine(RenderThemeList(Dialog.SearchTerm));
                     }

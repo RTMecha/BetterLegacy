@@ -24,7 +24,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Core.Runtime.Objects.Visual;
-using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
@@ -374,12 +374,12 @@ namespace BetterLegacy.Core.Helpers
             if (!CoreHelper.IsEditing)
                 return;
 
-            if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Level && x.Level.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel editorWrapper))
+            if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Item && x.Item.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel levelPanel))
             {
                 if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                     return;
 
-                var path = System.IO.Path.GetFileName(editorWrapper.FolderPath);
+                var path = System.IO.Path.GetFileName(levelPanel.Path);
 
                 RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
                 {
@@ -392,7 +392,7 @@ namespace BetterLegacy.Core.Helpers
                         });
                     }
 
-                    EditorLevelManager.inst.LoadLevel(editorWrapper.Level);
+                    EditorLevelManager.inst.LoadLevel(levelPanel.Item);
                 }, RTEditor.inst.HideWarningPopup);
             }
             else

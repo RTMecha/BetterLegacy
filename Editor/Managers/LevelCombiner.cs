@@ -17,8 +17,8 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -228,7 +228,7 @@ namespace BetterLegacy.Editor.Managers
         /// Combines all selected editor levels into one.
         /// </summary>
         /// <param name="savePath">Path to save the level to.</param>
-        public void Combine(string savePath, Action onCombined = null) => Combine(savePath, EditorLevelManager.inst.LevelPanels.Where(x => x.combinerSelected && x.Level && RTFile.FileExists(x.Level.GetFile(x.Level.CurrentFile))), onCombined);
+        public void Combine(string savePath, Action onCombined = null) => Combine(savePath, EditorLevelManager.inst.LevelPanels.Where(x => x.combinerSelected && x.Item && RTFile.FileExists(x.Item.GetFile(x.Item.CurrentFile))), onCombined);
 
         /// <summary>
         /// Combines editor levels into one.
@@ -247,8 +247,8 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var editorWrapper in selected)
             {
-                Debug.Log($"{EditorManager.inst.className}Parsing GameData from {editorWrapper.Level.FolderName}");
-                combineList.Add(editorWrapper.Level.LoadGameData());
+                Debug.Log($"{EditorManager.inst.className}Parsing GameData from {editorWrapper.Item.FolderName}");
+                combineList.Add(editorWrapper.Item.LoadGameData());
             }
 
             Debug.Log($"{EditorManager.inst.className}Can Combine: {combineList.Count > 0 && !string.IsNullOrEmpty(savePath)}" +
@@ -292,7 +292,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var levelPanel in selected)
             {
-                var file = levelPanel.Level.GetFile(levelPanel.Level.CurrentFile);
+                var file = levelPanel.Item.GetFile(levelPanel.Item.CurrentFile);
                 if (!RTFile.FileExists(file))
                     return;
 
@@ -323,7 +323,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (EditorConfig.Instance.CombinerOutputFormat.Value == ArrhythmiaType.LS)
             {
-                selected.First().Level.metadata?.WriteToFile(save.Replace(Level.LEVEL_LSB, Level.METADATA_LSB));
+                selected.First().Item.metadata?.WriteToFile(save.Replace(Level.LEVEL_LSB, Level.METADATA_LSB));
 
                 combinedGameData.SaveData(save, () =>
                 {
@@ -333,7 +333,7 @@ namespace BetterLegacy.Editor.Managers
             }
             else
             {
-                selected.First().Level.metadata?.WriteToFileVG(save.Replace(Level.LEVEL_VGD, Level.METADATA_VGM).Replace(Level.LEVEL_LSB, Level.METADATA_VGM));
+                selected.First().Item.metadata?.WriteToFileVG(save.Replace(Level.LEVEL_VGD, Level.METADATA_VGM).Replace(Level.LEVEL_LSB, Level.METADATA_VGM));
 
                 combinedGameData.SaveDataVG(save.Replace(FileFormat.LSB.Dot(), FileFormat.VGD.Dot()), () =>
                 {

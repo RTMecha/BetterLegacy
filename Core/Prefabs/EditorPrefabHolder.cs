@@ -290,14 +290,8 @@ namespace BetterLegacy.Core.Prefabs
         }
     }
 
-    public class PrefabPanelStorage : MonoBehaviour
+    public class PrefabPanelStorage : FunctionButtonStorage
     {
-        [SerializeField]
-        public Button button;
-
-        [SerializeField]
-        public Text nameText;
-
         [SerializeField]
         public Text typeNameText;
 

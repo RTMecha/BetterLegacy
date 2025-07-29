@@ -12,7 +12,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Editor.Data.Timeline
 {
     /// <summary>
     /// Represents a keyframe in an editor timeline.

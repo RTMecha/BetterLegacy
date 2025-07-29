@@ -13,7 +13,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
-using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {

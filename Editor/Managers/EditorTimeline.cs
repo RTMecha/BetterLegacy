@@ -22,6 +22,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Timeline;
 
 using ObjectType = BetterLegacy.Core.Data.Beatmap.BeatmapObject.ObjectType;
 

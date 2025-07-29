@@ -20,12 +20,12 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
-namespace BetterLegacy.Editor.Data
+namespace BetterLegacy.Editor.Data.Elements
 {
     /// <summary>
     /// Object for storing prefab panel data.
     /// </summary>
-    public class PrefabPanel : Exists
+    public class PrefabPanel : EditorPanel<Prefab>
     {
         public PrefabPanel() { }
 
@@ -33,29 +33,14 @@ namespace BetterLegacy.Editor.Data
 
         public PrefabPanel(PrefabDialog dialog, int index) : this(index) => Dialog = dialog;
 
-        #region Properties
+        #region Values
 
         #region UI
-
-        /// <summary>
-        /// The prefab panel game object.
-        /// </summary>
-        public GameObject GameObject { get; set; }
-
-        /// <summary>
-        /// The button for the prefab panel.
-        /// </summary>
-        public Button Button { get; set; }
 
         /// <summary>
         /// The delete button for the prefab panel.
         /// </summary>
         public Button DeleteButton { get; set; }
-
-        /// <summary>
-        /// The name text of the prefab panel.
-        /// </summary>
-        public Text Name { get; set; }
 
         /// <summary>
         /// The type text of the prefab panel.
@@ -72,11 +57,11 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public Image TypeIcon { get; set; }
 
-        public HoverUI HoverUI { get; set; }
-
         #endregion
 
         #region Data
+
+        public override float FocusSize => EditorConfig.Instance.PrefabButtonHoverSize.Value;
 
         /// <summary>
         /// What dialog this prefab panel is located in.
@@ -89,16 +74,6 @@ namespace BetterLegacy.Editor.Data
         public bool IsExternal => Dialog == PrefabDialog.External;
 
         /// <summary>
-        /// The prefab reference.
-        /// </summary>
-        public Prefab Prefab { get; set; }
-
-        /// <summary>
-        /// The file path to the prefab, if it is external.
-        /// </summary>
-        public string FilePath { get; set; }
-
-        /// <summary>
         /// The icon of the prefab panel.
         /// </summary>
         public Image IconImage { get; set; }
@@ -107,32 +82,12 @@ namespace BetterLegacy.Editor.Data
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// If the prefab panel is a folder button instead.
-        /// </summary>
-        public bool isFolder;
-
-        /// <summary>
-        /// Index of the prefab panel.
-        /// </summary>
-        public int index;
-
-        JSONNode infoJN;
-
-        #endregion
-
         #region Methods
 
-        /// <summary>
-        /// Initializes the prefab panel as a folder.
-        /// </summary>
-        /// <param name="directory">Directory to set to the theme panel.</param>
-        public void Init(string directory)
+        public override void Init(string directory)
         {
             var path = RTFile.ReplaceSlash(directory);
-            var fileName = Path.GetFileName(directory);
+            var fileName = System.IO.Path.GetFileName(directory);
 
             var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, $"Folder [{fileName}]");
             var folderButtonStorageFolder = gameObjectFolder.GetComponent<SpriteFunctionButtonStorage>();
@@ -266,9 +221,9 @@ namespace BetterLegacy.Editor.Data
             EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
 
             GameObject = gameObjectFolder;
-            Name = folderButtonStorageFolder.label;
-            HoverUI = hover;
-            FilePath = directory;
+            Label = folderButtonStorageFolder.label;
+            HoverFocus = hover;
+            Path = directory;
             Dialog = PrefabDialog.External;
             isFolder = true;
             IconImage = folderButtonStorageFolder.image;
@@ -276,17 +231,13 @@ namespace BetterLegacy.Editor.Data
             Render();
         }
 
-        /// <summary>
-        /// Initializes the prefab panel as an actual prefab.
-        /// </summary>
-        /// <param name="updateCurrentPrefab">If the current quick prefab should be set instead of importing.</param>
-        public void Init(Prefab prefab, bool updateCurrentPrefab = false)
+        public override void Init(Prefab prefab)
         {
             var gameObject = GameObject;
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            Prefab = prefab;
+            Item = prefab;
             var dialog = Dialog;
 
             gameObject = PrefabEditor.inst.AddPrefab.Duplicate(RTEditor.inst.PrefabPopups.GetPopup(dialog).Content);
@@ -297,7 +248,7 @@ namespace BetterLegacy.Editor.Data
 
             var storage = gameObject.GetComponent<PrefabPanelStorage>();
 
-            var name = storage.nameText;
+            var name = storage.label;
             var typeName = storage.typeNameText;
             var typeImage = storage.typeImage;
             var typeImageShade = storage.typeImageShade;
@@ -319,33 +270,29 @@ namespace BetterLegacy.Editor.Data
             delete.onClick.ClearAll();
 
             GameObject = gameObject;
-            HoverUI = hover;
-            Button = addPrefabObject;
+            HoverFocus = hover;
+            Button = gameObject.AddComponent<FolderButtonFunction>();
             DeleteButton = delete;
-            Name = name;
+            Label = name;
             TypeText = typeName;
             TypeImage = typeImage;
             TypeIcon = typeIconImage;
-            FilePath = prefab.filePath;
+            Path = prefab.filePath;
 
-            Render(updateCurrentPrefab);
-            SetActive(RTPrefabEditor.inst.ContainsName(Prefab, dialog));
+            Render();
+            SetActive(RTPrefabEditor.inst.ContainsName(Item, dialog));
         }
 
-        /// <summary>
-        /// Renders the whole prefab panel.
-        /// </summary>
-        /// <param name="updateCurrentPrefab">If the current quick prefab should be set instead of importing.</param>
-        public void Render(bool updateCurrentPrefab = false)
+        public override void Render()
         {
             var gameObject = GameObject;
             if (!gameObject)
                 return;
 
-            RenderHoverUI();
+            RenderHover();
 
             RenderIcon();
-            RenderName();
+            RenderLabel();
 
             if (isFolder)
             {
@@ -353,13 +300,13 @@ namespace BetterLegacy.Editor.Data
                 return;
             }
 
-            var prefab = Prefab;
+            var prefab = Item;
             var prefabType = prefab.GetPrefabType();
 
             RenderPrefabType(prefabType);
             RenderTooltip(prefab, prefabType);
             RenderDeleteButton();
-            UpdateFunction(updateCurrentPrefab);
+            UpdateFunction();
         }
 
         /// <summary>
@@ -370,44 +317,26 @@ namespace BetterLegacy.Editor.Data
             if (!isFolder || !IconImage)
                 return;
 
-            IconImage.sprite = RTFile.FileExists(RTFile.CombinePaths(FilePath, $"folder_icon{FileFormat.PNG.Dot()}")) ?
-                SpriteHelper.LoadSprite(RTFile.CombinePaths(FilePath, $"folder_icon{FileFormat.PNG.Dot()}")) :
+            IconImage.sprite = RTFile.FileExists(RTFile.CombinePaths(Path, $"folder_icon{FileFormat.PNG.Dot()}")) ?
+                SpriteHelper.LoadSprite(RTFile.CombinePaths(Path, $"folder_icon{FileFormat.PNG.Dot()}")) :
                 EditorSprites.OpenSprite;
         }
 
-        /// <summary>
-        /// Renders the prefab panel name.
-        /// </summary>
-        public void RenderName() => RenderName(isFolder ? Path.GetFileName(FilePath) : Prefab.name);
+        public override void RenderLabel() => RenderLabel(isFolder ? System.IO.Path.GetFileName(Path) : Item.name);
 
-        /// <summary>
-        /// Renders the prefab panel name.
-        /// </summary>
-        /// <param name="name">Name of the prefab.</param>
-        public void RenderName(string name)
+        public override void RenderLabel(string name)
         {
-            Name.text = name;
+            Label.text = name;
             var isExternal = IsExternal;
-            Name.horizontalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalNameHorizontalWrap.Value : EditorConfig.Instance.PrefabInternalNameHorizontalWrap.Value;
-            Name.verticalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalNameVerticalWrap.Value : EditorConfig.Instance.PrefabInternalNameVerticalWrap.Value;
-            Name.fontSize = isExternal ? EditorConfig.Instance.PrefabExternalNameFontSize.Value : EditorConfig.Instance.PrefabInternalNameFontSize.Value;
+            Label.horizontalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalNameHorizontalWrap.Value : EditorConfig.Instance.PrefabInternalNameHorizontalWrap.Value;
+            Label.verticalOverflow = isExternal ? EditorConfig.Instance.PrefabExternalNameVerticalWrap.Value : EditorConfig.Instance.PrefabInternalNameVerticalWrap.Value;
+            Label.fontSize = isExternal ? EditorConfig.Instance.PrefabExternalNameFontSize.Value : EditorConfig.Instance.PrefabInternalNameFontSize.Value;
         }
-
-        /// <summary>
-        /// Renders the prefab panel hover component.
-        /// </summary>
-        public void RenderHoverUI() => HoverUI.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
-
-        /// <summary>
-        /// Renders the prefab panel hover component.
-        /// </summary>
-        /// <param name="size">Size to grow when hovered.</param>
-        public void RenderHoverUI(float size) => HoverUI.size = size;
 
         /// <summary>
         /// Renders the prefab panel prefab type.
         /// </summary>
-        public void RenderPrefabType() => RenderPrefabType(Prefab.GetPrefabType());
+        public void RenderPrefabType() => RenderPrefabType(Item.GetPrefabType());
 
         /// <summary>
         /// Renders the prefab panel prefab type.
@@ -433,32 +362,15 @@ namespace BetterLegacy.Editor.Data
             TypeText.fontSize = isExternal ? EditorConfig.Instance.PrefabExternalTypeFontSize.Value : EditorConfig.Instance.PrefabInternalTypeFontSize.Value;
         }
 
-        /// <summary>
-        /// Renders the prefab panel tooltip.
-        /// </summary>
-        public void RenderTooltip()
+        public override void RenderTooltip()
         {
             if (isFolder)
             {
-                try
-                {
-                    if (infoJN == null)
-                        GetInfo();
-
-                    if (infoJN != null && !string.IsNullOrEmpty(infoJN["desc"]))
-                        TooltipHelper.AddHoverTooltip(GameObject, $"Folder - {Path.GetFileName(FilePath)}", infoJN["desc"], clear: true);
-                    else
-                        TooltipHelper.AddHoverTooltip(GameObject, "Folder", Path.GetFileName(FilePath), clear: true);
-                }
-                catch (System.Exception ex)
-                {
-                    CoreHelper.LogError($"Had an exception with trying to add info to the {nameof(PrefabPanel)}.\nGameObject: {GameObject}\nFilePath: {FilePath}\nException: {ex}");
-                }
-
+                GetFolderTooltip();
                 return;
             }
 
-            RenderTooltip(Prefab, Prefab.GetPrefabType());
+            RenderTooltip(Item, Item.GetPrefabType());
         }
 
         /// <summary>
@@ -480,14 +392,13 @@ namespace BetterLegacy.Editor.Data
         /// Updates the prefab panels' function.
         /// </summary>
         /// <param name="updateCurrentPrefab">If the current quick prefab should be set instead of importing.</param>
-        public void UpdateFunction(bool updateCurrentPrefab = false)
+        public void UpdateFunction()
         {
-            var prefab = Prefab;
+            var prefab = Item;
             switch (Dialog)
             {
                 case PrefabDialog.Internal: {
-                        var clickable = GameObject.AddComponent<ContextClickable>();
-                        clickable.onClick = eventData =>
+                        Button.onClick = eventData =>
                         {
                             if (RTEditor.inst.prefabPickerEnabled)
                             {
@@ -521,7 +432,7 @@ namespace BetterLegacy.Editor.Data
                                 return;
                             }
 
-                            if (updateCurrentPrefab)
+                            if (RTPrefabEditor.inst.selectingQuickPrefab)
                             {
                                 RTPrefabEditor.inst.UpdateCurrentPrefab(prefab);
                                 CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
@@ -554,7 +465,7 @@ namespace BetterLegacy.Editor.Data
                                     }),
                                     new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
-                                        RTPrefabEditor.inst.DeleteInternalPrefab(Prefab);
+                                        RTPrefabEditor.inst.DeleteInternalPrefab(Item);
                                         RTEditor.inst.HideWarningPopup();
                                     }, RTEditor.inst.HideWarningPopup))
                                     );
@@ -567,8 +478,7 @@ namespace BetterLegacy.Editor.Data
                         break;
                     }
                 case PrefabDialog.External: {
-                        var clickable = GameObject.AddComponent<ContextClickable>();
-                        clickable.onClick = eventData =>
+                        Button.onClick = eventData =>
                         {
                             if (RTEditor.inst.prefabPickerEnabled)
                                 RTEditor.inst.prefabPickerEnabled = false;
@@ -577,7 +487,7 @@ namespace BetterLegacy.Editor.Data
                             {
                                 RTPrefabEditor.inst.savingToPrefab = false;
 
-                                var prefabToSaveTo = Prefab;
+                                var prefabToSaveTo = Item;
 
                                 prefabToSaveTo.beatmapObjects = RTPrefabEditor.inst.prefabToSaveFrom.beatmapObjects.Clone();
                                 prefabToSaveTo.prefabObjects = RTPrefabEditor.inst.prefabToSaveFrom.prefabObjects.Clone();
@@ -587,7 +497,7 @@ namespace BetterLegacy.Editor.Data
 
                                 var prefabType = prefabToSaveTo.GetPrefabType();
 
-                                RenderName();
+                                RenderLabel();
                                 RenderPrefabType(prefabType);
                                 RenderTooltip(prefab, prefabType);
 
@@ -605,8 +515,8 @@ namespace BetterLegacy.Editor.Data
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
-                                    new ButtonFunction("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Prefab)),
-                                    new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Prefab)),
+                                    new ButtonFunction("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Item)),
+                                    new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
                                     new ButtonFunction("Open", () =>
                                     {
                                         RTPrefabEditor.inst.PrefabExternalEditor.Open();
@@ -623,14 +533,14 @@ namespace BetterLegacy.Editor.Data
                                     new ButtonFunction("Cut", () =>
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = true;
-                                        RTPrefabEditor.inst.copiedPrefabPath = FilePath;
+                                        RTPrefabEditor.inst.copiedPrefabPath = Path;
                                         EditorManager.inst.DisplayNotification($"Cut {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Cut prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
                                     new ButtonFunction("Copy", () =>
                                     {
                                         RTPrefabEditor.inst.shouldCutPrefab = false;
-                                        RTPrefabEditor.inst.copiedPrefabPath = FilePath;
+                                        RTPrefabEditor.inst.copiedPrefabPath = Path;
                                         EditorManager.inst.DisplayNotification($"Copied {prefab.name}!", 1.5f, EditorManager.NotificationType.Success);
                                         CoreHelper.Log($"Copied prefab: {RTPrefabEditor.inst.copiedPrefabPath}");
                                     }),
@@ -651,7 +561,7 @@ namespace BetterLegacy.Editor.Data
                                 RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                             }
                             else
-                                RTPrefabEditor.inst.ImportPrefabIntoLevel(Prefab);
+                                RTPrefabEditor.inst.ImportPrefabIntoLevel(Item);
                         };
                         break;
                     }
@@ -674,7 +584,7 @@ namespace BetterLegacy.Editor.Data
                 switch (Dialog)
                 {
                     case PrefabDialog.Internal: {
-                            RTPrefabEditor.inst.DeleteInternalPrefab(Prefab);
+                            RTPrefabEditor.inst.DeleteInternalPrefab(Item);
                             break;
                         }
                     case PrefabDialog.External: {
@@ -684,26 +594,6 @@ namespace BetterLegacy.Editor.Data
                 }
                 RTEditor.inst.HideWarningPopup();
             }, RTEditor.inst.HideWarningPopup));
-        }
-
-        /// <summary>
-        /// Sets the prefab panel active state.
-        /// </summary>
-        /// <param name="active">Active state to set.</param>
-        public void SetActive(bool active)
-        {
-            var gameObject = GameObject;
-            if (gameObject)
-                gameObject.SetActive(active);
-        }
-
-        /// <summary>
-        /// Gets the info file.
-        /// </summary>
-        public void GetInfo()
-        {
-            if (RTFile.TryReadFromFile(RTFile.CombinePaths(FilePath, $"folder_info{FileFormat.JSON.Dot()}"), out string file))
-                infoJN = JSON.Parse(file);
         }
 
         #endregion

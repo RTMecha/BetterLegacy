@@ -1,6 +1,7 @@
 ﻿using System;
 
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data

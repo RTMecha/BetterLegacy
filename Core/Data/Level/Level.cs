@@ -11,6 +11,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Level
 {
@@ -133,7 +134,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// The editor level wrapper.
         /// </summary>
-        public Editor.Data.LevelPanel editorLevelPanel;
+        public LevelPanel editorLevelPanel;
 
         /// <summary>
         /// If achievements have been loaded.

@@ -11,7 +11,6 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
-using TMPro;
 using SimpleJSON;
 using Crosstales.FB;
 
@@ -19,10 +18,7 @@ using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -30,6 +26,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {
