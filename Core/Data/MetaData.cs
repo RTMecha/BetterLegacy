@@ -65,6 +65,7 @@ namespace BetterLegacy.Core.Data
         public int index;
         public string uploaderName;
         public string uploaderID;
+        public List<string> uploaders = new List<string>();
         public string serverID;
         public string arcadeID;
         public string prevID;
@@ -98,6 +99,7 @@ namespace BetterLegacy.Core.Data
             serverID = orig.serverID;
             uploaderName = orig.uploaderName;
             uploaderID = orig.uploaderID;
+            uploaders = new List<string>(orig.uploaders);
             index = orig.index;
             collectionID = orig.collectionID;
             isHubLevel = orig.isHubLevel;
@@ -160,6 +162,10 @@ namespace BetterLegacy.Core.Data
 
                 if (!string.IsNullOrEmpty(jn["uploader_id"]))
                     uploaderID = jn["uploader_id"];
+
+                if (jn["uploaders"] != null)
+                    for (int i = 0; i < jn["uploaders"].Count; i++)
+                        uploaders.Add(jn["uploaders"][i]["id"]);
 
                 if (!string.IsNullOrEmpty(jn["is_hub_level"]))
                     isHubLevel = jn["is_hub_level"].AsBool;
@@ -250,6 +256,9 @@ namespace BetterLegacy.Core.Data
             
             if (!string.IsNullOrEmpty(uploaderID))
                 jn["uploader_id"] = uploaderID;
+
+            for (int i = 0; i < uploaders.Count; i++)
+                jn["uploaders"][i]["id"] = uploaders[i];
 
             if (isHubLevel)
                 jn["is_hub_level"] = isHubLevel.ToString();
