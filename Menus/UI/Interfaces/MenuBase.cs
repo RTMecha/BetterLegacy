@@ -166,6 +166,30 @@ namespace BetterLegacy.Menus.UI.Interfaces
             isOpen = active;
         }
 
+        /// <summary>
+        /// Clears elements from the interface.
+        /// </summary>
+        public void ClearElements() => elements.ForLoopReverse((element, index) =>
+        {
+            element.Clear();
+            CoreHelper.Delete(element.gameObject);
+            elements.RemoveAt(index);
+        });
+
+        /// <summary>
+        /// Clears elements from the interface.
+        /// </summary>
+        /// <param name="predicate">Predicate to check.</param>
+        public void ClearElements(Predicate<MenuImage> predicate) => elements.ForLoopReverse((element, index) =>
+        {
+            if (!predicate(element))
+                return;
+
+            element.Clear();
+            CoreHelper.Delete(element.gameObject);
+            elements.RemoveAt(index);
+        });
+
         #region Autos / Prefabs
 
         /// <summary>

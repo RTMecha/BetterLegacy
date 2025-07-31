@@ -1299,18 +1299,7 @@ namespace BetterLegacy.Arcade.Interfaces
             RefreshLocalLevels(true);
         }
 
-        void ClearLocalLevelButtons()
-        {
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
-        }
+        void ClearLocalLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
         public void RefreshLocalLevels(bool regenerateUI, bool clear = true)
         {
@@ -1620,20 +1609,14 @@ namespace BetterLegacy.Arcade.Interfaces
             Pages[1] = 0;
         }
 
+        void ClearOnlineLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty");
+
         public IEnumerator RefreshOnlineLevels()
         {
             if (loadingOnlineLevels)
                 yield break;
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty");
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty");
+            ClearOnlineLevelButtons();
 
             var page = Pages[1];
             int currentPage = page + 1;
@@ -2053,20 +2036,14 @@ namespace BetterLegacy.Arcade.Interfaces
             RefreshQueueLevels(true);
         }
 
+        void ClearQueueLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
+
         public void RefreshQueueLevels(bool regenerateUI)
         {
             // x = 800f
             // y = 180f
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
+            ClearQueueLevelButtons();
 
             var currentPage = Pages[(int)CurrentTab] + 1;
             int max = currentPage * MAX_QUEUED_PER_PAGE;
@@ -2329,18 +2306,7 @@ namespace BetterLegacy.Arcade.Interfaces
             RefreshSubscribedSteamLevels(true, true);
         }
 
-        void ClearSubscribedSteamLevelButtons()
-        {
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine"));
-        }
+        void ClearSubscribedSteamLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine"));
 
         public void RefreshSubscribedSteamLevels(bool regenerateUI, bool clear = false)
         {
@@ -2517,17 +2483,11 @@ namespace BetterLegacy.Arcade.Interfaces
             CoroutineHelper.StartCoroutine(RefreshOnlineSteamLevels());
         }
 
+        void ClearOnlineSteamLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+
         public IEnumerator RefreshOnlineSteamLevels()
         {
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            ClearOnlineSteamLevelButtons();
 
             yield return CoroutineHelper.Until(() => SteamWorkshopManager.inst.SearchAsync(SteamSearch, Pages[(int)CurrentTab] + 1, (Item item, int index) =>
             {
