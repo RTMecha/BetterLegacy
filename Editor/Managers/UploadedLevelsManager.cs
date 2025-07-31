@@ -161,7 +161,7 @@ namespace BetterLegacy.Editor.Managers
 
         int page;
         string search;
-        static string SearchURL => $"{AlephNetwork.ArcadeServerURL}api/level/uploads";
+        static string SearchURL => $"{AlephNetwork.ArcadeServerURL}api/level/uploaded";
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
@@ -181,11 +181,7 @@ namespace BetterLegacy.Editor.Managers
 
             var search = this.search;
 
-            string query =
-                string.IsNullOrEmpty(search) && page == 0 ? SearchURL :
-                    string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" :
-                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}" :
-                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}&page={page}" : "";
+            string query = $"{SearchURL}?page={page}";
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -193,7 +189,7 @@ namespace BetterLegacy.Editor.Managers
 			if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
 				headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/uploads", json =>
+			yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
 			{
 				try
 				{
