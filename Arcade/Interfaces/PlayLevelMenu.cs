@@ -321,7 +321,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 id = "4624859539",
                 name = "Tags",
                 rect = RectValues.Default.AnchoredPosition(250f, -200f).SizeDelta(800f, 100f),
-                text = "<size=22><b>Tags</b>: " + RTString.ArrayToString(CurrentLevel.metadata.song.tags),
+                text = "<size=22><b>Tags</b>: " + RTString.ListToString(CurrentLevel.metadata.song.tags),
                 hideBG = true,
                 textColor = 6,
                 enableWordWrapping = true,

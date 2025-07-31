@@ -508,7 +508,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (metadata.song.tags != null)
             {
-                for (int i = 0; i < metadata.song.tags.Length; i++)
+                for (int i = 0; i < metadata.song.tags.Count; i++)
                 {
                     int index = i;
                     var tag = metadata.song.tags[i];
@@ -535,23 +535,21 @@ namespace BetterLegacy.Editor.Managers
                     var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                     deleteStorage.button.onClick.NewListener(() =>
                     {
-                        var list = metadata.song.tags.ToList();
-                        var oldTag = list[index];
-                        list.RemoveAt(index);
-                        metadata.song.tags = list.ToArray();
+                        var oldTag = metadata.song.tags[index];
+                        metadata.song.tags.RemoveAt(index);
                         RenderTags(metadata);
 
                         EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
                         {
-                            var list = metadata.song.tags.ToList();
-                            list.RemoveAt(index);
-                            metadata.song.tags = list.ToArray();
+                            if (metadata.song.tags == null)
+                                return;
+                            metadata.song.tags.RemoveAt(index);
                             MetadataEditor.inst.OpenDialog();
                         }, () =>
                         {
-                            var list = metadata.song.tags.ToList();
-                            list.Insert(index, oldTag);
-                            metadata.song.tags = list.ToArray();
+                            if (metadata.song.tags == null)
+                                metadata.song.tags = new List<string>();
+                            metadata.song.tags.Insert(index, oldTag);
                             MetadataEditor.inst.OpenDialog();
                         }));
                     });
@@ -584,30 +582,30 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new Data.ButtonFunction("Clear Tags", () =>
                         {
-                            metadata.song.tags = null;
+                            metadata.song.tags?.Clear();
                             RenderTags(metadata);
                         }));
                     return;
                 }
 
-                var list = metadata.song.tags?.ToList() ?? new List<string>();
-                list.Add(DEFAULT_NEW_TAG);
-                metadata.song.tags = list.ToArray();
+                if (metadata.song.tags == null)
+                    metadata.song.tags = new List<string>();
+                metadata.song.tags.Add(DEFAULT_NEW_TAG);
                 RenderTags(metadata);
 
                 EditorManager.inst.history.Add(new History.Command("Add MetaData Tag",
                     () =>
                     {
-                        var list = metadata.song.tags.ToList();
-                        list.Add(DEFAULT_NEW_TAG);
-                        metadata.song.tags = list.ToArray();
+                        if (metadata.song.tags == null)
+                            metadata.song.tags = new List<string>();
+                        metadata.song.tags.Add(DEFAULT_NEW_TAG);
                         MetadataEditor.inst.OpenDialog();
                     },
                     () =>
                     {
-                        var list = metadata.song.tags.ToList();
-                        list.RemoveAt(list.Count - 1);
-                        metadata.song.tags = list.ToArray();
+                        if (metadata.song.tags == null)
+                            return;
+                        metadata.song.tags.RemoveAt(metadata.song.tags.Count - 1);
                         MetadataEditor.inst.OpenDialog();
                     }));
             };
@@ -655,9 +653,9 @@ namespace BetterLegacy.Editor.Managers
                 storage.button.onClick.NewListener(() =>
                 {
                     var metadata = MetaData.Current;
-                    var list = metadata.song.tags?.ToList() ?? new List<string>();
-                    list.Add(tag);
-                    metadata.song.tags = list.ToArray();
+                    if (metadata.song.tags == null)
+                        metadata.song.tags = new List<string>();
+                    metadata.song.tags.Add(tag);
                     RenderTags(metadata);
                 });
 

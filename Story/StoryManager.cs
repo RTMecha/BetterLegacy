@@ -355,7 +355,6 @@ namespace BetterLegacy.Story
                     },
                     song = new SongMetaData
                     {
-                        tags = new string[] { },
                         title = jsonPath switch
                         {
                             "demo/level" => "Save",

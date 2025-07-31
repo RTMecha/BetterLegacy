@@ -1272,7 +1272,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(LocalSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchArrayMatcher(level.metadata.song.tags),
+                new SearchListMatcher(level.metadata.song.tags),
                 level.metadata.artist.name,
                 level.metadata.creator.name,
                 level.metadata.song.title,
@@ -2032,7 +2032,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection &&
             RTString.SearchString(QueueSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchArrayMatcher(level.metadata.song.tags),
+                new SearchListMatcher(level.metadata.song.tags),
                 level.metadata.artist.name,
                 level.metadata.creator.name,
                 level.metadata.song.title,
@@ -2304,7 +2304,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> SubscribedSteamLevels => SteamWorkshopManager.inst.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(SteamSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchArrayMatcher(level.metadata.song.tags),
+                new SearchListMatcher(level.metadata.song.tags),
                 level.metadata.artist.name,
                 level.metadata.creator.name,
                 level.metadata.song.title,

@@ -201,10 +201,10 @@ namespace BetterLegacy.Core.Data
             }
             catch
             {
-                var artist = new ArtistMetaData("Corrupted", 0, "");
-                var creator = new CreatorMetaData(SteamWrapper.inst.user.displayName, SteamWrapper.inst.user.id, "", 0);
-                var song = new SongMetaData("Corrupt Metadata", 0, "", 140f, 100f, -1f, -1f, new string[] { "Corrupted" }, 2, "album/full-devoid");
-                var beatmap = new BeatmapMetaData("Level Name", "", "", "", ProjectArrhythmia.GameVersion.ToString(), 0, -1, LegacyPlugin.ModVersion.ToString());
+                var artist = new ArtistMetaData("Corrupted", 0, string.Empty);
+                var creator = new CreatorMetaData(SteamWrapper.inst.user.displayName, SteamWrapper.inst.user.id, string.Empty, 0);
+                var song = new SongMetaData("Corrupt Metadata", 0, string.Empty, 140f, 100f, -1f, -1f, new List<string>() { "Corrupted" }, 2, string.Empty);
+                var beatmap = new BeatmapMetaData("Level Name", string.Empty, string.Empty, string.Empty, ProjectArrhythmia.GameVersion.ToString(), 0, -1, LegacyPlugin.ModVersion.ToString());
 
                 this.artist = artist;
                 this.creator = creator;
@@ -536,7 +536,7 @@ namespace BetterLegacy.Core.Data
     {
         public SongMetaData() { }
 
-        public SongMetaData(string title, int difficulty, string description, float bpm, float time, float previewStart, float previewLength, string[] tags, int linkType, string link)
+        public SongMetaData(string title, int difficulty, string description, float bpm, float time, float previewStart, float previewLength, List<string> tags, int linkType, string link)
         {
             this.title = title;
             this.difficulty = difficulty;
@@ -555,7 +555,7 @@ namespace BetterLegacy.Core.Data
 
         public int linkType = 2;
         public string link;
-        public string[] tags;
+        public List<string> tags = new List<string>();
 
         public DifficultyType DifficultyType { get => difficulty; set => difficulty = value; }
 
@@ -587,7 +587,7 @@ namespace BetterLegacy.Core.Data
             previewLength = orig.previewLength;
             previewStart = orig.previewStart;
 
-            tags = orig.tags?.Copy() ?? new string[] { };
+            tags = new List<string>(orig.tags);
             linkType = orig.linkType;
             link = orig.link;
         }
@@ -608,7 +608,7 @@ namespace BetterLegacy.Core.Data
                 previewStart = jn["song"]["preview_start"].AsFloat;
             if (!string.IsNullOrEmpty(jn["song"]["preview_length"]))
                 previewLength = jn["song"]["preview_length"].AsFloat;
-            tags = new string[] { };
+            tags = new List<string>();
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -634,16 +634,10 @@ namespace BetterLegacy.Core.Data
             if (jn["song"]["preview_length"] != null)
                 previewLength = jn["song"]["preview_length"].AsFloat;
 
+            tags = new List<string>();
             if (jn["song"]["tags"] != null)
-            {
-                tags = new string[jn["song"]["tags"].Count];
                 for (int i = 0; i < jn["song"]["tags"].Count; i++)
-                {
-                    tags[i] = jn["song"]["tags"][i].Value.Replace(" ", "_");
-                }
-            }
-            else
-                tags = new string[] { };
+                    tags.Add(jn["song"]["tags"][i].Value.Replace(" ", "_"));
         }
 
         public override JSONNode ToJSONVG()
@@ -681,7 +675,7 @@ namespace BetterLegacy.Core.Data
             jn["preview_length"] = previewLength;
 
             if (tags != null)
-                for (int i = 0; i < tags.Length; i++)
+                for (int i = 0; i < tags.Count; i++)
                     jn["tags"][i] = tags[i] ?? string.Empty;
 
             return jn;

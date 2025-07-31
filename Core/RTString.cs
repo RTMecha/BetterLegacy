@@ -941,8 +941,6 @@ namespace BetterLegacy.Core
         /// </summary>
         public string value;
 
-        public override SearchMatchType MatchType { get; }
-
         public override bool Match(string searchTerm) => MatchType switch
         {
             SearchMatchType.Exact => value == searchTerm,
@@ -964,7 +962,26 @@ namespace BetterLegacy.Core
         /// </summary>
         public string[] value;
 
-        public override SearchMatchType MatchType { get; }
+        public override bool Match(string searchTerm) => MatchType switch
+        {
+            SearchMatchType.Exact => value.Contains(searchTerm),
+            SearchMatchType.Contains => value.Any(x => x.ToLower().Contains(searchTerm)),
+            _ => true,
+        };
+    }
+
+    public class SearchListMatcher : SearchMatcherBase
+    {
+        public SearchListMatcher(List<string> value, SearchMatchType matchType = SearchMatchType.Contains)
+        {
+            this.value = value;
+            MatchType = matchType;
+        }
+
+        /// <summary>
+        /// Value of the object that is searched for.
+        /// </summary>
+        public List<string> value;
 
         public override bool Match(string searchTerm) => MatchType switch
         {
@@ -982,7 +999,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Match type.
         /// </summary>
-        public abstract SearchMatchType MatchType { get; }
+        public virtual SearchMatchType MatchType { get; set; }
 
         /// <summary>
         /// Checks if the search term matches <see cref="value"/>.
