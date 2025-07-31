@@ -12,7 +12,6 @@ using HarmonyLib;
 
 using TMPro;
 using SimpleJSON;
-using Crosstales.FB;
 
 using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Companion.Entity;
@@ -824,17 +823,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenAlbumArtSelectorPrefix()
         {
-            string jpgFile = FileBrowser.OpenSingleFile("jpg");
-            Debug.Log("Selected file: " + jpgFile);
-            if (!string.IsNullOrEmpty(jpgFile))
-            {
-                string jpgFileLocation = EditorLevelManager.inst.CurrentLevel.GetFile(Level.LEVEL_JPG);
-                CoroutineHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
-                {
-                    RTFile.CopyFile(jpgFile, jpgFileLocation);
-                    RTMetaDataEditor.inst.SetLevelCover(cover);
-                }, errorFile => Instance.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
-            }
+            RTMetaDataEditor.inst.OpenIconSelector();
             return false;
         }
 

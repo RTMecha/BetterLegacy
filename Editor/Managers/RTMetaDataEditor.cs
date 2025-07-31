@@ -14,6 +14,7 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using SimpleJSON;
+using Crosstales.FB;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -24,6 +25,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
 
@@ -44,6 +46,8 @@ namespace BetterLegacy.Editor.Managers
         public MetaDataEditorDialog Dialog { get; set; }
 
         public ContentPopup TagPopup { get; set; }
+
+        public bool CollapseIcon { get; set; } = true;
 
         #endregion
 
@@ -97,9 +101,6 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            if (EditorLevelManager.inst.CurrentLevel)
-                Dialog.IconImage.sprite = EditorLevelManager.inst.CurrentLevel.icon;
-
             Dialog.Open();
             RenderDialog(metadata);
         }
@@ -124,6 +125,21 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            if (!Dialog || !Dialog.Setup)
+                return;
+
+            if (EditorLevelManager.inst.CurrentLevel && Dialog.IconImage)
+                Dialog.IconImage.sprite = EditorLevelManager.inst.CurrentLevel.icon;
+
+            Dialog.CollapseIcon(CollapseIcon);
+            Dialog.SelectIconButton.onClick.NewListener(OpenIconSelector);
+            Dialog.CollapseToggle.SetIsOnWithoutNotify(CollapseIcon);
+            Dialog.CollapseToggle.onValueChanged.NewListener(_val =>
+            {
+                Dialog.CollapseIcon(_val);
+                CollapseIcon = _val;
+            });
+
             RenderArtist(metadata);
             RenderCreator(metadata);
             RenderSong(metadata);
@@ -136,17 +152,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderArtist(MetaData metadata)
         {
-            var openArtistURL = Dialog.Content.Find("artist/link/inputs/openurl").GetComponent<Button>();
-            openArtistURL.onClick.NewListener(() =>
-            {
-                if (!string.IsNullOrEmpty(metadata.artist.URL))
-                    Application.OpenURL(metadata.artist.URL);
-            });
-
-            var artistName = Dialog.Content.Find("artist/name/input").GetComponent<InputField>();
-            artistName.onEndEdit.ClearAll();
-            artistName.text = metadata.artist.name;
-            artistName.onEndEdit.AddListener(_val =>
+            Dialog.ArtistNameField.SetTextWithoutNotify(metadata.artist.name);
+            Dialog.ArtistNameField.onEndEdit.NewListener(_val =>
             {
                 string oldVal = metadata.artist.name;
                 metadata.artist.name = _val;
@@ -161,10 +168,14 @@ namespace BetterLegacy.Editor.Managers
                 }));
             });
 
-            var artistLink = Dialog.Content.Find("artist/link/inputs/input").GetComponent<InputField>();
-            artistLink.onEndEdit.ClearAll();
-            artistLink.text = metadata.artist.link;
-            artistLink.onEndEdit.AddListener(_val =>
+            Dialog.OpenArtistURLButton.onClick.NewListener(() =>
+            {
+                if (!string.IsNullOrEmpty(metadata.artist.URL))
+                    Application.OpenURL(metadata.artist.URL);
+            });
+
+            Dialog.ArtistLinkField.SetTextWithoutNotify(metadata.artist.link);
+            Dialog.ArtistLinkField.onEndEdit.NewListener(_val =>
             {
                 string oldVal = metadata.artist.link;
                 metadata.artist.link = _val;
@@ -179,11 +190,9 @@ namespace BetterLegacy.Editor.Managers
                 }));
             });
 
-            var artistLinkTypes = Dialog.Content.Find("artist/link/inputs/dropdown").GetComponent<Dropdown>();
-            artistLinkTypes.onValueChanged.ClearAll();
-            artistLinkTypes.options = AlephNetwork.ArtistLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            artistLinkTypes.value = metadata.artist.linkType;
-            artistLinkTypes.onValueChanged.AddListener(_val =>
+            Dialog.ArtistLinkTypeDropdown.options = AlephNetwork.ArtistLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            Dialog.ArtistLinkTypeDropdown.SetValueWithoutNotify(metadata.artist.linkType);
+            Dialog.ArtistLinkTypeDropdown.onValueChanged.NewListener(_val =>
             {
                 int oldVal = metadata.artist.linkType;
                 metadata.artist.linkType = _val;
@@ -201,28 +210,23 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderCreator(MetaData metadata)
         {
-            var uploaderName = Dialog.Content.Find("creator/uploader_name/input").GetComponent<InputField>();
-            uploaderName.onValueChanged.ClearAll();
-            uploaderName.text = metadata.uploaderName;
-            uploaderName.onValueChanged.AddListener(_val => metadata.uploaderName = _val);
+            if (Dialog.UploaderNameField)
+            {
+                Dialog.UploaderNameField.SetTextWithoutNotify(metadata.uploaderName);
+                Dialog.UploaderNameField.onValueChanged.NewListener(_val => metadata.uploaderName = _val);
+            }
 
-            var creatorName = Dialog.Content.Find("creator/name/input").GetComponent<InputField>();
-            creatorName.onValueChanged.ClearAll();
-            creatorName.text = metadata.creator.name;
-            creatorName.onValueChanged.AddListener(_val => metadata.creator.name = _val);
+            Dialog.CreatorNameField.SetTextWithoutNotify(metadata.creator.name);
+            Dialog.CreatorNameField.onValueChanged.NewListener(_val => metadata.creator.name = _val);
 
-            var openCreatorURL = Dialog.Content.Find("creator/link/inputs/openurl").GetComponent<Button>();
-            openCreatorURL.onClick.ClearAll();
-            openCreatorURL.onClick.AddListener(() =>
+            Dialog.OpenCreatorURLButton.onClick.NewListener(() =>
             {
                 if (!string.IsNullOrEmpty(metadata.creator.URL))
                     Application.OpenURL(metadata.creator.URL);
             });
 
-            var creatorLink = Dialog.Content.Find("creator/link/inputs/input").GetComponent<InputField>();
-            creatorLink.onEndEdit.ClearAll();
-            creatorLink.text = metadata.creator.link;
-            creatorLink.onEndEdit.AddListener(_val =>
+            Dialog.CreatorLinkField.SetTextWithoutNotify(metadata.creator.link);
+            Dialog.CreatorLinkField.onEndEdit.NewListener(_val =>
             {
                 string oldVal = metadata.creator.link;
                 metadata.creator.link = _val;
@@ -237,11 +241,9 @@ namespace BetterLegacy.Editor.Managers
                 }));
             });
 
-            var creatorLinkTypes = Dialog.Content.Find("creator/link/inputs/dropdown").GetComponent<Dropdown>();
-            creatorLinkTypes.onValueChanged.ClearAll();
-            creatorLinkTypes.options = AlephNetwork.CreatorLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            creatorLinkTypes.value = metadata.creator.linkType;
-            creatorLinkTypes.onValueChanged.AddListener(_val =>
+            Dialog.CreatorLinkTypeDropdown.options = AlephNetwork.CreatorLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            Dialog.CreatorLinkTypeDropdown.SetValueWithoutNotify(metadata.creator.linkType);
+            Dialog.CreatorLinkTypeDropdown.onValueChanged.NewListener(_val =>
             {
                 int oldVal = metadata.creator.linkType;
                 metadata.creator.linkType = _val;
@@ -259,23 +261,17 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderSong(MetaData metadata)
         {
-            var songTitle = Dialog.Content.Find("song/title/input").GetComponent<InputField>();
-            songTitle.onValueChanged.ClearAll();
-            songTitle.text = metadata.song.title;
-            songTitle.onValueChanged.AddListener(_val => metadata.song.title = _val);
+            Dialog.SongTitleField.SetTextWithoutNotify(metadata.song.title);
+            Dialog.SongTitleField.onValueChanged.NewListener(_val => metadata.song.title = _val);
 
-            var openSongURL = Dialog.Content.Find("song/link/inputs/openurl").GetComponent<Button>();
-            openSongURL.onClick.ClearAll();
-            openSongURL.onClick.AddListener(() =>
+            Dialog.OpenSongURLButton.onClick.NewListener(() =>
             {
                 if (!string.IsNullOrEmpty(metadata.SongURL))
                     Application.OpenURL(metadata.SongURL);
             });
 
-            var songLink = Dialog.Content.Find("song/link/inputs/input").GetComponent<InputField>();
-            songLink.onEndEdit.ClearAll();
-            songLink.text = metadata.song.link;
-            songLink.onEndEdit.AddListener(_val =>
+            Dialog.SongLinkField.SetTextWithoutNotify(metadata.song.link);
+            Dialog.SongLinkField.onEndEdit.NewListener(_val =>
             {
                 string oldVal = metadata.song.link;
                 metadata.song.link = _val;
@@ -290,11 +286,9 @@ namespace BetterLegacy.Editor.Managers
                 }));
             });
 
-            var songLinkTypes = Dialog.Content.Find("song/link/inputs/dropdown").GetComponent<Dropdown>();
-            songLinkTypes.onValueChanged.ClearAll();
-            songLinkTypes.options = AlephNetwork.SongLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            songLinkTypes.value = metadata.song.linkType;
-            songLinkTypes.onValueChanged.AddListener(_val =>
+            Dialog.SongLinkTypeDropdown.options = AlephNetwork.SongLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            Dialog.SongLinkTypeDropdown.SetValueWithoutNotify(metadata.song.linkType);
+            Dialog.SongLinkTypeDropdown.onValueChanged.NewListener(_val =>
             {
                 int oldVal = metadata.song.linkType;
                 metadata.song.linkType = _val;
@@ -312,162 +306,244 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderLevel(MetaData metadata)
         {
-            var levelName = Dialog.Content.Find("creator/level_name/input").GetComponent<InputField>();
-            levelName.onValueChanged.ClearAll();
-            levelName.text = metadata.beatmap.name;
-            levelName.onValueChanged.AddListener(_val => metadata.beatmap.name = _val);
+            Dialog.LevelNameField.SetTextWithoutNotify(metadata.beatmap.name);
+            Dialog.LevelNameField.onValueChanged.NewListener(_val => metadata.beatmap.name = _val);
 
-            var creatorDescription = Dialog.Content.Find("creator/description/input").GetComponent<InputField>();
-            creatorDescription.onValueChanged.ClearAll();
-            creatorDescription.text = metadata.song.description;
-            creatorDescription.onValueChanged.AddListener(_val => metadata.song.description = _val);
-
+            Dialog.DescriptionField.SetTextWithoutNotify(metadata.song.description);
+            Dialog.DescriptionField.onValueChanged.NewListener(_val => metadata.song.description = _val);
         }
 
         public void RenderSettings(MetaData metadata)
         {
-            var isHubLevel = Dialog.Content.Find("is hub level/toggle").GetComponent<Toggle>();
-            isHubLevel.onValueChanged.ClearAll();
-            isHubLevel.isOn = metadata.isHubLevel;
-            isHubLevel.onValueChanged.AddListener(_val => metadata.isHubLevel = _val);
+            Dialog.IsHubLevelToggle.SetIsOnWithoutNotify(metadata.isHubLevel);
+            Dialog.IsHubLevelToggle.onValueChanged.NewListener(_val => metadata.isHubLevel = _val);
 
-            var requireUnlock = Dialog.Content.Find("unlock required/toggle").GetComponent<Toggle>();
-            requireUnlock.onValueChanged.ClearAll();
-            requireUnlock.isOn = metadata.requireUnlock;
-            requireUnlock.onValueChanged.AddListener(_val => metadata.requireUnlock = _val);
+            Dialog.UnlockRequiredToggle.SetIsOnWithoutNotify(metadata.requireUnlock);
+            Dialog.UnlockRequiredToggle.onValueChanged.NewListener(_val => metadata.requireUnlock = _val);
 
-            var unlockComplete = Dialog.Content.Find("unlock complete/toggle").GetComponent<Toggle>();
-            unlockComplete.onValueChanged.ClearAll();
-            unlockComplete.isOn = metadata.unlockAfterCompletion;
-            unlockComplete.onValueChanged.AddListener(_val => metadata.unlockAfterCompletion = _val);
+            Dialog.UnlockCompletedToggle.SetIsOnWithoutNotify(metadata.unlockAfterCompletion);
+            Dialog.UnlockCompletedToggle.onValueChanged.NewListener(_val => metadata.unlockAfterCompletion = _val);
 
             var levelData = GameData.Current?.data?.level;
-
             if (!levelData)
                 return;
 
-            var showIntro = Dialog.Content.Find("hide intro/toggle").GetComponent<Toggle>();
-            showIntro.onValueChanged.ClearAll();
-            showIntro.isOn = levelData.hideIntro;
-            showIntro.onValueChanged.AddListener(_val =>
+            Dialog.HideIntroToggle.SetIsOnWithoutNotify(levelData.hideIntro);
+            Dialog.HideIntroToggle.onValueChanged.NewListener(_val =>
             {
                 if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData)
                     levelData.hideIntro = _val;
             });
 
-            var replayEndLevelOff = Dialog.Content.Find("replay end level off/toggle").GetComponent<Toggle>();
-            replayEndLevelOff.onValueChanged.ClearAll();
-            replayEndLevelOff.isOn = levelData.forceReplayLevelOff;
-            replayEndLevelOff.onValueChanged.AddListener(_val =>
+            Dialog.ReplayEndLevelOffToggle.SetIsOnWithoutNotify(levelData.forceReplayLevelOff);
+            Dialog.ReplayEndLevelOffToggle.onValueChanged.NewListener(_val =>
             {
                 if (GameData.Current && GameData.Current.data && GameData.Current.data.level is LevelData levelData)
-                    levelData.forceReplayLevelOff = !_val;
+                    levelData.forceReplayLevelOff = _val;
             });
 
-            var preferredPlayerCount = Dialog.Content.Find("preferred player count/dropdown").GetComponent<Dropdown>();
-            preferredPlayerCount.options = CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four");
-            preferredPlayerCount.value = (int)metadata.beatmap.preferredPlayerCount;
-            preferredPlayerCount.onValueChanged.AddListener(_val =>
-            {
-                metadata.beatmap.preferredPlayerCount = (BeatmapMetaData.PreferredPlayerCount)_val;
-            });
+            Dialog.PreferredPlayerCountDropdown.options = CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four");
+            Dialog.PreferredPlayerCountDropdown.SetValueWithoutNotify((int)metadata.beatmap.preferredPlayerCount);
+            Dialog.PreferredPlayerCountDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredPlayerCount = (BeatmapMetaData.PreferredPlayerCount)_val);
 
-            var requireVersion = Dialog.Content.Find("require version/toggle").GetComponent<Toggle>();
-            requireVersion.onValueChanged.ClearAll();
-            requireVersion.isOn = metadata.requireVersion;
-            requireVersion.onValueChanged.AddListener(_val => metadata.requireVersion = _val);
+            Dialog.RequireVersion.SetIsOnWithoutNotify(metadata.requireVersion);
+            Dialog.RequireVersion.onValueChanged.NewListener(_val => metadata.requireVersion = _val);
 
-            var versionComparison = Dialog.Content.Find("version comparison/dropdown").GetComponent<Dropdown>();
-            versionComparison.options = CoreHelper.ToOptionData<DataManager.VersionComparison>();
-            versionComparison.value = (int)metadata.versionRange;
-            versionComparison.onValueChanged.AddListener(_val =>
-            {
-                metadata.versionRange = (DataManager.VersionComparison)_val;
-            });
+            Dialog.VersionComparison.options = CoreHelper.ToOptionData<DataManager.VersionComparison>();
+            Dialog.VersionComparison.SetValueWithoutNotify((int)metadata.versionRange);
+            Dialog.VersionComparison.onValueChanged.NewListener(_val => metadata.versionRange = (DataManager.VersionComparison)_val);
         }
 
         public void RenderServer(MetaData metadata)
         {
-            var serverVisibility = Dialog.Content.Find("upload/server visibility/dropdown").GetComponent<Dropdown>();
-            serverVisibility.options = CoreHelper.StringToOptionData("Public", "Unlisted", "Private");
-            serverVisibility.value = (int)metadata.visibility;
-            serverVisibility.onValueChanged.NewListener(_val => metadata.visibility = (ServerVisibility)_val);
+            Dialog.ServerVisibilityDropdown.options = CoreHelper.StringToOptionData("Public", "Unlisted", "Private");
+            Dialog.ServerVisibilityDropdown.SetValueWithoutNotify((int)metadata.visibility);
+            Dialog.ServerVisibilityDropdown.onValueChanged.NewListener(_val => metadata.visibility = (ServerVisibility)_val);
+
+            CoreHelper.DestroyChildren(Dialog.CollaboratorsContent);
+            for (int i = 0; i < metadata.uploaders.Count; i++)
+            {
+                int index = i;
+                var tag = metadata.uploaders[i];
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.CollaboratorsContent, index.ToString());
+                gameObject.transform.AsRT().sizeDelta = new Vector2(717f, 32f);
+                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                input.transform.AsRT().sizeDelta = new Vector2(682, 32f);
+                input.SetTextWithoutNotify(tag);
+                input.onValueChanged.NewListener(_val =>
+                {
+                    _val = RTString.ReplaceSpace(_val);
+                    var oldVal = metadata.uploaders[index];
+                    metadata.uploaders[index] = _val;
+
+                    EditorManager.inst.history.Add(new History.Command("Change MetaData Uploader", () =>
+                    {
+                        metadata.uploaders[index] = _val;
+                        MetadataEditor.inst.OpenDialog();
+                    }, () =>
+                    {
+                        metadata.uploaders[index] = oldVal;
+                        MetadataEditor.inst.OpenDialog();
+                    }));
+                });
+
+                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.NewListener(() =>
+                {
+                    var oldTag = metadata.uploaders[index];
+                    metadata.uploaders.RemoveAt(index);
+                    RenderServer(metadata);
+
+                    EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
+                    {
+                        if (metadata.uploaders == null)
+                            return;
+                        metadata.uploaders.RemoveAt(index);
+                        MetadataEditor.inst.OpenDialog();
+                    }, () =>
+                    {
+                        if (metadata.uploaders == null)
+                            metadata.uploaders = new List<string>();
+                        metadata.uploaders.Insert(index, oldTag);
+                        MetadataEditor.inst.OpenDialog();
+                    }));
+                });
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+
+                EditorThemeManager.ApplyInputField(input);
+
+                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+            }
+
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.CollaboratorsContent, "Add");
+            add.transform.AsRT().sizeDelta = new Vector2(717f, 32f);
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Add Collaborator";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.ClearAll();
+            var contextClickable = add.GetOrAddComponent<ContextClickable>();
+            contextClickable.onClick = pointerEventData =>
+            {
+                if (metadata.uploaders == null)
+                    metadata.uploaders = new List<string>();
+                metadata.uploaders.Add(string.Empty);
+                RenderServer(metadata);
+
+                EditorManager.inst.history.Add(new History.Command("Add MetaData Collaborator",
+                    () =>
+                    {
+                        if (metadata.uploaders == null)
+                            metadata.uploaders = new List<string>();
+                        metadata.uploaders.Add(string.Empty);
+                        MetadataEditor.inst.OpenDialog();
+                    },
+                    () =>
+                    {
+                        if (metadata.uploaders == null)
+                            return;
+                        metadata.uploaders.RemoveAt(metadata.uploaders.Count - 1);
+                        MetadataEditor.inst.OpenDialog();
+                    }));
+            };
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             bool hasID = !string.IsNullOrEmpty(metadata.serverID); // Only check for server id.
 
-            Dialog.Content.Find("upload/changelog").gameObject.SetActive(hasID);
-            Dialog.Content.Find("upload").transform.AsRT().sizeDelta = new Vector2(738.5f, !hasID ? 60f : 200f);
+            Dialog.ShowChangelog(hasID);
             if (hasID)
             {
-                var changelog = Dialog.Content.Find("upload/changelog/input").GetComponent<InputField>();
-                changelog.SetTextWithoutNotify(metadata.changelog);
-                changelog.onValueChanged.NewListener(_val => metadata.changelog = _val);
+                Dialog.ChangelogField.SetTextWithoutNotify(metadata.changelog);
+                Dialog.ChangelogField.onValueChanged.NewListener(_val => metadata.changelog = _val);
             }
 
-            Dialog.Content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click to copy)" : "No ID assigned.";
-            var idClickable = Dialog.Content.Find("id").gameObject.GetOrAddComponent<Clickable>();
-            idClickable.onClick = eventData =>
+            Dialog.ArcadeIDText.text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click to copy)" : "Arcade ID: No ID";
+            Dialog.ArcadeIDContextMenu.onClick = eventData =>
             {
+                if (string.IsNullOrEmpty(metadata.arcadeID))
+                {
+                    EditorManager.inst.DisplayNotification($"No ID assigned. This shouldn't happen. Did something break?", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
                 LSText.CopyToClipboard(metadata.arcadeID);
                 EditorManager.inst.DisplayNotification($"Copied ID: {metadata.arcadeID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
             };
 
-            var serverID = Dialog.Content.Find("server id");
-            serverID.gameObject.SetActive(hasID);
-            if (hasID)
+            Dialog.ServerIDText.text = !string.IsNullOrEmpty(metadata.serverID) ? $"Server ID: {metadata.serverID} (Click to copy)" : "Server ID: No ID";
+            Dialog.ServerIDContextMenu.onClick = eventData =>
             {
-                serverID.transform.Find("id").GetComponent<Text>().text = $"Server ID: {metadata.serverID} (Click to copy)";
-                var serverIDClickable = serverID.gameObject.GetOrAddComponent<Clickable>();
-                serverIDClickable.onClick = eventData =>
+                if (string.IsNullOrEmpty(metadata.serverID))
                 {
-                    LSText.CopyToClipboard(metadata.serverID);
-                    EditorManager.inst.DisplayNotification($"Copied ID: {metadata.serverID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-                };
-            }
+                    EditorManager.inst.DisplayNotification($"Upload the level first before trying to copy the server ID.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
 
-            var uploaderID = Dialog.Content.Find("uploader id");
-            var hasUserID = !string.IsNullOrEmpty(LegacyPlugin.UserID);
-            uploaderID.gameObject.SetActive(hasUserID);
-            if (hasUserID)
+                LSText.CopyToClipboard(metadata.serverID);
+                EditorManager.inst.DisplayNotification($"Copied ID: {metadata.serverID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+            };
+
+            Dialog.UserIDText.text = !string.IsNullOrEmpty(LegacyPlugin.UserID) ? $"User ID: {LegacyPlugin.UserID} (Click to copy)" : "User ID: No ID";
+            Dialog.UserIDContextMenu.onClick = eventData =>
             {
-                var uploaderIDText = uploaderID.Find("id").GetComponent<Text>();
-                uploaderIDText.text = $"User ID: {LegacyPlugin.UserID} (Click to copy)";
-                var uploaderIDClickable = uploaderID.gameObject.GetOrAddComponent<Clickable>();
-                uploaderIDClickable.onClick = eventData =>
+                if (string.IsNullOrEmpty(LegacyPlugin.UserID))
                 {
-                    LSText.CopyToClipboard(LegacyPlugin.UserID);
-                    EditorManager.inst.DisplayNotification($"Copied ID: {LegacyPlugin.UserID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-                };
-            }
+                    EditorManager.inst.DisplayNotification($"Login first before trying to copy the user ID.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                LSText.CopyToClipboard(LegacyPlugin.UserID);
+                EditorManager.inst.DisplayNotification($"Copied ID: {LegacyPlugin.UserID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+            };
 
             // Changed revisions to modded display.
-            Dialog.Content.Find("id/revisions").GetComponent<Text>().text = $"Modded: {(GameData.Current.Modded ? "Yes" : "No")}";
+            Dialog.ModdedDisplayText.text = $"Modded: {(GameData.Current.Modded ? "Yes" : "No")}";
 
-            var uploadText = Dialog.Content.Find("submit/upload/Text").GetComponent<Text>();
-            uploadText.text = hasID ? "Update" : "Upload";
+            Dialog.UploadButtonText.text = hasID ? "Update" : "Upload";
+            Dialog.UploadContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                    return;
 
-            var submitBase = Dialog.Content.Find("submit");
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Upload / Update", UploadLevel),
+                    new ButtonFunction("Verify Level is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the level is on the Arcade server?", () =>
+                    {
+                        RTEditor.inst.HideWarningPopup();
+                        EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
+                        VerifyLevelIsOnServer();
+                    }, RTEditor.inst.HideWarningPopup)),
+                    new ButtonFunction("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the level from the Arcade server?", () =>
+                    {
+                        RTEditor.inst.HideWarningPopup();
+                        EditorManager.inst.DisplayNotification("Pulling level...", 1.5f, EditorManager.NotificationType.Info);
+                        PullLevel();
+                    }, RTEditor.inst.HideWarningPopup)),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
+                    );
+            };
 
-            var pull = submitBase.Find("pull").gameObject;
-            var delete = submitBase.Find("delete").gameObject;
-            pull.SetActive(hasID);
-            delete.SetActive(hasID);
+            Dialog.PullButton.gameObject.SetActive(hasID);
+            Dialog.DeleteButton.gameObject.SetActive(hasID);
 
-            submitBase.Find("convert").GetComponent<Button>().onClick.NewListener(ConvertLevel);
-            submitBase.Find("upload").GetComponent<Button>().onClick.NewListener(UploadLevel);
+            Dialog.ConvertButton.onClick.NewListener(ConvertLevel);
+            Dialog.UploadButton.onClick.NewListener(UploadLevel);
 
             if (!hasID)
                 return;
 
-            pull.GetComponent<Button>().onClick.NewListener(PullLevel);
-            delete.GetComponent<Button>().onClick.NewListener(DeleteLevel);
+            Dialog.PullButton.onClick.NewListener(PullLevel);
+            Dialog.DeleteButton.onClick.NewListener(DeleteLevel);
         }
 
+        static Vector2 difficultySize = new Vector2(100f, 32f);
         public void RenderDifficulty(MetaData metadata)
         {
-            var content = Dialog.GameObject.transform.Find("Scroll View/Viewport/Content");
-            var toggles = content.Find("song/difficulty/toggles");
-            LSHelpers.DeleteChildren(toggles);
+            LSHelpers.DeleteChildren(Dialog.DifficultyContent);
 
             var values = CustomEnumHelper.GetValues<DifficultyType>();
             var count = values.Length - 1;
@@ -477,10 +553,10 @@ namespace BetterLegacy.Editor.Managers
                 if (difficulty.Ordinal < 0) // skip unknown difficulty
                     continue;
 
-                var gameObject = difficultyToggle.Duplicate(toggles, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
+                var gameObject = difficultyToggle.Duplicate(Dialog.DifficultyContent, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
                 gameObject.transform.localScale = Vector3.one;
 
-                gameObject.transform.AsRT().sizeDelta = new Vector2(69f, 32f);
+                gameObject.transform.AsRT().sizeDelta = difficultySize;
 
                 var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
                 text.color = LSColors.ContrastColor(difficulty.Color);
@@ -489,9 +565,8 @@ namespace BetterLegacy.Editor.Managers
                 var toggle = gameObject.GetComponent<Toggle>();
                 toggle.image.color = difficulty.Color;
                 toggle.group = null;
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = metadata.song.DifficultyType == difficulty;
-                toggle.onValueChanged.AddListener(_val =>
+                toggle.SetIsOnWithoutNotify(metadata.song.DifficultyType == difficulty);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     metadata.song.DifficultyType = difficulty;
                     RenderDifficulty(metadata);
@@ -561,7 +636,6 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
                     EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
                 }
-
             }
 
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.TagsContent, "Add");
@@ -670,6 +744,21 @@ namespace BetterLegacy.Editor.Managers
 
         public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != Level.EDITOR_LSE && !file.Contains("waveform-") &&
             RTFile.FileIsFormat(file, FileFormat.LSB, FileFormat.LSA, FileFormat.JPG, FileFormat.PNG, FileFormat.OGG, FileFormat.WAV, FileFormat.MP3, FileFormat.MP4);
+
+        public void OpenIconSelector()
+        {
+            string jpgFile = FileBrowser.OpenSingleFile("jpg");
+            CoreHelper.Log("Selected file: " + jpgFile);
+            if (string.IsNullOrEmpty(jpgFile))
+                return;
+
+            string jpgFileLocation = EditorLevelManager.inst.CurrentLevel.GetFile(Level.LEVEL_JPG);
+            CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
+            {
+                RTFile.CopyFile(jpgFile, jpgFileLocation);
+                RTMetaDataEditor.inst.SetLevelCover(cover);
+            }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
+        }
 
         public void SetLevelCover(Sprite sprite)
         {
