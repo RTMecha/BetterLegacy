@@ -39,6 +39,9 @@ namespace BetterLegacy.Editor.Data
             else
                 CoreHelper.DestroyChildren(GameObject.transform, 1, GameObject.transform.childCount - 1);
 
+            if (initSettings.rectValues.HasValue)
+                initSettings.rectValues.Value.AssignToRectTransform(GameObject.transform.AsRT());
+
             var first = GameObject.transform.GetChild(0);
 
             for (int i = 0; i < Count; i++)
@@ -90,10 +93,17 @@ namespace BetterLegacy.Editor.Data
                 return this;
             }
 
+            public InitSettings Rect(RectValues rectValues)
+            {
+                this.rectValues = rectValues;
+                return this;
+            }
+
             public Transform parent;
             public string name;
             public int siblingIndex;
             public bool applyThemes;
+            public RectValues? rectValues;
         }
     }
 }
