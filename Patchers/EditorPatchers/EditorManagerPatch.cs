@@ -703,7 +703,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CloseOpenBeatmapPopupPrefix()
         {
-            RTEditor.inst.OpenLevelPopup.Close();
+            EditorLevelManager.inst.OpenLevelPopup.Close();
             return false;
         }
 
@@ -769,14 +769,14 @@ namespace BetterLegacy.Patchers
             component.text = Instance.openFileSearch;
             Instance.ClearPopups();
             Instance.RenderOpenBeatmapPopup();
-            RTEditor.inst.OpenLevelPopup.Open();
+            EditorLevelManager.inst.OpenLevelPopup.Open();
 
             var config = EditorConfig.Instance;
 
             try
             {
                 //Create Local Variables
-                var openLevel = RTEditor.inst.OpenLevelPopup.GameObject;
+                var openLevel = EditorLevelManager.inst.OpenLevelPopup.GameObject;
                 var openTLevel = openLevel.transform;
                 var openRTLevel = openLevel.transform.AsRT();
                 var openGridLVL = openTLevel.Find("mask/content").GetComponent<GridLayoutGroup>();
@@ -924,7 +924,7 @@ namespace BetterLegacy.Patchers
         static bool OpenNewLevelPopupPrefix()
         {
             EditorManager.inst.ClearPopups();
-            RTEditor.inst.NewLevelPopup.Open();
+            EditorLevelManager.inst.NewLevelPopup.Open();
             return false;
         }
 

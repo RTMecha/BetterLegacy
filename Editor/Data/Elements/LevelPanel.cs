@@ -59,15 +59,17 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Data
 
+        public LevelInfo Info { get; set; }
+
         public override float FocusSize => EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
 
-        /// <summary>
-        /// Formats the name to display.
-        /// </summary>
-        public string NameFormat
+        public override string DisplayName
         {
             get
             {
+                if (Info)
+                    return $".  /{Info.arcadeID} - {Info.name}";
+
                 var metadata = Item.metadata;
                 return string.Format(EditorConfig.Instance.OpenLevelTextFormatting.Value,
                     LSText.ClampString(Name, EditorConfig.Instance.OpenLevelFolderNameMax.Value),
@@ -131,7 +133,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             GameObject = gameObject;
 
             Button = gameObject.AddComponent<FolderButtonFunction>();
@@ -164,7 +166,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
             GameObject = gameObject;
             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
@@ -193,6 +195,67 @@ namespace BetterLegacy.Editor.Data.Elements
 
             var iconImage = icon.AddComponent<Image>();
             iconImage.sprite = Item.icon;
+            IconImage = iconImage;
+
+            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "delete");
+
+            var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
+            DeleteButton = deleteStorage;
+
+            delete.transform.AsRT().anchoredPosition = new Vector2(-5f, 0f);
+
+            EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
+            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, true, roundedSide: SpriteHelper.RoundedSide.W);
+            delete.SetActive(EditorConfig.Instance.OpenLevelShowDeleteButton.Value);
+
+            SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
+            SelectedUI.SetActive(false);
+            var selectedImage = SelectedUI.AddComponent<Image>();
+            selectedImage.color = LSColors.HexToColorAlpha("0088FF25");
+
+            RectValues.FullAnchored.AssignToRectTransform(selectedImage.rectTransform);
+
+            Render();
+        }
+
+        public void Init(LevelInfo levelInfo)
+        {
+            Info = levelInfo;
+            Path = levelInfo.path;
+
+            var gameObject = GameObject;
+            if (gameObject)
+                CoreHelper.Destroy(gameObject);
+
+            gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(EditorLevelManager.inst.OpenLevelPopup.Content, $"Folder [{Name}]");
+            GameObject = gameObject;
+            var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+
+            HoverFocus = gameObject.AddComponent<HoverUI>();
+            HoverFocus.animatePos = false;
+            HoverFocus.animateSca = true;
+
+            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+            Label = folderButtonStorage.label;
+            Label.enabled = true;
+            folderButtonStorage.button.onClick.ClearAll();
+            Button = folderButtonFunction;
+            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
+
+            var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
+            var iconBaseImage = iconBase.AddComponent<Image>();
+            iconBase.AddComponent<Mask>().showMaskGraphic = false;
+            iconBase.transform.AsRT().anchoredPosition = EditorConfig.Instance.OpenLevelCoverPosition.Value;
+            iconBase.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
+            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
+
+            var icon = Creator.NewUIObject("icon", iconBase.transform);
+            icon.transform.AsRT().anchoredPosition = Vector3.zero;
+            icon.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
+
+            var iconImage = icon.AddComponent<Image>();
+            iconImage.sprite = Info?.level?.icon ?? LegacyPlugin.AtanPlaceholder;
             IconImage = iconImage;
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "delete");
@@ -248,7 +311,7 @@ namespace BetterLegacy.Editor.Data.Elements
             hoverUI.animatePos = false;
             hoverUI.animateSca = true;
 
-            folderButtonStorage.label.text = NameFormat;
+            folderButtonStorage.label.text = DisplayName;
 
             folderButtonStorage.label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
             folderButtonStorage.label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
@@ -304,7 +367,7 @@ namespace BetterLegacy.Editor.Data.Elements
             if (isFolder)
                 return;
 
-            RenderIcon(Item?.icon);
+            RenderIcon(Item?.icon ?? Info?.level?.icon ?? LegacyPlugin.AtanPlaceholder);
         }
 
         /// <summary>
@@ -325,7 +388,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 return;
             }
 
-            RenderLabel(NameFormat);
+            RenderLabel(DisplayName);
         }
 
         public override void RenderLabel(string text)
@@ -344,6 +407,22 @@ namespace BetterLegacy.Editor.Data.Elements
             if (isFolder)
             {
                 GetFolderTooltip();
+                return;
+            }
+
+            if (!Item)
+            {
+                if (!Info)
+                    return;
+
+                TooltipHelper.AddHoverTooltip(GameObject, $"{Info.songTitle} by {Info.creator}",
+                    $"<br>Folder: {Info.path}<br>" +
+                    $"<br>Folder: {Info.path}<br>" +
+                    $"Editor Folder: {Info.editorPath}<br>" +
+                    $"ID: {Info.id}<br>" +
+                    $"Find Arcade ID: {Info.arcadeID}" +
+                    $"Find Server ID: {Info.serverID}" +
+                    $"Find Workshop ID: {Info.workshopID}");
                 return;
             }
 
@@ -510,7 +589,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
             Button.onClick = eventData =>
             {
-                if (LevelTemplateEditor.inst.choosingLevelTemplate)
+                if (LevelTemplateEditor.inst.choosingLevelTemplate && Item)
                 {
                     LevelTemplateEditor.inst.CreateTemplate(Item.path);
 
@@ -522,8 +601,10 @@ namespace BetterLegacy.Editor.Data.Elements
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
                     var list = new List<ButtonFunction>();
+                    var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
 
                     if (!selectedLevels.IsEmpty())
+                    {
                         list = new List<ButtonFunction>()
                         {
                             new ButtonFunction("Combine", () =>
@@ -543,14 +624,18 @@ namespace BetterLegacy.Editor.Data.Elements
                                 EditorManager.inst.DisplayNotification($"Not implemented yet.", 2f, EditorManager.NotificationType.Warning);
                             }),
                         };
-                    else
+
+                        if (currentLevelCollection)
+                            list.Add(new ButtonFunction(true));
+                    }
+                    else if (Item)
                     {
                         list = new List<ButtonFunction>()
                         {
                             new ButtonFunction("Open", () =>
                             {
                                 EditorLevelManager.inst.LoadLevel(this);
-                                RTEditor.inst.OpenLevelPopup.Close();
+                                EditorLevelManager.inst.OpenLevelPopup.Close();
                             }, "Level Panel Open"),
                             new ButtonFunction("Show Autosaves", () =>
                             {
@@ -631,32 +716,42 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
                         };
 
-                        if (EditorLevelManager.inst.CurrentLevelCollection)
-                        {
+                        if (currentLevelCollection)
                             list.Add(new ButtonFunction(true));
-                            list.Add(new ButtonFunction("Move Earlier", () =>
-                            {
-                                if (Item.collectionInfo.index - 1 <= 0)
-                                {
-                                    EditorManager.inst.DisplayNotification($"Cannot move the level earlier than the start!", 2f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
+                    }
 
-                                EditorLevelManager.inst.CurrentLevelCollection.Move(Item.id, Item.collectionInfo.index - 1);
-                                EditorLevelManager.inst.RenderLevels();
-                            }));
-                            list.Add(new ButtonFunction("Move Later", () =>
-                            {
-                                if (Item.collectionInfo.index + 1 >= EditorLevelManager.inst.CurrentLevelCollection.levelInformation.Count)
-                                {
-                                    EditorManager.inst.DisplayNotification($"Cannot move the level later than the end!", 2f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
+                    if (currentLevelCollection)
+                    {
+                        list.Add(new ButtonFunction("Move Earlier", () =>
+                        {
+                            var info = Item?.collectionInfo ?? Info;
+                            if (!info)
+                                return;
 
-                                EditorLevelManager.inst.CurrentLevelCollection.Move(Item.id, Item.collectionInfo.index + 1);
-                                EditorLevelManager.inst.RenderLevels();
-                            }));
-                        }    
+                            if (info.index - 1 <= 0)
+                            {
+                                EditorManager.inst.DisplayNotification($"Cannot move the level earlier than the start!", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            currentLevelCollection.Move(info.id, info.index - 1);
+                            EditorLevelManager.inst.RenderLevels();
+                        }));
+                        list.Add(new ButtonFunction("Move Later", () =>
+                        {
+                            var info = Item?.collectionInfo ?? Info;
+                            if (!info)
+                                return;
+
+                            if (info.index + 1 >= currentLevelCollection.levelInformation.Count)
+                            {
+                                EditorManager.inst.DisplayNotification($"Cannot move the level later than the end!", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            currentLevelCollection.Move(info.id, info.index + 1);
+                            EditorLevelManager.inst.RenderLevels();
+                        }));
                     }
 
                     EditorContextMenu.inst.ShowContextMenu(list);
@@ -674,10 +769,16 @@ namespace BetterLegacy.Editor.Data.Elements
                 {
                     Selected = false;
                     return;
-                }    
+                }
+
+                if (!Item)
+                {
+                    EditorManager.inst.DisplayNotification($"No level was found.", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
 
                 EditorLevelManager.inst.LoadLevel(this);
-                RTEditor.inst.OpenLevelPopup.Close();
+                EditorLevelManager.inst.OpenLevelPopup.Close();
             };
         }
 
@@ -686,7 +787,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public void UpdateDeleteFunction()
         {
-            if (!DeleteButton)
+            if (!DeleteButton || !Item)
                 return;
 
             var active = EditorConfig.Instance.OpenLevelShowDeleteButton.Value;

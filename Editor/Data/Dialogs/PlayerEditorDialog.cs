@@ -101,7 +101,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            var search = RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(dialog.transform, "search");
+            var search = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(dialog.transform, "search");
 
             SearchField = search.transform.GetChild(0).GetComponent<InputField>();
 

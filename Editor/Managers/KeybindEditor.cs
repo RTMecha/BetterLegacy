@@ -1541,7 +1541,7 @@ namespace BetterLegacy.Editor.Managers
         public static void OpenNewLevel(Keybind keybind)
         {
             EditorManager.inst.ClearPopups();
-            RTEditor.inst.NewLevelPopup.Open();
+            EditorLevelManager.inst.NewLevelPopup.Open();
         }
 
         public static void ToggleBPMSnap(Keybind keybind)

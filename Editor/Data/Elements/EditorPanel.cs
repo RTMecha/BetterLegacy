@@ -67,6 +67,11 @@ namespace BetterLegacy.Editor.Data.Elements
         public string Path { get; set; }
 
         /// <summary>
+        /// Name to display on the editor panel.
+        /// </summary>
+        public virtual string DisplayName { get; }
+
+        /// <summary>
         /// Size the panel grows to when focused.
         /// </summary>
         public virtual float FocusSize { get; }

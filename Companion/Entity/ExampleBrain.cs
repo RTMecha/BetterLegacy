@@ -707,7 +707,7 @@ namespace BetterLegacy.Companion.Entity
         public void SelectObject(Image image)
         {
             var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
-            if (CoreHelper.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("mask").AsRT())))
+            if (CoreHelper.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("mask").AsRT())))
                 foreach (var levelItem in EditorLevelManager.inst.LevelPanels)
                 {
                     if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))

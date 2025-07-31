@@ -6,6 +6,7 @@ using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 using LSFunctions;
 
@@ -29,6 +30,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Editor.Managers
@@ -50,7 +52,95 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public static void Init() => EditorManager.inst.gameObject.AddComponent<EditorLevelManager>();
 
-        void Awake() => inst = this;
+        void Awake()
+        {
+            inst = this;
+            CoroutineHelper.WaitUntil(
+                () => RTEditor.inst,
+                Setup);
+        }
+
+        void Setup()
+        {
+            LevelCollectionPopup = RTEditor.inst.GeneratePopup(EditorPopup.LEVEL_COLLECTION_POPUP, "Level Collections", Vector2.zero, new Vector2(600f, 400f),
+                _val => RenderLevelCollections(),
+                close: () => onLevelCollectionSelected = null,
+                placeholderText: "Search for collection...");
+
+            var levelPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(LevelCollectionPopup.GameObject.transform, "collection path");
+            ((RectTransform)levelPathGameObject.transform).anchoredPosition = EditorConfig.Instance.OpenLevelEditorPathPos.Value;
+            ((RectTransform)levelPathGameObject.transform).sizeDelta = new Vector2(EditorConfig.Instance.OpenLevelEditorPathLength.Value, 32f);
+
+            TooltipHelper.AssignTooltip(levelPathGameObject, "Editor Path", 3f);
+
+            RTEditor.inst.levelCollectionPathField = levelPathGameObject.GetComponent<InputField>();
+            RTEditor.inst.levelCollectionPathField.characterValidation = InputField.CharacterValidation.None;
+            RTEditor.inst.levelCollectionPathField.onValueChanged.ClearAll();
+            RTEditor.inst.levelCollectionPathField.onEndEdit.ClearAll();
+            RTEditor.inst.levelCollectionPathField.textComponent.alignment = TextAnchor.MiddleLeft;
+            RTEditor.inst.levelCollectionPathField.textComponent.fontSize = 16;
+            RTEditor.inst.levelCollectionPathField.text = RTEditor.inst.CollectionsPath;
+            RTEditor.inst.levelCollectionPathField.onValueChanged.AddListener(_val => RTEditor.inst.CollectionsPath = _val);
+            RTEditor.inst.levelCollectionPathField.onEndEdit.AddListener(_val => LoadLevelCollections());
+
+            EditorThemeManager.AddInputField(RTEditor.inst.levelCollectionPathField);
+
+            var levelClickable = levelPathGameObject.AddComponent<Clickable>();
+            levelClickable.onDown = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Set Level folder", () =>
+                    {
+                        RTEditor.inst.BrowserPopup.Open();
+                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
+                        {
+                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            RTEditor.inst.levelCollectionPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            EditorManager.inst.DisplayNotification($"Set Editor path to {RTEditor.inst.CollectionsPath}!", 2f, EditorManager.NotificationType.Success);
+                            RTEditor.inst.BrowserPopup.Close();
+                            LoadLevelCollections();
+                        });
+                    }),
+                    new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder));
+            };
+            EditorHelper.SetComplexity(levelPathGameObject, Complexity.Advanced);
+
+            var levelListReloader = EditorPrefabHolder.Instance.SpriteButton.Duplicate(LevelCollectionPopup.GameObject.transform, "reload");
+            levelListReloader.transform.AsRT().anchoredPosition = EditorConfig.Instance.OpenLevelListRefreshPosition.Value;
+            levelListReloader.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+
+            (levelListReloader.GetOrAddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = "Refresh level collection list",
+                hint = "Clicking this will reload the level collection list."
+            });
+
+            var levelListReloaderButton = levelListReloader.GetComponent<Button>();
+            levelListReloaderButton.onClick.NewListener(LoadLevelCollections);
+
+            EditorThemeManager.AddSelectable(levelListReloaderButton, ThemeGroup.Function_2, false);
+
+            levelListReloaderButton.image.sprite = EditorSprites.ReloadSprite;
+
+            LoadLevelCollections();
+
+            EditorHelper.AddEditorDropdown("Open Level Collection", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.OpenSprite, () =>
+            {
+                LevelCollectionPopup.Open();
+                RenderLevelCollections();
+            }, 2);
+
+            LevelCollectionDialog = new LevelCollectionEditorDialog();
+            LevelCollectionDialog.Init();
+        }
 
         void Update() => autosaveTimer.Update();
 
@@ -82,15 +172,27 @@ namespace BetterLegacy.Editor.Managers
 
         public LevelCollection CurrentLevelCollection { get; set; }
 
+        public LevelCollection OpenLevelCollection { get; set; }
+
         /// <summary>
         /// Loaded editor levels.
         /// </summary>
         public List<LevelPanel> LevelPanels { get; set; } = new List<LevelPanel>();
-
+        
         /// <summary>
         /// Selected editor levels.
         /// </summary>
         public List<LevelPanel> SelectedLevels => LevelPanels.FindAll(x => x.Selected);
+
+        /// <summary>
+        /// Loaded editor level collections.
+        /// </summary>
+        public List<LevelCollectionPanel> LevelCollectionPanels { get; set; } = new List<LevelCollectionPanel>();
+
+        /// <summary>
+        /// Selected editor level collections.
+        /// </summary>
+        public List<LevelCollectionPanel> SelectedLevelCollections => LevelCollectionPanels.FindAll(x => x.Selected);
 
         /// <summary>
         /// If the current level is a newly created one.
@@ -132,6 +234,16 @@ namespace BetterLegacy.Editor.Managers
         /// Amount of time that has passed since the last autosave.
         /// </summary>
         public RTTimer autosaveTimer;
+
+        public NewLevelPopup NewLevelPopup { get; set; }
+
+        public ContentPopup OpenLevelPopup { get; set; }
+
+        public ContentPopup LevelCollectionPopup { get; set; }
+
+        public LevelCollectionEditorDialog LevelCollectionDialog { get; set; }
+
+        public Action<LevelCollectionPanel, PointerEventData> onLevelCollectionSelected;
 
         #endregion
 
@@ -206,8 +318,7 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator ILoadLevels()
         {
             LevelPanels.Clear();
-
-            RTEditor.inst.OpenLevelPopup.ClearContent();
+            OpenLevelPopup.ClearContent();
 
             var list = new List<Coroutine>();
             var fullPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath);
@@ -215,7 +326,7 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 var collectionPath = RTFile.CombinePaths(fullPath, LevelCollection.COLLECTION_LSCO);
-                if (RTFile.FileExists(collectionPath))
+                if (!OpenLevelCollection && RTFile.FileExists(collectionPath))
                 {
                     var jn = JSON.Parse(RTFile.ReadFromFile(collectionPath));
                     CurrentLevelCollection = LevelCollection.Parse(fullPath, jn, false);
@@ -232,7 +343,7 @@ namespace BetterLegacy.Editor.Managers
             // Back
             if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(fullPath) != RTEditor.inst.BeatmapsPath)
             {
-                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, "back");
+                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(OpenLevelPopup.Content, "back");
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -263,6 +374,8 @@ namespace BetterLegacy.Editor.Managers
 
                     if (RTEditor.inst.editorPathField.text == RTEditor.inst.EditorPath)
                     {
+                        OpenLevelCollection = null;
+
                         RTEditor.inst.editorPathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
                         RTEditor.inst.UpdateEditorPath(false);
                     }
@@ -272,9 +385,10 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
             }
 
-            if (CurrentLevelCollection)
+            var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
+            if (currentLevelCollection)
             {
-                foreach (var levelInfo in CurrentLevelCollection.levelInformation)
+                foreach (var levelInfo in currentLevelCollection.levelInformation)
                 {
                     var path = levelInfo.editorPath;
                     if (string.IsNullOrEmpty(path))
@@ -283,26 +397,34 @@ namespace BetterLegacy.Editor.Managers
                         continue;
 
                     Level level;
-                    if (!Level.TryVerify(RTFile.CombinePaths(fullPath, path), false, out level) ||
-                        !Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
-                        !(SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
-                        !LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level))
-                        continue;
-
-                    levelInfo.level = level;
-                    CurrentLevelCollection.levels.Add(level);
-
-                    var levelPanel = new LevelPanel();
-                    levelPanel.Init(levelInfo.level);
-
-                    if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
-                        list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
-                    else if (RTFile.FileExists(levelInfo.level.GetFile(Level.COVER_JPG)))
-                        list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
-                    else
+                    if (!(Level.TryVerify(RTFile.CombinePaths(fullPath, path), false, out level) ||
+                        Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
+                        (SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
+                        LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level)))
                     {
+                        var levelPanel = new LevelPanel();
+                        levelPanel.Init(levelInfo);
+
                         levelPanel.SetDefaultIcon();
                         LevelPanels.Add(levelPanel);
+                    }
+                    else
+                    {
+                        levelInfo.level = level;
+                        currentLevelCollection.levels.Add(level);
+
+                        var levelPanel = new LevelPanel();
+                        levelPanel.Init(levelInfo.level);
+
+                        if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
+                            list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
+                        else if (RTFile.FileExists(levelInfo.level.GetFile(Level.COVER_JPG)))
+                            list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
+                        else
+                        {
+                            levelPanel.SetDefaultIcon();
+                            LevelPanels.Add(levelPanel);
+                        }
                     }
                 }
             }
@@ -348,6 +470,106 @@ namespace BetterLegacy.Editor.Managers
                 OpenLevelPopupOnFinish();
 
             CoreHelper.Log($"Finished loading editor levels.");
+
+            yield break;
+        }
+
+        public void LoadLevelCollections() => CoroutineHelper.StartCoroutine(ILoadLevelCollections());
+
+        /// <summary>
+        /// Loads editor level collections from the current editor folder.
+        /// </summary>
+        public IEnumerator ILoadLevelCollections()
+        {
+            LevelCollectionPanels.Clear();
+            LevelCollectionPopup.ClearContent();
+
+            var list = new List<Coroutine>();
+            var fullPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath);
+
+            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(fullPath) != RTEditor.inst.BeatmapsPath)
+            {
+                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(LevelCollectionPopup.Content, "back");
+                var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
+                var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
+
+                var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
+                hoverUIFolder.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
+                hoverUIFolder.animatePos = false;
+                hoverUIFolder.animateSca = true;
+
+                folderButtonStorageFolder.label.text = "< Up a folder";
+
+                folderButtonStorageFolder.label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
+                folderButtonStorageFolder.label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
+                folderButtonStorageFolder.label.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
+
+                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonFunctionFolder.onClick = eventData =>
+                {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath), () => { LoadLevelCollections(); RTEditor.inst.HideNameEditor(); })),
+                            //new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
+                            //new ButtonFunction("Paste", PasteLevel),
+                            new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelCollectionListFolder));
+
+                        return;
+                    }
+
+                    if (RTEditor.inst.levelCollectionPathField.text == RTEditor.inst.CollectionsPath)
+                    {
+                        OpenLevelCollection = null;
+                        RTEditor.inst.levelCollectionPathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                        LoadLevelCollections();
+                    }
+                };
+
+                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
+            }
+
+            if (OpenLevelCollection)
+                yield break;
+
+            var files = Directory.GetDirectories(fullPath);
+            foreach (var file in files)
+            {
+                var path = RTFile.ReplaceSlash(file);
+
+                var levelCollectionPanel = new LevelCollectionPanel();
+
+                if (!LevelCollection.TryVerify(path, false, out LevelCollection levelCollection))
+                {
+                    if (!EditorConfig.Instance.ShowFoldersInLevelList.Value)
+                        continue;
+
+                    levelCollectionPanel.Init(path);
+                    LevelCollectionPanels.Add(levelCollectionPanel);
+
+                    list.Add(levelCollectionPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
+
+                    continue;
+                }
+
+                levelCollectionPanel.Init(levelCollection);
+
+                if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.ICON_PNG)))
+                    list.Add(levelCollectionPanel.LoadImageCoroutine(LevelCollection.ICON_PNG, LevelCollectionPanels.Add));
+                else if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.ICON_JPG)))
+                    list.Add(levelCollectionPanel.LoadImageCoroutine(LevelCollection.ICON_JPG, LevelCollectionPanels.Add));
+                else
+                {
+                    levelCollectionPanel.SetDefaultIcon();
+                    LevelCollectionPanels.Add(levelCollectionPanel);
+                }
+            }
+
+            if (list.Count >= 1)
+                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, RenderLevelCollections));
+            else
+                RenderLevelCollections();
 
             yield break;
         }
@@ -659,6 +881,14 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        public void LoadLevelCollection(LevelCollectionPanel levelCollectionPanel) => LoadLevelCollection(levelCollectionPanel.Item);
+        
+        public void LoadLevelCollection(LevelCollection levelCollection)
+        {
+            OpenLevelCollection = levelCollection;
+            LoadLevels();
+        }
+
         /// <summary>
         /// Saves the current level.
         /// </summary>
@@ -968,7 +1198,7 @@ namespace BetterLegacy.Editor.Managers
             levelPanel.Init(new Level(path));
             LevelPanels.Add(levelPanel);
             LoadLevel(levelPanel);
-            RTEditor.inst.NewLevelPopup.Close();
+            NewLevelPopup.Close();
         }
 
         /// <summary>
@@ -1035,17 +1265,30 @@ namespace BetterLegacy.Editor.Managers
             return gameData;
         }
 
+        /// <summary>
+        /// Creates a new level collection.
+        /// </summary>
+        /// <param name="levels">Levels to create from.</param>
+        /// <returns>Returns a created level collection.</returns>
+        public LevelCollection CreateNewLevelCollection(List<Level> levels = null)
+        {
+            var levelCollection = levels == null || levels.IsEmpty() ? new LevelCollection() : new LevelCollection(levels);
+            levelCollection.name = "New Level Collection";
+            levelCollection.path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath, "New Level Collection");
+            return levelCollection;
+        }
+
         void OpenLevelPopupOnFinish()
         {
-            if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || LevelPanels.Count > 0)
+            if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || !LevelPanels.IsEmpty())
             {
-                RTEditor.inst.OpenLevelPopup.Open();
+                OpenLevelPopup.Open();
                 EditorManager.inst.RenderOpenBeatmapPopup();
             }
             else
                 EditorManager.inst.OpenNewLevelPopup();
         }
-
+        
         /// <summary>
         /// Refreshes the search and sort of the editor levels.
         /// </summary>
@@ -1060,7 +1303,8 @@ namespace BetterLegacy.Editor.Managers
 
             var levelPanels = LevelPanels;
 
-            if (!CurrentLevelCollection)
+            var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
+            if (!currentLevelCollection)
             {
                 levelPanels = RTEditor.inst.levelSort switch
                 {
@@ -1081,7 +1325,7 @@ namespace BetterLegacy.Editor.Managers
             else
                 levelPanels = LevelPanels.Order(x => x.Item?.collectionInfo?.index ?? 0, !RTEditor.inst.levelAscend);
 
-            var content = RTEditor.inst.OpenLevelPopup.Content;
+            var content = OpenLevelPopup.Content;
 
             int num = 0;
             foreach (var levelPanel in levelPanels)
@@ -1101,6 +1345,41 @@ namespace BetterLegacy.Editor.Managers
 
                 if (num >= 0 && num < content.childCount)
                     levelPanel.GameObject.transform.SetSiblingIndex(num);
+                num++;
+            }
+
+            if (content.Find("back"))
+            {
+                yield return null;
+                if (content.Find("back"))
+                    content.Find("back").SetAsFirstSibling();
+            }
+
+            yield break;
+        }
+
+        public void RenderLevelCollections() => CoroutineHelper.StartCoroutine(IRenderLevelCollections());
+
+        public IEnumerator IRenderLevelCollections()
+        {
+            var content = LevelCollectionPopup.Content;
+
+            int num = 0;
+            foreach (var levelCollectionPanel in LevelCollectionPanels)
+            {
+                var folder = levelCollectionPanel.Path;
+                var levelCollection = levelCollectionPanel.Item;
+
+                levelCollectionPanel.SetActive(levelCollectionPanel.isFolder ? RTString.SearchString(LevelCollectionPopup.SearchTerm, Path.GetFileName(folder)) :
+                        RTString.SearchString(LevelCollectionPopup.SearchTerm,
+                            Path.GetFileName(folder),
+                            levelCollection.name,
+                            levelCollection.creator,
+                            levelCollection.description,
+                            LevelPanel.difficultyNames[Mathf.Clamp(levelCollection.difficulty, 0, LevelPanel.difficultyNames.Length - 1)]));
+
+                if (num >= 0 && num < content.childCount)
+                    levelCollectionPanel.GameObject.transform.SetSiblingIndex(num);
                 num++;
             }
 
@@ -1161,7 +1440,7 @@ namespace BetterLegacy.Editor.Managers
                                 levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
 
                                 LoadLevel(levelPanel);
-                                RTEditor.inst.OpenLevelPopup.Close();
+                                OpenLevelPopup.Close();
                                 break;
                             }
                         case PointerEventData.InputButton.Right: {
@@ -1171,7 +1450,7 @@ namespace BetterLegacy.Editor.Managers
                                         levelPanel.Item.currentFile = tmpFile.Remove(RTFile.AppendEndSlash(levelPanel.Path));
 
                                         LoadLevel(levelPanel);
-                                        RTEditor.inst.OpenLevelPopup.Close();
+                                        OpenLevelPopup.Close();
                                     }),
                                     new ButtonFunction("Toggle Backup State", () =>
                                     {
@@ -1228,6 +1507,75 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(backupHolder.button.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(backupHolder.label, ThemeGroup.Function_1_Text);
             }
+        }
+
+        /// <summary>
+        /// Renders the new level difficulty.
+        /// </summary>
+        public void RenderNewLevelDifficulty()
+        {
+            CoreHelper.DestroyChildren(NewLevelPopup.DifficultyContent);
+
+            var values = CustomEnumHelper.GetValues<DifficultyType>();
+            var count = values.Length - 1;
+
+            foreach (var difficulty in values)
+            {
+                if (difficulty.Ordinal < 0) // skip unknown difficulty
+                    continue;
+
+                var gameObject = RTMetaDataEditor.inst.difficultyToggle.Duplicate(NewLevelPopup.DifficultyContent, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
+                gameObject.transform.localScale = Vector3.one;
+
+                gameObject.transform.AsRT().sizeDelta = new Vector2(69f, 32f);
+
+                var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
+                text.color = LSColors.ContrastColor(difficulty.Color);
+                text.text = difficulty == count - 1 ? "Anim" : difficulty.DisplayName;
+                text.fontSize = 17;
+                var toggle = gameObject.GetComponent<Toggle>();
+                toggle.image.color = difficulty.Color;
+                toggle.group = null;
+                toggle.SetIsOnWithoutNotify(newLevelSettings.difficulty == difficulty);
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    newLevelSettings.difficulty = difficulty;
+                    RenderNewLevelDifficulty();
+                });
+
+                EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
+            }
+        }
+
+        public void RenderLevelCollectionEditor(LevelCollection levelCollection)
+        {
+            LevelCollectionDialog.NameField.SetTextWithoutNotify(levelCollection.name);
+            LevelCollectionDialog.NameField.onValueChanged.NewListener(_val =>
+            {
+                levelCollection.name = _val;
+            });
+            LevelCollectionDialog.NameField.onEndEdit.NewListener(_val =>
+            {
+                var oldPath = levelCollection.path;
+                var path = levelCollection.path;
+                path = RTFile.GetDirectory(RTFile.RemoveEndSlash(path));
+                path = RTFile.CombinePaths(path, RTFile.ValidateDirectory(_val));
+
+                RTFile.MoveDirectory(oldPath, path);
+            });
+
+            LevelCollectionDialog.DescriptionField.SetTextWithoutNotify(levelCollection.description);
+            LevelCollectionDialog.DescriptionField.onValueChanged.NewListener(_val =>
+            {
+                levelCollection.description = _val;
+            });
+
+            LevelCollectionDialog.CreatorField.SetTextWithoutNotify(levelCollection.creator);
+            LevelCollectionDialog.CreatorField.onValueChanged.NewListener(_val =>
+            {
+                levelCollection.creator = _val;
+            });
         }
 
         /// <summary>

@@ -132,7 +132,7 @@ namespace BetterLegacy.Core.Data.Level
         public bool isSteamLevel;
 
         /// <summary>
-        /// The editor level wrapper.
+        /// The editor level panel.
         /// </summary>
         public LevelPanel editorLevelPanel;
 

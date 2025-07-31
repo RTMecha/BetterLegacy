@@ -91,7 +91,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CreateNewTemplateButton.button.onClick.NewListener(() =>
             {
                 LevelTemplateEditor.inst.choosingLevelTemplate = true;
-                RTEditor.inst.OpenLevelPopup.Open();
+                EditorLevelManager.inst.OpenLevelPopup.Open();
                 EditorManager.inst.RenderOpenBeatmapPopup();
 
                 EditorManager.inst.DisplayNotification("Choose a level to create a template from.", 4f, EditorManager.NotificationType.Info);

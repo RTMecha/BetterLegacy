@@ -166,7 +166,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            RTEditor.inst.OpenLevelPopup.Close();
+            EditorLevelManager.inst.OpenLevelPopup.Close();
 
             RTEditor.inst.ShowWarningPopup("Are you sure you want to make a new level template?", () =>
             {
@@ -184,7 +184,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.HideWarningPopup();
             }, () =>
             {
-                RTEditor.inst.OpenLevelPopup.Open();
+                EditorLevelManager.inst.OpenLevelPopup.Open();
                 RTEditor.inst.HideWarningPopup();
             });
         }

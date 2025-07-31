@@ -117,7 +117,7 @@ namespace BetterLegacy.Editor.Managers
 
             // List handlers
             {
-                var searchBase = RTEditor.inst.OpenLevelPopup.SearchField.transform.parent.gameObject.Duplicate(contentBase.Find("Image"), "search base");
+                var searchBase = EditorLevelManager.inst.OpenLevelPopup.SearchField.transform.parent.gameObject.Duplicate(contentBase.Find("Image"), "search base");
                 searchBase.transform.localScale = Vector3.one;
                 searchBase.transform.AsRT().anchoredPosition = Vector2.zero;
                 searchBase.transform.AsRT().sizeDelta = new Vector2(0f, 48f);

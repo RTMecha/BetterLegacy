@@ -15,7 +15,7 @@ using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Editor.Managers;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 
@@ -111,6 +111,16 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public List<Achievement> achievements = new List<Achievement>();
 
+        /// <summary>
+        /// If level collection is loaded from the editor.
+        /// </summary>
+        public bool isEditor;
+
+        /// <summary>
+        /// The editor level collection panel.
+        /// </summary>
+        public LevelCollectionPanel editorPanel;
+
         #endregion
 
         #region Properties
@@ -142,6 +152,11 @@ namespace BetterLegacy.Core.Data.Level
         /// Total amount of levels in the collection.
         /// </summary>
         public int Count => levels.Count;
+
+        /// <summary>
+        /// Gets the level collection paths' folder name.
+        /// </summary>
+        public string FolderName => string.IsNullOrEmpty(path) ? path : Path.GetFileName(RTFile.RemoveEndSlash(path));
 
         #endregion
 
@@ -205,7 +220,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <param name="jn">JSON to parse.</param>
         /// <param name="loadLevels">If actual levels should be loaded.</param>
         /// <returns>Returns a parsed level collection.</returns>
-        public static LevelCollection Parse(string path, JSONNode jn, bool loadLevels = true)
+        public static LevelCollection Parse(string path, JSONNode jn, bool loadLevels = true, bool loadIcons = true)
         {
             var collection = new LevelCollection();
             collection.id = jn["id"] ?? PAObjectBase.GetNumberID();
@@ -233,7 +248,8 @@ namespace BetterLegacy.Core.Data.Level
                     collection.LoadLevel(levelInfo);
             }
 
-            collection.UpdateIcons();
+            if (loadIcons)
+                collection.UpdateIcons();
 
             return collection;
         }
@@ -632,6 +648,34 @@ namespace BetterLegacy.Core.Data.Level
             for (int i = 0; i < levelInformation.Count; i++)
                 levelInformation[i].index = i;
         }
+
+        /// <summary>
+        /// Checks if all files required to load a level collection exist.
+        /// </summary>
+        /// <param name="folder">The folder to check. Must end with a /.</param>
+        /// <returns>Returns true if all files are validated, otherwise false.</returns>
+        public static bool Verify(string folder) => VerifyLevel(folder);
+
+        /// <summary>
+        /// Checks if all necessary level collection files exist in a folder, and outputs a level collection.
+        /// </summary>
+        /// <param name="folder">Folder to check.</param>
+        /// <param name="loadIcons">If the icons should be loaded.</param>
+        /// <param name="level">The output level collection.</param>
+        /// <returns>Returns true if a level collection was found, otherwise returns false.</returns>
+        public static bool TryVerify(string folder, bool loadIcons, out LevelCollection level)
+        {
+            var verify = Verify(folder);
+            level = verify ? Parse(folder, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(folder, COLLECTION_LSCO))), loadIcons: loadIcons) : null;
+            return verify;
+        }
+
+        /// <summary>
+        /// Checks if the level collection has level collection data.
+        /// </summary>
+        /// <param name="folder">The folder to check.</param>
+        /// <returns>Returns true if level data exists, otherwise false.</returns>
+        public static bool VerifyLevel(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, COLLECTION_LSCO));
 
         #endregion
     }

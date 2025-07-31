@@ -89,13 +89,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddLightText(labelText);
             }
 
-            var search = RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(editorDialogTransform, "search");
+            var search = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(editorDialogTransform, "search");
 
             searchField = search.transform.GetChild(0).GetComponent<InputField>();
 
-            searchField.onValueChanged.ClearAll();
-            searchField.text = "";
-            searchField.onValueChanged.AddListener(_val =>
+            searchField.SetTextWithoutNotify(string.Empty);
+            searchField.onValueChanged.NewListener(_val =>
             {
                 searchTerm = _val;
                 StartCoroutine(RenderDialog());
@@ -129,14 +128,13 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddLightText(labelText);
                 }
 
-                var save = RTEditor.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(editorDialogTransform, "save");
+                var save = EditorLevelManager.inst.OpenLevelPopup.GameObject.transform.Find("search-box").gameObject.Duplicate(editorDialogTransform, "save");
 
                 saveField = save.transform.GetChild(0).GetComponent<InputField>();
                 UIManager.SetRectTransform(saveField.image.rectTransform, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(700f, 32f));
-                saveField.onValueChanged.ClearAll();
                 saveField.characterLimit = 0;
-                saveField.text = savePath;
-                saveField.onValueChanged.AddListener(_val => savePath = _val);
+                saveField.SetTextWithoutNotify(savePath);
+                saveField.onValueChanged.NewListener(_val => savePath = _val);
 
                 EditorThemeManager.AddInputField(saveField);
 
