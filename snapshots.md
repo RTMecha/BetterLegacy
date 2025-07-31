@@ -2,7 +2,14 @@
 
 ## Features
 ### Editor
-- Added a way to view your user ID and copy it to the MetaData editor.
+- Added a way to view your user ID and copy it to the Metadata editor.
+- Collaborators can now be added to a level. This means other users can post to the same level.
+
+## Changes
+### Editor
+- Overhauled the Metadata editor UI.
+
+## Fixes
 - Fixed Upload Visibility dropdown having some issues.
 
 # snapshot-2025.7.7 - (pre-1.8.0) [Jul 29, 2025]
