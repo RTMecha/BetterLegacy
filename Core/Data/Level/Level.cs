@@ -137,6 +137,11 @@ namespace BetterLegacy.Core.Data.Level
         public LevelPanel editorLevelPanel;
 
         /// <summary>
+        /// Info of the level for a level collection.
+        /// </summary>
+        public LevelInfo collectionInfo;
+
+        /// <summary>
         /// If achievements have been loaded.
         /// </summary>
         public bool loadedAchievements;

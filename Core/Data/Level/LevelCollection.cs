@@ -15,6 +15,7 @@ using BetterLegacy.Arcade.Interfaces;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 
@@ -252,12 +253,13 @@ namespace BetterLegacy.Core.Data.Level
         /// <param name="levelInfo">Level information to get the level from.</param>
         public void LoadLevel(LevelInfo levelInfo)
         {
-            var path = levelInfo.path;
+            var basePath = this.path;
+            var path =/* CoreHelper.InEditor ? levelInfo.editorPath : */levelInfo.path;
 
             // load via path
-            if (path != null && (RTFile.FileExists(RTFile.CombinePaths(path, path, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(path, path, Level.LEVEL_VGD))))
+            if (path != null && (RTFile.FileExists(RTFile.CombinePaths(basePath, path, Level.LEVEL_LSB)) || RTFile.FileExists(RTFile.CombinePaths(basePath, path, Level.LEVEL_VGD))))
             {
-                var levelFolder = RTFile.CombinePaths(path, path);
+                var levelFolder = RTFile.CombinePaths(basePath, path);
 
                 MetaData metadata = null;
 

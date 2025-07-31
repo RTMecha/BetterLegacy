@@ -492,12 +492,17 @@ namespace BetterLegacy.Editor.Data.Elements
                                     RTEditor.inst.HideWarningPopup();
                                     EditorManager.inst.DisplayNotification("Deleted info file!", 1.5f, EditorManager.NotificationType.Success);
                                 }, RTEditor.inst.HideWarningPopup);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Create Collection", () =>
+                            {
+                                EditorManager.inst.DisplayNotification($"todo", 2f, EditorManager.NotificationType.Error);
                             }));
 
                         return;
                     }
 
-                    RTEditor.inst.editorPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                    RTEditor.inst.editorPathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", string.Empty);
                     RTEditor.inst.UpdateEditorPath(false);
                 };
                 return;
@@ -539,6 +544,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             }),
                         };
                     else
+                    {
                         list = new List<ButtonFunction>()
                         {
                             new ButtonFunction("Open", () =>
@@ -624,6 +630,34 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
                             new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
                         };
+
+                        if (EditorLevelManager.inst.CurrentLevelCollection)
+                        {
+                            list.Add(new ButtonFunction(true));
+                            list.Add(new ButtonFunction("Move Earlier", () =>
+                            {
+                                if (Item.collectionInfo.index - 1 <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Cannot move the level earlier than the start!", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                EditorLevelManager.inst.CurrentLevelCollection.Move(Item.id, Item.collectionInfo.index - 1);
+                                EditorLevelManager.inst.RenderLevels();
+                            }));
+                            list.Add(new ButtonFunction("Move Later", () =>
+                            {
+                                if (Item.collectionInfo.index + 1 >= EditorLevelManager.inst.CurrentLevelCollection.levelInformation.Count)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Cannot move the level later than the end!", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                EditorLevelManager.inst.CurrentLevelCollection.Move(Item.id, Item.collectionInfo.index + 1);
+                                EditorLevelManager.inst.RenderLevels();
+                            }));
+                        }    
+                    }
 
                     EditorContextMenu.inst.ShowContextMenu(list);
 

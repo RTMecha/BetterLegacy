@@ -23,6 +23,7 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
@@ -78,6 +79,8 @@ namespace BetterLegacy.Editor.Managers
         /// The currently loaded level.
         /// </summary>
         public Level CurrentLevel { get; set; }
+
+        public LevelCollection CurrentLevelCollection { get; set; }
 
         /// <summary>
         /// Loaded editor levels.
@@ -207,10 +210,27 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.OpenLevelPopup.ClearContent();
 
             var list = new List<Coroutine>();
-            var files = Directory.GetDirectories(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath));
+            var fullPath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath);
+
+            try
+            {
+                var collectionPath = RTFile.CombinePaths(fullPath, LevelCollection.COLLECTION_LSCO);
+                if (RTFile.FileExists(collectionPath))
+                {
+                    var jn = JSON.Parse(RTFile.ReadFromFile(collectionPath));
+                    CurrentLevelCollection = LevelCollection.Parse(fullPath, jn, false);
+                }
+                else
+                    CurrentLevelCollection = null;
+            }
+            catch (Exception ex)
+            {
+                CurrentLevelCollection = null;
+                CoreHelper.LogError($"Had an exception with trying to read a collection file.\nException: {ex}");
+            }
 
             // Back
-            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath)) != RTEditor.inst.BeatmapsPath)
+            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(fullPath) != RTEditor.inst.BeatmapsPath)
             {
                 var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(RTEditor.inst.OpenLevelPopup.Content, "back");
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
@@ -252,35 +272,73 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
             }
 
-            foreach (var file in files)
+            if (CurrentLevelCollection)
             {
-                var path = RTFile.ReplaceSlash(file);
-
-                var levelPanel = new LevelPanel();
-
-                if (!Level.TryVerify(path, false, out Level level))
+                foreach (var levelInfo in CurrentLevelCollection.levelInformation)
                 {
-                    if (!EditorConfig.Instance.ShowFoldersInLevelList.Value)
+                    var path = levelInfo.editorPath;
+                    if (string.IsNullOrEmpty(path))
+                        path = levelInfo.path;
+                    if (string.IsNullOrEmpty(path))
                         continue;
 
-                    levelPanel.Init(path);
-                    LevelPanels.Add(levelPanel);
+                    Level level;
+                    if (!Level.TryVerify(RTFile.CombinePaths(fullPath, path), false, out level) ||
+                        !Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
+                        !(SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
+                        !LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level))
+                        continue;
 
-                    list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
+                    levelInfo.level = level;
+                    CurrentLevelCollection.levels.Add(level);
 
-                    continue;
+                    var levelPanel = new LevelPanel();
+                    levelPanel.Init(levelInfo.level);
+
+                    if (RTFile.FileExists(levelInfo.level.GetFile(Level.LEVEL_JPG)))
+                        list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
+                    else if (RTFile.FileExists(levelInfo.level.GetFile(Level.COVER_JPG)))
+                        list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
+                    else
+                    {
+                        levelPanel.SetDefaultIcon();
+                        LevelPanels.Add(levelPanel);
+                    }
                 }
-
-                levelPanel.Init(level);
-
-                if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
-                    list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
-                else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.COVER_JPG)))
-                    list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
-                else
+            }
+            else
+            {
+                var files = Directory.GetDirectories(fullPath);
+                foreach (var file in files)
                 {
-                    levelPanel.SetDefaultIcon();
-                    LevelPanels.Add(levelPanel);
+                    var path = RTFile.ReplaceSlash(file);
+
+                    var levelPanel = new LevelPanel();
+
+                    if (!Level.TryVerify(path, false, out Level level))
+                    {
+                        if (!EditorConfig.Instance.ShowFoldersInLevelList.Value)
+                            continue;
+
+                        levelPanel.Init(path);
+                        LevelPanels.Add(levelPanel);
+
+                        list.Add(levelPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
+
+                        continue;
+                    }
+
+                    levelPanel.Init(level);
+
+                    if (RTFile.FileExists(RTFile.CombinePaths(path, Level.LEVEL_JPG)))
+                        list.Add(levelPanel.LoadImageCoroutine(Level.LEVEL_JPG, LevelPanels.Add));
+                    else if (RTFile.FileExists(RTFile.CombinePaths(path, Level.COVER_JPG)))
+                        list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
+                    else
+                    {
+                        levelPanel.SetDefaultIcon();
+                        LevelPanels.Add(levelPanel);
+                    }
                 }
             }
 
@@ -1000,21 +1058,30 @@ namespace BetterLegacy.Editor.Managers
         {
             CoreHelper.Log($"Level Search: {EditorManager.inst.openFileSearch}\nLevel Sort: { RTEditor.inst.levelAscend} - { RTEditor.inst.levelSort}");
 
-            var levelPanels = RTEditor.inst.levelSort switch
-            {
-                LevelSort.Cover => LevelPanels.Order(x => x.Item && x.Item.icon != SteamWorkshop.inst.defaultSteamImageSprite, !RTEditor.inst.levelAscend),
-                LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.File => LevelPanels.Order(x => x.Path, !RTEditor.inst.levelAscend),
-                LevelSort.Title => LevelPanels.Order(x => x.Item?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.Difficulty => LevelPanels.Order(x => x.Item?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
-                LevelSort.DateEdited => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.DateCreated => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
-                LevelSort.DatePublished => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
-                _ => LevelPanels,
-            };
+            var levelPanels = LevelPanels;
 
-            levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+            if (!CurrentLevelCollection)
+            {
+                levelPanels = RTEditor.inst.levelSort switch
+                {
+                    LevelSort.Cover => LevelPanels.Order(x => x.Item && x.Item.icon != SteamWorkshop.inst.defaultSteamImageSprite, !RTEditor.inst.levelAscend),
+                    LevelSort.Artist => LevelPanels.Order(x => x.Item?.metadata?.artist?.name ?? string.Empty, !RTEditor.inst.levelAscend),
+                    LevelSort.Creator => LevelPanels.Order(x => x.Item?.metadata?.creator?.name ?? string.Empty, !RTEditor.inst.levelAscend),
+                    LevelSort.File => LevelPanels.Order(x => x.Path, !RTEditor.inst.levelAscend),
+                    LevelSort.Title => LevelPanels.Order(x => x.Item?.metadata?.song?.title ?? string.Empty, !RTEditor.inst.levelAscend),
+                    LevelSort.Difficulty => LevelPanels.Order(x => x.Item?.metadata?.song?.difficulty ?? 0, !RTEditor.inst.levelAscend),
+                    LevelSort.DateEdited => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateEdited ?? string.Empty, !RTEditor.inst.levelAscend),
+                    LevelSort.DateCreated => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.dateCreated ?? string.Empty, !RTEditor.inst.levelAscend),
+                    LevelSort.DatePublished => LevelPanels.Order(x => x.Item?.metadata?.beatmap?.datePublished ?? string.Empty, !RTEditor.inst.levelAscend),
+                    _ => LevelPanels,
+                };
+
+                levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+            }
+            else
+                levelPanels = LevelPanels.Order(x => x.Item?.collectionInfo?.index ?? 0, !RTEditor.inst.levelAscend);
+
+            var content = RTEditor.inst.OpenLevelPopup.Content;
 
             int num = 0;
             foreach (var levelPanel in levelPanels)
@@ -1022,20 +1089,20 @@ namespace BetterLegacy.Editor.Managers
                 var folder = levelPanel.Path;
                 var metadata = levelPanel.Item?.metadata;
 
-                levelPanel.SetActive(levelPanel.isFolder && RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
-                    !levelPanel.isFolder && (RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                levelPanel.SetActive(levelPanel.isFolder ? RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) :
+                    (RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
                         metadata == null || metadata != null &&
-                        (RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
-                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.artist.name) ||
-                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.creator.name) ||
-                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
-                        RTString.SearchString(EditorManager.inst.openFileSearch, LevelPanel.difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, LevelPanel.difficultyNames.Length - 1)]))));
+                        (RTString.SearchString(EditorManager.inst.openFileSearch,
+                            metadata.song.title,
+                            metadata.artist.name,
+                            metadata.creator.name,
+                            metadata.song.description,
+                            LevelPanel.difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, LevelPanel.difficultyNames.Length - 1)]))));
 
-                levelPanel.GameObject.transform.SetSiblingIndex(num);
+                if (num >= 0 && num < content.childCount)
+                    levelPanel.GameObject.transform.SetSiblingIndex(num);
                 num++;
             }
-
-            var content = RTEditor.inst.OpenLevelPopup.Content;
 
             if (content.Find("back"))
             {

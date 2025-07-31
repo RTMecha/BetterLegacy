@@ -142,6 +142,8 @@ namespace BetterLegacy.Core.Data.Level
             level.id = id;
 
             LevelManager.AssignSaveData(level);
+
+            level.collectionInfo = this;
         }
 
         /// <summary>
