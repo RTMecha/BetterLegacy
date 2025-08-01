@@ -2133,6 +2133,9 @@ namespace BetterLegacy.Core.Components.Player
             var index = PlayersData.Current.GetMaxIndex(playerIndex);
             playerObjects.ForLoop(playerObject =>
             {
+                if (playerObject.gameObject)
+                    return;
+
                 if (!playerObject.isCustom)
                 {
                     playerObject.gameObject.SetActive(playerObject.active);
@@ -2141,7 +2144,7 @@ namespace BetterLegacy.Core.Components.Player
 
                 var customObject = playerObject as RTCustomPlayerObject;
 
-                if (!Core || !customObject.gameObject)
+                if (!Core)
                     return;
 
                 var reference = customObject.reference;
