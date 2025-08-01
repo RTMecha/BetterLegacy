@@ -363,7 +363,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!CoreHelper.InEditor)
             {
-                if (LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level))
+                if (LevelManager.Levels.TryFind(x => x.id == id, out Level level))
                     LevelManager.Play(level);
                 else
                     SoundManager.inst.PlaySound(DefaultSounds.Block);
@@ -374,7 +374,7 @@ namespace BetterLegacy.Core.Helpers
             if (!CoreHelper.IsEditing)
                 return;
 
-            if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Item && x.Item.metadata is MetaData metaData && metaData.ID == modifier.value, out LevelPanel levelPanel))
+            if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Item && x.Item.metadata is MetaData metaData && metaData.ID == id, out LevelPanel levelPanel))
             {
                 if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
                     return;
@@ -462,10 +462,48 @@ namespace BetterLegacy.Core.Helpers
         {
             var levelInfo = new LevelInfo(modifier.GetValue(0, variables), modifier.GetValue(0, variables), modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetValue(4, variables));
 
+            if (!CoreHelper.InEditor)
+            {
+                if (LevelManager.Levels.TryFind(x => x.id == levelInfo.arcadeID, out Level level))
+                {
+                    LevelManager.Play(level);
+                    return;
+                }
+            }
+
+            if (CoreHelper.IsEditing)
+            {
+                if (EditorLevelManager.inst.LevelPanels.TryFind(x => x.Item && x.Item.metadata is MetaData metaData && metaData.ID == levelInfo.arcadeID, out LevelPanel levelPanel))
+                {
+                    if (!EditorConfig.Instance.ModifiersCanLoadLevels.Value)
+                        return;
+
+                    var path = System.IO.Path.GetFileName(levelPanel.Path);
+
+                    RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                    {
+                        string str = RTFile.BasePath;
+                        if (EditorConfig.Instance.ModifiersSavesBackup.Value)
+                        {
+                            GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
+                            {
+                                EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(RTFile.RemoveEndSlash(str))}", 2f, EditorManager.NotificationType.Success);
+                            });
+                        }
+
+                        EditorLevelManager.inst.LoadLevel(levelPanel.Item);
+                    }, RTEditor.inst.HideWarningPopup);
+                    return;
+                }
+                return;
+            }
+
             LevelCollection.DownloadLevel(null, levelInfo, level =>
             {
                 if (modifier.GetBool(5, true, variables))
                     LevelManager.Play(level);
+                else
+                    RTBeatmap.Current.Resume(); // in case of softlock
             });
         }
 
