@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Companion.Data.Parameters
 {
@@ -123,5 +125,18 @@ namespace BetterLegacy.Companion.Data.Parameters
             Prefab,
             Character,
         }
+    }
+
+    /// <summary>
+    /// Dialogue parameters passed from selected Timeline Objects.
+    /// </summary>
+    public class TimelineObjectsDialogueParameters : DialogueParameters
+    {
+        public TimelineObjectsDialogueParameters(List<TimelineObject> timelineObjects) : base() => this.timelineObjects = timelineObjects;
+
+        /// <summary>
+        /// List of timeline objects.
+        /// </summary>
+        public List<TimelineObject> timelineObjects = new List<TimelineObject>();
     }
 }

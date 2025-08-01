@@ -880,6 +880,7 @@ namespace BetterLegacy.Companion.Entity
             checks.Add(new ExampleCheck(Checks.USER_IS_TORI, () => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "karasutori"));
             checks.Add(new ExampleCheck(Checks.USER_IS_MONSTER, () => CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower() == "monster"));
             checks.Add(new ExampleCheck(Checks.USER_IS_APPY, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower(), "appy", "appysketch", "applebutter")));
+            checks.Add(new ExampleCheck(Checks.USER_IS_TERA, () => CoreHelper.Equals(CoreConfig.Instance.DisplayName.Value.Remove(" ").ToLower(), "quartercut", "@quartercut")));
             checks.Add(new ExampleCheck(Checks.USER_IS_DEFAULT, () => CoreConfig.Instance.DisplayName.Value == CoreConfig.Instance.DisplayName.Default));
             checks.Add(new ExampleCheck(Checks.TIME_LONGER_THAN_10_HOURS, () => Time.time > 36000f));
             checks.Add(new ExampleCheck(Checks.OBJECTS_ALIVE_COUNT_HIGH, () => RTLevel.Current && RTLevel.Current.objectEngine && RTLevel.Current.objectEngine.spawner && RTLevel.Current.objectEngine.spawner.activateList.Count > 900));
@@ -930,6 +931,8 @@ namespace BetterLegacy.Companion.Entity
 
             public const string BEING_DRAGGED = "Being Dragged";
 
+            #region Users
+
             public const string USER_IS_SLEEPYZ = "User Is Sleepyz";
 
             public const string USER_IS_RTMECHA = "User Is RTMecha";
@@ -944,7 +947,11 @@ namespace BetterLegacy.Companion.Entity
 
             public const string USER_IS_APPY = "User Is Appy";
 
+            public const string USER_IS_TERA = "Is Tera";
+
             public const string USER_IS_DEFAULT = "User Is Default";
+
+            #endregion
 
             public const string TIME_LONGER_THAN_10_HOURS = "Time Longer Than 10 Hours";
 
