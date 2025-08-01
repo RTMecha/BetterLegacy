@@ -74,6 +74,11 @@ namespace BetterLegacy.Core.Helpers
         public static Level CurrentLevel => InEditor ? EditorLevelManager.inst.CurrentLevel : LevelManager.CurrentLevel;
 
         /// <summary>
+        /// If the runtime is sequencing.
+        /// </summary>
+        public static bool Sequencing => (Playing || Reversing);
+
+        /// <summary>
         /// If the game is loading.
         /// </summary>
         public static bool Loading => GameManager.inst && GameManager.inst.gameState == GameManager.State.Loading;
