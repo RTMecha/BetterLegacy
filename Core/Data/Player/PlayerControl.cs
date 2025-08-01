@@ -97,6 +97,10 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public bool sprintSneakActive = false;
 
+        public float sprintSpeed = 1.3f;
+
+        public float sneakSpeed = 0.1f;
+
         /// <summary>
         /// If the player can boost. Managed by both the model and the control.
         /// </summary>
@@ -144,6 +148,8 @@ namespace BetterLegacy.Core.Data.Player
             hitCooldown = orig.hitCooldown;
             collisionAccurate = orig.collisionAccurate;
             sprintSneakActive = orig.sprintSneakActive;
+            sprintSpeed = orig.sprintSpeed;
+            sneakSpeed = orig.sneakSpeed;
             TickModifierBlock = orig.TickModifierBlock?.Copy();
             BoostModifierBlock = orig.BoostModifierBlock?.Copy();
             CollideModifierBlock = orig.CollideModifierBlock?.Copy();
@@ -171,6 +177,10 @@ namespace BetterLegacy.Core.Data.Player
                 collisionAccurate = jn["collision_acc"].AsBool;
             if (jn["sprint_sneak"] != null)
                 sprintSneakActive = jn["sprint_sneak"].AsBool;
+            if (jn["sprint_speed"] != null)
+                sprintSpeed = jn["sprint_speed"].AsFloat;
+            if (jn["sneak_speed"] != null)
+                sneakSpeed = jn["sneak_speed"].AsFloat;
 
             if (jn["jump_gravity"] != null)
                 jumpGravity = jn["jump_gravity"].AsFloat;
@@ -235,6 +245,10 @@ namespace BetterLegacy.Core.Data.Player
                 jn["collision_acc"] = collisionAccurate;
             if (sprintSneakActive)
                 jn["sprint_sneak"] = sprintSneakActive;
+            if (sprintSpeed != 1.3f)
+                jn["sprint_speed"] = sprintSpeed;
+            if (sneakSpeed != 0.1f)
+                jn["sneak_speed"] = sneakSpeed;
 
             if (jumpGravity != 40f)
                 jn["jump_gravity"] = jumpGravity;

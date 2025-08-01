@@ -471,6 +471,8 @@ namespace BetterLegacy.Core.Data.Player
             hitCooldown = basePart.hitCooldown,
             collisionAccurate = basePart.collisionAccurate,
             sprintSneakActive = basePart.sprintSneakActive,
+            sprintSpeed = basePart.sprintSpeed,
+            sneakSpeed = basePart.sneakSpeed,
             canBoost = basePart.canBoost,
         };
 
@@ -524,6 +526,10 @@ namespace BetterLegacy.Core.Data.Player
 
             public bool sprintSneakActive = false;
 
+            public float sprintSpeed = 1.3f;
+
+            public float sneakSpeed = 0.1f;
+
             public enum BaseRotateMode
             {
                 RotateToDirection,
@@ -559,6 +565,8 @@ namespace BetterLegacy.Core.Data.Player
                 rotationCurveType = orig.rotationCurveType;
                 collisionAccurate = orig.collisionAccurate;
                 sprintSneakActive = orig.sprintSneakActive;
+                sprintSpeed = orig.sprintSpeed;
+                sneakSpeed = orig.sneakSpeed;
                 jumpGravity = orig.jumpGravity;
                 jumpIntensity = orig.jumpIntensity;
                 jumpCount = orig.jumpCount;
@@ -604,8 +612,10 @@ namespace BetterLegacy.Core.Data.Player
                     sprintSneakActive = jn["sprsneak"].AsBool;
                 if (jn["spr_sneak"] != null)
                     sprintSneakActive = jn["spr_sneak"].AsBool;
-                if (jn["can_boost"] != null)
-                    canBoost = jn["can_boost"].AsBool;
+                if (jn["sprint_speed"] != null)
+                    sprintSpeed = jn["sprint_speed"].AsFloat;
+                if (jn["sneak_speed"] != null)
+                    sneakSpeed = jn["sneak_speed"].AsFloat;
 
                 if (jn["jump_gravity"] != null)
                     jumpGravity = jn["jump_gravity"].AsFloat;
@@ -617,6 +627,8 @@ namespace BetterLegacy.Core.Data.Player
                     jumpCount = jn["jump_count"].AsInt;
                 if (jn["jump_boost_count"] != null)
                     jumpBoostCount = jn["jump_boost_count"].AsInt;
+                if (jn["can_boost"] != null)
+                    canBoost = jn["can_boost"].AsBool;
             }
 
             public override JSONNode ToJSON()
@@ -655,6 +667,10 @@ namespace BetterLegacy.Core.Data.Player
                     jn["collision_acc"] = collisionAccurate;
                 if (sprintSneakActive)
                     jn["spr_sneak"] = sprintSneakActive;
+                if (sprintSpeed != 1.3f)
+                    jn["sprint_speed"] = sprintSpeed;
+                if (sneakSpeed != 0.1f)
+                    jn["sneak_speed"] = sneakSpeed;
 
                 if (jumpGravity != 40f)
                     jn["jump_gravity"] = jumpGravity;
