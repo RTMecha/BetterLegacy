@@ -177,10 +177,10 @@ namespace BetterLegacy.Core.Data.Level
             showAfterUnlock = jn["show_after_unlock"].AsBool,
             skip = jn["skip"].AsBool,
 
-            requireUnlock = jn["require_unlock"].AsBool,
             overwriteRequireUnlock = jn["require_unlock"] != null,
-            unlockAfterCompletion = jn["unlock_complete"].AsBool,
+            requireUnlock = jn["require_unlock"].AsBool,
             overwriteUnlockAfterCompletion = jn["unlock_complete"] != null,
+            unlockAfterCompletion = jn["unlock_complete"].AsBool,
         };
 
         /// <summary>
