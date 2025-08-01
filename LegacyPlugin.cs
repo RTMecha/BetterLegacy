@@ -282,7 +282,7 @@ namespace BetterLegacy
 
         #region Profile
 
-        public static string UserID => authData["id"];
+        public static string UserID => authData == null ? string.Empty : authData["id"];
 
         public static void SaveProfile()
         {
