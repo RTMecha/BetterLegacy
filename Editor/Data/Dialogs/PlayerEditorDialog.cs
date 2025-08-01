@@ -219,6 +219,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             BaseTab.RotationCurve = SetupDropdown("Base Rotation Curve", EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.CollisionAccurate = SetupBool("Base Collision Accurate", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.SprintSneakActive = SetupBool("Base Sprint Sneak Active", PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.SprintSpeed = SetupNumber("Base Sprint Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
+            BaseTab.SneakSpeed = SetupNumber("Base Sneak Speed", PlayerEditor.Tab.Base, editorTab: BaseTab);
             BaseTab.CanBoost = SetupBool("Base Can Boost", PlayerEditor.Tab.Base, editorTab: BaseTab);
 
             BaseTab.JumpGravity = SetupNumber("Base Jump Gravity", PlayerEditor.Tab.Base, editorTab: BaseTab);
@@ -1014,6 +1016,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorDropdown RotationCurve { get; set; }
         public PlayerEditorToggle CollisionAccurate { get; set; }
         public PlayerEditorToggle SprintSneakActive { get; set; }
+        public PlayerEditorNumber SprintSpeed { get; set; }
+        public PlayerEditorNumber SneakSpeed { get; set; }
+
         public PlayerEditorToggle CanBoost { get; set; }
 
         public PlayerEditorNumber JumpGravity { get; set; }

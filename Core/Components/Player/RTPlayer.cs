@@ -263,7 +263,16 @@ namespace BetterLegacy.Core.Components.Player
         public float idleSpeed = 20f;
         public float boostSpeed = 85f;
 
-        public float SprintSneakSpeed => Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? 1.3f : FaceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
+        public float SprintSneakSpeed
+        {
+            get
+            {
+                var control = Core?.GetControl() ?? new PlayerControl();
+                var sprintSpeed = control.sprintSpeed;
+                var sneakSpeed = control.sneakSpeed;
+                return Model.basePart.sprintSneakActive ? FaceController.Sprint.IsPressed ? sprintSpeed : FaceController.Sneak.IsPressed ? sneakSpeed : 1f : 1f;
+            }
+        }
 
         /// <summary>
         /// If negative zoom should be included with calculating player bounds.

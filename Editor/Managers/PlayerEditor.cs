@@ -929,7 +929,27 @@ namespace BetterLegacy.Editor.Managers
                 currentModel.basePart.sprintSneakActive = _val;
                 PlayerManager.UpdatePlayerModels();
             });
+
+            RenderSingle(Dialog.BaseTab.SprintSpeed.Field, currentModel.basePart.sprintSpeed,
+                onValueChanged: _val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        currentModel.basePart.sprintSpeed = num;
+                        PlayerManager.UpdatePlayerModels();
+                    }
+                });
             
+            RenderSingle(Dialog.BaseTab.SneakSpeed.Field, currentModel.basePart.sneakSpeed,
+                onValueChanged: _val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        currentModel.basePart.sneakSpeed = num;
+                        PlayerManager.UpdatePlayerModels();
+                    }
+                });
+
             Dialog.BaseTab.CanBoost.Toggle.SetIsOnWithoutNotify(currentModel.basePart.canBoost);
             Dialog.BaseTab.CanBoost.Toggle.onValueChanged.NewListener(_val =>
             {
