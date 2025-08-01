@@ -458,6 +458,26 @@ namespace BetterLegacy.Core.Helpers
                 LevelManager.Play(level);
         }
 
+        public static void loadLevelCollection(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            if (CoreHelper.InEditor || !LevelManager.LevelCollections.TryFind(x => x.id == id, out LevelCollection levelCollection))
+                return;
+
+            var levelID = modifier.GetValue(1, variables);
+
+            var entryLevelIndex = levelCollection.EntryLevelIndex;
+            if (!string.IsNullOrEmpty(levelID) && LevelManager.Levels.TryFindIndex(x => x && x.id == levelID, out int arcadeLevelIndex))
+                entryLevelIndex = arcadeLevelIndex;
+            if (!string.IsNullOrEmpty(levelID) && Core.Managers.Networking.SteamWorkshopManager.inst.Levels.TryFindIndex(x => x && x.id == levelID, out int steamLevelIndex))
+                entryLevelIndex = steamLevelIndex;
+
+            if (entryLevelIndex < 0)
+                return;
+
+            levelCollection.DownloadLevel(levelCollection.levelInformation[entryLevelIndex], LevelManager.Play);
+        }
+
         public static void downloadLevel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var levelInfo = new LevelInfo(modifier.GetValue(0, variables), modifier.GetValue(0, variables), modifier.GetValue(1, variables), modifier.GetValue(2, variables), modifier.GetValue(3, variables), modifier.GetValue(4, variables));

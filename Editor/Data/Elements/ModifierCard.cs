@@ -673,6 +673,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierActions.loadLevelCollection): {
+                        StringGenerator(modifier, reference, "Collection ID", 0);
+                        StringGenerator(modifier, reference, "Level ID", 1);
+
+                        break;
+                    }
                 case nameof(ModifierActions.downloadLevel): {
                         StringGenerator(modifier, reference, "Arcade ID", 0);
                         StringGenerator(modifier, reference, "Server ID", 1);

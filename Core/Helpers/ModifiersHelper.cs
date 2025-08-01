@@ -755,6 +755,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.loadLevelPrevious),  ModifierActions.loadLevelPrevious, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.loadLevelHub),  ModifierActions.loadLevelHub, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.loadLevelInCollection),  ModifierActions.loadLevelInCollection, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.loadLevelCollection),  ModifierActions.loadLevelCollection, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.downloadLevel),  ModifierActions.downloadLevel, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.endLevel),  ModifierActions.endLevel, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.setAudioTransition),  ModifierActions.setAudioTransition, ModifierCompatibility.LevelControlCompatible),
