@@ -606,6 +606,11 @@ namespace BetterLegacy.Editor.Managers
                     levelCollectionPanel.SetDefaultIcon();
                     LevelCollectionPanels.Add(levelCollectionPanel);
                 }
+
+                if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.BANNER_PNG)))
+                    list.Add(levelCollectionPanel.LoadBannerCoroutine(LevelCollection.BANNER_PNG));
+                else if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.BANNER_JPG)))
+                    list.Add(levelCollectionPanel.LoadBannerCoroutine(LevelCollection.BANNER_JPG));
             }
 
             if (list.Count >= 1)

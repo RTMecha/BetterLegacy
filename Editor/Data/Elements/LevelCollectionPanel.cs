@@ -557,6 +557,33 @@ namespace BetterLegacy.Editor.Data.Elements
                 SetDefaultIcon();
                 onLoad?.Invoke(this);
             }));
+        
+        /// <summary>
+        /// Loads the level collections' banner.
+        /// </summary>
+        /// <param name="file">Image file to load.</param>
+        /// <param name="onLoad">Action to run when the image is loaded.</param>
+        /// <returns>Returns a generated coroutine.</returns>
+        public Coroutine LoadBannerCoroutine(string file, Action<LevelCollectionPanel> onLoad = null) => CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"file://{RTFile.CombinePaths(Path, file)}",
+            cover =>
+            {
+                if (!cover)
+                {
+                    if (Item)
+                        Item.banner = null;
+                    onLoad?.Invoke(this);
+                    return;
+                }
+                if (Item)
+                    Item.banner = SpriteHelper.CreateSprite(cover);
+                onLoad?.Invoke(this);
+            },
+            (errorMsg, handlerText) =>
+            {
+                if (Item)
+                    Item.banner = null;
+                onLoad?.Invoke(this);
+            }));
 
         /// <summary>
         /// Sets the default icon.
