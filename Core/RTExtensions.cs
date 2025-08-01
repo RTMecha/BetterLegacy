@@ -642,6 +642,83 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Gets an item at an index. If the index is outside the bounds of the list, gets a default item.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="index">Index of the item to get.</param>
+        /// <param name="defaultItem">Default item.</param>
+        /// <returns>If the index is in the range of the array, returns the item at the index, otherwise returns <paramref name="defaultItem"/>.</returns>
+        public static T GetAtOrDefault<T>(this List<T> list, int index, T defaultItem) => list.TryGetAt(index, out T result) ? result : defaultItem;
+
+        /// <summary>
+        /// Gets an item at an index. If the index is outside the bounds of the array, gets a default item.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="index">Index of the item to get.</param>
+        /// <param name="defaultItem">Default item.</param>
+        /// <returns>If the index is in the range of the array, returns the item at the index, otherwise returns <paramref name="defaultItem"/>.</returns>
+        public static T GetAtOrDefault<T>(this T[] array, int index, T defaultItem) => array.TryGetAt(index, out T result) ? result : defaultItem;
+
+        /// <summary>
+        /// Tries to add or insert an item to a list.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="index">Index to insert at or add.</param>
+        /// <param name="item">Item to add.</param>
+        /// <returns>Returns true if the item was successfully added, otherwise returns false.</returns>
+        public static bool TryAdd<T>(this List<T> list, int index, T item)
+        {
+            if (index < 0)
+                return false;
+
+            if (index >= list.Count)
+                list.Add(item);
+            else
+                list[index] = item;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Overwrites an item in a list that matches a predicate.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="predicate">Predicate to find a matching item.</param>
+        /// <param name="item">Item to overwrite with.</param>
+        public static void Overwrite<T>(this List<T> list, Func<T, int, bool> predicate, T item)
+        {
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            list.ForLoop((other, index) =>
+            {
+                if (predicate(other, index))
+                    list[index] = item;
+            });
+        }
+
+        /// <summary>
+        /// Overwrites an item in a list that matches a predicate.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="predicate">Predicate to find a matching item.</param>
+        /// <param name="item">Item to overwrite with.</param>
+        public static void Overwrite<T>(this List<T> list, Func<T, int, bool> predicate, Func<T> get)
+        {
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            if (get == null)
+                throw new ArgumentNullException(nameof(get));
+
+            list.ForLoop((other, index) =>
+            {
+                if (predicate(other, index))
+                    list[index] = get();
+            });
+        }
+
+        /// <summary>
         /// Moves an item in a list to a different index.
         /// </summary>
         /// <typeparam name="T">The type of the List</typeparam>
