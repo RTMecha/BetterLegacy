@@ -100,7 +100,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var description = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "description");
             description.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
             DescriptionField = description.GetComponent<InputField>();
-            DescriptionField.textComponent.alignment = TextAnchor.MiddleLeft;
+            DescriptionField.textComponent.alignment = TextAnchor.UpperLeft;
             EditorThemeManager.AddInputField(DescriptionField);
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Creator");
@@ -187,8 +187,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public void CollapseBanner(bool collapse)
         {
-            BannerImage.rectTransform.sizeDelta = new Vector2(collapse ? 32f : 512f, collapse ? 18.20444f : 291.2711f);
-            BannerBase.transform.AsRT().sizeDelta = new Vector2(764f, collapse ? 94f : 354f);
+            BannerImage.rectTransform.sizeDelta = new Vector2(collapse ? 32f : 512f, collapse ? 18.20444f : 170.6666f);
+            BannerBase.transform.AsRT().sizeDelta = new Vector2(764f, collapse ? 94f : 234f);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(Content);
         }
