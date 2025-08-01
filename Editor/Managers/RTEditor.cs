@@ -6174,6 +6174,70 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.ColorPickerPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.ColorPickerPopupRotCloseEase,
             },
+            new EditorAnimation(EditorPopup.DEFAULT_TAGS_POPUP)
+            {
+                ActiveConfig = EditorConfig.Instance.DefaultTagsPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.DefaultTagsPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.DefaultTagsPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.DefaultTagsPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.DefaultTagsPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.DefaultTagsPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.DefaultTagsPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.DefaultTagsPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.DefaultTagsPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.DefaultTagsPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.DefaultTagsPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.DefaultTagsPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.DefaultTagsPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.DefaultTagsPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.DefaultTagsPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.DefaultTagsPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.DefaultTagsPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.DefaultTagsPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.DefaultTagsPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.DefaultTagsPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.DefaultTagsPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.DefaultTagsPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.DefaultTagsPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.DefaultTagsPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.DefaultTagsPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.DefaultTagsPopupRotCloseEase,
+            },
+            new EditorAnimation(EditorPopup.LEVEL_COLLECTION_POPUP)
+            {
+                ActiveConfig = EditorConfig.Instance.LevelCollectionsPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.LevelCollectionsPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.LevelCollectionsPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.LevelCollectionsPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.LevelCollectionsPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.LevelCollectionsPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.LevelCollectionsPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.LevelCollectionsPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.LevelCollectionsPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.LevelCollectionsPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.LevelCollectionsPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.LevelCollectionsPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.LevelCollectionsPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.LevelCollectionsPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.LevelCollectionsPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.LevelCollectionsPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.LevelCollectionsPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.LevelCollectionsPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.LevelCollectionsPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.LevelCollectionsPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.LevelCollectionsPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.LevelCollectionsPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.LevelCollectionsPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.LevelCollectionsPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.LevelCollectionsPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.LevelCollectionsPopupRotCloseEase,
+            },
 
             new EditorAnimation("File Dropdown")
             {

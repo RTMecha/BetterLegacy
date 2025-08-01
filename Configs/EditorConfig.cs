@@ -1184,6 +1184,74 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Default Tags Popup
+
+        public Setting<bool> DefaultTagsPopupActive { get; set; }
+
+        public Setting<bool> DefaultTagsPopupPosActive { get; set; }
+        public Setting<Vector2> DefaultTagsPopupPosOpen { get; set; }
+        public Setting<Vector2> DefaultTagsPopupPosClose { get; set; }
+        public Setting<Vector2> DefaultTagsPopupPosOpenDuration { get; set; }
+        public Setting<Vector2> DefaultTagsPopupPosCloseDuration { get; set; }
+        public Setting<Easing> DefaultTagsPopupPosXOpenEase { get; set; }
+        public Setting<Easing> DefaultTagsPopupPosXCloseEase { get; set; }
+        public Setting<Easing> DefaultTagsPopupPosYOpenEase { get; set; }
+        public Setting<Easing> DefaultTagsPopupPosYCloseEase { get; set; }
+
+        public Setting<bool> DefaultTagsPopupScaActive { get; set; }
+        public Setting<Vector2> DefaultTagsPopupScaOpen { get; set; }
+        public Setting<Vector2> DefaultTagsPopupScaClose { get; set; }
+        public Setting<Vector2> DefaultTagsPopupScaOpenDuration { get; set; }
+        public Setting<Vector2> DefaultTagsPopupScaCloseDuration { get; set; }
+        public Setting<Easing> DefaultTagsPopupScaXOpenEase { get; set; }
+        public Setting<Easing> DefaultTagsPopupScaXCloseEase { get; set; }
+        public Setting<Easing> DefaultTagsPopupScaYOpenEase { get; set; }
+        public Setting<Easing> DefaultTagsPopupScaYCloseEase { get; set; }
+
+        public Setting<bool> DefaultTagsPopupRotActive { get; set; }
+        public Setting<float> DefaultTagsPopupRotOpen { get; set; }
+        public Setting<float> DefaultTagsPopupRotClose { get; set; }
+        public Setting<float> DefaultTagsPopupRotOpenDuration { get; set; }
+        public Setting<float> DefaultTagsPopupRotCloseDuration { get; set; }
+        public Setting<Easing> DefaultTagsPopupRotOpenEase { get; set; }
+        public Setting<Easing> DefaultTagsPopupRotCloseEase { get; set; }
+
+        #endregion
+
+        #region Level Collections Popup
+
+        public Setting<bool> LevelCollectionsPopupActive { get; set; }
+
+        public Setting<bool> LevelCollectionsPopupPosActive { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupPosOpen { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupPosClose { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupPosOpenDuration { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupPosCloseDuration { get; set; }
+        public Setting<Easing> LevelCollectionsPopupPosXOpenEase { get; set; }
+        public Setting<Easing> LevelCollectionsPopupPosXCloseEase { get; set; }
+        public Setting<Easing> LevelCollectionsPopupPosYOpenEase { get; set; }
+        public Setting<Easing> LevelCollectionsPopupPosYCloseEase { get; set; }
+
+        public Setting<bool> LevelCollectionsPopupScaActive { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupScaOpen { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupScaClose { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupScaOpenDuration { get; set; }
+        public Setting<Vector2> LevelCollectionsPopupScaCloseDuration { get; set; }
+        public Setting<Easing> LevelCollectionsPopupScaXOpenEase { get; set; }
+        public Setting<Easing> LevelCollectionsPopupScaXCloseEase { get; set; }
+        public Setting<Easing> LevelCollectionsPopupScaYOpenEase { get; set; }
+        public Setting<Easing> LevelCollectionsPopupScaYCloseEase { get; set; }
+
+        public Setting<bool> LevelCollectionsPopupRotActive { get; set; }
+        public Setting<float> LevelCollectionsPopupRotOpen { get; set; }
+        public Setting<float> LevelCollectionsPopupRotClose { get; set; }
+        public Setting<float> LevelCollectionsPopupRotOpenDuration { get; set; }
+        public Setting<float> LevelCollectionsPopupRotCloseDuration { get; set; }
+        public Setting<Easing> LevelCollectionsPopupRotOpenEase { get; set; }
+        public Setting<Easing> LevelCollectionsPopupRotCloseEase { get; set; }
+
+        #endregion
+
         #region File Dropdown
 
         public Setting<bool> FileDropdownActive { get; set; }
@@ -2564,6 +2632,74 @@ namespace BetterLegacy.Configs
             ColorPickerPopupRotCloseDuration = Bind(this, ANIMATIONS, "Color Picker Popup Close Rotation Duration", 0f, "The duration of closing.");
             ColorPickerPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
             ColorPickerPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Color Picker Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Default Tags Popup
+
+            DefaultTagsPopupActive = Bind(this, ANIMATIONS, "Default Tags Popup Active", true, "If the popup animation should play.");
+
+            DefaultTagsPopupPosActive = Bind(this, ANIMATIONS, "Default Tags Popup Animate Position", false, "If position should be animated.");
+            DefaultTagsPopupPosOpen = Bind(this, ANIMATIONS, "Default Tags Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DefaultTagsPopupPosClose = Bind(this, ANIMATIONS, "Default Tags Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DefaultTagsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Default Tags Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            DefaultTagsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Default Tags Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            DefaultTagsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            DefaultTagsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            DefaultTagsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            DefaultTagsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
+
+            DefaultTagsPopupScaActive = Bind(this, ANIMATIONS, "Default Tags Popup Animate Scale", true, "If scale should be animated.");
+            DefaultTagsPopupScaOpen = Bind(this, ANIMATIONS, "Default Tags Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DefaultTagsPopupScaClose = Bind(this, ANIMATIONS, "Default Tags Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DefaultTagsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Default Tags Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            DefaultTagsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Default Tags Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            DefaultTagsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            DefaultTagsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            DefaultTagsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            DefaultTagsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
+
+            DefaultTagsPopupRotActive = Bind(this, ANIMATIONS, "Default Tags Popup Animate Rotation", false, "If rotation should be animated.");
+            DefaultTagsPopupRotOpen = Bind(this, ANIMATIONS, "Default Tags Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            DefaultTagsPopupRotClose = Bind(this, ANIMATIONS, "Default Tags Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            DefaultTagsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Default Tags Popup Open Rotation Duration", 0f, "The duration of opening.");
+            DefaultTagsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Default Tags Popup Close Rotation Duration", 0f, "The duration of closing.");
+            DefaultTagsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            DefaultTagsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Default Tags Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Level Collections Popup
+
+            LevelCollectionsPopupActive = Bind(this, ANIMATIONS, "Level Collections Popup Active", true, "If the popup animation should play.");
+
+            LevelCollectionsPopupPosActive = Bind(this, ANIMATIONS, "Level Collections Popup Animate Position", false, "If position should be animated.");
+            LevelCollectionsPopupPosOpen = Bind(this, ANIMATIONS, "Level Collections Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            LevelCollectionsPopupPosClose = Bind(this, ANIMATIONS, "Level Collections Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            LevelCollectionsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Level Collections Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            LevelCollectionsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Level Collections Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            LevelCollectionsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            LevelCollectionsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            LevelCollectionsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            LevelCollectionsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
+
+            LevelCollectionsPopupScaActive = Bind(this, ANIMATIONS, "Level Collections Popup Animate Scale", true, "If scale should be animated.");
+            LevelCollectionsPopupScaOpen = Bind(this, ANIMATIONS, "Level Collections Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            LevelCollectionsPopupScaClose = Bind(this, ANIMATIONS, "Level Collections Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            LevelCollectionsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Level Collections Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            LevelCollectionsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Level Collections Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            LevelCollectionsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            LevelCollectionsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            LevelCollectionsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            LevelCollectionsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
+
+            LevelCollectionsPopupRotActive = Bind(this, ANIMATIONS, "Level Collections Popup Animate Rotation", false, "If rotation should be animated.");
+            LevelCollectionsPopupRotOpen = Bind(this, ANIMATIONS, "Level Collections Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            LevelCollectionsPopupRotClose = Bind(this, ANIMATIONS, "Level Collections Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            LevelCollectionsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Level Collections Popup Open Rotation Duration", 0f, "The duration of opening.");
+            LevelCollectionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Level Collections Popup Close Rotation Duration", 0f, "The duration of closing.");
+            LevelCollectionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            LevelCollectionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 
