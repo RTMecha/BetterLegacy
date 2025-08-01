@@ -736,6 +736,25 @@ namespace BetterLegacy.Core.Data.Level
         /// <returns>Returns true if level data exists, otherwise false.</returns>
         public static bool VerifyLevel(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, COLLECTION_LSCO));
 
+        /// <summary>
+        /// Gets the rank of the collection.
+        /// </summary>
+        /// <returns>Returns the rank.</returns>
+        public Rank GetRank()
+        {
+            var hits = 0;
+            for (int i = 0; i < levelInformation.Count; i++)
+            {
+                var levelInfo = levelInformation[i];
+
+                var saveData = LevelManager.GetSaveData(levelInfo.id);
+                var levelHits = saveData?.Hits ?? -1;
+                if (levelHits > 0)
+                    hits += levelHits;
+            }
+            return LevelManager.GetLevelRank(hits);
+        }
+
         #endregion
     }
 }

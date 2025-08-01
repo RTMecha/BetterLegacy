@@ -1326,7 +1326,13 @@ namespace BetterLegacy.Arcade.Interfaces
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var collection = collections[i];
-                
+
+                var rank = collection.GetRank();
+
+                var isSSRank = rank == Rank.SS;
+
+                MenuImage shine = null;
+
                 elements.Add(new MenuButton
                 {
                     id = collection.id,
@@ -1354,7 +1360,114 @@ namespace BetterLegacy.Arcade.Interfaces
                     wait = !regenerateUI,
                     playSound = !regenerateUI,
                     mask = true,
+
+                    allowOriginalHoverMethods = true,
+                    enterFunc = () =>
+                    {
+                        if (!isSSRank)
+                            return;
+
+                        var animation = new RTAnimation($"{collection.id} Level Shine")
+                        {
+                            animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, -240f, Ease.Linear),
+                                    new FloatKeyframe(1f, 240f, Ease.CircInOut),
+                                }, x => { if (shine != null && shine.gameObject) shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(x, 0f); }),
+                            },
+                            loop = true,
+                        };
+
+                        AnimationManager.inst.Play(animation);
+                    },
+                    exitFunc = () =>
+                    {
+                        if (AnimationManager.inst.TryFindAnimations(x => x.name == $"{collection.id} Level Shine", out List<RTAnimation> animations))
+                            for (int i = 0; i < animations.Count; i++)
+                                AnimationManager.inst.Remove(animations[i].id);
+
+                        if (!isSSRank)
+                            return;
+
+                        if (shine != null && shine.gameObject)
+                            shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(-240f, 0f);
+                    },
                 });
+
+                elements.Add(new MenuImage
+                {
+                    id = "0",
+                    name = "Difficulty",
+                    parent = collection.id,
+                    rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
+                    overrideColor = collection.Difficulty.Color,
+                    useOverrideColor = true,
+                    opacity = 1f,
+                    roundedSide = SpriteHelper.RoundedSide.Left,
+                    length = 0f,
+                    wait = false,
+                });
+
+                if (rank != Rank.Null)
+                    elements.Add(new MenuText
+                    {
+                        id = "0",
+                        name = "Rank",
+                        parent = collection.id,
+                        text = $"<size=70><b><align=center>{rank.DisplayName}",
+                        rect = RectValues.Default.AnchoredPosition(65f, 25f).SizeDelta(64f, 64f),
+                        overrideTextColor = rank.Color,
+                        useOverrideTextColor = true,
+                        hideBG = true,
+                        length = 0f,
+                        wait = false,
+                    });
+
+                if (isSSRank)
+                {
+                    shine = new MenuImage
+                    {
+                        id = LSText.randomNumString(16),
+                        name = "Shine Base",
+                        parent = collection.id,
+                        rect = RectValues.Default.AnchoredPosition(-240f, 0f).Rotation(15f),
+                        opacity = 0f,
+                        length = 0f,
+                        wait = false,
+                    };
+
+                    var shine1 = new MenuImage
+                    {
+                        id = "0",
+                        name = "Shine 1",
+                        parent = shine.id,
+                        rect = RectValues.Default.AnchoredPosition(-12f, 0f).SizeDelta(8f, 400f),
+                        overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        length = 0f,
+                        wait = false,
+                    };
+
+                    var shine2 = new MenuImage
+                    {
+                        id = "0",
+                        name = "Shine 2",
+                        parent = shine.id,
+                        rect = RectValues.Default.AnchoredPosition(12f, 0f).SizeDelta(20f, 400f),
+                        overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        length = 0f,
+                        wait = false,
+                    };
+
+                    elements.Add(shine);
+                    elements.Add(shine1);
+                    elements.Add(shine2);
+                }
 
                 num++;
             }
