@@ -2,6 +2,7 @@
 ## Features
 ### Core
 - Added a Global toggle to the getAchievementUnlocked and achievementUnlocked modifiers.
+- Added Sprint & Sneak speeds to the Player.
 
 ### Example Companion
 - Added some dialogues to Example.
@@ -9,6 +10,7 @@
 ## Fixes
 - Fixed the downloadLevel modifier causing a softlock hopefully.
 - Fixed editor breaking if you were never logged in.
+- Fixed some level info settings not working in level collections.
 
 ------------------------------------------------------------------------------------------
 
