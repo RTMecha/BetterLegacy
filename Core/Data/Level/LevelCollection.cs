@@ -199,8 +199,12 @@ namespace BetterLegacy.Core.Data.Level
 
         public Level this[int index]
         {
-            get => levels[index];
-            set => levels[index] = value;
+            get => levels.GetAtOrDefault(index, null);
+            set
+            {
+                if (levels.InRange(index))
+                    levels[index] = value;
+            }
         }
 
         public Level this[string id]
