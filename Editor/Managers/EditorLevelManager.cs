@@ -1633,6 +1633,7 @@ namespace BetterLegacy.Editor.Managers
                 path = RTFile.CombinePaths(path, RTFile.ValidateDirectory(_val));
 
                 RTFile.MoveDirectory(oldPath, path);
+                levelCollection.path = path;
             });
 
             LevelCollectionDialog.DescriptionField.SetTextWithoutNotify(levelCollection.description);

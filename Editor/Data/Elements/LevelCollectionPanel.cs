@@ -424,12 +424,14 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction(true),
                             new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Level Renamer", "Level name", "Rename", () =>
                             {
-                                var destination = RTFile.ReplaceSlash(Item.path.Replace(Item.FolderName, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text)));
-                                RTFile.MoveDirectory(Item.path, destination);
-                                Item.name = RTEditor.inst.folderCreatorName.text;
-                                Item.Save();
+                                var oldPath = Item.path;
+                                var path = Item.path;
+                                path = RTFile.GetDirectory(RTFile.RemoveEndSlash(path));
+                                path = RTFile.CombinePaths(path, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text));
+                                Item.path = path;
 
-                                EditorLevelManager.inst.LoadLevelCollections();
+                                RTFile.MoveDirectory(oldPath, path);
+
                                 RTEditor.inst.HideNameEditor();
                             }), "Level Panel Rename Level"),
                             //new ButtonFunction("Cut", () =>
