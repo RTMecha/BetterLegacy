@@ -1,10 +1,13 @@
-﻿# ???
+﻿# snapshot-2025.8.1 - (pre-1.8.0) [Aug 1, 2025]
 
 ## Features
 ### Editor
 - Added a way to view your user ID and copy it to the Metadata editor.
-- Collaborators can now be added to a level. This means other users can post to the same level.
-- Fully mplemented level collection editing.
+- Collaborators can now be added to a level. This means other users can post to the same level. This hasn't been implemented server-side yet so please wait until further notice.
+- Fully implemented level collection editing. You can view them in the Level Collections popup under the File dropdown.
+  - Levels can be added to the collection either via the level collection itself or via the level panel context menu.
+  - "Add File to Collection" context menu button copies the level folder to the collection and adds the reference to the collection. This is only if you want the level to be exclusive to the level collection.
+  - "Add Ref to Collection" context menu button only adds the reference. It's recommended the level is on the Arcade server or the workshop before using this button.
 
 ## Changes
 ### Editor
@@ -13,6 +16,8 @@
 
 ## Fixes
 - Fixed Upload Visibility dropdown having some issues.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.7.7 - (pre-1.8.0) [Jul 29, 2025]
 
@@ -27,6 +32,8 @@
 
 ## Fixed
 - Fixed player spawning duplicate players and not destroying the objects properly.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.7.6 - (pre-1.8.0) [Jul 29, 2025]
 
