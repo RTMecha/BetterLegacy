@@ -1135,7 +1135,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool achievementUnlocked(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(1, variables));
+            // global or local
+            return modifier.GetBool(1, false, variables) ?
+                AchievementManager.unlockedCustomAchievements.TryGetValue(modifier.GetValue(0, variables), out bool global) && global :
+                LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(0, variables));
         }
 
         #endregion

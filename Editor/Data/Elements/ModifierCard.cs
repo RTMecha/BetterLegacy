@@ -3430,11 +3430,13 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierActions.getAchievementUnlocked): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "ID", 1);
+                        BoolGenerator(modifier, reference, "Global", 2);
 
                         break;
                     }
                 case nameof(ModifierTriggers.achievementUnlocked): {
                         StringGenerator(modifier, reference, "ID", 0);
+                        BoolGenerator(modifier, reference, "Global", 1);
 
                         break;
                     }

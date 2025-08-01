@@ -6811,7 +6811,12 @@ namespace BetterLegacy.Core.Helpers
 
             if (!LevelManager.CurrentLevel.saveData)
                 LevelManager.AssignSaveData(LevelManager.CurrentLevel);
-            variables[modifier.GetValue(0)] = LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(1, variables)).ToString();
+
+            // global or local
+            var unlocked = modifier.GetBool(2, false, variables) ?
+                AchievementManager.unlockedCustomAchievements.TryGetValue(modifier.GetValue(1, variables), out bool global) && global :
+                LevelManager.CurrentLevel && LevelManager.CurrentLevel.saveData && LevelManager.CurrentLevel.saveData.AchievementUnlocked(modifier.GetValue(1, variables));
+            variables[modifier.GetValue(0)] = unlocked.ToString();
         }
 
         public static void saveLevelRank(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
