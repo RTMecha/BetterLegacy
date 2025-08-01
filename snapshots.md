@@ -3,6 +3,13 @@
 ### Core
 - Added a Global toggle to the getAchievementUnlocked and achievementUnlocked modifiers.
 
+### Example Companion
+- Added some dialogues to Example.
+
+## Fixes
+- Fixed the downloadLevel modifier causing a softlock hopefully.
+- Fixed editor breaking if you were never logged in.
+
 ------------------------------------------------------------------------------------------
 
 # snapshot-2025.8.1 - (pre-1.8.0) [Aug 1, 2025]
