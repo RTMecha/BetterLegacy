@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-using LSFunctions;
-
 using BetterLegacy.Core;
-using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
@@ -31,6 +22,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public InputField DescriptionField { get; set; }
 
         public InputField CreatorField { get; set; }
+
+        public RectTransform DifficultyContent { get; set; }
+
+        public RectTransform TagsScrollView { get; set; }
+
+        public RectTransform TagsContent { get; set; }
 
         #region Icon
 
@@ -110,6 +107,51 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddInputField(CreatorField);
 
             var labelRect = new RectValues(new Vector2(16f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, -32f));
+
+            new Labels(Labels.InitSettings.Default.Parent(Content), "Difficulty");
+            var difficulty = Creator.NewUIObject("difficulty", Content);
+            var difficultyLayout = difficulty.AddComponent<HorizontalLayoutGroup>();
+            difficultyLayout.childControlHeight = false;
+            difficultyLayout.childControlWidth = false;
+            DifficultyContent = difficultyLayout.transform.AsRT();
+            var difficultyLayoutElement = difficulty.AddComponent<LayoutElement>();
+            difficultyLayoutElement.minHeight = 32f;
+            difficultyLayoutElement.preferredHeight = 32f;
+            difficulty.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+
+            new Labels(Labels.InitSettings.Default.Parent(Content), "Tags");
+            var tagScrollView = Creator.NewUIObject("Tags Scroll View", Content);
+            TagsScrollView = tagScrollView.transform.AsRT();
+            RectValues.Default.SizeDelta(522f, 40f).AssignToRectTransform(TagsScrollView);
+
+            var scroll = tagScrollView.AddComponent<ScrollRect>();
+            scroll.horizontal = true;
+            scroll.vertical = false;
+
+            var image = tagScrollView.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.01f);
+
+            tagScrollView.AddComponent<Mask>();
+
+            var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+            RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
+
+            var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
+            TagsContent = tagContent.transform.AsRT();
+            TagsContent.anchoredPosition = Vector2.zero;
+            var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
+            tagContentGLG.cellSize = new Vector2(168f, 32f);
+            tagContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            tagContentGLG.constraintCount = 1;
+            tagContentGLG.childAlignment = TextAnchor.MiddleLeft;
+            tagContentGLG.spacing = new Vector2(8f, 0f);
+
+            var tagContentCSF = tagContent.AddComponent<ContentSizeFitter>();
+            tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+            scroll.viewport = tagViewport.transform.AsRT();
+            scroll.content = tagContent.transform.AsRT();
 
             #region Icon
 

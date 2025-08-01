@@ -1667,6 +1667,122 @@ namespace BetterLegacy.Editor.Managers
                 LevelCollectionDialog.CollapseBanner(_val);
                 CollapseBanner = _val;
             });
+
+            RenderLevelCollectionDifficulty(levelCollection);
+            RenderLevelCollectionTags(levelCollection);
+        }
+
+        static Vector2 difficultySize = new Vector2(100f, 32f);
+        public void RenderLevelCollectionDifficulty(LevelCollection levelCollection)
+        {
+            LSHelpers.DeleteChildren(LevelCollectionDialog.DifficultyContent);
+
+            var values = CustomEnumHelper.GetValues<DifficultyType>();
+            var count = values.Length - 1;
+
+            foreach (var difficulty in values)
+            {
+                if (difficulty.Ordinal < 0) // skip unknown difficulty
+                    continue;
+
+                var gameObject = RTMetaDataEditor.inst.difficultyToggle.Duplicate(LevelCollectionDialog.DifficultyContent, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
+                gameObject.transform.localScale = Vector3.one;
+
+                gameObject.transform.AsRT().sizeDelta = difficultySize;
+
+                var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
+                text.color = LSColors.ContrastColor(difficulty.Color);
+                text.text = difficulty == count - 1 ? "Anim" : difficulty.DisplayName;
+                text.fontSize = 17;
+                var toggle = gameObject.GetComponent<Toggle>();
+                toggle.image.color = difficulty.Color;
+                toggle.group = null;
+                toggle.SetIsOnWithoutNotify(levelCollection.Difficulty == difficulty);
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    levelCollection.Difficulty = difficulty;
+                    levelCollection.Save();
+                    RenderLevelCollectionDifficulty(levelCollection);
+                });
+
+                EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
+            }
+        }
+
+        public void RenderLevelCollectionTags(LevelCollection levelCollection)
+        {
+            LSHelpers.DeleteChildren(LevelCollectionDialog.TagsContent);
+
+            for (int i = 0; i < levelCollection.tags.Count; i++)
+            {
+                int index = i;
+                var tag = levelCollection.tags[i];
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(LevelCollectionDialog.TagsContent, index.ToString());
+                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                input.SetTextWithoutNotify(tag);
+                input.onValueChanged.NewListener(_val =>
+                {
+                    _val = RTString.ReplaceSpace(_val);
+                    var oldVal = levelCollection.tags[index];
+                    levelCollection.tags[index] = _val;
+                });
+                input.onEndEdit.NewListener(_val => levelCollection.Save());
+
+                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.NewListener(() =>
+                {
+                    var oldTag = levelCollection.tags[index];
+                    levelCollection.tags.RemoveAt(index);
+                    levelCollection.Save();
+                    RenderLevelCollectionTags(levelCollection);
+                });
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+
+                EditorThemeManager.ApplyInputField(input);
+
+                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+            }
+
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(LevelCollectionDialog.TagsContent, "Add");
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Add Tag";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.ClearAll();
+            var contextClickable = add.GetOrAddComponent<ContextClickable>();
+            contextClickable.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Add a Default Tag", () =>
+                        {
+                            RTMetaDataEditor.inst.TagPopup.Open();
+                            RTMetaDataEditor.inst.RenderTagPopup(tag =>
+                            {
+                                levelCollection.tags.Add(tag);
+                                levelCollection.Save();
+                                RenderLevelCollectionTags(levelCollection);
+                            });
+                        }),
+                        new ButtonFunction("Clear Tags", () =>
+                        {
+                            levelCollection.tags.Clear();
+                            levelCollection.Save();
+                            RenderLevelCollectionTags(levelCollection);
+                        }));
+                    return;
+                }
+
+                levelCollection.tags.Add(RTMetaDataEditor.DEFAULT_NEW_TAG);
+                levelCollection.Save();
+                RenderLevelCollectionTags(levelCollection);
+            };
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
         }
 
         public void OpenIconSelector(LevelCollection levelCollection)

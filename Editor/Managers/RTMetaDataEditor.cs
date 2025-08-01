@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
@@ -72,7 +73,7 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
-                    refreshSearch: _val => RenderTagPopup());
+                    refreshSearch: _val => { });
             }
             catch (Exception ex)
             {
@@ -646,15 +647,22 @@ namespace BetterLegacy.Editor.Managers
             var contextClickable = add.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = pointerEventData =>
             {
-                if (pointerEventData.button == UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
                     EditorContextMenu.inst.ShowContextMenu(
-                        new Data.ButtonFunction("Add a Default Tag", () =>
+                        new ButtonFunction("Add a Default Tag", () =>
                         {
                             TagPopup.Open();
-                            RenderTagPopup();
+                            RenderTagPopup(tag =>
+                            {
+                                var metadata = MetaData.Current;
+                                if (metadata.song.tags == null)
+                                    metadata.song.tags = new List<string>();
+                                metadata.song.tags.Add(tag);
+                                RenderTags(metadata);
+                            });
                         }),
-                        new Data.ButtonFunction("Clear Tags", () =>
+                        new ButtonFunction("Clear Tags", () =>
                         {
                             metadata.song.tags?.Clear();
                             RenderTags(metadata);
@@ -712,8 +720,10 @@ namespace BetterLegacy.Editor.Managers
             "horror",
         };
 
-        public void RenderTagPopup()
+        public void RenderTagPopup(Action<string> onTagSelected)
         {
+            TagPopup.SearchField.onValueChanged.NewListener(_val => RenderTagPopup(onTagSelected));
+
             TagPopup.ClearContent();
             foreach (var tag in defaultTags)
             {
@@ -724,14 +734,7 @@ namespace BetterLegacy.Editor.Managers
                 var storage = gameObject.GetComponent<FunctionButtonStorage>();
 
                 storage.label.text = tag;
-                storage.button.onClick.NewListener(() =>
-                {
-                    var metadata = MetaData.Current;
-                    if (metadata.song.tags == null)
-                        metadata.song.tags = new List<string>();
-                    metadata.song.tags.Add(tag);
-                    RenderTags(metadata);
-                });
+                storage.button.onClick.NewListener(() => onTagSelected?.Invoke(tag));
 
                 EditorThemeManager.ApplyLightText(storage.label);
                 EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
