@@ -33,48 +33,53 @@ namespace BetterLegacy.Core.Data.Level
         public Level level;
 
         /// <summary>
+        /// The level collection reference.
+        /// </summary>
+        public LevelCollection collection;
+
+        /// <summary>
         /// Index of the level in the <see cref="levels"/>.
         /// </summary>
-        public int index;
+        public int index = 0;
         /// <summary>
         /// Unique ID of the level. Changes <see cref="arcadeID"/> to this when loading the level from the collection, so it does not conflict with the same level outside the collection.
         /// </summary>
-        public string id;
+        public string id = string.Empty;
 
         /// <summary>
         /// Path to the level in the level collection folder, if it's located there.
         /// </summary>
-        public string path;
+        public string path = string.Empty;
         /// <summary>
         /// Path to the level in the editor. Used for editing the level collection.
         /// </summary>
-        public string editorPath;
+        public string editorPath = string.Empty;
 
         /// <summary>
         /// Title of the song the level uses.
         /// </summary>
-        public string songTitle;
+        public string songTitle = string.Empty;
         /// <summary>
         /// Human-readable name of the level.
         /// </summary>
-        public string name;
+        public string name = string.Empty;
         /// <summary>
         /// Creator of the level.
         /// </summary>
-        public string creator;
+        public string creator = string.Empty;
 
         /// <summary>
         /// Arcade ID reference.
         /// </summary>
-        public string arcadeID;
+        public string arcadeID = string.Empty;
         /// <summary>
         /// Server ID reference. Used for downloading the level off the Arcade server. if the player does not have it.
         /// </summary>
-        public string serverID;
+        public string serverID = string.Empty;
         /// <summary>
         /// Steam Workshop ID reference. Used for subscribing to and downloading the level off the Steam Workshop if the player does not have it.
         /// </summary>
-        public string workshopID;
+        public string workshopID = string.Empty;
 
         #endregion
 
@@ -155,7 +160,7 @@ namespace BetterLegacy.Core.Data.Level
         public static LevelInfo Parse(JSONNode jn, int index) => new LevelInfo
         {
             index = index,
-            id = jn["id"],
+            id = jn["id"] ?? PAObjectBase.GetNumberID(),
 
             path = jn["path"],
             editorPath = jn["editor_path"],
@@ -184,7 +189,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <returns>Returns a JSON representing the <see cref="LevelInfo"/>.</returns>
         public JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
 
@@ -210,14 +215,14 @@ namespace BetterLegacy.Core.Data.Level
             if (hidden)
                 jn["hidden"] = hidden.ToString();
             if (showAfterUnlock)
-                jn["show_after_unlock"] = showAfterUnlock.ToString();
+                jn["show_after_unlock"] = showAfterUnlock;
             if (skip)
                 jn["skip"] = skip.ToString();
 
             if (overwriteRequireUnlock && requireUnlock)
-                jn["require_unlock"] = requireUnlock.ToString();
+                jn["require_unlock"] = requireUnlock;
             if (overwriteUnlockAfterCompletion && unlockAfterCompletion)
-                jn["unlock_complete"] = unlockAfterCompletion.ToString();
+                jn["unlock_complete"] = unlockAfterCompletion;
 
             return jn;
         }
@@ -230,7 +235,7 @@ namespace BetterLegacy.Core.Data.Level
         public static LevelInfo FromLevel(Level level) => new LevelInfo
         {
             level = level,
-            id = LSText.randomNumString(16),
+            id = PAObjectBase.GetNumberID(),
 
             name = level.metadata?.beatmap?.name,
             creator = level.metadata?.creator?.name,

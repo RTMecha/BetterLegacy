@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -19,6 +16,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
@@ -376,6 +374,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 if (EditorLevelManager.inst.onLevelCollectionSelected != null)
                 {
                     EditorLevelManager.inst.onLevelCollectionSelected.Invoke(this, eventData);
+                    EditorLevelManager.inst.onLevelCollectionSelected = null;
                     return;
                 }
 
@@ -404,9 +403,13 @@ namespace BetterLegacy.Editor.Data.Elements
                             }, "Level Panel Open"),
                             new ButtonFunction("Edit", () =>
                             {
-                                EditorLevelManager.inst.LevelCollectionDialog.Open();
-                                EditorLevelManager.inst.RenderLevelCollectionEditor(Item);
-                            }, "Level Panel Open"),
+                                EditorLevelManager.inst.OpenLevelCollectionEditor(Item);
+                            }),
+                            new ButtonFunction("Copy to Arcade", () =>
+                            {
+                                RTFile.CopyDirectory(Path, RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath, System.IO.Path.GetFileName(Path)));
+                                EditorManager.inst.DisplayNotification($"Successfully copied the level collection to the Arcade!", 2f, EditorManager.NotificationType.Success);
+                            }),
                             //new ButtonFunction("Show Autosaves", () =>
                             //{
                             //    RTEditor.inst.AutosavePopup.Open();

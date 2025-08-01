@@ -36,7 +36,11 @@ namespace BetterLegacy.Core.Data.Level
         {
             this.levels = levels;
             for (int i = 0; i < levels.Count; i++)
-                levelInformation.Add(LevelInfo.FromLevel(levels[i]));
+            {
+                var levelInfo = LevelInfo.FromLevel(levels[i]);
+                levelInfo.collection = this;
+                levelInformation.Add(levelInfo);
+            }
         }
 
         #region Fields
@@ -44,27 +48,27 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Identification number of the collection.
         /// </summary>
-        public string id;
+        public string id = string.Empty;
 
         /// <summary>
         /// Server ID of the collection.
         /// </summary>
-        public string serverID;
+        public string serverID = string.Empty;
 
         /// <summary>
         /// Name of the collection.
         /// </summary>
-        public string name;
+        public string name = string.Empty;
 
         /// <summary>
         /// Description of the collection.
         /// </summary>
-        public string description;
+        public string description = string.Empty;
 
         /// <summary>
         /// Creator of the collection / levels within.
         /// </summary>
-        public string creator;
+        public string creator = string.Empty;
 
         /// <summary>
         /// General difficutly of the collection.
@@ -79,7 +83,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Full path of the collection. Must end with a "/".
         /// </summary>
-        public string path;
+        public string path = string.Empty;
 
         /// <summary>
         /// Icon of the collection.
@@ -242,6 +246,7 @@ namespace BetterLegacy.Core.Data.Level
             {
                 var jnLevel = jn["levels"][i];
                 var levelInfo = LevelInfo.Parse(jnLevel, i);
+                levelInfo.collection = collection;
                 collection.levelInformation.Add(levelInfo);
 
                 if (loadLevels)
@@ -559,7 +564,7 @@ namespace BetterLegacy.Core.Data.Level
         {
             var jn = Parser.NewJSONObject();
 
-            jn["id"] = id;
+            jn["id"] = id ?? PAObjectBase.GetNumberID();
             if (!string.IsNullOrEmpty(serverID))
                 jn["server_id"] = serverID;
             if (!string.IsNullOrEmpty(name))
@@ -573,13 +578,15 @@ namespace BetterLegacy.Core.Data.Level
 
             if (tags != null)
                 for (int i = 0; i < tags.Length; i++)
-                    jn["tags"][i] = tags[i];
+                    jn["tags"][i] = tags[i] ?? string.Empty;
 
             for (int i = 0; i < levelInformation.Count; i++)
                 jn["levels"][i] = levelInformation[i].ToJSON();
 
             if (saveIcons)
                 SaveIcons(jpg);
+
+            RTFile.CreateDirectory(path);
 
             RTFile.WriteToFile(RTFile.CombinePaths(path, COLLECTION_LSCO), jn.ToString(3));
         }
@@ -597,12 +604,34 @@ namespace BetterLegacy.Core.Data.Level
         }
 
         /// <summary>
+        /// Adds a <see cref="Level"/> to the level collection.
+        /// </summary>
+        /// <param name="level">Level to add.</param>
+        public void AddLevel(Level level)
+        {
+            if (!levels.IsEmpty() && levels.Any(x => x.id == level.id)) // don't want to have duplicate levels
+                return;
+
+            var actualLevel = new Level(level.path);
+            var levelInfo = LevelInfo.FromLevel(actualLevel);
+            levelInfo.collection = this;
+            levelInfo.index = levelInformation.Count;
+            var id = levelInfo.id;
+            actualLevel.id = id;
+            if (actualLevel.metadata)
+                actualLevel.metadata.arcadeID = id;
+
+            levels.Add(actualLevel);
+            levelInformation.Add(levelInfo);
+        }
+
+        /// <summary>
         /// Adds a <see cref="Level"/> to the level collection and copies its folder to the level collection folder.
         /// </summary>
         /// <param name="level">Level to add.</param>
-        public void AddLevelToFolder(Level level, bool add = false)
+        public void AddLevelToFolder(Level level)
         {
-            if (levels.Any(x => x.id == level.id)) // don't want to have duplicate levels
+            if (!levels.IsEmpty() && levels.Any(x => x && x.id == level.id)) // don't want to have duplicate levels
                 return;
 
             var path = RTFile.RemoveEndSlash(level.path);
@@ -620,14 +649,15 @@ namespace BetterLegacy.Core.Data.Level
 
             var actualLevel = new Level(levelPath);
             var levelInfo = LevelInfo.FromLevel(actualLevel);
+            levelInfo.collection = this;
             levelInfo.index = levelInformation.Count;
             var id = levelInfo.id;
             actualLevel.id = id;
             if (actualLevel.metadata)
                 actualLevel.metadata.arcadeID = id;
+            levelInfo.path = folderName;
 
-            if (add)
-                levels.Add(actualLevel);
+            levels.Add(actualLevel);
             levelInformation.Add(levelInfo);
         }
 
@@ -644,6 +674,27 @@ namespace BetterLegacy.Core.Data.Level
 
             levels.RemoveAll(x => x.id == level.id);
             levelInformation.RemoveAll(x => x.id == level.id);
+
+            for (int i = 0; i < levelInformation.Count; i++)
+                levelInformation[i].index = i;
+        }
+
+        public void Remove(LevelInfo levelInfo, bool deleteFiles = true)
+        {
+            if (deleteFiles)
+            {
+                if (!string.IsNullOrEmpty(levelInfo.path))
+                    RTFile.DeleteDirectory(RTFile.CombinePaths(path, levelInfo.path));
+                if (!string.IsNullOrEmpty(levelInfo.editorPath))
+                    RTFile.DeleteDirectory(RTFile.CombinePaths(path, levelInfo.editorPath));
+            }
+            Remove(levelInfo.id);
+        }
+
+        public void Remove(string id)
+        {
+            levels.RemoveAll(x => x && x.id == id);
+            levelInformation.RemoveAll(x => x && x.id == id);
 
             for (int i = 0; i < levelInformation.Count; i++)
                 levelInformation[i].index = i;

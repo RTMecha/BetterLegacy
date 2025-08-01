@@ -12,6 +12,7 @@ using LSFunctions;
 
 using CielaSpike;
 using SimpleJSON;
+using Crosstales.FB;
 
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
@@ -140,6 +141,9 @@ namespace BetterLegacy.Editor.Managers
 
             LevelCollectionDialog = new LevelCollectionEditorDialog();
             LevelCollectionDialog.Init();
+
+            LevelInfoDialog = new LevelInfoEditorDialog();
+            LevelInfoDialog.Init();
         }
 
         void Update() => autosaveTimer.Update();
@@ -243,7 +247,12 @@ namespace BetterLegacy.Editor.Managers
 
         public LevelCollectionEditorDialog LevelCollectionDialog { get; set; }
 
+        public LevelInfoEditorDialog LevelInfoDialog { get; set; }
+
         public Action<LevelCollectionPanel, PointerEventData> onLevelCollectionSelected;
+
+        public bool CollapseIcon { get; set; } = true;
+        public bool CollapseBanner { get; set; } = true;
 
         #endregion
 
@@ -341,7 +350,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             // Back
-            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(fullPath) != RTEditor.inst.BeatmapsPath)
+            if (EditorConfig.Instance.ShowFoldersInLevelList.Value && RTFile.GetDirectory(fullPath) != RTEditor.inst.BeatmapsPath || OpenLevelCollection)
             {
                 var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(OpenLevelPopup.Content, "back");
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
@@ -352,7 +361,7 @@ namespace BetterLegacy.Editor.Managers
                 hoverUIFolder.animatePos = false;
                 hoverUIFolder.animateSca = true;
 
-                folderButtonStorageFolder.label.text = "< Up a folder";
+                folderButtonStorageFolder.label.text = OpenLevelCollection ? "< Return" : "< Up a folder";
 
                 folderButtonStorageFolder.label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
                 folderButtonStorageFolder.label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
@@ -372,10 +381,15 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    if (RTEditor.inst.editorPathField.text == RTEditor.inst.EditorPath)
+                    if (OpenLevelCollection)
                     {
                         OpenLevelCollection = null;
+                        LoadLevels();
+                        return;
+                    }
 
+                    if (RTEditor.inst.editorPathField.text == RTEditor.inst.EditorPath)
+                    {
                         RTEditor.inst.editorPathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
                         RTEditor.inst.UpdateEditorPath(false);
                     }
@@ -388,16 +402,33 @@ namespace BetterLegacy.Editor.Managers
             var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
             if (currentLevelCollection)
             {
+                var add = PrefabEditor.inst.CreatePrefab.Duplicate(OpenLevelPopup.Content, "add");
+                var addText = add.transform.Find("Text").GetComponent<Text>();
+                addText.text = "Add Level";
+                var addButton = add.GetComponent<Button>();
+                addButton.onClick.NewListener(() =>
+                {
+                    var levelInfo = new LevelInfo();
+                    levelInfo.id = PAObjectBase.GetNumberID();
+                    levelInfo.index = currentLevelCollection.levelInformation.Count;
+                    levelInfo.collection = currentLevelCollection;
+                    OpenLevelInfoEditor(levelInfo, () =>
+                    {
+                        currentLevelCollection.levelInformation.Add(levelInfo);
+                        currentLevelCollection.Save();
+                        LevelInfoDialog.Close();
+                        LoadLevels();
+                    });
+                });
+
+                EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+                EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+
                 foreach (var levelInfo in currentLevelCollection.levelInformation)
                 {
-                    var path = levelInfo.editorPath;
-                    if (string.IsNullOrEmpty(path))
-                        path = levelInfo.path;
-                    if (string.IsNullOrEmpty(path))
-                        continue;
-
+                    var path = !string.IsNullOrEmpty(levelInfo.editorPath) ? levelInfo.editorPath : levelInfo.path;
                     Level level;
-                    if (!(Level.TryVerify(RTFile.CombinePaths(fullPath, path), false, out level) ||
+                    if (!(!string.IsNullOrEmpty(path) && Level.TryVerify(RTFile.CombinePaths(fullPath, path), false, out level) ||
                         Level.TryVerify(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, path), false, out level) ||
                         (SteamWorkshopManager.inst && SteamWorkshopManager.inst.Initialized && SteamWorkshopManager.inst.Levels.TryFind(x => x && x.id == levelInfo.workshopID, out level)) ||
                         LevelManager.Levels.TryFind(x => x && x.id == levelInfo.arcadeID, out level)))
@@ -530,8 +561,19 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
             }
 
-            if (OpenLevelCollection)
-                yield break;
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(LevelCollectionPopup.Content, "add");
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Create Empty Collection";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.NewListener(() =>
+            {
+                var collection = CreateNewLevelCollection();
+                collection.Save();
+                LoadLevelCollections();
+            });
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             var files = Directory.GetDirectories(fullPath);
             foreach (var file in files)
@@ -1323,7 +1365,7 @@ namespace BetterLegacy.Editor.Managers
                 levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
             }
             else
-                levelPanels = LevelPanels.Order(x => x.Item?.collectionInfo?.index ?? 0, !RTEditor.inst.levelAscend);
+                levelPanels = LevelPanels;
 
             var content = OpenLevelPopup.Content;
 
@@ -1346,6 +1388,13 @@ namespace BetterLegacy.Editor.Managers
                 if (num >= 0 && num < content.childCount)
                     levelPanel.GameObject.transform.SetSiblingIndex(num);
                 num++;
+            }
+
+            if (content.Find("add"))
+            {
+                yield return null;
+                if (content.Find("add"))
+                    content.Find("add").SetAsFirstSibling();
             }
 
             if (content.Find("back"))
@@ -1383,6 +1432,13 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
+            if (content.Find("add"))
+            {
+                yield return null;
+                if (content.Find("add"))
+                    content.Find("add").SetAsFirstSibling();
+            }
+            
             if (content.Find("back"))
             {
                 yield return null;
@@ -1548,6 +1604,15 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public void OpenLevelCollectionEditor(LevelCollection levelCollection)
+        {
+            if (!levelCollection)
+                return;
+
+            LevelCollectionDialog.Open();
+            RenderLevelCollectionEditor(levelCollection);
+        }
+
         public void RenderLevelCollectionEditor(LevelCollection levelCollection)
         {
             LevelCollectionDialog.NameField.SetTextWithoutNotify(levelCollection.name);
@@ -1566,16 +1631,192 @@ namespace BetterLegacy.Editor.Managers
             });
 
             LevelCollectionDialog.DescriptionField.SetTextWithoutNotify(levelCollection.description);
-            LevelCollectionDialog.DescriptionField.onValueChanged.NewListener(_val =>
-            {
-                levelCollection.description = _val;
-            });
+            LevelCollectionDialog.DescriptionField.onValueChanged.NewListener(_val => levelCollection.description = _val);
+            LevelCollectionDialog.DescriptionField.onEndEdit.NewListener(_val => levelCollection.Save());
 
             LevelCollectionDialog.CreatorField.SetTextWithoutNotify(levelCollection.creator);
-            LevelCollectionDialog.CreatorField.onValueChanged.NewListener(_val =>
+            LevelCollectionDialog.CreatorField.onValueChanged.NewListener(_val => levelCollection.creator = _val);
+            LevelCollectionDialog.CreatorField.onEndEdit.NewListener(_val => levelCollection.Save());
+
+            LevelCollectionDialog.IconImage.sprite = levelCollection.icon;
+
+            LevelCollectionDialog.CollapseIcon(CollapseIcon);
+            LevelCollectionDialog.SelectIconButton.onClick.NewListener(() => OpenIconSelector(levelCollection));
+            LevelCollectionDialog.CollapseIconToggle.SetIsOnWithoutNotify(CollapseIcon);
+            LevelCollectionDialog.CollapseIconToggle.onValueChanged.NewListener(_val =>
             {
-                levelCollection.creator = _val;
+                LevelCollectionDialog.CollapseIcon(_val);
+                CollapseIcon = _val;
             });
+
+            LevelCollectionDialog.BannerImage.sprite = levelCollection.banner;
+
+            LevelCollectionDialog.CollapseBanner(CollapseBanner);
+            LevelCollectionDialog.SelectBannerButton.onClick.NewListener(() => OpenBannerSelector(levelCollection));
+            LevelCollectionDialog.CollapseBannerToggle.SetIsOnWithoutNotify(CollapseBanner);
+            LevelCollectionDialog.CollapseBannerToggle.onValueChanged.NewListener(_val =>
+            {
+                LevelCollectionDialog.CollapseBanner(_val);
+                CollapseBanner = _val;
+            });
+        }
+
+        public void OpenIconSelector(LevelCollection levelCollection)
+        {
+            string jpgFile = FileBrowser.OpenSingleFile("jpg");
+            CoreHelper.Log("Selected file: " + jpgFile);
+            if (string.IsNullOrEmpty(jpgFile))
+                return;
+
+            string jpgFileLocation = RTFile.CombinePaths(levelCollection.path, LevelCollection.ICON_JPG);
+            CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
+            {
+                RTFile.CopyFile(jpgFile, jpgFileLocation);
+                SetLevelCollectionIcon(levelCollection, cover);
+            }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
+        }
+
+        public void SetLevelCollectionIcon(LevelCollection levelCollection, Sprite sprite)
+        {
+            if (levelCollection)
+            {
+                levelCollection.icon = sprite;
+                LevelCollectionDialog.IconImage.sprite = levelCollection.icon;
+                levelCollection.Save();
+            }
+        }
+
+        public void OpenBannerSelector(LevelCollection levelCollection)
+        {
+            string jpgFile = FileBrowser.OpenSingleFile("jpg");
+            CoreHelper.Log("Selected file: " + jpgFile);
+            if (string.IsNullOrEmpty(jpgFile))
+                return;
+
+            string jpgFileLocation = RTFile.CombinePaths(levelCollection.path, LevelCollection.BANNER_JPG);
+            CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(900f, 300f)), cover =>
+            {
+                RTFile.CopyFile(jpgFile, jpgFileLocation);
+                SetLevelCollectionBanner(levelCollection, cover);
+            }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 900 x 300 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
+        }
+
+        public void SetLevelCollectionBanner(LevelCollection levelCollection, Sprite sprite)
+        {
+            if (levelCollection)
+            {
+                levelCollection.banner = sprite;
+                LevelCollectionDialog.BannerImage.sprite = levelCollection.banner;
+                levelCollection.Save();
+            }
+        }
+
+        public void OpenLevelInfoEditor(LevelInfo levelInfo, Action onSubmit = null)
+        {
+            if (!levelInfo)
+                return;
+
+            LevelInfoDialog.Open();
+            RenderLevelInfoEditor(levelInfo, onSubmit);
+        }
+
+        public void RenderLevelInfoEditor(LevelInfo levelInfo, Action onSubmit = null)
+        {
+            LevelInfoDialog.PathField.SetTextWithoutNotify(levelInfo.path);
+            LevelInfoDialog.PathField.onValueChanged.NewListener(_val => levelInfo.path = _val);
+            LevelInfoDialog.PathField.onEndEdit.NewListener(_val =>
+            {
+                levelInfo.collection?.Save();
+
+                LoadLevelCollections();
+                LoadLevels();
+            });
+
+            LevelInfoDialog.EditorPathField.SetTextWithoutNotify(levelInfo.editorPath);
+            LevelInfoDialog.EditorPathField.onValueChanged.NewListener(_val => levelInfo.editorPath = _val);
+            LevelInfoDialog.EditorPathField.onEndEdit.NewListener(_val =>
+            {
+                levelInfo.collection?.Save();
+
+                LoadLevelCollections();
+                LoadLevels();
+            });
+
+            LevelInfoDialog.SongTitleField.SetTextWithoutNotify(levelInfo.songTitle);
+            LevelInfoDialog.SongTitleField.onValueChanged.NewListener(_val => levelInfo.songTitle = _val);
+            LevelInfoDialog.SongTitleField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+
+            LevelInfoDialog.NameField.SetTextWithoutNotify(levelInfo.name);
+            LevelInfoDialog.NameField.onValueChanged.NewListener(_val => levelInfo.name = _val);
+            LevelInfoDialog.NameField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+
+            LevelInfoDialog.CreatorField.SetTextWithoutNotify(levelInfo.creator);
+            LevelInfoDialog.CreatorField.onValueChanged.NewListener(_val => levelInfo.creator = _val);
+            LevelInfoDialog.CreatorField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+
+            LevelInfoDialog.ArcadeIDField.SetTextWithoutNotify(levelInfo.arcadeID);
+            LevelInfoDialog.ArcadeIDField.onValueChanged.NewListener(_val => levelInfo.arcadeID = _val);
+            LevelInfoDialog.ArcadeIDField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+
+            LevelInfoDialog.ServerIDField.SetTextWithoutNotify(levelInfo.serverID);
+            LevelInfoDialog.ServerIDField.onValueChanged.NewListener(_val => levelInfo.serverID = _val);
+            LevelInfoDialog.ServerIDField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+
+            LevelInfoDialog.WorkshopIDField.SetTextWithoutNotify(levelInfo.workshopID);
+            LevelInfoDialog.WorkshopIDField.onValueChanged.NewListener(_val => levelInfo.workshopID = _val);
+            LevelInfoDialog.WorkshopIDField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+
+            LevelInfoDialog.UnlockRequiredToggle.SetIsOnWithoutNotify(levelInfo.requireUnlock);
+            LevelInfoDialog.UnlockRequiredToggle.onValueChanged.NewListener(_val =>
+            {
+                levelInfo.requireUnlock = _val;
+                levelInfo.collection?.Save();
+            });
+
+            LevelInfoDialog.OverwriteUnlockRequiredToggle.SetIsOnWithoutNotify(levelInfo.overwriteRequireUnlock);
+            LevelInfoDialog.OverwriteUnlockRequiredToggle.onValueChanged.NewListener(_val =>
+            {
+                levelInfo.overwriteRequireUnlock = _val;
+                levelInfo.collection?.Save();
+            });
+
+            LevelInfoDialog.UnlockCompletionToggle.SetIsOnWithoutNotify(levelInfo.unlockAfterCompletion);
+            LevelInfoDialog.UnlockCompletionToggle.onValueChanged.NewListener(_val =>
+            {
+                levelInfo.unlockAfterCompletion = _val;
+                levelInfo.collection?.Save();
+            });
+
+            LevelInfoDialog.OverwriteUnlockCompletionToggle.SetIsOnWithoutNotify(levelInfo.overwriteUnlockAfterCompletion);
+            LevelInfoDialog.OverwriteUnlockCompletionToggle.onValueChanged.NewListener(_val =>
+            {
+                levelInfo.overwriteUnlockAfterCompletion = _val;
+                levelInfo.collection?.Save();
+            });
+
+            LevelInfoDialog.HiddenToggle.SetIsOnWithoutNotify(levelInfo.hidden);
+            LevelInfoDialog.HiddenToggle.onValueChanged.NewListener(_val =>
+            {
+                levelInfo.hidden = _val;
+                levelInfo.collection?.Save();
+            });
+
+            LevelInfoDialog.ShowAfterUnlockToggle.SetIsOnWithoutNotify(levelInfo.showAfterUnlock);
+            LevelInfoDialog.ShowAfterUnlockToggle.onValueChanged.NewListener(_val =>
+            {
+                levelInfo.showAfterUnlock = _val;
+                levelInfo.collection?.Save();
+            });
+
+            LevelInfoDialog.SkipToggle.SetIsOnWithoutNotify(levelInfo.skip);
+            LevelInfoDialog.SkipToggle.onValueChanged.NewListener(_val =>
+            {
+                levelInfo.skip = _val;
+                levelInfo.collection?.Save();
+            });
+
+            LevelInfoDialog.SubmitButton.gameObject.SetActive(onSubmit != null);
+            LevelInfoDialog.SubmitButton.onClick.NewListener(() => onSubmit?.Invoke());
         }
 
         /// <summary>

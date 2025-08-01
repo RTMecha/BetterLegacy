@@ -81,6 +81,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public const string PINNED_EDITOR_LAYER_DIALOG = "Pinned Editor Layer Dialog";
         public const string ACHIEVEMENT_EDITOR_DIALOG = "Achievement Editor Dialog";
         public const string LEVEL_COLLECTION_EDITOR = "Level Collection Editor";
+        public const string LEVEL_INFO_EDITOR = "Level Info Editor";
 
         #endregion
 

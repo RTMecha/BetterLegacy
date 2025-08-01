@@ -159,6 +159,7 @@ namespace BetterLegacy.Editor.Data.Elements
         {
             Item = level;
             Path = level.path;
+            Info = level.collectionInfo;
             level.editorLevelPanel = this;
             level.isEditor = true;
 
@@ -202,10 +203,10 @@ namespace BetterLegacy.Editor.Data.Elements
             var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
             DeleteButton = deleteStorage;
 
-            delete.transform.AsRT().anchoredPosition = new Vector2(-5f, 0f);
+            new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)).AssignToRectTransform(delete.transform.AsRT());
 
             EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
-            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, true, roundedSide: SpriteHelper.RoundedSide.W);
+            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
             delete.SetActive(EditorConfig.Instance.OpenLevelShowDeleteButton.Value);
 
             SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
@@ -263,11 +264,11 @@ namespace BetterLegacy.Editor.Data.Elements
             var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
             DeleteButton = deleteStorage;
 
-            delete.transform.AsRT().anchoredPosition = new Vector2(-5f, 0f);
+            new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(32f, 0f)).AssignToRectTransform(delete.transform.AsRT());
 
             EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true, roundedSide: SpriteHelper.RoundedSide.W);
-            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, true, roundedSide: SpriteHelper.RoundedSide.W);
-            delete.SetActive(EditorConfig.Instance.OpenLevelShowDeleteButton.Value);
+            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, false, roundedSide: SpriteHelper.RoundedSide.W);
+            delete.SetActive(true);
 
             SelectedUI = Creator.NewUIObject("selected", gameObject.transform);
             SelectedUI.SetActive(false);
@@ -674,16 +675,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 CoreHelper.Log($"Copied level: {EditorLevelManager.inst.copiedLevelPath}");
                             }, "Level Panel Copy"),
                             new ButtonFunction("Paste", EditorLevelManager.inst.PasteLevel, "Level Panel Paste"),
-                            new ButtonFunction("Delete", () =>
-                            {
-                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
-                                {
-                                    RTFile.DeleteDirectory(Item.path);
-                                    EditorLevelManager.inst.LoadLevels();
-                                    EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup);
-                            }),
+                            new ButtonFunction("Delete", () => Delete()),
                             new ButtonFunction(true),
                             new ButtonFunction("Copy Arcade ID", () =>
                             {
@@ -714,6 +706,37 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction("Copy Path", () => LSText.CopyToClipboard(Item.path), "Level Panel Copy Folder"),
                             new ButtonFunction("Open in File Explorer", () => RTFile.OpenInFileBrowser.Open(Item.path), "Level Panel Open Explorer"),
                             new ButtonFunction("Open List in File Explorer", RTEditor.inst.OpenLevelListFolder, "Level List Open Explorer"),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Add File to Collection", () =>
+                            {
+                                EditorLevelManager.inst.LevelCollectionPopup.Open();
+                                EditorLevelManager.inst.RenderLevelCollections();
+                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                                {
+                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                        return;
+
+                                    levelCollectionPanel.Item.AddLevelToFolder(Item);
+                                    levelCollectionPanel.Item.Save();
+                                    EditorLevelManager.inst.LoadLevels();
+                                    EditorManager.inst.DisplayNotification($"Added the level to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                                };
+                            }),
+                            new ButtonFunction("Add Ref to Collection", () =>
+                            {
+                                EditorLevelManager.inst.LevelCollectionPopup.Open();
+                                EditorLevelManager.inst.RenderLevelCollections();
+                                EditorLevelManager.inst.onLevelCollectionSelected = (levelCollectionPanel, pointerEventData) =>
+                                {
+                                    if (!levelCollectionPanel || !levelCollectionPanel.Item)
+                                        return;
+
+                                    levelCollectionPanel.Item.AddLevel(Item);
+                                    levelCollectionPanel.Item.Save();
+                                    EditorLevelManager.inst.LoadLevels();
+                                    EditorManager.inst.DisplayNotification($"Added the level to the level collection [ {levelCollectionPanel.Item.name} ]", 3f, EditorManager.NotificationType.Success);
+                                };
+                            }),
                         };
 
                         if (currentLevelCollection)
@@ -722,6 +745,25 @@ namespace BetterLegacy.Editor.Data.Elements
 
                     if (currentLevelCollection)
                     {
+                        if (Info)
+                        {
+                            list.Add(new ButtonFunction("Edit Info", () => EditorLevelManager.inst.OpenLevelInfoEditor(Info)));
+                            list.Add(new ButtonFunction("Remove from Collection", () =>
+                            {
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to remove the level from the current collection?", () =>
+                                {
+                                    if (Item)
+                                        currentLevelCollection.RemoveLevelFromFolder(Item);
+                                    else
+                                        currentLevelCollection.Remove(Info);
+                                    currentLevelCollection.Save();
+
+                                    EditorLevelManager.inst.LoadLevels();
+                                    RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup);
+                            }));
+                        }
+
                         list.Add(new ButtonFunction("Move Earlier", () =>
                         {
                             var info = Item?.collectionInfo ?? Info;
@@ -735,7 +777,8 @@ namespace BetterLegacy.Editor.Data.Elements
                             }
 
                             currentLevelCollection.Move(info.id, info.index - 1);
-                            EditorLevelManager.inst.RenderLevels();
+                            currentLevelCollection.Save();
+                            EditorLevelManager.inst.LoadLevels();
                         }));
                         list.Add(new ButtonFunction("Move Later", () =>
                         {
@@ -743,6 +786,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             if (!info)
                                 return;
 
+                            var index = info.index;
                             if (info.index + 1 >= currentLevelCollection.levelInformation.Count)
                             {
                                 EditorManager.inst.DisplayNotification($"Cannot move the level later than the end!", 2f, EditorManager.NotificationType.Warning);
@@ -750,7 +794,8 @@ namespace BetterLegacy.Editor.Data.Elements
                             }
 
                             currentLevelCollection.Move(info.id, info.index + 1);
-                            EditorLevelManager.inst.RenderLevels();
+                            currentLevelCollection.Save();
+                            EditorLevelManager.inst.LoadLevels();
                         }));
                     }
 
@@ -773,7 +818,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 if (!Item)
                 {
-                    EditorManager.inst.DisplayNotification($"No level was found.", 2f, EditorManager.NotificationType.Error);
+                    if (Info)
+                        EditorLevelManager.inst.OpenLevelInfoEditor(Info);
+                    else
+                        EditorManager.inst.DisplayNotification($"No level was found.", 2f, EditorManager.NotificationType.Error);
                     return;
                 }
 
@@ -787,25 +835,49 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public void UpdateDeleteFunction()
         {
-            if (!DeleteButton || !Item)
+            if (!DeleteButton)
                 return;
 
-            var active = EditorConfig.Instance.OpenLevelShowDeleteButton.Value;
+            var active = Info || EditorConfig.Instance.OpenLevelShowDeleteButton.Value;
 
             DeleteButton.gameObject.SetActive(active);
 
             if (!active)
                 return;
 
-            DeleteButton.button.onClick.NewListener(() =>
+            DeleteButton.button.onClick.NewListener(() => Delete(true));
+        }
+
+        public void Delete(bool recycle = false)
+        {
+            if (Info)
             {
-                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", () =>
-                {
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this level from the current collection? This cannot be undone!", () =>
+                    {
+                        var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
+                        currentLevelCollection.Remove(Info);
+                        currentLevelCollection.Save();
+                        EditorLevelManager.inst.LoadLevels();
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup);
+                return;
+            }
+
+            if (!Item)
+                return;
+
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", () =>
+            {
+                if (recycle)
                     EditorLevelManager.inst.RecycleLevel(this);
-                    EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup);
-            });
+                else
+                {
+                    RTFile.DeleteDirectory(Item.path);
+                    EditorLevelManager.inst.LoadLevels();
+                }
+                EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup);
         }
 
         /// <summary>
