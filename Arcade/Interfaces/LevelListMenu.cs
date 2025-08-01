@@ -344,7 +344,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static List<Level> Levels { get; set; }
         public static int LocalLevelPageCount => LocalLevels.Count / ArcadeMenu.MAX_LEVELS_PER_PAGE;
-        public static List<Level> LocalLevels => Levels.FindAll(level => !level.fromCollection &&
+        public static List<Level> LocalLevels => Levels.FindAll(level =>
             RTString.SearchString(Search,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
                 new SearchListMatcher(level.metadata.song.tags),
@@ -370,18 +370,7 @@ namespace BetterLegacy.Arcade.Interfaces
             RefreshLocalLevels(true);
         }
 
-        void ClearLocalLevelButtons()
-        {
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
-        }
+        void ClearLocalLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Rank" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
         public void RefreshLocalLevels(bool regenerateUI, bool clear = true)
         {
