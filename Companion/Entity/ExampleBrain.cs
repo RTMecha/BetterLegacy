@@ -947,7 +947,7 @@ namespace BetterLegacy.Companion.Entity
 
             public const string USER_IS_APPY = "User Is Appy";
 
-            public const string USER_IS_TERA = "Is Tera";
+            public const string USER_IS_TERA = "User Is Tera";
 
             public const string USER_IS_DEFAULT = "User Is Default";
 
