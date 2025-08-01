@@ -1,16 +1,6 @@
 ﻿# TODO
 ## Features
 ### Core
-- Level collections.  
-  Update: 1.8.0  
-  Notes:  
-  - Level collections in the editor are stored in a separate "collections" folder.
-  - Levels can be added to a collection via the context menu. The folder can be added directly to the level collection to make the level exclusive, or it can be just added to the list. (Requires the level to have already been uploaded)
-  - Level collections are shown in a different content popup.
-  - Non-editor levels can be added a more advanced way by filling out a level's info.
-  - Preview song. (done)
-  - Overall ranking (similar to regular ranking, except instead of hits it's the level ranks ordinal values)
-  - Level collections can be uploaded with only level folders or only references to levels, or a mixture of both.
 - Online multiplayer.  
   Update: 1.10.0  
 - Level modifiers (supports VG triggers).  
@@ -80,9 +70,7 @@
   Update: 1.8.0+  
 - Editor online backups / version control  
   Update: 1.8.0+  
-- Sprites list popup that show images in the game data and level folder.  
-  Update: 1.8.0  
-- Level priority sort  
+- Sprite / audio asset list popup that show images & sounds in the game data and level folder.  
   Update: 1.8.0  
 - QOL Keyframe Editor custom UI  
   Notes:  
@@ -132,7 +120,6 @@
 - Overhaul player models.
   Update: 1.8.0  
 - Merge all effect managers into single EffectsManager.
-- Rework controller shake to be properly toggleable and have a separate variable.
 - Summary and note as much as I can (or need to).
 
 ### Editor
@@ -154,7 +141,6 @@
 - Make Editor Documentation read from a json file.  
   Update: 1.8.0  
 - Update the file browser UI to include more info / functions.
-- Cleanup Player Editor code.
 - Overhaul the custom UI settings to be more extensive.
 - Rework object dragging to have a lot more control and settings. (take some inspiration from Modern + Blender + EditorManagement)
 
