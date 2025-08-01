@@ -4,6 +4,7 @@
 - Added a Global toggle to the getAchievementUnlocked and achievementUnlocked modifiers.
 - Added Sprint & Sneak speeds to the Player.
 - Level collections now display difficulty, tags and average rank.
+- Added loadLevelCollection modifier.
 
 ### Example Companion
 - Added some dialogues to Example.
