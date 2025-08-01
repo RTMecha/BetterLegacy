@@ -12,6 +12,7 @@ using LSFunctions;
 
 using CielaSpike;
 
+using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -450,6 +451,8 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current?.RecalculateObjectStates();
 
             HandleSelection(timelineObjects, minIndex, false);
+
+            Example.Current?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.DELETE_OBJECT, new TimelineObjectsDialogueParameters(list));
 
             EditorManager.inst.DisplayNotification($"Deleted {count} objects!", 1f, EditorManager.NotificationType.Success);
         }
