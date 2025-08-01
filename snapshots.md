@@ -1,4 +1,11 @@
-﻿# snapshot-2025.8.1 - (pre-1.8.0) [Aug 1, 2025]
+﻿# ???
+## Features
+### Core
+- Added a Global toggle to the getAchievementUnlocked and achievementUnlocked modifiers.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.1 - (pre-1.8.0) [Aug 1, 2025]
 
 ## Features
 ### Editor
