@@ -5053,7 +5053,7 @@ namespace BetterLegacy.Editor.Managers
             dialog.ParentDesyncToggle.gameObject.SetActive(ShowModdedUI);
             if (ShowModdedUI)
             {
-                dialog.ParentDesyncToggle.isOn = parentable.ParentDesync;
+                dialog.ParentDesyncToggle.SetIsOnWithoutNotify(parentable.ParentDesync);
                 dialog.ParentDesyncToggle.onValueChanged.NewListener(_val =>
                 {
                     parentable.ParentDesync = _val;
@@ -5077,8 +5077,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent Offset
                 var lel = parentSetting.offsetField.GetComponent<LayoutElement>();
-                lel.minWidth = RTEditor.ShowModdedUI ? 64f : 128f;
-                lel.preferredWidth = RTEditor.ShowModdedUI ? 64f : 128f;
+                lel.minWidth = ShowModdedUI ? 64f : 128f;
+                lel.preferredWidth = ShowModdedUI ? 64f : 128f;
                 parentSetting.offsetField.SetTextWithoutNotify(parentable.GetParentOffset(i).ToString());
                 parentSetting.offsetField.onValueChanged.NewListener(_val =>
                 {
