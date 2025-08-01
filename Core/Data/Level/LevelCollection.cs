@@ -78,7 +78,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <summary>
         /// Tags used to identify the collection.
         /// </summary>
-        public string[] tags;
+        public List<string> tags = new List<string>();
 
         /// <summary>
         /// Full path of the collection. Must end with a "/".
@@ -237,9 +237,9 @@ namespace BetterLegacy.Core.Data.Level
 
             if (jn["tags"] != null)
             {
-                collection.tags = new string[jn["tags"].Count];
+                collection.tags = new List<string>();
                 for (int i = 0; i < jn["tags"].Count; i++)
-                    collection.tags[i] = jn["tags"][i];
+                    collection.tags.Add(jn["tags"][i]);
             }
 
             for (int i = 0; i < jn["levels"].Count; i++)
@@ -539,8 +539,12 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public void UpdateIcons()
         {
-            icon = RTFile.FileExists(RTFile.CombinePaths(path, ICON_PNG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, ICON_PNG)) : SpriteHelper.LoadSprite(RTFile.CombinePaths(path, ICON_JPG));
-            banner = RTFile.FileExists(RTFile.CombinePaths(path, BANNER_PNG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, BANNER_PNG)) : SpriteHelper.LoadSprite(RTFile.CombinePaths(path, BANNER_JPG));
+            icon =
+                RTFile.FileExists(RTFile.CombinePaths(path, ICON_PNG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, ICON_PNG)) :
+                RTFile.FileExists(RTFile.CombinePaths(path, ICON_JPG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, ICON_JPG)) : LegacyPlugin.AtanPlaceholder;
+            banner =
+                RTFile.FileExists(RTFile.CombinePaths(path, BANNER_PNG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, BANNER_PNG)) :
+                RTFile.FileExists(RTFile.CombinePaths(path, BANNER_JPG)) ? SpriteHelper.LoadSprite(RTFile.CombinePaths(path, BANNER_JPG)) : LegacyPlugin.AtanPlaceholder;
         }
 
         /// <summary>
@@ -577,7 +581,7 @@ namespace BetterLegacy.Core.Data.Level
                 jn["difficulty"] = difficulty;
 
             if (tags != null)
-                for (int i = 0; i < tags.Length; i++)
+                for (int i = 0; i < tags.Count; i++)
                     jn["tags"][i] = tags[i] ?? string.Empty;
 
             for (int i = 0; i < levelInformation.Count; i++)
