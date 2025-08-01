@@ -138,7 +138,13 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <summary>
         /// Opens the editor popup.
         /// </summary>
-        public virtual void Open() => PlayAnimation(true);
+        public virtual void Open()
+        {
+            // display the popup in front of others
+            if (GameObject)
+                GameObject.transform.SetAsLastSibling();
+            PlayAnimation(true);
+        }
 
         /// <summary>
         /// Closes the editor popup.
