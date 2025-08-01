@@ -428,8 +428,10 @@ namespace BetterLegacy.Editor.Data.Elements
                                 var path = Item.path;
                                 path = RTFile.GetDirectory(RTFile.RemoveEndSlash(path));
                                 path = RTFile.CombinePaths(path, RTFile.ValidateDirectory(RTEditor.inst.folderCreatorName.text));
+                                Item.name = RTEditor.inst.folderCreatorName.text;
                                 Item.path = path;
 
+                                RenderLabel();
                                 RTFile.MoveDirectory(oldPath, path);
 
                                 RTEditor.inst.HideNameEditor();

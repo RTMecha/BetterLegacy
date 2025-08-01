@@ -1624,6 +1624,7 @@ namespace BetterLegacy.Editor.Managers
             LevelCollectionDialog.NameField.onValueChanged.NewListener(_val =>
             {
                 levelCollection.name = _val;
+                levelCollection.editorPanel?.RenderLabel();
             });
             LevelCollectionDialog.NameField.onEndEdit.NewListener(_val =>
             {
