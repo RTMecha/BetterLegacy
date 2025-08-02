@@ -1798,6 +1798,11 @@ namespace BetterLegacy.Core
         public static ObjectTransform GetObjectTransform(this ITransformable transformable) => new ObjectTransform(transformable.GetFullPosition(), transformable.GetFullScale(), transformable.GetFullRotation(true).z);
 
         /// <summary>
+        /// Updates the modifier functions.
+        /// </summary>
+        public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, modifyable.ReferenceType));
+
+        /// <summary>
         /// Gets all transformables from a package.
         /// </summary>
         /// <param name="beatmap">Package reference.</param>

@@ -141,6 +141,7 @@ namespace BetterLegacy.Editor.Managers
             { ModifierReferenceType.PlayerModel, new List<Modifier>() },
             { ModifierReferenceType.PlayerObject, new List<Modifier>() },
             { ModifierReferenceType.GameData, new List<Modifier>() },
+            { ModifierReferenceType.ModifierBlock, new List<Modifier>() },
         };
 
         #region Default Modifiers
@@ -201,6 +202,8 @@ namespace BetterLegacy.Editor.Managers
                         modifyable.Modifiers.Add(modifier);
                     else
                         modifyable.Modifiers.Insert(Mathf.Clamp(addIndex, 0, modifyable.Modifiers.Count), modifier);
+
+                    modifyable.UpdateFunctions();
 
                     CoroutineHelper.StartCoroutine(modifiersEditorDialog.RenderModifiers(modifyable));
                     DefaultModifiersPopup.Close();
@@ -269,6 +272,7 @@ namespace BetterLegacy.Editor.Managers
             buttonStorage.button.onClick.NewListener(() =>
             {
                 modifyable.Modifiers.AddRange(copiedModifiers.Select(x => x.Copy()));
+                modifyable.UpdateFunctions();
 
                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                 if (modifyable is BeatmapObject beatmapObject)

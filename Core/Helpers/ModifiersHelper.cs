@@ -86,17 +86,17 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <typeparam name="T">The type of <see cref="Modifier"/>.</typeparam>
         /// <param name="modifier">The modifier to assign to.</param>
-        public static void AssignModifierActions(Modifier modifier, IModifierReference reference)
+        public static void AssignModifierActions(Modifier modifier, ModifierReferenceType referenceType)
         {
             var name = modifier.Name;
 
-            if (modifier.type == Modifier.Type.Trigger && triggers.TryFind(x => x.name == name, out ModifierTrigger trigger) && trigger.compatibility.CompareType(reference.ReferenceType))
+            if (modifier.type == Modifier.Type.Trigger && triggers.TryFind(x => x.name == name, out ModifierTrigger trigger) && trigger.compatibility.CompareType(referenceType))
                 modifier.Trigger = trigger.function;
 
-            if (modifier.type == Modifier.Type.Action && actions.TryFind(x => x.name == name, out ModifierAction action) && action.compatibility.CompareType(reference.ReferenceType))
+            if (modifier.type == Modifier.Type.Action && actions.TryFind(x => x.name == name, out ModifierAction action) && action.compatibility.CompareType(referenceType))
                 modifier.Action = action.function;
 
-            if (modifier.Inactive == null && inactives.TryFind(x => x.name == name, out ModifierInactive inactive) && inactive.compatibility.CompareType(reference.ReferenceType))
+            if (modifier.Inactive == null && inactives.TryFind(x => x.name == name, out ModifierInactive inactive) && inactive.compatibility.CompareType(referenceType))
                 modifier.Inactive = inactive.function;
         }
 

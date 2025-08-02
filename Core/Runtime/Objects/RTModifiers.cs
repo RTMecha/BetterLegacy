@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             StartTime = startTime;
             KillTime = killTime;
 
-            modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, reference));
+            modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, reference.ReferenceType));
         }
 
         public IModifierReference reference;

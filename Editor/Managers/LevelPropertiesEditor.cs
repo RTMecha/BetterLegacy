@@ -114,7 +114,7 @@ namespace BetterLegacy.Editor.Managers
             var contextClickable = add.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = pointerEventData =>
             {
-                var modifierBlock = new ModifierBlock<IModifierReference>("newModifierBlock", ModifierReferenceType.GameData);
+                var modifierBlock = new ModifierBlock<IModifierReference>("newModifierBlock", ModifierReferenceType.ModifierBlock);
                 GameData.Current.modifierBlocks.Add(modifierBlock);
                 RenderDialog();
             };

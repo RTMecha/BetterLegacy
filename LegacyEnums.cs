@@ -1150,6 +1150,7 @@ namespace BetterLegacy
         PlayerModel,
         PlayerObject,
         GameData,
+        ModifierBlock,
     }
 
     #endregion
