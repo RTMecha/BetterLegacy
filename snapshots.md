@@ -1,4 +1,18 @@
-﻿# snapshot-2025.8.2 - (pre-1.8.0) [Aug 2, 2025]
+﻿# snapshot-2025.8.3 - (pre-1.8.0) [Aug 2, 2025]
+## Features
+### Editor
+- You can now copy & paste modifier blocks.
+
+## Changes
+### Editor
+- The editor context menu should no longer overflow to the right of the application.
+
+## Fixes
+- Fixed modifier blocks not showing all modifiers.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.2 - (pre-1.8.0) [Aug 2, 2025]
 ## Features
 ### Core
 - Added a Global toggle to the getAchievementUnlocked and achievementUnlocked modifiers.
