@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
 
 using SimpleJSON;
+
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
+
+using Version = BetterLegacy.Core.Data.Version;
 
 namespace BetterLegacy.Core
 {
@@ -170,6 +176,35 @@ namespace BetterLegacy.Core
             => jn == null ? defaultValue :
                             jn.IsArray ? new Vector3Int(jn.Count > 0 ? jn[0].AsInt : defaultValue.x, jn.Count > 1 ? jn[1].AsInt : defaultValue.y, jn.Count > 2 ? jn[2].AsInt : defaultValue.z) :
                             new Vector3Int(jn["x"] == null ? defaultValue.x : jn["x"].AsInt, jn["y"] == null ? defaultValue.y : jn["y"].AsInt, jn["z"] == null ? defaultValue.z : jn["z"].AsInt);
+
+        public static List<ModifierBlock<T>> ParseModifierBlocks<T>(JSONNode jn, ModifierReferenceType referenceType) where T : IModifierReference
+        {
+            var modifierBlocks = new List<ModifierBlock<T>>();
+            if (jn != null)
+                for (int i = 0; i < jn.Count; i++)
+                {
+                    var jnModifierBlock = jn[i];
+                    var modifierBlock = ModifierBlock<T>.Parse(jnModifierBlock);
+                    modifierBlock.Name = jnModifierBlock["name"];
+                    modifierBlock.ReferenceType = referenceType;
+                    modifierBlock.UpdateFunctions();
+                    modifierBlocks.Add(modifierBlock);
+                }
+            return modifierBlocks;
+        }
+
+        public static JSONNode ModifierBlocksToJSON<T>(List<ModifierBlock<T>> modifierBlocks) where T : IModifierReference
+        {
+            var jn = NewJSONArray();
+            for (int i = 0; i < modifierBlocks.Count; i++)
+            {
+                var modifierBlock = modifierBlocks[i];
+                var jnModifierBlock = modifierBlock.ToJSON();
+                jnModifierBlock["name"] = modifierBlock.Name;
+                jn[i] = jnModifierBlock;
+            }
+            return jn;
+        }
 
         public static JSONNode NewJSONObject() => JSON.Parse("{}");
         public static JSONNode NewJSONArray() => JSON.Parse("[]");

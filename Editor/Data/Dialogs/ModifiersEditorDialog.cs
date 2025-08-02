@@ -29,6 +29,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Text Label { get; set; }
 
         /// <summary>
+        /// Button to copy the modifier block.
+        /// </summary>
+        public Button CopyButton { get; set; }
+
+        /// <summary>
         /// Button to delete the modifier block.
         /// </summary>
         public Button DeleteButton { get; set; }
@@ -100,6 +105,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Label = label.transform.GetChild(0).GetComponent<Text>();
             Label.text = "Modifiers";
             EditorThemeManager.ApplyLightText(Label);
+        }
+
+        public void InitCopy(Transform parent)
+        {
+            var copy = EditorPrefabHolder.Instance.DeleteButton.Duplicate(parent, "copy");
+            var copyStorage = copy.GetComponent<DeleteButtonStorage>();
+            copyStorage.image.sprite = EditorSprites.CopySprite;
+
+            CopyButton = copyStorage.button;
+            EditorThemeManager.ApplyGraphic(copyStorage.baseImage, ThemeGroup.Copy, true);
+            EditorThemeManager.ApplyGraphic(copyStorage.image, ThemeGroup.Copy_Text);
         }
 
         public void InitDelete(Transform parent)

@@ -53,7 +53,11 @@ namespace BetterLegacy.Core.Data
         /// <returns>Returns true if the list doesn't contain elements.</returns>
         public bool IsEmpty() => Modifiers.IsEmpty();
 
-        public override void CopyData(ModifierBlock<T> orig, bool newID = true) => this.CopyModifyableData(orig);
+        public override void CopyData(ModifierBlock<T> orig, bool newID = true)
+        {
+            Name = orig.Name;
+            this.CopyModifyableData(orig);
+        }
 
         public override void ReadJSON(JSONNode jn) => this.ReadModifiersJSON(jn);
 

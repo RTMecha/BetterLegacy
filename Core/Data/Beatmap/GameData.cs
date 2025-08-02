@@ -1191,16 +1191,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         gameData.modifiers.Add(modifier);
                 }
 
-            if (jn["modifier_blocks"] != null)
-                for (int i = 0; i < jn["modifier_blocks"].Count; i++)
-                {
-                    var jnModifierBlock = jn["modifier_blocks"][i];
-                    var modifierBlock = ModifierBlock<IModifierReference>.Parse(jnModifierBlock);
-                    modifierBlock.Name = jnModifierBlock["name"];
-                    modifierBlock.ReferenceType = ModifierReferenceType.ModifierBlock;
-                    modifierBlock.UpdateFunctions();
-                    gameData.modifierBlocks.Add(modifierBlock);
-                }
+            gameData.modifierBlocks = Parser.ParseModifierBlocks<IModifierReference>(jn["modifier_blocks"], ModifierReferenceType.ModifierBlock);
 
             gameData.data = BeatmapData.Parse(jn);
 
@@ -1608,6 +1599,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jnModifierBlock["name"] = modifierBlock.Name;
                 jn["modifier_blocks"][i] = jnModifierBlock;
             }
+
+            if (!modifierBlocks.IsEmpty())
+                jn["modifier_blocks"] = Parser.ModifierBlocksToJSON(modifierBlocks);
 
             if (assets && !assets.IsEmpty())
                 jn["assets"] = assets.ToJSON();

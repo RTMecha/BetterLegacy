@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 using UnityEngine;
 
@@ -832,6 +833,8 @@ namespace BetterLegacy.Core
 
             return input;
         }
+
+        public static string GetClipboardText() => Clipboard.ContainsText() ? Clipboard.GetText() : string.Empty;
 
         #region Code Encryptions
 
