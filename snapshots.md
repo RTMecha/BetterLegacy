@@ -1,4 +1,14 @@
-﻿# snapshot-2025.8.3 - (pre-1.8.0) [Aug 2, 2025]
+﻿# ???
+## Features
+### Core
+- Implemented more level settings.
+
+## Fixes
+- Fixed "Show Default Themes" setting not working.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.3 - (pre-1.8.0) [Aug 2, 2025]
 ## Features
 ### Editor
 - You can now copy & paste modifier blocks.
