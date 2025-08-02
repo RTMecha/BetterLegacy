@@ -1,10 +1,12 @@
-﻿# ???
+﻿# snapshot-2025.8.2 - (pre-1.8.0) [Aug 2, 2025]
 ## Features
 ### Core
 - Added a Global toggle to the getAchievementUnlocked and achievementUnlocked modifiers.
 - Added Sprint & Sneak speeds to the Player.
 - Level collections now display difficulty, tags and average rank.
 - Added loadLevelCollection modifier.
+- Implemented level modifiers. Level modifiers can be converted to triggers in the VG format, but will only save the first trigger and action of a set of modifiers.
+- Implemented modifier blocks. These can be called using the callModifierBlock modifier. Good for compacting and reusing modifier code, but not recommended for prefab models.
 
 ### Example Companion
 - Added some dialogues to Example.
