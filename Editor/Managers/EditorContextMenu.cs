@@ -144,6 +144,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            pos.x = Mathf.Clamp(pos.x, float.NegativeInfinity, (Screen.width * CoreHelper.ScreenScaleInverse) - width);
             pos.y = Mathf.Clamp(pos.y, height, float.PositiveInfinity);
             contextMenu.transform.AsRT().anchoredPosition = pos;
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
