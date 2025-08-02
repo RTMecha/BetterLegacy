@@ -436,7 +436,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             ModifierReferenceType.PlayerModel => PlayerModel,
             ModifierReferenceType.PlayerObject => PlayerObject,
             ModifierReferenceType.GameData => GameData,
-            ModifierReferenceType.ModifierBlock => BeatmapObject && BackgroundObject && PrefabObject && PAPlayer && GameData,
+            ModifierReferenceType.ModifierBlock => BeatmapObject || BackgroundObject || PrefabObject || PAPlayer || GameData,
             _ => false,
         };
 
