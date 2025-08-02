@@ -26,6 +26,7 @@ namespace BetterLegacy.Editor
 
                 AddSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_add{FileFormat.PNG.Dot()}"));
                 EditSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_edit{FileFormat.PNG.Dot()}"));
+                CopySprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_copy{FileFormat.PNG.Dot()}"));
                 CloseSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_close{FileFormat.PNG.Dot()}"));
                 DropperSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_dropper{FileFormat.PNG.Dot()}"));
                 SearchSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_search{FileFormat.PNG.Dot()}"));
@@ -66,6 +67,8 @@ namespace BetterLegacy.Editor
         public static Sprite AddSprite { get; set; }
 
         public static Sprite EditSprite { get; set; }
+
+        public static Sprite CopySprite { get; set; }
 
         public static Sprite CloseSprite { get; set; }
 

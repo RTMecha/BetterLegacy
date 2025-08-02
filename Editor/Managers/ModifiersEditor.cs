@@ -87,7 +87,7 @@ namespace BetterLegacy.Editor.Managers
             duplicateLayoutElement.minWidth = 32f;
             RectValues.Default.AnchoredPosition(106f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(copy.transform.AsRT());
 
-            copy.GetComponent<DeleteButtonStorage>().image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"copy{FileFormat.PNG.Dot()}"));
+            copy.GetComponent<DeleteButtonStorage>().image.sprite = EditorSprites.CopySprite;
 
             var notifier = Creator.NewUIObject("Notifier", mcpLabel.transform);
             var notifierImage = notifier.AddComponent<Image>();
