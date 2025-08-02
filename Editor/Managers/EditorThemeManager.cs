@@ -359,7 +359,7 @@ namespace BetterLegacy.Editor.Managers
                 }));
         }
 
-        public static void ApplyToggle(Toggle toggle, ThemeGroup checkGroup = ThemeGroup.Null, Text text = null)
+        public static void ApplyToggle(Toggle toggle, ThemeGroup checkGroup = ThemeGroup.Null, Graphic graphic = null)
         {
             toggle.image.fillCenter = true;
             ApplyElement(new Element(ThemeGroup.Toggle_1, toggle.image.gameObject, new List<Component>
@@ -373,11 +373,11 @@ namespace BetterLegacy.Editor.Managers
                 toggle.graphic,
             }));
 
-            if (text)
+            if (graphic)
             {
-                ApplyElement(new Element(checkMarkGroup, text.gameObject, new List<Component>
+                ApplyElement(new Element(checkMarkGroup, graphic.gameObject, new List<Component>
                 {
-                    text,
+                    graphic,
                 }));
                 return;
             }

@@ -2510,7 +2510,7 @@ namespace BetterLegacy.Editor.Managers
                 selectionToggle.onValueChanged.ClearAll();
                 selectionToggle.isOn = timelineObject.Selected;
                 selectionToggle.onValueChanged.AddListener(_val => timelineObject.Selected = _val);
-                EditorThemeManager.ApplyToggle(selectionToggle, text: text);
+                EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
             }
         }
 
