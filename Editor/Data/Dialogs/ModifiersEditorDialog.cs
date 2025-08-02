@@ -29,6 +29,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Text Label { get; set; }
 
         /// <summary>
+        /// Button to delete the modifier block.
+        /// </summary>
+        public Button DeleteButton { get; set; }
+
+        /// <summary>
+        /// Name input field of the modifiers editor.
+        /// </summary>
+        public InputField NameField { get; set; }
+
+        /// <summary>
         /// Text that displays the objects' current integer variable.
         /// </summary>
         public Text IntVariableUI { get; set; }
@@ -83,72 +93,82 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// </summary>
         public Action<bool> showModifiersFunc;
 
-        /// <summary>
-        /// Initializes the Modifier Editor UI.
-        /// </summary>
-        /// <param name="parent">Parent to set the Modifier Editor UI to.</param>
-        public void Init(Transform parent, bool doLabel = true, bool doIntegerVariable = true, bool doIgnoreLifespan = true)
+        public void InitLabel(Transform parent)
         {
-            // Label
-            if (doLabel)
-            {
-                var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "label");
+            var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "label");
 
-                Label = label.transform.GetChild(0).GetComponent<Text>();
-                Label.text = "Modifiers";
-                EditorThemeManager.AddLightText(Label);
-            }
+            Label = label.transform.GetChild(0).GetComponent<Text>();
+            Label.text = "Modifiers";
+            EditorThemeManager.ApplyLightText(Label);
+        }
 
-            // Integer variable
-            if (doIntegerVariable)
-            {
-                var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "int_variable");
+        public void InitDelete(Transform parent)
+        {
+            var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(parent, "delete");
+            var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
 
-                IntVariableUI = label.transform.GetChild(0).GetComponent<Text>();
-                IntVariableUI.text = "Integer Variable: [ null ]";
-                IntVariableUI.fontSize = 18;
-                EditorThemeManager.AddLightText(IntVariableUI);
-                label.AddComponent<Image>().color = LSColors.transparent;
-                TooltipHelper.AssignTooltip(label, "Modifiers Integer Variable");
-            }
+            DeleteButton = deleteStorage.button;
+            EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+        }
 
-            // Ignored Lifespan
-            if (doIgnoreLifespan)
-            {
-                var ignoreLifespan = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "ignore life");
-                var ignoreLifespanToggleButton = ignoreLifespan.GetComponent<ToggleButtonStorage>();
-                ignoreLifespanToggleButton.label.text = "Ignore Lifespan";
+        public void InitName(Transform parent)
+        {
+            var name = EditorPrefabHolder.Instance.StringInputField.Duplicate(parent, "block name");
+            NameField = name.GetComponent<InputField>();
+            EditorThemeManager.ApplyInputField(NameField);
+        }
 
-                IgnoreToggle = ignoreLifespanToggleButton.toggle;
+        public void InitIntegerVariable(Transform parent)
+        {
+            var label = EditorPrefabHolder.Instance.Labels.Duplicate(parent, "int_variable");
 
-                EditorThemeManager.AddToggle(IgnoreToggle, graphic: ignoreLifespanToggleButton.label);
-                TooltipHelper.AssignTooltip(ignoreLifespan, "Modifiers Ignore Lifespan");
-            }
+            IntVariableUI = label.transform.GetChild(0).GetComponent<Text>();
+            IntVariableUI.text = "Integer Variable: [ null ]";
+            IntVariableUI.fontSize = 18;
+            EditorThemeManager.ApplyLightText(IntVariableUI);
+            label.AddComponent<Image>().color = LSColors.transparent;
+            TooltipHelper.AssignTooltip(label, "Modifiers Integer Variable");
+        }
 
-            // Order Modifiers
-            {
-                var orderMatters = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "order modifiers");
-                var orderMattersToggleButton = orderMatters.GetComponent<ToggleButtonStorage>();
-                orderMattersToggleButton.label.text = "Order Matters";
+        public void InitIgnoreLifespan(Transform parent)
+        {
+            var ignoreLifespan = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "ignore life");
+            var ignoreLifespanToggleButton = ignoreLifespan.GetComponent<ToggleButtonStorage>();
+            ignoreLifespanToggleButton.label.text = "Ignore Lifespan";
 
-                OrderToggle = orderMattersToggleButton.toggle;
+            IgnoreToggle = ignoreLifespanToggleButton.toggle;
 
-                EditorThemeManager.AddToggle(OrderToggle, graphic: orderMattersToggleButton.label);
-                TooltipHelper.AssignTooltip(orderMatters, "Modifiers Order Matters");
-            }
+            EditorThemeManager.ApplyToggle(IgnoreToggle, graphic: ignoreLifespanToggleButton.label);
+            TooltipHelper.AssignTooltip(ignoreLifespan, "Modifiers Ignore Lifespan");
+        }
 
-            // Active
-            {
-                var showModifiers = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "active");
-                var showModifiersToggleButton = showModifiers.GetComponent<ToggleButtonStorage>();
-                showModifiersToggleButton.label.text = "Show Modifiers";
+        public void InitOrderMatters(Transform parent)
+        {
+            var orderMatters = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "order modifiers");
+            var orderMattersToggleButton = orderMatters.GetComponent<ToggleButtonStorage>();
+            orderMattersToggleButton.label.text = "Order Matters";
 
-                ActiveToggle = showModifiersToggleButton.toggle;
+            OrderToggle = orderMattersToggleButton.toggle;
 
-                EditorThemeManager.AddToggle(ActiveToggle, graphic: showModifiersToggleButton.label);
-                TooltipHelper.AssignTooltip(showModifiers, "Show Modifiers");
-            }
+            EditorThemeManager.ApplyToggle(OrderToggle, graphic: orderMattersToggleButton.label);
+            TooltipHelper.AssignTooltip(orderMatters, "Modifiers Order Matters");
+        }
 
+        public void InitActive(Transform parent)
+        {
+            var showModifiers = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, "active");
+            var showModifiersToggleButton = showModifiers.GetComponent<ToggleButtonStorage>();
+            showModifiersToggleButton.label.text = "Show Modifiers";
+
+            ActiveToggle = showModifiersToggleButton.toggle;
+
+            EditorThemeManager.ApplyToggle(ActiveToggle, graphic: showModifiersToggleButton.label);
+            TooltipHelper.AssignTooltip(showModifiers, "Show Modifiers");
+        }
+
+        public void InitScrollView(Transform parent)
+        {
             var scrollObj = EditorPrefabHolder.Instance.ScrollView.Duplicate(parent, "Modifiers Scroll View");
 
             ScrollView = scrollObj.transform;
@@ -159,6 +179,29 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             ScrollView.gameObject.SetActive(showModifiers);
             Scrollbar = ScrollView.Find("Scrollbar Vertical").GetComponent<Scrollbar>();
+        }
+
+        /// <summary>
+        /// Initializes the Modifier Editor UI.
+        /// </summary>
+        /// <param name="parent">Parent to set the Modifier Editor UI to.</param>
+        public void Init(Transform parent, bool doLabel = true, bool doIntegerVariable = true, bool doIgnoreLifespan = true, bool doName = false)
+        {
+            if (doLabel)
+                InitLabel(parent);
+
+            if (doName)
+                InitName(parent);
+
+            if (doIntegerVariable)
+                InitIntegerVariable(parent);
+
+            if (doIgnoreLifespan)
+                InitIgnoreLifespan(parent);
+
+            InitOrderMatters(parent);
+            InitActive(parent);
+            InitScrollView(parent);
         }
 
         /// <summary>
@@ -176,6 +219,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 IgnoreToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
             if (OrderToggle)
                 OrderToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+
+            if (NameField)
+            {
+                NameField.gameObject.SetActive(RTEditor.ShowModdedUI);
+                if (modifyable is ModifierBlock<IModifierReference> modifierBlock)
+                {
+                    NameField.SetTextWithoutNotify(modifierBlock.Name);
+                    NameField.onValueChanged.NewListener(_val => modifierBlock.Name = _val);
+                }
+            }
 
             if (!RTEditor.ShowModdedUI)
                 showModifiers = false;
@@ -287,6 +340,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
 
             }
+        }
+
+        /// <summary>
+        /// Clears the modifiers editor.
+        /// </summary>
+        public void Clear()
+        {
+            if (Label)
+                CoreHelper.Delete(Label.transform.parent);
+            CoreHelper.Delete(NameField);
+            CoreHelper.Delete(IntVariableUI);
+            CoreHelper.Delete(ActiveToggle);
+            CoreHelper.Delete(IgnoreToggle);
+            CoreHelper.Delete(OrderToggle);
+            CoreHelper.Delete(ScrollView);
+            modifierCards.Clear();
+            showModifiersFunc = null;
         }
     }
 }

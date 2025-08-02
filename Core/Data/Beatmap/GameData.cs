@@ -22,7 +22,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents a Project Arrhythmia level.
     /// </summary>
-    public class GameData : Exists, IModifierReference, IBeatmap
+    public class GameData : Exists, IModifyable, IModifierReference, IBeatmap
     {
         public GameData() { }
 
@@ -638,6 +638,16 @@ namespace BetterLegacy.Core.Data.Beatmap
         //public static JSONNode LastParsedJSON { get; set; }
         //public static GameData ConvertedGameData { get; set; }
 
+        public List<string> Tags { get; set; }
+
+        public List<Modifier> Modifiers { get => modifiers; set => modifiers = value; }
+
+        public bool IgnoreLifespan { get; set; }
+
+        public bool OrderModifiers { get; set; }
+
+        public bool ModifiersActive => true;
+
         public ModifierReferenceType ReferenceType => ModifierReferenceType.GameData;
 
         public int IntVariable { get; set; }
@@ -1157,6 +1167,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             //LastParsedJSON = jn;
             var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
 
+            if (jn["ordmod"] != null)
+                gameData.OrderModifiers = jn["ordmod"].AsBool;
+
             if (jn["modifiers"] != null)
                 for (int i = 0; i < jn["modifiers"].Count; i++)
                 {
@@ -1180,7 +1193,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["modifier_blocks"] != null)
                 for (int i = 0; i < jn["modifier_blocks"].Count; i++)
-                    gameData.modifierBlocks.Add(ModifierBlock<IModifierReference>.Parse(jn["modifier_blocks"][i]));
+                {
+                    var modifierBlock = ModifierBlock<IModifierReference>.Parse(jn["modifier_blocks"][i]);
+                    modifierBlock.ReferenceType = ModifierReferenceType.GameData;
+                    gameData.modifierBlocks.Add(modifierBlock);
+                }
 
             gameData.data = BeatmapData.Parse(jn);
 
@@ -1579,8 +1596,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < data.markers.Count; i++)
                 jn["ed"]["markers"][i] = data.markers[i].ToJSON();
 
-            for (int i = 0; i < modifiers.Count; i++)
-                jn["modifiers"][i] = modifiers[i].ToJSON();
+            this.WriteModifiersJSON(jn);
 
             for (int i = 0; i < modifierBlocks.Count; i++)
                 jn["modifier_blocks"][i] = modifierBlocks[i].ToJSON();
