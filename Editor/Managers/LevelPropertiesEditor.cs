@@ -115,6 +115,32 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderDialog()
         {
+            Dialog.LevelStartOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.levelStartOffset.ToString());
+            Dialog.LevelStartOffsetField.inputField.onValueChanged.NewListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                    GameData.Current.data.level.levelStartOffset = num;
+            });
+
+            Dialog.ReverseToggle.SetIsOnWithoutNotify(GameData.Current.data.level.reverse);
+            Dialog.ReverseToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.reverse = _val);
+
+            Dialog.LevelEndOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.levelEndOffset.ToString());
+            Dialog.LevelEndOffsetField.inputField.onValueChanged.NewListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                    GameData.Current.data.level.levelEndOffset = num;
+            });
+
+            Dialog.AutoEndLevelToggle.SetIsOnWithoutNotify(GameData.Current.data.level.autoEndLevel);
+            Dialog.AutoEndLevelToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.autoEndLevel = _val);
+
+            Dialog.LevelEndFunctionDropdown.SetValueWithoutNotify((int)GameData.Current.data.level.endLevelFunc);
+            Dialog.LevelEndFunctionDropdown.onValueChanged.NewListener(_val => GameData.Current.data.level.endLevelFunc = (EndLevelFunction)_val);
+
+            Dialog.LevelEndDataField.SetTextWithoutNotify(GameData.Current.data.level.endLevelData);
+            Dialog.LevelEndDataField.onValueChanged.NewListener(_val => GameData.Current.data.level.endLevelData = _val);
+
             CoroutineHelper.StartCoroutine(Dialog.LevelModifiers.RenderModifiers(GameData.Current));
 
             Dialog.ModifierBlocks.ForLoopReverse((modifierBlockDialog, index) =>

@@ -24,6 +24,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string modVersion;
 
         /// <summary>
+        /// The time the level should start at.
+        /// </summary>
+        public float levelStartOffset;
+
+        /// <summary>
         /// If the song should reverse at all when all players are dead.
         /// </summary>
         public bool reverse = true;
@@ -192,6 +197,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             levelVersion = orig.levelVersion;
             modVersion = orig.modVersion;
 
+            levelStartOffset = orig.levelStartOffset;
+            reverse = orig.reverse;
             hideIntro = orig.hideIntro;
 
             respawnImmediately = orig.allowCustomPlayerModels;
@@ -302,6 +309,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["limit_hit_cooldown"] != null)
                 limitHitCooldown = Parser.TryParse(jn["limit_hit_cooldown"], new Vector2(2.5f, 2.5f));
 
+            if (jn["level_start_offset"] != null)
+                levelStartOffset = Parser.TryParse(jn["level_start_offset"], 0f);
+            
             if (jn["level_end_offset"] != null)
                 levelEndOffset = Parser.TryParse(jn["level_end_offset"], 0.1f);
 
@@ -381,6 +391,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (limitHitCooldown.x != 2.5f || limitHitCooldown.y != 2.5f)
                 jn["limit_hit_cooldown"] = limitHitCooldown.ToJSON();
 
+            if (levelStartOffset != 0f)
+                jn["level_start_offset"] = levelStartOffset;
+            
             if (levelEndOffset != 0.1f)
                 jn["level_end_offset"] = levelEndOffset;
 

@@ -52,7 +52,6 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix()
         {
-            AudioManager.inst.SetMusicTime(0f);
             Instance.gameState = GameManager.State.Loading;
             InputDataManager.inst.PlayerPrefabs = Instance.PlayerPrefabs;
             InputDataManager.inst.playersCanJoin = false;
@@ -139,7 +138,7 @@ namespace BetterLegacy.Patchers
         static void CheckReplay()
         {
             if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
-                AudioManager.inst.SetMusicTime(0f);
+                AudioManager.inst.SetMusicTime(GameData.Current.data.level.levelStartOffset);
         }
 
         [HarmonyPatch(nameof(GameManager.FixedUpdate))]

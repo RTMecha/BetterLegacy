@@ -433,7 +433,7 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Done!");
 
             GameManager.inst.gameState = GameManager.State.Playing;
-            AudioManager.inst.SetMusicTime(0f);
+            AudioManager.inst.SetMusicTime(GameData.Current.data.level.levelStartOffset);
 
             LoadingFromHere = false;
 

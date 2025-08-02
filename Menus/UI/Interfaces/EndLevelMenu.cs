@@ -8,6 +8,7 @@ using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Companion.Entity;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -64,7 +65,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             string hard = LSColors.GetThemeColorHex("hard");
             string expert = LSColors.GetThemeColorHex("expert");
 
-            AudioManager.inst.SetMusicTime(ArcadeHelper.ReplayLevel ? 0f : AudioManager.inst.CurrentAudioSource.clip.length - 0.01f);
+            AudioManager.inst.SetMusicTime(ArcadeHelper.ReplayLevel ? GameData.Current.data.level.levelStartOffset : AudioManager.inst.CurrentAudioSource.clip.length - GameData.Current.data.level.levelEndOffset);
             SoundManager.inst.SetPlaying(ArcadeHelper.ReplayLevel);
 
             layouts.Add("results", new MenuVerticalLayout

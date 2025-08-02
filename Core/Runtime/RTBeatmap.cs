@@ -234,7 +234,7 @@ namespace BetterLegacy.Core.Runtime
                         }
                     case EndLevelFunction.Loop: {
                             GameManager.inst.gameState = GameManager.State.Playing;
-                            AudioManager.inst.SetMusicTime(0f);
+                            AudioManager.inst.SetMusicTime(GameData.Current.data.level.levelStartOffset);
 
                             Time.timeScale = 1f;
                             InputDataManager.inst.SetAllControllerRumble(0f);
@@ -394,7 +394,7 @@ namespace BetterLegacy.Core.Runtime
             float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
             if (!CoreHelper.InEditor && challengeMode.Lives > 0)
             {
-                time = 0.1f;
+                time = GameData.Current.data.level.levelStartOffset;
                 if (OutOfLives)
                     UpdateLives(challengeMode.Lives);
             }

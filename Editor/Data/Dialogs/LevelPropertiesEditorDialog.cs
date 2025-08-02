@@ -25,6 +25,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform Content { get; set; }
 
+        public InputFieldStorage LevelStartOffsetField { get; set; }
+
+        public Toggle ReverseToggle { get; set; }
+
+        public InputFieldStorage LevelEndOffsetField { get; set; }
+
+        public Toggle AutoEndLevelToggle { get; set; }
+
+        public Dropdown LevelEndFunctionDropdown { get; set; }
+
+        public InputField LevelEndDataField { get; set; }
+
         public ModifiersEditorDialog LevelModifiers { get; set; }
 
         public List<ModifiersEditorDialog> ModifierBlocks { get; set; } = new List<ModifiersEditorDialog>();
@@ -65,16 +77,70 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Setup
 
-            new Labels(Labels.InitSettings.Default.Parent(Content), "Level Modifiers");
+            new Labels(Labels.InitSettings.Default.Parent(Content), new Label("General Settings") { fontStyle = FontStyle.Bold, });
+            new Labels(Labels.InitSettings.Default.Parent(Content), "Start Offset");
+            var levelStartOffset = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "level start offset");
+            levelStartOffset.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            LevelStartOffsetField = levelStartOffset.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(LevelStartOffsetField.middleButton);
+            EditorThemeManager.AddInputField(LevelStartOffsetField);
+
+            ReverseToggle = GenerateToggle(Content, "Level Can Rewind");
+
+            new Labels(Labels.InitSettings.Default.Parent(Content), new Label("End Settings") { fontStyle = FontStyle.Bold, });
+            new Labels(Labels.InitSettings.Default.Parent(Content), "End Offset");
+            var levelEndOffset = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "level end offset");
+            levelEndOffset.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            LevelEndOffsetField = levelEndOffset.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(LevelEndOffsetField.middleButton);
+            EditorThemeManager.AddInputField(LevelEndOffsetField);
+
+            AutoEndLevelToggle = GenerateToggle(Content, "Auto End");
+
+            LevelEndFunctionDropdown = GenerateDropdown(Content, "End Function", true, CoreHelper.ToOptionData<EndLevelFunction>());
+
+            new Labels(Labels.InitSettings.Default.Parent(Content), "End Data");
+            var levelEndData = EditorPrefabHolder.Instance.StringInputField.Duplicate(Content, "level end data");
+            levelEndData.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            LevelEndDataField = levelEndData.GetComponent<InputField>();
+            EditorThemeManager.AddInputField(LevelEndDataField);
+
+            new Labels(Labels.InitSettings.Default.Parent(Content), new Label("Level Modifiers") { fontStyle = FontStyle.Bold, });
             LevelModifiers = new ModifiersEditorDialog();
             LevelModifiers.Init(Content.transform, false, false, false);
 
-            new Labels(Labels.InitSettings.Default.Parent(Content), "Modifier Blocks");
+            new Labels(Labels.InitSettings.Default.Parent(Content), new Label("Modifier Blocks") { fontStyle = FontStyle.Bold, });
             var modifierBlocksScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(Content, "Modifier Blocks");
             modifierBlocksScrollView.transform.AsRT().sizeDelta = new Vector2(765f, 400f);
             ModifierBlocksContent = modifierBlocksScrollView.transform.Find("Viewport/Content").AsRT();
 
             #endregion
+        }
+
+        Dropdown GenerateDropdown(Transform parent, string name, bool doLabel, List<Dropdown.OptionData> list)
+        {
+            if (doLabel)
+                new Labels(Labels.InitSettings.Default.Parent(parent), new Label(name));
+            var gameObject = EditorPrefabHolder.Instance.Dropdown.Duplicate(parent, name.ToLower());
+            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var layoutElement = gameObject.GetComponent<LayoutElement>();
+            layoutElement.ignoreLayout = false;
+            layoutElement.minWidth = 200f;
+            layoutElement.preferredWidth = 200f;
+            var dropdown = gameObject.GetComponent<Dropdown>();
+            dropdown.options = list;
+            EditorThemeManager.AddDropdown(dropdown);
+            return dropdown;
+        }
+
+        Toggle GenerateToggle(Transform parent, string text)
+        {
+            var gameObject = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parent, text.ToLower());
+            gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var toggleStorage = gameObject.GetComponent<ToggleButtonStorage>();
+            toggleStorage.label.text = text;
+            EditorThemeManager.AddToggle(toggleStorage.toggle, graphic: toggleStorage.label);
+            return toggleStorage.toggle;
         }
     }
 }
