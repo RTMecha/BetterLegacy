@@ -2133,7 +2133,7 @@ namespace BetterLegacy.Core.Components.Player
             var index = PlayersData.Current.GetMaxIndex(playerIndex);
             playerObjects.ForLoop(playerObject =>
             {
-                if (playerObject.gameObject)
+                if (!playerObject.gameObject)
                     return;
 
                 if (!playerObject.isCustom)
@@ -2144,9 +2144,6 @@ namespace BetterLegacy.Core.Components.Player
 
                 var customObject = playerObject as RTCustomPlayerObject;
 
-                if (!Core)
-                    return;
-
                 var reference = customObject.reference;
 
                 if (reference.OrderModifiers)
@@ -2155,10 +2152,10 @@ namespace BetterLegacy.Core.Components.Player
                     ModifiersHelper.RunModifiersAll(reference.Modifiers, customObject, new Dictionary<string, string>());
 
                 var active = customObject.active &&
-                    (customObject.reference.visibilitySettings.IsEmpty() ? customObject.reference.active :
-                        customObject.reference.requireAll ?
-                            customObject.reference.visibilitySettings.All(x => CheckVisibility(x)) :
-                            customObject.reference.visibilitySettings.Any(x => CheckVisibility(x)));
+                    (reference.visibilitySettings.IsEmpty() ? reference.active :
+                        reference.requireAll ?
+                            reference.visibilitySettings.All(x => CheckVisibility(x)) :
+                            reference.visibilitySettings.Any(x => CheckVisibility(x)));
 
                 customObject.gameObject.SetActive(active);
 
