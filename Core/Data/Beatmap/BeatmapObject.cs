@@ -1499,8 +1499,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 var transform = runtimeObject.visualObject.gameObject.transform;
                 if (!includeSelf)
-                    transform = transform.parent.parent;
-                return transform.localEulerAngles;
+                    transform = transform.parent;
+                return transform.parent.eulerAngles;
             }
 
             return new Vector3(0f, 0f, InterpolateChainRotation(includeSelf: includeSelf));
