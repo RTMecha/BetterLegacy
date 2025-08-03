@@ -360,6 +360,7 @@ namespace BetterLegacy.Menus
             InputSelectMenu.Current = null;
             LoadLevelsMenu.Current = null;
             ControllerDisconnectedMenu.Current = null;
+            ProfileMenu.Current = null;
 
             StopGenerating();
 
@@ -4018,9 +4019,7 @@ namespace BetterLegacy.Menus
                 #region Profile
 
                 case "Profile": {
-                        CloseMenus();
-                        var profileMenu = new ProfileMenu();
-                        CurrentInterface = profileMenu;
+                        ProfileMenu.Init();
 
                         break;
                     }
