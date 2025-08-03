@@ -2,6 +2,12 @@
 ## Features
 ### Core
 - Implemented more level settings.
+- Added whiteHole and more blackHole modifiers. The blackHole modifier now only targets the nearest player and no longer has the "Use Opacity" setting, as there are better ways of doing it now.
+- Added getVisualOpacity modifier.
+- Added playerLockX and playerLockY modifiers. These prevent the player from moving in the specified axis.
+
+### Editor
+- Added "Modifiers Display Achievements" in Config Manager > Editor > Modifiers. This allows achievements to display in the editor when they're unlocked via a modifier.
 
 ## Fixes
 - Fixed "Show Default Themes" setting not working.
