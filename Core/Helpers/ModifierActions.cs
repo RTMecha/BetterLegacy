@@ -2432,11 +2432,13 @@ namespace BetterLegacy.Core.Helpers
             float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
             var players = PlayerManager.Players;
 
-            var pos = beatmapObject.GetFullPosition();
-
-            players.ForLoop(player =>
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
             {
-                if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.RuntimePlayer)
                     return;
 
                 var transform = player.RuntimePlayer.rb.transform;
@@ -2448,9 +2450,176 @@ namespace BetterLegacy.Core.Helpers
             });
         }
 
+        public static void blackHoleIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
+
+            float num = modifier.GetFloat(1, 0.01f, variables);
+
+            if (num == 0f)
+                return;
+
+            float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
+            var index = modifier.GetInt(0, 0, variables);
+            if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
+                return;
+
+            var pos = beatmapObject.GetFullPosition();
+
+            if (!player || !player.RuntimePlayer)
+                return;
+
+            var transform = player.RuntimePlayer.rb.transform;
+
+            var vector = new Vector3(transform.position.x, transform.position.y, 0f);
+            var target = new Vector3(pos.x, pos.y, 0f);
+
+            transform.position += (target - vector) * moveDelay;
+        }
+
+        public static void blackHoleAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
+
+            float num = modifier.GetFloat(0, 0.01f, variables);
+
+            if (modifier.GetBool(1, false, variables))
+                num = -(beatmapObject.Interpolate(3, 1) - 1f) * num;
+
+            if (num == 0f)
+                return;
+
+            float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
+            var players = PlayerManager.Players;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                players.ForLoop(player =>
+                {
+                    if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
+                        return;
+
+                    var transform = player.RuntimePlayer.rb.transform;
+
+                    var vector = new Vector3(transform.position.x, transform.position.y, 0f);
+                    var target = new Vector3(pos.x, pos.y, 0f);
+
+                    transform.position += (target - vector) * moveDelay;
+                });
+            });
+        }
+
         public static void whiteHole(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            // todo
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
+
+            float num = modifier.GetFloat(0, 0.01f, variables);
+
+            if (num == 0f)
+                return;
+
+            float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
+            var players = PlayerManager.Players;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (!player || !player.RuntimePlayer)
+                    return;
+
+                var transform = player.RuntimePlayer.rb.transform;
+
+                var vector = new Vector3(transform.position.x, transform.position.y, 0f);
+                var target = new Vector3(pos.x, pos.y, 0f);
+
+                transform.position += (target + vector) * moveDelay;
+            });
+        }
+
+        public static void whiteHoleIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
+
+            float num = modifier.GetFloat(1, 0.01f, variables);
+
+            if (num == 0f)
+                return;
+
+            float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
+            var index = modifier.GetInt(0, 0, variables);
+            if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
+                return;
+
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+
+                if (!player || !player.RuntimePlayer)
+                    return;
+
+                var transform = player.RuntimePlayer.rb.transform;
+
+                var vector = new Vector3(transform.position.x, transform.position.y, 0f);
+                var target = new Vector3(pos.x, pos.y, 0f);
+
+                transform.position += (target + vector) * moveDelay;
+            });
+        }
+
+        public static void whiteHoleAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
+
+            float num = modifier.GetFloat(0, 0.01f, variables);
+
+            if (modifier.GetBool(1, false, variables))
+                num = -(beatmapObject.Interpolate(3, 1) - 1f) * num;
+
+            if (num == 0f)
+                return;
+
+            float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
+            var players = PlayerManager.Players;
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                players.ForLoop(player =>
+                {
+                    if (!player.RuntimePlayer || !player.RuntimePlayer.rb)
+                        return;
+
+                    var transform = player.RuntimePlayer.rb.transform;
+
+                    var vector = new Vector3(transform.position.x, transform.position.y, 0f);
+                    var target = new Vector3(pos.x, pos.y, 0f);
+
+                    transform.position += (target + vector) * moveDelay;
+                });
+            });
         }
 
         #endregion
@@ -2946,8 +3115,35 @@ namespace BetterLegacy.Core.Helpers
             if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
             {
                 var colors = solidObject.GetColors();
-                variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(colors.startColor);
-                variables[modifier.GetValue(1)] = RTColors.ColorToHexOptional(colors.endColor);
+                var startColorName = modifier.GetValue(0);
+                var endColorName = modifier.GetValue(1);
+                if (string.IsNullOrEmpty(startColorName))
+                    variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
+                if (string.IsNullOrEmpty(endColorName))
+                    variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
+            }
+        }
+
+        public static void getVisualOpacity(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
+            {
+                var colors = solidObject.GetColors();
+                var startOpacityName = modifier.GetValue(0);
+                var endOpacityName = modifier.GetValue(1);
+                if (string.IsNullOrEmpty(startOpacityName))
+                    variables[startOpacityName] = colors.startColor.a.ToString();
+                if (string.IsNullOrEmpty(endOpacityName))
+                    variables[endOpacityName] = colors.endColor.a.ToString();
+            }
+            else if (reference is BeatmapObject beatmapObject)
+            {
+                var startOpacityName = modifier.GetValue(0);
+                var endOpacityName = modifier.GetValue(1);
+                if (string.IsNullOrEmpty(startOpacityName))
+                    variables[startOpacityName] = (-(beatmapObject.Interpolate(3, 1) - 1f)).ToString();
+                if (string.IsNullOrEmpty(endOpacityName))
+                    variables[endOpacityName] = (-(beatmapObject.Interpolate(3, 6) - 1f)).ToString();
             }
         }
 
@@ -6844,12 +7040,23 @@ namespace BetterLegacy.Core.Helpers
 
         public static void unlockAchievement(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            var id = modifier.GetValue(0, variables);
+            if (CoreHelper.InEditor)
+            {
+                if (!EditorConfig.Instance.ModifiersDisplayAchievements.Value)
+                    return;
+
+                var achievement = AchievementEditor.inst.achievements.Find(x => x.id == id);
+                AchievementManager.inst.ShowAchievement(achievement);
+                return;
+            }
+
             if (!LevelManager.CurrentLevel)
                 return;
 
             if (!LevelManager.CurrentLevel.saveData)
                 LevelManager.AssignSaveData(LevelManager.CurrentLevel);
-            LevelManager.CurrentLevel.saveData.UnlockAchievement(modifier.GetValue(0, variables));
+            LevelManager.CurrentLevel.saveData.UnlockAchievement(id);
         }
         
         public static void lockAchievement(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

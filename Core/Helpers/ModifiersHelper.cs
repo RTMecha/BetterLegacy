@@ -875,7 +875,11 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.gameMode),  ModifierActions.setGameMode, ModifierCompatibility.LevelControlCompatible),
 
             new ModifierAction(nameof(ModifierActions.blackHole),  ModifierActions.blackHole, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.blackHoleIndex),  ModifierActions.blackHoleIndex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.blackHoleAll),  ModifierActions.blackHoleAll, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.whiteHole),  ModifierActions.whiteHole, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.whiteHoleIndex),  ModifierActions.whiteHoleIndex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.whiteHoleAll),  ModifierActions.whiteHoleAll, ModifierCompatibility.BeatmapObjectCompatible),
 
             #endregion
 
@@ -921,6 +925,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.getModifiedColor),  ModifierActions.getModifiedColor),
             new ModifierAction(nameof(ModifierActions.getMixedColors),  ModifierActions.getMixedColors),
             new ModifierAction(nameof(ModifierActions.getVisualColor),  ModifierActions.getVisualColor),
+            new ModifierAction(nameof(ModifierActions.getVisualOpacity),  ModifierActions.getVisualOpacity),
             new ModifierAction(nameof(ModifierActions.getJSONString),  ModifierActions.getJSONString),
             new ModifierAction(nameof(ModifierActions.getJSONFloat),  ModifierActions.getJSONFloat),
             new ModifierAction(nameof(ModifierActions.getJSON),  ModifierActions.getJSON),

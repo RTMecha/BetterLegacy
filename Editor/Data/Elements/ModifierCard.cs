@@ -1349,7 +1349,33 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 case nameof(ModifierActions.blackHole): {
                         SingleGenerator(modifier, reference, "Value", 0, 1f);
-                        BoolGenerator(modifier, reference, "Use Opacity", 1, false);
+
+                        break;
+                    }
+                case nameof(ModifierActions.blackHoleIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "Value", 1, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierActions.blackHoleAll): {
+                        SingleGenerator(modifier, reference, "Value", 0, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierActions.whiteHole): {
+                        SingleGenerator(modifier, reference, "Value", 0, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierActions.whiteHoleIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        SingleGenerator(modifier, reference, "Value", 1, 1f);
+
+                        break;
+                    }
+                case nameof(ModifierActions.whiteHoleAll): {
+                        SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
@@ -1679,6 +1705,12 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierActions.getVisualColor): {
                         StringGenerator(modifier, reference, "Color 1 Var Name", 0);
                         StringGenerator(modifier, reference, "Color 2 Var Name", 1);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getVisualOpacity): {
+                        StringGenerator(modifier, reference, "Opacity 1 Var Name", 0);
+                        StringGenerator(modifier, reference, "Opacity 2 Var Name", 1);
 
                         break;
                     }
