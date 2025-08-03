@@ -6,11 +6,15 @@
 - Added getVisualOpacity modifier.
 - Added playerLockX and playerLockY modifiers. These prevent the player from moving in the specified axis.
 
+### Interfaces
+- Improved the Profile menu to include pages and a list of achievements.
+
 ### Editor
 - Added "Modifiers Display Achievements" in Config Manager > Editor > Modifiers. This allows achievements to display in the editor when they're unlocked via a modifier.
 
 ## Fixes
 - Fixed "Show Default Themes" setting not working.
+- Fixed Hidden & Shared achievement toggles not actually disabling those values when turned off.
 
 ------------------------------------------------------------------------------------------
 
