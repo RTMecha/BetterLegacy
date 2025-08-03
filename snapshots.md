@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.8.4 - (pre-1.8.0) [Aug 4, 2025]
 ## Features
 ### Core
 - Implemented more level settings.
@@ -15,6 +15,7 @@
 ## Fixes
 - Fixed "Show Default Themes" setting not working.
 - Fixed Hidden & Shared achievement toggles not actually disabling those values when turned off.
+- Fixed prefab parenting desync not working.
 
 ------------------------------------------------------------------------------------------
 
