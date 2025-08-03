@@ -551,6 +551,16 @@ namespace BetterLegacy.Core.Components.Player
         }
 
         /// <summary>
+        /// If X movement is locked.
+        /// </summary>
+        public bool LockXMovement { get; set; }
+
+        /// <summary>
+        /// If Y movement is locked.
+        /// </summary>
+        public bool LockYMovement { get; set; }
+
+        /// <summary>
         /// If the player can move.
         /// </summary>
         public bool CanMove
@@ -1698,8 +1708,8 @@ namespace BetterLegacy.Core.Components.Player
                 movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
                 colliding = false;
-                var x = Actions.Move.Vector.x;
-                var y = Actions.Move.Vector.y;
+                var x = !LockXMovement ? Actions.Move.Vector.x : 0f;
+                var y = !LockYMovement ? Actions.Move.Vector.y : 0f;
                 var pitch = MultiplyByPitch ? CoreHelper.ForwardPitch : 1f;
 
                 if (x != 0f)

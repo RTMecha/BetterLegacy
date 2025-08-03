@@ -808,7 +808,11 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.playerRespawnAll),  ModifierActions.playerRespawnAll, ModifierCompatibility.LevelControlCompatible),
 
             // lock
+            new ModifierAction(nameof(ModifierActions.playerLockX), ModifierActions.playerLockX, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerLockXIndex), ModifierActions.playerLockXIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerLockXAll), ModifierActions.playerLockXAll, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerLockY), ModifierActions.playerLockY, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerLockYIndex), ModifierActions.playerLockYIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerLockYAll), ModifierActions.playerLockYAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerLockBoostAll),  ModifierActions.playerLockBoostAll, ModifierCompatibility.LevelControlCompatible),
 

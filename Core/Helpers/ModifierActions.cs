@@ -1166,15 +1166,82 @@ namespace BetterLegacy.Core.Helpers
                 PlayerManager.RespawnPlayers();
         }
         
-        // todo: implement these
+        public static void playerLockX(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var locked = modifier.GetBool(0, true, variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.LockXMovement = locked;
+            });
+        }
+
+        public static void playerLockXIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var locked = modifier.GetBool(1, true, variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.LockXMovement = locked;
+        }
+
         public static void playerLockXAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-
+            var locked = modifier.GetBool(0, true, variables);
+            PlayerManager.Players.ForLoop(player =>
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.LockXMovement = locked;
+            });
         }
-        
+
+        public static void playerLockY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var locked = modifier.GetBool(0, true, variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.LockYMovement = locked;
+            });
+        }
+
+        public static void playerLockYIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var locked = modifier.GetBool(1, true, variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.LockYMovement = locked;
+        }
+
         public static void playerLockYAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-
+            var locked = modifier.GetBool(0, true, variables);
+            PlayerManager.Players.ForLoop(player =>
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.LockYMovement = locked;
+            });
         }
 
         public static void playerLockBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

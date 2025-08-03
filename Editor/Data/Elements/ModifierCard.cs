@@ -929,7 +929,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                //case "playerKill): {
+                //case nameof(ModifierActions.playerKill): {
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerKillIndex): {
@@ -937,11 +937,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "playerKillAll): {
+                //case nameof(ModifierActions.playerKillAll): {
                 //        break;
                 //    }
 
-                //case "playerRespawn): {
+                //case nameof(ModifierActions.playerRespawn): {
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerRespawnIndex): {
@@ -949,9 +949,36 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "playerRespawnAll): {
+                //case nameof(ModifierActions.playerRespawnAll): {
                 //        break;
                 //    }
+
+                case nameof(ModifierActions.playerLockX): {
+                        BoolGenerator(modifier, reference, "Lock X", 0);
+                        break;
+                    }
+                case nameof(ModifierActions.playerLockXIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0);
+                        BoolGenerator(modifier, reference, "Lock X", 1);
+                        break;
+                    }
+                case nameof(ModifierActions.playerLockXAll): {
+                        BoolGenerator(modifier, reference, "Lock X", 0);
+                        break;
+                    }
+                case nameof(ModifierActions.playerLockY): {
+                        BoolGenerator(modifier, reference, "Lock Y", 0);
+                        break;
+                    }
+                case nameof(ModifierActions.playerLockYIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0);
+                        BoolGenerator(modifier, reference, "Lock Y", 1);
+                        break;
+                    }
+                case nameof(ModifierActions.playerLockYAll): {
+                        BoolGenerator(modifier, reference, "Lock Y", 0);
+                        break;
+                    }
 
                 case nameof(ModifierActions.playerMove): {
                         var value = modifier.GetValue(0);
@@ -1117,7 +1144,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                //case "playerMoveToObject): {
+                //case nameof(ModifierActions.playerMoveToObject): {
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerMoveIndexToObject): {
@@ -1125,10 +1152,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "playerMoveAllToObject): {
+                //case nameof(ModifierActions.playerMoveAllToObject): {
                 //        break;
                 //    }
-                //case "playerMoveXToObject): {
+                //case nameof(ModifierActions.playerMoveXToObject): {
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerMoveXIndexToObject): {
@@ -1136,10 +1163,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "playerMoveXAllToObject): {
+                //case nameof(ModifierActions.playerMoveXAllToObject): {
                 //        break;
                 //    }
-                //case "playerMoveYToObject): {
+                //case nameof(ModifierActions.playerMoveYToObject): {
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerMoveYIndexToObject): {
@@ -1158,7 +1185,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "playerRotateAllToObject): {
+                //case nameof(ModifierActions.playerRotateAllToObject): {
                 //        break;
                 //    }
 
@@ -1204,7 +1231,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //        break;
                 //    }
 
-                //case "playerDisableBoost): {
+                //case nameof(ModifierActions.playerDisableBoost): {
                 //        break;
                 //    }
                 case nameof(ModifierActions.playerDisableBoostIndex): {
@@ -1212,10 +1239,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case "playerDisableBoostAll): {
+                //case nameof(ModifierActions.playerDisableBoostAll): {
                 //        break;
                 //    }
-                
+
                 case nameof(ModifierActions.playerEnableBoost): {
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
