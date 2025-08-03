@@ -107,22 +107,22 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("select_player", "This is not a clicker game!", "Select the player in the editor preview window.", DifficultyType.Expert, "select_player");
             CreateGlobalAchievement("time_machine", "Time Machine", "Convert a VG file to an LS file, or the other way around.", DifficultyType.Expert, "time_machine");
             CreateGlobalAchievement("time_traveler", "Time Traveler", "Play a level made in the modern (alpha / public) editor.", DifficultyType.Normal, "time_traveler");
-            CreateGlobalAchievement("discover_hidden_levels", "Still in Alpha", "Discover a secret.", DifficultyType.Expert, "discover_hidden_levels");
+            CreateGlobalAchievement("discover_hidden_levels", "Still in Alpha", "Discover a secret.", DifficultyType.Expert, "discover_hidden_levels", true);
             CreateGlobalAchievement("more_bins", "There's MORE?!", "Expand the editor timeline's bin count.", DifficultyType.Hard, "more_bins");
 
             // Story related
-            CreateGlobalAchievement("story_doc01_complete", "The Purpose", "Complete Story Mode chapter 1.", DifficultyType.Easy, "story_doc01_complete");
-            CreateGlobalAchievement("story_doc01_secret", "Fall into the Night", "Discover the first secret...", DifficultyType.Normal, "story_doc01_secret");
+            CreateGlobalAchievement("story_doc01_complete", "The Purpose", "Complete Story Mode chapter 1.", DifficultyType.Easy, "story_doc01_complete", true);
+            CreateGlobalAchievement("story_doc01_secret", "Fall into the Night", "Discover the first secret...", DifficultyType.Normal, "story_doc01_secret", true, "Discover a secret in the story mode to unhide this achievement.");
 
             // todo:
             // story_doc01_full
         }
 
-        void CreateGlobalAchievement(string id, string name, string desc, DifficultyType difficulty, string iconFileName)
+        void CreateGlobalAchievement(string id, string name, string desc, DifficultyType difficulty, string iconFileName, bool hidden = false, string hint = null)
         {
             try
             {
-                var achievement = new Achievement(id, name, desc, difficulty, LoadIcon(iconFileName));
+                var achievement = new Achievement(id, name, desc, difficulty, LoadIcon(iconFileName), hidden, hint ?? string.Empty);
                 achievement.unlocked = unlockedGlobalAchievements.TryGetValue(id, out bool unlocked) && unlocked;
                 globalAchievements.Add(achievement);
             }

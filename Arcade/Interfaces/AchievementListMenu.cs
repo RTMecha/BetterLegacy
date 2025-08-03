@@ -25,7 +25,6 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public int CurrentPage { get; set; }
 
-        public const int MAX_ACHIEVEMENTS_PER_PAGE = 5;
         public Level CurrentLevel { get; set; }
 
         public List<Achievement> Achievements { get; set; }
@@ -36,7 +35,7 @@ namespace BetterLegacy.Arcade.Interfaces
             CurrentPage = page;
             Achievements = CurrentLevel.GetAchievements();
 
-            id = InterfaceManager.PROFILE_MENU_ID;
+            id = "63562464";
 
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             name = "Achievements";
@@ -163,7 +162,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 name = "Prev Page",
                 text = "<align=center><b><",
                 parentLayout = "settings",
-                selectionPosition = new Vector2Int(3, 1),
+                selectionPosition = new Vector2Int(1, 0),
                 rect = RectValues.Default.SizeDelta(132f, 64f),
                 func = () =>
                 {
@@ -194,7 +193,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 name = "Next Page",
                 text = "<align=center><b>>",
                 parentLayout = "settings",
-                selectionPosition = new Vector2Int(4, 1),
+                selectionPosition = new Vector2Int(2, 0),
                 rect = RectValues.Default.SizeDelta(132f, 64f),
                 func = () =>
                 {
@@ -224,7 +223,6 @@ namespace BetterLegacy.Arcade.Interfaces
             exitFunc = onReturn;
 
             layer = 10000;
-            defaultSelection = new Vector2Int(0, 4);
 
             InterfaceManager.inst.SetCurrentInterface(this);
         }
@@ -235,20 +233,15 @@ namespace BetterLegacy.Arcade.Interfaces
             Current = new AchievementListMenu(level, page, onReturn);
         }
 
+        public const int MAX_ACHIEVEMENTS_PER_PAGE = 5;
         public int AchievementPageCount => Achievements.Count / MAX_ACHIEVEMENTS_PER_PAGE;
+
+        public void ClearAchievements() => ClearElements(x => x.name == "Achievement Button" || x.name == "Difficulty");
 
         public void RefreshAchievements(bool regenerateUI, bool clear = true)
         {
             if (clear)
-                elements.ForLoopReverse((button, index) =>
-                {
-                    if (button.name != "Achievement Button")
-                        return;
-
-                    button.Clear();
-                    CoreHelper.Delete(button.gameObject);
-                    elements.RemoveAt(index);
-                });
+                ClearAchievements();
 
             var currentPage = CurrentPage + 1;
             int max = currentPage * MAX_ACHIEVEMENTS_PER_PAGE;
@@ -276,7 +269,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         parentLayout = "achievements",
                         selectionPosition = new Vector2Int(0, num + 1),
                         rect = RectValues.Default.SizeDelta(800f, 120f),
-                        text = $"<b><size=24><font=Arrhythmia>HIDDEN ACHIEVEMENT</font></b>\nUnlock this achievement to unhide it.",
+                        text = $"<b><size=24><font=Arrhythmia>HIDDEN ACHIEVEMENT</font></b>\n{achievement.GetHint()}",
                         //alignment = TMPro.TextAlignmentOptions.TopLeft,
                         textRect = RectValues.FullAnchored.AnchoredPosition(120f, 30f),
                         icon = LegacyPlugin.PALogoSprite,

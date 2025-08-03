@@ -43,6 +43,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public List<Toggle> DifficultyToggles { get; set; } = new List<Toggle>();
 
         public ToggleButtonStorage HiddenToggle { get; set; }
+        public InputField HintField { get; set; }
         public ToggleButtonStorage SharedToggle { get; set; }
 
         public FunctionButtonStorage PreviewButton { get; set; }
@@ -187,7 +188,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             HiddenToggle = hidden.GetComponent<ToggleButtonStorage>();
             HiddenToggle.label.text = "Hidden";
             EditorThemeManager.AddToggle(HiddenToggle.toggle, graphic: HiddenToggle.label);
-            
+
+            new Labels(Labels.InitSettings.Default.Parent(LeftContent), "Hint");
+            var hint = EditorPrefabHolder.Instance.StringInputField.Duplicate(LeftContent, "hint");
+            HintField = hint.GetComponent<InputField>();
+            HintField.GetPlaceholderText().text = "Set hint (empty for default)";
+            EditorThemeManager.AddInputField(HintField);
+
             new Labels(Labels.InitSettings.Default.Parent(LeftContent), new Label("Unlocked state is shared everywhere") { horizontalWrap = HorizontalWrapMode.Overflow });
             var shared = EditorPrefabHolder.Instance.ToggleButton.Duplicate(LeftContent, "shared");
             SharedToggle = shared.GetComponent<ToggleButtonStorage>();

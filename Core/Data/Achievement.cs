@@ -31,6 +31,11 @@ namespace BetterLegacy.Core.Data
             unlocked = false;
         }
 
+        public Achievement(string id, string name, string description, int difficulty, Sprite icon, bool hidden, string hint) : this(id, name, description, difficulty, icon, hidden)
+        {
+            this.hint = hint;
+        }
+
         /// <summary>
         /// Name of the achievement.
         /// </summary>
@@ -60,6 +65,11 @@ namespace BetterLegacy.Core.Data
         /// If the achievement shows up in achievement lists when not unlocked.
         /// </summary>
         public bool hidden;
+
+        /// <summary>
+        /// Hint to display in achievement interfaces on how to get this achievement.
+        /// </summary>
+        public string hint = string.Empty;
 
         /// <summary>
         /// If the achievement has already been achieved or not.
@@ -114,6 +124,7 @@ namespace BetterLegacy.Core.Data
             icon = orig.icon;
             lockedIcon = orig.lockedIcon;
             hidden = orig.hidden;
+            hint = orig.hint;
             unlocked = orig.unlocked;
             shared = orig.shared;
         }
@@ -128,6 +139,8 @@ namespace BetterLegacy.Core.Data
                 icon = SpriteHelper.StringToSprite(jn["icon"]);
             if (jn["locked_icon"] != null)
                 lockedIcon = SpriteHelper.StringToSprite(jn["locked_icon"]);
+            if (jn["hint"] != null)
+                hint = jn["hint"];
             hidden = jn["hidden"].AsBool;
             shared = jn["shared"].AsBool;
         }
@@ -148,11 +161,15 @@ namespace BetterLegacy.Core.Data
                 jn["locked_icon"] = SpriteHelper.SpriteToString(lockedIcon);
             if (hidden)
                 jn["hidden"] = hidden;
+            if (!string.IsNullOrEmpty(hint))
+                jn["hint"] = hint;
             if (shared)
                 jn["shared"] = shared;
 
             return jn;
         }
+
+        public string GetHint() => !string.IsNullOrEmpty(hint) ? hint : "Unlock this achievement to unhide it.";
 
         public static Achievement TestAchievement => new Achievement("265265", "Test", "Test this achievement!", 3, LegacyPlugin.AtanPlaceholder);
 

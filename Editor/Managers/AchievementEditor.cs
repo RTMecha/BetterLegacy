@@ -365,12 +365,15 @@ namespace BetterLegacy.Editor.Managers
             });
 
             Dialog.HiddenToggle.toggle.SetIsOnWithoutNotify(achievement.hidden);
-            Dialog.HiddenToggle.toggle.onValueChanged.NewListener(_val => achievement.hidden = true);
+            Dialog.HiddenToggle.toggle.onValueChanged.NewListener(_val => achievement.hidden = _val);
+
+            Dialog.HintField.SetTextWithoutNotify(achievement.hint);
+            Dialog.HintField.onValueChanged.NewListener(_val => achievement.hint = _val);
 
             RenderDifficulty(achievement);
 
             Dialog.SharedToggle.toggle.SetIsOnWithoutNotify(achievement.shared);
-            Dialog.SharedToggle.toggle.onValueChanged.NewListener(_val => achievement.shared = true);
+            Dialog.SharedToggle.toggle.onValueChanged.NewListener(_val => achievement.shared = _val);
 
             Dialog.PreviewButton.button.onClick.NewListener(DisplayAchievement);
         }
