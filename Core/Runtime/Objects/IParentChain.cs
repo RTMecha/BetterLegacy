@@ -181,6 +181,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 desync = parentObject.desync || parentObject.beatmapObject.detatched;
                 syncOffset = timeOffset + parentObject.desyncOffset;
+                if (parentObject.beatmapObject.fromPrefab)
+                    syncOffset += parentObject.beatmapObject.GetPrefabOffsetTime();
             }
 
             parentChain.CurrentScale = totalScale;

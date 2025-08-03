@@ -1649,6 +1649,21 @@ namespace BetterLegacy.Core
         public static bool SamePrefabInstanceSpawned(this IPrefabable instance, IPrefabable prefabable) => instance.SamePrefabInstance(prefabable) && instance.FromPrefab == prefabable.FromPrefab;
 
         /// <summary>
+        /// Gets the offset time of a prefabable.
+        /// </summary>
+        /// <returns>Returns the prefabables' offset time.</returns>
+        public static float GetPrefabOffsetTime(this IPrefabable instance)
+        {
+            var prefab = instance.GetPrefab();
+            if (!prefab)
+                return 0f;
+            var prefabObject = instance.GetPrefabObject();
+            if (!prefabObject)
+                return 0f;
+            return prefabObject.StartTime + prefab.offset;
+        }
+
+        /// <summary>
         /// Gets variables from the evaluatable object.
         /// </summary>
         /// <returns>Returns a dictionary containing variables from the evaluatable object.</returns>
