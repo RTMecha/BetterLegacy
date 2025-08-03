@@ -2045,10 +2045,19 @@ namespace BetterLegacy.Core.Helpers
                     var sca = beatmapObject.GetFullScale();
                     distance += (Vector2)(sca - prevSca) * playerDistance;
                 }
+                // idk why this rotates the player around the area next to the object instead of around it
                 if (useRotation)
                 {
                     var rot = beatmapObject.GetFullRotation(true);
-                    distance += (Vector2)(RTMath.Rotate(rb.position + (Vector2)pos, rot.z) - RTMath.Rotate(rb.position + (Vector2)pos, prevRot.z));
+                    //var rotationDistance = RTMath.Distance(rot.z, prevRot.z);
+
+                    var amount = (Vector2)(RTMath.Rotate(distance + rb.position + (Vector2)pos, rot.z) - RTMath.Rotate(distance + rb.position + (Vector2)pos, prevRot.z));
+                    //var a = (Vector2)RTMath.Rotate(rb.position + (Vector2)pos, rot.z);
+                    //var b = (Vector2)RTMath.Rotate(rb.position + (Vector2)pos, prevRot.z);
+                    //var amount = new Vector2(RTMath.Distance(a.x, b.x), RTMath.Distance(a.y, b.y));
+                    //if (Input.GetKeyDown(KeyCode.U))
+                    //    CoreHelper.Log($"Rot: {rot} Prev Rot: {prevRot} A: {a} B: {b} Amount: {amount}");
+                    distance = amount;
                 }
 
                 rb.position += distance;
