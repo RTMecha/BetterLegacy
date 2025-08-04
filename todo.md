@@ -44,6 +44,7 @@
   Notes:  
   - The current song can be set from the loaded audio tracks via modifiers.
   - Tracks can be loaded / unloaded via modifiers.
+- Event Modifiers layer that interpolate through a sequence and pass the variables to the modifiers.
 
 ### Story
 - Chapter 1.  
@@ -129,10 +130,6 @@
   Update: 1.8.0  
 - Undo / redo everything.  
   Update: 1.13.0  
-- Improve profile menu.  
-  Update: 1.8.0  
-- Improve changelog menu.  
-  Update: 1.8.0  
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
 - New Editor Layer types [Object Only, Prefab Object Only]
 - Update the sprite asset.
