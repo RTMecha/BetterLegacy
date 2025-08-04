@@ -3,11 +3,8 @@
 ### Core
 - Online multiplayer.  
   Update: 1.10.0  
-- Level modifiers (supports VG triggers).  
-  Update: 1.8.0  
 - 2D option for BG objects (VG parallax support?)
 - Level preview song.
-- Custom end level function defaults.
 - Controller Preferences metadata. [Keyboard, Controller, Mouse]
 - Versus Mode (Players can attack other players via boosting through them, shooting them, etc)  
   Update: 1.10.0  
@@ -23,9 +20,6 @@
   - Movement (controls the players velocity)
   - Consumable toggle (removes the item after use, heal mechanic always has this on for balance sake or I might go for a cooldown mechanic instead)
   - Aiming behavior (mouse, right stick, rotate with player, etc)
-- Game Timeline Editor. (skipping regions, custom images, etc)
-- Glow object that acts like bloom.
-- Ignore start time object spawn?
 - Arcade auto plays song config.
 - Active event keyframe value.
   Notes:  
@@ -61,7 +55,7 @@
 - Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)  
   Update: 1.14.0  
 - Interface editor.  
-  Update: 1.8.0  
+  Update: 1.8.0+  
 - Animation editor (for player animations).  
   Update: 1.8.0  
 - Prefab preview image. Can set the specific capture size and position.
@@ -100,12 +94,6 @@
   Update: 1.8.0
   Notes:  
   - Same as downloadLevel except for level collections.
-- registerFunc modifier.  
-  Update: 1.8.0+  
-  Notes:  
-  - Registers all modifiers up until a return modifier to a function.
-  - This function can pass specific variables.
-  - Best used with level modifiers since they run before anything else.
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)  
@@ -117,15 +105,14 @@
 
 ## Changes
 ### Core
-- Change how modifiers are saved for better consistency.
-- Overhaul player models.
-  Update: 1.8.0  
 - Merge all effect managers into single EffectsManager.
 - Summary and note as much as I can (or need to).
 
 ### Editor
 - Multi language support.
 - Rework the level combiner into just a selection system.
+- Make Editor Documentation read from a json file.  
+  Update: 1.8.0  
 - Give Editor Documentation a cover image so people know what a specific document is talking about.  
   Update: 1.8.0  
 - Undo / redo everything.  
@@ -135,8 +122,6 @@
 - Update the sprite asset.
 - Documentation & tooltips.
 - Possible multi object editor rework???
-- Make Editor Documentation read from a json file.  
-  Update: 1.8.0  
 - Update the file browser UI to include more info / functions.
 - Overhaul the custom UI settings to be more extensive.
 - Rework object dragging to have a lot more control and settings. (take some inspiration from Modern + Blender + EditorManagement)
@@ -144,7 +129,6 @@
 
 ### Fixes
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
-- Fix some issues with Player Models and extra tail parts. (verify if this is fixed, I think it should be)
 
 
 ## Ideas
@@ -157,6 +141,9 @@
   - Prefab Objects can be spawned + despawned.
   - Player Models can be switched between and tested.
   - GUI and keybinds for interacting with this mode (similar to the editor).
+- Game Timeline Editor. (skipping regions, custom images, etc)
+- Glow object that acts like bloom.
+- Ignore start time object spawn?
 
 
 ## Demos
