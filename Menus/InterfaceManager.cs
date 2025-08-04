@@ -520,61 +520,12 @@ namespace BetterLegacy.Menus
             {
                 CoreHelper.Log($"Loading changelog...\nIs loading scene: {SceneHelper.Loading}");
                 if (RTFile.TryReadFromFile(RTFile.GetAsset($"changelog{FileFormat.TXT.Dot()}"), out string file))
-                {
-                    var changeLogMenu = new ChangeLogMenu();
-
-                    changeLogMenu.layouts.Add("updates", new MenuVerticalLayout
-                    {
-                        name = "updates",
-                        childControlWidth = true,
-                        childForceExpandWidth = true,
-                        spacing = 4f,
-                        rect = RectValues.FullAnchored.AnchoredPosition(0f, -32f).SizeDelta(-64f, -256f),
-                    });
-
-                    changeLogMenu.elements.Add(new MenuText
-                    {
-                        id = "1",
-                        name = "Title",
-                        text = "<size=60><b>BetterLegacy Changelog",
-                        rect = RectValues.Default.AnchoredPosition(-640f, 440f).SizeDelta(400f, 64f),
-                        icon = LegacyPlugin.PALogoSprite,
-                        iconRect = RectValues.Default.AnchoredPosition(-256f, 0f).SizeDelta(64f, 64f),
-                        hideBG = true,
-                        textColor = 6
-                    });
-
-                    var lines = RTString.GetLines(file);
-                    RTString.GetLines(file).ForLoop(changeLogMenu.AddUpdateNote);
-
-                    changeLogMenu.elements.Add(new MenuButton
-                    {
-                        id = "0",
-                        name = "Next Menu Button",
-                        text = "<b><align=center>[ NEXT ]",
-                        rect = RectValues.Default.AnchoredPosition(0f, -400f).SizeDelta(300f, 64f),
-                        func = () => SetCurrentInterface(MAIN_MENU_ID),
-                        opacity = 0.1f,
-                        selectedOpacity = 1f,
-                        color = 6,
-                        selectedColor = 6,
-                        textColor = 6,
-                        selectedTextColor = 7,
-                        length = 1f,
-                    });
-
-                    SetCurrentInterface(changeLogMenu);
-                    PlayMusic();
-                    AudioManager.inst.SetPitch(1f);
-
-                    ChangeLogMenu.Seen = true;
-                }
+                    new ChangeLogMenu(RTString.GetLines(file));
                 else
                 {
                     CoreHelper.LogError($"Couldn't read changelog file, continuing...");
                     SetCurrentInterface(MAIN_MENU_ID);
                     PlayMusic();
-                    AudioManager.inst.SetPitch(1f);
                 }
             }
             catch (Exception ex)
