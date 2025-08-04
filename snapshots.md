@@ -1,4 +1,9 @@
-﻿# snapshot-2025.8.4 - (pre-1.8.0) [Aug 4, 2025]
+﻿# ???
+## Changes
+### Interfaces
+- Improved the changelog menu so it doesn't overflow anymore. You can now scroll up & down the notes.
+
+# snapshot-2025.8.4 - (pre-1.8.0) [Aug 4, 2025]
 ## Features
 ### Core
 - Implemented more level settings.
