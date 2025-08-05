@@ -820,7 +820,24 @@ namespace BetterLegacy.Editor.Managers
             Dialog.BaseTab.EditControls.Toggle.onValueChanged.NewListener(_val =>
             {
                 editControls = _val;
-                RenderBaseTab(currentModel);
+                Dialog.BaseTab.Health.ShowInDefault = _val;
+                Dialog.BaseTab.Lives.ShowInDefault = _val;
+                Dialog.BaseTab.MoveSpeed.ShowInDefault = _val;
+                Dialog.BaseTab.BoostSpeed.ShowInDefault = _val;
+                Dialog.BaseTab.BoostCooldown.ShowInDefault = _val;
+                Dialog.BaseTab.MinBoostTime.ShowInDefault = _val;
+                Dialog.BaseTab.MaxBoostTime.ShowInDefault = _val;
+                Dialog.BaseTab.HitCooldown.ShowInDefault = _val;
+                Dialog.BaseTab.CollisionAccurate.ShowInDefault = _val;
+                Dialog.BaseTab.SprintSneakActive.ShowInDefault = _val;
+                Dialog.BaseTab.SneakSpeed.ShowInDefault = _val;
+                Dialog.BaseTab.CanBoost.ShowInDefault = _val;
+                Dialog.BaseTab.JumpGravity.ShowInDefault = _val;
+                Dialog.BaseTab.JumpIntensity.ShowInDefault = _val;
+                Dialog.BaseTab.JumpCount.ShowInDefault = _val;
+                Dialog.BaseTab.JumpBoostCount.ShowInDefault = _val;
+                Dialog.BaseTab.Bounciness.ShowInDefault = _val;
+                CoroutineHelper.StartCoroutine(RefreshEditor());
             });
 
             RenderInteger(Dialog.BaseTab.Health.Field, editControls ? control.Health : currentModel.basePart.health,
