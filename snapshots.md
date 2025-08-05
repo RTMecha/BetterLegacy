@@ -1,7 +1,13 @@
-﻿# ???
+﻿# snapshot-2025.8.5 - (pre-1.8.0) [Aug 5, 2025]
+## Features
+### Editor
+- The Player editor now has a way to edit Player Control of a Player by turning "Edit Controls" on in the editor.
+
 ## Changes
 ### Interfaces
 - Improved the changelog menu so it doesn't overflow anymore. You can now scroll up & down the notes.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.8.4 - (pre-1.8.0) [Aug 4, 2025]
 ## Features
