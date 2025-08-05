@@ -1,9 +1,13 @@
-﻿# ???
+﻿# snapshot-2025.8.6 - (pre-1.8.0) [Aug 6, 2025]
 ## Features
 ### Core
 - Added await and awaitCounter trigger modifiers. This waits for a set amount of time when active and then triggers.
 - Added playerEnable modifers. This shows / hides specific players.
 - Added playerEnableDamage modifies. Modifies players damageable state.
+
+## Changes
+### Editor
+- Base Player Model control values can now show in default models if Edit Controls is turned on.
 
 ## Fixes
 - Fixed prefab parenting desync not working in cases where the both the object and its parent are from a prefab.
