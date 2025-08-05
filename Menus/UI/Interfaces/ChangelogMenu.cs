@@ -48,7 +48,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 id = "0",
                 name = "Background",
                 opacity = 0f,
-                siblingIndex = 0,
                 rect = RectValues.FullAnchored,
                 onScrollUpFuncJSON = onScrollUpFunc,
                 onScrollDownFuncJSON = onScrollDownFunc,
@@ -140,6 +139,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             InterfaceManager.inst.SetCurrentInterface(this);
             InterfaceManager.inst.PlayMusic();
             exitFunc = () => InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID);
+            Seen = true;
         }
 
         public static bool Seen { get; set; }
