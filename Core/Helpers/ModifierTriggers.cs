@@ -1351,21 +1351,35 @@ namespace BetterLegacy.Core.Helpers
                 return false;
             }
 
-            var realTime = modifier.GetBool(1, true, variables);
+            var start = modifier.GetInt(0, 0, variables);
+            var realTime = modifier.GetBool(2, true, variables);
             float time;
             if (realTime)
             {
-                var hasResult = modifier.HasResult();
-                var timer = hasResult ? modifier.GetResult<RTTimer>() : new RTTimer();
-                if (!hasResult)
+                var timer = modifier.GetResultOrDefault(() =>
+                {
+                    var timer = new RTTimer();
+                    timer.offset = start;
                     timer.Reset();
+                    return timer;
+                });
                 timer.Update();
                 time = timer.time;
             }
             else
-                time = reference.GetParentRuntime().FixedTime;
+                time = modifier.GetResultOrDefault(() => reference.GetParentRuntime().FixedTime + start) + reference.GetParentRuntime().FixedTime;
 
-            return time > modifier.GetFloat(0, 0f, variables);
+            return time >= modifier.GetFloat(1, 0f, variables);
+        }
+
+        public static bool awaitCounter(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var start = modifier.GetInt(0, 0, variables);
+            var end = modifier.GetInt(1, 10, variables);
+            var num = modifier.GetResultOrDefault(() => start - 1);
+            num += modifier.GetInt(2, 1, variables);
+            modifier.Result = num;
+            return num >= end;
         }
 
         public static bool containsTag(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

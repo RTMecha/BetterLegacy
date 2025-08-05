@@ -541,12 +541,14 @@ namespace BetterLegacy.Core.Components.Player
 
         public static bool resetVelocity = true;
 
+        public bool canTakeDamageModified = true;
+
         /// <summary>
         /// If the player can take damage.
         /// </summary>
         public bool CanTakeDamage
         {
-            get => RTBeatmap.Current.challengeMode.Damageable && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage;
+            get => RTBeatmap.Current.challengeMode.Damageable && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage && canTakeDamageModified;
             set => canTakeDamage = value;
         }
 
@@ -2275,7 +2277,11 @@ namespace BetterLegacy.Core.Components.Player
             cleared = true;
         }
 
-        public void SetActive(bool active) => gameObject.SetActive(active);
+        public void SetActive(bool active)
+        {
+            if (gameObject)
+                gameObject.SetActive(active);
+        }
 
         public void Interpolate(float time) { }
 

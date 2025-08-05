@@ -14,7 +14,7 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PAPlayer : Exists, IModifierReference
+    public class PAPlayer : Exists, IModifierReference, ICustomActivatable
     {
         public PAPlayer(bool active, int index, InputDevice device)
         {
@@ -127,14 +127,11 @@ namespace BetterLegacy.Core.Data.Player
 
         public int IntVariable { get; set; }
 
-        public IRTObject GetRuntimeObject() => RuntimePlayer;
-
-        public IPrefabable AsPrefabable() => null;
-        public ITransformable AsTransformable() => RuntimePlayer;
-
         #endregion
 
         #region Methods
+
+        public void SetCustomActive(bool active) => RuntimePlayer?.SetActive(active);
 
         public void UpdatePlayerModel()
         {
@@ -219,6 +216,11 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         public void ResetHealth() => Health = GetControl()?.Health ?? 3;
+
+        public IRTObject GetRuntimeObject() => RuntimePlayer;
+
+        public IPrefabable AsPrefabable() => null;
+        public ITransformable AsTransformable() => RuntimePlayer;
 
         #endregion
     }

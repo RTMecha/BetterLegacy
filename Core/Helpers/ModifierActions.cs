@@ -1186,9 +1186,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerLockXIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
             var locked = modifier.GetBool(1, true, variables);
 
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
@@ -1225,9 +1222,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerLockYIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
-                return;
-
             var locked = modifier.GetBool(1, true, variables);
 
             if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
@@ -1248,6 +1242,43 @@ namespace BetterLegacy.Core.Helpers
         {
             if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
                 RTPlayer.LockBoost = lockBoost;
+        }
+
+        public static void playerEnable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var enabled = modifier.GetBool(0, true, variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.SetCustomActive(enabled);
+            });
+        }
+        
+        public static void playerEnableIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var enabled = modifier.GetBool(1, true, variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.SetCustomActive(enabled);
+        }
+
+        public static void playerEnableAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var enabled = modifier.GetBool(0, true, variables);
+
+            PlayerManager.Players.ForLoop(player =>
+            {
+                if (player.RuntimePlayer)
+                    player.SetCustomActive(enabled);
+            });
         }
 
         public static void playerMove(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -2463,7 +2494,44 @@ namespace BetterLegacy.Core.Helpers
                 player.RuntimePlayer.rb.velocity = velocity;
             }
         }
-        
+
+        public static void playerEnableDamage(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var enabled = modifier.GetBool(0, true, variables);
+
+            // queue post tick so the position of the object is accurate.
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var pos = beatmapObject.GetFullPosition();
+                var player = PlayerManager.GetClosestPlayer(pos);
+
+                if (player && player.RuntimePlayer)
+                    player.RuntimePlayer.canTakeDamageModified = enabled;
+            });
+        }
+
+        public static void playerEnableDamageIndex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var enabled = modifier.GetBool(1, true, variables);
+
+            if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer)
+                player.RuntimePlayer.canTakeDamageModified = enabled;
+        }
+
+        public static void playerEnableDamageAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var enabled = modifier.GetBool(0, true, variables);
+
+            foreach (var player in PlayerManager.Players)
+            {
+                if (player.RuntimePlayer)
+                    player.RuntimePlayer.canTakeDamageModified = enabled;
+            }
+        }
+
         public static void setPlayerModel(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (modifier.constant)
@@ -2485,7 +2553,7 @@ namespace BetterLegacy.Core.Helpers
             player.RuntimePlayer.playerNeedsUpdating = true;
             player.RuntimePlayer.UpdateModel();
         }
-        
+
         public static void setGameMode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);
         
         public static void gameMode(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => RTPlayer.GameMode = (GameMode)modifier.GetInt(0, 0);

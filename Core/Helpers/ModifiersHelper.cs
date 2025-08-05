@@ -668,6 +668,8 @@ namespace BetterLegacy.Core.Helpers
 
             #region Misc
 
+            new ModifierTrigger(nameof(ModifierTriggers.await), ModifierTriggers.await),
+            new ModifierTrigger(nameof(ModifierTriggers.awaitCounter), ModifierTriggers.awaitCounter),
             new ModifierTrigger(nameof(ModifierTriggers.containsTag), ModifierTriggers.containsTag),
             new ModifierTrigger(nameof(ModifierTriggers.requireSignal), ModifierTriggers.requireSignal),
             new ModifierTrigger(nameof(ModifierTriggers.isFocused), ModifierTriggers.isFocused),
@@ -816,6 +818,10 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.playerLockYAll), ModifierActions.playerLockYAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerLockBoostAll),  ModifierActions.playerLockBoostAll, ModifierCompatibility.LevelControlCompatible),
 
+            new ModifierAction(nameof(ModifierActions.playerEnable),  ModifierActions.playerEnable, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableIndex),  ModifierActions.playerEnableIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableAll),  ModifierActions.playerEnableAll, ModifierCompatibility.LevelControlCompatible),
+
             // player move
             new ModifierAction(nameof(ModifierActions.playerMove),  ModifierActions.playerMove, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.playerMoveIndex),  ModifierActions.playerMoveIndex, ModifierCompatibility.LevelControlCompatible),
@@ -874,6 +880,9 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.playerVelocityYIndex),  ModifierActions.playerVelocityYIndex, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.playerVelocityYAll),  ModifierActions.playerVelocityYAll, ModifierCompatibility.LevelControlCompatible),
 
+            new ModifierAction(nameof(ModifierActions.playerEnableDamage),  ModifierActions.playerEnableDamage, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableDamageIndex),  ModifierActions.playerEnableDamageIndex, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.playerEnableDamageAll),  ModifierActions.playerEnableDamageAll, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.setPlayerModel),  ModifierActions.setPlayerModel, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.setGameMode),  ModifierActions.setGameMode, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.gameMode),  ModifierActions.setGameMode, ModifierCompatibility.LevelControlCompatible),
@@ -969,7 +978,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.setActiveOther), ModifierActions.setActiveOther, ModifierCompatibility.BackgroundObjectCompatible),
 
             // enable
-            new ModifierAction(nameof(ModifierActions.enableObject),  ModifierActions.enableObject, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierAction(nameof(ModifierActions.enableObject),  ModifierActions.enableObject, ModifierCompatibility.FullBeatmapCompatible.WithPAPlayer()),
             new ModifierAction(nameof(ModifierActions.enableObjectTree),  ModifierActions.enableObjectTree, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.enableObjectOther),  ModifierActions.enableObjectOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierActions.enableObjectTreeOther),  ModifierActions.enableObjectTreeOther, ModifierCompatibility.BeatmapObjectCompatible),
@@ -1325,7 +1334,7 @@ namespace BetterLegacy.Core.Helpers
 
                     if (prefabable.GetRuntimeObject() is ICustomActivatable activatable)
                         activatable.SetCustomActive(false);
-                }, ModifierCompatibility.BeatmapObjectCompatible
+                }, ModifierCompatibility.BeatmapObjectCompatible.WithPAPlayer()
             ),
             new ModifierInactive(nameof(ModifierActions.enableObjectOther),
                 (modifier, reference, variables) =>
@@ -1827,6 +1836,16 @@ namespace BetterLegacy.Core.Helpers
 
             #region Misc
             
+            new ModifierInactive(nameof(ModifierTriggers.await),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = default;
+                }),
+            new ModifierInactive(nameof(ModifierTriggers.awaitCounter),
+                (modifier, reference, variables) =>
+                {
+                    modifier.Result = default;
+                }),
             new ModifierInactive(nameof(ModifierTriggers.objectSpawned),
                 (modifier, reference, variables) =>
                 {

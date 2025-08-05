@@ -980,6 +980,20 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
+                case nameof(ModifierActions.playerEnable): {
+                        BoolGenerator(modifier, reference, "Enabled", 0);
+                        break;
+                    }
+                case nameof(ModifierActions.playerEnableIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0);
+                        BoolGenerator(modifier, reference, "Enabled", 1);
+                        break;
+                    }
+                case nameof(ModifierActions.playerEnableAll): {
+                        BoolGenerator(modifier, reference, "Enabled", 0);
+                        break;
+                    }
+
                 case nameof(ModifierActions.playerMove): {
                         var value = modifier.GetValue(0);
 
@@ -1335,6 +1349,23 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierActions.playerVelocityYAll): {
                         SingleGenerator(modifier, reference, "Y", 0, 0f);
+
+                        break;
+                    }
+
+                case nameof(ModifierActions.playerEnableDamage): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
+
+                        break;
+                    }
+                case nameof(ModifierActions.playerEnableDamageIndex): {
+                        IntegerGenerator(modifier, reference, "Player Index", 0, 0);
+                        BoolGenerator(modifier, reference, "Enabled", 1, true);
+
+                        break;
+                    }
+                case nameof(ModifierActions.playerEnableDamageAll): {
+                        BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         break;
                     }
@@ -4234,6 +4265,21 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 case nameof(ModifierTriggers.playerCollideIndex): {
                         IntegerGenerator(modifier, reference, "Index", 0);
+
+                        break;
+                    }
+
+                case nameof(ModifierTriggers.await): {
+                        IntegerGenerator(modifier, reference, "Start Time", 0);
+                        SingleGenerator(modifier, reference, "Trigger Time", 1);
+                        BoolGenerator(modifier, reference, "Use Real Time", 2);
+
+                        break;
+                    }
+                case nameof(ModifierTriggers.awaitCounter): {
+                        IntegerGenerator(modifier, reference, "Start", 0);
+                        IntegerGenerator(modifier, reference, "End", 1);
+                        IntegerGenerator(modifier, reference, "Amount", 2);
 
                         break;
                     }
