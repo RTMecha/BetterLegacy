@@ -41,6 +41,8 @@ namespace BetterLegacy.Editor.Managers
         public int playerModelIndex = 0;
         public string CustomObjectID { get; set; }
 
+        public bool editControls;
+
         public PlayerEditorDialog Dialog { get; set; }
         public ContentPopup ModelsPopup { get; set; }
 
@@ -795,6 +797,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderBaseTab(PlayerModel currentModel)
         {
+            var control = PlayersData.Current.playerControls.GetAt(playerModelIndex);
+
             var text = Dialog.BaseTab.ID.GameObject.transform.GetChild(0).GetComponent<Text>();
             RectValues.Default.AnchoredPosition(-32f, 0f).SizeDelta(750f, 32f).AssignToRectTransform(text.rectTransform);
             text.alignment = TextAnchor.MiddleRight;
@@ -812,82 +816,113 @@ namespace BetterLegacy.Editor.Managers
                 PlayerManager.UpdatePlayerModels();
             });
 
-            RenderInteger(Dialog.BaseTab.Health.Field, currentModel.basePart.health,
+            Dialog.BaseTab.EditControls.Toggle.SetIsOnWithoutNotify(editControls);
+            Dialog.BaseTab.EditControls.Toggle.onValueChanged.NewListener(_val =>
+            {
+                editControls = _val;
+                RenderBaseTab(currentModel);
+            });
+
+            RenderInteger(Dialog.BaseTab.Health.Field, editControls ? control.Health : currentModel.basePart.health,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
                     {
-                        currentModel.basePart.health = num;
+                        if (editControls)
+                            control.Health = num;
+                        else
+                            currentModel.basePart.health = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
             
-            RenderInteger(Dialog.BaseTab.Lives.Field, currentModel.basePart.lives,
+            RenderInteger(Dialog.BaseTab.Lives.Field, editControls ? control.lives : currentModel.basePart.lives,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
                     {
-                        currentModel.basePart.lives = num;
+                        if (editControls)
+                            control.lives = num;
+                        else
+                            currentModel.basePart.lives = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MoveSpeed.Field, currentModel.basePart.moveSpeed,
+            RenderSingle(Dialog.BaseTab.MoveSpeed.Field, editControls ? control.moveSpeed : currentModel.basePart.moveSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.moveSpeed = num;
+                        if (editControls)
+                            control.moveSpeed = num;
+                        else
+                            currentModel.basePart.moveSpeed = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.BoostSpeed.Field, currentModel.basePart.boostSpeed,
+            RenderSingle(Dialog.BaseTab.BoostSpeed.Field, editControls ? control.boostSpeed : currentModel.basePart.boostSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.boostSpeed = num;
+                        if (editControls)
+                            control.boostSpeed = num;
+                        else
+                            currentModel.basePart.boostSpeed = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.BoostCooldown.Field, currentModel.basePart.boostCooldown,
+            RenderSingle(Dialog.BaseTab.BoostCooldown.Field, editControls ? control.boostCooldown : currentModel.basePart.boostCooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.boostCooldown = num;
+                        if (editControls)
+                            control.boostCooldown = num;
+                        else
+                            currentModel.basePart.boostCooldown = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MinBoostTime.Field, currentModel.basePart.minBoostTime,
+            RenderSingle(Dialog.BaseTab.MinBoostTime.Field, editControls ? control.minBoostTime : currentModel.basePart.minBoostTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.minBoostTime = num;
+                        if (editControls)
+                            control.minBoostTime = num;
+                        else
+                            currentModel.basePart.minBoostTime = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.MaxBoostTime.Field, currentModel.basePart.maxBoostTime,
+            RenderSingle(Dialog.BaseTab.MaxBoostTime.Field, editControls ? control.maxBoostTime : currentModel.basePart.maxBoostTime,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.maxBoostTime = num;
+                        if (editControls)
+                            control.maxBoostTime = num;
+                        else
+                            currentModel.basePart.maxBoostTime = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.HitCooldown.Field, currentModel.basePart.hitCooldown,
+            RenderSingle(Dialog.BaseTab.HitCooldown.Field, editControls ? control.hitCooldown : currentModel.basePart.hitCooldown,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.hitCooldown = num;
+                        if (editControls)
+                            control.hitCooldown = num;
+                        else
+                            currentModel.basePart.hitCooldown = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
@@ -916,93 +951,123 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-            Dialog.BaseTab.CollisionAccurate.Toggle.SetIsOnWithoutNotify(currentModel.basePart.collisionAccurate);
+            Dialog.BaseTab.CollisionAccurate.Toggle.SetIsOnWithoutNotify(editControls ? control.collisionAccurate : currentModel.basePart.collisionAccurate);
             Dialog.BaseTab.CollisionAccurate.Toggle.onValueChanged.NewListener(_val =>
             {
-                currentModel.basePart.collisionAccurate = _val;
+                if (editControls)
+                    control.collisionAccurate = _val;
+                else
+                    currentModel.basePart.collisionAccurate = _val;
                 PlayerManager.UpdatePlayerModels();
             });
 
-            Dialog.BaseTab.SprintSneakActive.Toggle.SetIsOnWithoutNotify(currentModel.basePart.sprintSneakActive);
+            Dialog.BaseTab.SprintSneakActive.Toggle.SetIsOnWithoutNotify(editControls ? control.sprintSneakActive : currentModel.basePart.sprintSneakActive);
             Dialog.BaseTab.SprintSneakActive.Toggle.onValueChanged.NewListener(_val =>
             {
-                currentModel.basePart.sprintSneakActive = _val;
+                if (editControls)
+                    control.sprintSneakActive = _val;
+                else
+                    currentModel.basePart.sprintSneakActive = _val;
                 PlayerManager.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.SprintSpeed.Field, currentModel.basePart.sprintSpeed,
+            RenderSingle(Dialog.BaseTab.SprintSpeed.Field, editControls ? control.sprintSpeed : currentModel.basePart.sprintSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.sprintSpeed = num;
+                        if (editControls)
+                            control.sprintSpeed = num;
+                        else
+                            currentModel.basePart.sprintSpeed = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
             
-            RenderSingle(Dialog.BaseTab.SneakSpeed.Field, currentModel.basePart.sneakSpeed,
+            RenderSingle(Dialog.BaseTab.SneakSpeed.Field, editControls ? control.sprintSpeed : currentModel.basePart.sneakSpeed,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.sneakSpeed = num;
+                        if (editControls)
+                            control.sneakSpeed = num;
+                        else
+                            currentModel.basePart.sneakSpeed = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            Dialog.BaseTab.CanBoost.Toggle.SetIsOnWithoutNotify(currentModel.basePart.canBoost);
+            Dialog.BaseTab.CanBoost.Toggle.SetIsOnWithoutNotify(editControls ? control.canBoost : currentModel.basePart.canBoost);
             Dialog.BaseTab.CanBoost.Toggle.onValueChanged.NewListener(_val =>
             {
-                currentModel.basePart.canBoost = _val;
+                if (editControls)
+                    control.canBoost = _val;
+                else
+                    currentModel.basePart.canBoost = _val;
                 PlayerManager.UpdatePlayerModels();
             });
 
-            RenderSingle(Dialog.BaseTab.JumpGravity.Field, currentModel.basePart.jumpGravity,
+            RenderSingle(Dialog.BaseTab.JumpGravity.Field, editControls ? control.jumpGravity : currentModel.basePart.jumpGravity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.jumpGravity = num;
+                        if (editControls)
+                            control.jumpGravity = num;
+                        else
+                            currentModel.basePart.jumpGravity = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.JumpIntensity.Field, currentModel.basePart.jumpIntensity,
+            RenderSingle(Dialog.BaseTab.JumpIntensity.Field, editControls ? control.jumpIntensity : currentModel.basePart.jumpIntensity,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.jumpIntensity = num;
+                        if (editControls)
+                            control.jumpIntensity = num;
+                        else
+                            currentModel.basePart.jumpIntensity = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderInteger(Dialog.BaseTab.JumpCount.Field, currentModel.basePart.jumpCount,
+            RenderInteger(Dialog.BaseTab.JumpCount.Field, editControls ? control.jumpCount : currentModel.basePart.jumpCount,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
                     {
-                        currentModel.basePart.jumpCount = num;
+                        if (editControls)
+                            control.jumpCount = num;
+                        else
+                            currentModel.basePart.jumpCount = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
             
-            RenderInteger(Dialog.BaseTab.JumpBoostCount.Field, currentModel.basePart.jumpBoostCount,
+            RenderInteger(Dialog.BaseTab.JumpBoostCount.Field, editControls ? control.jumpBoostCount : currentModel.basePart.jumpBoostCount,
                 onValueChanged: _val =>
                 {
                     if (int.TryParse(_val, out int num))
                     {
-                        currentModel.basePart.jumpBoostCount = num;
+                        if (editControls)
+                            control.jumpBoostCount = num;
+                        else
+                            currentModel.basePart.jumpBoostCount = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
 
-            RenderSingle(Dialog.BaseTab.Bounciness.Field, currentModel.basePart.bounciness,
+            RenderSingle(Dialog.BaseTab.Bounciness.Field, editControls ? control.bounciness : currentModel.basePart.bounciness,
                 onValueChanged: _val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentModel.basePart.bounciness = num;
+                        if (editControls)
+                            control.bounciness = num;
+                        else
+                            currentModel.basePart.bounciness = num;
                         PlayerManager.UpdatePlayerModels();
                     }
                 });
