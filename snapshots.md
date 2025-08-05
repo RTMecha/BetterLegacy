@@ -1,4 +1,13 @@
-﻿# snapshot-2025.8.5 - (pre-1.8.0) [Aug 5, 2025]
+﻿# ???
+## Features
+### Core
+- Added await and awaitCounter trigger modifiers. This waits for a set amount of time when active and then triggers.
+- Added playerEnable modifers. This shows / hides specific players.
+- Added playerEnableDamage modifies. Modifies players damageable state.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.5 - (pre-1.8.0) [Aug 5, 2025]
 ## Features
 ### Editor
 - The Player editor now has a way to edit Player Control of a Player by turning "Edit Controls" on in the editor.
