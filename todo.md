@@ -2,16 +2,20 @@
 ## Features
 ### Core
 - Online multiplayer.  
-  Update: 1.10.0  
+  Update: 1.9.0  
+  Notes:  
+  - Camera follows the clients players, online players from other clients are not taken into account and can go in other directions.
+  - Objects can be set to render differently per client.
+  - Includes "isOnline" ("Client" bool) trigger modifier
 - 2D option for BG objects (VG parallax support?)
 - Level preview song.
 - Controller Preferences metadata. [Keyboard, Controller, Mouse]
 - Versus Mode (Players can attack other players via boosting through them, shooting them, etc)  
-  Update: 1.10.0  
+  Update: 1.9.0  
 - Player shooting aiming  
-  Update: 1.10.0  
+  Update: 1.9.0  
 - Player toolkit inventory system. Includes customizable tools and weapons that can be used with triggers and specific object tags.    
-  Update: 1.10.0  
+  Update: 1.9.0  
   Toolkit mechanics:  
   - Damage (sends a damage signal to a damage modifier, can have a set damage amount)
   - Shoot (spawns a custom built bullet / missile with custom movement behavior)
@@ -44,7 +48,7 @@
 - Chapter 1.  
   Update: 1.7.0  
 - Chapter 2.  
-  Update: 1.9.0  
+  Update: 1.10.0  
 
 ### Example
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)  
@@ -60,7 +64,7 @@
   Update: 1.8.0  
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)  
-  Update: 1.9.0  
+  Update: 1.8.0  
 - Collab sharing via server  
   Update: 1.8.0+  
 - Editor online backups / version control  
@@ -97,7 +101,7 @@
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)  
-  Update: 1.8.0  
+  Update: 1.8.0+  
 - Add feedback (KinoFeedback) effect to event keyframes.  
   Update: 1.8.0  
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
