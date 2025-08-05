@@ -115,21 +115,21 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderDialog()
         {
-            Dialog.LevelStartOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.levelStartOffset.ToString());
+            Dialog.LevelStartOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.LevelStartOffset.ToString());
             Dialog.LevelStartOffsetField.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                    GameData.Current.data.level.levelStartOffset = num;
+                    GameData.Current.data.level.LevelStartOffset = num;
             });
 
             Dialog.ReverseToggle.SetIsOnWithoutNotify(GameData.Current.data.level.reverse);
             Dialog.ReverseToggle.onValueChanged.NewListener(_val => GameData.Current.data.level.reverse = _val);
 
-            Dialog.LevelEndOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.levelEndOffset.ToString());
+            Dialog.LevelEndOffsetField.inputField.SetTextWithoutNotify(GameData.Current.data.level.LevelEndOffset.ToString());
             Dialog.LevelEndOffsetField.inputField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                    GameData.Current.data.level.levelEndOffset = num;
+                    GameData.Current.data.level.LevelEndOffset = num;
             });
 
             Dialog.AutoEndLevelToggle.SetIsOnWithoutNotify(GameData.Current.data.level.autoEndLevel);

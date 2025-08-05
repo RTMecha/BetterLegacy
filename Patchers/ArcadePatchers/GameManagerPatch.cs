@@ -138,7 +138,7 @@ namespace BetterLegacy.Patchers
         static void CheckReplay()
         {
             if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor && ArcadeHelper.SongEnded && ArcadeHelper.ReplayLevel && LevelManager.LevelEnded)
-                AudioManager.inst.SetMusicTime(GameData.Current.data.level.levelStartOffset);
+                AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
         }
 
         [HarmonyPatch(nameof(GameManager.FixedUpdate))]

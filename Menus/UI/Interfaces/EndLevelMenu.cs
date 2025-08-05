@@ -65,7 +65,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             string hard = LSColors.GetThemeColorHex("hard");
             string expert = LSColors.GetThemeColorHex("expert");
 
-            AudioManager.inst.SetMusicTime(ArcadeHelper.ReplayLevel ? GameData.Current.data.level.levelStartOffset : AudioManager.inst.CurrentAudioSource.clip.length - GameData.Current.data.level.levelEndOffset);
+            AudioManager.inst.SetMusicTime(ArcadeHelper.ReplayLevel ? GameData.Current.data.level.LevelStartOffset : AudioManager.inst.CurrentAudioSource.clip.length - GameData.Current.data.level.LevelEndOffset);
             SoundManager.inst.SetPlaying(ArcadeHelper.ReplayLevel);
 
             layouts.Add("results", new MenuVerticalLayout

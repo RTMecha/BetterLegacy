@@ -27,6 +27,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// The time the level should start at.
         /// </summary>
         public float levelStartOffset;
+        public float LevelStartOffset { get => Mathf.Clamp(levelStartOffset, 0.1f, float.MaxValue); set => levelStartOffset = Mathf.Clamp(value, 0.1f, float.MaxValue); }
 
         /// <summary>
         /// If the song should reverse at all when all players are dead.
@@ -162,6 +163,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Offset from the levels' end.
         /// </summary>
         public float levelEndOffset = 0.1f;
+        public float LevelEndOffset { get => Mathf.Clamp(levelEndOffset, 0.1f, float.MaxValue); set => levelEndOffset = Mathf.Clamp(value, 0.1f, float.MaxValue); }
 
         /// <summary>
         /// If the level should automatically end when the song reaches the end.
@@ -310,10 +312,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                 limitHitCooldown = Parser.TryParse(jn["limit_hit_cooldown"], new Vector2(2.5f, 2.5f));
 
             if (jn["level_start_offset"] != null)
-                levelStartOffset = Parser.TryParse(jn["level_start_offset"], 0f);
+                LevelStartOffset = Parser.TryParse(jn["level_start_offset"], 0f);
             
             if (jn["level_end_offset"] != null)
-                levelEndOffset = Parser.TryParse(jn["level_end_offset"], 0.1f);
+                LevelEndOffset = Parser.TryParse(jn["level_end_offset"], 0.1f);
 
             if (jn["auto_end_level"] != null)
                 autoEndLevel = jn["auto_end_level"].AsBool;
@@ -391,11 +393,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (limitHitCooldown.x != 2.5f || limitHitCooldown.y != 2.5f)
                 jn["limit_hit_cooldown"] = limitHitCooldown.ToJSON();
 
-            if (levelStartOffset != 0f)
-                jn["level_start_offset"] = levelStartOffset;
+            if (LevelStartOffset != 0f)
+                jn["level_start_offset"] = LevelStartOffset;
             
-            if (levelEndOffset != 0.1f)
-                jn["level_end_offset"] = levelEndOffset;
+            if (LevelEndOffset != 0.1f)
+                jn["level_end_offset"] = LevelEndOffset;
 
             if (!autoEndLevel)
                 jn["auto_end_level"] = autoEndLevel;

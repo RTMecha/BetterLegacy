@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// If the song has reached the end.
         /// </summary>
-        public static bool SongEnded => CoreHelper.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - (GameData.Current?.data?.level?.levelEndOffset ?? 0.1f) && (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level || GameData.Current.data.level.autoEndLevel);
+        public static bool SongEnded => CoreHelper.InGame && AudioManager.inst.CurrentAudioSource.time >= GameManager.inst.songLength - (GameData.Current?.data?.level?.LevelEndOffset ?? 0.1f) && (!GameData.Current || !GameData.Current.data || !GameData.Current.data.level || GameData.Current.data.level.autoEndLevel);
 
         /// <summary>
         /// Replays the level during the End Level Menu.
@@ -182,7 +182,7 @@ namespace BetterLegacy.Core.Helpers
 
             PlayerManager.SpawnPlayersOnStart();
 
-            AudioManager.inst.SetMusicTime(GameData.Current.data.level.levelStartOffset);
+            AudioManager.inst.SetMusicTime(GameData.Current.data.level.LevelStartOffset);
             AudioManager.inst.SetPitch(1f);
             RTBeatmap.Current.ResetCheckpoint();
             endedLevel = false;
