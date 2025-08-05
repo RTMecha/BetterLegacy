@@ -140,6 +140,9 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         void UpdateSpawning()
         {
+            if (parentObjects == null || parentObjects.IsEmpty())
+                return;
+
             // stop objects' own keyframes due to stopping parent chain keyframes causing the homing keyframes to bug out.
             var parentObject = parentObjects[0];
             for (int j = 0; j < parentObject.positionSequence.keyframes.Length; j++)
