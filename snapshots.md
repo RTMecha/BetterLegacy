@@ -5,6 +5,10 @@
 - Added playerEnable modifers. This shows / hides specific players.
 - Added playerEnableDamage modifies. Modifies players damageable state.
 
+## Fixes
+- Fixed prefab parenting desync not working in cases where the both the object and its parent are from a prefab.
+- Fixed level ending on restart.
+
 ------------------------------------------------------------------------------------------
 
 # snapshot-2025.8.5 - (pre-1.8.0) [Aug 5, 2025]
