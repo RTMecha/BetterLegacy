@@ -5,6 +5,7 @@
   Update: 1.9.0  
   Notes:  
   - Camera follows the clients players, online players from other clients are not taken into account and can go in other directions.
+  - Specific effects can be set to only show for specific clients (if one client was in another area and had a bloom effect applied, the other clients shouldn't have the effect)
   - Objects can be set to render differently per client.
   - Includes "isOnline" ("Client" bool) trigger modifier
 - 2D option for BG objects (VG parallax support?)
