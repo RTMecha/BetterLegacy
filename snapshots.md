@@ -1,4 +1,12 @@
-﻿# snapshot-2025.8.6 - (pre-1.8.0) [Aug 6, 2025]
+﻿# ???
+## Features
+### Example Companion
+- Added a setting for delete object notice chance.
+
+## Fixes
+- Fixed config preset breaking render depth.
+
+# snapshot-2025.8.6 - (pre-1.8.0) [Aug 6, 2025]
 ## Features
 ### Core
 - Added await and awaitCounter trigger modifiers. This waits for a set amount of time when active and then triggers.
