@@ -452,7 +452,8 @@ namespace BetterLegacy.Editor.Managers
 
             HandleSelection(timelineObjects, minIndex, false);
 
-            Example.Current?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.DELETE_OBJECT, new TimelineObjectsDialogueParameters(list));
+            if (RandomHelper.PercentChance(ExampleConfig.Instance.DeleteObjectNoticeChance.Value))
+                Example.Current?.chatBubble?.SayDialogue(ExampleChatBubble.Dialogues.DELETE_OBJECT, new TimelineObjectsDialogueParameters(list));
 
             EditorManager.inst.DisplayNotification($"Deleted {count} objects!", 1f, EditorManager.NotificationType.Success);
         }
