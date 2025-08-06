@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive
     {
         public BeatmapObject() : base() { }
 
@@ -142,14 +142,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public AutoKillType autoKillType;
 
-        public AutoKillType AutoKillType { get => autoKillType; set => autoKillType = value; }
-
         /// <summary>
         /// Autokill time offset.
         /// </summary>
         public float autoKillOffset;
-
-        public float AutoKillOffset { get => autoKillOffset; set => autoKillOffset = value; }
 
         public bool Alive
         {

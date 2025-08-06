@@ -4,22 +4,12 @@
     /// Indicates an object has a spawn time and a despawn time.
     /// </summary>
     /// <typeparam name="AKT">Autokill Type.</typeparam>
-    public interface ILifetime<AKT> where AKT : struct
+    public interface ILifetime
     {
         /// <summary>
         /// Object spawn time.
         /// </summary>
         public float StartTime { get; set; }
-
-        /// <summary>
-        /// Object despawn behavior.
-        /// </summary>
-        public AKT AutoKillType { get; set; }
-
-        /// <summary>
-        /// Autokill time offset.
-        /// </summary>
-        public float AutoKillOffset { get; set; }
 
         /// <summary>
         /// Gets if the current audio time is within the lifespan of the object.

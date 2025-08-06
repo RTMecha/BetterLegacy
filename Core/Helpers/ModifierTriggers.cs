@@ -681,12 +681,12 @@ namespace BetterLegacy.Core.Helpers
         
         public static bool musicTimeGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime<AutoKillType> lifetime ? lifetime.StartTime : 0f) > modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime lifetime ? lifetime.StartTime : 0f) > modifier.GetFloat(0, 0f, variables);
         }
         
         public static bool musicTimeLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime<AutoKillType> lifetime ? lifetime.StartTime : 0f) < modifier.GetFloat(0, 0f, variables);
+            return AudioManager.inst.CurrentAudioSource.time - (modifier.GetBool(1, false, variables) && reference is ILifetime lifetime ? lifetime.StartTime : 0f) < modifier.GetFloat(0, 0f, variables);
         }
 
         public static bool musicTimeInRange(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

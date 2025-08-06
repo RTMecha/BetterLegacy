@@ -20,7 +20,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object that appears in the background and can fade. Looks like the towers from the PS2 startup.
     /// </summary>
-    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime<AutoKillType>, IShapeable, ITransformable, IEvaluatable, IModifyable, IModifierReference, IEditable
+    public class BackgroundObject : PAObject<BackgroundObject>, IPrefabable, ILifetime, IShapeable, ITransformable, IEvaluatable, IModifyable, IModifierReference, IEditable
     {
         public BackgroundObject() : base() { }
 
@@ -43,14 +43,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public AutoKillType autoKillType;
 
-        public AutoKillType AutoKillType { get => autoKillType; set => autoKillType = value; }
-
         /// <summary>
         /// Autokill time offset.
         /// </summary>
         public float autoKillOffset;
-
-        public float AutoKillOffset { get => autoKillOffset; set => autoKillOffset = value; }
 
         public bool Alive
         {

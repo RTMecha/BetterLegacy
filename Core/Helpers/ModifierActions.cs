@@ -152,13 +152,13 @@ namespace BetterLegacy.Core.Helpers
         
         public static void setMusicTimeStartTime(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is ILifetime<AutoKillType> lifeTime)
+            if (reference is ILifetime lifeTime)
                 AudioManager.inst.SetMusicTime(lifeTime.StartTime);
         }
         
         public static void setMusicTimeAutokill(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is ILifetime<AutoKillType> lifeTime)
+            if (reference is ILifetime lifeTime)
                 AudioManager.inst.SetMusicTime(lifeTime.StartTime + lifeTime.SpawnDuration);
         }
 
@@ -4631,7 +4631,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void animateColorKF(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ILifetime<AutoKillType> lifetime)
+            if (reference is not ILifetime lifetime)
                 return;
 
             Sequence<Color> sequence1;
@@ -4728,7 +4728,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void animateColorKFHex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ILifetime<AutoKillType> lifetime)
+            if (reference is not ILifetime lifetime)
                 return;
 
             Sequence<Color> sequence1;
@@ -5430,7 +5430,7 @@ namespace BetterLegacy.Core.Helpers
         // todo: see if i can get homing to work via adding a keyframe depending on audio time
         public static void animateObjectKF(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not ITransformable transformable || reference is not ILifetime<AutoKillType> lifetime)
+            if (reference is not ITransformable transformable || reference is not ILifetime lifetime)
                 return;
 
             var audioTime = modifier.GetFloat(0, 0f, variables);

@@ -21,7 +21,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// An instance of a <see cref="Prefab"/> that spawns all objects contained in the Prefab.
     /// </summary>
-    public class PrefabObject : PAObject<PrefabObject>, ILifetime<PrefabAutoKillType>, ITransformable, IParentable, IModifyable, IModifierReference, IEditable, IPrefabable, IEvaluatable
+    public class PrefabObject : PAObject<PrefabObject>, ILifetime, ITransformable, IParentable, IModifyable, IModifierReference, IEditable, IPrefabable, IEvaluatable
     {
         public PrefabObject() : base()
         {
@@ -214,11 +214,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public PrefabAutoKillType autoKillType = PrefabAutoKillType.Regular;
 
-        public PrefabAutoKillType AutoKillType { get => autoKillType; set => autoKillType = value; }
-
         public float autoKillOffset = -1f;
-
-        public float AutoKillOffset { get => autoKillOffset; set => autoKillOffset = value; }
 
         public bool Alive
         {
