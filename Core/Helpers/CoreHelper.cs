@@ -938,7 +938,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.LevelPausesOnStart.Value = false;
                         EditorConfig.Instance.DragUI.Value = true;
                         EditorConfig.Instance.ImportPrefabsDirectly.Value = true;
-                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(0, 30);
+                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(30, 0);
                         EditorConfig.Instance.PlayEditorAnimations.Value = true;
                         EditorConfig.Instance.PreviewGridEnabled.Value = false;
 
@@ -976,7 +976,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.LevelPausesOnStart.Value = false;
                         EditorConfig.Instance.DragUI.Value = false;
                         EditorConfig.Instance.ImportPrefabsDirectly.Value = true;
-                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(0, 30);
+                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(30, 0);
                         EditorConfig.Instance.PlayEditorAnimations.Value = false;
                         EditorConfig.Instance.PreviewGridEnabled.Value = false;
 
@@ -1014,7 +1014,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.LevelPausesOnStart.Value = false;
                         EditorConfig.Instance.DragUI.Value = false;
                         EditorConfig.Instance.ImportPrefabsDirectly.Value = true;
-                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(0, 40); // todo: verify that the range is 40
+                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(60, 0); // todo: verify that the range is 40
                         EditorConfig.Instance.PlayEditorAnimations.Value = false;
                         EditorConfig.Instance.PreviewGridEnabled.Value = true;
 
