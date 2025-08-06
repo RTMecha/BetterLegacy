@@ -1,5 +1,8 @@
 ﻿# ???
 ## Features
+### Core
+- Added resetLoop modifier. This allows already activated non-constant modifiers to run again. The current loop continues running.
+
 ### Example Companion
 - Added a setting for delete object notice chance.
 
