@@ -290,6 +290,34 @@ namespace BetterLegacy.Core.Helpers
                     continue;
                 }
 
+                if (name == "resetLoop")
+                {
+                    if (!modifier.running)
+                        modifier.runCount++;
+
+                    modifier.running = true;
+
+                    if (!(modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
+                        modifiers.ForLoop(modifier =>
+                        {
+                            if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
+                                return;
+
+                            modifier.active = false;
+                            modifier.running = false;
+                            if (modifier.Inactive == null && TryGetInactive(modifier, reference, out ModifierInactive action))
+                                modifier.Inactive = action.function;
+                            modifier.RunInactive(modifier, reference, variables);
+                        });
+
+                    // Only occur once
+                    if (!modifier.constant && sequence + 1 >= end)
+                        modifier.active = true;
+
+                    index++;
+                    continue;
+                }
+
                 if (isTrigger)
                 {
                     if (previousType == Modifier.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
