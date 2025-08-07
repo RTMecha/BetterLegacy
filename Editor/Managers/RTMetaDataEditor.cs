@@ -343,9 +343,11 @@ namespace BetterLegacy.Editor.Managers
                     levelData.forceReplayLevelOff = _val;
             });
 
-            Dialog.PreferredPlayerCountDropdown.options = CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four");
             Dialog.PreferredPlayerCountDropdown.SetValueWithoutNotify((int)metadata.beatmap.preferredPlayerCount);
             Dialog.PreferredPlayerCountDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredPlayerCount = (BeatmapMetaData.PreferredPlayerCount)_val);
+            
+            Dialog.PreferredControlTypeDropdown.SetValueWithoutNotify((int)metadata.beatmap.preferredControlType);
+            Dialog.PreferredControlTypeDropdown.onValueChanged.NewListener(_val => metadata.beatmap.preferredControlType = (BeatmapMetaData.PreferredControlType)_val);
 
             Dialog.RequireVersion.SetIsOnWithoutNotify(metadata.requireVersion);
             Dialog.RequireVersion.onValueChanged.NewListener(_val => metadata.requireVersion = _val);

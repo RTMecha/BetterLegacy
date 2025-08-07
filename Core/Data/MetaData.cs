@@ -739,6 +739,18 @@ namespace BetterLegacy.Core.Data
             MoreThanFour
         }
 
+        public PreferredControlType preferredControlType;
+
+        public enum PreferredControlType
+        {
+            AnyDevice,
+            KeyboardOnly,
+            KeyboardExtraOnly,
+            MouseOnly,
+            KeyboardMouseOnly,
+            ControllerOnly
+        }
+
         #endregion
 
         #region Methods
@@ -756,6 +768,7 @@ namespace BetterLegacy.Core.Data
             modVersion = orig.modVersion;
 
             preferredPlayerCount = orig.preferredPlayerCount;
+            preferredControlType = orig.preferredControlType;
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -799,6 +812,8 @@ namespace BetterLegacy.Core.Data
                 workshopID = jn["beatmap"]["workshop_id"].AsLong;
             if (jn["beatmap"]["preferred_players"] != null)
                 preferredPlayerCount = (PreferredPlayerCount)jn["beatmap"]["preferred_players"].AsInt;
+            if (jn["beatmap"]["preferred_control"] != null)
+                preferredControlType = (PreferredControlType)jn["beatmap"]["preferred_control"].AsInt;
         }
 
         public override JSONNode ToJSONVG()
@@ -833,6 +848,8 @@ namespace BetterLegacy.Core.Data
 
             if (preferredPlayerCount != PreferredPlayerCount.Any)
                 jn["preferred_players"] = (int)preferredPlayerCount;
+            if (preferredControlType != PreferredControlType.AnyDevice)
+                jn["preferred_control"] = (int)preferredControlType;
 
             return jn;
         }

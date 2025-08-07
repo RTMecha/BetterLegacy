@@ -88,6 +88,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Toggle UnlockCompletedToggle { get; set; }
 
         public Dropdown PreferredPlayerCountDropdown { get; set; }
+        public Dropdown PreferredControlTypeDropdown { get; set; }
 
         public Toggle HideIntroToggle { get; set; }
 
@@ -412,10 +413,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 #region Settings
 
                 var settingsBase = Creator.NewUIObject("settings", Content);
-                RectValues.Default.SizeDelta(764f, 400f).AssignToRectTransform(settingsBase.transform.AsRT());
+                RectValues.Default.SizeDelta(764f, 420f).AssignToRectTransform(settingsBase.transform.AsRT());
                 new Labels(Labels.InitSettings.Default.Parent(settingsBase.transform).Rect(labelRect), new Label("Settings") { fontStyle = FontStyle.Bold, });
                 var settings = Creator.NewUIObject("info", settingsBase.transform);
-                RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 340f).AssignToRectTransform(settings.transform.AsRT());
+                RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 360f).AssignToRectTransform(settings.transform.AsRT());
                 var settingsLayout = settings.AddComponent<VerticalLayoutGroup>();
                 settingsLayout.childControlHeight = false;
                 settingsLayout.childForceExpandHeight = false;
@@ -426,6 +427,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 UnlockCompletedToggle = GenerateToggle(settings.transform, "Unlock After Completion");
 
                 PreferredPlayerCountDropdown = GenerateDropdown(settings.transform, "Preferred Player Count", true, CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four"));
+                PreferredControlTypeDropdown = GenerateDropdown(settings.transform, "Preferred Control Type", true, CoreHelper.StringToOptionData("Any Device", "Keyboard Only", "Keyboard Extra Only", "Mouse Only", "Keyboard Mouse Only", "Controller Only"));
 
                 HideIntroToggle = GenerateToggle(settings.transform, "Hide Intro");
                 ReplayEndLevelOffToggle = GenerateToggle(settings.transform, $"Prevent \"{CoreConfig.Instance.ReplayLevel.Key}\" setting");
