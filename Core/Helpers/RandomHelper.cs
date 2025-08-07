@@ -282,8 +282,8 @@ namespace BetterLegacy.Core.Helpers
                 switch ((RandomType)eventKeyframe.random)
                 {
                     case RandomType.Normal: {
-                            var xHash = GetHash(id, kfIndex, "X", CurrentSeed);
-                            var yHash = GetHash(id, kfIndex, "Y", CurrentSeed);
+                            var xHash = GetHash(id + "XXXXXXXXXXXX", kfIndex, CurrentSeed);
+                            var yHash = GetHash(id + "YYYYYYYYYYYY", kfIndex, CurrentSeed);
 
                             if (round)
                             {
@@ -302,8 +302,8 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case RandomType.BETA_SUPPORT: {
-                            var xHash = GetHash(id, kfIndex, "X", CurrentSeed);
-                            var yHash = GetHash(id, kfIndex, "Y", CurrentSeed);
+                            var xHash = GetHash(id + "XXXXXXXXXXXX", kfIndex, CurrentSeed);
+                            var yHash = GetHash(id + "YYYYYYYYYYYY", kfIndex, CurrentSeed);
 
                             x = UnityEngine.Mathf.Round(SingleFromRange(xHash, eventKeyframe.values[0], eventKeyframe.randomValues[0]));
                             y = UnityEngine.Mathf.Round(SingleFromRange(yHash, eventKeyframe.values[1], eventKeyframe.randomValues[1]));
