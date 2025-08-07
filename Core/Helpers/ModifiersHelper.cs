@@ -292,12 +292,13 @@ namespace BetterLegacy.Core.Helpers
 
                 if (name == "resetLoop")
                 {
+                    var runCount = modifier.runCount;
                     if (!modifier.running)
-                        modifier.runCount++;
+                        runCount++;
 
                     modifier.running = true;
 
-                    if (!(modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount))
+                    if (!(modifier.active || !result || modifier.triggerCount > 0 && runCount >= modifier.triggerCount))
                         modifiers.ForLoop(modifier =>
                         {
                             if (modifier.compatibility.StoryOnly && !CoreHelper.InStory || !modifier.active && !modifier.running)
@@ -305,6 +306,7 @@ namespace BetterLegacy.Core.Helpers
 
                             modifier.active = false;
                             modifier.running = false;
+                            modifier.runCount = 0;
                             if (modifier.Inactive == null && TryGetInactive(modifier, reference, out ModifierInactive action))
                                 modifier.Inactive = action.function;
                             modifier.RunInactive(modifier, reference, variables);
@@ -313,6 +315,8 @@ namespace BetterLegacy.Core.Helpers
                     // Only occur once
                     if (!modifier.constant && sequence + 1 >= end)
                         modifier.active = true;
+
+                    modifier.runCount = runCount;
 
                     index++;
                     continue;
@@ -2149,18 +2153,18 @@ namespace BetterLegacy.Core.Helpers
             {
                 // Animate position
                 if (animatePos)
-                    applyTo.positionOffset = takeFrom.cachedSequences.PositionSequence.Interpolate(currentTime - time - delayPos);
+                    applyTo.positionOffset = takeFrom.cachedSequences.PositionSequence.GetValue(currentTime - time - delayPos);
 
                 // Animate scale
                 if (animateSca)
                 {
-                    var scaleSequence = takeFrom.cachedSequences.ScaleSequence.Interpolate(currentTime - time - delaySca);
+                    var scaleSequence = takeFrom.cachedSequences.ScaleSequence.GetValue(currentTime - time - delaySca);
                     applyTo.scaleOffset = new Vector3(scaleSequence.x - 1f, scaleSequence.y - 1f, 0f);
                 }
 
                 // Animate rotation
                 if (animateRot)
-                    applyTo.rotationOffset = new Vector3(0f, 0f, takeFrom.cachedSequences.RotationSequence.Interpolate(currentTime - time - delayRot));
+                    applyTo.rotationOffset = new Vector3(0f, 0f, takeFrom.cachedSequences.RotationSequence.GetValue(currentTime - time - delayRot));
             }
             else if (useVisual && takeFrom.runtimeObject is RTBeatmapObject levelObject && levelObject.visualObject != null && levelObject.visualObject.gameObject)
             {
