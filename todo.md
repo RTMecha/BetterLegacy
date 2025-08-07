@@ -7,7 +7,8 @@
   - Camera follows the clients players, online players from other clients are not taken into account and can go in other directions.
   - Specific effects can be set to only show for specific clients (if one client was in another area and had a bloom effect applied, the other clients shouldn't have the effect)
   - Objects can be set to render differently per client.
-  - Includes "isOnline" ("Client" bool) trigger modifier
+  - Includes "isOnline" ("Client" bool) trigger modifier.
+  - MetaData toggle for if the level is compatible with online play. If it isn't and a host tries to load the level, they will not be able to.
 - 2D option for BG objects (VG parallax support?)
 - Level preview song.
 - Controller Preferences metadata. [Keyboard, Controller, Mouse]

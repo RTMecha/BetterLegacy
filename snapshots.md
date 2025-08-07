@@ -2,12 +2,15 @@
 ## Features
 ### Core
 - Added resetLoop modifier. This allows already activated non-constant modifiers to run again. The current loop continues running.
+- Added "Preferred Control Type" setting to level metadata. This will be used to notify users of levels with specific mechanics.
 
 ### Example Companion
 - Added a setting for delete object notice chance.
 
 ## Fixes
 - Fixed config preset breaking render depth.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.8.6 - (pre-1.8.0) [Aug 6, 2025]
 ## Features
