@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.8.7 - (pre-1.8.0) [Aug 8, 2025]
 ## Features
 ### Core
 - Added resetLoop modifier. This allows already activated non-constant modifiers to run again. The current loop continues running.
@@ -7,8 +7,13 @@
 ### Example Companion
 - Added a setting for delete object notice chance.
 
+## Changes
+### Core
+- Tried optimizing the keyframe sequences a little.
+
 ## Fixes
 - Fixed config preset breaking render depth.
+- Fixed Normal random type in seed based random being in a straight line.
 
 ------------------------------------------------------------------------------------------
 
