@@ -205,10 +205,11 @@ namespace BetterLegacy.Core.Runtime.Objects
             if (isImage)
                 visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f)); // fixes origin being off.
 
-            this.InterpolateParentChain(time, beatmapObject.fromPrefab, beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background);
+            this.UpdateCameraParent(beatmapObject.renderLayerType == BeatmapObject.RenderLayerType.Background);
+            this.InterpolateParentChain(time, beatmapObject.fromPrefab);
         }
 
-        public void CheckCollision()
+        public void CheckScale()
         {
             var active = RTMath.Distance(0f, CurrentScale.x) > 0.001f && RTMath.Distance(0f, CurrentScale.y) > 0.001f && RTMath.Distance(0f, CurrentScale.z) > 0.001f;
 

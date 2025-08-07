@@ -593,7 +593,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             opacityCollision = orig.opacityCollision;
 
             for (int i = 0; i < events.Count; i++)
-                events[i].AddRange(orig.events[i].Select(x => x.Copy()));
+                events[i] = new List<EventKeyframe>(orig.events[i].Select(x => x.Copy()));
+
+            SortKeyframes(events);
 
             this.CopyModifyableData(orig);
         }
@@ -753,6 +755,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                         events[3].Add(eventKeyframe);
                     }
                 }
+
+                SortKeyframes(events);
             }
 
             this.events = events;
@@ -1039,6 +1043,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                     events[3].Add(eventKeyframe);
                 }
+
+                SortKeyframes(events);
             }
 
             this.events = events;
@@ -1411,6 +1417,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             return selected;
         }
 
+        public void SortKeyframes() => SortKeyframes(events);
+
+        public void SortKeyframes(List<List<EventKeyframe>> events)
+        {
+            for (int i = 0; i < events.Count; i++)
+                SortKeyframes(i);
+        }
+
+        public void SortKeyframes(int type) => SortKeyframes(events[type]);
+
+        public void SortKeyframes(List<EventKeyframe> eventKeyframes) => eventKeyframes.Sort((a, b) => a.time.CompareTo(b.time));
+
         public IRTObject GetRuntimeObject() => runtimeObject;
 
         public IPrefabable AsPrefabable() => this;
@@ -1515,6 +1533,28 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a single value based on the event.</returns>
         public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, this.GetParentRuntime().CurrentTime - StartTime);
 
+        int SearchKeyframe(int type, float time)
+        {
+            int low = 0;
+            var keyframes = events[type];
+            int high = keyframes.Count - 1;
+
+            while (low <= high)
+            {
+                int mid = (low + high) / 2;
+                float midTime = keyframes[mid].time;
+
+                if (time < midTime)
+                    high = mid - 1;
+                else if (time > midTime)
+                    low = mid + 1;
+                else
+                    return mid;
+            }
+
+            return low - 1;
+        }
+
         /// <summary>
         /// Interpolates an animation from the object.
         /// </summary>
@@ -1529,9 +1569,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a single value based on the event.</returns>
         public float Interpolate(int type, int valueIndex, float time)
         {
-            var list = events[type].OrderBy(x => x.time).ToList();
+            var list = events[type];
 
-            var nextKFIndex = list.FindIndex(x => x.time > time);
+            var nextKFIndex = SearchKeyframe(type, time) + 1;
 
             if (nextKFIndex < 0)
                 nextKFIndex = list.Count - 1;
@@ -1543,7 +1583,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             var nextKF = list[nextKFIndex];
             var prevKF = list[prevKFIndex];
 
-            type = Mathf.Clamp(type, 0, list.Count);
             valueIndex = Mathf.Clamp(valueIndex, 0, list[0].values.Length);
 
             if (prevKF.values.Length <= valueIndex)
@@ -1551,23 +1590,26 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             var total = 0f;
             var prevtotal = 0f;
-            for (int k = 0; k < nextKFIndex; k++)
+            if (prevKF.relative || nextKF.relative)
             {
-                if (list[k + 1].relative)
-                    total += list[k].values[valueIndex];
-                else
-                    total = 0f;
+                for (int k = 0; k < nextKFIndex; k++)
+                {
+                    if (list[k + 1].relative)
+                        total += list[k].values[valueIndex];
+                    else
+                        total = 0f;
 
-                if (list[k].relative)
-                    prevtotal += list[k].values[valueIndex];
-                else
-                    prevtotal = 0f;
+                    if (list[k].relative)
+                        prevtotal += list[k].values[valueIndex];
+                    else
+                        prevtotal = 0f;
+                }
             }
 
             var next = nextKF.relative ? total + nextKF.values[valueIndex] : nextKF.values[valueIndex];
             var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[valueIndex];
 
-            bool isLerper = type != 3 || valueIndex != 0;
+            bool isLerper = type != 3 || valueIndex != 0 || valueIndex != 5;
 
             if (float.IsNaN(prev) || !isLerper)
                 prev = 0f;
@@ -1583,8 +1625,59 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, Mathf.Clamp(time, 0f, nextKF.time))));
 
-            if (prevKFIndex == nextKFIndex)
+            if (float.IsNaN(x) || float.IsInfinity(x))
                 x = next;
+
+            return x;
+        }
+
+        public float Interpolate(EventKeyframe prevKeyframe, EventKeyframe nextKeyframe, int type, int valueIndex, float time)
+        {
+            valueIndex = Mathf.Clamp(valueIndex, 0, prevKeyframe.values.Length);
+
+            if (prevKeyframe.values.Length <= valueIndex)
+                return 0f;
+
+            var total = 0f;
+            var prevtotal = 0f;
+            if (prevKeyframe.relative || nextKeyframe.relative)
+            {
+                var list = events[type];
+                for (int k = 0; k < events[type].Count; k++)
+                {
+                    if (time >= list[k].time)
+                        break;
+
+                    if (list[k + 1].relative)
+                        total += list[k].values[valueIndex];
+                    else
+                        total = 0f;
+
+                    if (list[k].relative)
+                        prevtotal += list[k].values[valueIndex];
+                    else
+                        prevtotal = 0f;
+                }
+            }
+
+            var next = nextKeyframe.relative ? total + nextKeyframe.values[valueIndex] : nextKeyframe.values[valueIndex];
+            var prev = prevKeyframe.relative || nextKeyframe.relative ? prevtotal : prevKeyframe.values[valueIndex];
+
+            bool isLerper = type != 3 || valueIndex != 0;
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKeyframe == nextKeyframe)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKeyframe.curve.ToString())(RTMath.InverseLerp(prevKeyframe.time, nextKeyframe.time, Mathf.Clamp(time, 0f, nextKeyframe.time))));
 
             if (float.IsNaN(x) || float.IsInfinity(x))
                 x = next;

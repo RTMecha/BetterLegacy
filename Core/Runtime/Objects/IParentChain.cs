@@ -1,41 +1,97 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using UnityEngine;
 
 namespace BetterLegacy.Core.Runtime.Objects
 {
+    /// <summary>
+    /// Indicates a runtime object includes a parent chain.
+    /// </summary>
     public interface IParentChain
     {
+        /// <summary>
+        /// Depth offset of the object.
+        /// </summary>
         public float Depth { get; set; }
 
+        /// <summary>
+        /// If the object is parented to the camera.
+        /// </summary>
         public bool CameraParent { get; set; }
+
+        /// <summary>
+        /// If the position of a parent is applied.
+        /// </summary>
         public bool PositionParent { get; set; }
+
+        /// <summary>
+        /// If the scale of a parent is applied.
+        /// </summary>
         public bool ScaleParent { get; set; }
+
+        /// <summary>
+        /// If the rotation of a parent is applied.
+        /// </summary>
         public bool RotationParent { get; set; }
 
+        /// <summary>
+        /// Position parent parallax.
+        /// </summary>
         public float PositionParentOffset { get; set; }
+
+        /// <summary>
+        /// Scale parent parallax.
+        /// </summary>
         public float ScaleParentOffset { get; set; }
+
+        /// <summary>
+        /// Rotation parent parallax.
+        /// </summary>
         public float RotationParentOffset { get; set; }
 
+        /// <summary>
+        /// Top position offset.
+        /// </summary>
         public Vector3 TopPositionOffset { get; set; }
+
+        /// <summary>
+        /// Top scale offset.
+        /// </summary>
         public Vector3 TopScaleOffset { get; set; }
+
+        /// <summary>
+        /// Top rotation offset.
+        /// </summary>
         public Vector3 TopRotationOffset { get; set; }
 
+        /// <summary>
+        /// Parent of the runtime object.
+        /// </summary>
         public Transform Parent { get; set; }
 
+        /// <summary>
+        /// The current scale of the object. If scale is 0, 0 then the objects collider and renderer will be disabled.
+        /// </summary>
         public Vector3 CurrentScale { get; set; } // if scale is 0, 0 then disable collider and renderer
 
+        /// <summary>
+        /// List of parent objects.
+        /// </summary>
         public List<ParentObject> ParentObjects { get; set; }
 
-        void CheckCollision();
+        /// <summary>
+        /// Checks the scale of the parent chain.
+        /// </summary>
+        public void CheckScale();
     }
 
     public static class ParentChainExtension
     {
+        /// <summary>
+        /// Updates the camera parent.
+        /// </summary>
+        /// <param name="parentChain">Parent chain reference.</param>
+        /// <param name="inBackground">If the object renders in the background.</param>
         public static void UpdateCameraParent(this IParentChain parentChain, bool inBackground = false)
         {
             if (!parentChain.CameraParent)
@@ -78,10 +134,14 @@ namespace BetterLegacy.Core.Runtime.Objects
                 parentChain.Parent.localRotation = Quaternion.Euler(parentChain.TopRotationOffset);
         }
 
-        public static void InterpolateParentChain(this IParentChain parentChain, float time, bool fromPrefab = false, bool inBackground = false)
+        /// <summary>
+        /// Interpolates the parent chain.
+        /// </summary>
+        /// <param name="parentChain">Parent chain reference.</param>
+        /// <param name="time">Time to interpolate.</param>
+        /// <param name="fromPrefab">If the object is from a prefab.</param>
+        public static void InterpolateParentChain(this IParentChain parentChain, float time, bool fromPrefab = false)
         {
-            UpdateCameraParent(parentChain, inBackground);
-
             // Update parents
             float positionOffset = 0.0f;
             float scaleOffset = 0.0f;
@@ -190,7 +250,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             parentChain.CurrentScale = totalScale;
 
-            parentChain.CheckCollision();
+            parentChain.CheckScale();
         }
     }
 }

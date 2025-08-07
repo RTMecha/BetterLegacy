@@ -618,7 +618,7 @@ namespace BetterLegacy.Editor.Managers
                                  timelineObject.InternalTimelineObjects.Clear();
                                  for (int i = 0; i < bm.events.Count; i++)
                                  {
-                                     bm.events[i] = bm.events[i].OrderBy(x => x.time).ToList();
+                                     bm.events[i].Sort((a, b) => a.time.CompareTo(b.time));
                                      var firstKF = bm.events[i][0].Copy(false);
                                      bm.events[i].Clear();
                                      bm.events[i].Add(firstKF);

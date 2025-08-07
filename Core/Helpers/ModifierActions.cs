@@ -3337,7 +3337,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (sequence != null)
-                variables[modifier.GetValue(0)] = sequence.Interpolate(audioTime).ToString();
+                variables[modifier.GetValue(0)] = sequence.GetValue(audioTime).ToString();
         }
 
         public static void getSignaledVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -3579,7 +3579,7 @@ namespace BetterLegacy.Core.Helpers
                     // To Axis X
                     // From Type Position
                     case 0: {
-                            var sequence = cachedSequences.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay);
+                            var sequence = cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay);
 
                             beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                             break;
@@ -3588,7 +3588,7 @@ namespace BetterLegacy.Core.Helpers
                     // To Axis X
                     // From Type Scale
                     case 1: {
-                            var sequence = cachedSequences.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay);
+                            var sequence = cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay);
 
                             beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                             break;
@@ -3597,7 +3597,7 @@ namespace BetterLegacy.Core.Helpers
                     // To Axis X
                     // From Type Rotation
                     case 2: {
-                            var sequence = cachedSequences.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) * multiply;
+                            var sequence = cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay) * multiply;
 
                             beatmapObject.integerVariable = (int)Mathf.Clamp((sequence % loop) - offset, min, max);
                             break;
@@ -4086,9 +4086,9 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual && beatmapObject.cachedSequences)
                 RTLevel.Current.eventEngine.SetOffset(toType, toAxis, fromType switch
                 {
-                    0 => Mathf.Clamp((beatmapObject.cachedSequences.PositionSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    1 => Mathf.Clamp((beatmapObject.cachedSequences.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
-                    2 => Mathf.Clamp((beatmapObject.cachedSequences.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) - offset) * multiply % loop, min, max),
+                    0 => Mathf.Clamp((beatmapObject.cachedSequences.PositionSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    1 => Mathf.Clamp((beatmapObject.cachedSequences.ScaleSequence.GetValue(time - beatmapObject.StartTime - delay).At(fromAxis) - offset) * multiply % loop, min, max),
+                    2 => Mathf.Clamp((beatmapObject.cachedSequences.RotationSequence.GetValue(time - beatmapObject.StartTime - delay) - offset) * multiply % loop, min, max),
                     _ => 0f,
                 });
             else if (beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
@@ -4486,9 +4486,9 @@ namespace BetterLegacy.Core.Helpers
                     _ => 0f
                 } : type switch
                 {
-                    0 => axis == 0 ? cachedSequences.PositionSequence.Interpolate(time).x : axis == 1 ? cachedSequences.PositionSequence.Interpolate(time).y : cachedSequences.PositionSequence.Interpolate(time).z,
-                    1 => axis == 0 ? cachedSequences.ScaleSequence.Interpolate(time).x : cachedSequences.ScaleSequence.Interpolate(time).y,
-                    2 => cachedSequences.RotationSequence.Interpolate(time),
+                    0 => axis == 0 ? cachedSequences.PositionSequence.GetValue(time).x : axis == 1 ? cachedSequences.PositionSequence.GetValue(time).y : cachedSequences.PositionSequence.GetValue(time).z,
+                    1 => axis == 0 ? cachedSequences.ScaleSequence.GetValue(time).x : cachedSequences.ScaleSequence.GetValue(time).y,
+                    2 => cachedSequences.RotationSequence.GetValue(time),
                     _ => 0f
                 };
 
@@ -4710,8 +4710,8 @@ namespace BetterLegacy.Core.Helpers
                 var primaryColor = Color.white;
                 var secondaryColor = Color.white;
 
-                primaryColor = sequence1.Interpolate(audioTime - startTime);
-                secondaryColor = sequence2.Interpolate(audioTime - startTime);
+                primaryColor = sequence1.GetValue(audioTime - startTime);
+                secondaryColor = sequence2.GetValue(audioTime - startTime);
 
                 if (beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
                 {
@@ -4790,8 +4790,8 @@ namespace BetterLegacy.Core.Helpers
                 var primaryColor = Color.white;
                 var secondaryColor = Color.white;
 
-                primaryColor = sequence1.Interpolate(audioTime - startTime);
-                primaryColor = sequence2.Interpolate(audioTime - startTime);
+                primaryColor = sequence1.GetValue(audioTime - startTime);
+                primaryColor = sequence2.GetValue(audioTime - startTime);
 
                 if (beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
                 {
@@ -5489,7 +5489,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             if (sequence != null)
-                transformable.SetTransform(type, sequence.Interpolate(audioTime - lifetime.StartTime));
+                transformable.SetTransform(type, sequence.GetValue(audioTime - lifetime.StartTime));
         }
 
         public static void animateSignal(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

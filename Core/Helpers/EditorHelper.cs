@@ -345,18 +345,14 @@ namespace BetterLegacy.Core.Helpers
             {
                 var ids = new List<string>();
                 for (int i = 0; i < beatmapObject.events.Count; i++)
+                {
                     beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
                     {
                         var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
                         ids.Add(kf.id);
                         return kf;
                     }));
-
-                for (int i = 0; i < beatmapObject.events.Count; i++)
-                {
-                    beatmapObject.events[i] = (from x in beatmapObject.events[i]
-                                               orderby x.time
-                                               select x).ToList();
+                    beatmapObject.events[i].Sort((a, b) => a.time.CompareTo(b.time));
                 }
 
                 var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
@@ -394,6 +390,7 @@ namespace BetterLegacy.Core.Helpers
                 for (int repeat = 0; repeat < Mathf.Clamp(repeatCount + 1, 0, int.MaxValue); repeat++)
                 {
                     for (int i = 0; i < beatmapObject.events.Count; i++)
+                    {
                         beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
                         {
                             var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
@@ -401,15 +398,10 @@ namespace BetterLegacy.Core.Helpers
                             ids.Add(kf.id);
                             return kf;
                         }));
+                        beatmapObject.events[i].Sort((a, b) => a.time.CompareTo(b.time));
+                    }
 
                     t += Mathf.Clamp(repeatOffsetTime, 0f, float.PositiveInfinity);
-                }
-
-                for (int i = 0; i < beatmapObject.events.Count; i++)
-                {
-                    beatmapObject.events[i] = (from x in beatmapObject.events[i]
-                                               orderby x.time
-                                               select x).ToList();
                 }
 
                 var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);

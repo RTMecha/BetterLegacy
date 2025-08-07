@@ -95,8 +95,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddGraphic(idRight.GetChild(type).GetComponent<Image>(), EditorTheme.GetGroup($"Object Keyframe Color {type + 1}"));
                 }
 
-                ObjEditor.inst.objTimelineSlider.onValueChanged.ClearAll();
-                ObjEditor.inst.objTimelineSlider.onValueChanged.AddListener(_val =>
+                ObjEditor.inst.objTimelineSlider.onValueChanged.NewListener(_val =>
                 {
                     if (!ObjEditor.inst.changingTime)
                         return;
@@ -678,12 +677,15 @@ namespace BetterLegacy.Editor.Managers
 
             var ids = new List<string>();
             for (int i = 0; i < beatmapObject.events.Count; i++)
+            {
                 beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
                 {
                     var kf = PasteKF(beatmapObject, x, setTime);
                     ids.Add(kf.id);
                     return kf;
                 }));
+                beatmapObject.events[i].Sort((a, b) => a.time.CompareTo(b.time));
+            }
 
             ResizeKeyframeTimeline(beatmapObject);
             UpdateKeyframeOrder(beatmapObject);
@@ -1484,7 +1486,8 @@ namespace BetterLegacy.Editor.Managers
 
             eventKeyframe.locked = false;
 
-            beatmapObject.events[type].Add(eventKeyframe);
+            var index = beatmapObject.events[type].FindIndex(x => x.id == previousKeyframe.id);
+            beatmapObject.events[type].Insert(index + 1, eventKeyframe);
 
             EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
@@ -5086,7 +5089,7 @@ namespace BetterLegacy.Editor.Managers
 
                 for (int j = 0; j < beatmapObject.events[i].Count; j++)
                 {
-                    var keyframe = (EventKeyframe)beatmapObject.events[i][j];
+                    var keyframe = beatmapObject.events[i][j];
                     var kf = beatmapObject.timelineObject.InternalTimelineObjects.Find(x => x.ID == keyframe.id);
                     if (!kf)
                     {
