@@ -48,6 +48,12 @@ namespace BetterLegacy.Core.Runtime
         public abstract float FixedTime { get; }
 
         /// <summary>
+        /// Gets the start time offset of the runtime.
+        /// </summary>
+        /// <returns>Returns the start time offset.</returns>
+        public virtual float GetStartTime() => 0f;
+
+        /// <summary>
         /// Loads the runtime.
         /// </summary>
         public abstract void Load();
@@ -808,6 +814,8 @@ namespace BetterLegacy.Core.Runtime
             runtimeObject.PositionParentOffset = beatmapParent.parallaxSettings[0];
             runtimeObject.ScaleParentOffset = beatmapParent.parallaxSettings[1];
             runtimeObject.RotationParentOffset = beatmapParent.parallaxSettings[2];
+
+            runtimeObject.SetActive(objectEngine.spawner.ActiveObjects.Contains(runtimeObject));
         }
 
         public virtual void UpdateVisualObject(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject)
