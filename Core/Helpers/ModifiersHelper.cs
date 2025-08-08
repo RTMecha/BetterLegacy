@@ -2280,6 +2280,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void SetParent(IParentable child, string parent)
         {
+            // don't update parent if the parent is already the same
+            if (child.Parent == parent)
+                return;
+
             child.CustomParent = parent;
             child.UpdateParentChain();
 
