@@ -223,7 +223,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Func<float> getScrollMultiply;
         public Func<float> getMin;
         public Func<float> getMax;
-        public Func<string> getResetValue;
+        public Func<float> getResetValue;
         public Func<string> getMultiValue;
 
         public override void Init(KeyframeDialog dialog, Transform parent, string name)
@@ -254,7 +254,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Reset Value", () =>
                     {
-                        Field.Text = getResetValue?.Invoke() ?? type switch
+                        Field.Text = getResetValue?.Invoke().ToString() ?? type switch
                         {
                             0 => "0",
                             1 => "1",
