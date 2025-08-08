@@ -394,12 +394,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             repeatOffsetTime = orig.repeatOffsetTime;
             speed = orig.Speed;
 
-            editorData = ObjectEditorData.DeepCopy(orig.editorData);
-
             CopyTransformData(orig);
 
             this.CopyParentData(orig);
             this.CopyModifyableData(orig);
+
+            editorData.CopyData(orig.editorData);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)

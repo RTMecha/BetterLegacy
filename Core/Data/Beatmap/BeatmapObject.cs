@@ -572,7 +572,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             autoKillOffset = orig.autoKillOffset;
             autoKillType = orig.autoKillType;
             Depth = orig.Depth;
-            editorData = ObjectEditorData.DeepCopy(orig.editorData);
+
             fromPrefab = orig.fromPrefab;
             objectType = orig.objectType;
             origin = orig.origin;
@@ -598,6 +598,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             SortKeyframes(events);
 
             this.CopyModifyableData(orig);
+
+            editorData.CopyData(orig.editorData);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)

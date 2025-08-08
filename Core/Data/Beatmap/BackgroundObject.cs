@@ -353,7 +353,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.CopyModifyableData(orig);
 
-            editorData = ObjectEditorData.DeepCopy(orig.editorData);
+            editorData.CopyData(orig.editorData);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)

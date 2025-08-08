@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
 
 using SimpleJSON;
 
@@ -7,7 +10,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Contains info about a PA objects' layer, bin, etc.
     /// </summary>
-    public class ObjectEditorData : Exists
+    public class ObjectEditorData : PAObject<ObjectEditorData>
     {
         public ObjectEditorData() {  }
 
@@ -83,10 +86,16 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string markColor;
 
+        public List<CustomUIDisplay> displays = new List<CustomUIDisplay>();
+
         /// <summary>
         /// If the editor data should serialize to JSON.
         /// </summary>
-        public bool ShouldSerialize => Bin != 0 || Layer != 0 || collapse || locked || !selectable || hidden || !string.IsNullOrEmpty(color) || !string.IsNullOrEmpty(selectedColor) || !string.IsNullOrEmpty(textColor) || !string.IsNullOrEmpty(markColor);
+        public bool ShouldSerialize =>
+            Bin != 0 || Layer != 0 ||
+            collapse || locked || !selectable || hidden ||
+            !string.IsNullOrEmpty(color) || !string.IsNullOrEmpty(selectedColor) || !string.IsNullOrEmpty(textColor) || !string.IsNullOrEmpty(markColor) ||
+            !displays.IsEmpty();
 
         #endregion
 
@@ -108,27 +117,56 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        public static ObjectEditorData DeepCopy(ObjectEditorData orig) => new ObjectEditorData(orig.Bin, orig.Layer, orig.collapse, orig.locked, orig.selectable, orig.hidden, orig.color, orig.selectedColor, orig.textColor, orig.markColor);
-
-        public static ObjectEditorData ParseVG(JSONNode jn)
+        public override void CopyData(ObjectEditorData orig, bool newID = true)
         {
-            var objectEditorData = new ObjectEditorData(jn["b"].AsInt, Mathf.Clamp(jn["l"].AsInt, 0, int.MaxValue), jn["lk"].AsBool, jn["co"].AsBool);
+            Bin = orig.Bin;
+            Layer = orig.Layer;
+            collapse = orig.collapse;
+            locked = orig.locked;
+            selectable = orig.selectable;
+            hidden = orig.hidden;
+            color = orig.color;
+            selectedColor = orig.selectedColor;
+            textColor = orig.textColor;
+            markColor = orig.markColor;
+            displays = new List<CustomUIDisplay>(orig.displays.Select(x => x.Copy()));
+        }
+
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
+        {
+            Bin = jn["b"].AsInt;
+            Layer = jn["l"].AsInt;
+            locked = jn["lk"].AsBool;
+            collapse = jn["co"].AsBool;
 
             var tc = jn["tc"];
             if (tc != null)
-                objectEditorData.textColor = GetDefaultColorVG(tc["r"].AsBool, tc["g"].AsBool, tc["b"].AsBool);
+                textColor = GetDefaultColorVG(tc["r"].AsBool, tc["g"].AsBool, tc["b"].AsBool);
             var bgc = jn["bgc"];
             if (bgc != null)
-                objectEditorData.color = GetDefaultColorVG(bgc["r"].AsBool, bgc["g"].AsBool, bgc["b"].AsBool);
-
-            return objectEditorData;
+                color = GetDefaultColorVG(bgc["r"].AsBool, bgc["g"].AsBool, bgc["b"].AsBool);
         }
 
-        public static ObjectEditorData Parse(JSONNode jn) => new ObjectEditorData(jn["bin"].AsInt, Mathf.Clamp(jn["layer"].AsInt, 0, int.MaxValue), jn["shrink"] == null ? jn["collapse"].AsBool : jn["shrink"].AsBool, jn["locked"].AsBool, jn["select"] == null || jn["select"].AsBool, jn["hide"].AsBool, jn["col"], jn["selcol"], jn["texcol"], jn["markcol"]);
-
-        public JSONNode ToJSONVG()
+        public override void ReadJSON(JSONNode jn)
         {
-            var jn = JSON.Parse("{}");
+            Bin = jn["bin"].AsInt;
+            Layer = jn["layer"].AsInt;
+            collapse = jn["shrink"] == null ? jn["collapse"].AsBool : jn["shrink"].AsBool;
+            locked = jn["locked"].AsBool;
+            selectable = jn["select"] == null || jn["select"].AsBool;
+            hidden = jn["hide"].AsBool;
+            color = jn["col"];
+            selectedColor = jn["selcol"];
+            textColor = jn["texcol"];
+            markColor = jn["markcol"];
+            if (jn["ui"] != null)
+                for (int i = 0; i < jn["ui"].Count; i++)
+                    displays.Add(CustomUIDisplay.Parse(jn["ui"][i]));
+        }
+
+        public override JSONNode ToJSONVG()
+        {
+            var jn = Parser.NewJSONObject();
 
             jn["lk"] = locked;
             jn["co"] = collapse;
@@ -152,9 +190,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             if (Bin != 0)
                 jn["bin"] = Bin;
@@ -177,6 +215,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["texcol"] = textColor;
             if (!string.IsNullOrEmpty(markColor))
                 jn["markcol"] = markColor;
+
+            for (int i = 0; i < displays.Count; i++)
+                jn["ui"] = displays[i].ToJSON();
 
             return jn;
         }
@@ -232,6 +273,22 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return jn;
         }
+
+        /// <summary>
+        /// Tries to find the custom UI display with the matching path.
+        /// </summary>
+        /// <param name="path">Path of the display to find.</param>
+        /// <param name="display">Display result.</param>
+        /// <returns>Returns true if a display was found, otherwise returns false.</returns>
+        public bool TryGetDisplay(string path, out CustomUIDisplay display) => displays.TryFind(x => x.path == path, out display);
+
+        /// <summary>
+        /// Gets a custom UI display.
+        /// </summary>
+        /// <param name="path">Path of the display to find.</param>
+        /// <param name="defaultDisplay">Default display to return if no custom display was found.</param>
+        /// <returns>Returns the found custom UI display.</returns>
+        public CustomUIDisplay GetDisplay(string path, CustomUIDisplay defaultDisplay) => TryGetDisplay(path, out CustomUIDisplay display) ? display : defaultDisplay;
 
         #endregion
     }
