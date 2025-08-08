@@ -4160,6 +4160,9 @@ namespace BetterLegacy.Editor.Managers
             switch (type)
             {
                 case 0: {
+                        //for (int i = 0; i < firstKF.eventKeyframe.values.Length; i++)
+                        //    dialog.EventValueElements[i].Render(type, i, selected, firstKF, beatmapObject);
+
                         for (int i = 0; i < 3; i++)
                             KeyframeHandler(type, i, selected, firstKF, beatmapObject);
 
@@ -4170,6 +4173,9 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case 1: {
+                        //for (int i = 0; i < firstKF.eventKeyframe.values.Length; i++)
+                        //    dialog.EventValueElements[i].Render(type, i, selected, firstKF, beatmapObject);
+
                         for (int i = 0; i < 2; i++)
                             KeyframeHandler(type, i, selected, firstKF, beatmapObject);
 
@@ -4180,6 +4186,7 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case 2: {
+                        //dialog.EventValueElements[0].Render(type, 0, selected, firstKF, beatmapObject);
                         KeyframeHandler(type, 0, selected, firstKF, beatmapObject);
 
                         KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
