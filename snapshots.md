@@ -1,4 +1,11 @@
-﻿# snapshot-2025.8.7 - (pre-1.8.0) [Aug 8, 2025]
+﻿# ???
+## Fixes
+- Fixed sequences with only one keyframe breaking.
+- Fixed level collections throwing an error if no "collections" folder exists.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.7 - (pre-1.8.0) [Aug 8, 2025]
 ## Features
 ### Core
 - Added resetLoop modifier. This allows already activated non-constant modifiers to run again. The current loop continues running.
