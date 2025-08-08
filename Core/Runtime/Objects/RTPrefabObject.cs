@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 
-using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -57,7 +55,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override Transform Parent { get; }
 
-        public override float FixedTime => UseCustomTime ? CustomTime : GetTime(ParentRuntime.FixedTime);
+        public override float FixedTime => UseCustomTime ? CustomTime : GetTime(ParentRuntime.GetStartTime() + ParentRuntime.FixedTime);
 
         /// <summary>
         /// Custom interpolation time.
@@ -97,6 +95,9 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// </summary>
         public Vector3 Rotation { get; set; }
 
+        /// <summary>
+        /// Triggers when active state changes.
+        /// </summary>
         public Action<bool> onActiveChanged;
 
         public override void Load()
@@ -158,6 +159,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float StartTime { get; set; }
 
         public float KillTime { get; set; }
+
+        public override float GetStartTime() => PrefabObject.StartTime + Prefab.offset;
 
         public void SetActive(bool active)
         {
