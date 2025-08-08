@@ -1,0 +1,308 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using SimpleJSON;
+
+namespace BetterLegacy.Core.Data.Beatmap
+{
+    /// <summary>
+    /// Allows specific editor UI to be customized per-object.
+    /// </summary>
+    public class CustomUIDisplay : PAObject<CustomUIDisplay>
+    {
+        public CustomUIDisplay() { }
+
+        #region Values
+
+        /// <summary>
+        /// If the UI data should serialize to JSON.
+        /// </summary>
+        public bool ShouldSerialize =>
+            !string.IsNullOrEmpty(path) || type != UIType.InputField || multiValue != "1" || // base
+            scrollAmount != 0.1f || scrollMultiply != 10.0f || min != 0.0f || max != 0.0f || resetValue != 0.0f || // input field
+            !options.IsEmpty() || // dropdown
+            offValue != 0.0f || onValue != 1.0f; // toggle
+
+        /// <summary>
+        /// Represents the location of the custom UI.
+        /// </summary>
+        public string path = string.Empty;
+
+        /// <summary>
+        /// The type of UI to display.
+        /// </summary>
+        public UIType type;
+
+        /// <summary>
+        /// UI display type.
+        /// </summary>
+        public enum UIType
+        {
+            /// <summary>
+            /// Displays as an <see cref="UnityEngine.UI.InputField"/>.
+            /// </summary>
+            InputField,
+            /// <summary>
+            /// Displays as a <see cref="UnityEngine.UI.Dropdown"/>.
+            /// </summary>
+            Dropdown,
+            /// <summary>
+            /// Displays as a <see cref="UnityEngine.UI.Toggle"/>.
+            /// </summary>
+            Toggle,
+        }
+
+        /// <summary>
+        /// Value to display with multiple selections.
+        /// </summary>
+        public string multiValue = "1";
+
+        #region InputField
+
+        /// <summary>
+        /// Amount to scroll.
+        /// </summary>
+        public float scrollAmount = 0.1f;
+
+        /// <summary>
+        /// Multiply amount for scroll.
+        /// </summary>
+        public float scrollMultiply = 10.0f;
+
+        /// <summary>
+        /// Minimum amount.
+        /// </summary>
+        public float min = 0.0f;
+
+        /// <summary>
+        /// Maximum amount.
+        /// </summary>
+        public float max = 0.0f;
+
+        /// <summary>
+        /// Reset value.
+        /// </summary>
+        public float resetValue = 0.0f;
+
+        #endregion
+
+        #region Dropdown
+
+        /// <summary>
+        /// List of options to apply to the dropdown.
+        /// </summary>
+        public List<Option> options = new List<Option>();
+
+        #endregion
+
+        #region Toggle
+
+        /// <summary>
+        /// Value to set when toggle is on.
+        /// </summary>
+        public float offValue = 0.0f;
+
+        /// <summary>
+        /// Value to set when the toggle is off.
+        /// </summary>
+        public float onValue = 1.0f;
+
+        #endregion
+
+        #endregion
+
+        #region Global
+
+        public static CustomUIDisplay DefaultPositionXDisplay => new CustomUIDisplay()
+        {
+            path = "position/x",
+            type = UIType.InputField,
+        };
+        
+        public static CustomUIDisplay DefaultPositionYDisplay => new CustomUIDisplay()
+        {
+            path = "position/y",
+            type = UIType.InputField,
+        };
+        
+        public static CustomUIDisplay DefaultPositionZDisplay => new CustomUIDisplay()
+        {
+            path = "position/z",
+            type = UIType.InputField,
+        };
+        
+        public static CustomUIDisplay DefaultScaleXDisplay => new CustomUIDisplay()
+        {
+            path = "scale/x",
+            type = UIType.InputField,
+        };
+        
+        public static CustomUIDisplay DefaultScaleYDisplay => new CustomUIDisplay()
+        {
+            path = "scale/y",
+            type = UIType.InputField,
+        };
+
+        public static CustomUIDisplay DefaultRotationDisplay => new CustomUIDisplay()
+        {
+            path = "rotation/x",
+            type = UIType.InputField,
+        };
+
+        #endregion
+
+        #region Methods
+
+        public override void CopyData(CustomUIDisplay orig, bool newID = true)
+        {
+            path = orig.path;
+            type = orig.type;
+
+            multiValue = orig.multiValue;
+
+            scrollAmount = orig.scrollAmount;
+            scrollMultiply = orig.scrollMultiply;
+            min = orig.min;
+            max = orig.max;
+            resetValue = orig.resetValue;
+
+            options = new List<Option>(orig.options.Select(x => x.Copy()));
+
+            offValue = orig.offValue;
+            onValue = orig.onValue;
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            path = jn["path"] ?? string.Empty;
+            type = (UIType)jn["type"].AsInt;
+
+            multiValue = jn["multi_val"] ?? "1";
+
+            switch (type)
+            {
+                case UIType.InputField: {
+                        if (jn["scr"] != null)
+                            scrollAmount = jn["scr"].AsFloat;
+                        if (jn["scr_multi"] != null)
+                            scrollMultiply = jn["scr_multi"].AsFloat;
+                        if (jn["min"] != null)
+                            min = jn["min"].AsFloat;
+                        if (jn["max"] != null)
+                            max = jn["max"].AsFloat;
+                        if (jn["reset_val"] != null)
+                            resetValue = jn["reset_val"].AsFloat;
+
+                        break;
+                    }
+                case UIType.Dropdown: {
+                        if (jn["options"] == null)
+                            break;
+
+                        options.Clear();
+                        for (int i = 0; i < jn["options"].Count; i++)
+                            options.Add(Option.Parse(jn["options"][i]));
+
+                        break;
+                    }
+                case UIType.Toggle: {
+                        offValue = jn["off_val"].AsFloat;
+                        onValue = jn["on_val"].AsFloat;
+
+                        break;
+                    }
+            }
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            jn["path"] = path ?? string.Empty;
+            if (type != UIType.InputField)
+                jn["type"] = (int)type;
+
+            if (multiValue != "1")
+                jn["multi_val"] = multiValue ?? "1";
+            switch (type)
+            {
+                case UIType.InputField: {
+                        if (scrollAmount != 0.1f)
+                            jn["scr"] = scrollAmount;
+                        if (scrollMultiply != 10.0f)
+                            jn["scr_multi"] = scrollMultiply;
+                        if (min != 0.0f)
+                            jn["min"] = min;
+                        if (max != 0.0f)
+                            jn["max"] = max;
+                        if (resetValue != 0.0f)
+                            jn["reset_val"] = resetValue;
+                        break;
+                    }
+                case UIType.Dropdown: {
+                        for (int i = 0; i < options.Count; i++)
+                            jn["options"][i] = options[i].ToJSON();
+                        break;
+                    }
+                case UIType.Toggle: {
+                        if (offValue != 0.0f)
+                            jn["off_val"] = offValue;
+                        if (onValue != 1.0f)
+                            jn["on_val"] = onValue;
+
+                        break;
+                    }
+            }
+
+            return jn;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Represents an option in a dropdown.
+        /// </summary>
+        public class Option : PAObject<Option>
+        {
+            #region Values
+
+            /// <summary>
+            /// Name of the dropdown option to display.
+            /// </summary>
+            public string name = string.Empty;
+
+            /// <summary>
+            /// Value to set to the option when selected.
+            /// </summary>
+            public float value = 0.0f;
+
+            #endregion
+
+            #region Methods
+
+            public override void CopyData(Option orig, bool newID = true)
+            {
+                name = orig.name;
+                value = orig.value;
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
+                name = jn["n"] ?? string.Empty;
+                value = jn["v"].AsFloat;
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                jn["n"] = name ?? string.Empty;
+                jn["v"] = value;
+
+                return jn;
+            }
+
+            #endregion
+        }
+    }
+}
