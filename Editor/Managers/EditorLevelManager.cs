@@ -575,6 +575,15 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
+            if (!RTFile.DirectoryExists(fullPath))
+            {
+                if (list.Count >= 1)
+                    yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, RenderLevelCollections));
+                else
+                    RenderLevelCollections();
+                yield break;
+            }
+
             var files = Directory.GetDirectories(fullPath);
             foreach (var file in files)
             {
