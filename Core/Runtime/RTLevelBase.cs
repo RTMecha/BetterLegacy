@@ -770,8 +770,8 @@ namespace BetterLegacy.Core.Runtime
             var baseObject = runtimeObject.visualObject.gameObject.transform.parent;
             baseObject.SetParent(runtimeObject.Parent);
 
-            for (int i = 1; i < runtimeObject.parentObjects.Count; i++)
-                CoreHelper.Destroy(runtimeObject.parentObjects[i].gameObject);
+            var parentObject = runtimeObject.parentObjects.Last();
+            CoreHelper.Delete(parentObject.gameObject);
 
             var parentObjects = new List<ParentObject>();
 
