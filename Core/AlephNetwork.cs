@@ -668,11 +668,94 @@ namespace BetterLegacy.Core
             return !www.isNetworkError && !www.isHttpError;
         });
 
+        /// <summary>
+        /// Builds a search query.
+        /// </summary>
+        /// <param name="searchURL">URL to append.</param>
+        /// <param name="queries">Array of queries.</param>
+        /// <returns>Returns the built query.</returns>
+        public static string BuildQuery(string searchURL, List<Query> queries)
+        {
+            if (!queries.IsEmpty())
+                searchURL += "?";
+
+            for (int i = 0; i < queries.Count; i++)
+            {
+                searchURL += queries[i].ToString();
+                if (i < queries.Count - 1)
+                    searchURL += "&";
+            }
+
+            return searchURL;
+        }
+
+        /// <summary>
+        /// Builds a search query.
+        /// </summary>
+        /// <param name="searchURL">URL to append.</param>
+        /// <param name="queries">Array of queries.</param>
+        /// <returns>Returns the built query.</returns>
+        public static string BuildQuery(string searchURL, params Query[] queries)
+        {
+            if (!queries.IsEmpty())
+                searchURL += "?";
+
+            for (int i = 0; i < queries.Length; i++)
+            {
+                searchURL += queries[i].ToString();
+                if (i < queries.Length - 1)
+                    searchURL += "&";
+            }
+
+            return searchURL;
+        }
+
+        public static string BuildQuery(string searchURL, string search, int page = 0, int sort = 0, bool ascend = false)
+        {
+            var queries = new List<Query>();
+            if (!string.IsNullOrEmpty(search))
+                queries.Add(new Query("query", search));
+            if (page != 0)
+                queries.Add(new Query("page", page.ToString()));
+
+            // todo: implement sorting
+            if (sort != 0)
+                queries.Add(new Query("sort", sort.ToString()));
+            if (ascend)
+                queries.Add(new Query("ascend", ascend.ToString()));
+
+            return BuildQuery(searchURL, queries);
+        }
+
         #endregion
 
         public class ForceAcceptAll : CertificateHandler
         {
             public override bool ValidateCertificate(byte[] certificateData) => true;
+        }
+
+        /// <summary>
+        /// Query used for search URLs.
+        /// </summary>
+        public class Query
+        {
+            public Query(string name, string variable)
+            {
+                this.name = name;
+                this.variable = variable;
+            }
+
+            /// <summary>
+            /// Name of the query.
+            /// </summary>
+            public string name;
+
+            /// <summary>
+            /// Variable of the query.
+            /// </summary>
+            public string variable;
+
+            public override string ToString() => $"{name}={variable}";
         }
     }
 }

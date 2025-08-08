@@ -25,142 +25,29 @@ namespace BetterLegacy.Editor.Managers
     {
         public static UploadedLevelsManager inst;
 
-        public Transform content;
-        InputField pageField;
-
         public static void Init() => Creator.NewGameObject(nameof(UploadedLevelsManager), EditorManager.inst.transform.parent).AddComponent<UploadedLevelsManager>();
 
         void Awake()
         {
             inst = this;
-            StartCoroutine(GenerateUI());
-        }
-
-        IEnumerator GenerateUI()
-        {
-            var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "UploadedDialog");
-            editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
-            editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-            var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
-
-            dialogStorage.topPanel.color = LSColors.HexToColor("F05355");
-            dialogStorage.title.text = "- Uploaded Levels -";
-
-            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
-            editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
-
-            Destroy(editorDialogObject.transform.GetChild(2).gameObject);
-
-            EditorHelper.AddEditorDialog(EditorDialog.UPLOADED_LEVELS, editorDialogObject);
-
-            var search = EditorPrefabHolder.Instance.StringInputField.Duplicate(editorDialogObject.transform.Find("spacer"), "search");
-            RectValues.Default.AnchoredPosition(-200f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(search.transform.AsRT());
-            var searchField = search.GetComponent<InputField>();
-            searchField.onValueChanged.ClearAll();
-            searchField.text = "";
-            searchField.GetPlaceholderText().text = "Search levels...";
-            searchField.onValueChanged.AddListener(_val => this.search = _val);
-
-            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"), "page");
-            RectValues.Default.AnchoredPosition(-40f, 0f).SizeDelta(0f, 32f).AssignToRectTransform(page.transform.AsRT());
-            var pageStorage = page.GetComponent<InputFieldStorage>();
-            pageField = pageStorage.inputField;
-
-            pageStorage.inputField.onValueChanged.ClearAll();
-            pageStorage.inputField.text = this.page.ToString();
-            pageStorage.inputField.onValueChanged.AddListener(_val =>
-            {
-                if (int.TryParse(_val, out int p))
-                    this.page = Mathf.Clamp(p, 0, int.MaxValue);
-            });
-
-            pageStorage.leftGreaterButton.onClick.ClearAll();
-            pageStorage.leftGreaterButton.onClick.AddListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p - 10, 0, int.MaxValue).ToString();
-            });
-
-            pageStorage.leftButton.onClick.ClearAll();
-            pageStorage.leftButton.onClick.AddListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, int.MaxValue).ToString();
-            });
-
-            pageStorage.rightButton.onClick.ClearAll();
-            pageStorage.rightButton.onClick.AddListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, int.MaxValue).ToString();
-            });
-
-            pageStorage.rightGreaterButton.onClick.ClearAll();
-            pageStorage.rightGreaterButton.onClick.AddListener(() =>
-            {
-                if (int.TryParse(pageStorage.inputField.text, out int p))
-                    pageStorage.inputField.text = Mathf.Clamp(p + 10, 0, int.MaxValue).ToString();
-            });
-
-            Destroy(pageStorage.middleButton.gameObject);
-
-            var searchButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(editorDialogObject.transform.Find("spacer"), "search button");
-            RectValues.Default.AnchoredPosition(310f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(searchButton.transform.AsRT());
-            var searchButtonStorage = searchButton.GetComponent<FunctionButtonStorage>();
-            searchButtonStorage.label.text = "Search";
-            searchButtonStorage.button.onClick.ClearAll();
-            searchButtonStorage.button.onClick.AddListener(Search);
-
-            EditorThemeManager.AddInputField(searchField);
-            EditorThemeManager.AddInputField(pageStorage.inputField);
-            EditorThemeManager.AddSelectable(pageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(pageStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(searchButtonStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(searchButtonStorage.label, ThemeGroup.Function_2_Text);
-
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
-            content = scrollView.transform.Find("Viewport/Content");
-            scrollView.transform.localScale = Vector3.one;
-
-            LSHelpers.DeleteChildren(content);
-
-            var scrollViewLE = scrollView.AddComponent<LayoutElement>();
-            scrollViewLE.ignoreLayout = true;
-
-            scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
-            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 638f);
-
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
-
-            EditorHelper.AddEditorDropdown("View Uploaded", "", "Steam", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_levels{FileFormat.PNG.Dot()}"), () =>
-            {
-                Dialog.Open();
-                Search();
-            });
-
             try
             {
-                Dialog = new EditorDialog(EditorDialog.UPLOADED_LEVELS);
+                Dialog = new UploadedLevelsDialog();
                 Dialog.Init();
             }
             catch (Exception ex)
             {
                 CoreHelper.LogException(ex);
             } // init dialog
-
-            yield break;
         }
 
 		int levelCount;
 
 		bool loadingOnlineLevels;
 
-        public EditorDialog Dialog { get; set; }
+        public UploadedLevelsDialog Dialog { get; set; }
 
-        int page;
-        string search;
+        public int page;
         static string SearchURL => $"{AlephNetwork.ArcadeServerURL}api/level/uploaded";
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
@@ -174,14 +61,14 @@ namespace BetterLegacy.Editor.Managers
 
 			loadingOnlineLevels = true;
 
-            LSHelpers.DeleteChildren(content);
+            Dialog.ClearContent();
 
             var page = this.page;
             int currentPage = page + 1;
 
-            var search = this.search;
+            var search = Dialog.SearchTerm;
 
-            string query = $"{SearchURL}?page={page}";
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -213,7 +100,7 @@ namespace BetterLegacy.Editor.Managers
                             if (id == null || id == "0")
                                 continue;
 
-                            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(content, $"Folder [{name}]");
+                            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Dialog.Content, $"Folder [{name}]");
                             var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                             var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 

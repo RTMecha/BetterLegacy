@@ -1736,11 +1736,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             var search = OnlineSearch;
 
-            string query =
-                string.IsNullOrEmpty(search) && page == 0 ? SearchURL :
-                    string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" :
-                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}" :
-                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}&page={page}" : "";
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1752,8 +1748,12 @@ namespace BetterLegacy.Arcade.Interfaces
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
+            CoreHelper.Log($"Downloading from query.");
+
             yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
             {
+                CoreHelper.Log($"Got result from query.");
+
                 try
                 {
                     var jn = JSON.Parse(json);

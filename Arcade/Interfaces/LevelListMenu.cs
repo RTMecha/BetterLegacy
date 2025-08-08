@@ -688,31 +688,21 @@ namespace BetterLegacy.Arcade.Interfaces
             Page = 0;
         }
 
+        void ClearOnlineLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty");
+
         public IEnumerator RefreshOnlineLevels()
         {
             if (loadingOnlineLevels)
                 yield break;
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty");
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty");
+            ClearOnlineLevelButtons();
 
             var page = Page;
             int currentPage = page + 1;
 
             var search = Search;
 
-            string query =
-                string.IsNullOrEmpty(search) && page == 0 ? SearchURL :
-                    string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" :
-                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}" :
-                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetwork.ReplaceSpace(search)}&page={page}" : "";
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page);
 
             CoreHelper.Log($"Search query: {query}");
 
