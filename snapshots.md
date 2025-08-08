@@ -2,6 +2,7 @@
 ## Fixes
 - Fixed sequences with only one keyframe breaking.
 - Fixed level collections throwing an error if no "collections" folder exists.
+- Fixed setParent modifier re-activating objects when it shouldn't.
 
 ------------------------------------------------------------------------------------------
 
