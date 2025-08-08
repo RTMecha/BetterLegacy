@@ -4207,9 +4207,9 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
-                                float hueNum = beatmapObject.Interpolate(type, 2, eventTime);
-                                float satNum = beatmapObject.Interpolate(type, 3, eventTime);
-                                float valNum = beatmapObject.Interpolate(type, 4, eventTime);
+                                float hueNum = beatmapObject.Interpolate(3, 2, eventTime);
+                                float satNum = beatmapObject.Interpolate(3, 3, eventTime);
+                                float valNum = beatmapObject.Interpolate(3, 4, eventTime);
 
                                 toggle.image.color = RTColors.ChangeColorHSV(color, hueNum, satNum, valNum);
                             }

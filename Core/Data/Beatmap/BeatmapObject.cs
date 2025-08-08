@@ -1569,24 +1569,22 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a single value based on the event.</returns>
         public float Interpolate(int type, int valueIndex, float time)
         {
-            var list = events[type];
+            if (!events.TryGetAt(type, out List<EventKeyframe> list))
+                return 0f;
 
-            var nextKFIndex = SearchKeyframe(type, time) + 1;
+            var prevKFIndex = RTMath.Clamp(SearchKeyframe(type, time), 0, list.Count - 1);
+            var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
 
-            if (nextKFIndex < 0)
-                nextKFIndex = list.Count - 1;
-
-            var prevKFIndex = nextKFIndex - 1;
-            if (prevKFIndex < 0)
-                prevKFIndex = 0;
-
-            var nextKF = list[nextKFIndex];
             var prevKF = list[prevKFIndex];
+            var nextKF = list[nextKFIndex];
 
             valueIndex = Mathf.Clamp(valueIndex, 0, list[0].values.Length);
 
             if (prevKF.values.Length <= valueIndex)
                 return 0f;
+
+            if (time <= 0f)
+                return prevKF.values[valueIndex];
 
             var total = 0f;
             var prevtotal = 0f;
