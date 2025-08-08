@@ -203,6 +203,13 @@ namespace BetterLegacy.Core.Prefabs
         [SerializeField]
         public InputFieldSwapper fieldSwapper;
 
+        public string Text { get => inputField.text; set => inputField.text = value; }
+        public InputField.OnValidateInput OnValidateInput { get => inputField.onValidateInput; set => inputField.onValidateInput = value; }
+        public InputField.OnChangeEvent OnValueChanged { get => inputField.onValueChanged; set => inputField.onValueChanged = value; }
+        public InputField.SubmitEvent OnEndEdit { get => inputField.onEndEdit; set => inputField.onEndEdit = value; }
+
+        public void SetTextWithoutNotify(string input) => inputField.SetTextWithoutNotify(input);
+
         public void SetInteractible(bool interactable)
         {
             if (leftGreaterButton)
