@@ -78,7 +78,7 @@ namespace BetterLegacy.Core
                 return link;
 
             // no sussy
-            if (link.Contains("http://") || link.Contains("https://") || link.Contains(".") || link.Contains("/") || link.Contains("\\"))
+            if (link.Contains("http://") || link.Contains("https://") || link.Contains("."))
                 return null;
 
             var links = source switch
