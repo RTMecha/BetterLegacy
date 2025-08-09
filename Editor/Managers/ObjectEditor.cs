@@ -167,10 +167,13 @@ namespace BetterLegacy.Editor.Managers
 
         public List<TimelineKeyframe> copiedObjectKeyframes = new List<TimelineKeyframe>();
 
+        public CustomUIDisplay copiedUIDisplay;
+
         public EventKeyframe CopiedPositionData { get; set; }
         public EventKeyframe CopiedScaleData { get; set; }
         public EventKeyframe CopiedRotationData { get; set; }
         public EventKeyframe CopiedColorData { get; set; }
+
 
         public List<Toggle> gradientColorButtons = new List<Toggle>();
 
@@ -1573,16 +1576,10 @@ namespace BetterLegacy.Editor.Managers
             RenderLayers(beatmapObject);
             RenderBin(beatmapObject);
 
-            try
-            {
-                RenderIndex(beatmapObject);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
+            RenderIndex(beatmapObject);
 
             RenderEditorColors(beatmapObject);
+            RenderCustomUIDisplay(beatmapObject);
 
             RenderGameObjectInspector(beatmapObject);
             RenderPrefabReference(beatmapObject);
@@ -1591,14 +1588,7 @@ namespace BetterLegacy.Editor.Managers
 
             RenderObjectKeyframesDialog(beatmapObject);
 
-            try
-            {
-                RenderMarkers(beatmapObject);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Error {ex}");
-            }
+            RenderMarkers(beatmapObject);
 
             CoroutineHelper.StartCoroutine(Dialog.ModifiersDialog.RenderModifiers(beatmapObject));
         }
@@ -3234,6 +3224,24 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Renders the custom keyframe UI.
+        /// </summary>
+        /// <param name="beatmapObject">The BeatmapObject to set.</param>
+        public void RenderCustomUIDisplay(BeatmapObject beatmapObject)
+        {
+            Dialog.keyframeDialogs[0].InitCustomUI(
+                beatmapObject.editorData.GetDisplay("position/x", CustomUIDisplay.DefaultPositionXDisplay),
+                beatmapObject.editorData.GetDisplay("position/y", CustomUIDisplay.DefaultPositionYDisplay),
+                beatmapObject.editorData.GetDisplay("position/z", CustomUIDisplay.DefaultPositionZDisplay));
+            Dialog.keyframeDialogs[0].EventValueElements[2].GameObject.SetActive(RTEditor.ShowModdedUI);
+            Dialog.keyframeDialogs[1].InitCustomUI(
+                beatmapObject.editorData.GetDisplay("scale/x", CustomUIDisplay.DefaultScaleXDisplay),
+                beatmapObject.editorData.GetDisplay("scale/y", CustomUIDisplay.DefaultScaleYDisplay));
+            Dialog.keyframeDialogs[2].InitCustomUI(
+                beatmapObject.editorData.GetDisplay("rotation/x", CustomUIDisplay.DefaultRotationDisplay));
+        }
+
+        /// <summary>
         /// Renders the Prefab references.
         /// </summary>
         /// <param name="beatmapObject">The BeatmapObject to set.</param>
@@ -3287,194 +3295,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
                 OpenDialog(beatmapObject);
             });
-        }
-
-        void KeyframeHandler(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
-        {
-            var isSingle = selected.Count() == 1;
-            var dialog = Dialog.keyframeDialogs[type];
-            var inputFieldStorage = dialog.EventValueFields[valueIndex];
-
-            TriggerHelper.InversableField(inputFieldStorage);
-
-            if (!inputFieldStorage.eventTrigger)
-                inputFieldStorage.eventTrigger = inputFieldStorage.gameObject.AddComponent<EventTrigger>();
-
-            inputFieldStorage.eventTrigger.triggers.Clear();
-
-            var contextMenu = inputFieldStorage.inputField.gameObject.GetOrAddComponent<ContextClickable>();
-            contextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Reset Value", () =>
-                    {
-                        switch (type)
-                        {
-                            case 0: {
-                                    inputFieldStorage.inputField.text = "0";
-                                    break;
-                                }
-                            case 1: {
-                                    inputFieldStorage.inputField.text = "1";
-                                    break;
-                                }
-                            case 2: {
-                                    inputFieldStorage.inputField.text = "0";
-                                    break;
-                                }
-                        }
-                    }));
-            };
-
-            switch (type)
-            {
-                case 0: {
-                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value, multi: true));
-                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(dialog.EventValueFields[0].inputField, dialog.EventValueFields[1].inputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value));
-                        break;
-                    }
-                case 1: {
-                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value, multi: true));
-                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(dialog.EventValueFields[0].inputField, dialog.EventValueFields[1].inputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value));
-                        break;
-                    }
-                case 2: {
-                        inputFieldStorage.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(inputFieldStorage.inputField, EditorConfig.Instance.ObjectRotationScroll.Value, EditorConfig.Instance.ObjectRotationScrollMultiply.Value));
-                        break;
-                    }
-            }
-
-            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
-            inputFieldStorage.inputField.contentType = InputField.ContentType.Standard;
-            inputFieldStorage.inputField.keyboardType = TouchScreenKeyboardType.Default;
-
-            inputFieldStorage.inputField.SetTextWithoutNotify(isSingle ? firstKF.eventKeyframe.values[valueIndex].ToString() : type == 2 ? "15" : "1");
-            inputFieldStorage.inputField.onValueChanged.NewListener(_val =>
-            {
-                if (isSingle && float.TryParse(_val, out float num))
-                {
-                    firstKF.eventKeyframe.values[valueIndex] = num;
-
-                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    if (UpdateObjects)
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                }
-            });
-            inputFieldStorage.inputField.onEndEdit.NewListener(_val =>
-            {
-                if (!isSingle)
-                    return;
-
-                var variables = new Dictionary<string, float>
-                {
-                    { "eventTime", firstKF.eventKeyframe.time },
-                    { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
-                };
-
-                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
-                    inputFieldStorage.inputField.text = calc.ToString();
-            });
-
-            inputFieldStorage.leftButton.gameObject.SetActive(isSingle);
-            inputFieldStorage.rightButton.gameObject.SetActive(isSingle);
-            if (isSingle)
-                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage, type == 2 ? 15f : 0.1f, type == 2 ? 3f : 10f);
-
-            if (inputFieldStorage.addButton)
-            {
-                inputFieldStorage.addButton.onClick.ClearAll();
-                inputFieldStorage.addButton.gameObject.SetActive(!isSingle);
-                if (!isSingle)
-                    inputFieldStorage.addButton.onClick.AddListener(() =>
-                    {
-                        if (float.TryParse(inputFieldStorage.inputField.text, out float x))
-                        {
-                            foreach (var keyframe in selected)
-                                keyframe.eventKeyframe.values[valueIndex] += x;
-
-                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                            if (UpdateObjects)
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        }
-                        else
-                        {
-                            var variables = new Dictionary<string, float>
-                            {
-                                { "eventTime", firstKF.eventKeyframe.time },
-                                { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
-                            };
-
-                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
-                                foreach (var keyframe in selected)
-                                    keyframe.eventKeyframe.values[valueIndex] += calc;
-                        }
-                    });
-            }
-            if (inputFieldStorage.subButton)
-            {
-                inputFieldStorage.subButton.onClick.ClearAll();
-                inputFieldStorage.subButton.gameObject.SetActive(!isSingle);
-                if (!isSingle)
-                    inputFieldStorage.subButton.onClick.AddListener(() =>
-                    {
-                        if (float.TryParse(inputFieldStorage.inputField.text, out float x))
-                        {
-                            foreach (var keyframe in selected)
-                                keyframe.eventKeyframe.values[valueIndex] -= x;
-
-                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                            if (UpdateObjects)
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        }
-                        else
-                        {
-                            var variables = new Dictionary<string, float>
-                            {
-                                { "eventTime", firstKF.eventKeyframe.time },
-                                { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
-                            };
-
-                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
-                                foreach (var keyframe in selected)
-                                    keyframe.eventKeyframe.values[valueIndex] -= calc;
-                        }
-                    });
-            }
-            if (inputFieldStorage.middleButton)
-            {
-                inputFieldStorage.middleButton.onClick.ClearAll();
-                inputFieldStorage.middleButton.gameObject.SetActive(!isSingle);
-                if (!isSingle)
-                    inputFieldStorage.middleButton.onClick.AddListener(() =>
-                    {
-                        if (float.TryParse(inputFieldStorage.inputField.text, out float x))
-                        {
-                            foreach (var keyframe in selected)
-                                keyframe.eventKeyframe.values[valueIndex] = x;
-
-                            // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                            if (UpdateObjects)
-                                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        }
-                        else
-                        {
-                            var variables = new Dictionary<string, float>
-                            {
-                                { "eventTime", firstKF.eventKeyframe.time },
-                                { "currentValue", firstKF.eventKeyframe.values[valueIndex] }
-                            };
-
-                            if (RTMath.TryParse(inputFieldStorage.inputField.text, firstKF.eventKeyframe.values[valueIndex], variables, out float calc))
-                                foreach (var keyframe in selected)
-                                    keyframe.eventKeyframe.values[valueIndex] = calc;
-                        }
-                    });
-            }
-
-            inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = isSingle ? 8f : 0f;
         }
 
         void UpdateKeyframeRandomDialog(int type, int randomType)
@@ -4160,11 +3980,8 @@ namespace BetterLegacy.Editor.Managers
             switch (type)
             {
                 case 0: {
-                        //for (int i = 0; i < firstKF.eventKeyframe.values.Length; i++)
-                        //    dialog.EventValueElements[i].Render(type, i, selected, firstKF, beatmapObject);
-
-                        for (int i = 0; i < 3; i++)
-                            KeyframeHandler(type, i, selected, firstKF, beatmapObject);
+                        for (int i = 0; i < dialog.EventValueElements.Count; i++)
+                            dialog.EventValueElements[i].Render(type, i, selected, firstKF, beatmapObject);
 
                         KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
                         for (int i = 0; i < 2; i++)
@@ -4173,11 +3990,8 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case 1: {
-                        //for (int i = 0; i < firstKF.eventKeyframe.values.Length; i++)
-                        //    dialog.EventValueElements[i].Render(type, i, selected, firstKF, beatmapObject);
-
-                        for (int i = 0; i < 2; i++)
-                            KeyframeHandler(type, i, selected, firstKF, beatmapObject);
+                        for (int i = 0; i < dialog.EventValueElements.Count; i++)
+                            dialog.EventValueElements[i].Render(type, i, selected, firstKF, beatmapObject);
 
                         KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
                         for (int i = 0; i < 2; i++)
@@ -4186,8 +4000,7 @@ namespace BetterLegacy.Editor.Managers
                         break;
                     }
                 case 2: {
-                        //dialog.EventValueElements[0].Render(type, 0, selected, firstKF, beatmapObject);
-                        KeyframeHandler(type, 0, selected, firstKF, beatmapObject);
+                        dialog.EventValueElements[0].Render(type, 0, selected, firstKF, beatmapObject);
 
                         KeyframeRandomHandler(type, selected, firstKF, beatmapObject);
                         for (int i = 0; i < 2; i++)

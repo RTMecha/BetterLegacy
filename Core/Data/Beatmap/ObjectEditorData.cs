@@ -159,6 +159,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             selectedColor = jn["selcol"];
             textColor = jn["texcol"];
             markColor = jn["markcol"];
+            displays.Clear();
             if (jn["ui"] != null)
                 for (int i = 0; i < jn["ui"].Count; i++)
                     displays.Add(CustomUIDisplay.Parse(jn["ui"][i]));
@@ -217,7 +218,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["markcol"] = markColor;
 
             for (int i = 0; i < displays.Count; i++)
-                jn["ui"] = displays[i].ToJSON();
+                jn["ui"][i] = displays[i].ToJSON();
 
             return jn;
         }

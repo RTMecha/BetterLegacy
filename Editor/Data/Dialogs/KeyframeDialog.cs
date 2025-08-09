@@ -128,15 +128,19 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         EventValuesParent = valuesTransform;
                         EventValueFields = new List<InputFieldStorage>();
-                        for (int i = 0; i < valuesTransform.childCount; i++)
-                        {
-                            var eventValueField = valuesTransform.GetChild(i).gameObject.GetOrAddComponent<InputFieldStorage>();
-                            eventValueField.Assign(eventValueField.gameObject);
-                            EditorThemeManager.AddSelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.AddSelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.AddSelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
-                            EventValueFields.Add(eventValueField);
-                        }
+                        EventValueElements = new List<KeyframeElement>();
+                        if (!isObjectKeyframe)
+                            for (int i = 0; i < valuesTransform.childCount; i++)
+                            {
+                                var eventValueField = valuesTransform.GetChild(i).gameObject.GetOrAddComponent<InputFieldStorage>();
+                                eventValueField.Assign(eventValueField.gameObject);
+                                EditorThemeManager.AddSelectable(eventValueField.middleButton, ThemeGroup.Function_2, false);
+                                EditorThemeManager.AddSelectable(eventValueField.subButton, ThemeGroup.Function_2, false);
+                                EditorThemeManager.AddSelectable(eventValueField.addButton, ThemeGroup.Function_2, false);
+                                EventValueFields.Add(eventValueField);
+                            }
+                        else if (type != 3)
+                            CoreHelper.DestroyChildren(EventValuesParent);
                     }
 
                     if (GameObject.transform.TryFind($"r_{Name.ToLower()}", out Transform randomValuesTransform))
@@ -201,6 +205,75 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 GameObject.SetActive(active);
         }
 
+        public void InitCustomUI(params CustomUIDisplay[] displays)
+        {
+            CoreHelper.DestroyChildren(EventValuesParent);
+            EventValueElements.Clear();
+            EventValueFields.Clear();
+
+            for (int i = 0; i < displays.Length; i++)
+            {
+                var name = i switch
+                {
+                    0 => "x",
+                    1 => "y",
+                    2 => "z",
+                    _ => string.Empty,
+                };
+
+                var display = displays[i];
+                KeyframeElement element = display.type switch
+                {
+                    CustomUIDisplay.UIType.InputField => new KeyframeInputField(display.path),
+                    CustomUIDisplay.UIType.Dropdown => new KeyframeDropdown(display.path),
+                    CustomUIDisplay.UIType.Toggle => new KeyframeToggle(display.path),
+                    _ => null,
+                };
+                element?.Init(this, EventValuesParent, name, display);
+                EventValueElements.Add(element);
+                EventValueFields.Add(element is KeyframeInputField inputField ? inputField.Field : null);
+            }
+        }
+
+        public void InitCustomUI(CustomUIDisplay display)
+        {
+            int index = EventValueElements.Count;
+            if (EventValueElements.TryFindIndex(x => x.path == display.path, out index))
+            {
+                CoreHelper.Delete(EventValueElements[index].GameObject);
+                EventValueElements.RemoveAt(index);
+                if (EventValueFields.InRange(index))
+                    EventValueFields.RemoveAt(index);
+            }
+
+            var name = display.path.Split('/').Last();
+            if (string.IsNullOrEmpty(name))
+                return;
+
+            KeyframeElement element = display.type switch
+            {
+                CustomUIDisplay.UIType.InputField => new KeyframeInputField(display.path),
+                CustomUIDisplay.UIType.Dropdown => new KeyframeDropdown(display.path),
+                CustomUIDisplay.UIType.Toggle => new KeyframeToggle(display.path),
+                _ => null,
+            };
+            if (element)
+            {
+                element.Init(this, EventValuesParent, name, display);
+                element.GameObject.transform.SetSiblingIndex(index);
+            }
+            if (!EventValueElements.IsEmpty())
+            {
+                EventValueElements.Insert(index, element);
+                EventValueFields.Insert(index, element is KeyframeInputField inputField ? inputField.Field : null);
+            }
+            else
+            {
+                EventValueElements.Add(element);
+                EventValueFields.Add(element is KeyframeInputField inputField ? inputField.Field : null);
+            }
+        }
+
         public override string ToString() => GameObject?.name;
 
         #endregion
@@ -208,30 +281,46 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
     public abstract class KeyframeElement : Exists
     {
+        public KeyframeElement(string path) => this.path = path;
+
         public KeyframeDialog Dialog { get; set; }
 
-        public abstract void Init(KeyframeDialog dialog, Transform parent, string name);
+        public GameObject GameObject { get; set; }
+
+        public CustomUIDisplay Display { get; set; }
+
+        public string path;
+
+        public abstract void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display);
 
         public abstract void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject);
     }
 
     public class KeyframeInputField : KeyframeElement
     {
+        public KeyframeInputField(string path) : base(path) { }
+
         public InputFieldStorage Field { get; set; }
 
-        public Func<float> getScrollAmount;
-        public Func<float> getScrollMultiply;
         public Func<float> getMin;
         public Func<float> getMax;
         public Func<float> getResetValue;
         public Func<string> getMultiValue;
 
-        public override void Init(KeyframeDialog dialog, Transform parent, string name)
+        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
         {
+            Display = display;
             Dialog = dialog;
-            var field = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
-            Field = field.GetComponent<InputFieldStorage>();
+            GameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
+            Field = GameObject.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(Field.leftGreaterButton);
+            CoreHelper.Delete(Field.rightGreaterButton);
             EditorThemeManager.ApplyInputField(Field);
+
+            getMin = () => display.min;
+            getMax = () => display.max;
+            getResetValue = () => display.resetValue;
+            getMultiValue = () => display.multiValue;
         }
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
@@ -261,17 +350,89 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             2 => "0",
                             _ => string.Empty,
                         };
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Set Max", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set maximum value", "Max", Display.max.ToString(), "Set", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                                return;
+
+                            Display.max = max;
+                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction("Set Min", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set minimum value", "Max", Display.min.ToString(), "Set", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float min))
+                                return;
+
+                            Display.min = min;
+                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction("Set Reset Value", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set reset value", "Reset", Display.resetValue.ToString(), "Set", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float resetValue))
+                                return;
+
+                            Display.resetValue = resetValue;
+                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Change to Dropdown", () =>
+                    {
+                        Display.type = CustomUIDisplay.UIType.Dropdown;
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction("Change to Toggle", () =>
+                    {
+                        Display.type = CustomUIDisplay.UIType.Toggle;
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Copy UI", () =>
+                    {
+                        ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                        EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Paste UI", () =>
+                    {
+                        if (!ObjectEditor.inst.copiedUIDisplay)
+                        {
+                            EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display.Copy());
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
                     }));
             };
 
-            var amount = getScrollAmount?.Invoke() ?? type switch
+            var amount = Display.overrideScroll ? Display.scrollAmount : type switch
             {
                 0 => EditorConfig.Instance.ObjectPositionScroll.Value,
                 1 => EditorConfig.Instance.ObjectScaleScroll.Value,
                 2 => EditorConfig.Instance.ObjectRotationScroll.Value,
                 _ => 0.1f,
             };
-            var multiply = getScrollMultiply?.Invoke() ?? type switch
+            var multiply = Display.overrideScroll ? Display.scrollMultiply : type switch
             {
                 0 => EditorConfig.Instance.ObjectPositionScrollMultiply.Value,
                 1 => EditorConfig.Instance.ObjectScaleScrollMultiply.Value,
@@ -281,7 +442,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var min = getMin?.Invoke() ?? 0f;
             var max = getMax?.Invoke() ?? 0f;
 
-            var multi = Dialog.EventValueFields.Count > 1 && Dialog.EventValueFields[1];
+            var multi = Dialog.EventValueFields.Count > 1 && Dialog.EventValueFields[0] && Dialog.EventValueFields[1];
             Field.eventTrigger.triggers.Add(TriggerHelper.ScrollDelta(Field.inputField, amount, multiply, min, max, multi: multi));
             if (multi)
                 Field.eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(Dialog.EventValueFields[0].inputField, Dialog.EventValueFields[1].inputField, amount, multiply));
@@ -320,7 +481,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Field.leftButton.gameObject.SetActive(isSingle);
             Field.rightButton.gameObject.SetActive(isSingle);
             if (isSingle)
-                TriggerHelper.IncreaseDecreaseButtons(Field, amount, multiply);
+                TriggerHelper.IncreaseDecreaseButtons(Field, amount, multiply, min, max);
 
             if (Field.addButton)
             {
@@ -410,42 +571,141 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
     public class KeyframeDropdown : KeyframeElement
     {
+        public KeyframeDropdown(string path) : base(path) { }
+
         public Dropdown Dropdown { get; set; }
 
         public Button Apply { get; set; }
 
         public Func<List<Dropdown.OptionData>> getOptions;
-        public Func<int> getMultiValue;
+        public Func<int, float> getValue;
+        public Func<string> getMultiValue;
 
-        public override void Init(KeyframeDialog dialog, Transform parent, string name)
+        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
         {
+            Display = display;
             Dialog = dialog;
-            var subParent = Creator.NewUIObject(name, parent);
+            GameObject = Creator.NewUIObject(name, parent);
 
-            var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(subParent.transform, "dropdown");
+            var layout = GameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.childControlHeight = false;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.spacing = 8f;
+
+            var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(GameObject.transform, "dropdown");
             Dropdown = dropdown.GetComponent<Dropdown>();
             EditorThemeManager.ApplyDropdown(Dropdown);
 
-            var apply = EditorPrefabHolder.Instance.Function1Button.Duplicate(subParent.transform, "apply");
+            var dropdownLayoutElement = dropdown.GetOrAddComponent<LayoutElement>();
+            dropdownLayoutElement.minWidth = -1f;
+            dropdownLayoutElement.preferredWidth = 10000f;
+
+            var apply = EditorPrefabHolder.Instance.Function1Button.Duplicate(GameObject.transform, "apply");
             var applyStorage = apply.GetComponent<FunctionButtonStorage>();
             Apply = applyStorage.button;
+            applyStorage.label.text = "Apply";
             EditorThemeManager.ApplyGraphic(applyStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.ApplyGraphic(applyStorage.label, ThemeGroup.Function_1_Text);
+
+            getOptions = () => display.options.IsEmpty() ? new List<Dropdown.OptionData>() : display.options.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            getValue = _val => display.options.IsEmpty() ? 0f : display.options.GetAt(_val).value;
+            getMultiValue = () => display.multiValue;
         }
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
         {
             var isSingle = selected.Count() == 1;
 
+            var contextMenu = Dropdown.gameObject.GetOrAddComponent<ContextClickable>();
+            contextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        Dropdown.value = 0;
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Add Entry", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
+                        {
+                            var name = RTEditor.inst.folderCreatorName.text;
+
+                            RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Value", "0", "Add", () =>
+                            {
+                                if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float value))
+                                    return;
+
+                                Display.options.Add(new CustomUIDisplay.Option(name, value));
+                                beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                                ObjectEditor.inst.RenderDialog(beatmapObject);
+                                RTEditor.inst.HideNameEditor();
+                            });
+                        });
+                    }),
+                    new ButtonFunction("Remove Entry", () =>
+                    {
+                        if (Display.options.IsEmpty())
+                            return;
+
+                        Display.options.RemoveAt(Display.options.Count - 1);
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction("Clear Entries", () =>
+                    {
+                        Display.options.Clear();
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Change to Input Field", () =>
+                    {
+                        Display.type = CustomUIDisplay.UIType.InputField;
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction("Change to Toggle", () =>
+                    {
+                        Display.type = CustomUIDisplay.UIType.Toggle;
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Copy UI", () =>
+                    {
+                        ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                        EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Paste UI", () =>
+                    {
+                        if (!ObjectEditor.inst.copiedUIDisplay)
+                        {
+                            EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display.Copy());
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
+                    }));
+            };
+
             if (getOptions != null)
                 Dropdown.options = getOptions.Invoke();
-            Dropdown.SetValueWithoutNotify(isSingle ? (int)firstKF.eventKeyframe.values[valueIndex] : getMultiValue?.Invoke() ?? 0);
+            Dropdown.SetValueWithoutNotify(isSingle ? (int)firstKF.eventKeyframe.values[valueIndex] : Parser.TryParse(getMultiValue?.Invoke(), 0));
             Dropdown.onValueChanged.NewListener(_val =>
             {
                 if (!isSingle)
                     return;
 
-                firstKF.eventKeyframe.values[valueIndex] = _val;
+                firstKF.eventKeyframe.values[valueIndex] = getValue?.Invoke(_val) ?? 0f;
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
 
@@ -457,8 +717,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 if (isSingle)
                     return;
 
+                var value = getValue?.Invoke(Dropdown.value) ?? 0f;
                 foreach (var keyframe in selected)
-                    keyframe.eventKeyframe.values[valueIndex] = Dropdown.value;
+                    keyframe.eventKeyframe.values[valueIndex] = value;
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
         }
@@ -466,29 +727,49 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
     public class KeyframeToggle : KeyframeElement
     {
+        public KeyframeToggle(string path) : base(path) { }
+
         public Toggle Toggle { get; set; }
 
         public Button Apply { get; set; }
 
         public Func<float> getOnValue;
         public Func<float> getOffValue;
-        public Func<bool> getMultiValue;
+        public Func<string> getMultiValue;
 
-        public override void Init(KeyframeDialog dialog, Transform parent, string name)
+        public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
         {
+            Display = display;
             Dialog = dialog;
-            var subParent = Creator.NewUIObject(name, parent);
+            GameObject = Creator.NewUIObject(name, parent);
 
-            var toggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(subParent.transform, "toggle");
+            var layout = GameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.childControlHeight = false;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.spacing = 8f;
+
+            var toggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(GameObject.transform, "toggle");
             var toggleStorage = toggle.GetComponent<ToggleButtonStorage>();
             Toggle = toggleStorage.toggle;
+            toggleStorage.label.text = !string.IsNullOrEmpty(display.label) ? display.label : "On";
             EditorThemeManager.ApplyToggle(toggleStorage.toggle, graphic: toggleStorage.label);
 
-            var apply = EditorPrefabHolder.Instance.Function1Button.Duplicate(subParent.transform, "apply");
+            var toggleLayoutElement = toggle.GetOrAddComponent<LayoutElement>();
+            toggleLayoutElement.preferredWidth = 10000f;
+
+            var apply = EditorPrefabHolder.Instance.Function1Button.Duplicate(GameObject.transform, "apply");
+            apply.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             var applyStorage = apply.GetComponent<FunctionButtonStorage>();
             Apply = applyStorage.button;
+            applyStorage.label.text = "Apply";
             EditorThemeManager.ApplyGraphic(applyStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.ApplyGraphic(applyStorage.label, ThemeGroup.Function_1_Text);
+
+            getOnValue = () => display.onValue;
+            getOffValue = () => display.offValue;
+            getMultiValue = () => display.multiValue;
         }
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
@@ -497,7 +778,89 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var offValue = getOffValue?.Invoke() ?? 0f;
             var onValue = getOnValue?.Invoke() ?? 1f;
 
-            Toggle.SetIsOnWithoutNotify(isSingle ? firstKF.eventKeyframe.values[valueIndex] == onValue : getMultiValue?.Invoke() ?? false);
+            var contextMenu = Toggle.gameObject.GetOrAddComponent<ContextClickable>();
+            contextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Reset Value", () =>
+                    {
+                        Toggle.isOn = false;
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Set On Value", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set on value", "On", Display.onValue.ToString(), "Set", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                                return;
+
+                            Display.onValue = max;
+                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction("Set Off Value", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set off value", "Off", Display.offValue.ToString(), "Set", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                                return;
+
+                            Display.offValue = max;
+                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction("Set Label", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.label) ? Display.label : "On", "Set", () =>
+                        {
+                            Display.label = RTEditor.inst.folderCreatorName.text;
+                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Change to Input Field", () =>
+                    {
+                        Display.type = CustomUIDisplay.UIType.InputField;
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction("Change to Dropdown", () =>
+                    {
+                        Display.type = CustomUIDisplay.UIType.Dropdown;
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Copy UI", () =>
+                    {
+                        ObjectEditor.inst.copiedUIDisplay = Display.Copy();
+                        EditorManager.inst.DisplayNotification($"Copied UI settings.", 2f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction("Paste UI", () =>
+                    {
+                        if (!ObjectEditor.inst.copiedUIDisplay)
+                        {
+                            EditorManager.inst.DisplayNotification($"No copied UI yet!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
+                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display.Copy());
+                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
+                    }));
+            };
+
+            Toggle.SetIsOnWithoutNotify(isSingle ? firstKF.eventKeyframe.values[valueIndex] == onValue : Parser.TryParse(getMultiValue?.Invoke(), false));
             Toggle.onValueChanged.NewListener(_val =>
             {
                 if (!isSingle)

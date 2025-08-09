@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public bool ShouldSerialize =>
             !string.IsNullOrEmpty(path) || type != UIType.InputField || multiValue != "1" || // base
-            scrollAmount != 0.1f || scrollMultiply != 10.0f || min != 0.0f || max != 0.0f || resetValue != 0.0f || // input field
+            overrideScroll && (scrollAmount != 0.1f || scrollMultiply != 10.0f) || min != 0.0f || max != 0.0f || resetValue != 0.0f || // input field
             !options.IsEmpty() || // dropdown
             offValue != 0.0f || onValue != 1.0f; // toggle
 
@@ -60,6 +60,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region InputField
 
         /// <summary>
+        /// If input field scrolling should use the custom scroll values.
+        /// </summary>
+        public bool overrideScroll = false;
+
+        /// <summary>
         /// Amount to scroll.
         /// </summary>
         public float scrollAmount = 0.1f;
@@ -96,6 +101,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #endregion
 
         #region Toggle
+
+        /// <summary>
+        /// Label to display on the element.
+        /// </summary>
+        public string label = string.Empty;
 
         /// <summary>
         /// Value to set when toggle is on.
@@ -135,12 +145,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             path = "scale/x",
             type = UIType.InputField,
+            resetValue = 1.0f,
         };
         
         public static CustomUIDisplay DefaultScaleYDisplay => new CustomUIDisplay()
         {
             path = "scale/y",
             type = UIType.InputField,
+            resetValue = 1.0f,
         };
 
         public static CustomUIDisplay DefaultRotationDisplay => new CustomUIDisplay()
@@ -156,36 +168,28 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void CopyData(CustomUIDisplay orig, bool newID = true)
         {
             path = orig.path;
-            type = orig.type;
-
-            multiValue = orig.multiValue;
-
-            scrollAmount = orig.scrollAmount;
-            scrollMultiply = orig.scrollMultiply;
-            min = orig.min;
-            max = orig.max;
-            resetValue = orig.resetValue;
-
-            options = new List<Option>(orig.options.Select(x => x.Copy()));
-
-            offValue = orig.offValue;
-            onValue = orig.onValue;
+            ApplyFrom(orig);
         }
 
         public override void ReadJSON(JSONNode jn)
         {
             path = jn["path"] ?? string.Empty;
-            type = (UIType)jn["type"].AsInt;
+            if (jn["type"] != null)
+                type = (UIType)jn["type"].AsInt;
 
             multiValue = jn["multi_val"] ?? "1";
 
             switch (type)
             {
                 case UIType.InputField: {
-                        if (jn["scr"] != null)
-                            scrollAmount = jn["scr"].AsFloat;
-                        if (jn["scr_multi"] != null)
-                            scrollMultiply = jn["scr_multi"].AsFloat;
+                        if (jn["scr_override"] != null)
+                        {
+                            overrideScroll = jn["scr_override"].AsBool;
+                            if (jn["scr"] != null)
+                                scrollAmount = jn["scr"].AsFloat;
+                            if (jn["scr_multi"] != null)
+                                scrollMultiply = jn["scr_multi"].AsFloat;
+                        }
                         if (jn["min"] != null)
                             min = jn["min"].AsFloat;
                         if (jn["max"] != null)
@@ -206,8 +210,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         break;
                     }
                 case UIType.Toggle: {
-                        offValue = jn["off_val"].AsFloat;
-                        onValue = jn["on_val"].AsFloat;
+                        if (jn["label"] != null)
+                            label = jn["label"];
+                        if (jn["off_val"] != null)
+                            offValue = jn["off_val"].AsFloat;
+                        if (jn["on_val"] != null)
+                            onValue = jn["on_val"].AsFloat;
 
                         break;
                     }
@@ -227,10 +235,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             switch (type)
             {
                 case UIType.InputField: {
-                        if (scrollAmount != 0.1f)
-                            jn["scr"] = scrollAmount;
-                        if (scrollMultiply != 10.0f)
-                            jn["scr_multi"] = scrollMultiply;
+                        if (overrideScroll)
+                        {
+                            jn["scr_override"] = overrideScroll;
+                            if (scrollAmount != 0.1f)
+                                jn["scr"] = scrollAmount;
+                            if (scrollMultiply != 10.0f)
+                                jn["scr_multi"] = scrollMultiply;
+                        }
                         if (min != 0.0f)
                             jn["min"] = min;
                         if (max != 0.0f)
@@ -245,6 +257,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                         break;
                     }
                 case UIType.Toggle: {
+                        if (!string.IsNullOrEmpty(label))
+                            jn["label"] = label;
                         if (offValue != 0.0f)
                             jn["off_val"] = offValue;
                         if (onValue != 1.0f)
@@ -257,6 +271,30 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
+        /// <summary>
+        /// Applies custom UI settings from another display element.
+        /// </summary>
+        /// <param name="other">Other element to copy from.</param>
+        public void ApplyFrom(CustomUIDisplay other)
+        {
+            type = other.type;
+
+            multiValue = other.multiValue;
+
+            overrideScroll = other.overrideScroll;
+            scrollAmount = other.scrollAmount;
+            scrollMultiply = other.scrollMultiply;
+            min = other.min;
+            max = other.max;
+            resetValue = other.resetValue;
+
+            options = new List<Option>(other.options.Select(x => x.Copy()));
+
+            label = other.label;
+            offValue = other.offValue;
+            onValue = other.onValue;
+        }
+
         #endregion
 
         /// <summary>
@@ -264,6 +302,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public class Option : PAObject<Option>
         {
+            public Option() { }
+
+            public Option(string name, float value)
+            {
+                this.name = name;
+                this.value = value;
+            }
+
             #region Values
 
             /// <summary>
