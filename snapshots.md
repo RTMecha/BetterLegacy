@@ -1,8 +1,17 @@
-﻿# ???
+﻿# snapshot-2025.8.8 - (pre-1.8.0) [Aug 9, 2025]
+## Features
+### Editor
+- Object keyframe UI can now be customized via right clicking the X / Y / Z values and changing the UI to a Input Field, Dropdown or Toggle. You can also customize how each of these display.
+
+## Changes
+### Editor
+- Removed "Adjust Position Inputs" setting. This isn't needed anymore since position Z has been a part of the mod for a long while.
+
 ## Fixes
 - Fixed sequences with only one keyframe breaking.
 - Fixed level collections throwing an error if no "collections" folder exists.
 - Fixed setParent modifier re-activating objects when it shouldn't.
+- Fixed song link not working.
 
 ------------------------------------------------------------------------------------------
 
