@@ -685,16 +685,22 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
         /// <param name="predicate">Predicate to find a matching item.</param>
         /// <param name="item">Item to overwrite with.</param>
-        public static void Overwrite<T>(this List<T> list, Func<T, int, bool> predicate, T item)
+        /// <returns>Returns true if an item was successfully overwritten, otherwise returns false.</returns>
+        public static bool Overwrite<T>(this List<T> list, Func<T, int, bool> predicate, T item)
         {
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
 
+            bool result = false;
             list.ForLoop((other, index) =>
             {
-                if (predicate(other, index))
-                    list[index] = item;
+                if (!predicate(other, index))
+                    return;
+
+                list[index] = item;
+                result = true;
             });
+            return result;
         }
 
         /// <summary>
@@ -703,7 +709,8 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
         /// <param name="predicate">Predicate to find a matching item.</param>
         /// <param name="item">Item to overwrite with.</param>
-        public static void Overwrite<T>(this List<T> list, Func<T, int, bool> predicate, Func<T> get)
+        /// <returns>Returns true if an item was successfully overwritten, otherwise returns false.</returns>
+        public static bool Overwrite<T>(this List<T> list, Func<T, int, bool> predicate, Func<T> get)
         {
             if (predicate == null)
                 throw new ArgumentNullException(nameof(predicate));
@@ -711,11 +718,51 @@ namespace BetterLegacy.Core
             if (get == null)
                 throw new ArgumentNullException(nameof(get));
 
+            bool result = false;
             list.ForLoop((other, index) =>
             {
-                if (predicate(other, index))
-                    list[index] = get();
+                if (!predicate(other, index))
+                    return;
+
+                list[index] = get();
+                result = true;
             });
+            return result;
+        }
+
+        /// <summary>
+        /// Overwrites an item in a list that matches a predicate.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="predicate">Predicate to find a matching item.</param>
+        /// <param name="item">Item to overwrite with.</param>
+        /// <returns>Returns true if an item was successfully overwritten, otherwise returns false.</returns>
+        public static void OverwriteAdd<T>(this List<T> list, Func<T, int, bool> predicate, T item)
+        {
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            if (!Overwrite(list, predicate, item))
+                list.Add(item);
+        }
+
+        /// <summary>
+        /// Overwrites an item in a list that matches a predicate.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="predicate">Predicate to find a matching item.</param>
+        /// <param name="item">Item to overwrite with.</param>
+        /// <returns>Returns true if an item was successfully overwritten, otherwise returns false.</returns>
+        public static void OverwriteAdd<T>(this List<T> list, Func<T, int, bool> predicate, Func<T> get)
+        {
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            if (get == null)
+                throw new ArgumentNullException(nameof(get));
+
+            if (!Overwrite(list, predicate, get))
+                list.Add(get());
         }
 
         /// <summary>
