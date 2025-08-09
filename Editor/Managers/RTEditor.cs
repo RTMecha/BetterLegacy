@@ -4735,6 +4735,38 @@ namespace BetterLegacy.Editor.Managers
             folderCreatorSubmit.onClick.NewListener(() => onSubmit?.Invoke());
         }
 
+        /// <summary>
+        /// Shows the Name Editor Popup.
+        /// </summary>
+        /// <param name="title">Name of the popup to render.</param>
+        /// <param name="nameLabel">Label of the name field.</param>
+        /// <param name="defaultText">Default text to set.</param>
+        /// <param name="submitText">Submit button text.</param>
+        /// <param name="onSubmit">Function to run when submit is clicked.</param>
+        public void ShowNameEditor(string title, string nameLabel, string defaultText, string submitText, Action onSubmit)
+        {
+            NamePopup.Open();
+            RefreshNameEditor(title, nameLabel, defaultText, submitText, onSubmit);
+        }
+
+        /// <summary>
+        /// Renders the Name Editor Popup.
+        /// </summary>
+        /// <param name="title">Name of the popup to render.</param>
+        /// <param name="nameLabel">Label of the name field.</param>
+        /// <param name="defaultText">Default text to set.</param>
+        /// <param name="submitText">Submit button text.</param>
+        /// <param name="onSubmit">Function to run when submit is clicked.</param>
+        public void RefreshNameEditor(string title, string nameLabel, string defaultText, string submitText, Action onSubmit)
+        {
+            folderCreatorTitle.text = title;
+            folderCreatorNameLabel.text = nameLabel;
+            folderCreatorSubmitText.text = submitText;
+
+            folderCreatorName.SetTextWithoutNotify(defaultText);
+            folderCreatorSubmit.onClick.NewListener(() => onSubmit?.Invoke());
+        }
+
         #endregion
 
         #region Warning Popup
