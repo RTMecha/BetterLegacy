@@ -987,32 +987,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (!ObjectEditor.inst)
                         return;
 
-                    bool adjusted = EditorConfig.Instance.AdjustPositionInputs.Value && RTEditor.ShowModdedUI;
-                    positionBase.AsRT().sizeDelta = new Vector2(553f, adjusted ? 32f : 64f);
-                    grp.cellSize = new Vector2(adjusted ? 122f : 183f, 40f);
+                    positionBase.AsRT().sizeDelta = new Vector2(553f, 32f);
+                    grp.cellSize = new Vector2(RTEditor.ShowModdedUI ? 122f : 183f, 40f);
 
-                    var minWidth = adjusted ? 65f : 125.3943f;
-                    xLayout.minWidth = minWidth;
-                    yLayout.minWidth = minWidth;
-                    zLayout.minWidth = minWidth;
-                    posZLabel.gameObject.SetActive(adjusted);
-                    positionBase.gameObject.SetActive(false);
-                    positionBase.gameObject.SetActive(true);
-
-                    posZ.gameObject.SetActive(RTEditor.ShowModdedUI);
+                    posZLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(positionBase.transform.AsRT());
                 };
 
-                bool adjusted = EditorConfig.Instance.AdjustPositionInputs.Value && RTEditor.ShowModdedUI;
-                positionBase.AsRT().sizeDelta = new Vector2(553f, adjusted ? 32f : 64f);
-                grp.cellSize = new Vector2(adjusted ? 122f : 183f, 40f);
+                positionBase.AsRT().sizeDelta = new Vector2(553f, 32f);
+                grp.cellSize = new Vector2(RTEditor.ShowModdedUI ? 122f : 183f, 40f);
 
-                var minWidth = adjusted ? 65f : 125.3943f;
-                xLayout.minWidth = minWidth;
-                yLayout.minWidth = minWidth;
-                zLayout.minWidth = minWidth;
-                posZLabel.gameObject.SetActive(adjusted);
-
-                posZ.gameObject.SetActive(RTEditor.ShowModdedUI);
+                posZLabel.SetActive(RTEditor.ShowModdedUI);
+                posZ.SetActive(RTEditor.ShowModdedUI);
             }
 
             // Opacity

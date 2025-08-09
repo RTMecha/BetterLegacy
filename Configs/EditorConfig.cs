@@ -179,7 +179,6 @@ namespace BetterLegacy.Configs
         public Setting<float> NotificationSize { get; set; }
         public Setting<VerticalDirection> NotificationDirection { get; set; }
         public Setting<bool> NotificationsDisplay { get; set; }
-        public Setting<bool> AdjustPositionInputs { get; set; }
         public Setting<bool> ShowDropdownOnHover { get; set; }
         public Setting<bool> HideVisualElementsWhenObjectIsEmpty { get; set; }
         public Setting<Vector2Int> RenderDepthRange { get; set; }
@@ -1636,7 +1635,6 @@ namespace BetterLegacy.Configs
             NotificationSize = Bind(this, EDITOR_GUI, "Notification Size", 1f, "Total size of the notifications.");
             NotificationDirection = BindEnum(this, EDITOR_GUI, "Notification Direction", VerticalDirection.Down, "Direction the notifications popup from.");
             NotificationsDisplay = Bind(this, EDITOR_GUI, "Notifications Display", true, "If the notifications should display. Does not include the help box.");
-            AdjustPositionInputs = Bind(this, EDITOR_GUI, "Adjust Position Inputs", true, "If position keyframe input fields should be adjusted so they're in a proper row rather than having Z Axis below X Axis without a label. Drawback with doing this is it makes the fields smaller than normal.");
             ShowDropdownOnHover = Bind(this, EDITOR_GUI, "Show Dropdowns on Hover", false, "If your mouse enters a dropdown bar, it will automatically show the dropdown list.");
             HideVisualElementsWhenObjectIsEmpty = Bind(this, EDITOR_GUI, "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
             RenderDepthRange = Bind(this, EDITOR_GUI, "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
