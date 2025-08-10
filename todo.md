@@ -73,10 +73,6 @@
   Update: 1.8.0+  
 - Sprite / audio asset list popup that show images & sounds in the game data and level folder.  
   Update: 1.8.0  
-- QOL Keyframe Editor custom UI  
-  Notes:  
-  - Keyframe values (like positon x, y, scale x, y, etc) can have their UI customized.
-  - Accepts toggles, dropdown and input fields with min-max ranges.
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
