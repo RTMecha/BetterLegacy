@@ -124,7 +124,7 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="transform">Transform to cast.</param>
         /// <returns>Returns a casted <see cref="Transform"/>.</returns>
-        public static RectTransform AsRT(this Transform transform) => (RectTransform)transform;
+        public static RectTransform AsRT(this Transform transform) => transform as RectTransform;
 
         public static Vector3 GetLocalVector(this Transform transform, int type) => type switch
         {
@@ -1667,12 +1667,12 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Gets the prefab reference.
         /// </summary>
-        public static Prefab GetPrefab(this IPrefabable instance) => instance.CachedPrefab ? instance.CachedPrefab : GameData.Current.prefabs.Find(x => x.id == instance.PrefabID);
+        public static Prefab GetPrefab(this IPrefabable instance) => instance.CachedPrefab ? instance.CachedPrefab : string.IsNullOrEmpty(instance.PrefabID) ? null : GameData.Current.prefabs.Find(x => x.id == instance.PrefabID);
 
         /// <summary>
         /// Gets the prefab reference.
         /// </summary>
-        public static Prefab GetPrefab(this IPrefabable instance, List<Prefab> prefabs) => prefabs.Find(x => x.id == instance.PrefabID);
+        public static Prefab GetPrefab(this IPrefabable instance, List<Prefab> prefabs) => string.IsNullOrEmpty(instance.PrefabID) ? null : prefabs.Find(x => x.id == instance.PrefabID);
 
         /// <summary>
         /// Tries to get the Prefab Object reference.
@@ -1688,7 +1688,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Gets the prefab object reference.
         /// </summary>
-        public static PrefabObject GetPrefabObject(this IPrefabable instance) => instance.CachedPrefabObject ? instance.CachedPrefabObject : GameData.Current.prefabObjects.Find(x => x.id == instance.PrefabInstanceID);
+        public static PrefabObject GetPrefabObject(this IPrefabable instance) => instance.CachedPrefabObject ? instance.CachedPrefabObject : string.IsNullOrEmpty(instance.PrefabInstanceID) ? null : GameData.Current.prefabObjects.Find(x => x.id == instance.PrefabInstanceID);
 
         /// <summary>
         /// Checks if a prefabable object is from the same Prefab.
