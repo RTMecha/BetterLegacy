@@ -1206,7 +1206,7 @@ namespace BetterLegacy.Editor.Managers
             LegacyPlugin.authData["access_token_expiry_time"] = jn["accessTokenExpiryTime"].Value;
 
             RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), LegacyPlugin.authData.ToString());
-            EditorManager.inst.DisplayNotification("Refreshed tokens! Uploading...", 5f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification("Refreshed tokens!", 5f, EditorManager.NotificationType.Success);
             if (EditorConfig.Instance.UploadDeleteOnLogin.Value)
                 onRefreshed?.Invoke();
         }
