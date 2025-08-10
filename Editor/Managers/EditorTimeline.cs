@@ -629,12 +629,9 @@ namespace BetterLegacy.Editor.Managers
             if (!GameData.Current)
                 yield break;
 
-            var editables = GameData.Current.GetEditables();
+            var editables = GameData.Current.FindEditablesList(x => x.CanRenderInTimeline);
             foreach (var editable in editables)
             {
-                if (!editable.CanRenderInTimeline)
-                    continue;
-
                 TimelineObject timelineObject = null;
 
                 try

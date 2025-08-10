@@ -753,69 +753,102 @@ namespace BetterLegacy.Core.Runtime
                 AddObject(beatmapObject);
         }
 
-        public virtual void UpdateParentChain(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject = null)
+        public virtual void UpdateParentChain(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject = null, bool log = false)
         {
+            System.Diagnostics.Stopwatch sw = null;
+            if (log)
+            {
+                CoreHelper.Log($"Started updating parent chain for {beatmapObject}");
+                sw = CoreHelper.StartNewStopwatch();
+            }
+
             string id = beatmapObject.id;
             var beatmapObjects = GameData.Current.beatmapObjects;
             for (int i = 0; i < beatmapObjects.Count; i++)
             {
-                var bm = beatmapObjects[i];
-                if (bm.Parent == id)
-                    UpdateParentChain(bm, bm.runtimeObject);
+                var child = beatmapObjects[i];
+                if (child.Parent == id)
+                    UpdateParentChain(child, child.runtimeObject, false);
             }
 
             if (!runtimeObject)
+            {
+                if (log)
+                    sw?.StopAndLog("Finished updating parent chain because the object is empty.");
+                sw = null;
                 return;
+            }
 
-            var baseObject = runtimeObject.visualObject.gameObject.transform.parent;
-            baseObject.SetParent(runtimeObject.Parent);
+            if (log)
+                sw?.Log("Finished recursive updating.");
 
-            var parentObject = runtimeObject.parentObjects.Last();
-            CoreHelper.Delete(parentObject.gameObject);
+            try
+            {
+                var visualObject = runtimeObject.visualObject;
+                if (!visualObject)
+                    throw new NullReferenceException("Visual Object is null.");
+                if (!visualObject.gameObject)
+                    throw new NullReferenceException("Game Object is null.");
 
-            var parentObjects = new List<ParentObject>();
+                var baseObject = visualObject.gameObject.transform.parent;
+                baseObject.SetParent(runtimeObject.Parent);
 
-            if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
-                converter.InitParentChain(beatmapObjectParent, parentObjects);
+                if (runtimeObject.parentObjects.Count > 1)
+                    CoreHelper.Delete(runtimeObject.parentObjects[runtimeObject.parentObjects.Count - 1].gameObject);
 
-            var lastParent = !parentObjects.IsEmpty() && parentObjects[0] && parentObjects[0].transform ?
-                parentObjects[0].transform : null;
+                var parentObjects = new List<ParentObject>(ParentObject.DEFAULT_PARENT_CHAIN_CAPACITY);
+                BeatmapObject beatmapObjectParent = beatmapObject.CachedParent;
+                var parent = beatmapObject.Parent;
+                if (beatmapObjectParent || !string.IsNullOrEmpty(parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == parent, out beatmapObjectParent))
+                {
+                    beatmapObject.CachedParent = beatmapObjectParent;
+                    converter.InitParentChain(beatmapObjectParent, parentObjects);
+                }
+                if (string.IsNullOrEmpty(parent))
+                    beatmapObject.CachedParent = null;
 
-            var p = converter.InitLevelParentObject(beatmapObject, baseObject.gameObject);
-            if (!parentObjects.IsEmpty())
-                parentObjects.Insert(0, p);
-            else
-                parentObjects.Add(p);
+                var noParents = parentObjects.IsEmpty();
 
-            var top = !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
-                parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
+                var lastParent = !noParents ? parentObjects[0]?.transform : null;
 
-            top.SetParent(runtimeObject.Parent);
-            top.localScale = Vector3.one;
+                var p = converter.ToParentObject(beatmapObject, baseObject.gameObject);
+                if (!noParents)
+                    parentObjects.Insert(0, p);
+                else
+                    parentObjects.Add(p);
 
-            if (lastParent)
-                baseObject.SetParent(lastParent);
+                var firstParent = parentObjects[parentObjects.Count - 1];
+                var top = firstParent?.transform ?? baseObject;
 
-            runtimeObject.parentObjects = parentObjects;
+                top.SetParent(runtimeObject.Parent);
+                top.localScale = Vector3.one;
 
-            var pc = beatmapObject.GetParentChain();
+                if (lastParent)
+                    baseObject.SetParent(lastParent);
 
-            if (pc == null || pc.IsEmpty())
-                return;
+                runtimeObject.parentObjects = parentObjects;
+                runtimeObject.SetActive(runtimeObject.Active);
 
-            var beatmapParent = pc[pc.Count - 1];
+                var beatmapParent = firstParent.beatmapObject;
 
-            runtimeObject.CameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+                runtimeObject.CameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
 
-            runtimeObject.PositionParent = beatmapParent.GetParentType(0);
-            runtimeObject.ScaleParent = beatmapParent.GetParentType(1);
-            runtimeObject.RotationParent = beatmapParent.GetParentType(2);
+                runtimeObject.PositionParent = beatmapParent.GetParentType(0);
+                runtimeObject.ScaleParent = beatmapParent.GetParentType(1);
+                runtimeObject.RotationParent = beatmapParent.GetParentType(2);
 
-            runtimeObject.PositionParentOffset = beatmapParent.parallaxSettings[0];
-            runtimeObject.ScaleParentOffset = beatmapParent.parallaxSettings[1];
-            runtimeObject.RotationParentOffset = beatmapParent.parallaxSettings[2];
+                runtimeObject.PositionParentOffset = beatmapParent.parallaxSettings[0];
+                runtimeObject.ScaleParentOffset = beatmapParent.parallaxSettings[1];
+                runtimeObject.RotationParentOffset = beatmapParent.parallaxSettings[2];
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
-            runtimeObject.SetActive(objectEngine.spawner.ActiveObjects.Contains(runtimeObject));
+            if (log)
+                sw?.StopAndLog("Finished updating parent chain.");
+            sw = null;
         }
 
         public virtual void UpdateVisualObject(BeatmapObject beatmapObject, RTBeatmapObject runtimeObject)
@@ -842,7 +875,7 @@ namespace BetterLegacy.Core.Runtime
                 visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
             visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
-            runtimeObject.parentObjects[0] = converter.InitLevelParentObject(beatmapObject, baseObject);
+            runtimeObject.parentObjects[0] = converter.ToParentObject(beatmapObject, baseObject);
 
             baseObject.name = beatmapObject.name;
 

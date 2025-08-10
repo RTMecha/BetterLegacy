@@ -25,31 +25,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             isImage = beatmapObject.ShapeType == ShapeType.Image;
 
-            try
-            {
-                Parent = this.parentObjects[this.parentObjects.Count - 1].transform.parent;
-
-                var pc = beatmapObject.GetParentChain();
-
-                if (pc != null && !pc.IsEmpty())
-                {
-                    var beatmapParent = pc[pc.Count - 1];
-
-                    CameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
-
-                    PositionParent = beatmapParent.GetParentType(0);
-                    ScaleParent = beatmapParent.GetParentType(1);
-                    RotationParent = beatmapParent.GetParentType(2);
-
-                    PositionParentOffset = beatmapParent.parallaxSettings[0];
-                    ScaleParentOffset = beatmapParent.parallaxSettings[1];
-                    RotationParentOffset = beatmapParent.parallaxSettings[2];
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"{RTLevel.className}a\n{ex}");
-            }
+            this.UpdateParentValues();
         }
 
         #region Values
@@ -58,6 +34,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float StartTime { get; set; }
         public float KillTime { get; set; }
+        public bool Active { get; set; }
 
         public BeatmapObject beatmapObject;
 
@@ -125,6 +102,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
+            Active = active;
             if (!parentObjects.IsEmpty())
                 parentObjects[parentObjects.Count - 1].gameObject?.SetActive(active);
 

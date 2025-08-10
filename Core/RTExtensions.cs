@@ -1185,6 +1185,22 @@ namespace BetterLegacy.Core
                 a[keyValuePair.Key] = keyValuePair.Value;
         }
 
+        /// <summary>
+        /// Adds a range of items matching a predicate to the list.
+        /// </summary>
+        /// <typeparam name="T">Type of the list.</typeparam>
+        /// <param name="otherList">List to add from.</param>
+        /// <param name="match">Match predicate.</param>
+        public static void AddWhere<T>(this List<T> list, List<T> otherList, Predicate<T> match)
+        {
+            for (int i = 0; i < otherList.Count; i++)
+            {
+                var item = otherList[i];
+                if (match(item))
+                    list.Add(item);
+            }
+        }
+
         #endregion
 
         #region JSON
@@ -1864,6 +1880,53 @@ namespace BetterLegacy.Core
         /// </summary>
         public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, modifyable.ReferenceType));
 
+        #region Beatmap
+
+        /// <summary>
+        /// Gets all transformables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of transformables.</returns>
+        public static List<ITransformable> GetTransformablesList(this IBeatmap beatmap)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.PrefabObjects.Count;
+            var transformables = new List<ITransformable>(count);
+            transformables.AddRange(beatmap.BeatmapObjects);
+            transformables.AddRange(beatmap.BackgroundObjects);
+            transformables.AddRange(beatmap.PrefabObjects);
+            return transformables;
+        }
+
+        /// <summary>
+        /// Gets all transformables matching a predicate from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of transformables.</returns>
+        public static List<ITransformable> FindTransformablesList(this IBeatmap beatmap, Predicate<ITransformable> match)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.PrefabObjects.Count;
+            var list = new List<ITransformable>(count);
+            for (int i = 0; i < beatmap.BeatmapObjects.Count; i++)
+            {
+                var item = beatmap.BeatmapObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.BackgroundObjects.Count; i++)
+            {
+                var item = beatmap.BackgroundObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.PrefabObjects.Count; i++)
+            {
+                var item = beatmap.PrefabObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            return list;
+        }
+
         /// <summary>
         /// Gets all transformables from a package.
         /// </summary>
@@ -1877,6 +1940,51 @@ namespace BetterLegacy.Core
                 yield return backgroundObject;
             foreach (var prefabObject in beatmap.PrefabObjects)
                 yield return prefabObject;
+        }
+        
+        /// <summary>
+        /// Gets all modifyables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of modifyables.</returns>
+        public static List<IModifyable> GetModifyablesList(this IBeatmap beatmap)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.PrefabObjects.Count;
+            var modifyables = new List<IModifyable>(count);
+            modifyables.AddRange(beatmap.BeatmapObjects);
+            modifyables.AddRange(beatmap.BackgroundObjects);
+            modifyables.AddRange(beatmap.PrefabObjects);
+            return modifyables;
+        }
+
+        /// <summary>
+        /// Gets all modifyables matching a predicate from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of modifyables.</returns>
+        public static List<IModifyable> FindModifyablesList(this IBeatmap beatmap, Predicate<IModifyable> match)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.PrefabObjects.Count;
+            var list = new List<IModifyable>(count);
+            for (int i = 0; i < beatmap.BeatmapObjects.Count; i++)
+            {
+                var item = beatmap.BeatmapObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.BackgroundObjects.Count; i++)
+            {
+                var item = beatmap.BackgroundObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.PrefabObjects.Count; i++)
+            {
+                var item = beatmap.PrefabObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            return list;
         }
 
         /// <summary>
@@ -1901,15 +2009,56 @@ namespace BetterLegacy.Core
         /// <returns>Returns a collection of prefabables.</returns>
         public static List<IPrefabable> GetPrefabablesList(this IBeatmap beatmap)
         {
-            var prefabables = new List<IPrefabable>();
-
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.BackgroundLayers.Count + beatmap.PrefabObjects.Count + beatmap.Prefabs.Count;
+            var prefabables = new List<IPrefabable>(count);
             prefabables.AddRange(beatmap.BeatmapObjects);
             prefabables.AddRange(beatmap.BackgroundObjects);
             prefabables.AddRange(beatmap.BackgroundLayers);
             prefabables.AddRange(beatmap.PrefabObjects);
             prefabables.AddRange(beatmap.Prefabs);
-
             return prefabables;
+        }
+
+        /// <summary>
+        /// Gets all prefabables matching a predicate from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of prefabables.</returns>
+        public static List<IPrefabable> FindPrefabablesList(this IBeatmap beatmap, Predicate<IPrefabable> match)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.PrefabObjects.Count;
+            var list = new List<IPrefabable>(count);
+            for (int i = 0; i < beatmap.BeatmapObjects.Count; i++)
+            {
+                var item = beatmap.BeatmapObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.BackgroundObjects.Count; i++)
+            {
+                var item = beatmap.BackgroundObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.BackgroundLayers.Count; i++)
+            {
+                var item = beatmap.BackgroundLayers[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.PrefabObjects.Count; i++)
+            {
+                var item = beatmap.PrefabObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.Prefabs.Count; i++)
+            {
+                var item = beatmap.Prefabs[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            return list;
         }
 
         /// <summary>
@@ -1936,12 +2085,95 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="beatmap">Package reference.</param>
         /// <returns>Returns a collection of parentables.</returns>
+        public static List<IParentable> GetParentablesList(this IBeatmap beatmap)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.PrefabObjects.Count;
+            var parentables = new List<IParentable>(count);
+            parentables.AddRange(beatmap.BeatmapObjects);
+            parentables.AddRange(beatmap.PrefabObjects);
+            return parentables;
+        }
+
+        /// <summary>
+        /// Gets all parentables matching a predicate from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of parentables.</returns>
+        public static List<IParentable> FindParentablesList(this IBeatmap beatmap, Predicate<IParentable> match)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.PrefabObjects.Count;
+            var list = new List<IParentable>(count);
+            for (int i = 0; i < beatmap.BeatmapObjects.Count; i++)
+            {
+                var item = beatmap.BeatmapObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.PrefabObjects.Count; i++)
+            {
+                var item = beatmap.PrefabObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Gets all parentables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of parentables.</returns>
         public static IEnumerable<IParentable> GetParentables(this IBeatmap beatmap)
         {
             foreach (var beatmapObject in beatmap.BeatmapObjects)
                 yield return beatmapObject;
             foreach (var prefabObject in beatmap.PrefabObjects)
                 yield return prefabObject;
+        }
+
+        /// <summary>
+        /// Gets all editables from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of editables.</returns>
+        public static List<IEditable> GetEditablesList(this IBeatmap beatmap)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.PrefabObjects.Count;
+            var editables = new List<IEditable>(count);
+            editables.AddRange(beatmap.BeatmapObjects);
+            editables.AddRange(beatmap.BackgroundObjects);
+            editables.AddRange(beatmap.PrefabObjects);
+            return editables;
+        }
+
+        /// <summary>
+        /// Gets all editables matching a predicate from a package.
+        /// </summary>
+        /// <param name="beatmap">Package reference.</param>
+        /// <returns>Returns a collection of editables.</returns>
+        public static List<IEditable> FindEditablesList(this IBeatmap beatmap, Predicate<IEditable> match)
+        {
+            var count = beatmap.BeatmapObjects.Count + beatmap.BackgroundObjects.Count + beatmap.PrefabObjects.Count;
+            var list = new List<IEditable>(count);
+            for (int i = 0; i < beatmap.BeatmapObjects.Count; i++)
+            {
+                var item = beatmap.BeatmapObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.BackgroundObjects.Count; i++)
+            {
+                var item = beatmap.BackgroundObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            for (int i = 0; i < beatmap.PrefabObjects.Count; i++)
+            {
+                var item = beatmap.PrefabObjects[i];
+                if (match(item))
+                    list.Add(item);
+            }
+            return list;
         }
 
         /// <summary>
@@ -1958,6 +2190,8 @@ namespace BetterLegacy.Core
             foreach (var prefabObject in beatmap.PrefabObjects)
                 yield return prefabObject;
         }
+
+        #endregion
 
         /// <summary>
         /// Copies parent data from another parentable object.
@@ -1989,6 +2223,8 @@ namespace BetterLegacy.Core
             for (int i = 0; i < orig.Modifiers.Count; i++)
                 modifyable.Modifiers.Add(orig.Modifiers[i].Copy());
         }
+
+        #region JSON
 
         /// <summary>
         /// Reads <see cref="IShapeable"/> data from JSON.
@@ -2247,6 +2483,8 @@ namespace BetterLegacy.Core
                 jn["modifiers"][i] = modifyable.Modifiers[i].ToJSON();
         }
 
+        #endregion
+
         #region Animation
 
         /// <summary>
@@ -2409,6 +2647,14 @@ namespace BetterLegacy.Core
         #endregion
 
         #endregion
+
+        #endregion
+
+        #region Stopwatch
+
+        public static void StopAndLog(this System.Diagnostics.Stopwatch sw, string message = "") => CoreHelper.StopAndLogStopwatch(sw, message);
+
+        public static void Log(this System.Diagnostics.Stopwatch sw, string message = "") => CoreHelper.LogStopwatch(sw, message);
 
         #endregion
 

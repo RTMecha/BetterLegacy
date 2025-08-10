@@ -2,6 +2,8 @@
 
 using UnityEngine;
 
+using BetterLegacy.Core.Data.Beatmap;
+
 namespace BetterLegacy.Core.Runtime.Objects
 {
     /// <summary>
@@ -251,6 +253,27 @@ namespace BetterLegacy.Core.Runtime.Objects
             parentChain.CurrentScale = totalScale;
 
             parentChain.CheckScale();
+        }
+
+        /// <summary>
+        /// Updates the parent values.
+        /// </summary>
+        public static void UpdateParentValues(this IParentChain parentChain)
+        {
+            var firstParent = parentChain.ParentObjects[parentChain.ParentObjects.Count - 1];
+            parentChain.Parent = firstParent.transform.parent;
+
+            var beatmapParent = firstParent.beatmapObject;
+
+            parentChain.CameraParent = beatmapParent.Parent == BeatmapObject.CAMERA_PARENT;
+
+            parentChain.PositionParent = beatmapParent.GetParentType(0);
+            parentChain.ScaleParent = beatmapParent.GetParentType(1);
+            parentChain.RotationParent = beatmapParent.GetParentType(2);
+
+            parentChain.PositionParentOffset = beatmapParent.parallaxSettings[0];
+            parentChain.ScaleParentOffset = beatmapParent.parallaxSettings[1];
+            parentChain.RotationParentOffset = beatmapParent.parallaxSettings[2];
         }
     }
 }

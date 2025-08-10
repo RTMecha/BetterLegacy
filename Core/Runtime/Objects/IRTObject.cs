@@ -21,6 +21,11 @@
         public float KillTime { get; set; }
 
         /// <summary>
+        /// Active state of the object.
+        /// </summary>
+        public bool Active { get; set; }
+
+        /// <summary>
         /// Clears the data of the object.
         /// </summary>
         public void Clear();

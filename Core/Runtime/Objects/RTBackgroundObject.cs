@@ -31,6 +31,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float StartTime { get; set; }
         public float KillTime { get; set; }
+        public bool Active { get; set; }
 
         public BackgroundObject backgroundObject;
 
@@ -82,8 +83,9 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
-            var gameObject = BaseObject;
+            Active = active;
 
+            var gameObject = BaseObject;
             if (gameObject)
                 gameObject.SetActive(active);
         }

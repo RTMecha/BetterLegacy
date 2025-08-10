@@ -100,12 +100,16 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         RTBeatmapObject ToRuntimeObject(BeatmapObject beatmapObject)
         {
-            var parentObjects = new List<ParentObject>();
+            var parentObjects = new List<ParentObject>(ParentObject.DEFAULT_PARENT_CHAIN_CAPACITY);
 
             GameObject parent = null;
 
+            beatmapObject.CachedParent = null;
             if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+            {
+                beatmapObject.CachedParent = beatmapObjectParent;
                 parent = InitParentChain(beatmapObjectParent, parentObjects);
+            }
 
             var shape = Mathf.Clamp(beatmapObject.Shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             var shapeOption = Mathf.Clamp(beatmapObject.ShapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
@@ -120,7 +124,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
             visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
-            var p = InitLevelParentObject(beatmapObject, baseObject);
+            var p = ToParentObject(beatmapObject, baseObject);
             if (!parentObjects.IsEmpty())
                 parentObjects.Insert(0, p);
             else
@@ -130,8 +134,8 @@ namespace BetterLegacy.Core.Runtime.Objects
 
             var top = Creator.NewGameObject($"top - [{beatmapObject.name}]", runtimeLevel.Parent);
 
-            var tf = !parentObjects.IsEmpty() && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
-                parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
+            var firstParent = parentObjects[parentObjects.Count - 1];
+            var tf = firstParent?.transform ?? baseObject.transform;
 
             tf.SetParent(top.transform);
             tf.localScale = Vector3.one;
@@ -185,20 +189,25 @@ namespace BetterLegacy.Core.Runtime.Objects
         {
             var gameObject = new GameObject(beatmapObject.name);
 
-            parentObjects.Add(InitLevelParentObject(beatmapObject, gameObject));
+            parentObjects.Add(ToParentObject(beatmapObject, gameObject));
 
             // Has parent - init parent (recursive)
-            if (!string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == beatmapObject.Parent, out BeatmapObject beatmapObjectParent))
+            BeatmapObject beatmapObjectParent = beatmapObject.CachedParent;
+            var parent = beatmapObject.Parent;
+            if (beatmapObjectParent || !string.IsNullOrEmpty(parent) && GameData.Current.beatmapObjects.TryFind(x => x.id == parent, out beatmapObjectParent))
             {
+                beatmapObject.CachedParent = beatmapObjectParent;
                 var parentObject = InitParentChain(beatmapObjectParent, parentObjects);
 
                 gameObject.transform.SetParent(parentObject.transform);
             }
+            if (string.IsNullOrEmpty(parent))
+                beatmapObject.CachedParent = null;
 
             return gameObject;
         }
 
-        public ParentObject InitLevelParentObject(BeatmapObject beatmapObject, GameObject gameObject)
+        public ParentObject ToParentObject(BeatmapObject beatmapObject, GameObject gameObject)
         {
             CachedSequences cachedSequences = beatmapObject.cachedSequences;
 

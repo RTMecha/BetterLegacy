@@ -70,15 +70,13 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <summary>
         /// If the Runtime Prefab Object is currently active.
         /// </summary>
-        public bool IsActive => EngineActive && Active && !PrefabObject.editorData.hidden;
-        /// <summary>
-        /// If the Runtime Prefab Object is currently active.
-        /// </summary>
-        public bool EngineActive { get; set; }
+        public bool IsActive => Active && CustomActive && !PrefabObject.editorData.hidden;
+
+        public bool Active { get; set; }
         /// <summary>
         /// If the Runtime Prefab Object is currently active. Used for modifiers.
         /// </summary>
-        public bool Active { get; set; } = true;
+        public bool CustomActive { get; set; } = true;
 
         /// <summary>
         /// Position offset of the Prefab Object.
@@ -164,10 +162,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
-            if (EngineActive == active)
+            if (Active == active)
                 return;
 
-            EngineActive = active;
+            Active = active;
             UpdateActive();
         }
 
@@ -177,10 +175,10 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <param name="active">Active state.</param>
         public void SetCustomActive(bool active)
         {
-            if (Active == active)
+            if (CustomActive == active)
                 return;
 
-            Active = active;
+            CustomActive = active;
             UpdateActive();
         }
 

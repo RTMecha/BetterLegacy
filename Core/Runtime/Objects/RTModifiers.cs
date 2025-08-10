@@ -33,8 +33,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         public RTLevelBase ParentRuntime { get; set; }
 
         public float StartTime { get; set; }
-
         public float KillTime { get; set; }
+        public bool Active { get; set; }
 
         public bool active;
 
@@ -72,6 +72,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetActive(bool active)
         {
+            Active = active;
             this.active = active;
             if (active)
                 return;

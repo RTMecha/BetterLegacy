@@ -2499,6 +2499,36 @@ namespace BetterLegacy.Core.Helpers
         public float startTime;
     }
 
+    public class SetParentCache
+    {
+        public SetParentCache() { }
+
+        public static SetParentCache FromSingle(Modifier modifier, IPrefabable prefabable, string group)
+        {
+            var cache = new SetParentCache();
+            cache.group = group;
+            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target))
+                cache.target = target;
+            return cache;
+        }
+
+        public static SetParentCache FromGroup(IModifierReference reference, Modifier modifier, IPrefabable prefabable, string group, string otherGroup)
+        {
+            var cache = new SetParentCache();
+            cache.group = group;
+            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target))
+                cache.target = target;
+            if (!cache.target && reference is BeatmapObject parent)
+                cache.target = parent;
+            cache.parentables = GameData.Current.FindParentablesWithTag(modifier, prefabable, otherGroup);
+            return cache;
+        }
+
+        public string group;
+        public BeatmapObject target;
+        public List<IParentable> parentables;
+    }
+
     #endregion
 
     public class ModifierTrigger

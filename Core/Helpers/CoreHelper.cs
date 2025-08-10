@@ -584,11 +584,14 @@ namespace BetterLegacy.Core.Helpers
         public static System.Diagnostics.Stopwatch StartNewStopwatch() => System.Diagnostics.Stopwatch.StartNew();
         public static void StopAndLogStopwatch(System.Diagnostics.Stopwatch sw, string message = "")
         {
+            if (sw == null)
+                return;
+
             sw.Stop();
-            Log($"{(string.IsNullOrEmpty(message) ? message : message + "\n")}Time taken: {sw.Elapsed}");
+            LogStopwatch(sw, message);
         }
 
-        public static void LogStopwatch(System.Diagnostics.Stopwatch sw) => Log($"Time: {sw.Elapsed}");
+        public static void LogStopwatch(System.Diagnostics.Stopwatch sw, string message = "") => Log($"{(string.IsNullOrEmpty(message) ? message : message + "\n")}Time taken: {sw.Elapsed}");
 
         #endregion
 

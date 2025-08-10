@@ -10,6 +10,8 @@ namespace BetterLegacy.Core.Runtime.Objects
     {
         public ParentObject() { }
 
+        public const int DEFAULT_PARENT_CHAIN_CAPACITY = 30;
+
         public Sequence<Vector3> positionSequence;
         public Sequence<Vector2> scaleSequence;
         public Sequence<float> rotationSequence;

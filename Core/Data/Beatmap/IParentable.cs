@@ -58,6 +58,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool ParentDetatched { get; set; }
 
         /// <summary>
+        /// Cached parent reference.
+        /// </summary>
+        public BeatmapObject CachedParent { get; set; }
+
+        /// <summary>
         /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
         /// </summary>
         /// <param name="beatmapObjectToParentTo">Object to try parenting to.</param>

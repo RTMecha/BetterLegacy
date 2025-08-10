@@ -5377,7 +5377,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7));
 
             var time = modifier.GetFloat(0, 0f, variables);
             var type = modifier.GetInt(1, 0, variables);
@@ -5568,7 +5568,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, variables));
 
             var time = modifier.GetFloat(0, 0f, variables);
             var type = modifier.GetInt(1, 0, variables);
@@ -5704,7 +5704,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable)
                 return;
 
-            var transformables = modifier.GetResultOrDefault(() => GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables)));
+            var transformables = modifier.GetResultOrDefault(() => GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, variables)));
 
             var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -5840,7 +5840,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable || reference is not IEvaluatable evaluatable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(7, variables));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(7, variables));
 
             var numberVariables = evaluatable.GetObjectVariables();
             ModifiersHelper.SetVariables(variables, numberVariables);
@@ -6682,7 +6682,7 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not IPrefabable prefabable)
                 return;
 
-            var transformables = GameData.Current.FindTransformables(modifier, prefabable, modifier.GetValue(0, variables));
+            var transformables = GameData.Current.FindTransformablesWithTag(modifier, prefabable, modifier.GetValue(0, variables));
 
             var gravityX = modifier.GetFloat(1, 0f, variables);
             var gravityY = modifier.GetFloat(2, 0f, variables);
@@ -7358,48 +7358,65 @@ namespace BetterLegacy.Core.Helpers
         
         public static void setParent(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || reference is not IPrefabable prefabable || reference is not IParentable child)
+            if (modifier.constant || reference is not IParentable child)
+                return;
+
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
                 return;
 
             var group = modifier.GetValue(0, variables);
+
+            var result = modifier.GetResultOrDefault(() => SetParentCache.FromSingle(modifier, prefabable, group));
+
+            if (result.group != group)
+            {
+                result = SetParentCache.FromSingle(modifier, prefabable, group);
+                modifier.Result = result;
+            }
+
             if (group == string.Empty)
                 ModifiersHelper.SetParent(child, string.Empty);
-            else if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target) && child.CanParent(target))
-                ModifiersHelper.SetParent(child, target);
+            else if (result.target && child.CanParent(result.target))
+                ModifiersHelper.SetParent(child, result.target);
             else
                 CoreHelper.LogError($"CANNOT PARENT OBJECT!\nID: {child.ID}");
         }
         
         public static void setParentOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || reference is not IPrefabable prefabable || reference is not BeatmapObject parent)
+            if (modifier.constant)
+                return;
+
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
                 return;
 
             var group = modifier.GetValue(2, variables);
 
-            BeatmapObject target = null;
-            if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject targetAAA))
-                target = targetAAA;
-            if (target == null)
-                target = parent;
+            var result = modifier.GetResultOrDefault(() => SetParentCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables)));
 
-            var parentables = GameData.Current.FindParentables(modifier, prefabable, modifier.GetValue(0, variables));
+            if (result.group != group)
+            {
+                result = SetParentCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables));
+                modifier.Result = result;
+            }
 
             var isEmpty = modifier.GetBool(1, false, variables);
 
             bool failed = false;
-            foreach (var parentable in parentables)
+            foreach (var parentable in result.parentables)
             {
                 if (isEmpty)
                     ModifiersHelper.SetParent(parentable, string.Empty);
-                else if (parentable.CanParent(target))
-                    ModifiersHelper.SetParent(parentable, target);
+                else if (parentable.CanParent(result.target))
+                    ModifiersHelper.SetParent(parentable, result.target);
                 else
                     failed = true;
             }
 
             if (failed)
-                CoreHelper.LogError($"CANNOT PARENT OBJECT!\nID: {parent.ID}");
+                CoreHelper.LogError($"CANNOT PARENT OBJECT {reference}");
         }
         
         public static void detachParent(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

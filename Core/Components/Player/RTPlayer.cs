@@ -2261,6 +2261,8 @@ namespace BetterLegacy.Core.Components.Player
 
         #region Actions
 
+        public bool Active { get; set; }
+
         bool cleared;
         public void Clear()
         {
@@ -2279,6 +2281,7 @@ namespace BetterLegacy.Core.Components.Player
 
         public void SetActive(bool active)
         {
+            Active = active;
             if (gameObject)
                 gameObject.SetActive(active);
         }

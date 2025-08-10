@@ -111,6 +111,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             get => customParent ?? parent;
             set
             {
+                CachedParent = null;
                 customParent = null;
                 parent = value;
             }
@@ -169,6 +170,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool detatched;
 
         public bool ParentDetatched { get => detatched; set => detatched = value; }
+
+        public BeatmapObject CachedParent { get; set; }
 
         #endregion
 
