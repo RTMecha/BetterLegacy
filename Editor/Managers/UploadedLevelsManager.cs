@@ -48,6 +48,8 @@ namespace BetterLegacy.Editor.Managers
         public UploadedLevelsDialog Dialog { get; set; }
 
         public int page;
+        public int sort;
+        public bool ascend;
         static string SearchURL => $"{AlephNetwork.ArcadeServerURL}api/level/uploaded";
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
@@ -68,7 +70,7 @@ namespace BetterLegacy.Editor.Managers
 
             var search = Dialog.SearchTerm;
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page);
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page, sort, ascend);
 
             CoreHelper.Log($"Search query: {query}");
 

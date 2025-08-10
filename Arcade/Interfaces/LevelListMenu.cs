@@ -673,6 +673,10 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static string SearchURL { get; set; } = $"{AlephNetwork.ArcadeServerURL}api/level/search";
 
+        public static int OnlineSort { get; set; }
+
+        public static bool OnlineAscend { get; set; }
+
         public static int OnlineLevelCount { get; set; }
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();

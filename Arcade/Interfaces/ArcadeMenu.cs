@@ -1706,6 +1706,10 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static string OnlineSearch => Searches[1];
 
+        public static int OnlineSort { get; set; }
+
+        public static bool OnlineAscend { get; set; }
+
         public static int OnlineLevelCount { get; set; }
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
@@ -1736,7 +1740,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             var search = OnlineSearch;
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page);
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page, OnlineSort, OnlineAscend);
 
             CoreHelper.Log($"Search query: {query}");
 
