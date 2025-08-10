@@ -67,12 +67,15 @@ namespace BetterLegacy.Editor.Data.Elements
             gameObject = ModifiersEditor.inst.modifierCardPrefab.Duplicate(content, name, index);
             this.gameObject = gameObject;
 
+            if (!string.IsNullOrEmpty(modifier.description))
+                TooltipHelper.AddHoverTooltip(gameObject, modifier.DisplayName, modifier.description);
+
             TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {(name + " (" + modifier.type.ToString() + ")")}");
             EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
 
             gameObject.transform.localScale = Vector3.one;
             var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
-            modifierTitle.text = name;
+            modifierTitle.text = modifier.DisplayName;
             EditorThemeManager.ApplyLightText(modifierTitle);
 
             var collapse = gameObject.transform.Find("Label/Collapse").GetComponent<Toggle>();
@@ -243,8 +246,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     new ButtonFunction(true),
                     new ButtonFunction("Update Modifier", () => Update(modifier, reference)),
                     new ButtonFunction(true),
-                    new ButtonFunction("Collapse", () => Collapse(true, reference)),
-                    new ButtonFunction("Unollapse", () => Collapse(false, reference)),
+                    new ButtonFunction(modifier.collapse ? "Uncollapse" : "Collapse", () => Collapse(!modifier.collapse, reference)),
                     new ButtonFunction("Collapse All", () =>
                     {
                         foreach (var mod in modifyable.Modifiers)
@@ -258,7 +260,26 @@ namespace BetterLegacy.Editor.Data.Elements
                             mod.collapse = false;
 
                         CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
-                    })
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Set Custom Name", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set Custom Name", "Custom name", "modifierName", "Set", () =>
+                        {
+                            modifier.customName = RTEditor.inst.folderCreatorName.text;
+                            RenderModifier(reference);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction("Set Description", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set Description", "Description", "This modifier does...", "Set", () =>
+                        {
+                            modifier.description = RTEditor.inst.folderCreatorName.text;
+                            RenderModifier(reference);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
                 });
 
                 if (ModCompatibility.UnityExplorerInstalled)
@@ -582,7 +603,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         int soundIndex = -1;
                         for (int i = 0; i < sounds.Length; i++)
                         {
-                            if (sounds[i] == modifier.value)
+                            if (sounds[i] == modifier.GetValue(0))
                             {
                                 soundIndex = i;
                                 break;
@@ -594,7 +615,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         d.onValueChanged.AddListener(_val =>
                         {
-                            modifier.value = sounds[_val];
+                            modifier.SetValue(0, sounds[_val]);
                             modifier.active = false;
                         });
 
@@ -618,7 +639,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             EditorContextMenu.inst.ShowContextMenu(
                                 new ButtonFunction("Use Local Browser", () =>
                                 {
-                                    var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                    var isGlobal = modifier.GetBool(1, false);
                                     var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
                                                     RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
 
@@ -632,7 +653,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     if (string.IsNullOrEmpty(result))
                                         return;
 
-                                    var global = Parser.TryParse(modifier.commands[1], false);
+                                    var global = modifier.GetBool(1, false);
                                     result = RTFile.ReplaceSlash(result);
                                     if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                     {
@@ -647,7 +668,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 {
                                     RTEditor.inst.BrowserPopup.Open();
 
-                                    var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                    var isGlobal = modifier.GetBool(1, false);
                                     var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
                                                     RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
 
@@ -659,7 +680,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                                     RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
                                     {
-                                        var global = Parser.TryParse(modifier.commands[1], false);
+                                        var global = modifier.GetBool(1, false);
                                         _val = RTFile.ReplaceSlash(_val);
                                         if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
                                         {
@@ -1045,10 +1066,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         if (value.Contains(','))
                         {
-                            var axis = modifier.value.Split(',');
+                            var axis = value.Split(',');
                             modifier.SetValue(0, axis[0]);
-                            modifier.commands.RemoveAt(modifier.commands.Count - 1);
-                            modifier.commands.Insert(1, axis[1]);
+                            modifier.values.RemoveAt(modifier.values.Count - 1);
+                            modifier.values.Insert(1, axis[1]);
                         }
 
                         SingleGenerator(modifier, reference, "X", 0, 0f);
@@ -1081,10 +1102,10 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         if (value.Contains(','))
                         {
-                            var axis = modifier.value.Split(',');
+                            var axis = value.Split(',');
                             modifier.SetValue(0, axis[0]);
-                            modifier.commands.RemoveAt(modifier.commands.Count - 1);
-                            modifier.commands.Insert(1, axis[1]);
+                            modifier.values.RemoveAt(modifier.values.Count - 1);
+                            modifier.values.Insert(1, axis[1]);
                         }
 
                         SingleGenerator(modifier, reference, "X", 0, 0f);
@@ -1561,8 +1582,8 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierActions.getEnum): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         var options = new List<string>();
-                        for (int i = 3; i < modifier.commands.Count; i += 2)
-                            options.Add(modifier.commands[i]);
+                        for (int i = 3; i < modifier.values.Count; i += 2)
+                            options.Add(modifier.values[i]);
 
                         if (!options.IsEmpty())
                             DropdownGenerator(modifier, reference, "Value", 1, options);
@@ -1584,7 +1605,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             break;
 
                         int a = 0;
-                        for (int i = 3; i < modifier.commands.Count; i += 2)
+                        for (int i = 3; i < modifier.values.Count; i += 2)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Enum Value {a + 1}");
@@ -1592,7 +1613,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 2; j++)
-                                    modifier.commands.RemoveAt(groupIndex);
+                                    modifier.values.RemoveAt(groupIndex);
                             });
 
                             var groupName = StringGenerator(modifier, reference, "Name", i, _val =>
@@ -1614,8 +1635,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Enum Value", () =>
                         {
-                            modifier.commands.Add($"Enum {a}");
-                            modifier.commands.Add(a.ToString());
+                            modifier.values.Add($"Enum {a}");
+                            modifier.values.Add(a.ToString());
                         });
 
                         break;
@@ -1775,12 +1796,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         int a = 0;
-                        for (int i = 1; i < modifier.commands.Count; i++)
+                        for (int i = 1; i < modifier.values.Count; i++)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Color {a + 1}");
 
-                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.values.RemoveAt(groupIndex));
 
                             var groupName = StringGenerator(modifier, reference, "Color Hex Code", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -1790,7 +1811,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Color Value", () =>
                         {
-                            modifier.commands.Add(RTColors.ColorToHexOptional(RTColors.errorColor));
+                            modifier.values.Add(RTColors.ColorToHexOptional(RTColors.errorColor));
                         });
 
                         break;
@@ -1865,12 +1886,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         StringGenerator(modifier, reference, "Character", 1);
 
                         int a = 0;
-                        for (int i = 2; i < modifier.commands.Count; i++)
+                        for (int i = 2; i < modifier.values.Count; i++)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Variable {a + 1}");
 
-                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.values.RemoveAt(groupIndex));
 
                             var groupName = StringGenerator(modifier, reference, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -1880,7 +1901,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add String Value", () =>
                         {
-                            modifier.commands.Add($"SPLITSTRING_VAR_{a}");
+                            modifier.values.Add($"SPLITSTRING_VAR_{a}");
                         });
 
                         break;
@@ -1904,12 +1925,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         StringGenerator(modifier, reference, "Text", 1);
 
                         int a = 0;
-                        for (int i = 2; i < modifier.commands.Count; i++)
+                        for (int i = 2; i < modifier.values.Count; i++)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator(a == 0 ? "- Whole Match Variable" : $"- Match Variable {a}");
 
-                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.values.RemoveAt(groupIndex));
 
                             var groupName = StringGenerator(modifier, reference, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -1919,7 +1940,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Regex Value", () =>
                         {
-                            modifier.commands.Add($"REGEX_VAR_{a}");
+                            modifier.values.Add($"REGEX_VAR_{a}");
                         });
 
                         break;
@@ -1929,12 +1950,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         StringGenerator(modifier, reference, "Format Text", 1);
 
                         int a = 0;
-                        for (int i = 2; i < modifier.commands.Count; i++)
+                        for (int i = 2; i < modifier.values.Count; i++)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Text Arg {a + 1}");
 
-                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.values.RemoveAt(groupIndex));
 
                             var groupName = StringGenerator(modifier, reference, "Variable Name", i);
                             EditorHelper.AddInputFieldContextMenu(groupName.transform.Find("Input").GetComponent<InputField>());
@@ -1944,7 +1965,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Text Value", () =>
                         {
-                            modifier.commands.Add($"Text");
+                            modifier.values.Add($"Text");
                         });
 
                         break;
@@ -1985,7 +2006,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierActions.addVariableOther):
                 case nameof(ModifierActions.subVariableOther):
                 case nameof(ModifierActions.setVariableOther): {
-                        var isGroup = modifier.commands.Count == 2;
+                        var isGroup = modifier.values.Count == 2;
                         if (isGroup)
                             PrefabGroupOnly(modifier, reference);
                         IntegerGenerator(modifier, reference, "Value", 0, 0);
@@ -2047,8 +2068,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierActions.enableObjectTree): {
-                        if (modifier.value == "0")
-                            modifier.value = "False";
+                        if (modifier.GetValue(0) == "0")
+                            modifier.SetValue(0, "False");
 
                         BoolGenerator(modifier, reference, "Enabled", 2, true);
                         BoolGenerator(modifier, reference, "Use Self", 0, true);
@@ -2080,18 +2101,18 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         var options = new List<string>() { "All" };
-                        for (int i = 2; i < modifier.commands.Count; i++)
-                            options.Add(modifier.commands[i]);
+                        for (int i = 2; i < modifier.values.Count; i++)
+                            options.Add(modifier.values[i]);
 
                         DropdownGenerator(modifier, reference, "Value", 1, options);
 
                         int a = 0;
-                        for (int i = 2; i < modifier.commands.Count; i++)
+                        for (int i = 2; i < modifier.values.Count; i++)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Group {a + 1}");
 
-                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.values.RemoveAt(groupIndex));
 
                             var groupName = StringGenerator(modifier, reference, "Object Group", i, _val =>
                             {
@@ -2110,7 +2131,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Group", () =>
                         {
-                            modifier.commands.Add($"Object Group");
+                            modifier.values.Add($"Object Group");
                         });
 
                         break;
@@ -2126,8 +2147,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierActions.disableObjectTree): {
-                        if (modifier.value == "0")
-                            modifier.value = "False";
+                        if (modifier.GetValue(0) == "0")
+                            modifier.SetValue(0, "False");
 
                         BoolGenerator(modifier, reference, "Use Self", 0, true);
                         BoolGenerator(modifier, reference, "Reset", 1, true);
@@ -2751,7 +2772,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Value 2 Start", 11, 0f);
 
                         int a = 0;
-                        for (int i = 12; i < modifier.commands.Count; i += 14)
+                        for (int i = 12; i < modifier.values.Count; i += 14)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Keyframe {a + 1}");
@@ -2759,7 +2780,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 14; j++)
-                                    modifier.commands.RemoveAt(groupIndex);
+                                    modifier.values.RemoveAt(groupIndex);
                             });
 
                             var collapseValue = modifier.GetBool(i, false);
@@ -2799,20 +2820,20 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Keyframe", () =>
                         {
-                            modifier.commands.Add("False"); // collapse keyframe
-                            modifier.commands.Add("0"); // keyframe time
-                            modifier.commands.Add("0"); // color slot 1
-                            modifier.commands.Add("1"); // opacity 1
-                            modifier.commands.Add("0"); // hue 1
-                            modifier.commands.Add("0"); // saturation 1
-                            modifier.commands.Add("0"); // value 1
-                            modifier.commands.Add("0"); // color slot 2
-                            modifier.commands.Add("1"); // opacity 2
-                            modifier.commands.Add("0"); // hue 2
-                            modifier.commands.Add("0"); // saturation 2
-                            modifier.commands.Add("0"); // value 2
-                            modifier.commands.Add("True"); // relative
-                            modifier.commands.Add("0"); // easing
+                            modifier.values.Add("False"); // collapse keyframe
+                            modifier.values.Add("0"); // keyframe time
+                            modifier.values.Add("0"); // color slot 1
+                            modifier.values.Add("1"); // opacity 1
+                            modifier.values.Add("0"); // hue 1
+                            modifier.values.Add("0"); // saturation 1
+                            modifier.values.Add("0"); // value 1
+                            modifier.values.Add("0"); // color slot 2
+                            modifier.values.Add("1"); // opacity 2
+                            modifier.values.Add("0"); // hue 2
+                            modifier.values.Add("0"); // saturation 2
+                            modifier.values.Add("0"); // value 2
+                            modifier.values.Add("True"); // relative
+                            modifier.values.Add("0"); // easing
                         });
 
                         break;
@@ -2824,7 +2845,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         StringGenerator(modifier, reference, "Color 2", 2);
 
                         int a = 0;
-                        for (int i = 3; i < modifier.commands.Count; i += 6)
+                        for (int i = 3; i < modifier.values.Count; i += 6)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Keyframe {a + 1}");
@@ -2832,7 +2853,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 6; j++)
-                                    modifier.commands.RemoveAt(groupIndex);
+                                    modifier.values.RemoveAt(groupIndex);
                             });
 
                             var collapseValue = modifier.GetBool(i, false);
@@ -2863,12 +2884,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Keyframe", () =>
                         {
-                            modifier.commands.Add("False"); // collapse keyframe
-                            modifier.commands.Add("0"); // keyframe time
-                            modifier.commands.Add("0"); // color 1
-                            modifier.commands.Add("0"); // color 2
-                            modifier.commands.Add("True"); // relative
-                            modifier.commands.Add("0"); // easing
+                            modifier.values.Add("False"); // collapse keyframe
+                            modifier.values.Add("0"); // keyframe time
+                            modifier.values.Add("0"); // color 1
+                            modifier.values.Add("0"); // color 2
+                            modifier.values.Add("True"); // relative
+                            modifier.values.Add("0"); // easing
                         });
 
                         break;
@@ -3305,7 +3326,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         DropdownGenerator(modifier, reference, "To Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
                         int a = 0;
-                        for (int i = 3; i < modifier.commands.Count; i += 8)
+                        for (int i = 3; i < modifier.values.Count; i += 8)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Group {a + 1}");
@@ -3313,7 +3334,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 8; j++)
-                                    modifier.commands.RemoveAt(groupIndex);
+                                    modifier.values.RemoveAt(groupIndex);
                             });
 
                             var groupName = StringGenerator(modifier, reference, "Name", i);
@@ -3332,16 +3353,16 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Group", () =>
                         {
-                            var lastIndex = modifier.commands.Count - 1;
+                            var lastIndex = modifier.values.Count - 1;
 
-                            modifier.commands.Add($"var_{a}");
-                            modifier.commands.Add("Object Group");
-                            modifier.commands.Add("0");
-                            modifier.commands.Add("0");
-                            modifier.commands.Add("0");
-                            modifier.commands.Add("-9999");
-                            modifier.commands.Add("9999");
-                            modifier.commands.Add("False");
+                            modifier.values.Add($"var_{a}");
+                            modifier.values.Add("Object Group");
+                            modifier.values.Add("0");
+                            modifier.values.Add("0");
+                            modifier.values.Add("0");
+                            modifier.values.Add("-9999");
+                            modifier.values.Add("9999");
+                            modifier.values.Add("False");
                         });
 
                         break;
@@ -3372,7 +3393,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         CoreHelper.Destroy(path.transform.Find("Input").gameObject);
 
                         int a = 0;
-                        for (int i = 1; i < modifier.commands.Count; i += 3)
+                        for (int i = 1; i < modifier.values.Count; i += 3)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Tail Group {a + 1}");
@@ -3380,7 +3401,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 3; j++)
-                                    modifier.commands.RemoveAt(groupIndex);
+                                    modifier.values.RemoveAt(groupIndex);
                             });
 
                             var str = StringGenerator(modifier, reference, "Object Group", i);
@@ -3392,18 +3413,18 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Group", () =>
                         {
-                            var lastIndex = modifier.commands.Count - 1;
+                            var lastIndex = modifier.values.Count - 1;
                             var length = "2";
                             var time = "12";
                             if (lastIndex - 1 > 2)
                             {
-                                length = modifier.commands[lastIndex - 1];
-                                time = modifier.commands[lastIndex];
+                                length = modifier.values[lastIndex - 1];
+                                time = modifier.values[lastIndex];
                             }
 
-                            modifier.commands.Add("Object Group");
-                            modifier.commands.Add(length);
-                            modifier.commands.Add(time);
+                            modifier.values.Add("Object Group");
+                            modifier.values.Add(length);
+                            modifier.values.Add(time);
                         });
 
                         break;
@@ -3709,7 +3730,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         DropdownGenerator(modifier, reference, "Spawn Position Type", 8, CoreHelper.ToOptionData<Checkpoint.SpawnPositionType>());
 
                         int a = 0;
-                        for (int i = 9; i < modifier.commands.Count; i += 2)
+                        for (int i = 9; i < modifier.values.Count; i += 2)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Position {a + 1}");
@@ -3717,7 +3738,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             DeleteGenerator(modifier, reference, label.transform, () =>
                             {
                                 for (int j = 0; j < 2; j++)
-                                    modifier.commands.RemoveAt(groupIndex);
+                                    modifier.values.RemoveAt(groupIndex);
                             });
 
                             SingleGenerator(modifier, reference, "Pos X", i);
@@ -3728,8 +3749,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         AddGenerator(modifier, reference, "Add Position Value", () =>
                         {
-                            modifier.commands.Add("0");
-                            modifier.commands.Add("0");
+                            modifier.values.Add("0");
+                            modifier.values.Add("0");
                         });
 
                         break;
@@ -3880,19 +3901,19 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Do Multiple", 1, true);
                         IntegerGenerator(modifier, reference, "Singlular Index", 2, 0);
 
-                        for (int i = 3; i < modifier.commands.Count; i++)
+                        for (int i = 3; i < modifier.values.Count; i++)
                         {
                             int groupIndex = i;
                             var label = LabelGenerator($"- Name {i + 1}");
 
-                            DeleteGenerator(modifier, reference, label.transform, () => modifier.commands.RemoveAt(groupIndex));
+                            DeleteGenerator(modifier, reference, label.transform, () => modifier.values.RemoveAt(groupIndex));
 
                             StringGenerator(modifier, reference, "Modifier Name", groupIndex);
                         }
 
                         AddGenerator(modifier, reference, "Add Modifier Ref", () =>
                         {
-                            modifier.commands.Add("modifierName");
+                            modifier.values.Add("modifierName");
                         });
 
                         break;
@@ -4170,20 +4191,20 @@ namespace BetterLegacy.Editor.Data.Elements
                 case nameof(ModifierTriggers.loadLesser):
                 case nameof(ModifierTriggers.loadGreater):
                 case nameof(ModifierTriggers.loadExists): {
-                        if (name == "loadEquals" && modifier.commands.Count < 5)
-                            modifier.commands.Add("0");
+                        if (name == "loadEquals" && modifier.values.Count < 5)
+                            modifier.values.Add("0");
 
-                        if (name == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 0 && !float.TryParse(modifier.value, out float abcdef))
-                            modifier.value = "0";
+                        if (name == "loadEquals" && modifier.GetInt(4, 0) == 0 && !float.TryParse(modifier.GetValue(0), out float abcdef))
+                            modifier.SetValue(0, "0");
 
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
                         StringGenerator(modifier, reference, "JSON 2", 3);
 
-                        if (name != "loadExists" && (name != "loadEquals" || Parser.TryParse(modifier.commands[4], 0) == 0))
+                        if (name != "loadExists" && (name != "loadEquals" || modifier.GetInt(4, 0) == 0))
                             SingleGenerator(modifier, reference, "Value", 0, 0f);
 
-                        if (name == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 1)
+                        if (name == "loadEquals" && modifier.GetInt(4, 0) == 1)
                             StringGenerator(modifier, reference, "Value", 0);
 
                         if (name == "loadEquals")
@@ -4365,7 +4386,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 case nameof(ModifierActions.loadSceneDEVONLY): {
                         StringGenerator(modifier, reference, "Scene", 0);
-                        if (modifier.commands.Count > 1)
+                        if (modifier.values.Count > 1)
                             BoolGenerator(modifier, reference, "Show Loading", 1, true);
 
                         break;
