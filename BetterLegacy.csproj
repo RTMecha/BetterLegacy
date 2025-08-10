@@ -33,10 +33,6 @@
     <PackageReference Include="UnityEngine.Modules" Version="2019.1.13" IncludeAssets="compile" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
-  </ItemGroup>
-  
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\lib\0Harmony.dll</HintPath>
@@ -62,15 +58,20 @@
     <Reference Include="mcs">
       <HintPath>..\lib\mcs.dll</HintPath>
     </Reference>
-    <Reference Include="System.Windows.Forms" />
+    <Reference Include="mscorlib-publicized">
+      <HintPath>..\lib\mscorlib-publicized.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>..\lib\System.Windows.Forms.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Postprocessing.Runtime">
       <HintPath>..\lib\Unity.Postprocessing.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression">
       <HintPath>..\lib\System.IO.Compression.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>..\lib\Unity.TextMeshPro.dll</HintPath>
+    <Reference Include="Unity.TextMeshPro-publicized">
+      <HintPath>..\lib\Unity.TextMeshPro-publicized.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\lib\UnityEngine.dll</HintPath>
@@ -78,8 +79,8 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\lib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\lib\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine.UI-publicized">
+      <HintPath>..\lib\UnityEngine.UI-publicized.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

@@ -22,7 +22,7 @@ namespace BetterLegacy.Editor.Components
 
         float cellHeight;
 
-        protected override void OnPopulateMesh(VertexHelper vh)
+        public override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
 
