@@ -1,4 +1,15 @@
-﻿# snapshot-2025.8.9 - (pre-1.8.0) [Aug 10, 2025]
+﻿# ???
+## Changes
+### Core
+- Changed some system library references.
+
+## Editor
+- Improved timeline object loading by a tiny amount.
+
+## Fixes
+- Cursor position modifiers no longer force the position if the application isn't focused or the user isn't editing.
+
+# snapshot-2025.8.9 - (pre-1.8.0) [Aug 10, 2025]
 ## Features
 ### Editor
 - Added a "comment" modifier that allows you to describe what a modifier function does. The comment can be locked / unlocked by right clicking the input field and selecting the context menu button.
