@@ -3279,7 +3279,8 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Apply", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData)),
-                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData, true))
+                    new ButtonFunction("Create New", () => RTPrefabEditor.inst.Collapse(beatmapObject, beatmapObject.editorData, true)),
+                    new ButtonFunction(EditorConfig.Instance.ShowCollapsePrefabWarning.Value ? "Hide Warning" : "Show Warning", () => EditorConfig.Instance.ShowCollapsePrefabWarning.Value = !EditorConfig.Instance.ShowCollapsePrefabWarning.Value)
                     );
             };
 
