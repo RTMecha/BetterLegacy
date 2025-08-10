@@ -420,11 +420,11 @@ namespace BetterLegacy.Core.Helpers
             {
                 modifier.verified = true;
 
-                if (!modifier.commands.IsEmpty() && !modifier.Name.Contains("DEVONLY"))
+                if (!modifier.Name.Contains("DEVONLY"))
                     modifier.VerifyModifier(modifiers);
             }
 
-            return !modifier.commands.IsEmpty();
+            return !string.IsNullOrEmpty(modifier.name);
         }
 
         public static ModifierTrigger[] triggers = new ModifierTrigger[]
@@ -1308,7 +1308,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                        modifier.GetBool(2, false))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1320,7 +1320,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                        modifier.GetBool(2, false))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1332,7 +1332,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
                         beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
-                        modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                        modifier.GetBool(2, false))
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
@@ -1358,7 +1358,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.enableObject),
                 (modifier, reference, variables) =>
                 {
-                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                    if (!modifier.GetBool(1, false))
                         return;
 
                     if (reference is not IPrefabable prefabable)
@@ -1371,7 +1371,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.enableObjectOther),
                 (modifier, reference, variables) =>
                 {
-                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                    if (!modifier.GetBool(1, false))
                         return;
 
                     if (reference is not IPrefabable prefabable)
@@ -1397,7 +1397,7 @@ namespace BetterLegacy.Core.Helpers
                     if (modifier.GetValue(0) == "0")
                         modifier.SetValue(0, "False");
 
-                    if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], false))
+                    if (!modifier.GetBool(1, false))
                     {
                         modifier.Result = null;
                         return;
@@ -1420,7 +1420,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.enableObjectTreeOther),
                 (modifier, reference, variables) =>
                 {
-                    if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                    if (!modifier.GetBool(2, false))
                     {
                         modifier.Result = null;
                         return;
@@ -1436,7 +1436,7 @@ namespace BetterLegacy.Core.Helpers
                         var resultList = new List<BeatmapObject>();
                         foreach (var bm in beatmapObjects)
                         {
-                            var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                            var beatmapObject = modifier.GetBool(0, true) ? bm : bm.GetParentChain().Last();
                             resultList.AddRange(beatmapObject.GetChildTree());
                         }
 
@@ -1455,7 +1455,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.disableObject),
                 (modifier, reference, variables) =>
                 {
-                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                    if (!modifier.GetBool(1, false))
                         return;
 
                     if (reference is not IPrefabable prefabable)
@@ -1468,7 +1468,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.disableObjectOther),
                 (modifier, reference, variables) =>
                 {
-                    if (!(modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], false)))
+                    if (!modifier.GetBool(1, false))
                         return;
 
                     if (reference is not IPrefabable prefabable)
@@ -1494,7 +1494,7 @@ namespace BetterLegacy.Core.Helpers
                     if (modifier.GetValue(0) == "0")
                         modifier.SetValue(0, "False");
 
-                    if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], false))
+                    if (!modifier.GetBool(1, false))
                     {
                         modifier.Result = null;
                         return;
@@ -1517,7 +1517,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.disableObjectTreeOther),
                 (modifier, reference, variables) =>
                 {
-                    if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                    if (!modifier.GetBool(2, false))
                     {
                         modifier.Result = null;
                         return;
@@ -1533,7 +1533,7 @@ namespace BetterLegacy.Core.Helpers
                         var resultList = new List<BeatmapObject>();
                         foreach (var bm in beatmapObjects)
                         {
-                            var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                            var beatmapObject = modifier.GetBool(0, true) ? bm : bm.GetParentChain().Last();
                             resultList.AddRange(beatmapObject.GetChildTree());
                         }
 
@@ -1633,13 +1633,13 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.animateSignal),
                 (modifier, reference, variables) =>
                 {
-                    if (modifier.constant || !Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
+                    if (modifier.constant || !modifier.GetBool(!modifier.Name.Contains("Other") ? 9 : 10, true))
                         return;
 
                     if (reference is not IPrefabable prefabable)
                         return;
 
-                    int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
+                    int groupIndex = !modifier.Name.Contains("Other") ? 7 : 8;
                     var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex));
 
                     foreach (var modifyable in modifyables)
@@ -1652,13 +1652,13 @@ namespace BetterLegacy.Core.Helpers
             new ModifierInactive(nameof(ModifierActions.animateSignalOther),
                 (modifier, reference, variables) =>
                 {
-                    if (modifier.constant || !Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
+                    if (modifier.constant || !modifier.GetBool(!modifier.Name.Contains("Other") ? 9 : 10, true))
                         return;
 
                     if (reference is not IPrefabable prefabable)
                         return;
 
-                    int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
+                    int groupIndex = !modifier.Name.Contains("Other") ? 7 : 8;
                     var modifyables = GameData.Current.FindModifyables(modifier, prefabable, modifier.GetValue(groupIndex));
 
                     foreach (var modifyable in modifyables)
@@ -1794,7 +1794,7 @@ namespace BetterLegacy.Core.Helpers
                 (modifier, reference, variables) =>
                 {
                     if (modifier.GetBool(2, true) && reference is PAPlayer player && player.RuntimePlayer.customObjects.TryFind(x => x.id == modifier.GetValue(1), out RTPlayer.RTCustomPlayerObject customObject))
-                        customObject.active = !Parser.TryParse(modifier.value, false);
+                        customObject.active = !modifier.GetBool(0, false);
                 }, ModifierCompatibility.PAPlayerCompatible),
 
             #endregion
@@ -2138,7 +2138,7 @@ namespace BetterLegacy.Core.Helpers
             if (delay != 0.0)
                 yield return CoroutineHelper.Seconds(delay);
 
-            if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier modifier))
+            if (beatmapObject.modifiers.TryFind(x => x.Name == "requireSignal" && x.type == Modifier.Type.Trigger, out Modifier modifier))
                 modifier.Result = "death hd";
             yield break;
         }

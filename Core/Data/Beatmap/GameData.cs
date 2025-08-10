@@ -1373,7 +1373,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                 jnTrigger["event_type"] = actionIndex;
 
-                for (int j = 0; j < modifier.commands.Count; i++)
+                for (int j = 0; j < modifier.values.Count; i++)
                     jnTrigger["event_data"][j] = modifier.GetValue(j);
 
                 jn["triggers"][numModifier] = jnTrigger;

@@ -12,42 +12,34 @@ namespace BetterLegacy.Core.Data.Beatmap
     {
         public Modifier() { }
 
-        public Modifier(string name) : this()
-        {
-            commands = new List<string> { name };
-        }
+        public Modifier(string name) : this() => this.name = name;
 
         public Modifier(Type type, string name, bool constant, params string[] values)
         {
-            commands = new List<string> { name };
+            this.name = name;
             this.type = type;
             this.constant = constant;
-            value = values == null || values.IsEmpty() ? string.Empty : values[0];
-            for (int i = 1; i < values.Length; i++)
-                commands.Add(values[i]);
+            for (int i = 0; i < values.Length; i++)
+                this.values.Add(values[i]);
         }
         
-        public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant, params string[] values) : this(type, name, constant, values)
-        {
-            this.compatibility = compatibility;
-        }
-        
+        public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant, params string[] values) : this(type, name, constant, values) => this.compatibility = compatibility;
+
         public Modifier(Type type, string name, bool constant,
             Action<Modifier, IModifierReference, Dictionary<string, string>> action,
             Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
             Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
             params string[] values)
         {
-            commands = new List<string> { name };
+            this.name = name;
             this.type = type;
             this.constant = constant;
-            value = values == null || values.IsEmpty() ? string.Empty : values[0];
-            for (int i = 1; i < values.Length; i++)
-                commands.Add(values[i]);
+            for (int i = 0; i < values.Length; i++)
+                this.values.Add(values[i]);
 
             Action = action;
             Trigger = trigger;
-            Inactive = Inactive;
+            Inactive = inactive;
         }
 
         public Modifier(Type type, string name, bool constant,
@@ -63,18 +55,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
             Action<Modifier, IModifierReference, Dictionary<string, string>> action,
             Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
-            params string[] values) : this(type, name, constant, action, null, inactive, values)
-        {
-            this.compatibility = compatibility;
-        }
+            params string[] values) : this(type, name, constant, action, null, inactive, values) => this.compatibility = compatibility;
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
             Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
             Action<Modifier, IModifierReference, Dictionary<string, string>> inactive,
-            params string[] values) : this(type, name, constant, null, trigger, inactive, values)
-        {
-            this.compatibility = compatibility;
-        }
+            params string[] values) : this(type, name, constant, null, trigger, inactive, values) => this.compatibility = compatibility;
 
         public Modifier(Type type, string name, bool constant,
             Action<Modifier, IModifierReference, Dictionary<string, string>> action,
@@ -86,17 +72,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
             Action<Modifier, IModifierReference, Dictionary<string, string>> action,
-            params string[] values) : this(type, name, constant, action, null, null, values)
-        {
-            this.compatibility = compatibility;
-        }
+            params string[] values) : this(type, name, constant, action, null, null, values) => this.compatibility = compatibility;
 
         public Modifier(ModifierCompatibility compatibility, Type type, string name, bool constant,
             Func<Modifier, IModifierReference, Dictionary<string, string>, bool> trigger,
-            params string[] values) : this(type, name, constant, null, trigger, null, values)
-        {
-            this.compatibility = compatibility;
-        }
+            params string[] values) : this(type, name, constant, null, trigger, null, values) => this.compatibility = compatibility;
 
         #region Values
 
@@ -120,10 +100,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Action<Modifier, IModifierReference, Dictionary<string, string>> Inactive { get; set; }
 
+        public string name;
         /// <summary>
         /// Name of the modifier.
         /// </summary>
-        public string Name => commands != null && !commands.IsEmpty() ? commands[0] : "Invalid Modifier";
+        public string Name => !string.IsNullOrEmpty(name) ? name : "Invalid Modifier";
 
         /// <summary>
         /// Function type.
@@ -158,24 +139,14 @@ namespace BetterLegacy.Core.Data.Beatmap
         public bool subPrefab = false;
 
         /// <summary>
-        /// If the modifier should be collapsed in the editor.
-        /// </summary>
-        public bool collapse = false;
-
-        /// <summary>
         /// Function type of the modifier.
         /// </summary>
         public Type type = Type.Action;
 
         /// <summary>
-        /// Main value of the modifier.
+        /// Values of the modifier.
         /// </summary>
-        public string value;
-
-        /// <summary>
-        /// Extra values.
-        /// </summary>
-        public List<string> commands = new List<string> { "" };
+        public List<string> values = new List<string>();
 
         #endregion
 
@@ -237,6 +208,30 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        #region Editor
+
+        /// <summary>
+        /// If the modifier should be collapsed in the editor.
+        /// </summary>
+        public bool collapse = false;
+
+        /// <summary>
+        /// Name to display for the modifier in the editor.
+        /// </summary>
+        public string DisplayName => !string.IsNullOrEmpty(customName) ? customName : Name;
+
+        /// <summary>
+        /// Custom name to display for the modifier in the editor.
+        /// </summary>
+        public string customName = string.Empty;
+
+        /// <summary>
+        /// Description to display for the modifier in the editor.
+        /// </summary>
+        public string description = string.Empty;
+
+        #endregion
+
         #region Debug
 
         public static bool tryCatch;
@@ -250,9 +245,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void CopyData(Modifier orig, bool newID = true)
         {
             id = newID ? GetNumberID() : orig.id;
+            name = orig.name;
             type = orig.type;
-            commands = orig.commands.Clone();
-            value = orig.value;
+            values = new List<string>(orig.values);
             not = orig.not;
             elseIf = orig.elseIf;
             constant = orig.constant;
@@ -263,6 +258,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             subPrefab = orig.subPrefab;
 
             collapse = orig.collapse;
+            customName = orig.customName;
+            description = orig.description;
 
             Action = orig.Action;
             Trigger = orig.Trigger;
@@ -286,26 +283,26 @@ namespace BetterLegacy.Core.Data.Beatmap
             subPrefab = jn["sub"].AsBool;
 
             collapse = jn["collapse"].AsBool;
+            customName = jn["cn"] ?? string.Empty;
+            description = jn["desc"] ?? string.Empty;
 
-            commands.Clear();
+            values.Clear();
             if (jn["name"] != null)
             {
-                commands.Add(jn["name"]);
+                name = jn["name"];
 
                 if (jn["values"] != null)
-                {
-                    value = jn["values"][0];
-                    for (int i = 1; i < jn["values"].Count; i++)
-                        commands.Add(jn["values"][i]);
-                }
+                    for (int i = 0; i < jn["values"].Count; i++)
+                        values.Add(jn["values"][i]);
 
                 return;
             }
 
-            for (int i = 0; i < jn["commands"].Count; i++)
-                commands.Add(((string)jn["commands"][i]).Replace("{{colon}}", ":"));
+            name = jn["commands"].Count > 0 ? jn["commands"][0] : string.Empty;
 
-            value = string.IsNullOrEmpty(jn["value"]) ? string.Empty : jn["value"];
+            values.Add(string.IsNullOrEmpty("value") ? string.Empty : jn["value"]);
+            for (int i = 1; i < jn["commands"].Count; i++)
+                values.Add(((string)jn["commands"][i]).Replace("{{colon}}", ":"));
         }
 
         public override JSONNode ToJSON()
@@ -325,7 +322,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["name"] = Name;
 
-            for (int i = 0; i < commands.Count; i++)
+            for (int i = 0; i < values.Count; i++)
                 jn["values"][i] = GetValue(i);
 
             jn["const"] = constant;
@@ -339,23 +336,24 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (collapse)
                 jn["collapse"] = collapse;
+            if (!string.IsNullOrEmpty(customName))
+                jn["cn"] = customName;
+            if (!string.IsNullOrEmpty(description))
+                jn["desc"] = description;
 
             return jn;
         }
 
         public void VerifyModifier(List<Modifier> modifiers)
         {
-            if (commands.IsEmpty())
-                return;
-
             if (modifiers != null && modifiers.TryFind(x => x.Name == Name && x.type == type, out Modifier defaultModifier))
             {
                 compatibility = defaultModifier.compatibility;
 
-                int num = commands.Count;
-                while (commands.Count < defaultModifier.commands.Count)
+                int num = values.Count;
+                while (values.Count < defaultModifier.values.Count)
                 {
-                    commands.Add(defaultModifier.commands[num]);
+                    values.Add(defaultModifier.values[num]);
                     num++;
                 }
             }
@@ -473,10 +471,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns a value.</returns>
         public string GetValue(int index, Dictionary<string, string> variables = null)
         {
-            if (index > 0 && !commands.InRange(index))
+            if (index > 0 && !values.InRange(index))
                 return string.Empty;
 
-            var result = index == 0 ? value : commands[index];
+            var result = values[index];
 
             if (variables != null && variables.TryGetValue(result, out string variable))
                 return variable;
@@ -500,7 +498,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool GetBool(int index, bool defaultValue, Dictionary<string, string> variables = null)
         {
-            if (!commands.InRange(index))
+            if (!values.InRange(index))
                 return defaultValue;
 
             return Parser.TryParse(GetValue(index, variables), defaultValue);
@@ -508,7 +506,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public float GetFloat(int index, float defaultValue, Dictionary<string, string> variables = null)
         {
-            if (!commands.InRange(index))
+            if (!values.InRange(index))
                 return defaultValue;
 
             return Parser.TryParse(GetValue(index, variables), defaultValue);
@@ -516,7 +514,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public int GetInt(int index, int defaultValue, Dictionary<string, string> variables = null)
         {
-            if (!commands.InRange(index))
+            if (!values.InRange(index))
                 return defaultValue;
 
             return Parser.TryParse(GetValue(index, variables), defaultValue);
@@ -524,7 +522,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string GetString(int index, string defaultValue, Dictionary<string, string> variables = null)
         {
-            if (!commands.InRange(index))
+            if (!values.InRange(index))
                 return defaultValue;
 
             return GetValue(index, variables);
@@ -532,12 +530,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public void SetValue(int index, string value)
         {
-            if (index == 0)
-                this.value = value;
-            else if (index < commands.Count)
-                commands[index] = value;
+            if (index < values.Count)
+                values[index] = value;
             else
-                commands.Add(value);
+                values.Add(value);
         }
 
         #endregion

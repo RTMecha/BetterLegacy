@@ -607,7 +607,7 @@ namespace BetterLegacy.Core.Helpers
                 renderer.material = LegacyResources.blur;
             }
 
-            if (modifier.commands.Count > 1 && modifier.GetBool(1, false, variables))
+            if (modifier.GetBool(1, false, variables))
                 renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             else
                 renderer.material.SetFloat("_blurSizeXY", amount);
@@ -714,7 +714,7 @@ namespace BetterLegacy.Core.Helpers
                 renderer.material.shader = LegacyResources.blurColored;
             }
 
-            if (modifier.commands.Count > 1 && modifier.GetBool(1, false, variables))
+            if (modifier.GetBool(1, false, variables))
                 renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             else
                 renderer.material.SetFloat("_Size", amount);
@@ -1240,7 +1240,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playerLockBoostAll(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
+            if (modifier.values.Count > 3 && !string.IsNullOrEmpty(modifier.GetValue(1)) && bool.TryParse(modifier.GetValue(0, variables), out bool lockBoost))
                 RTPlayer.LockBoost = lockBoost;
         }
 
@@ -1297,10 +1297,10 @@ namespace BetterLegacy.Core.Helpers
                 Vector2 vector;
                 if (value.Contains(','))
                 {
-                    var axis = modifier.value.Split(',');
+                    var axis = value.Split(',');
                     modifier.SetValue(0, axis[0]);
-                    modifier.commands.RemoveAt(modifier.commands.Count - 1);
-                    modifier.commands.Insert(1, axis[1]);
+                    modifier.values.RemoveAt(modifier.values.Count - 1);
+                    modifier.values.Insert(1, axis[1]);
                     vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
                 }
                 else
@@ -1385,10 +1385,10 @@ namespace BetterLegacy.Core.Helpers
             Vector2 vector;
             if (value.Contains(','))
             {
-                var axis = modifier.value.Split(',');
+                var axis = value.Split(',');
                 modifier.SetValue(0, axis[0]);
-                modifier.commands.RemoveAt(modifier.commands.Count - 1);
-                modifier.commands.Insert(1, axis[1]);
+                modifier.values.RemoveAt(modifier.values.Count - 1);
+                modifier.values.Insert(1, axis[1]);
                 vector = new Vector2(Parser.TryParse(axis[0], 0f), Parser.TryParse(axis[1], 0f));
             }
             else
@@ -2806,8 +2806,8 @@ namespace BetterLegacy.Core.Helpers
         
         public static void followMousePosition(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.value == "0")
-                modifier.value = "1";
+            if (modifier.GetValue(0) == "0")
+                modifier.SetValue(0, "1");
 
             if (reference is not ITransformable transformable)
                 return;
@@ -2883,7 +2883,7 @@ namespace BetterLegacy.Core.Helpers
         public static void getEnum(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var index = (modifier.GetInt(1, 0, variables) * 2) + 4;
-            if (modifier.commands.Count > index)
+            if (modifier.values.Count > index)
                 variables[modifier.GetValue(0)] = modifier.GetValue(index, variables).ToString();
         }
 
@@ -3147,7 +3147,7 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < split.Length; i++)
             {
                 var index = i + 2;
-                if (modifier.commands.InRange(index))
+                if (modifier.values.InRange(index))
                     variables[modifier.GetValue(index)] = split[i];
             }
         }
@@ -3197,8 +3197,8 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < match.Groups.Count; i++)
             {
                 var index = i + 2;
-                if (modifier.commands.InRange(index))
-                    variables[modifier.commands[index]] = match.Groups[i].ToString();
+                if (modifier.values.InRange(index))
+                    variables[modifier.values[index]] = match.Groups[i].ToString();
             }
         }
 
@@ -3206,8 +3206,8 @@ namespace BetterLegacy.Core.Helpers
         {
             try
             {
-                object[] args = new object[modifier.commands.Count - 2];
-                for (int i = 2; i < modifier.commands.Count; i++)
+                object[] args = new object[modifier.values.Count - 2];
+                for (int i = 2; i < modifier.values.Count; i++)
                     args[i - 2] = modifier.GetValue(i, variables);
 
                 variables[modifier.GetValue(0)] = string.Format(modifier.GetValue(1, variables), args);
@@ -3248,7 +3248,7 @@ namespace BetterLegacy.Core.Helpers
         public static void getMixedColors(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var colors = new List<Color>();
-            for (int i = 1; i < modifier.commands.Count; i++)
+            for (int i = 1; i < modifier.values.Count; i++)
                 colors.Add(RTColors.HexToColor(modifier.GetValue(1, variables)));
 
             variables[modifier.GetValue(0)] = RTColors.MixColors(colors).ToString();
@@ -3309,7 +3309,7 @@ namespace BetterLegacy.Core.Helpers
 
                 var keyframes = new List<IKeyframe<float>>();
                 keyframes.Add(new FloatKeyframe(currentTime, value, Ease.Linear));
-                for (int i = 5; i < modifier.commands.Count; i += 4)
+                for (int i = 5; i < modifier.values.Count; i += 4)
                 {
                     var time = modifier.GetFloat(i, 0f, variables);
                     if (time < currentTime)
@@ -3399,7 +3399,7 @@ namespace BetterLegacy.Core.Helpers
         // object variable
         public static void addVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.commands.Count == 2)
+            if (modifier.values.Count == 2)
             {
                 if (reference is not IPrefabable prefabable)
                     return;
@@ -3434,7 +3434,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void subVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.commands.Count == 2)
+            if (modifier.values.Count == 2)
             {
                 if (reference is not IPrefabable prefabable)
                     return;
@@ -3469,7 +3469,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void setVariable(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.commands.Count == 2)
+            if (modifier.values.Count == 2)
             {
                 if (reference is not IPrefabable prefabable)
                     return;
@@ -3504,7 +3504,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void setVariableRandom(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.commands.Count == 3)
+            if (modifier.values.Count == 3)
             {
                 if (reference is not IPrefabable prefabable)
                     return;
@@ -3732,9 +3732,9 @@ namespace BetterLegacy.Core.Helpers
 
                 var groups = new List<List<IPrefabable>>();
                 int count = 0;
-                for (int i = 2; i < modifier.commands.Count; i++)
+                for (int i = 2; i < modifier.values.Count; i++)
                 {
-                    var tag = modifier.commands[i];
+                    var tag = modifier.values[i];
                     if (string.IsNullOrEmpty(tag))
                         continue;
 
@@ -4665,7 +4665,7 @@ namespace BetterLegacy.Core.Helpers
                 keyframes1.Add(new CustomThemeKeyframe(currentTime, colorSource, colorSlot1Start, opacity1Start, hue1Start, saturation1Start, value1Start, Ease.Linear, false));
                 var keyframes2 = new List<IKeyframe<Color>>();
                 keyframes2.Add(new CustomThemeKeyframe(currentTime, colorSource, colorSlot2Start, opacity2Start, hue2Start, saturation2Start, value2Start, Ease.Linear, false));
-                for (int i = 12; i < modifier.commands.Count; i += 14)
+                for (int i = 12; i < modifier.values.Count; i += 14)
                 {
                     var time = modifier.GetFloat(i + 1, 0f, variables);
                     if (time < currentTime)
@@ -4753,7 +4753,7 @@ namespace BetterLegacy.Core.Helpers
                 keyframes1.Add(new ColorKeyframe(currentTime, RTColors.HexToColor(color1Start), Ease.Linear));
                 var keyframes2 = new List<IKeyframe<Color>>();
                 keyframes2.Add(new ColorKeyframe(currentTime, RTColors.HexToColor(color2Start), Ease.Linear));
-                for (int i = 3; i < modifier.commands.Count; i += 6)
+                for (int i = 3; i < modifier.values.Count; i += 6)
                 {
                     var time = modifier.GetFloat(i + 1, 0f, variables);
                     if (time < currentTime)
@@ -5460,7 +5460,7 @@ namespace BetterLegacy.Core.Helpers
 
                 var keyframes = new List<IKeyframe<Vector3>>();
                 keyframes.Add(new Vector3Keyframe(currentTime, vector, Ease.Linear));
-                for (int i = 5; i < modifier.commands.Count; i += 6)
+                for (int i = 5; i < modifier.values.Count; i += 6)
                 {
                     var time = modifier.GetFloat(i, 0f, variables);
                     if (time < currentTime)
@@ -6509,7 +6509,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     var result = new List<BeatmapObject>();
 
-                    for (int i = 3; i < modifier.commands.Count; i += 8)
+                    for (int i = 3; i < modifier.values.Count; i += 8)
                     {
                         var group = modifier.GetValue(i + 1);
 
@@ -6521,7 +6521,7 @@ namespace BetterLegacy.Core.Helpers
                 });
 
                 int groupIndex = 0;
-                for (int i = 3; i < modifier.commands.Count; i += 8)
+                for (int i = 3; i < modifier.values.Count; i += 8)
                 {
                     var name = modifier.GetValue(i, variables);
                     var group = modifier.GetValue(i + 1, variables);
@@ -6599,7 +6599,7 @@ namespace BetterLegacy.Core.Helpers
         
         public static void legacyTail(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject || modifier.commands.IsEmpty() || !GameData.Current)
+            if (reference is not BeatmapObject beatmapObject || modifier.values.IsEmpty() || !GameData.Current)
                 return;
 
             var totalTime = modifier.GetFloat(0, 200f, variables);
@@ -6610,11 +6610,11 @@ namespace BetterLegacy.Core.Helpers
             {
                 list.Add(new LegacyTracker(beatmapObject, Vector3.zero, Vector3.zero, Quaternion.identity, 0f, 0f));
 
-                for (int i = 1; i < modifier.commands.Count; i += 3)
+                for (int i = 1; i < modifier.values.Count; i += 3)
                 {
                     var group = GameData.Current.FindObjectsWithTag(modifier, beatmapObject, modifier.GetValue(i, variables));
 
-                    if (modifier.commands.Count <= i + 2 || group.Count < 1)
+                    if (modifier.values.Count <= i + 2 || group.Count < 1)
                         break;
 
                     var distance = modifier.GetFloat(i + 1, 2f, variables);
@@ -7485,7 +7485,7 @@ namespace BetterLegacy.Core.Helpers
             checkpoint.reverse = modifier.GetBool(6, true, variables);
             checkpoint.setTime = modifier.GetBool(7, true, variables);
             checkpoint.spawnType = (Checkpoint.SpawnPositionType)modifier.GetInt(8, 0, variables);
-            for (int i = 9; i < modifier.commands.Count; i += 2)
+            for (int i = 9; i < modifier.values.Count; i += 2)
                 checkpoint.positions.Add(new Vector2(modifier.GetFloat(i, 0f, variables), modifier.GetFloat(i + 1, 0f, variables)));
 
             RTBeatmap.Current.SetCheckpoint(checkpoint);
@@ -7633,7 +7633,7 @@ namespace BetterLegacy.Core.Helpers
 
             // 3 is modifier names
             var modifierNames = new List<string>();
-            for (int i = 3; i < modifier.commands.Count; i++)
+            for (int i = 3; i < modifier.values.Count; i++)
                 modifierNames.Add(modifier.GetValue(i, variables));
 
             for (int i = 0; i < list.Count; i++)
@@ -7674,11 +7674,15 @@ namespace BetterLegacy.Core.Helpers
             var discordSubIcons = CoreHelper.discordSubIcons;
             var discordIcons = CoreHelper.discordIcons;
 
-            if (int.TryParse(modifier.commands[2], out int discordSubIcon) && int.TryParse(modifier.commands[3], out int discordIcon))
-                CoreHelper.UpdateDiscordStatus(
-                    string.Format(modifier.value, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
-                    string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
-                    discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
+            var state = modifier.GetValue(0, variables);
+            var details = modifier.GetValue(1, variables);
+            var discordSubIcon = modifier.GetInt(2, 0, variables);
+            var discordIcon = modifier.GetInt(3, 0, variables);
+
+            CoreHelper.UpdateDiscordStatus(
+                string.Format(state, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                string.Format(details, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
         }
 
         public static void callModifierBlock(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -7856,7 +7860,7 @@ namespace BetterLegacy.Core.Helpers
         public static void loadSceneDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (CoreHelper.InStory)
-                SceneManager.inst.LoadScene(modifier.GetValue(0, variables), modifier.commands.Count > 1 && modifier.GetBool(1, true, variables));
+                SceneManager.inst.LoadScene(modifier.GetValue(0, variables), modifier.values.Count > 1 && modifier.GetBool(1, true, variables));
         }
         
         public static void loadStoryLevelDEVONLY(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

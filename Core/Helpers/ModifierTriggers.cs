@@ -692,7 +692,7 @@ namespace BetterLegacy.Core.Helpers
         public static bool musicTimeInRange(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var time = reference.GetParentRuntime().FixedTime;
-            return modifier.commands.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
+            return modifier.values.Count > 2 && time >= modifier.GetFloat(1, 0f, variables) - 0.01f && time <= modifier.GetFloat(2, 0f, variables) + 0.1f;
         }
 
         public static bool musicPlaying(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

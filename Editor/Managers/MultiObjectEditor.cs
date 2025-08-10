@@ -2171,10 +2171,8 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var modifier in bm.modifiers)
                     {
-                        for (int i = 1; i < modifier.commands.Count; i++)
-                            modifier.commands[i] = modifier.commands[i].Replace(oldNameIF.text, newNameIF.text);
-
-                        modifier.value = modifier.value.Replace(oldNameIF.text, newNameIF.text);
+                        for (int i = 0; i < modifier.values.Count; i++)
+                            modifier.values[i] = modifier.values[i].Replace(oldNameIF.text, newNameIF.text);
                     }
                 }
             });
