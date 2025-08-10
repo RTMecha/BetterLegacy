@@ -275,45 +275,50 @@ namespace BetterLegacy.Editor.Data.Elements
 
             layout = gameObject.transform.Find("Layout");
 
-            var constant = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Constant");
-            constant.transform.localScale = Vector3.one;
+            var isComment = name == "comment";
 
-            var constantText = constant.transform.Find("Text").GetComponent<Text>();
-            constantText.text = "Constant";
-
-            var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
-            constantToggle.SetIsOnWithoutNotify(modifier.constant);
-            constantToggle.onValueChanged.NewListener(_val =>
+            if (!isComment)
             {
-                modifier.constant = _val;
-                Update(modifier, reference);
-            });
+                var constant = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Constant");
+                constant.transform.localScale = Vector3.one;
 
-            TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
-            EditorThemeManager.ApplyLightText(constantText);
-            EditorThemeManager.ApplyToggle(constantToggle);
+                var constantText = constant.transform.Find("Text").GetComponent<Text>();
+                constantText.text = "Constant";
 
-            var count = NumberGenerator(layout, "Run Count", modifier.triggerCount.ToString(), _val =>
-            {
-                if (int.TryParse(_val, out int num))
-                    modifier.triggerCount = Mathf.Clamp(num, 0, int.MaxValue);
-
-                modifier.runCount = 0;
-
-                try
+                var constantToggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
+                constantToggle.SetIsOnWithoutNotify(modifier.constant);
+                constantToggle.onValueChanged.NewListener(_val =>
                 {
-                    modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-                modifier.active = false;
-            }, out InputField countField);
+                    modifier.constant = _val;
+                    Update(modifier, reference);
+                });
 
-            TooltipHelper.AssignTooltip(countField.gameObject, "Run Count Modifier");
-            TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
-            TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
+                TooltipHelper.AssignTooltip(constantToggle.gameObject, "Constant Modifier");
+                EditorThemeManager.ApplyLightText(constantText);
+                EditorThemeManager.ApplyToggle(constantToggle);
+
+                var count = NumberGenerator(layout, "Run Count", modifier.triggerCount.ToString(), _val =>
+                {
+                    if (int.TryParse(_val, out int num))
+                        modifier.triggerCount = Mathf.Clamp(num, 0, int.MaxValue);
+
+                    modifier.runCount = 0;
+
+                    try
+                    {
+                        modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+                    modifier.active = false;
+                }, out InputField countField);
+
+                TooltipHelper.AssignTooltip(countField.gameObject, "Run Count Modifier");
+                TriggerHelper.IncreaseDecreaseButtonsInt(countField, 1, 0, int.MaxValue, count.transform);
+                TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
+            }
 
             if (modifier.type == Modifier.Type.Trigger)
             {
@@ -367,6 +372,47 @@ namespace BetterLegacy.Editor.Data.Elements
 
             switch (name)
             {
+                case "comment": {
+                        layout.transform.AsRT().sizeDelta = new Vector2(340f, 126f);
+                        var input = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(layout, "Input");
+                        input.transform.localScale = Vector2.one;
+                        input.transform.AsRT().sizeDelta = new Vector2(340f, 126f);
+                        input.transform.Find("Text").AsRT().sizeDelta = Vector2.zero;
+                        var inputField = input.GetComponent<InputField>();
+                        inputField.textComponent.alignment = TextAnchor.UpperLeft;
+                        inputField.lineType = InputField.LineType.MultiLineNewline;
+                        inputField.interactable = !modifier.GetBool(1, false);
+                        inputField.SetTextWithoutNotify(modifier.GetValue(0));
+                        inputField.onValueChanged.NewListener(_val =>
+                        {
+                            modifier.SetValue(0, _val);
+
+                            Update(modifier, reference);
+                        });
+
+                        EditorThemeManager.ApplyInputField(inputField);
+
+                        var contextClickable = input.AddComponent<ContextClickable>();
+                        contextClickable.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction(modifier.GetBool(1, false) ? "Unlock comment" : "Lock comment", () =>
+                                {
+                                    modifier.SetValue(1, (!modifier.GetBool(1, false)).ToString());
+
+                                    Update(modifier, reference);
+
+                                    if (inputField)
+                                        inputField.interactable = !modifier.GetBool(1, false);
+                                }));
+                        };
+
+                        break;
+                    }
+
                 case nameof(ModifierActions.setActive): {
                         BoolGenerator(modifier, reference, "Active", 0, false);
 
