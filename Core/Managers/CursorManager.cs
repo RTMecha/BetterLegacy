@@ -184,7 +184,11 @@ namespace BetterLegacy.Core.Managers
         /// Sets the cursors' position.
         /// </summary>
         /// <param name="pos">Position to set.</param>
-        public void SetCursorPosition(Vector2 pos) => System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)pos.x, (int)pos.y);
+        public void SetCursorPosition(Vector2 pos)
+        {
+            if (Application.isFocused && !CoreHelper.IsEditing)
+                System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)pos.x, (int)pos.y);
+        }
 
         #endregion
     }
