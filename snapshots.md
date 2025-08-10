@@ -1,4 +1,10 @@
-﻿# snapshot-2025.8.8 - (pre-1.8.0) [Aug 9, 2025]
+﻿# ???
+## Features
+### Editor
+- Added a "comment" modifier that allows you to describe what a modifier function does. The comment can be locked / unlocked by right clicking the input field and selecting the context menu button.
+- You can now enable / disable the "Show Collapse Prefab Warning" setting via the "Apply / Collapse" buttons' context menu.
+
+# snapshot-2025.8.8 - (pre-1.8.0) [Aug 9, 2025]
 ## Features
 ### Editor
 - Object keyframe UI can now be customized via right clicking the X / Y / Z values and changing the UI to a Input Field, Dropdown or Toggle. You can also customize how each of these display.
