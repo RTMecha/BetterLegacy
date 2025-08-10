@@ -278,7 +278,6 @@ namespace BetterLegacy.Core.Runtime
                 RTBeatmap.Current.LevelStarted = false;
             }
 
-
             if (logTick)
                 Log($"Start post-tick at: {sw.Elapsed}");
             sw?.Stop();

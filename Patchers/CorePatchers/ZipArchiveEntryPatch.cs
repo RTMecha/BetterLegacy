@@ -23,27 +23,22 @@ namespace BetterLegacy.Patchers
         static Stream OpenInWriteMode(ZipArchiveEntry __instance)
         {
             if (__instance._everOpenedForWrite)
-            {
                 throw new IOException("Ever opened for write");
-            }
             __instance._everOpenedForWrite = true;
-            var dataCompressor = GetDataCompressor(__instance, __instance._archive.ArchiveStream, true, delegate (object o, EventArgs e)
+            var dataCompressor = GetDataCompressor(__instance, __instance._archive.ArchiveStream, true, (object o, EventArgs e) =>
             {
                 __instance._archive.ReleaseArchiveStream(__instance);
                 __instance._outstandingWriteStream = null;
             });
             __instance._outstandingWriteStream = new ZipArchiveEntry.DirectToArchiveWriterStream(dataCompressor, __instance);
-            return new WrappedStream(__instance._outstandingWriteStream, delegate (object o, EventArgs e)
-            {
-                __instance._outstandingWriteStream.Close();
-            });
+            return new WrappedStream(__instance._outstandingWriteStream, (object o, EventArgs e) => __instance._outstandingWriteStream.Close());
         }
 
         static CheckSumAndSizeWriteStream GetDataCompressor(ZipArchiveEntry __instance, Stream backingStream, bool leaveBackingStreamOpen, EventHandler onClose)
         {
             var stream = new DeflateStream(backingStream, CompressionMode.Compress, leaveBackingStreamOpen);
 
-            return new CheckSumAndSizeWriteStream(stream, backingStream, leaveBackingStreamOpen && !true, delegate (long initialPosition, long currentPosition, uint checkSum)
+            return new CheckSumAndSizeWriteStream(stream, backingStream, leaveBackingStreamOpen && !true, (long initialPosition, long currentPosition, uint checkSum) =>
             {
                 __instance._crc32 = checkSum;
                 __instance._uncompressedSize = currentPosition;
@@ -51,6 +46,5 @@ namespace BetterLegacy.Patchers
                 onClose?.Invoke(__instance, EventArgs.Empty);
             });
         }
-
     }
 }
