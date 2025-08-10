@@ -3,6 +3,7 @@
 ### Editor
 - Added a "comment" modifier that allows you to describe what a modifier function does. The comment can be locked / unlocked by right clicking the input field and selecting the context menu button.
 - You can now enable / disable the "Show Collapse Prefab Warning" setting via the "Apply / Collapse" buttons' context menu.
+- Modifier cards can now display a custom name and have a description display in the info box.
 
 # snapshot-2025.8.8 - (pre-1.8.0) [Aug 9, 2025]
 ## Features
