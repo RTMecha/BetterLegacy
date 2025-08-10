@@ -71,19 +71,22 @@ namespace BetterLegacy.Editor.Managers
 
             var collapse = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(mcpLabel.transform, "Collapse");
             collapse.transform.localScale = Vector3.one;
-            var collapseLayoutElement = collapse.GetComponent<LayoutElement>() ?? collapse.AddComponent<LayoutElement>();
+            var collapseHoverTooltip = collapse.GetComponent<HoverTooltip>();
+            if (collapseHoverTooltip)
+                CoreHelper.Destroy(collapseHoverTooltip);
+            var collapseLayoutElement = collapse.GetOrAddComponent<LayoutElement>();
             collapseLayoutElement.minWidth = 32f;
             RectValues.Default.AnchoredPosition(70f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(collapse.transform.AsRT());
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Delete");
             delete.transform.localScale = Vector3.one;
-            var deleteLayoutElement = delete.GetComponent<LayoutElement>() ?? delete.AddComponent<LayoutElement>();
+            var deleteLayoutElement = delete.GetOrAddComponent<LayoutElement>();
             deleteLayoutElement.minWidth = 32f;
             RectValues.Default.AnchoredPosition(140f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
 
             var copy = EditorPrefabHolder.Instance.DeleteButton.Duplicate(mcpLabel.transform, "Copy");
             copy.transform.localScale = Vector3.one;
-            var duplicateLayoutElement = copy.GetComponent<LayoutElement>() ?? copy.AddComponent<LayoutElement>();
+            var duplicateLayoutElement = copy.GetOrAddComponent<LayoutElement>();
             duplicateLayoutElement.minWidth = 32f;
             RectValues.Default.AnchoredPosition(106f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(copy.transform.AsRT());
 
