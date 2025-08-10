@@ -565,7 +565,12 @@ namespace BetterLegacy.Editor.Managers
         void UpdateTimelineObjects()
         {
             for (int i = 0; i < timelineObjects.Count; i++)
-                timelineObjects[i].RenderVisibleState();
+            {
+                var timelineObject = timelineObjects[i];
+                timelineObject.RenderVisibleState();
+                if (timelineObject.IsCurrentLayer)
+                    timelineObject.RenderPosLength();
+            }
 
             if (CurrentSelection && CurrentSelection.isBeatmapObject && CurrentSelection.InternalTimelineObjects.Count > 0)
                 for (int i = 0; i < CurrentSelection.InternalTimelineObjects.Count; i++)
@@ -573,6 +578,9 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < timelineKeyframes.Count; i++)
                 timelineKeyframes[i].RenderVisibleState();
+
+            for (int i = 0; i < RTMarkerEditor.inst.timelineMarkers.Count; i++)
+                RTMarkerEditor.inst.timelineMarkers[i].Render();
         }
 
         /// <summary>
@@ -596,7 +604,7 @@ namespace BetterLegacy.Editor.Managers
             if (!timelineObject.GameObject)
             {
                 timelineObject.AddToList();
-                timelineObject.Init();
+                timelineObject.Init(false);
             }
 
             timelineObject.Render();
@@ -610,8 +618,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderTimelineObjectsPositions()
         {
-            foreach (var timelineObject in timelineObjects)
+            for (int i = 0; i < timelineObjects.Count; i++)
             {
+                var timelineObject = timelineObjects[i];
                 if (timelineObject.IsCurrentLayer)
                     timelineObject.RenderPosLength();
             }
@@ -624,21 +633,31 @@ namespace BetterLegacy.Editor.Managers
             timelineObjects.Clear();
         }
 
+        public Action<TimelineObject, int, int> onTimelineObjectCreated;
         public IEnumerable<TimelineObject> ToTimelineObjects()
         {
             if (!GameData.Current)
                 yield break;
 
-            var editables = GameData.Current.FindEditablesList(x => x.CanRenderInTimeline);
+            var editables = GameData.Current.GetEditablesList();
+            int num = 0;
             foreach (var editable in editables)
             {
+                if (!editable.CanRenderInTimeline)
+                {
+                    num++;
+                    continue;
+                }
+
                 TimelineObject timelineObject = null;
 
                 try
                 {
                     timelineObject = GetTimelineObject(editable);
                     timelineObject.verified = true;
-                    timelineObject.Init(true);
+                    timelineObject.Init(false);
+                    timelineObject.Render();
+                    onTimelineObjectCreated?.Invoke(timelineObject, num, editables.Count);
                 }
                 catch (Exception e)
                 {
@@ -649,8 +668,10 @@ namespace BetterLegacy.Editor.Managers
 
                     Debug.LogError(stringBuilder.ToString());
                 }
+
                 if (timelineObject)
                     yield return timelineObject;
+                num++;
             }
         }
 
@@ -671,7 +692,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var timelineObject = GetTimelineObject(beatmapObject);
                 timelineObject.AddToList(true);
-                timelineObject.Init(true);
+                timelineObject.Init();
             }
 
             for (int i = 0; i < GameData.Current.backgroundObjects.Count; i++)
@@ -682,7 +703,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var timelineObject = GetTimelineObject(backgroundObject);
                 timelineObject.AddToList(true);
-                timelineObject.Init(true);
+                timelineObject.Init();
             }
 
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
@@ -693,7 +714,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var timelineObject = GetTimelineObject(prefabObject);
                 timelineObject.AddToList(true);
-                timelineObject.Init(true);
+                timelineObject.Init();
             }
         }
 
@@ -1568,14 +1589,11 @@ namespace BetterLegacy.Editor.Managers
             if (prevLayer != layer || prevLayerType != layerType)
             {
                 UpdateTimelineObjects();
-                foreach (var timelineMarker in RTMarkerEditor.inst.timelineMarkers)
-                    timelineMarker.Render();
 
                 switch (layerType)
                 {
                     case LayerType.Objects: {
                             RenderBins();
-                            RenderTimelineObjectsPositions();
 
                             ClampTimeline(false);
 

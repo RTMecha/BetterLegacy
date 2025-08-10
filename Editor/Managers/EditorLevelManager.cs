@@ -659,14 +659,6 @@ namespace BetterLegacy.Editor.Managers
 
             RTPlayer.GameMode = GameMode.Regular;
 
-            string code = RTFile.CombinePaths(fullPath, $"EditorLoad{FileFormat.CS.Dot()}");
-            if (RTFile.FileExists(code))
-            {
-                var str = RTFile.ReadFromFile(code);
-                if (RTCode.Validate(str))
-                    yield return StartCoroutine(RTCode.IEvaluate(str));
-            }
-
             EditorTimeline.inst.SetLayer(0, EditorTimeline.LayerType.Objects);
 
             WindowController.ResetTitle();
@@ -875,11 +867,12 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CoreHelper.Log("Updating objects...");
-            StartCoroutine(RTLevel.IReinit());
+            yield return StartCoroutine(RTLevel.IReinit());
+            RTLevel.Current.Tick();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
-            CoreHelper.Log("Updating timeline objects...");
-            EventEditor.inst.CreateEventObjects();
+            CoreHelper.Log("Updating timeline...");
+            RTEventEditor.inst.CreateEventObjects();
 
             RTMarkerEditor.inst.CreateMarkers();
             RTMarkerEditor.inst.markerLooping = false;
