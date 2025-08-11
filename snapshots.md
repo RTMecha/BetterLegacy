@@ -1,4 +1,10 @@
-﻿# snapshot-2025.8.10 - (pre-1.8.0) [Aug 12, 2025]
+﻿# snapshot-2025.8.11 - (pre-1.8.0) [Aug 12, 2025]
+## Fixes
+- Hotfix for uploader data breaking saves.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.10 - (pre-1.8.0) [Aug 12, 2025]
 ## Features
 ### Core
 - Implemented uploader data to Level Collections, Prefabs, Beatmap Themes and Player Models.
