@@ -24,7 +24,7 @@ namespace BetterLegacy.Core.Data.Level
     /// <summary>
     /// Stores multiple levels in a specific order. Good for stories.
     /// </summary>
-    public class LevelCollection : Exists
+    public class LevelCollection : Exists, IUploadable
     {
         public LevelCollection() => id = PAObjectBase.GetNumberID();
 
@@ -43,17 +43,48 @@ namespace BetterLegacy.Core.Data.Level
             }
         }
 
-        #region Fields
+        #region Values
+
+        public DifficultyType Difficulty { get => difficulty; set => difficulty = value; }
+
+        /// <summary>
+        /// Gets the level that the player first enters when clicking Play.<br>Level is either a hub level or the first in the collection.</br>
+        /// </summary>
+        public Level EntryLevel => this[EntryLevelIndex];
+
+        /// <summary>
+        /// Gets the levels' index that the player first enters when clicking Play.<br>Level is either a hub level or the first in the collection.</br>
+        /// </summary>
+        public int EntryLevelIndex
+        {
+            get
+            {
+                if (levelInformation.InRange(this.entryLevelIndex))
+                    return this.entryLevelIndex;
+
+                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.saveData && x.saveData.Unlocked));
+
+                if (entryLevelIndex < 0)
+                    entryLevelIndex = 0;
+
+                return entryLevelIndex;
+            }
+        }
+
+        /// <summary>
+        /// Total amount of levels in the collection.
+        /// </summary>
+        public int Count => levels.Count;
+
+        /// <summary>
+        /// Gets the level collection paths' folder name.
+        /// </summary>
+        public string FolderName => string.IsNullOrEmpty(path) ? path : Path.GetFileName(RTFile.RemoveEndSlash(path));
 
         /// <summary>
         /// Identification number of the collection.
         /// </summary>
         public string id = string.Empty;
-
-        /// <summary>
-        /// Server ID of the collection.
-        /// </summary>
-        public string serverID = string.Empty;
 
         /// <summary>
         /// Name of the collection.
@@ -76,11 +107,6 @@ namespace BetterLegacy.Core.Data.Level
         public int difficulty;
 
         /// <summary>
-        /// Tags used to identify the collection.
-        /// </summary>
-        public List<string> tags = new List<string>();
-
-        /// <summary>
         /// Full path of the collection. Must end with a "/".
         /// </summary>
         public string path = string.Empty;
@@ -99,6 +125,11 @@ namespace BetterLegacy.Core.Data.Level
         /// Audio to play when viewing the collection.
         /// </summary>
         public AudioClip previewAudio;
+
+        /// <summary>
+        /// First level to enter.
+        /// </summary>
+        public int entryLevelIndex = -1;
 
         /// <summary>
         /// All levels the collection contains.
@@ -125,42 +156,32 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public LevelCollectionPanel editorPanel;
 
+        #region Server
+
+        /// <summary>
+        /// Server ID of the collection.
+        /// </summary>
+        public string serverID = string.Empty;
+
+        public string ServerID { get => serverID; set => serverID = value; }
+
+        public string UploaderName { get; set; }
+
+        public string UploaderID { get; set; }
+
+        public List<string> Uploaders { get; set; }
+
+        public ServerVisibility Visibility { get; set; }
+
+        public string Changelog { get; set; }
+
+        /// <summary>
+        /// Tags used to identify the collection.
+        /// </summary>
+        public List<string> tags = new List<string>();
+        public List<string> ArcadeTags { get => tags; set => tags = value; }
+
         #endregion
-
-        #region Properties
-
-        public DifficultyType Difficulty { get => difficulty; set => difficulty = value; }
-
-        /// <summary>
-        /// Gets the level that the player first enters when clicking Play.<br>Level is either a hub level or the first in the collection.</br>
-        /// </summary>
-        public Level EntryLevel => this[EntryLevelIndex];
-
-        /// <summary>
-        /// Gets the levels' index that the player first enters when clicking Play.<br>Level is either a hub level or the first in the collection.</br>
-        /// </summary>
-        public int EntryLevelIndex
-        {
-            get
-            {
-                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.saveData && x.saveData.Unlocked));
-
-                if (entryLevelIndex < 0)
-                    entryLevelIndex = 0;
-
-                return entryLevelIndex;
-            }
-        }
-
-        /// <summary>
-        /// Total amount of levels in the collection.
-        /// </summary>
-        public int Count => levels.Count;
-
-        /// <summary>
-        /// Gets the level collection paths' folder name.
-        /// </summary>
-        public string FolderName => string.IsNullOrEmpty(path) ? path : Path.GetFileName(RTFile.RemoveEndSlash(path));
 
         #endregion
 
@@ -232,19 +253,15 @@ namespace BetterLegacy.Core.Data.Level
         {
             var collection = new LevelCollection();
             collection.id = jn["id"] ?? PAObjectBase.GetNumberID();
-            collection.serverID = jn["server_id"] ?? string.Empty;
             collection.name = jn["name"] ?? string.Empty;
             collection.creator = jn["creator"] ?? string.Empty;
             collection.description = jn["desc"] ?? string.Empty;
             collection.difficulty = jn["difficulty"].AsInt;
             collection.path = path;
+            if (jn["entry_level_index"] != null)
+                collection.entryLevelIndex = jn["entry_level_index"].AsInt;
 
-            if (jn["tags"] != null)
-            {
-                collection.tags = new List<string>();
-                for (int i = 0; i < jn["tags"].Count; i++)
-                    collection.tags.Add(jn["tags"][i]);
-            }
+            collection.ReadUploadableJSON(jn);
 
             for (int i = 0; i < jn["levels"].Count; i++)
             {
@@ -573,8 +590,6 @@ namespace BetterLegacy.Core.Data.Level
             var jn = Parser.NewJSONObject();
 
             jn["id"] = id ?? PAObjectBase.GetNumberID();
-            if (!string.IsNullOrEmpty(serverID))
-                jn["server_id"] = serverID;
             if (!string.IsNullOrEmpty(name))
                 jn["name"] = name;
             if (!string.IsNullOrEmpty(creator))
@@ -583,10 +598,10 @@ namespace BetterLegacy.Core.Data.Level
                 jn["desc"] = description;
             if (difficulty != 0)
                 jn["difficulty"] = difficulty;
+            if (levelInformation.InRange(entryLevelIndex))
+                jn["entry_level_index"] = entryLevelIndex;
 
-            if (tags != null)
-                for (int i = 0; i < tags.Count; i++)
-                    jn["tags"][i] = tags[i] ?? string.Empty;
+            this.WriteUploadableJSON(jn);
 
             for (int i = 0; i < levelInformation.Count; i++)
                 jn["levels"][i] = levelInformation[i].ToJSON();

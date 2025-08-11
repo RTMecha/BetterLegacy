@@ -2209,9 +2209,8 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Copies parent data from another modifyable object.
+        /// Copies modifyable data from another modifyable object.
         /// </summary>
-        /// <typeparam name="T">Type of the modifyable.</typeparam>
         /// <param name="orig">Modifyable object to copy and apply from.</param>
         public static void CopyModifyableData(this IModifyable modifyable, IModifyable orig)
         {
@@ -2222,6 +2221,21 @@ namespace BetterLegacy.Core
             modifyable.Modifiers.Clear();
             for (int i = 0; i < orig.Modifiers.Count; i++)
                 modifyable.Modifiers.Add(orig.Modifiers[i].Copy());
+        }
+
+        /// <summary>
+        /// Copies uploadable data from another uploadable object.
+        /// </summary>
+        /// <param name="orig">Uploadable object to copy and apply from.</param>
+        public static void CopyUploadableData(this IUploadable uploadable, IUploadable orig)
+        {
+            uploadable.ServerID = orig.ServerID ?? string.Empty;
+            uploadable.UploaderName = orig.UploaderName ?? string.Empty;
+            uploadable.UploaderID = orig.UploaderID ?? string.Empty;
+            uploadable.Uploaders = new List<string>(orig.Uploaders);
+            uploadable.Visibility = orig.Visibility;
+            uploadable.Changelog = orig.Changelog ?? string.Empty;
+            uploadable.ArcadeTags = new List<string>(orig.ArcadeTags);
         }
 
         #region JSON
@@ -2396,12 +2410,11 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Reads <see cref="IModifyable{T}"/> data from JSON.
+        /// Reads <see cref="IModifyable"/> data from JSON.
         /// </summary>
-        /// <typeparam name="T">Type of the modifyable.</typeparam>
         /// <param name="modifyable">Modifyable object reference.</param>
         /// <param name="jn">JSON to read from.</param>
-        /// <param name="defaultModifiers">Default modifiers list to validate from.</param>
+        /// <param name="handleOutdatedPageModifiers">If outdated page modifiers should be handled.</param>
         public static void ReadModifiersJSON(this IModifyable modifyable, JSONNode jn, bool handleOutdatedPageModifiers = false)
         {
             modifyable.Tags.Clear();
@@ -2464,9 +2477,8 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Writes <see cref="IModifyable{T}"/> data to JSON.
+        /// Writes <see cref="IModifyable"/> data to JSON.
         /// </summary>
-        /// <typeparam name="T">Type of the modifyable.</typeparam>
         /// <param name="modifyable">Modifyable object reference.</param>
         /// <param name="jn">JSON to write to.</param>
         public static void WriteModifiersJSON(this IModifyable modifyable, JSONNode jn)
@@ -2481,6 +2493,63 @@ namespace BetterLegacy.Core
                 jn["ordmod"] = modifyable.OrderModifiers;
             for (int i = 0; i < modifyable.Modifiers.Count; i++)
                 jn["modifiers"][i] = modifyable.Modifiers[i].ToJSON();
+        }
+
+        /// <summary>
+        /// Reads <see cref="IUploadable"/> data from JSON.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object reference.</param>
+        /// <param name="jn">JSON to read from.</param>
+        public static void ReadUploadableJSON(this IUploadable uploadable, JSONNode jn)
+        {
+            uploadable.ServerID = jn["server_id"] ?? string.Empty;
+            uploadable.UploaderName = jn["uploader_name"] ?? string.Empty;
+            uploadable.UploaderID = jn["uploader_id"] ?? string.Empty;
+
+            uploadable.Uploaders = new List<string>();
+            if (jn["uploaders"] != null)
+                for (int i = 0; i < jn["uploaders"].Count; i++)
+                    uploadable.Uploaders.Add(jn["uploaders"][i]["id"]);
+
+            if (!string.IsNullOrEmpty(jn["visibility"]))
+                uploadable.Visibility = (ServerVisibility)jn["visibility"].AsInt;
+
+            uploadable.Changelog = jn["changelog"] ?? string.Empty;
+
+            uploadable.ArcadeTags = new List<string>();
+            if (jn["tags"] != null)
+                for (int i = 0; i < jn["tags"].Count; i++)
+                    uploadable.ArcadeTags.Add(jn["tags"][i].Value.Replace(" ", "_"));
+        }
+
+        /// <summary>
+        /// Writes <see cref="IUploadable"/> data to JSON.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object reference.</param>
+        /// <param name="jn">JSON to write to.</param>
+        public static void WriteUploadableJSON(this IUploadable uploadable, JSONNode jn)
+        {
+            if (!string.IsNullOrEmpty(uploadable.ServerID))
+                jn["server_id"] = uploadable.ServerID;
+
+            if (!string.IsNullOrEmpty(uploadable.UploaderName))
+                jn["uploader_name"] = uploadable.UploaderName;
+
+            if (!string.IsNullOrEmpty(uploadable.UploaderID))
+                jn["uploader_id"] = uploadable.UploaderID;
+
+            for (int i = 0; i < uploadable.Uploaders.Count; i++)
+                jn["uploaders"][i]["id"] = uploadable.Uploaders[i];
+
+            if (uploadable.Visibility != ServerVisibility.Public)
+                jn["visibility"] = ((int)uploadable.Visibility).ToString();
+
+            if (!string.IsNullOrEmpty(uploadable.Changelog))
+                jn["changelog"] = uploadable.Changelog;
+
+            if (uploadable.ArcadeTags != null)
+                for (int i = 0; i < uploadable.ArcadeTags.Count; i++)
+                    jn["tags"][i] = uploadable.ArcadeTags[i] ?? string.Empty;
         }
 
         #endregion

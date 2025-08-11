@@ -233,7 +233,7 @@ namespace BetterLegacy.Core.Managers
         {
             if (PlayerManager.Players.Count > 1)
                 UnlockAchievement("friendship");
-            var tags = LevelManager.CurrentLevel.metadata.song.tags;
+            var tags = LevelManager.CurrentLevel.metadata.tags;
             if (tags.Contains("joke") || tags.Contains("joke_level") || tags.Contains("meme") || tags.Contains("meme_level"))
                 UnlockAchievement("youve_been_trolled");
             if (tags.Contains("high_detail") || tags.Contains("lag"))

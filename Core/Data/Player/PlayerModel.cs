@@ -14,7 +14,7 @@ using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Player
 {
-    public class PlayerModel : PAObject<PlayerModel>, IModifyable
+    public class PlayerModel : PAObject<PlayerModel>, IModifyable, IUploadable
     {
         public PlayerModel()
         {
@@ -31,34 +31,7 @@ namespace BetterLegacy.Core.Data.Player
             boostTailPart.color = 25;
             boostTailPart.active = false;
 
-            float t = 0.5f;
-            for (int i = 0; i < 3; i++)
-            {
-                var tail = new PlayerObject();
-                tail.Trail.emitting = true;
-                tail.color = 25;
-                tail.scale = new Vector2(t, t);
-                tail.Trail.time = 0.075f;
-                tail.Trail.startWidth = t;
-                tail.Trail.endWidth = t / 2f;
-                tail.Trail.startColor = 25;
-                tail.Trail.endColor = 25;
-
-                // 1 Trail Time = 0.075
-                // 1 Trail Start Width = 0.5
-                // 1 Trail End Width = 0.3
-
-                // 2 Trail Time = 0.075
-                // 2 Trail Start Width = 0.4
-                // 2 Trail End Width = 0.2
-
-                // 3 Trail Time = 0.075
-                // 3 Trail Start Width = 0.3
-                // 3 Trail End Width = 0.1
-
-                tailParts.Add(tail);
-                t -= 0.1f;
-            }
+            tailParts = GetDefaultTail();
         }
 
         #region Default Models
@@ -219,6 +192,44 @@ namespace BetterLegacy.Core.Data.Player
             }
         }
 
+        /// <summary>
+        /// Gets the default tail parts list.
+        /// </summary>
+        /// <returns>Returns the default player tail.</returns>
+        public static List<PlayerObject> GetDefaultTail()
+        {
+            var tailParts = new List<PlayerObject>(4);
+            float t = 0.5f;
+            for (int i = 0; i < 3; i++)
+            {
+                var tail = new PlayerObject();
+                tail.Trail.emitting = true;
+                tail.color = 25;
+                tail.scale = new Vector2(t, t);
+                tail.Trail.time = 0.075f;
+                tail.Trail.startWidth = t;
+                tail.Trail.endWidth = t / 2f;
+                tail.Trail.startColor = 25;
+                tail.Trail.endColor = 25;
+
+                // 1 Trail Time = 0.075
+                // 1 Trail Start Width = 0.5
+                // 1 Trail End Width = 0.3
+
+                // 2 Trail Time = 0.075
+                // 2 Trail Start Width = 0.4
+                // 2 Trail End Width = 0.2
+
+                // 3 Trail Time = 0.075
+                // 3 Trail Start Width = 0.3
+                // 3 Trail End Width = 0.1
+
+                tailParts.Add(tail);
+                t -= 0.1f;
+            }
+            return tailParts;
+        }
+
         #region Internal
 
         static List<PlayerModel> defaultModels;
@@ -267,6 +278,8 @@ namespace BetterLegacy.Core.Data.Player
 
         public List<CustomPlayerObject> customObjects = new List<CustomPlayerObject>();
 
+        #region Modifiers
+
         public ModifierReferenceType ReferenceType => ModifierReferenceType.PlayerModel;
 
         public List<string> Tags { get; set; } = new List<string>();
@@ -282,6 +295,26 @@ namespace BetterLegacy.Core.Data.Player
         public int IntVariable { get; set; }
 
         public bool ModifiersActive => false;
+
+        #endregion
+
+        #region Server
+
+        public string ServerID { get; set; }
+
+        public string UploaderName { get; set; }
+
+        public string UploaderID { get; set; }
+
+        public List<string> Uploaders { get; set; }
+
+        public ServerVisibility Visibility { get; set; }
+
+        public string Changelog { get; set; }
+
+        public List<string> ArcadeTags { get; set; }
+
+        #endregion
 
         #endregion
 
@@ -309,6 +342,7 @@ namespace BetterLegacy.Core.Data.Player
             for (int i = 0; i < orig.customObjects.Count; i++)
                 customObjects.Add(orig.customObjects[i].Copy(false));
             this.CopyModifyableData(orig);
+            this.CopyUploadableData(orig);
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -317,6 +351,8 @@ namespace BetterLegacy.Core.Data.Player
                 Version = new Version(jn["version"]);
             else
                 needsUpdate = true;
+
+            this.ReadUploadableJSON(jn);
 
             if (jn["assets"] != null)
                 assets.ReadJSON(jn["assets"]);
@@ -340,33 +376,16 @@ namespace BetterLegacy.Core.Data.Player
             tailBase.ReadJSON(jn["tail_base"]);
             boostTailPart.ReadJSON(jn["tail_boost"]);
 
-            tailParts.Clear();
             if (jn["tail"] != null && jn["tail"].Count > 0)
+            {
+                tailParts.Clear();
                 for (int i = 0; i < jn["tail"].Count; i++)
                     tailParts.Add(PlayerObject.Parse(jn["tail"][i]));
-            else
-            {
-                float t = 0.5f;
-                for (int i = 0; i < 3; i++)
-                {
-                    var tail = new PlayerObject();
-                    tail.Trail.emitting = true;
-                    tail.color = 25;
-                    tail.scale = new Vector2(t, t);
-                    tail.Trail.startColor = 25;
-                    tail.Trail.endColor = 25;
-                    tailParts.Add(tail);
-                    t -= 0.1f;
-                }
             }
+            else
+                tailParts = GetDefaultTail();
 
-            if (jn["modifiers"] != null && jn["modifiers"].Count > 0)
-                for (int i = 0; i < jn["modifiers"].Count; i++)
-                {
-                    var modifier = Modifier.Parse(jn["modifiers"][i]);
-                    if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.modifiers))
-                        modifiers.Add(modifier);
-                }
+            this.ReadModifiersJSON(jn);
 
             if (jn["custom_objects"] != null && jn["custom_objects"].Count > 0)
                 for (int i = 0; i < jn["custom_objects"].Count; i++)
@@ -384,6 +403,8 @@ namespace BetterLegacy.Core.Data.Player
             var jn = Parser.NewJSONObject();
 
             jn["version"] = Version.ToString();
+
+            this.WriteUploadableJSON(jn);
 
             if (assets && !assets.IsEmpty())
                 jn["assets"] = assets.ToJSON();
@@ -415,9 +436,7 @@ namespace BetterLegacy.Core.Data.Player
                 for (int i = 0; i < tailParts.Count; i++)
                     jn["tail"][i] = tailParts[i].ToJSON();
 
-            if (modifiers != null && !modifiers.IsEmpty())
-                for (int i = 0; i < modifiers.Count; i++)
-                    jn["modifiers"][i] = modifiers[i].ToJSON();
+            this.WriteModifiersJSON(jn);
 
             if (customObjects != null && !customObjects.IsEmpty())
                 for (int i = 0; i < customObjects.Count; i++)

@@ -1272,7 +1272,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(LocalSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchListMatcher(level.metadata.song.tags),
+                new SearchListMatcher(level.metadata.tags),
                 level.metadata.artist.name,
                 level.metadata.creator.name,
                 level.metadata.song.title,
@@ -1875,7 +1875,7 @@ namespace BetterLegacy.Arcade.Interfaces
             Directory.GetDirectories(BrowserCurrentDirectory)
                     .Where(x => string.IsNullOrEmpty(BrowserSearch) || Path.GetFileName(x).ToLower().Contains(BrowserSearch.ToLower()) || Level.TryVerify(x + "/", false, out Level level) &&
                         (level.id == BrowserSearch
-                        || level.metadata.song.tags.Contains(BrowserSearch.ToLower())
+                        || level.metadata.tags.Contains(BrowserSearch.ToLower())
                         || level.metadata.artist.name.ToLower().Contains(BrowserSearch.ToLower())
                         || level.metadata.creator.name.ToLower().Contains(BrowserSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(BrowserSearch.ToLower())
@@ -2132,7 +2132,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection &&
             RTString.SearchString(QueueSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchListMatcher(level.metadata.song.tags),
+                new SearchListMatcher(level.metadata.tags),
                 level.metadata.artist.name,
                 level.metadata.creator.name,
                 level.metadata.song.title,
@@ -2398,7 +2398,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> SubscribedSteamLevels => SteamWorkshopManager.inst.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(SteamSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchListMatcher(level.metadata.song.tags),
+                new SearchListMatcher(level.metadata.tags),
                 level.metadata.artist.name,
                 level.metadata.creator.name,
                 level.metadata.song.title,

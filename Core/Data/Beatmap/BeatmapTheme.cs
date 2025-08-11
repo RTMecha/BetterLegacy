@@ -12,7 +12,7 @@ using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BeatmapTheme : PAObject<BeatmapTheme>
+    public class BeatmapTheme : PAObject<BeatmapTheme>, IUploadable
     {
         public BeatmapTheme() => id = string.Empty;
 
@@ -41,6 +41,24 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<Color> backgroundColors = new List<Color>();
 
         public ThemePanel themePanel;
+
+        #region Server
+
+        public string ServerID { get; set; }
+
+        public string UploaderName { get; set; }
+
+        public string UploaderID { get; set; }
+
+        public List<string> Uploaders { get; set; }
+
+        public ServerVisibility Visibility { get; set; }
+
+        public string Changelog { get; set; }
+
+        public List<string> ArcadeTags { get; set; }
+
+        #endregion
 
         #endregion
 
@@ -170,6 +188,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             var lastFXColor = effectColors.Last();
             while (effectColors.Count < 18)
                 effectColors.Add(lastFXColor);
+
+            this.CopyUploadableData(orig);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -234,13 +254,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void ReadJSON(JSONNode jn)
         {
             id = jn["id"] ?? ThemeManager.inst.ThemeCount.ToString();
-
             name = jn["name"] ?? "name your themes!";
+            this.ReadUploadableJSON(jn);
 
             guiColor = jn["gui"] != null ? ((string)jn["gui"]).Length == 8 ? LSColors.HexToColorAlpha(jn["gui"]) : LSColors.HexToColor(jn["gui"]) : LSColors.gray800;
-
             guiAccentColor = jn["gui_ex"] != null ? ((string)jn["gui_ex"]).Length == 8 ? LSColors.HexToColor(jn["gui_ex"]) : LSColors.HexToColorAlpha(jn["gui_ex"]) : guiColor;
-
             backgroundColor = jn["bg"] != null ? LSColors.HexToColor(jn["bg"]) : LSColors.gray100;
 
             playerColors = jn["players"] != null ? SetColors(jn["players"], 4, "Player Hex code does not exist for some reason") : new List<Color>
@@ -250,7 +268,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                     LSColors.HexToColorAlpha("81C784FF"),
                     LSColors.HexToColorAlpha("FFB74DFF"),
                 };
-
             objectColors = jn["objs"] != null ? SetColors(jn["objs"], 18) : new List<Color>
             {
                 LSColors.pink100,
@@ -272,7 +289,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                 LSColors.pink800,
                 LSColors.pink900,
             };
-
             backgroundColors = jn["bgs"] != null ? SetColors(jn["bgs"], 9, "BG Hex code does not exist for some reason") : new List<Color>
                 {
                     LSColors.gray100,
@@ -285,13 +301,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     LSColors.gray800,
                     LSColors.gray900,
                 };
-
             effectColors = jn["fx"] != null ? SetColors(jn["fx"], 18) : objectColors.Clone();
         }
 
         public override JSONNode ToJSONVG()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["name"] = name;
             if (!string.IsNullOrEmpty(VGID))
@@ -317,10 +332,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["id"] = id;
             jn["name"] = name;
+            this.WriteUploadableJSON(jn);
+
             jn["gui_ex"] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(guiAccentColor) : LSColors.ColorToHex(guiAccentColor);
             jn["gui"] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(guiColor) : LSColors.ColorToHex(guiColor);
             jn["bg"] = LSColors.ColorToHex(backgroundColor);

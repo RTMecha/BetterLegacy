@@ -13,7 +13,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Contains a package of <see cref="IPrefabable"/> objects.
     /// </summary>
-    public class Prefab : PAObject<Prefab>, IBeatmap, IPrefabable
+    public class Prefab : PAObject<Prefab>, IBeatmap, IPrefabable, IUploadable
     {
         public Prefab() : base() { }
 
@@ -147,6 +147,24 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        #region Server
+
+        public string ServerID { get; set; }
+
+        public string UploaderName { get; set; }
+
+        public string UploaderID { get; set; }
+
+        public List<string> Uploaders { get; set; }
+
+        public ServerVisibility Visibility { get; set; }
+
+        public string Changelog { get; set; }
+
+        public List<string> ArcadeTags { get; set; }
+
+        #endregion
+
         #endregion
 
         #region Methods
@@ -189,6 +207,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && orig.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
                     assets.sprites.Add(spriteAsset.Copy());
             }
+
+            this.CopyUploadableData(orig);
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -208,6 +228,20 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
+            id = jn["id"];
+            name = jn["name"];
+            type = jn["type"].AsInt;
+            typeID = jn["type_id"];
+            offset = jn["offset"].AsFloat;
+            description = jn["desc"] ?? string.Empty;
+            if (string.IsNullOrEmpty(typeID))
+                typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
+
+            this.ReadUploadableJSON(jn);
+            this.ReadPrefabJSON(jn);
+
+            #region Read Contents
+
             prefabs.Clear();
             if (jn["prefabs"] != null)
                 for (int i = 0; i < jn["prefabs"].Count; i++)
@@ -231,24 +265,14 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < jn["bg_objects"].Count; i++)
                     backgroundObjects.Add(BackgroundObject.Parse(jn["bg_objects"][i]));
 
-            id = jn["id"];
-            name = jn["name"];
-            type = jn["type"].AsInt;
-            typeID = jn["type_id"];
-            offset = jn["offset"].AsFloat;
-            description = jn["desc"] ?? string.Empty;
-
-            this.ReadPrefabJSON(jn);
-
-            if (string.IsNullOrEmpty(typeID))
-                typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
-
             if (jn["default"] != null)
                 defaultInstanceData = PrefabObject.Parse(jn["default"]);
 
             assets.Clear();
             if (jn["assets"] != null)
                 assets.ReadJSON(jn["assets"]);
+
+            #endregion
         }
 
         public override JSONNode ToJSONVG()
@@ -273,20 +297,21 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
-            jn["name"] = name;
-            jn["type"] = (PrefabType.LSIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0).ToString();
-            jn["offset"] = offset;
-
             if (id != null)
                 jn["id"] = id;
-
-            this.WritePrefabJSON(jn);
-
+            jn["name"] = name;
+            jn["type"] = (PrefabType.LSIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0).ToString();
             if (typeID != null)
                 jn["type_id"] = typeID;
+            jn["offset"] = offset;
+
+            this.WriteUploadableJSON(jn);
+            this.WritePrefabJSON(jn);
 
             if (!string.IsNullOrEmpty(description))
                 jn["desc"] = description;
+
+            #region Write Contents
 
             for (int i = 0; i < prefabs.Count; i++)
                 jn["prefabs"][i] = prefabs[i].ToJSON();
@@ -316,6 +341,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (assets && !assets.IsEmpty())
                 jn["assets"] = assets.ToJSON();
+
+            #endregion
 
             return jn;
         }

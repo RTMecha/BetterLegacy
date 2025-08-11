@@ -584,28 +584,28 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(Dialog.TagsContent);
 
-            if (metadata.song.tags != null)
+            if (metadata.tags != null)
             {
-                for (int i = 0; i < metadata.song.tags.Count; i++)
+                for (int i = 0; i < metadata.tags.Count; i++)
                 {
                     int index = i;
-                    var tag = metadata.song.tags[i];
+                    var tag = metadata.tags[i];
                     var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
                     var input = gameObject.transform.Find("Input").GetComponent<InputField>();
                     input.SetTextWithoutNotify(tag);
                     input.onValueChanged.NewListener(_val =>
                     {
                         _val = RTString.ReplaceSpace(_val);
-                        var oldVal = metadata.song.tags[index];
-                        metadata.song.tags[index] = _val;
+                        var oldVal = metadata.tags[index];
+                        metadata.tags[index] = _val;
 
                         EditorManager.inst.history.Add(new History.Command("Change MetaData Tag", () =>
                         {
-                            metadata.song.tags[index] = _val;
+                            metadata.tags[index] = _val;
                             MetadataEditor.inst.OpenDialog();
                         }, () =>
                         {
-                            metadata.song.tags[index] = oldVal;
+                            metadata.tags[index] = oldVal;
                             MetadataEditor.inst.OpenDialog();
                         }));
                     });
@@ -613,21 +613,21 @@ namespace BetterLegacy.Editor.Managers
                     var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                     deleteStorage.button.onClick.NewListener(() =>
                     {
-                        var oldTag = metadata.song.tags[index];
-                        metadata.song.tags.RemoveAt(index);
+                        var oldTag = metadata.tags[index];
+                        metadata.tags.RemoveAt(index);
                         RenderTags(metadata);
 
                         EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
                         {
-                            if (metadata.song.tags == null)
+                            if (metadata.tags == null)
                                 return;
-                            metadata.song.tags.RemoveAt(index);
+                            metadata.tags.RemoveAt(index);
                             MetadataEditor.inst.OpenDialog();
                         }, () =>
                         {
-                            if (metadata.song.tags == null)
-                                metadata.song.tags = new List<string>();
-                            metadata.song.tags.Insert(index, oldTag);
+                            if (metadata.tags == null)
+                                metadata.tags = new List<string>();
+                            metadata.tags.Insert(index, oldTag);
                             MetadataEditor.inst.OpenDialog();
                         }));
                     });
@@ -658,38 +658,38 @@ namespace BetterLegacy.Editor.Managers
                             RenderTagPopup(tag =>
                             {
                                 var metadata = MetaData.Current;
-                                if (metadata.song.tags == null)
-                                    metadata.song.tags = new List<string>();
-                                metadata.song.tags.Add(tag);
+                                if (metadata.tags == null)
+                                    metadata.tags = new List<string>();
+                                metadata.tags.Add(tag);
                                 RenderTags(metadata);
                             });
                         }),
                         new ButtonFunction("Clear Tags", () =>
                         {
-                            metadata.song.tags?.Clear();
+                            metadata.tags?.Clear();
                             RenderTags(metadata);
                         }));
                     return;
                 }
 
-                if (metadata.song.tags == null)
-                    metadata.song.tags = new List<string>();
-                metadata.song.tags.Add(DEFAULT_NEW_TAG);
+                if (metadata.tags == null)
+                    metadata.tags = new List<string>();
+                metadata.tags.Add(DEFAULT_NEW_TAG);
                 RenderTags(metadata);
 
                 EditorManager.inst.history.Add(new History.Command("Add MetaData Tag",
                     () =>
                     {
-                        if (metadata.song.tags == null)
-                            metadata.song.tags = new List<string>();
-                        metadata.song.tags.Add(DEFAULT_NEW_TAG);
+                        if (metadata.tags == null)
+                            metadata.tags = new List<string>();
+                        metadata.tags.Add(DEFAULT_NEW_TAG);
                         MetadataEditor.inst.OpenDialog();
                     },
                     () =>
                     {
-                        if (metadata.song.tags == null)
+                        if (metadata.tags == null)
                             return;
-                        metadata.song.tags.RemoveAt(metadata.song.tags.Count - 1);
+                        metadata.tags.RemoveAt(metadata.tags.Count - 1);
                         MetadataEditor.inst.OpenDialog();
                     }));
             };

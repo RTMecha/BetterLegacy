@@ -347,7 +347,7 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> LocalLevels => Levels.FindAll(level =>
             RTString.SearchString(Search,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchListMatcher(level.metadata.song.tags),
+                new SearchListMatcher(level.metadata.tags),
                 level.metadata.artist.name,
                 level.metadata.creator.name,
                 level.metadata.song.title,
