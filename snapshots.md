@@ -1,11 +1,17 @@
-﻿# ???
+﻿# snapshot-2025.8.10 - (pre-1.8.0) [Aug 12, 2025]
 ## Features
 ### Core
 - Implemented uploader data to Level Collections, Prefabs, Beatmap Themes and Player Models.
+- Added getEditorBin, getEditorLayer and getObjectName modifiers. Good for debugging, level editing and sandboxing.
+- Fully implemented sprite & sound asset system. These include a list in the editor and a new modifier: "loadSoundAsset".
+
+## Editor
+- Added "Load Sound Asset On Click" in Config Manager > Editor > Data.
 
 ## Changes
 ### Core
 - Changed some system library references.
+- Renamed playSoundOnline modifier to "playOnlineSound" to match "playDefaultSound".
 
 ## Editor
 - Improved timeline object loading by a tiny amount.
