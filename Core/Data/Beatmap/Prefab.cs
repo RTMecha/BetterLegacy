@@ -155,13 +155,13 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string UploaderID { get; set; }
 
-        public List<string> Uploaders { get; set; }
+        public List<string> Uploaders { get; set; } = new List<string>();
 
         public ServerVisibility Visibility { get; set; }
 
         public string Changelog { get; set; }
 
-        public List<string> ArcadeTags { get; set; }
+        public List<string> ArcadeTags { get; set; } = new List<string>();
 
         #endregion
 
