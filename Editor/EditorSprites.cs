@@ -19,6 +19,8 @@ namespace BetterLegacy.Editor
         {
             try
             {
+                PALogo = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_pa_logo{FileFormat.PNG.Dot()}"));
+
                 DownArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_down{FileFormat.PNG.Dot()}"));
                 LeftArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_left{FileFormat.PNG.Dot()}"));
                 RightArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_right{FileFormat.PNG.Dot()}"));
@@ -38,6 +40,7 @@ namespace BetterLegacy.Editor
                 OpenSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_open{FileFormat.PNG.Dot()}"));
 
                 LinkSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_link{FileFormat.PNG.Dot()}"));
+                SoundSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_sound{FileFormat.PNG.Dot()}"));
 
                 FlagStartSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_start{FileFormat.PNG.Dot()}"));
                 FlagEndSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_end{FileFormat.PNG.Dot()}"));
@@ -54,6 +57,8 @@ namespace BetterLegacy.Editor
         }
 
         #region Sprites
+
+        public static Sprite PALogo { get; set; }
 
         #region Directions
 
@@ -87,6 +92,7 @@ namespace BetterLegacy.Editor
         public static Sprite OpenSprite { get; set; }
 
         public static Sprite LinkSprite { get; set; }
+        public static Sprite SoundSprite { get; set; }
 
         public static Sprite DottedLineSprite { get; set; }
 
