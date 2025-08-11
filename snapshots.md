@@ -1,4 +1,8 @@
 ﻿# ???
+## Features
+### Core
+- Implemented uploader data to Level Collections, Prefabs, Beatmap Themes and Player Models.
+
 ## Changes
 ### Core
 - Changed some system library references.
@@ -8,6 +12,9 @@
 
 ## Fixes
 - Cursor position modifiers no longer force the position if the application isn't focused or the user isn't editing.
+- Fixed some Player model values not saving & loading.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.8.9 - (pre-1.8.0) [Aug 10, 2025]
 ## Features
@@ -19,6 +26,8 @@
 ## Changes
 ### Core
 - Optimized parent chain updating by a lot.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.8.8 - (pre-1.8.0) [Aug 9, 2025]
 ## Features
