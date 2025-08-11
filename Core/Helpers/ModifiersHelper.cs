@@ -776,8 +776,10 @@ namespace BetterLegacy.Core.Helpers
             // play sound
             new ModifierAction(nameof(ModifierActions.playSound),  ModifierActions.playSound),
             new ModifierAction(nameof(ModifierActions.playSoundOnline),  ModifierActions.playSoundOnline),
+            new ModifierAction(nameof(ModifierActions.playOnlineSound),  ModifierActions.playOnlineSound),
             new ModifierAction(nameof(ModifierActions.playDefaultSound),  ModifierActions.playDefaultSound),
             new ModifierAction(nameof(ModifierActions.audioSource),  ModifierActions.audioSource, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierActions.loadSoundAsset),  ModifierActions.loadSoundAsset, ModifierCompatibility.BeatmapObjectCompatible),
 
             #endregion
 
@@ -984,6 +986,9 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.getFormatVariable),  ModifierActions.getFormatVariable),
             new ModifierAction(nameof(ModifierActions.getComparison),  ModifierActions.getComparison),
             new ModifierAction(nameof(ModifierActions.getComparisonMath),  ModifierActions.getComparisonMath),
+            new ModifierAction(nameof(ModifierActions.getEditorBin),  ModifierActions.getEditorBin),
+            new ModifierAction(nameof(ModifierActions.getEditorLayer),  ModifierActions.getEditorLayer),
+            new ModifierAction(nameof(ModifierActions.getObjectName),  ModifierActions.getObjectName),
             new ModifierAction(nameof(ModifierActions.getSignaledVariables),  ModifierActions.getSignaledVariables),
             new ModifierAction(nameof(ModifierActions.signalLocalVariables),  ModifierActions.signalLocalVariables),
             new ModifierAction(nameof(ModifierActions.clearLocalVariables),  ModifierActions.clearLocalVariables),
