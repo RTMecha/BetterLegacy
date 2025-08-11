@@ -1065,6 +1065,8 @@ namespace BetterLegacy.Core.Helpers
 
             // todo: implement gradients and different color controls
             #region Color
+            
+            new ModifierAction(nameof(ModifierActions.mask),  ModifierActions.mask, ModifierCompatibility.BeatmapObjectCompatible),
 
             // color
             new ModifierAction(nameof(ModifierActions.addColor),  ModifierActions.addColor, ModifierCompatibility.BeatmapObjectCompatible),
@@ -1098,7 +1100,6 @@ namespace BetterLegacy.Core.Helpers
 
             #endregion
 
-            // todo: figure out how to get actorFrameTexture to work
             #region Shape
             
             new ModifierAction(nameof(ModifierActions.translateShape),  ModifierActions.translateShape, ModifierCompatibility.BeatmapObjectCompatible),
@@ -1107,7 +1108,6 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.setPolygonShapeOther),  ModifierActions.setPolygonShapeOther, ModifierCompatibility.BeatmapObjectCompatible),
 
             // image
-            new ModifierAction(nameof(ModifierActions.actorFrameTexture),  ModifierActions.actorFrameTexture, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.setImage),  ModifierActions.setImage, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierActions.setImageOther),  ModifierActions.setImageOther, ModifierCompatibility.BeatmapObjectCompatible),
 
@@ -2527,6 +2527,13 @@ namespace BetterLegacy.Core.Helpers
         public string group;
         public BeatmapObject target;
         public List<IParentable> parentables;
+    }
+
+    public class MaskCache
+    {
+        public int width;
+        public int height;
+        public RenderTexture renderTexture;
     }
 
     #endregion

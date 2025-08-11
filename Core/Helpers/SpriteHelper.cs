@@ -171,6 +171,19 @@ namespace BetterLegacy.Core.Helpers
             return sprite;
         }
 
+        public static Sprite RenderToSprite(this RenderTexture renderTexture)
+        {
+            // Create a new Texture2D and read the RenderTexture image into it
+            var texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
+
+            texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+            texture.Apply();
+
+            var sprite = CreateSprite(texture);
+            sprite.name = texture.name;
+            return sprite;
+        }
+
         public const string DEFAULT_TEXTURE_NAME = "Default_Texture";
 
         #endregion

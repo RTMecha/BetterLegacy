@@ -2371,7 +2371,16 @@ namespace BetterLegacy.Editor.Data.Elements
                 #endregion
 
                 #region Color
+                    
+                case nameof(ModifierActions.mask): {
+                        DropdownGenerator(modifier, reference, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
+                        IntegerGenerator(modifier, reference, "Width", 1, 512);
+                        IntegerGenerator(modifier, reference, "Height", 2, 512);
+                        SingleGenerator(modifier, reference, "Pos X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Pos Y", 4, 0f);
 
+                        break;
+                    }
                 case nameof(ModifierActions.addColor): {
                         ColorGenerator(modifier, reference, "Color", 1);
 
@@ -2959,15 +2968,6 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Thick Scale Y", 9);
                         IntegerGenerator(modifier, reference, "Slices", 5, max: 32);
                         SingleGenerator(modifier, reference, "Angle", 10);
-
-                        break;
-                    }
-                case nameof(ModifierActions.actorFrameTexture): {
-                        DropdownGenerator(modifier, reference, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
-                        IntegerGenerator(modifier, reference, "Width", 1, 512);
-                        IntegerGenerator(modifier, reference, "Height", 2, 512);
-                        SingleGenerator(modifier, reference, "Pos X", 3, 0f);
-                        SingleGenerator(modifier, reference, "Pos Y", 4, 0f);
 
                         break;
                     }

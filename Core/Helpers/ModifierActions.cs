@@ -4937,54 +4937,218 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = meshParams;
         }
 
-        public static void actorFrameTexture(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void mask(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Image || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not ImageObject imageObject)
+            if (reference is not BeatmapObject beatmapObject)
+                return;
+
+            var runtimeObject = beatmapObject.runtimeObject;
+            if (!runtimeObject || !runtimeObject.visualObject)
                 return;
 
             var camera = modifier.GetInt(0, 0, variables) == 0 ? EventManager.inst.cam : EventManager.inst.camPer;
+            var width = modifier.GetInt(1, 512, variables);
+            var height = modifier.GetInt(2, 512, variables);
+            var offsetX = modifier.GetFloat(3, 0f, variables);
+            var offsetY = modifier.GetFloat(4, 0f, variables);
 
-            var frame = SpriteHelper.CaptureFrame(camera, modifier.GetInt(1, 512, variables), modifier.GetInt(2, 512, variables), modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
+            var renderer = runtimeObject.visualObject.renderer;
+            if (!renderer)
+                return;
 
-            var renderer = (SpriteRenderer)imageObject.renderer;
-
-            if (modifier.HasResult() && renderer.sprite != LegacyPlugin.PALogoSprite)
+            if (beatmapObject.ShapeType == ShapeType.Image)
             {
-                if (renderer.sprite)
-                    CoreHelper.Destroy(renderer.sprite.texture);
-                CoreHelper.Destroy(renderer.sprite);
+                if (renderer is not SpriteRenderer spriteRenderer)
+                    return;
+
+                camera.transform.localPosition = new Vector3(offsetX, offsetY);
+
+                // Get render texture
+                var result = modifier.GetResultOrDefault(() =>
+                {
+                    var cache = new MaskCache()
+                    {
+                        width = width,
+                        height = height,
+                        renderTexture = new RenderTexture(width, height, 24)
+                        {
+                            name = SpriteHelper.DEFAULT_TEXTURE_NAME
+                        },
+                    };
+                    //renderer.material.shader = Shader.Find("Unlit/Texture");
+                    //renderer.material.mainTexture = cache.renderTexture;
+                    //renderer.material.SetTexture("_MainTex", cache.renderTexture);
+                    return cache;
+                });
+                if (result.width != width || result.height != height)
+                {
+                    result = new MaskCache()
+                    {
+                        width = width,
+                        height = height,
+                        renderTexture = new RenderTexture(width, height, 24)
+                        {
+                            name = SpriteHelper.DEFAULT_TEXTURE_NAME,
+                        },
+                    };
+                    //renderer.material.shader = Shader.Find("Unlit/Texture");
+                    //renderer.material.mainTexture = result.renderTexture;
+                    //renderer.material.SetTexture("_MainTex", result.renderTexture);
+                    modifier.Result = result;
+                }
+                var renderTexture = result.renderTexture;
+
+                var currentActiveRT = RenderTexture.active;
+                RenderTexture.active = renderTexture;
+
+                var enabled = renderer.enabled;
+                renderer.enabled = false;
+                // Assign render texture to camera and render the camera
+                camera.targetTexture = renderTexture;
+                camera.Render();
+
+                spriteRenderer.sprite = SpriteHelper.RenderToSprite(renderTexture);
+
+                // Reset to defaults
+                renderer.enabled = enabled;
+                camera.targetTexture = null;
+                RenderTexture.active = currentActiveRT;
+                camera.transform.localPosition = Vector3.zero;
+
+                renderTexture.Release();
             }
             else
             {
-                imageObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-                modifier.Result = true;
+                camera.transform.localPosition = new Vector3(offsetX, offsetY);
+
+                // Get render texture
+                var result = modifier.GetResultOrDefault(() =>
+                {
+                    var cache = new MaskCache()
+                    {
+                        width = width,
+                        height = height,
+                        renderTexture = new RenderTexture(width, height, 24)
+                        {
+                            name = SpriteHelper.DEFAULT_TEXTURE_NAME
+                        },
+                    };
+                    renderer.material.shader = Shader.Find("Unlit/Texture");
+                    //renderer.material.mainTexture = cache.renderTexture;
+                    renderer.material.SetTexture("_MainTex", cache.renderTexture);
+                    return cache;
+                });
+                if (result.width != width || result.height != height)
+                {
+                    result = new MaskCache()
+                    {
+                        width = width,
+                        height = height,
+                        renderTexture = new RenderTexture(width, height, 24)
+                        {
+                            name = SpriteHelper.DEFAULT_TEXTURE_NAME,
+                        },
+                    };
+                    renderer.material.shader = Shader.Find("Unlit/Texture");
+                    //renderer.material.mainTexture = result.renderTexture;
+                    renderer.material.SetTexture("_MainTex", result.renderTexture);
+                    modifier.Result = result;
+                }
+                var renderTexture = result.renderTexture;
+
+                var currentActiveRT = RenderTexture.active;
+                RenderTexture.active = renderTexture;
+
+                var enabled = renderer.enabled;
+                renderer.enabled = false;
+                // Assign render texture to camera and render the camera
+                camera.targetTexture = renderTexture;
+                camera.Render();
+                renderTexture.Create();
+
+                // Reset to defaults
+                renderer.enabled = enabled;
+                camera.targetTexture = null;
+                RenderTexture.active = currentActiveRT;
+                camera.transform.localPosition = Vector3.zero;
             }
 
-            renderer.sprite = frame;
+
+            //if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Image || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not ImageObject imageObject)
+            //    return;
+
+            //var camera = modifier.GetInt(0, 0, variables) == 0 ? EventManager.inst.cam : EventManager.inst.camPer;
+
+            //var frame = SpriteHelper.CaptureFrame(camera, modifier.GetInt(1, 512, variables), modifier.GetInt(2, 512, variables), modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
+
+            //var renderer = (SpriteRenderer)imageObject.renderer;
+
+            //if (modifier.HasResult() && renderer.sprite != LegacyPlugin.PALogoSprite)
+            //{
+            //    if (renderer.sprite)
+            //        CoreHelper.Destroy(renderer.sprite.texture);
+            //    CoreHelper.Destroy(renderer.sprite);
+            //}
+            //else
+            //{
+            //    imageObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+            //    modifier.Result = true;
+            //}
+
+            //renderer.sprite = frame;
         }
 
         public static void setImage(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Image || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not ImageObject imageObject)
+            if (modifier.constant || reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
                 return;
 
             var value = modifier.GetValue(0, variables);
             var sprite = GameData.Current.assets.GetSprite(value);
-            if (sprite)
+            if (beatmapObject.runtimeObject.visualObject is ImageObject imageObject)
             {
-                imageObject.SetSprite(sprite);
-                return;
+                if (sprite)
+                {
+                    imageObject.SetSprite(sprite);
+                    return;
+                }
+
+                var path = RTFile.CombinePaths(RTFile.BasePath, value);
+
+                if (!RTFile.FileExists(path))
+                {
+                    imageObject.SetDefaultSprite();
+                    return;
+                }
+
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
             }
-
-            var path = RTFile.CombinePaths(RTFile.BasePath, value);
-
-            if (!RTFile.FileExists(path))
+            else if (beatmapObject.runtimeObject.visualObject is SolidObject solidObject && solidObject.renderer)
             {
-                imageObject.SetDefaultSprite();
-                return;
-            }
+                var renderer = solidObject.renderer;
+                renderer.material = Material.GetDefaultMaterial();
+                solidObject.material = renderer.material;
+                if (sprite)
+                {
+                    renderer.material.SetTexture("_MainTex", sprite.texture);
+                    return;
+                }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, imageObject.SetTexture, imageObject.SetDefaultSprite));
+                var path = RTFile.CombinePaths(RTFile.BasePath, value);
+
+                if (!RTFile.FileExists(path))
+                    return;
+
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, texture2D =>
+                {
+                    if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject)
+                        return;
+
+                    var renderer = solidObject.renderer;
+                    if (renderer)
+                        renderer.material.SetTexture("_MainTex", texture2D);
+                }));
+            }
         }
         
         public static void setImageOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
