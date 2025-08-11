@@ -734,9 +734,10 @@ namespace BetterLegacy.Editor.Managers
             LevelCombiner.Init();
             AchievementEditor.Init();
             LevelPropertiesEditor.Init();
-            ProjectPlanner.Init();
+            AssetEditor.Init();
             UploadedLevelsManager.Init();
             PinnedLayerEditor.Init();
+            ProjectPlanner.Init();
 
             RTBackgroundEditor.Init();
 
@@ -6270,6 +6271,38 @@ namespace BetterLegacy.Editor.Managers
                 RotCloseDurationConfig = EditorConfig.Instance.LevelCollectionsPopupRotCloseDuration,
                 RotOpenEaseConfig = EditorConfig.Instance.LevelCollectionsPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.LevelCollectionsPopupRotCloseEase,
+            },
+            new EditorAnimation(EditorPopup.ASSET_POPUP)
+            {
+                ActiveConfig = EditorConfig.Instance.AssetsPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.AssetsPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.AssetsPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.AssetsPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.AssetsPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.AssetsPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.AssetsPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.AssetsPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.AssetsPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.AssetsPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.AssetsPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.AssetsPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.AssetsPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.AssetsPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.AssetsPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.AssetsPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.AssetsPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.AssetsPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.AssetsPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.AssetsPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.AssetsPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.AssetsPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.AssetsPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.AssetsPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.AssetsPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.AssetsPopupRotCloseEase,
             },
 
             new EditorAnimation("File Dropdown")

@@ -7,17 +7,15 @@ using BetterLegacy.Core.Helpers;
 namespace BetterLegacy.Core.Data.Beatmap
 {
     /// <summary>
-    /// Stored sprite in a levels' game data.
+    /// Stores sprite data that can be reused.
     /// </summary>
     public class SpriteAsset : PAObject<SpriteAsset>
     {
         public SpriteAsset() : base() { }
 
-        public SpriteAsset(string name, Sprite sprite) : this()
-        {
-            this.name = name;
-            this.sprite = sprite;
-        }
+        public SpriteAsset(string name) : this() => this.name = name;
+
+        public SpriteAsset(string name, Sprite sprite) : this(name) => this.sprite = sprite;
 
         /// <summary>
         /// Name of the sprite.
@@ -53,6 +51,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["i"] = SpriteHelper.SpriteToString(sprite);
 
             return jn;
+        }
+
+        public void UnloadSprite()
+        {
+            if (sprite)
+                CoreHelper.Destroy(sprite);
+            sprite = null;
         }
 
         public override string ToString() => name;

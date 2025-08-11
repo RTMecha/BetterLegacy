@@ -1546,6 +1546,18 @@ namespace BetterLegacy.Core
         };
 
         /// <summary>
+        /// Checks if the file format is of an audio type.
+        /// </summary>
+        /// <returns>Returns true if the file format is an audio, otherwise returns false.</returns>
+        public static bool IsAudio(this FileFormat fileFormat) => fileFormat == FileFormat.OGG || fileFormat == FileFormat.WAV || fileFormat == FileFormat.MP3;
+
+        /// <summary>
+        /// Checks if the file format is of an image type.
+        /// </summary>
+        /// <returns>Returns true if the file format is an image, otherwise returns false.</returns>
+        public static bool IsImage(this FileFormat fileFormat) => fileFormat == FileFormat.PNG || fileFormat == FileFormat.JPG;
+
+        /// <summary>
         /// Sorts a query.
         /// </summary>
         /// <param name="query">Query to sort.</param>

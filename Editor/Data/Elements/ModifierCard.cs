@@ -511,7 +511,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 return;
 
                             EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Use Local Browser", () =>
+                                new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () =>
                                 {
                                     var global = modifier.GetBool(1, false);
                                     var directory = global && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -539,7 +539,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                                     EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                                 }),
-                                new ButtonFunction("Use In-game Browser", () =>
+                                new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
                                 {
                                     RTEditor.inst.BrowserPopup.Open();
 
@@ -566,6 +566,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                                         EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                                     });
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("Select Sound Asset", () =>
+                                {
+                                    AssetEditor.inst.OpenPopup(sound =>
+                                    {
+                                        str.transform.Find("Input").GetComponent<InputField>().text = sound;
+                                    }, null, true, false);
                                 })
                                 );
                         };
@@ -578,6 +586,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierActions.playSoundOnline): {
+                        StringGenerator(modifier, reference, "URL", 0);
+                        SingleGenerator(modifier, reference, "Pitch", 1, 1f);
+                        SingleGenerator(modifier, reference, "Volume", 2, 1f);
+                        BoolGenerator(modifier, reference, "Loop", 3, false);
+                        SingleGenerator(modifier, reference, "Pan Stereo", 4);
+                        break;
+                    }
+                case nameof(ModifierActions.playOnlineSound): {
                         StringGenerator(modifier, reference, "URL", 0);
                         SingleGenerator(modifier, reference, "Pitch", 1, 1f);
                         SingleGenerator(modifier, reference, "Volume", 2, 1f);
@@ -637,7 +653,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             if (pointerEventData.button != PointerEventData.InputButton.Right)
                                 return;
                             EditorContextMenu.inst.ShowContextMenu(
-                                new ButtonFunction("Use Local Browser", () =>
+                                new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () =>
                                 {
                                     var isGlobal = modifier.GetBool(1, false);
                                     var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
@@ -664,7 +680,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                                     EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                                 }),
-                                new ButtonFunction("Use In-game Browser", () =>
+                                new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
                                 {
                                     RTEditor.inst.BrowserPopup.Open();
 
@@ -691,6 +707,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                                         EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                                     });
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("Select Sound Asset", () =>
+                                {
+                                    AssetEditor.inst.OpenPopup(sound =>
+                                    {
+                                        str.transform.Find("Input").GetComponent<InputField>().text = sound;
+                                    }, null, true, false);
                                 })
                                 );
                         };
@@ -706,6 +730,17 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Playing", 8, true);
 
                         SingleGenerator(modifier, reference, "Pan Stereo", 9);
+
+                        break;
+                    }
+                case nameof(ModifierActions.loadSoundAsset): {
+                        StringGenerator(modifier, reference, "Asset Name", 0);
+                        BoolGenerator(modifier, reference, "Load", 1);
+                        BoolGenerator(modifier, reference, "Play", 2);
+                        SingleGenerator(modifier, reference, "Pitch", 3);
+                        SingleGenerator(modifier, reference, "Volume", 4);
+                        BoolGenerator(modifier, reference, "Loop", 5);
+                        SingleGenerator(modifier, reference, "Pan Stereo", 6);
 
                         break;
                     }
@@ -1984,6 +2019,23 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierActions.getEditorBin): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Use Prefab Object Bin", 1);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getEditorLayer): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        BoolGenerator(modifier, reference, "Use Prefab Object Bin", 1);
+
+                        break;
+                    }
+                case nameof(ModifierActions.getObjectName): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
                 case nameof(ModifierActions.getSignaledVariables): {
                         BoolGenerator(modifier, reference, "Clear", 0, true);
 
@@ -3044,14 +3096,85 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Display Glitch", 1, true);
                         BoolGenerator(modifier, reference, "Play Sound", 2, true);
                         BoolGenerator(modifier, reference, "Custom Sound", 3, false);
-                        StringGenerator(modifier, reference, "Sound Path", 4);
+                        var str = StringGenerator(modifier, reference, "Sound Path", 4);
+                        var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
+                        search.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction($"Use {RTEditor.SYSTEM_BROWSER}", () =>
+                                {
+                                    var isGlobal = modifier.GetBool(5, false);
+                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
+                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
+
+                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
+                                    {
+                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, FileFormat.OGG.ToName(), FileFormat.WAV.ToName(), FileFormat.MP3.ToName());
+                                    if (string.IsNullOrEmpty(result))
+                                        return;
+
+                                    var global = modifier.GetBool(5, false);
+                                    result = RTFile.ReplaceSlash(result);
+                                    if (result.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
+                                    {
+                                        str.transform.Find("Input").GetComponent<InputField>().text = result.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                        RTEditor.inst.BrowserPopup.Close();
+                                        return;
+                                    }
+
+                                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                }),
+                                new ButtonFunction($"Use {RTEditor.EDITOR_BROWSER}", () =>
+                                {
+                                    RTEditor.inst.BrowserPopup.Open();
+
+                                    var isGlobal = modifier.GetBool(5, false);
+                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH) ?
+                                                    RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH : RTFile.RemoveEndSlash(RTFile.BasePath);
+
+                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH))
+                                    {
+                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    RTFileBrowser.inst.UpdateBrowserFile(directory, RTFile.AudioDotFormats, onSelectFile: _val =>
+                                    {
+                                        var global = modifier.GetBool(5, false);
+                                        _val = RTFile.ReplaceSlash(_val);
+                                        if (_val.Contains(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath))))
+                                        {
+                                            str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace(global ? RTFile.ApplicationDirectory + ModifiersManager.SOUNDLIBRARY_PATH + "/" : RTFile.ReplaceSlash(RTFile.AppendEndSlash(RTFile.BasePath)), "");
+                                            RTEditor.inst.BrowserPopup.Close();
+                                            return;
+                                        }
+
+                                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                    });
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("Select Sound Asset", () =>
+                                {
+                                    AssetEditor.inst.OpenPopup(sound =>
+                                    {
+                                        str.transform.Find("Input").GetComponent<InputField>().text = sound;
+                                    }, null, true, false);
+                                })
+                                );
+                        };
                         BoolGenerator(modifier, reference, "Global", 5, false);
 
                         SingleGenerator(modifier, reference, "Pitch", 6, 1f);
                         SingleGenerator(modifier, reference, "Volume", 7, 1f);
                         SingleGenerator(modifier, reference, "Pitch Vary", 8, 0f);
-                        var str = StringGenerator(modifier, reference, "Custom Text", 9);
-                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        var customText = StringGenerator(modifier, reference, "Custom Text", 9);
+                        EditorHelper.AddInputFieldContextMenu(customText.transform.Find("Input").GetComponent<InputField>());
                         SingleGenerator(modifier, reference, "Time Offset", 10, 0f);
                         BoolGenerator(modifier, reference, "Time Relative", 11, false);
                         SingleGenerator(modifier, reference, "Pan Stereo", 12);

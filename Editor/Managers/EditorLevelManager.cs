@@ -807,9 +807,11 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < GameData.Current.assets.sounds.Count; i++)
                 {
                     var soundAsset = GameData.Current.assets.sounds[i];
-                    if (!soundAsset.audio)
+                    if (!soundAsset.audio && soundAsset.autoLoad)
                         yield return CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip());
                 }
+
+            yield return CoroutineHelper.StartCoroutine(AssetEditor.inst.ILoadAssets());
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 

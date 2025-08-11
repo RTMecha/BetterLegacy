@@ -129,9 +129,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (sounds.Has(x => x.name == name))
                 return;
 
-            var soundAsset = new SoundAsset(name, null);
+            var soundAsset = new SoundAsset(name);
             CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip());
             sounds.Add(soundAsset);
         }
+
+        /// <summary>
+        /// Removes the sound from the sound asset list.
+        /// </summary>
+        /// <param name="name">Name of the sound to remove.</param>
+        /// <returns>Returns true if a sound asset was successfully removed, otherwise returns false.</returns>
+        public bool RemoveSound(string name) => sounds.Remove(x => x.name == name);
     }
 }

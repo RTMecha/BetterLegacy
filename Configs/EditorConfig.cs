@@ -152,6 +152,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> ShowDefaultThemes { get; set; }
         public Setting<int> ImageSequenceFPS { get; set; }
         public Setting<bool> OverwriteImportedImages { get; set; }
+        public Setting<bool> LoadSoundAssetOnClick { get; set; }
 
         #endregion
 
@@ -1250,6 +1251,40 @@ namespace BetterLegacy.Configs
         public Setting<Easing> LevelCollectionsPopupRotCloseEase { get; set; }
 
         #endregion
+        
+        #region Assets Popup
+
+        public Setting<bool> AssetsPopupActive { get; set; }
+
+        public Setting<bool> AssetsPopupPosActive { get; set; }
+        public Setting<Vector2> AssetsPopupPosOpen { get; set; }
+        public Setting<Vector2> AssetsPopupPosClose { get; set; }
+        public Setting<Vector2> AssetsPopupPosOpenDuration { get; set; }
+        public Setting<Vector2> AssetsPopupPosCloseDuration { get; set; }
+        public Setting<Easing> AssetsPopupPosXOpenEase { get; set; }
+        public Setting<Easing> AssetsPopupPosXCloseEase { get; set; }
+        public Setting<Easing> AssetsPopupPosYOpenEase { get; set; }
+        public Setting<Easing> AssetsPopupPosYCloseEase { get; set; }
+
+        public Setting<bool> AssetsPopupScaActive { get; set; }
+        public Setting<Vector2> AssetsPopupScaOpen { get; set; }
+        public Setting<Vector2> AssetsPopupScaClose { get; set; }
+        public Setting<Vector2> AssetsPopupScaOpenDuration { get; set; }
+        public Setting<Vector2> AssetsPopupScaCloseDuration { get; set; }
+        public Setting<Easing> AssetsPopupScaXOpenEase { get; set; }
+        public Setting<Easing> AssetsPopupScaXCloseEase { get; set; }
+        public Setting<Easing> AssetsPopupScaYOpenEase { get; set; }
+        public Setting<Easing> AssetsPopupScaYCloseEase { get; set; }
+
+        public Setting<bool> AssetsPopupRotActive { get; set; }
+        public Setting<float> AssetsPopupRotOpen { get; set; }
+        public Setting<float> AssetsPopupRotClose { get; set; }
+        public Setting<float> AssetsPopupRotOpenDuration { get; set; }
+        public Setting<float> AssetsPopupRotCloseDuration { get; set; }
+        public Setting<Easing> AssetsPopupRotOpenEase { get; set; }
+        public Setting<Easing> AssetsPopupRotCloseEase { get; set; }
+
+        #endregion
 
         #region File Dropdown
 
@@ -1608,6 +1643,7 @@ namespace BetterLegacy.Configs
             ShowDefaultThemes = Bind(this, DATA, "Show Default Themes", true, "If the default beatmap themes should appear in the theme list.");
             ImageSequenceFPS = Bind(this, DATA, "Image Sequence FPS", 24, "FPS of a generated image sequence. Image sequences can be created by dragging in a collection of images or a folder that only contains images.");
             OverwriteImportedImages = Bind(this, DATA, "Overwrite Imported Images", false, "If imported images to image objects should overwrite the file.");
+            LoadSoundAssetOnClick = Bind(this, DATA, "Load Sound Asset On Click", true, "If sound assets should load the audio clip when clicked.");
 
             #endregion
 
@@ -2703,6 +2739,40 @@ namespace BetterLegacy.Configs
             LevelCollectionsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Level Collections Popup Close Rotation Duration", 0f, "The duration of closing.");
             LevelCollectionsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
             LevelCollectionsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Level Collections Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Assets Popup
+
+            AssetsPopupActive = Bind(this, ANIMATIONS, "Assets Popup Active", true, "If the popup animation should play.");
+
+            AssetsPopupPosActive = Bind(this, ANIMATIONS, "Assets Popup Animate Position", false, "If position should be animated.");
+            AssetsPopupPosOpen = Bind(this, ANIMATIONS, "Assets Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            AssetsPopupPosClose = Bind(this, ANIMATIONS, "Assets Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            AssetsPopupPosOpenDuration = Bind(this, ANIMATIONS, "Assets Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            AssetsPopupPosCloseDuration = Bind(this, ANIMATIONS, "Assets Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            AssetsPopupPosXOpenEase = BindEnum(this, ANIMATIONS, "Assets Popup Open Position X Ease", Easing.Linear, "The easing of opening.");
+            AssetsPopupPosXCloseEase = BindEnum(this, ANIMATIONS, "Assets Popup Close Position X Ease", Easing.Linear, "The easing of opening.");
+            AssetsPopupPosYOpenEase = BindEnum(this, ANIMATIONS, "Assets Popup Open Position Y Ease", Easing.Linear, "The easing of opening.");
+            AssetsPopupPosYCloseEase = BindEnum(this, ANIMATIONS, "Assets Popup Close Position Y Ease", Easing.Linear, "The easing of opening.");
+
+            AssetsPopupScaActive = Bind(this, ANIMATIONS, "Assets Popup Animate Scale", true, "If scale should be animated.");
+            AssetsPopupScaOpen = Bind(this, ANIMATIONS, "Assets Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            AssetsPopupScaClose = Bind(this, ANIMATIONS, "Assets Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            AssetsPopupScaOpenDuration = Bind(this, ANIMATIONS, "Assets Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            AssetsPopupScaCloseDuration = Bind(this, ANIMATIONS, "Assets Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            AssetsPopupScaXOpenEase = BindEnum(this, ANIMATIONS, "Assets Popup Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
+            AssetsPopupScaXCloseEase = BindEnum(this, ANIMATIONS, "Assets Popup Close Scale X Ease", Easing.InCirc, "The easing of opening.");
+            AssetsPopupScaYOpenEase = BindEnum(this, ANIMATIONS, "Assets Popup Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
+            AssetsPopupScaYCloseEase = BindEnum(this, ANIMATIONS, "Assets Popup Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
+
+            AssetsPopupRotActive = Bind(this, ANIMATIONS, "Assets Popup Animate Rotation", false, "If rotation should be animated.");
+            AssetsPopupRotOpen = Bind(this, ANIMATIONS, "Assets Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            AssetsPopupRotClose = Bind(this, ANIMATIONS, "Assets Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            AssetsPopupRotOpenDuration = Bind(this, ANIMATIONS, "Assets Popup Open Rotation Duration", 0f, "The duration of opening.");
+            AssetsPopupRotCloseDuration = Bind(this, ANIMATIONS, "Assets Popup Close Rotation Duration", 0f, "The duration of closing.");
+            AssetsPopupRotOpenEase = BindEnum(this, ANIMATIONS, "Assets Popup Open Rotation Ease", Easing.Linear, "The easing of opening.");
+            AssetsPopupRotCloseEase = BindEnum(this, ANIMATIONS, "Assets Popup Close Rotation Ease", Easing.Linear, "The easing of opening.");
 
             #endregion
 

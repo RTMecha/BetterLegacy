@@ -177,8 +177,18 @@ namespace BetterLegacy.Core.Helpers
             if (string.IsNullOrEmpty(id))
                 loop = false;
 
-            if (GameData.Current && GameData.Current.assets.sounds.TryFind(x => x.name == path, out SoundAsset soundAsset) && soundAsset.audio)
+            if (GameData.Current && GameData.Current.assets.sounds.TryFind(x => x.name == path, out SoundAsset soundAsset))
             {
+                if (!soundAsset.audio)
+                {
+                    CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() =>
+                    {
+                        if (soundAsset.audio)
+                            ModifiersHelper.PlaySound(id, soundAsset.audio, pitch, vol, loop, panStereo);
+                    }));
+                    return;
+                }
+
                 ModifiersHelper.PlaySound(id, soundAsset.audio, pitch, vol, loop, panStereo);
                 return;
             }
@@ -186,7 +196,9 @@ namespace BetterLegacy.Core.Helpers
             ModifiersHelper.GetSoundPath(id, path, global, pitch, vol, loop, panStereo);
         }
 
-        public static void playSoundOnline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void playSoundOnline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => playOnlineSound(modifier, reference, variables);
+
+        public static void playOnlineSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var url = modifier.GetValue(0, variables);
             var pitch = modifier.GetFloat(1, 1f, variables);
@@ -313,6 +325,34 @@ namespace BetterLegacy.Core.Helpers
                 audioModifier.panStereo = modifier.GetFloat(9, 0f, variables);
                 audioModifier.Tick();
             }));
+        }
+
+        public static void loadSoundAsset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var name = modifier.GetValue(0, variables);
+            var soundAsset = GameData.Current.assets.sounds.Find(x => x.name == name);
+            if (!soundAsset)
+                return;
+
+            if (modifier.GetBool(1, true, variables))
+            {
+                if (soundAsset.audio)
+                    return;
+
+                var play = modifier.GetBool(2, false, variables);
+                var pitch = modifier.GetFloat(3, 1f, variables);
+                var vol = modifier.GetFloat(4, 1f, variables);
+                var loop = modifier.GetBool(5, false, variables);
+                var panStereo = modifier.GetFloat(6, 0f, variables);
+
+                CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() =>
+                {
+                    if (play)
+                        SoundManager.inst.PlaySound(soundAsset.audio, vol, pitch, loop, panStereo);
+                }));
+            }
+            else
+                soundAsset.UnloadAudioClip();
         }
 
         #endregion
@@ -3338,6 +3378,42 @@ namespace BetterLegacy.Core.Helpers
 
             if (sequence != null)
                 variables[modifier.GetValue(0)] = sequence.GetValue(audioTime).ToString();
+        }
+
+        public static void getEditorBin(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            ObjectEditorData editorData = null;
+            var prefabable = reference.AsPrefabable();
+            if (prefabable != null && prefabable.FromPrefab && modifier.GetBool(1, false, variables))
+                editorData = prefabable.GetPrefabObject()?.EditorData;
+            else if (reference is IEditable editable)
+                editorData = editable.EditorData;
+
+            variables[modifier.GetValue(0)] = editorData ? editorData.Bin.ToString() : 0.ToString();
+        }
+
+        public static void getEditorLayer(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            ObjectEditorData editorData = null;
+            var prefabable = reference.AsPrefabable();
+            if (prefabable != null && prefabable.FromPrefab && modifier.GetBool(1, false, variables))
+                editorData = prefabable.GetPrefabObject()?.EditorData;
+            else if (reference is IEditable editable)
+                editorData = editable.EditorData;
+
+            variables[modifier.GetValue(0)] = editorData ? editorData.Layer.ToString() : 0.ToString();
+        }
+
+        public static void getObjectName(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is BeatmapObject beatmapObject)
+                variables[modifier.GetValue(0)] = beatmapObject.name;
+            else if (reference is BackgroundObject backgroundObject)
+                variables[modifier.GetValue(0)] = backgroundObject.name;
+            else if (reference is PrefabObject prefabObject && prefabObject.GetPrefab() is Prefab prefab)
+                variables[modifier.GetValue(0)] = prefab.name;
+            else if (reference is RTPlayer.RTCustomPlayerObject customPlayerObject && customPlayerObject.reference)
+                variables[modifier.GetValue(0)] = customPlayerObject.reference.name;
         }
 
         public static void getSignaledVariables(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

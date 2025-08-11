@@ -97,6 +97,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string PINNED_EDITOR_LAYER_POPUP = "Pinned Editor Layer Popup";
         public const string DEFAULT_TAGS_POPUP = "Default Tags Popup";
         public const string LEVEL_COLLECTION_POPUP = "Level Collection Popup";
+        public const string ASSET_POPUP = "Asset Popup";
 
         #endregion
 
