@@ -26,6 +26,13 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class AnimationEditor : MonoBehaviour
     {
+        /*
+         TOOD:
+        - Copy & Paste animations
+        - Autoplay animations, similar to animating beatmap objects at runtime
+        - Animation library
+         */
+
         #region Init
 
         /// <summary>
@@ -112,6 +119,22 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ReferenceField.SetTextWithoutNotify(animation.ReferenceID);
             Dialog.ReferenceField.onValueChanged.NewListener(_val => animation.ReferenceID = _val);
+            var referenceContextMenu = Dialog.ReferenceField.gameObject.GetOrAddComponent<ContextClickable>();
+            referenceContextMenu.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction(PlayerModel.IDLE_ANIM, () => Dialog.ReferenceField.text = PlayerModel.IDLE_ANIM),
+                    new ButtonFunction(PlayerModel.BOOST_ANIM, () => Dialog.ReferenceField.text = PlayerModel.BOOST_ANIM),
+                    new ButtonFunction(PlayerModel.HEAL_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HEAL_ANIM),
+                    new ButtonFunction(PlayerModel.HIT_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HIT_ANIM),
+                    new ButtonFunction(PlayerModel.DEATH_ANIM, () => Dialog.ReferenceField.text = PlayerModel.DEATH_ANIM),
+                    new ButtonFunction(PlayerModel.SHOOT_ANIM, () => Dialog.ReferenceField.text = PlayerModel.SHOOT_ANIM),
+                    new ButtonFunction(PlayerModel.JUMP_ANIM, () => Dialog.ReferenceField.text = PlayerModel.JUMP_ANIM)
+                    );
+            };
 
             Dialog.NameField.SetTextWithoutNotify(animation.name);
             Dialog.NameField.onValueChanged.NewListener(_val => animation.name = _val);
@@ -172,10 +195,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
-        public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null)
+        public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null)
         {
             Popup.Open();
-            RenderPopup(animations, onPlay);
+            RenderPopup(animations, onPlay, onSelect);
         }
 
         /// <summary>
@@ -183,10 +206,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
-        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null)
+        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null)
         {
             Popup.ClearContent();
-            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay));
+            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect));
 
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(Popup.Content);
             add.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
@@ -196,7 +219,7 @@ namespace BetterLegacy.Editor.Managers
             addButton.onClick.NewListener(() =>
             {
                 animations.Add(new PAAnimation("New Animation", "This is the default description!"));
-                RenderPopup(animations, onPlay);
+                RenderPopup(animations, onPlay, onSelect);
             });
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
@@ -238,12 +261,18 @@ namespace BetterLegacy.Editor.Managers
                                 new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
                                 {
                                     animations.RemoveAt(index);
-                                    RenderPopup(animations, onPlay);
+                                    RenderPopup(animations, onPlay, onSelect);
                                     RTEditor.inst.HideWarningPopup();
                                 }, RTEditor.inst.HideWarningPopup)),
                             };
 
                         EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                        return;
+                    }
+
+                    if (onSelect != null)
+                    {
+                        onSelect.Invoke(animation);
                         return;
                     }
 

@@ -80,6 +80,9 @@ namespace BetterLegacy.Editor.Managers
         public int playerModelIndex = 0;
         public string CustomObjectID { get; set; }
 
+        public PlayerModel CurrentModel => PlayersData.Current.GetPlayerModel(playerModelIndex);
+        public CustomPlayerObject CurrentCustomObject => !string.IsNullOrEmpty(CustomObjectID) ? CurrentModel.customObjects.Find(x => x.id == CustomObjectID) : null;
+
         public bool editControls;
 
         public PlayerEditorDialog Dialog { get; set; }
@@ -115,7 +118,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshEditor()
         {
-            var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
+            var currentModel = CurrentModel;
 
             var isDefault = currentModel.IsDefault;
             Dialog.Content.Find("handler").gameObject.SetActive(isDefault && CurrentTab != Tab.Global);
@@ -2018,18 +2021,20 @@ namespace BetterLegacy.Editor.Managers
 
             RenderObject(Dialog.CustomObjectTab, customObject);
 
-            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, animation =>
-            {
-                if (!PlayerManager.Players.TryGetAt(playerModelIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTPlayer.RTCustomPlayerObject customObject))
-                    return;
-
-                var runtimeAnimation = new RTAnimation("Custom Animation");
-                runtimeAnimation.SetDefaultOnComplete(player.RuntimePlayer.animationController);
-                player.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
-                player.RuntimePlayer.animationController.Play(runtimeAnimation);
-            }));
+            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, PlayAnimation));
 
             CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
+        }
+
+        public void PlayAnimation(PAAnimation animation)
+        {
+            if (!PlayerManager.Players.TryGetAt(playerModelIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTPlayer.RTCustomPlayerObject customObject))
+                return;
+
+            var runtimeAnimation = new RTAnimation("Custom Animation");
+            runtimeAnimation.SetDefaultOnComplete(player.RuntimePlayer.animationController);
+            player.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
+            player.RuntimePlayer.animationController.Play(runtimeAnimation);
         }
 
         public IEnumerator RefreshModels(Action<PlayerModel> onSelect = null)

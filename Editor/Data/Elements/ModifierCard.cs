@@ -3930,13 +3930,51 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierActions.setIdleAnimation): {
                         StringGenerator(modifier, reference, "ID", 0);
-                        StringGenerator(modifier, reference, "Reference ID", 1);
+                        var referenceID = StringGenerator(modifier, reference, "Reference ID", 1);
+                        var customPlayerObject = PlayerEditor.inst.CurrentCustomObject;
+                        if (!customPlayerObject)
+                            break;
+
+                        var referenceIDContextMenu = referenceID.GetOrAddComponent<ContextClickable>();
+                        referenceIDContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Select Animation", () =>
+                                {
+                                    AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
+                                    {
+                                        referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
+                                    });
+                                }));
+                        };
 
                         break;
                     }
                 case nameof(ModifierActions.playAnimation): {
                         StringGenerator(modifier, reference, "ID", 0);
-                        StringGenerator(modifier, reference, "Reference ID", 1);
+                        var referenceID = StringGenerator(modifier, reference, "Reference ID", 1);
+                        var customPlayerObject = PlayerEditor.inst.CurrentCustomObject;
+                        if (!customPlayerObject)
+                            break;
+
+                        var referenceIDContextMenu = referenceID.GetOrAddComponent<ContextClickable>();
+                        referenceIDContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Select Animation", () =>
+                                {
+                                    AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
+                                    {
+                                        referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
+                                    });
+                                }));
+                        };
 
                         break;
                     }
