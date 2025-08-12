@@ -27,6 +27,11 @@
   - Consumable toggle (removes the item after use, heal mechanic always has this on for balance sake or I might go for a cooldown mechanic instead)
   - Aiming behavior (mouse, right stick, rotate with player, etc)
 - Arcade auto plays song config.
+- Global animation library.
+  Notes:  
+  - Can turn an object into an animation and back.
+  - Can be played onto an object using a modifier.
+  - Modifiers can also use it to interpolate.
 - Active event keyframe value.
   Notes:  
   - Skips the next keyframe if it's value is off. Acts kinda like relative except if the value at a specific index was 0.
@@ -62,8 +67,6 @@
   Update: 1.14.0  
 - Interface editor.  
   Update: 1.8.0+  
-- Animation editor (for player animations).  
-  Update: 1.8.0  
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)  
   Update: 1.8.0  
