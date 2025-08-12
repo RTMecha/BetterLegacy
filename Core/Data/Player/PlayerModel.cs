@@ -226,6 +226,14 @@ namespace BetterLegacy.Core.Data.Player
             return tailParts;
         }
 
+        public const string IDLE_ANIM = "idle";
+        public const string BOOST_ANIM = "boost";
+        public const string HEAL_ANIM = "heal";
+        public const string HIT_ANIM = "hit";
+        public const string DEATH_ANIM = "death";
+        public const string SHOOT_ANIM = "shoot";
+        public const string JUMP_ANIM = "jump";
+
         #region Internal
 
         static List<PlayerModel> defaultModels;

@@ -3323,37 +3323,37 @@ namespace BetterLegacy.Core.Components.Player
 
                 switch (animation.ReferenceID.ToLower().Remove(" "))
                 {
-                    case "boost": {
+                    case PlayerModel.BOOST_ANIM: {
                             if (!boostAnimationCustom)
                                 boostAnimationCustom = new RTAnimation("Player Boost Custom Animation");
                             runtimeAnim = boostAnimationCustom;
                             break;
                         }
-                    case "heal": {
+                    case PlayerModel.HEAL_ANIM: {
                             if (!healAnimationCustom)
                                 healAnimationCustom = new RTAnimation("Player Heal Custom Animation");
                             runtimeAnim = healAnimationCustom;
                             break;
                         }
-                    case "hit": {
+                    case PlayerModel.HIT_ANIM: {
                             if (!hitAnimationCustom)
                                 hitAnimationCustom = new RTAnimation("Player Hit Custom Animation");
                             runtimeAnim = hitAnimationCustom;
                             break;
                         }
-                    case "death": {
+                    case PlayerModel.DEATH_ANIM: {
                             if (!deathAnimationCustom)
                                 deathAnimationCustom = new RTAnimation("Player Death Custom Animation");
                             runtimeAnim = deathAnimationCustom;
                             break;
                         }
-                    case "shoot": {
+                    case PlayerModel.SHOOT_ANIM: {
                             if (!shootAnimationCustom)
                                 shootAnimationCustom = new RTAnimation("Player Shoot Custom Animation");
                             runtimeAnim = shootAnimationCustom;
                             break;
                         }
-                    case "jump": {
+                    case PlayerModel.JUMP_ANIM: {
                             if (!jumpAnimationCustom)
                                 jumpAnimationCustom = new RTAnimation("Player Jump Custom Animation");
                             runtimeAnim = jumpAnimationCustom;
@@ -3799,7 +3799,7 @@ namespace BetterLegacy.Core.Components.Player
             public CustomPlayerObject reference;
             public TextMeshPro text;
             public bool idle = true;
-            public string currentIdleAnimation = "idle";
+            public string currentIdleAnimation = PlayerModel.IDLE_ANIM;
 
             public Vector3 positionOffset;
             public Vector3 scaleOffset;
