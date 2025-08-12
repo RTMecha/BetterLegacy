@@ -2251,6 +2251,21 @@ namespace BetterLegacy.Core
             uploadable.ArcadeTags = new List<string>(orig.ArcadeTags);
         }
 
+        /// <summary>
+        /// Copies animatable data from another animatable object.
+        /// </summary>
+        /// <param name="orig">Animatable object to copy and apply from.</param>
+        public static void CopyAnimatableData(this IAnimatable animatable, IAnimatable orig)
+        {
+            if (!animatable.TimelineKeyframes.IsEmpty())
+                animatable.TimelineKeyframes.ForLoop(timelineKeyframe => CoreHelper.Delete(timelineKeyframe.GameObject));
+            animatable.TimelineKeyframes.Clear();
+
+            var origEvents = orig.Events;
+            for (int i = 0; i < origEvents.Count; i++)
+                animatable.SetEventKeyframes(i, new List<EventKeyframe>(origEvents[i].Select(x => x.Copy())));
+        }
+
         #region JSON
 
         /// <summary>
@@ -2567,7 +2582,7 @@ namespace BetterLegacy.Core
 
         #endregion
 
-        #region Animation
+        #region Animation Controller
 
         /// <summary>
         /// Updates all animation controllers.

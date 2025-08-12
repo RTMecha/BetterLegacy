@@ -333,6 +333,29 @@ namespace BetterLegacy.Core.Data
             _ => null,
         };
 
+        public void SetEventKeyframes(int type, List<EventKeyframe> eventKeyframes)
+        {
+            switch (type)
+            {
+                case 0: {
+                        positionKeyframes = eventKeyframes;
+                        break;
+                    }
+                case 1: {
+                        scaleKeyframes = eventKeyframes;
+                        break;
+                    }
+                case 2: {
+                        rotationKeyframes = eventKeyframes;
+                        break;
+                    }
+                case 3: {
+                        colorKeyframes = eventKeyframes;
+                        break;
+                    }
+            }
+        }
+
         int SearchKeyframe(int type, float time)
         {
             int low = 0;

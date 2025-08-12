@@ -35,6 +35,13 @@ namespace BetterLegacy.Core.Data
         public List<EventKeyframe> GetEventKeyframes(int type);
 
         /// <summary>
+        /// Sets the list of event keyframes.
+        /// </summary>
+        /// <param name="type">Type of list to set.</param>
+        /// <param name="eventKeyframes">List of keyframes to set based on the type.</param>
+        public void SetEventKeyframes(int type, List<EventKeyframe> eventKeyframes);
+
+        /// <summary>
         /// Interpolates an animation from the object.
         /// </summary>
         /// <param name="type">

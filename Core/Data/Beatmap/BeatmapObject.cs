@@ -1538,6 +1538,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<EventKeyframe> GetEventKeyframes(int type) => events[type];
 
+        public void SetEventKeyframes(int type, List<EventKeyframe> eventKeyframes) => events[type] = eventKeyframes;
+
         /// <summary>
         /// Interpolates an animation from the object.
         /// </summary>
