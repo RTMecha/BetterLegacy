@@ -11,7 +11,6 @@
   - MetaData toggle for if the level is compatible with online play. If it isn't and a host tries to load the level, they will not be able to.
 - 2D option for BG objects (VG parallax support?)
 - Level preview song.
-- Controller Preferences metadata. [Keyboard, Controller, Mouse]
 - Versus Mode (Players can attack other players via boosting through them, shooting them, etc)  
   Update: 1.9.0  
 - Player shooting aiming  
