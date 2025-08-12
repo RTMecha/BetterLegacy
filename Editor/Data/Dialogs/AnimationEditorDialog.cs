@@ -128,6 +128,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 keyframeDialog.isMulti = i == 4;
                 keyframeDialog.isObjectKeyframe = true;
                 keyframeDialog.Init();
+                if (keyframeDialog.RandomToggles != null)
+                    keyframeDialog.RandomToggles.ForLoopReverse((toggle, index) =>
+                    {
+                        if (toggle.name != "homing-static" && toggle.name != "homing-dynamic")
+                            return;
+
+                        CoreHelper.Delete(toggle);
+                        keyframeDialog.RandomToggles.RemoveAt(index);
+                    });
                 keyframeDialogs.Add(keyframeDialog);
             }
 
@@ -166,6 +175,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             reference.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
             ReferenceField = reference.GetComponent<InputField>();
             EditorThemeManager.AddInputField(ReferenceField);
+            TooltipHelper.AssignTooltip(reference, "Animation Reference ID");
         }
 
         void SetupName()
@@ -231,6 +241,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             TransitionToggle = transitionStorage.toggle;
             transitionStorage.label.text = "Transition Override";
             EditorThemeManager.AddToggle(TransitionToggle, graphic: transitionStorage.label);
+            TooltipHelper.AssignTooltip(transition, "Animation Transition");
         }
 
         #endregion

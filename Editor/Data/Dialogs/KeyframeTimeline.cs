@@ -909,6 +909,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         void KeyframeRandomHandler(int type, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
             var dialog = Dialog.KeyframeDialogs[type];
+            if (dialog.RandomToggles == null)
+                return;
 
             int random = firstKF.eventKeyframe.random;
 
@@ -918,6 +920,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 int buttonTmp = (n >= 2 && (type != 2 || n < 3)) ? (n + 1) : (n > 2 && type == 2) ? n + 2 : n;
 
                 var active = buttonTmp != 5 && buttonTmp != 6 || RTEditor.ShowModdedUI;
+
+                if (n >= dialog.RandomToggles.Count)
+                    continue;
 
                 var toggle = dialog.RandomToggles[n];
                 toggle.gameObject.SetActive(active);
