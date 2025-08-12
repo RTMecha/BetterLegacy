@@ -683,6 +683,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
 
+        public List<PAAnimation> animations = new List<PAAnimation>();
+
         public RTLevelBase ParentRuntime { get; set; }
 
         #endregion
@@ -1279,6 +1281,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             ClampEventListValues(gameData.events);
 
+            if (jn["anims"] != null)
+                for (int i = 0; i < jn["anims"].Count; i++)
+                    gameData.animations.Add(PAAnimation.Parse(jn["anims"][i]));
+
             return gameData;
         }
 
@@ -1654,6 +1660,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["bg_objects"][i] = backgroundObjects[i].ToJSON();
 
             CoreHelper.Log("Saving Event Objects");
+            for (int i = 0; i < animations.Count; i++)
+                jn["anims"][i] = animations[i].ToJSON();
+
             for (int i = 0; i < events.Count; i++)
                 for (int j = 0; j < events[i].Count; j++)
                     if (EventTypes.Length > i)

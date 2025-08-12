@@ -55,6 +55,17 @@ namespace BetterLegacy.Editor.Managers
                 Dialog.Init();
 
                 Popup = RTEditor.inst.GeneratePopup(EditorPopup.ANIMATIONS_POPUP, "Animations", Vector2.zero, new Vector2(600f, 400f));
+
+                EditorHelper.AddEditorDropdown("View Animations", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.PlaySprite, () =>
+                {
+                    if (!EditorManager.inst.hasLoadedLevel)
+                    {
+                        EditorManager.inst.DisplayNotification($"Load a level first!", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    OpenPopup(GameData.Current.animations);
+                });
             }
             catch (Exception ex)
             {
@@ -216,11 +227,41 @@ namespace BetterLegacy.Editor.Managers
             var addText = add.transform.Find("Text").GetComponent<Text>();
             addText.text = "Add new Animation";
             var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            addButton.onClick.ClearAll();
+            var addContextMenu = add.GetOrAddComponent<ContextClickable>();
+            addContextMenu.onClick = pointerEventData =>
             {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Create New", () =>
+                        {
+                            animations.Add(new PAAnimation("New Animation", "This is the default description!"));
+                            RenderPopup(animations, onPlay, onSelect);
+                        }),
+                        new ButtonFunction("Create From Object", () =>
+                        {
+                            EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                            {
+                                if (!timelineObject.isBeatmapObject)
+                                {
+                                    EditorManager.inst.DisplayNotification("Cannot apply animation from non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
+                                animation.CopyAnimatableData(beatmapObject);
+                                animations.Add(animation);
+                                RenderPopup(animations, onPlay, onSelect);
+                            };
+                        }));
+                    return;
+                }
+
                 animations.Add(new PAAnimation("New Animation", "This is the default description!"));
                 RenderPopup(animations, onPlay, onSelect);
-            });
+            };
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
@@ -264,6 +305,39 @@ namespace BetterLegacy.Editor.Managers
                                     RenderPopup(animations, onPlay, onSelect);
                                     RTEditor.inst.HideWarningPopup();
                                 }, RTEditor.inst.HideWarningPopup)),
+                                new ButtonFunction(true),
+                                new ButtonFunction("Apply To Object", () =>
+                                {
+                                    EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                                    {
+                                        if (!timelineObject.isBeatmapObject)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Cannot apply animation to non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
+                                            return;
+                                        }
+
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.CopyAnimatableData(animation);
+                                        if (ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.ID == beatmapObject.id)
+                                            ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
+                                    };
+                                }),
+                                new ButtonFunction("Copy From Object", () =>
+                                {
+                                    EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                                    {
+                                        if (!timelineObject.isBeatmapObject)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Cannot apply animation from non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
+                                            return;
+                                        }
+
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        animation.CopyAnimatableData(beatmapObject);
+                                        if (Dialog.IsCurrent && Dialog.Timeline.CurrentObject == animation)
+                                            RenderDialog(animation);
+                                    };
+                                }),
                             };
 
                         EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
