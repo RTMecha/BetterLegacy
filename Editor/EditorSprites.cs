@@ -34,6 +34,8 @@ namespace BetterLegacy.Editor
                 SearchSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_search{FileFormat.PNG.Dot()}"));
                 ReloadSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_refresh-white{FileFormat.PNG.Dot()}"));
                 CheckmarkSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_checkmark{FileFormat.PNG.Dot()}"));
+                PauseSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_pause{FileFormat.PNG.Dot()}"));
+                PlaySprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_play{FileFormat.PNG.Dot()}"));
                 PlayerSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_player{FileFormat.PNG.Dot()}"));
 
                 NewSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_new{FileFormat.PNG.Dot()}"));
@@ -84,6 +86,10 @@ namespace BetterLegacy.Editor
         public static Sprite ReloadSprite { get; set; }
 
         public static Sprite CheckmarkSprite { get; set; }
+
+        public static Sprite PauseSprite { get; set; }
+
+        public static Sprite PlaySprite { get; set; }
 
         public static Sprite PlayerSprite { get; set; }
 
