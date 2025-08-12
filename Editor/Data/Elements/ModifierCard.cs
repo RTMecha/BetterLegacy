@@ -6,8 +6,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-using LSFunctions;
-
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -34,15 +32,21 @@ namespace BetterLegacy.Editor.Data.Elements
             this.dialog = dialog;
         }
 
-        public GameObject gameObject;
+        #region Values
 
         public Modifier Modifier { get; set; }
+
+        public GameObject gameObject;
 
         public Transform layout;
 
         public int index;
 
         public ModifiersEditorDialog dialog;
+
+        #endregion
+
+        #region Methods
 
         public void RenderModifier<T>(T reference = default)
         {
@@ -3918,6 +3922,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierActions.setCustomObjectIdle): {
+                        StringGenerator(modifier, reference, "ID", 0);
+                        BoolGenerator(modifier, reference, "Idle", 1);
+
+                        break;
+                    }
                 case nameof(ModifierActions.setIdleAnimation): {
                         StringGenerator(modifier, reference, "ID", 0);
                         StringGenerator(modifier, reference, "Reference ID", 1);
@@ -4663,7 +4673,7 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
         }
 
-        public void Update<T>(T reference) => Update(Modifier as Modifier, reference);
+        public void Update<T>(T reference) => Update(Modifier, reference);
 
         public void Update<T>(Modifier modifier, T reference)
         {
@@ -5173,6 +5183,8 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
             return baseAdd;
         }
+
+        #endregion
 
         #endregion
     }
