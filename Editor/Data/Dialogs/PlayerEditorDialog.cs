@@ -402,6 +402,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             visibilityScrollRectSR.content = visibilityContentGO.transform.AsRT();
 
+            CustomObjectTab.ViewAnimations = SetupButton("Animations", PlayerEditor.Tab.Custom, "View Animations", editorTab: CustomObjectTab);
             CustomObjectTab.Modifiers = SetupModifiers("  Modifiers", PlayerEditor.Tab.Tail, editorTab: CustomObjectTab);
 
             #endregion
@@ -1222,6 +1223,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public PlayerEditorToggle RotationParent { get; set; }
         public PlayerEditorToggle RequireAll { get; set; }
         public PlayerEditorElement VisibilitySettings { get; set; }
+        public PlayerEditorButton ViewAnimations { get; set; }
         public PlayerEditorModifiers Modifiers { get; set; }
     }
 

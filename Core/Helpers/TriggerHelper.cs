@@ -393,14 +393,17 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             // double click
-            if (pointerEventData.clickCount > 1 && !ObjEditor.inst.timelineKeyframesDrag && !EventEditor.inst.eventDrag)
+            if (pointerEventData.clickCount > 1 && (!timelineKeyframe.timeline || !timelineKeyframe.timeline.draggingKeyframes) && !EventEditor.inst.eventDrag)
             {
-                AudioManager.inst.SetMusicTime(timelineKeyframe.isObjectKeyframe && EditorTimeline.inst.CurrentSelection.isBeatmapObject ? EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().StartTime + timelineKeyframe.Time : timelineKeyframe.Time);
+                if (timelineKeyframe.animatable is BeatmapObject)
+                    AudioManager.inst.SetMusicTime(timelineKeyframe.isObjectKeyframe && EditorTimeline.inst.CurrentSelection.isBeatmapObject ? EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().StartTime + timelineKeyframe.Time : timelineKeyframe.Time);
+                else if (timelineKeyframe.timeline && timelineKeyframe.timeline.Cursor)
+                    timelineKeyframe.timeline.Cursor.value = timelineKeyframe.Time;
                 return;
             }
 
             if (timelineKeyframe.isObjectKeyframe)
-                ObjectEditor.inst.SetCurrentKeyframe(timelineKeyframe.beatmapObject, timelineKeyframe.Type, timelineKeyframe.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
+                timelineKeyframe.timeline?.SetCurrentKeyframe(timelineKeyframe.animatable, timelineKeyframe.Type, timelineKeyframe.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
             else if (!EventEditor.inst.eventDrag)
                 (InputDataManager.inst.editorActions.MultiSelect.IsPressed ?
                     (Action<int, int>)RTEventEditor.inst.AddSelectedEvent : RTEventEditor.inst.SetCurrentEvent)(timelineKeyframe.Type, timelineKeyframe.Index);
@@ -416,24 +419,29 @@ namespace BetterLegacy.Core.Helpers
 
             if (timelineKeyframe.isObjectKeyframe)
             {
+                var timeline = timelineKeyframe.timeline;
+                if (!timeline)
+                    return;
+
                 var pointerEventData = (PointerEventData)eventData;
                 if (pointerEventData.button == PointerEventData.InputButton.Middle)
                 {
                     EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
-                    ObjectEditor.inst.StartTimelineDrag();
+                    timeline.StartTimelineDrag();
                     return;
                 }
 
-                var beatmapObject = timelineKeyframe.beatmapObject;
-                ObjEditor.inst.currentKeyframeKind = timelineKeyframe.Type;
-                ObjEditor.inst.currentKeyframe = timelineKeyframe.Index;
+                var animatable = timelineKeyframe.animatable;
 
-                var list = beatmapObject.timelineObject.InternalTimelineObjects;
+                timeline.currentKeyframeType = timelineKeyframe.Type;
+                timeline.currentKeyframeIndex = timelineKeyframe.Index;
+
+                var list = animatable.TimelineKeyframes;
                 if (list.FindIndex(x => x.Type == timelineKeyframe.Type && x.Index == timelineKeyframe.Index) != -1)
-                    foreach (var otherTLO in beatmapObject.timelineObject.InternalTimelineObjects)
-                        otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineKeyframe.Time;
-                ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineKeyframe.Time - ObjectEditor.MouseTimelineCalc();
-                ObjEditor.inst.timelineKeyframesDrag = true;
+                    foreach (var otherTLO in animatable.TimelineKeyframes)
+                        otherTLO.timeOffset = otherTLO.Type == timeline.currentKeyframeType && otherTLO.Index == timeline.currentKeyframeIndex ? 0f : otherTLO.Time - timelineKeyframe.Time;
+                ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineKeyframe.Time - timeline.MouseTimelineCalc();
+                timeline.draggingKeyframes = true;
             }
             else
             {
@@ -459,22 +467,25 @@ namespace BetterLegacy.Core.Helpers
         {
             if (timelineKeyframe.isObjectKeyframe)
             {
-                if (EditorTimeline.inst.movingTimeline)
+                if (timelineKeyframe.timeline.movingTimeline)
                 {
-                    EditorTimeline.inst.movingTimeline = false;
+                    timelineKeyframe.timeline.movingTimeline = false;
                     return;
                 }
 
-                var beatmapObject = timelineKeyframe.beatmapObject;
-                ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
+                var animatable = timelineKeyframe.animatable;
+                if (animatable is not BeatmapObject beatmapObject)
+                    return;
+
+                ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(beatmapObject);
 
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
 
-                ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
-                ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                ObjectEditor.inst.RenderMarkers(beatmapObject);
-                ObjEditor.inst.timelineKeyframesDrag = false;
+                ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.RenderMarkers(beatmapObject);
+                timelineKeyframe.timeline.draggingKeyframes = false;
             }
             else
             {
@@ -492,7 +503,10 @@ namespace BetterLegacy.Core.Helpers
 
             if (timelineKeyframe.isObjectKeyframe)
             {
-                var beatmapObject = timelineKeyframe.beatmapObject;
+                var animatable = timelineKeyframe.animatable;
+                if (animatable is not BeatmapObject beatmapObject)
+                    return;
+
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Set Cursor to KF", () => AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineKeyframe.Time)),
                     new ButtonFunction("Set KF to Cursor", () =>
@@ -502,18 +516,18 @@ namespace BetterLegacy.Core.Helpers
                         for (int i = 0; i < selected.Count; i++)
                             selected[i].Time = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
-                        ObjectEditor.inst.RenderKeyframes(beatmapObject);
+                        ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     }),
                     new ButtonFunction(true),
-                    new ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
-                    new ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
+                    new ButtonFunction("Copy", () => ObjectEditor.inst.Dialog.Timeline.CopyAllSelectedEvents(beatmapObject)),
+                    new ButtonFunction("Paste", () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframes(beatmapObject)),
                     new ButtonFunction("Copy Data", () =>
                     {
-                        ObjectEditor.inst.CopyData(timelineKeyframe.Type, timelineKeyframe.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.CopyData(timelineKeyframe.Type, timelineKeyframe.eventKeyframe);
                         EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
                     }),
-                    new ButtonFunction("Paste Data", () => ObjectEditor.inst.PasteKeyframeData(timelineKeyframe.Type, beatmapObject.timelineObject.InternalTimelineObjects.Where(x => x.Selected), beatmapObject)),
+                    new ButtonFunction("Paste Data", () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframeData(timelineKeyframe.Type, beatmapObject.TimelineKeyframes.Where(x => x.Selected), beatmapObject)),
                     new ButtonFunction("Delete", RTEditor.inst.Delete),
                     new ButtonFunction(true),
                     new ButtonFunction("Set to Camera", () =>
@@ -524,7 +538,7 @@ namespace BetterLegacy.Core.Helpers
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.position.x;
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.transform.position.y;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
@@ -532,14 +546,14 @@ namespace BetterLegacy.Core.Helpers
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.orthographicSize / 20f;
                                     timelineKeyframe.eventKeyframe.values[1] = EventManager.inst.cam.orthographicSize / 20f;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }
                             case 2: {
                                     timelineKeyframe.eventKeyframe.values[0] = EventManager.inst.cam.transform.eulerAngles.x;
                                     if (ObjectEditor.inst.Dialog.IsCurrent)
-                                        ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                                     break;
                                 }

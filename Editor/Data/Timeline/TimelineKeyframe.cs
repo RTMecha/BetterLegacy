@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +9,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Timeline
@@ -25,9 +25,10 @@ namespace BetterLegacy.Editor.Data.Timeline
             this.eventKeyframe.timelineKeyframe = this;
         }
 
-        public TimelineKeyframe(EventKeyframe eventKeyframe, BeatmapObject beatmapObject) : this(eventKeyframe)
+        public TimelineKeyframe(EventKeyframe eventKeyframe, IAnimatable animatable, KeyframeTimeline timeline) : this(eventKeyframe)
         {
-            this.beatmapObject = beatmapObject;
+            this.timeline = timeline;
+            this.animatable = animatable;
             isObjectKeyframe = true;
         }
 
@@ -139,7 +140,8 @@ namespace BetterLegacy.Editor.Data.Timeline
 
         #endregion
 
-        public BeatmapObject beatmapObject;
+        public KeyframeTimeline timeline;
+        public IAnimatable animatable;
         public EventKeyframe eventKeyframe;
 
         bool selected;
@@ -160,7 +162,7 @@ namespace BetterLegacy.Editor.Data.Timeline
 
             if (isObjectKeyframe)
             {
-                gameObject = ObjEditor.inst.objTimelinePrefab.Duplicate(ObjEditor.inst.TimelineParents[Type], $"{ObjectEditor.IntToType(Type)}_{Index}");
+                gameObject = ObjEditor.inst.objTimelinePrefab.Duplicate(timeline ? timeline.KeyframeParents[Type] : ObjEditor.inst.TimelineParents[Type], $"{KeyframeTimeline.IntToType(Type)}_{Index}");
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
@@ -201,17 +203,18 @@ namespace BetterLegacy.Editor.Data.Timeline
         {
             if (isObjectKeyframe)
             {
-                if (beatmapObject.events[Type].TryFindIndex(x => x.id == ID, out int kfIndex))
+                var events = animatable.GetEventKeyframes(Type);
+                if (events.TryFindIndex(x => x.id == ID, out int kfIndex))
                     Index = kfIndex;
 
-                RenderSprite(beatmapObject.events[Type]);
+                RenderSprite(events);
                 RenderPos();
                 RenderIcons();
             }
             else
             {
-                var events = GameData.Current.events[Type].Select(x => x as EventKeyframe).ToList();
-                if (events.TryFindIndex(x => (x as EventKeyframe).id == ID, out int index))
+                var events = GameData.Current.events[Type];
+                if (events.TryFindIndex(x => x.id == ID, out int index))
                     Index = index;
 
                 if (Type / RTEventEditor.EVENT_LIMIT == EditorTimeline.inst.Layer)

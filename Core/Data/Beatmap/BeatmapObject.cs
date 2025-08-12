@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents an object PA levels are made of.
     /// </summary>
-    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive
+    public class BeatmapObject : PAObject<BeatmapObject>, IPrefabable, ILifetime, IShapeable, ITransformable, IParentable, IEvaluatable, IModifyable, IModifierReference, IEditable, IReactive, IAnimatable
     {
         public BeatmapObject() : base() { }
 
@@ -51,6 +51,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             new List<EventKeyframe>(),
             new List<EventKeyframe>()
         };
+        public List<List<EventKeyframe>> Events => events;
 
         #region Parent
 
@@ -551,6 +552,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public TimelineObject timelineObject;
 
         public TimelineObject TimelineObject { get => timelineObject; set => timelineObject = value; }
+
+        public List<TimelineKeyframe> TimelineKeyframes { get; set; } = new List<TimelineKeyframe>();
 
         public bool CanRenderInTimeline => !string.IsNullOrEmpty(id) && !FromPrefab;
 
@@ -1423,8 +1426,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (renderEditor && ObjectEditor.inst)
             {
-                ObjectEditor.inst.RenderKeyframes(this);
-                ObjectEditor.inst.SetCurrentKeyframe(this, type, index, false, false);
+                ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(this);
+                ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(this, type, index, false, false);
             }
 
             return selected;
@@ -1533,6 +1536,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             return new Vector3(0f, 0f, InterpolateChainRotation(includeSelf: includeSelf));
         }
 
+        public List<EventKeyframe> GetEventKeyframes(int type) => events[type];
+
         /// <summary>
         /// Interpolates an animation from the object.
         /// </summary>
@@ -1568,18 +1573,6 @@ namespace BetterLegacy.Core.Data.Beatmap
             return low - 1;
         }
 
-        /// <summary>
-        /// Interpolates an animation from the object.
-        /// </summary>
-        /// <param name="type">
-        /// The type of transform value to get.<br></br>
-        /// 0 -> <see cref="positionOffset"/><br></br>
-        /// 1 -> <see cref="scaleOffset"/><br></br>
-        /// 2 -> <see cref="rotationOffset"/>
-        /// </param>
-        /// <param name="valueIndex">Axis index to interpolate.</param>
-        /// <param name="time">Time to interpolate to.</param>
-        /// <returns>Returns a single value based on the event.</returns>
         public float Interpolate(int type, int valueIndex, float time)
         {
             if (!events.TryGetAt(type, out List<EventKeyframe> list))

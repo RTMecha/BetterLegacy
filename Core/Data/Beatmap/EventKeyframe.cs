@@ -105,7 +105,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             locked = orig.locked;
         }
 
-        public static EventKeyframe Parse(JSONNode jn, int type, int valueCount, bool defaultRelative = false)
+        public static EventKeyframe Parse(JSONNode jn, int type, int valueCount, int randomValueCount, float[] origValues, float[] origRandomValues, bool defaultRelative = false)
         {
             var eventKeyframe = new EventKeyframe();
 
@@ -120,8 +120,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventValues.Add(jn[axis[i]].AsFloat);
 
             while (eventValues.Count < valueCount)
-                eventValues.Add(GameData.DefaultKeyframes[type].values[eventValues.Count]);
-
+                eventValues.Add(origValues[eventValues.Count]);
             while (eventValues.Count > valueCount)
                 eventValues.RemoveAt(eventValues.Count - 1);
 
@@ -131,6 +130,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < raxis.Length; i++)
                 if (jn[raxis[i]] != null)
                     eventRandomValues.Add(jn[raxis[i]].AsFloat);
+
+            while (eventRandomValues.Count < randomValueCount)
+                eventRandomValues.Add(origRandomValues[eventRandomValues.Count]);
+            while (eventRandomValues.Count > randomValueCount)
+                eventRandomValues.RemoveAt(eventRandomValues.Count - 1);
 
             eventKeyframe.SetRandomValues(eventRandomValues.ToArray());
 

@@ -180,6 +180,7 @@ namespace BetterLegacy.Core.Managers
         public List<Modifier> defaultPlayerModifiers = new List<Modifier>
         {
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierActions.setCustomObjectActive), true, "False", "0", "True"),
+            new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierActions.setCustomObjectIdle), true, "0", "True"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierActions.playAnimation), false, "0", "boost"),
             new Modifier(ModifierCompatibility.FullPlayerCompatible, Modifier.Type.Action, nameof(ModifierActions.setIdleAnimation), false, "0", "boost"),
             new Modifier(ModifierCompatibility.PAPlayerCompatible, Modifier.Type.Action, nameof(ModifierActions.kill), false, ""),

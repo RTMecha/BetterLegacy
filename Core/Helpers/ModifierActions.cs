@@ -122,7 +122,7 @@ namespace BetterLegacy.Core.Helpers
                         new FloatKeyframe(Mathf.Clamp(time, 0f, 9999f), setPitch, Ease.GetEaseFunction(easing, Ease.Linear)),
                     }, x => RTLevel.Current.eventEngine.pitchOffset = x, interpolateOnComplete: true),
                 };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
                 return;
             }
@@ -1374,7 +1374,7 @@ namespace BetterLegacy.Core.Helpers
                             new Vector2Keyframe(modifier.GetFloat(2, 1f, variables), new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.localPosition.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             });
@@ -1413,7 +1413,7 @@ namespace BetterLegacy.Core.Helpers
                         new Vector2Keyframe(duration, new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
                     }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
                 };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
             }
         }
@@ -1465,7 +1465,7 @@ namespace BetterLegacy.Core.Helpers
                             new Vector2Keyframe(duration, new Vector2(vector.x + (relative ? tf.localPosition.x : 0f), vector.y + (relative ? tf.position.y : 0f)), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector2 => tf.localPosition = vector2, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             }
@@ -1514,7 +1514,7 @@ namespace BetterLegacy.Core.Helpers
                             new FloatKeyframe(duration, value + (relative ? tf.localPosition.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionX, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             });
@@ -1555,7 +1555,7 @@ namespace BetterLegacy.Core.Helpers
                         new FloatKeyframe(duration, value + (relative ? tf.localPosition.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                     }, tf.SetLocalPositionX, interpolateOnComplete: true),
                 };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
             }
         }
@@ -1595,7 +1595,7 @@ namespace BetterLegacy.Core.Helpers
                             new FloatKeyframe(duration, value + (relative ? tf.localPosition.x : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionX, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             }
@@ -1644,7 +1644,7 @@ namespace BetterLegacy.Core.Helpers
                             new FloatKeyframe(duration, value + (relative ? tf.localPosition.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionY, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             });
@@ -1685,7 +1685,7 @@ namespace BetterLegacy.Core.Helpers
                         new FloatKeyframe(duration, value + (relative ? tf.localPosition.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                     }, tf.SetLocalPositionY, interpolateOnComplete: true),
                 };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
             }
         }
@@ -1725,7 +1725,7 @@ namespace BetterLegacy.Core.Helpers
                             new FloatKeyframe(duration, value + (relative ? tf.localPosition.y : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalPositionY, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             }
@@ -1773,7 +1773,7 @@ namespace BetterLegacy.Core.Helpers
                             new FloatKeyframe(duration, value + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             });
@@ -1814,7 +1814,7 @@ namespace BetterLegacy.Core.Helpers
                         new FloatKeyframe(duration, value + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                     }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
                 };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
             }
         }
@@ -1854,7 +1854,7 @@ namespace BetterLegacy.Core.Helpers
                             new FloatKeyframe(duration, value + (relative ? tf.localRotation.eulerAngles.z : 0f), Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, tf.SetLocalRotationEulerZ, interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                 }
             }
@@ -4130,7 +4130,7 @@ namespace BetterLegacy.Core.Helpers
                             new FloatKeyframe(modifier.GetFloat(3, 1f, variables), value, Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, x => RTLevel.Current.eventEngine.SetOffset(eventType, indexValue, x), interpolateOnComplete: true)
                     };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
             }
         }
@@ -5604,7 +5604,7 @@ namespace BetterLegacy.Core.Helpers
                         new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
                     }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
                 };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
                 return;
             }
@@ -5657,7 +5657,7 @@ namespace BetterLegacy.Core.Helpers
                             new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                     continue;
                 }
@@ -5931,7 +5931,7 @@ namespace BetterLegacy.Core.Helpers
                         new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
                     }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
                 };
-                animation.SetDefaultOnComplete(false);
+                animation.SetDefaultOnComplete();
                 AnimationManager.inst.Play(animation);
                 return;
             }
@@ -5990,7 +5990,7 @@ namespace BetterLegacy.Core.Helpers
                             new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.GetEaseFunction(easing, Ease.Linear)),
                         }, vector3 => transformable.SetTransform(type, vector3), interpolateOnComplete: true),
                     };
-                    animation.SetDefaultOnComplete(false);
+                    animation.SetDefaultOnComplete();
                     AnimationManager.inst.Play(animation);
                     continue;
                 }
@@ -7962,13 +7962,35 @@ namespace BetterLegacy.Core.Helpers
                 customObject.active = modifier.GetBool(0, false, variables);
         }
 
+        public static void setCustomObjectIdle(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var id = modifier.GetValue(0, variables);
+            var idle = modifier.GetBool(1, true, variables);
+            var customPlayerObject = reference as RTPlayer.RTCustomPlayerObject;
+            var player = customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+
+            if (!player || !player.RuntimePlayer)
+                return;
+
+            var customObject = string.IsNullOrEmpty(id) && customPlayerObject ? customPlayerObject : player.RuntimePlayer.customObjects.Find(x => x.id == id);
+
+            if (customObject)
+                customObject.idle = idle;
+        }
+
         public static void setIdleAnimation(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var id = modifier.GetValue(0, variables);
             var referenceID = modifier.GetValue(1, variables);
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var customPlayerObject = reference as RTPlayer.RTCustomPlayerObject;
+            var player = customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
 
-            if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+            if (!player || !player.RuntimePlayer)
+                return;
+
+            var customObject = string.IsNullOrEmpty(id) && customPlayerObject ? customPlayerObject : player.RuntimePlayer.customObjects.Find(x => x.id == id);
+
+            if (customObject && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
                 customObject.currentIdleAnimation = animation.ReferenceID;
         }
 
@@ -7976,11 +7998,18 @@ namespace BetterLegacy.Core.Helpers
         {
             var id = modifier.GetValue(0, variables);
             var referenceID = modifier.GetValue(1, variables);
-            var player = reference is RTPlayer.RTCustomPlayerObject customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
+            var customPlayerObject = reference as RTPlayer.RTCustomPlayerObject;
+            var player = customPlayerObject ? customPlayerObject.Player.Core : reference as PAPlayer;
 
-            if (player && player.RuntimePlayer && player.RuntimePlayer.customObjects.TryFind(x => x.id == id, out RTPlayer.RTCustomPlayerObject customObject) && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
+            if (!player || !player.RuntimePlayer)
+                return;
+
+            var customObject = string.IsNullOrEmpty(id) && customPlayerObject ? customPlayerObject : player.RuntimePlayer.customObjects.Find(x => x.id == id);
+
+            if (customObject && customObject.reference && customObject.reference.animations.TryFind(x => x.ReferenceID == referenceID, out PAAnimation animation))
             {
                 var runtimeAnimation = new RTAnimation("Custom Animation");
+                runtimeAnimation.SetDefaultOnComplete(player.RuntimePlayer.animationController);
                 player.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
                 player.RuntimePlayer.animationController.Play(runtimeAnimation);
             }

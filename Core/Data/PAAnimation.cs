@@ -10,12 +10,12 @@ using SimpleJSON;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Runtime.Objects;
+using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data
 {
-    // TODO: figure out how to get this working properly
-    public class PAAnimation : PAObject<PAAnimation>
+    public class PAAnimation : PAObject<PAAnimation>, IAnimatable
     {
         public PAAnimation()
         {
@@ -28,11 +28,11 @@ namespace BetterLegacy.Core.Data
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
         }
 
-        public PAAnimation(string name, string desc)
+        public PAAnimation(string name, string description)
         {
             id = LSText.randomNumString(16);
             this.name = name;
-            this.desc = desc;
+            this.description = description;
             StartTime = 0f;
             markers = new List<Marker>();
 
@@ -42,11 +42,11 @@ namespace BetterLegacy.Core.Data
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
         }
         
-        public PAAnimation(string name, string desc, float startTime)
+        public PAAnimation(string name, string description, float startTime)
         {
             id = LSText.randomNumString(16);
             this.name = name;
-            this.desc = desc;
+            this.description = description;
             StartTime = startTime;
             markers = new List<Marker>();
 
@@ -55,13 +55,10 @@ namespace BetterLegacy.Core.Data
             rotationKeyframes.Add(EventKeyframe.DefaultRotationKeyframe);
             colorKeyframes.Add(EventKeyframe.DefaultColorKeyframe);
         }
-        
-        #region Fields
 
-        /// <summary>
-        /// ID of the animation.
-        /// </summary>
-        public string id;
+        #region Values
+
+        public string ID { get => id; set => id = value; }
 
         /// <summary>
         /// Name of the animation.
@@ -71,7 +68,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Description of the animation.
         /// </summary>
-        public string desc = "This is the default description!";
+        public string description = "This is the default description!";
 
         float startTime;
         /// <summary>
@@ -89,6 +86,14 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string ReferenceID { get; set; }
 
+        public List<List<EventKeyframe>> Events => new List<List<EventKeyframe>>
+        {
+            positionKeyframes,
+            scaleKeyframes,
+            rotationKeyframes,
+            colorKeyframes,
+        };
+
         public List<EventKeyframe> positionKeyframes = new List<EventKeyframe>();
         public List<EventKeyframe> scaleKeyframes = new List<EventKeyframe>();
         public List<EventKeyframe> rotationKeyframes = new List<EventKeyframe>();
@@ -104,16 +109,34 @@ namespace BetterLegacy.Core.Data
         public bool animateRotation = true;
         public bool animateColor;
 
+        #region Editor
+
+        public ObjectEditorData EditorData { get; set; } = new ObjectEditorData();
+
+        public List<TimelineKeyframe> TimelineKeyframes { get; set; } = new List<TimelineKeyframe>();
+
+        #endregion
+
         #endregion
 
         #region Methods
 
-        public float GetLength()
+        public float GetLength(bool markers = false)
         {
-            var objectsLength = GetLength(0) + GetLength(1) + GetLength(2) + GetLength(3);
-            var markersLength = markers.IsEmpty() ? 0f : markers.Max(x => x.time);
+            var animLength = 0f;
+            for (int i = 0; i < 4; i++)
+            {
+                var length = GetLength(i);
+                if (length > animLength)
+                    animLength = length;
+            }
 
-            return objectsLength > markersLength ? objectsLength : markersLength;
+            if (!markers)
+                return animLength;
+
+            var markersLength = this.markers.IsEmpty() ? 0f : this.markers.Max(x => x.time);
+
+            return animLength > markersLength ? animLength : markersLength;
         }
 
         public float GetLength(int type) => type switch
@@ -129,7 +152,7 @@ namespace BetterLegacy.Core.Data
         {
             id = newID ? LSText.randomNumString(16) : orig.id;
             name = orig.name;
-            desc = orig.desc;
+            description = orig.description;
             markers = orig.markers.Select(x => x.Copy()).ToList();
             ReferenceID = orig.ReferenceID;
             StartTime = orig.StartTime;
@@ -144,13 +167,17 @@ namespace BetterLegacy.Core.Data
             animateRotation = orig.animateRotation;
             animateColor = orig.animateColor;
             transition = orig.transition;
+
+            if (!EditorData)
+                EditorData = new ObjectEditorData();
+            EditorData.CopyData(orig.EditorData);
         }
 
         public override void ReadJSON(JSONNode jn)
         {
             id = jn["id"] ?? LSText.randomNumString(16);
-            name = jn["name"];
-            desc = jn["desc"];
+            name = jn["name"] ?? string.Empty;
+            description = jn["desc"] ?? string.Empty;
             StartTime = jn["st"].AsFloat;
             markers = new List<Marker>();
             positionKeyframes = new List<EventKeyframe>();
@@ -180,20 +207,27 @@ namespace BetterLegacy.Core.Data
             if (jn["anim"]["col"] != null)
                 animateColor = jn["anim"]["col"].AsBool;
 
-            ReadKeyframesJSON(jn["pos"] ?? jn["e"]["pos"], positionKeyframes, 0, 3);
-            ReadKeyframesJSON(jn["sca"] ?? jn["e"]["sca"], scaleKeyframes, 1, 2);
-            ReadKeyframesJSON(jn["rot"] ?? jn["e"]["rot"], rotationKeyframes, 2, 1);
-            ReadKeyframesJSON(jn["col"] ?? jn["e"]["col"], colorKeyframes, 3, 5);
+            var d = EventKeyframe.DefaultPositionKeyframe;
+            ReadKeyframesJSON(jn["pos"] ?? jn["e"]["pos"], positionKeyframes, 0, 3, 4, d.values, d.randomValues);
+            d = EventKeyframe.DefaultScaleKeyframe;
+            ReadKeyframesJSON(jn["sca"] ?? jn["e"]["sca"], scaleKeyframes, 1, 2, 4, d.values, d.randomValues);
+            d = EventKeyframe.DefaultRotationKeyframe;
+            ReadKeyframesJSON(jn["rot"] ?? jn["e"]["rot"], rotationKeyframes, 2, 1, 4, d.values, d.randomValues, true);
+            d = EventKeyframe.DefaultColorKeyframe;
+            ReadKeyframesJSON(jn["col"] ?? jn["e"]["col"], colorKeyframes, 3, 10, 3, d.values, d.randomValues);
+
+            if (jn["ed"] != null)
+                EditorData = ObjectEditorData.Parse(jn["ed"]);
         }
 
-        void ReadKeyframesJSON(JSONNode jn, List<EventKeyframe> eventKeyframes, int type, int valueCount, bool defaultRelative = false)
+        void ReadKeyframesJSON(JSONNode jn, List<EventKeyframe> eventKeyframes, int type, int valueCount, int randomValueCount, float[] origValues, float[] origRandomValues, bool defaultRelative = false)
         {
             if (jn == null)
                 return;
 
             eventKeyframes.Clear();
             for (int i = 0; i < jn.Count; i++)
-                eventKeyframes.Add(EventKeyframe.Parse(jn[i], type, valueCount, defaultRelative));
+                eventKeyframes.Add(EventKeyframe.Parse(jn[i], type, valueCount, randomValueCount, origValues, origRandomValues, defaultRelative));
         }
 
         public override JSONNode ToJSON()
@@ -201,6 +235,9 @@ namespace BetterLegacy.Core.Data
             var jn = Parser.NewJSONObject();
             jn["id"] = id;
             jn["name"] = name;
+            if (!string.IsNullOrEmpty(description))
+                jn["desc"] = description;
+
             jn["st"] = StartTime;
             for (int i = 0; i < markers.Count; i++)
                 jn["markers"][i] = markers[i].ToJSON();
@@ -225,6 +262,9 @@ namespace BetterLegacy.Core.Data
                 jn["rot"][i] = rotationKeyframes[i].ToJSON(true);
             for (int i = 0; i < colorKeyframes.Count; i++)
                 jn["col"][i] = colorKeyframes[i].ToJSON();
+
+            if (EditorData && EditorData.ShouldSerialize)
+                jn["ed"] = EditorData.ToJSON();
 
             return jn;
         }
@@ -283,6 +323,176 @@ namespace BetterLegacy.Core.Data
 
             return runtimeAnim;
         }
+
+        public List<EventKeyframe> GetEventKeyframes(int type) => type switch
+        {
+            0 => positionKeyframes,
+            1 => scaleKeyframes,
+            2 => rotationKeyframes,
+            3 => colorKeyframes,
+            _ => null,
+        };
+
+        int SearchKeyframe(int type, float time)
+        {
+            int low = 0;
+            var keyframes = GetEventKeyframes(type);
+            int high = keyframes.Count - 1;
+
+            while (low <= high)
+            {
+                int mid = (low + high) / 2;
+                float midTime = keyframes[mid].time;
+
+                if (time < midTime)
+                    high = mid - 1;
+                else if (time > midTime)
+                    low = mid + 1;
+                else
+                    return mid;
+            }
+
+            return low - 1;
+        }
+
+        public float Interpolate(int type, int valueIndex, float time)
+        {
+            var list = GetEventKeyframes(type);
+            if (list == null)
+                return 0f;
+
+            var prevKFIndex = RTMath.Clamp(SearchKeyframe(type, time), 0, list.Count - 1);
+            var nextKFIndex = RTMath.Clamp(prevKFIndex + 1, 0, list.Count - 1);
+
+            var prevKF = list[prevKFIndex];
+            var nextKF = list[nextKFIndex];
+
+            valueIndex = Mathf.Clamp(valueIndex, 0, list[0].values.Length);
+
+            if (prevKF.values.Length <= valueIndex)
+                return 0f;
+
+            if (time <= 0f)
+                return prevKF.values[valueIndex];
+
+            var total = 0f;
+            var prevtotal = 0f;
+            if (prevKF.relative || nextKF.relative)
+            {
+                for (int k = 0; k < nextKFIndex; k++)
+                {
+                    if (list[k + 1].relative)
+                        total += list[k].values[valueIndex];
+                    else
+                        total = 0f;
+
+                    if (list[k].relative)
+                        prevtotal += list[k].values[valueIndex];
+                    else
+                        prevtotal = 0f;
+                }
+            }
+
+            var next = nextKF.relative ? total + nextKF.values[valueIndex] : nextKF.values[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.values[valueIndex];
+
+            bool isLerper = type != 3 || valueIndex != 0 || valueIndex != 5;
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, Mathf.Clamp(time, 0f, nextKF.time))));
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x;
+        }
+
+        public float Interpolate(EventKeyframe prevKeyframe, EventKeyframe nextKeyframe, int type, int valueIndex, float time)
+        {
+            var list = GetEventKeyframes(type);
+            if (list == null)
+                return 0f;
+
+            valueIndex = Mathf.Clamp(valueIndex, 0, prevKeyframe.values.Length);
+
+            if (prevKeyframe.values.Length <= valueIndex)
+                return 0f;
+
+            var total = 0f;
+            var prevtotal = 0f;
+            if (prevKeyframe.relative || nextKeyframe.relative)
+            {
+                for (int k = 0; k < list.Count; k++)
+                {
+                    if (time >= list[k].time)
+                        break;
+
+                    if (list[k + 1].relative)
+                        total += list[k].values[valueIndex];
+                    else
+                        total = 0f;
+
+                    if (list[k].relative)
+                        prevtotal += list[k].values[valueIndex];
+                    else
+                        prevtotal = 0f;
+                }
+            }
+
+            var next = nextKeyframe.relative ? total + nextKeyframe.values[valueIndex] : nextKeyframe.values[valueIndex];
+            var prev = prevKeyframe.relative || nextKeyframe.relative ? prevtotal : prevKeyframe.values[valueIndex];
+
+            bool isLerper = type != 3 || valueIndex != 0;
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKeyframe == nextKeyframe)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKeyframe.curve.ToString())(RTMath.InverseLerp(prevKeyframe.time, nextKeyframe.time, Mathf.Clamp(time, 0f, nextKeyframe.time))));
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x;
+        }
+
+        public void SortKeyframes() => SortKeyframes(Events);
+
+        public void SortKeyframes(List<List<EventKeyframe>> events)
+        {
+            for (int i = 0; i < events.Count; i++)
+                SortKeyframes(i);
+        }
+
+        public void SortKeyframes(int type) => SortKeyframes(type switch
+        {
+            0 => positionKeyframes,
+            1 => scaleKeyframes,
+            2 => rotationKeyframes,
+            3 => colorKeyframes,
+            _ => null,
+        });
+
+        public void SortKeyframes(List<EventKeyframe> eventKeyframes) => eventKeyframes.Sort((a, b) => a.time.CompareTo(b.time));
 
         #endregion
     }

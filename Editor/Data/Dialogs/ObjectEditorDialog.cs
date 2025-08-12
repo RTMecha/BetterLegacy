@@ -26,7 +26,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents the object editor dialog for editing a <see cref="Core.Data.Beatmap.BeatmapObject"/>.
     /// </summary>
-    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog
+    public class ObjectEditorDialog : EditorDialog, ITagDialog, IParentDialog, IAnimationDialog
     {
         public ObjectEditorDialog() : base(OBJECT_EDITOR) { }
 
@@ -170,16 +170,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// A list containing all the event keyframe editors.
         /// </summary>
         public List<KeyframeDialog> keyframeDialogs = new List<KeyframeDialog>();
+        public List<KeyframeDialog> KeyframeDialogs { get => keyframeDialogs; set => keyframeDialogs = value; }
 
-        #endregion
-
-        #region Keyframe Timeline
-
-        public Transform Timeline { get; set; }
-
-        public Scrollbar TimelinePosScrollbar { get; set; }
-
-        public Transform Markers { get; set; }
+        public KeyframeTimeline Timeline { get; set; }
 
         #endregion
 
@@ -190,13 +183,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             base.Init();
 
-            var objectView = ObjEditor.inst.ObjectView.transform;
+            Content = ObjEditor.inst.ObjectView.transform.AsRT();
+
             var dialog = ObjEditor.inst.ObjectView.transform.parent.parent.parent.parent.parent; // lol wtf
             var right = dialog.Find("data/right");
 
             right.gameObject.AddComponent<Mask>();
 
-            var todDropdown = objectView.Find("autokill/tod-dropdown");
+            var todDropdown = Content.Find("autokill/tod-dropdown");
             var hide = todDropdown.GetComponent<HideDropdownOptions>();
             hide.DisabledOptions[0] = false;
             hide.remove = true;
@@ -208,12 +202,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var csf = template.AddComponent<ContentSizeFitter>();
             csf.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-            objectView.Find("name/name").GetComponent<InputField>().characterLimit = 0;
+            Content.Find("name/name").GetComponent<InputField>().characterLimit = 0;
 
             // Labels
-            for (int j = 0; j < objectView.childCount; j++)
+            for (int j = 0; j < Content.childCount; j++)
             {
-                var label = objectView.GetChild(j);
+                var label = Content.GetChild(j);
                 if (label.name == "label" || label.name == "collapselabel")
                 {
                     for (int k = 0; k < label.childCount; k++)
@@ -246,7 +240,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Depth
             {
-                var spacer = Creator.NewUIObject("depth input", objectView, 15);
+                var spacer = Creator.NewUIObject("depth input", Content, 15);
 
                 var spHLG = spacer.AddComponent<HorizontalLayoutGroup>();
 
@@ -267,17 +261,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 CoreHelper.Delete(depthInputFieldStorage.middleButton.gameObject);
                 CoreHelper.Delete(depthInputFieldStorage.rightGreaterButton.gameObject);
 
-                var sliderObject = objectView.Find("depth/depth").gameObject;
+                var sliderObject = Content.Find("depth/depth").gameObject;
 
-                var depthLeft = objectView.Find("depth/<").gameObject;
-                var depthRight = objectView.Find("depth/>").gameObject;
+                var depthLeft = Content.Find("depth/<").gameObject;
+                var depthRight = Content.Find("depth/>").gameObject;
                 EditorHelper.SetComplexity(depthLeft, Complexity.Simple);
                 EditorHelper.SetComplexity(depthRight, Complexity.Simple);
                 EditorThemeManager.AddSelectable(depthLeft.GetComponent<Button>(), ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(depthRight.GetComponent<Button>(), ThemeGroup.Function_2, false);
 
                 sliderObject.transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
-                objectView.Find("depth").AsRT().sizeDelta = new Vector2(261f, 32f);
+                Content.Find("depth").AsRT().sizeDelta = new Vector2(261f, 32f);
 
                 EditorThemeManager.AddInputField(depthInputFieldStorage.inputField);
                 EditorThemeManager.AddSelectable(depthInputFieldStorage.leftButton, ThemeGroup.Function_2, false);
@@ -293,7 +287,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Lock
             {
-                var timeParent = objectView.Find("time");
+                var timeParent = Content.Find("time");
 
                 var locker = EditorPrefabHolder.Instance.Toggle.Duplicate(timeParent.transform, "lock", 0);
                 locker.transform.localScale = Vector3.one;
@@ -344,7 +338,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Origin X / Y
             {
-                var contentOriginTF = objectView.transform.Find("origin").transform;
+                var contentOriginTF = Content.transform.Find("origin").transform;
 
                 EditorHelper.SetComplexity(contentOriginTF.Find("origin-x").gameObject, Complexity.Simple);
                 EditorHelper.SetComplexity(contentOriginTF.Find("origin-y").gameObject, Complexity.Simple);
@@ -407,7 +401,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Layers
             {
-                var editor = objectView.Find("editor");
+                var editor = Content.Find("editor");
 
                 editor.Find("layer").AsRT().sizeDelta = new Vector2(168.5f, 32f);
                 editor.Find("layer").gameObject.SetActive(false);
@@ -419,18 +413,18 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 layersIF.textComponent.alignment = TextAnchor.MiddleCenter;
                 layersIF.characterValidation = InputField.CharacterValidation.Integer;
 
-                var edhlg = objectView.transform.Find("editor").GetComponent<HorizontalLayoutGroup>();
+                var edhlg = Content.transform.Find("editor").GetComponent<HorizontalLayoutGroup>();
                 edhlg.childControlWidth = false;
                 edhlg.childForceExpandWidth = false;
 
                 layers.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
-                objectView.Find("editor/bin").AsRT().sizeDelta = new Vector2(237f, 32f);
+                Content.Find("editor/bin").AsRT().sizeDelta = new Vector2(237f, 32f);
 
                 layers.AddComponent<ContrastColors>().Init(layersIF.textComponent, layersIF.image);
 
                 EditorThemeManager.AddGraphic(layersIF.image, ThemeGroup.Null, true);
 
-                var binSlider = objectView.Find("editor/bin").GetComponent<Slider>();
+                var binSlider = Content.Find("editor/bin").GetComponent<Slider>();
                 var binSliderImage = binSlider.transform.Find("Image").GetComponent<Image>();
                 binSlider.colors = UIManager.SetColorBlock(binSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
                 EditorThemeManager.AddGraphic(binSliderImage, ThemeGroup.Slider_2, true);
@@ -439,7 +433,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Clear Parent
             {
-                var parent = objectView.Find("parent");
+                var parent = Content.Find("parent");
                 var hlg = parent.GetComponent<HorizontalLayoutGroup>();
                 hlg.childControlWidth = false;
                 hlg.spacing = 4f;
@@ -479,7 +473,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // ID & LDM
             {
-                var id = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "id", 0);
+                var id = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "id", 0);
                 EditorHelper.SetComplexity(id, Complexity.Normal);
 
                 id.transform.AsRT().sizeDelta = new Vector2(515, 32f);
@@ -510,14 +504,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Object Tags
             {
-                var label = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "tags_label");
-                var index = objectView.Find("name").GetSiblingIndex() + 1;
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "tags_label");
+                var index = Content.Find("name").GetSiblingIndex() + 1;
                 label.transform.SetSiblingIndex(index);
 
                 label.transform.GetChild(0).GetComponent<Text>().text = "Tags";
 
                 // Tags Scroll View/Viewport/Content
-                var tagScrollView = Creator.NewUIObject("Tags Scroll View", objectView, index + 1);
+                var tagScrollView = Creator.NewUIObject("Tags Scroll View", Content, index + 1);
 
                 tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 40f);
                 var scroll = tagScrollView.AddComponent<ScrollRect>();
@@ -552,15 +546,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Render Type
             {
-                var label = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "rendertype_label");
-                var index = objectView.Find("depth").GetSiblingIndex() + 1;
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "rendertype_label");
+                var index = Content.Find("depth").GetSiblingIndex() + 1;
                 label.transform.SetSiblingIndex(index);
 
                 var labelText = label.transform.GetChild(0).GetComponent<Text>();
                 labelText.text = "Render Type";
                 EditorThemeManager.AddLightText(labelText);
 
-                var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(objectView, "rendertype", index + 1);
+                var renderType = EditorPrefabHolder.Instance.Dropdown.Duplicate(Content, "rendertype", index + 1);
                 var renderTypeDD = renderType.GetComponent<Dropdown>();
                 renderTypeDD.options = CoreHelper.StringToOptionData("Foreground", "Background", "UI");
 
@@ -572,7 +566,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var array = new string[] { "pos", "sca", "rot" };
                 for (int i = 0; i < 3; i++)
                 {
-                    var parent = objectView.Find("parent_more").GetChild(i + 1);
+                    var parent = Content.Find("parent_more").GetChild(i + 1);
 
                     CoreHelper.Delete(parent.Find("<<"));
                     CoreHelper.Delete(parent.Find("<"));
@@ -667,7 +661,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             // Parent Desync
             {
-                var parentMore = objectView.Find("parent_more");
+                var parentMore = Content.Find("parent_more");
                 var parentDesync = EditorPrefabHolder.Instance.ToggleButton.Duplicate(parentMore, "spawn_once", 1);
                 var parentDesyncButtonToggle = parentDesync.GetComponent<ToggleButtonStorage>();
                 parentDesyncButtonToggle.label.text = "Parent Desync";
@@ -681,16 +675,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 if (ModCompatibility.UnityExplorerInstalled)
                 {
-                    var index = objectView.Find("editor").GetSiblingIndex() + 1;
+                    var index = Content.Find("editor").GetSiblingIndex() + 1;
 
                     // Setup label
-                    var label = EditorPrefabHolder.Instance.Labels.Duplicate(objectView, "unity explorer label", index);
+                    var label = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "unity explorer label", index);
                     var labelText = label.transform.GetChild(0).GetComponent<Text>();
                     labelText.text = "Unity Explorer";
                     EditorThemeManager.AddLightText(labelText);
 
                     // Inspect Beatmap Object
-                    var inspectBeatmapObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectbeatmapobject", index + 1);
+                    var inspectBeatmapObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "inspectbeatmapobject", index + 1);
                     var inspectBeatmapObjectButton = inspectBeatmapObject.GetComponent<FunctionButtonStorage>();
                     inspectBeatmapObjectButton.label.text = "Inspect Beatmap Object";
 
@@ -698,7 +692,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorThemeManager.AddGraphic(inspectBeatmapObjectButton.label, ThemeGroup.Function_2_Text);
 
                     // Inspect Level Object
-                    var inspectLevelObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspectlevelobject", index + 2);
+                    var inspectLevelObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "inspectlevelobject", index + 2);
                     var inspectLevelObjectButton = inspectLevelObject.GetComponent<FunctionButtonStorage>();
                     inspectLevelObjectButton.label.text = "Inspect Runtime Object";
 
@@ -706,7 +700,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorThemeManager.AddGraphic(inspectLevelObjectButton.label, ThemeGroup.Function_2_Text);
 
                     // Inspect Timeline Object
-                    var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(objectView, "inspecttimelineobject", index + 3);
+                    var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "inspecttimelineobject", index + 3);
                     var inspectTimelineObjectButton = inspectTimelineObject.GetComponent<FunctionButtonStorage>();
                     inspectTimelineObjectButton.label.text = "Inspect Timeline Object";
 
@@ -723,11 +717,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
                 EditorThemeManager.AddGraphic(right.GetComponent<Image>(), ThemeGroup.Background_3);
-                EditorThemeManager.AddInputField(objectView.Find("name/name").GetComponent<InputField>());
-                EditorThemeManager.AddDropdown(objectView.Find("name/object-type").GetComponent<Dropdown>());
+                EditorThemeManager.AddInputField(Content.Find("name/name").GetComponent<InputField>());
+                EditorThemeManager.AddDropdown(Content.Find("name/object-type").GetComponent<Dropdown>());
                 EditorThemeManager.AddDropdown(todDropdown.GetComponent<Dropdown>());
 
-                var autokill = objectView.Find("autokill");
+                var autokill = Content.Find("autokill");
                 EditorThemeManager.AddInputField(autokill.Find("tod-value").GetComponent<InputField>());
 
                 var setAutokillButton = autokill.Find("|").GetComponent<Button>();
@@ -742,16 +736,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 for (int i = 0; i < collapse.transform.Find("dots").childCount; i++)
                     EditorThemeManager.AddGraphic(collapse.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
-                var parentButton = objectView.Find("parent/text").GetComponent<Button>();
+                var parentButton = Content.Find("parent/text").GetComponent<Button>();
                 EditorThemeManager.AddSelectable(parentButton, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(parentButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_2_Text);
 
-                var moreButton = objectView.Find("parent/more").GetComponent<Button>();
+                var moreButton = Content.Find("parent/more").GetComponent<Button>();
                 CoreHelper.Destroy(moreButton.GetComponent<Animator>());
                 moreButton.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(moreButton, ThemeGroup.Function_2, false);
 
-                EditorThemeManager.AddInputField(objectView.transform.Find("shapesettings/5").GetComponent<InputField>());
+                EditorThemeManager.AddInputField(Content.transform.Find("shapesettings/5").GetComponent<InputField>());
 
                 try
                 {
@@ -859,27 +853,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     Debug.LogError($"\nException: {ex}");
                 }
 
-                Timeline = ObjEditor.inst.objTimelineContent.parent.parent;
-
-                EditorThemeManager.AddScrollbar(Timeline.Find("Scrollbar Horizontal").GetComponent<Scrollbar>(),
-                    scrollbarGroup: ThemeGroup.Timeline_Scrollbar_Base, handleGroup: ThemeGroup.Timeline_Scrollbar, canSetScrollbarRounded: false);
-                EditorThemeManager.AddGraphic(ObjEditor.inst.objTimelineSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Timeline_Time_Scrollbar);
-                EditorThemeManager.AddGraphic(Timeline.GetComponent<Image>(), ThemeGroup.Background_1);
-                EditorThemeManager.AddScrollbar(dialog.Find("data/left/Scroll View/Scrollbar Vertical").GetComponent<Scrollbar>());
-
                 var zoomSliderBase = ObjEditor.inst.zoomSlider.transform.parent;
 
                 var gameObject = Creator.NewUIObject("zoom back", zoomSliderBase.parent, 1);
-
                 var image = gameObject.AddComponent<Image>();
                 RectValues.BottomLeftAnchored.SizeDelta(128f, 25f).AssignToRectTransform(image.rectTransform);
-                EditorThemeManager.AddGraphic(image, ThemeGroup.Timeline_Scrollbar_Base);
-                EditorThemeManager.AddGraphic(zoomSliderBase.GetComponent<Image>(), ThemeGroup.Background_1, true);
-                EditorThemeManager.AddGraphic(zoomSliderBase.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Slider_2);
-                EditorThemeManager.AddGraphic(zoomSliderBase.transform.GetChild(2).GetComponent<Image>(), ThemeGroup.Slider_2);
-                EditorThemeManager.AddGraphic(ObjEditor.inst.zoomSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-                EditorThemeManager.AddGraphic(ObjEditor.inst.zoomSlider.transform.Find("Fill Area/Fill").GetComponent<Image>(), ThemeGroup.Slider_2, true);
-                EditorThemeManager.AddGraphic(ObjEditor.inst.zoomSlider.image, ThemeGroup.Slider_2_Handle, true);
+                EditorThemeManager.AddScrollbar(dialog.Find("data/left/Scroll View/Scrollbar Vertical").GetComponent<Scrollbar>());
             }
 
             #endregion
@@ -1103,7 +1082,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         flipXButton.onClick.NewListener(() =>
                         {
-                            foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+                            foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                             {
                                 var eventKeyframe = timelineObject.eventKeyframe;
                                 eventKeyframe.values[0] = -eventKeyframe.values[0];
@@ -1111,7 +1090,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
                             RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                            ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                            Timeline.RenderDialog(beatmapObject);
                         });
 
                         EditorThemeManager.AddGraphic(flipXButton.image, ThemeGroup.Function_1, true);
@@ -1129,7 +1108,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                             flipYButton.onClick.NewListener(() =>
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+                                foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                                 {
                                     var eventKeyframe = timelineObject.eventKeyframe;
                                     eventKeyframe.values[1] = -eventKeyframe.values[1];
@@ -1137,7 +1116,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                                 var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
                                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                Timeline.RenderDialog(beatmapObject);
                             });
 
                             EditorThemeManager.AddGraphic(flipYButton.image, ThemeGroup.Function_1, true);
@@ -1295,7 +1274,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 snapToBPM.onClick.NewListener(() =>
                 {
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+                    foreach (var timelineObject in beatmapObject.TimelineKeyframes.Where(x => x.Selected))
                     {
                         if (timelineObject.Index != 0)
                             timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
@@ -1304,9 +1283,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                         st = -(st - RTEditor.SnapToBPM(st + timelineObject.Time));
 
-                        float timePosition = ObjectEditor.TimeTimelineCalc(st);
+                        float timePosition = KeyframeTimeline.TimeTimelineCalc(st);
 
-                        ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(timePosition, 0f);
+                        timelineObject.GameObject.transform.AsRT().anchoredPosition = new Vector2(timePosition, 0f);
 
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
 
@@ -1331,13 +1310,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 pasteAll.onClick.NewListener(() =>
                 {
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    var list = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
+                    var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.SetCopiedData(timelineObject.Type, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(timelineObject.Type, timelineObject.eventKeyframe);
 
-                    ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                    Timeline.RenderKeyframes(beatmapObject);
+                    Timeline.RenderDialog(beatmapObject);
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted keyframe data to selected keyframes!", 2f, EditorManager.NotificationType.Success);
                 });
@@ -1373,13 +1352,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 pastePos.onClick.NewListener(() =>
                 {
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    var list = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected && x.Type == 0);
+                    var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 0);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.SetCopiedData(0, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(0, timelineObject.eventKeyframe);
 
-                    ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                    Timeline.RenderKeyframes(beatmapObject);
+                    Timeline.RenderDialog(beatmapObject);
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted position keyframe data to selected position keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
@@ -1396,17 +1375,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 pasteScaText.text = "Paste Scale";
 
                 var pasteSca = pasteScaObject.GetComponent<Button>();
-                pasteSca.onClick.ClearAll();
-                pasteSca.onClick.AddListener(() =>
+                pasteSca.onClick.NewListener(() =>
                 {
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    var list = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected && x.Type == 1);
+                    var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 1);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.SetCopiedData(1, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(1, timelineObject.eventKeyframe);
 
-                    ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                    Timeline.RenderKeyframes(beatmapObject);
+                    Timeline.RenderDialog(beatmapObject);
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted scale keyframe data to selected scale keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
@@ -1442,13 +1420,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 pasteRot.onClick.NewListener(() =>
                 {
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    var list = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected && x.Type == 2);
+                    var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 2);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.SetCopiedData(2, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(2, timelineObject.eventKeyframe);
 
-                    ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                    Timeline.RenderKeyframes(beatmapObject);
+                    Timeline.RenderDialog(beatmapObject);
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted rotation keyframe data to selected rotation keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
@@ -1468,13 +1446,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 pasteCol.onClick.NewListener(() =>
                 {
                     var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    var list = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected && x.Type == 3);
+                    var list = beatmapObject.TimelineKeyframes.Where(x => x.Selected && x.Type == 3);
 
                     foreach (var timelineObject in list)
-                        ObjectEditor.inst.SetCopiedData(3, timelineObject.eventKeyframe);
+                        ObjectEditor.inst.Dialog.Timeline.SetCopiedData(3, timelineObject.eventKeyframe);
 
-                    ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                    Timeline.RenderKeyframes(beatmapObject);
+                    Timeline.RenderDialog(beatmapObject);
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     EditorManager.inst.DisplayNotification("Pasted color keyframe data to selected color keyframes!", 3f, EditorManager.NotificationType.Success);
                 });
@@ -1490,15 +1468,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
             // Markers
             {
                 var markers = Creator.NewUIObject("Markers", ObjEditor.inst.objTimelineSlider.transform);
-                Markers = markers.transform;
-                RectValues.FullAnchored.AssignToRectTransform(Markers.AsRT());
+                RectValues.FullAnchored.AssignToRectTransform(markers.transform.AsRT());
             }
 
-            TimelinePosScrollbar = ObjEditor.inst.objTimelineContent.parent.parent.GetComponent<ScrollRect>().horizontalScrollbar;
-
             #endregion
-
-            Content = ObjEditor.inst.ObjectView.transform.AsRT();
 
             #region Top Properties
 
@@ -1599,9 +1572,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 try
                 {
-                    var index = objectView.Find("shape").GetSiblingIndex();
-                    objectView.GetChild(index - 1).GetComponentInChildren<Text>().text = "Gradient / Shape";
-                    var gradient = objectView.Find("shape").gameObject.Duplicate(objectView, "gradienttype", index);
+                    var index = Content.Find("shape").GetSiblingIndex();
+                    Content.GetChild(index - 1).GetComponentInChildren<Text>().text = "Gradient / Shape";
+                    var gradient = Content.Find("shape").gameObject.Duplicate(Content, "gradienttype", index);
                     GradientParent = gradient.transform.AsRT();
 
                     CoreHelper.DestroyChildren(GradientParent, 1, GradientParent.childCount - 1);
@@ -1670,8 +1643,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                     // Gradient Settings
                     {
-                        var gradientScale = EditorPrefabHolder.Instance.NumberInputField.Duplicate(objectView, "gradientscale", index + 1);
-                        var gradientRotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(objectView, "gradientrotation", index + 2);
+                        var gradientScale = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "gradientscale", index + 1);
+                        var gradientRotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Content, "gradientrotation", index + 2);
                         var gradientScaleStorage = gradientScale.GetComponent<InputFieldStorage>();
                         var gradientRotationStorage = gradientRotation.GetComponent<InputFieldStorage>();
 
@@ -1979,6 +1952,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 keyframeDialog.Init();
                 keyframeDialogs.Add(keyframeDialog);
             }
+
+            Timeline = new KeyframeTimeline();
+            Timeline.startColorsReference = ObjEditor.inst.colorButtons;
+            Timeline.endColorsReference = ObjectEditor.inst.gradientColorButtons;
+            Timeline.setTime = true;
+            Timeline.Init(this);
         }
 
         bool updatedShapes;
@@ -2402,38 +2381,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
 
             updatedShapes = true;
-        }
-
-        /// <summary>
-        /// Opens an object keyframe editor.
-        /// </summary>
-        /// <param name="type">The type of object keyframe.</param>
-        public void OpenKeyframeDialog(int type)
-        {
-            for (int i = 0; i < keyframeDialogs.Count; i++)
-            {
-                var active = i == type;
-                keyframeDialogs[i].SetActive(active);
-                if (active)
-                    CurrentKeyframeDialog = keyframeDialogs[i];
-            }
-        }
-
-        /// <summary>
-        /// Checks if <see cref="CurrentKeyframeDialog"/> is of a specific keyframe type.
-        /// </summary>
-        /// <param name="type">The type of object keyframe.</param>
-        /// <returns>Returns true if the current keyframe dialog type matches the specific type, otherwise returns false.</returns>
-        public bool IsCurrentKeyframeType(int type) => CurrentKeyframeDialog && CurrentKeyframeDialog.type == type;
-
-        /// <summary>
-        /// Closes the keyframe dialogs.
-        /// </summary>
-        public void CloseKeyframeDialogs()
-        {
-            for (int i = 0; i < keyframeDialogs.Count; i++)
-                keyframeDialogs[i].SetActive(false);
-            CurrentKeyframeDialog = null;
         }
     }
 }

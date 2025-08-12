@@ -334,7 +334,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void PasteKeyframes()
         {
-            var kfs = ObjectEditor.inst.copiedObjectKeyframes;
+            var kfs = ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes;
 
             if (kfs.IsEmpty())
             {
@@ -348,7 +348,7 @@ namespace BetterLegacy.Core.Helpers
                 {
                     beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
                     {
-                        var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
+                        var kf = ObjectEditor.inst.Dialog.Timeline.PasteKF(beatmapObject, x);
                         ids.Add(kf.id);
                         return kf;
                     }));
@@ -358,7 +358,7 @@ namespace BetterLegacy.Core.Helpers
                 var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
-                    foreach (var kf in timelineObject.InternalTimelineObjects)
+                    foreach (var kf in beatmapObject.TimelineKeyframes)
                         kf.Selected = ids.Contains(kf.ID);
                 }
 
@@ -375,7 +375,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void RepeatPasteKeyframes(int repeatCount, float repeatOffsetTime)
         {
-            var kfs = ObjectEditor.inst.copiedObjectKeyframes;
+            var kfs = ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes;
 
             if (kfs.IsEmpty())
             {
@@ -393,7 +393,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
                         {
-                            var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
+                            var kf = ObjectEditor.inst.Dialog.Timeline.PasteKF(beatmapObject, x);
                             kf.time += t;
                             ids.Add(kf.id);
                             return kf;
@@ -407,7 +407,7 @@ namespace BetterLegacy.Core.Helpers
                 var timelineObject = EditorTimeline.inst.GetTimelineObject(beatmapObject);
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
-                    foreach (var kf in timelineObject.InternalTimelineObjects)
+                    foreach (var kf in beatmapObject.TimelineKeyframes)
                         kf.Selected = ids.Contains(kf.ID);
                 }
 

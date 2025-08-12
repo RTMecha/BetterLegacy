@@ -33,7 +33,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// <summary>
         /// Name of the keyframes' type.
         /// </summary>
-        public string Name => isObjectKeyframe ? ObjectEditor.IntToTypeName(type) : RTEventEditor.EventTypes[type];
+        public string Name => isObjectKeyframe ? KeyframeTimeline.IntToTypeName(type) : RTEventEditor.EventTypes[type];
 
         /// <summary>
         /// Game object of the keyframe editor.
@@ -293,7 +293,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public abstract void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display);
 
-        public abstract void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject);
+        public abstract void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable);
+
+        public void UpdateDisplay(IAnimatable animatable)
+        {
+            animatable.EditorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
+            RenderDialog(animatable);
+        }
+
+        public void RenderDialog(IAnimatable animatable)
+        {
+            if (animatable is BeatmapObject beatmapObject)
+                ObjectEditor.inst.RenderDialog(beatmapObject);
+            if (animatable is PAAnimation animation)
+                AnimationEditor.inst.RenderDialog(animation);
+        }
     }
 
     public class KeyframeInputField : KeyframeElement
@@ -323,7 +337,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             getMultiValue = () => display.multiValue;
         }
 
-        public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
+        public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
             var isSingle = selected.Count() == 1;
 
@@ -360,8 +374,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 return;
 
                             Display.max = max;
-                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
@@ -373,8 +386,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 return;
 
                             Display.min = min;
-                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
@@ -386,8 +398,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 return;
 
                             Display.resetValue = resetValue;
-                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
@@ -395,14 +406,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     new ButtonFunction("Change to Dropdown", () =>
                     {
                         Display.type = CustomUIDisplay.UIType.Dropdown;
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction("Change to Toggle", () =>
                     {
                         Display.type = CustomUIDisplay.UIType.Toggle;
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy UI", () =>
@@ -419,8 +428,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         }
 
                         Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display.Copy());
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                         EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
                     }));
             };
@@ -460,7 +468,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     firstKF.eventKeyframe.values[valueIndex] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    if (animatable is BeatmapObject beatmapObject)
+                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 }
             });
             Field.OnEndEdit.NewListener(_val =>
@@ -494,7 +503,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             keyframe.eventKeyframe.values[valueIndex] = RTMath.ClampZero(keyframe.eventKeyframe.values[valueIndex] + x, min, max);
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        if (animatable is BeatmapObject beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     }
                     else
                     {
@@ -521,7 +531,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             keyframe.eventKeyframe.values[valueIndex] = RTMath.ClampZero(keyframe.eventKeyframe.values[valueIndex] - x, min, max);
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        if (animatable is BeatmapObject beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     }
                     else
                     {
@@ -548,7 +559,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             keyframe.eventKeyframe.values[valueIndex] = RTMath.ClampZero(x, min, max);
 
                         // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                        RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        if (animatable is BeatmapObject beatmapObject)
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                     }
                     else
                     {
@@ -614,7 +626,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             getMultiValue = () => display.multiValue;
         }
 
-        public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
+        public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
             var isSingle = selected.Count() == 1;
 
@@ -642,8 +654,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                     return;
 
                                 Display.options.Add(new CustomUIDisplay.Option(name, value));
-                                beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                                ObjectEditor.inst.RenderDialog(beatmapObject);
+                                UpdateDisplay(animatable);
                                 RTEditor.inst.HideNameEditor();
                             });
                         });
@@ -654,27 +665,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             return;
 
                         Display.options.RemoveAt(Display.options.Count - 1);
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction("Clear Entries", () =>
                     {
                         Display.options.Clear();
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Change to Input Field", () =>
                     {
                         Display.type = CustomUIDisplay.UIType.InputField;
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction("Change to Toggle", () =>
                     {
                         Display.type = CustomUIDisplay.UIType.Toggle;
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy UI", () =>
@@ -691,8 +698,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         }
 
                         Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display.Copy());
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                         EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
                     }));
             };
@@ -706,7 +712,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     return;
 
                 firstKF.eventKeyframe.values[valueIndex] = getValue?.Invoke(_val) ?? 0f;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                if (animatable is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
 
             TriggerHelper.AddEventTriggers(Dropdown.gameObject, TriggerHelper.ScrollDelta(Dropdown));
@@ -720,7 +727,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var value = getValue?.Invoke(Dropdown.value) ?? 0f;
                 foreach (var keyframe in selected)
                     keyframe.eventKeyframe.values[valueIndex] = value;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                if (animatable is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
         }
     }
@@ -772,7 +780,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             getMultiValue = () => display.multiValue;
         }
 
-        public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, BeatmapObject beatmapObject)
+        public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
             var isSingle = selected.Count() == 1;
             var offValue = getOffValue?.Invoke() ?? 0f;
@@ -798,8 +806,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 return;
 
                             Display.onValue = max;
-                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
@@ -811,8 +818,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 return;
 
                             Display.offValue = max;
-                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
@@ -821,8 +827,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.label) ? Display.label : "On", "Set", () =>
                         {
                             Display.label = RTEditor.inst.folderCreatorName.text;
-                            beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                            ObjectEditor.inst.RenderDialog(beatmapObject);
+                            UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
@@ -830,14 +835,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     new ButtonFunction("Change to Input Field", () =>
                     {
                         Display.type = CustomUIDisplay.UIType.InputField;
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction("Change to Dropdown", () =>
                     {
                         Display.type = CustomUIDisplay.UIType.Dropdown;
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Copy UI", () =>
@@ -854,8 +857,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         }
 
                         Display.ApplyFrom(ObjectEditor.inst.copiedUIDisplay);
-                        beatmapObject.editorData.displays.OverwriteAdd((x, index) => x.path == path, Display.Copy());
-                        ObjectEditor.inst.RenderDialog(beatmapObject);
+                        UpdateDisplay(animatable);
                         EditorManager.inst.DisplayNotification($"Paste UI settings.", 2f, EditorManager.NotificationType.Success);
                     }));
             };
@@ -867,7 +869,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     return;
 
                 firstKF.eventKeyframe.values[valueIndex] = _val ? onValue : offValue;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                if (animatable is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
 
             Apply.gameObject.SetActive(!isSingle);
@@ -879,7 +882,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var value = Toggle.isOn ? onValue : offValue;
                 foreach (var keyframe in selected)
                     keyframe.eventKeyframe.values[valueIndex] = value;
-                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                if (animatable is BeatmapObject beatmapObject)
+                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
         }
     }

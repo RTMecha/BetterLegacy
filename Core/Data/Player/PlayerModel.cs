@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
 
-using LSFunctions;
-
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Player
@@ -386,6 +382,8 @@ namespace BetterLegacy.Core.Data.Player
                 tailParts = GetDefaultTail();
 
             this.ReadModifiersJSON(jn);
+            if (!modifiers.IsEmpty())
+                this.UpdateFunctions();
 
             if (jn["custom_objects"] != null && jn["custom_objects"].Count > 0)
                 for (int i = 0; i < jn["custom_objects"].Count; i++)

@@ -331,7 +331,7 @@ namespace BetterLegacy.Editor.Components
                 return;
 
             if (!beatmapObject.fromPrefab)
-                ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
             else if (beatmapObject.fromPrefab && prefabObjectToDrag)
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObjectToDrag);
         }

@@ -737,6 +737,7 @@ namespace BetterLegacy.Editor.Managers
             AssetEditor.Init();
             UploadedLevelsManager.Init();
             PinnedLayerEditor.Init();
+            AnimationEditor.Init();
             ProjectPlanner.Init();
 
             RTBackgroundEditor.Init();
@@ -2150,7 +2151,6 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
                             EditorManager.inst.DisplayNotification("Cut Object Keyframe", 1f, EditorManager.NotificationType.Success);
                         }
-
                         break;
                     }
                 case EditorDialog.BACKGROUND_EDITOR: {
@@ -2201,6 +2201,27 @@ namespace BetterLegacy.Editor.Managers
                             AchievementEditor.inst.PasteAchievements();
                         break;
                     }
+                case EditorDialog.ANIMATION_EDITOR_DIALOG: {
+                        if (dup)
+                        {
+                            EditorManager.inst.DisplayNotification("Can't duplicate Object Keyframe", 1f, EditorManager.NotificationType.Error);
+                            break;
+                        }
+
+                        if (!AnimationEditor.inst.CurrentAnimation)
+                            return;
+
+                        AnimationEditor.inst.Dialog.Timeline.CopyAllSelectedEvents(AnimationEditor.inst.CurrentAnimation);
+
+                        if (!cut)
+                            EditorManager.inst.DisplayNotification("Copied Object Keyframe", 1f, EditorManager.NotificationType.Success);
+                        else
+                        {
+                            StartCoroutine(AnimationEditor.inst.Dialog.Timeline.DeleteKeyframes(AnimationEditor.inst.CurrentAnimation));
+                            EditorManager.inst.DisplayNotification("Cut Object Keyframe", 1f, EditorManager.NotificationType.Success);
+                        }
+                        break;
+                    }
             }
         }
 
@@ -2243,7 +2264,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 case EditorDialog.OBJECT_EDITOR: {
                         ObjectEditor.inst.PasteKeyframes();
-                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
                 case EditorDialog.BACKGROUND_EDITOR: {
@@ -2258,6 +2279,14 @@ namespace BetterLegacy.Editor.Managers
                     }
                 case EditorDialog.ACHIEVEMENT_EDITOR_DIALOG: {
                         AchievementEditor.inst.PasteAchievements();
+                        break;
+                    }
+                case EditorDialog.ANIMATION_EDITOR_DIALOG: {
+                        if (!AnimationEditor.inst.CurrentAnimation)
+                            return;
+
+                        AnimationEditor.inst.Dialog.Timeline.PasteKeyframes(AnimationEditor.inst.CurrentAnimation);
+                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
             }
@@ -2329,21 +2358,22 @@ namespace BetterLegacy.Editor.Managers
                         if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                             break;
 
-                        if (ObjEditor.inst.currentKeyframe == 0)
+                        if (ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex == 0)
                         {
                             EditorManager.inst.DisplayNotification("Can't delete first keyframe.", 1f, EditorManager.NotificationType.Error);
                             break;
                         }
 
                         var list = new List<TimelineKeyframe>();
-                        foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+                        foreach (var timelineObject in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                             list.Add(timelineObject);
                         var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                        EditorManager.inst.history.Add(new History.Command("Delete Keyframes", ObjectEditor.inst.DeleteKeyframes().Start, () => ObjectEditor.inst.PasteKeyframes(beatmapObject, list, false)));
+                        EditorManager.inst.history.Add(new History.Command("Delete Keyframes",
+                            ObjectEditor.inst.Dialog.Timeline.DeleteKeyframes(beatmapObject).Start,
+                            () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframes(beatmapObject, list, false)));
 
                         StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
-
                         break;
                     }
                 case EditorDialog.BACKGROUND_EDITOR: {
@@ -2359,6 +2389,28 @@ namespace BetterLegacy.Editor.Managers
 
                         RTCheckpointEditor.inst.DeleteCheckpoint(RTCheckpointEditor.inst.CurrentCheckpoint.Index);
                         EditorManager.inst.DisplayNotification("Deleted Checkpoint.", 1f, EditorManager.NotificationType.Success);
+                        break;
+                    }
+                case EditorDialog.ANIMATION_EDITOR_DIALOG: {
+                        var animation = AnimationEditor.inst.CurrentAnimation;
+                        if (!animation)
+                            break;
+
+                        if (AnimationEditor.inst.Dialog.Timeline.currentKeyframeIndex == 0)
+                        {
+                            EditorManager.inst.DisplayNotification("Can't delete first keyframe.", 1f, EditorManager.NotificationType.Error);
+                            break;
+                        }
+
+                        var list = new List<TimelineKeyframe>();
+                        foreach (var timelineObject in animation.TimelineKeyframes.Where(x => x.Selected))
+                            list.Add(timelineObject);
+
+                        EditorManager.inst.history.Add(new History.Command("Delete Keyframes",
+                            AnimationEditor.inst.Dialog.Timeline.DeleteKeyframes(animation).Start,
+                            () => AnimationEditor.inst.Dialog.Timeline.PasteKeyframes(animation, list, false)));
+
+                        CoroutineHelper.StartCoroutine(AnimationEditor.inst.Dialog.Timeline.DeleteKeyframes(animation));
                         break;
                     }
             }
@@ -3823,9 +3875,6 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorTimeline.inst.timelineSliderHandle = EditorTimeline.inst.wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image/Handle").GetComponent<Image>();
                 EditorTimeline.inst.timelineSliderRuler = EditorTimeline.inst.wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image").GetComponent<Image>();
-                var keyframeTimelineHandle = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("timeline/Scroll View/Viewport/Content/time_slider/Handle Slide Area/Handle");
-                EditorTimeline.inst.keyframeTimelineSliderHandle = keyframeTimelineHandle.Find("Image").GetComponent<Image>();
-                EditorTimeline.inst.keyframeTimelineSliderRuler = keyframeTimelineHandle.GetComponent<Image>();
 
                 EditorTimeline.inst.UpdateTimelineColors();
             }

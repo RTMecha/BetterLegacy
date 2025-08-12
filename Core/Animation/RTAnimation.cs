@@ -266,32 +266,26 @@ namespace BetterLegacy.Core.Animation
         /// <summary>
         /// Sets the default completion function, which removes the animation from the main animation manager.
         /// </summary>
-        public void SetDefaultOnComplete(bool finishInterpolation = true) => onComplete = () =>
-        {
-            AnimationManager.inst.Remove(id);
-            if (finishInterpolation)
-            {
-                for (int i = 0; i < animationHandlers.Count; i++)
-                {
-                    var anim = animationHandlers[i];
-                    anim.Interpolate(time - anim.offsetTime);
-                }
-            }
-        };
-        
+        public void SetDefaultOnComplete() => SetDefaultOnComplete(AnimationManager.inst, false);
+
         /// <summary>
-        /// Sets the default completion function, which removes the animation from a <see cref="AnimationController"/>.
+        /// Sets the default completion function, which removes the animation from a <see cref="IAnimationController"/>.
         /// </summary>
-        public void SetDefaultOnComplete(AnimationController animationController, bool finishInterpolation = true) => onComplete = () =>
+        public void SetDefaultOnComplete(IAnimationController animationController) => SetDefaultOnComplete(animationController, false);
+
+        /// <summary>
+        /// Sets the default completion function, which removes the animation from a <see cref="IAnimationController"/>.
+        /// </summary>
+        public void SetDefaultOnComplete(IAnimationController animationController, bool finishInterpolation) => onComplete = () =>
         {
             animationController.Remove(id);
-            if (finishInterpolation)
+            if (!finishInterpolation)
+                return;
+
+            for (int i = 0; i < animationHandlers.Count; i++)
             {
-                for (int i = 0; i < animationHandlers.Count; i++)
-                {
-                    var anim = animationHandlers[i];
-                    anim.Interpolate(time - anim.offsetTime);
-                }
+                var anim = animationHandlers[i];
+                anim.Interpolate(time - anim.offsetTime);
             }
         };
 

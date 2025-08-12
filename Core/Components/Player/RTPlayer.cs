@@ -3388,10 +3388,10 @@ namespace BetterLegacy.Core.Components.Player
 
                     runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, vector =>
                     {
-                        customObject.idle = false;
+                        //customObject.idle = false;
                         if (customObject.gameObject)
                             customObject.gameObject.transform.localPosition = (new Vector3(reference.position.x, reference.position.y, reference.depth) + vector);
-                    }, () => customObject.idle = true));
+                    }, interpolateOnComplete: true));
                 }
             if (animation.animateScale)
                 for (int i = 0; i < animation.scaleKeyframes.Count; i++)
@@ -3403,10 +3403,10 @@ namespace BetterLegacy.Core.Components.Player
 
                     runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, vector =>
                     {
-                        customObject.idle = false;
+                        //customObject.idle = false;
                         if (customObject.gameObject)
                             customObject.gameObject.transform.localScale = (new Vector3(reference.scale.x, reference.scale.y, 1f) * vector);
-                    }, () => customObject.idle = true));
+                    }, interpolateOnComplete: true));
                 }
             if (animation.animateRotation)
                 for (int i = 0; i < animation.rotationKeyframes.Count; i++)
@@ -3418,11 +3418,16 @@ namespace BetterLegacy.Core.Components.Player
 
                     runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, x =>
                     {
-                        customObject.idle = false;
+                        //customObject.idle = false;
                         if (customObject.gameObject)
                             customObject.gameObject.transform.localEulerAngles = (new Vector3(0f, 0f, reference.rotation + x));
-                    }, () => customObject.idle = true));
+                    }, interpolateOnComplete: true));
                 }
+
+            //if (runtimeAnim.onComplete != null)
+            //    runtimeAnim.onComplete += () => customObject.idle = true;
+            //else
+            //    runtimeAnim.onComplete = () => customObject.idle = true;
         }
 
         /// <summary>

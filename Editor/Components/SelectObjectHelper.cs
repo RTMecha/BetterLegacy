@@ -182,7 +182,7 @@ namespace BetterLegacy.Editor.Components
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                    ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
 
                                     break;
                                 }
@@ -244,7 +244,7 @@ namespace BetterLegacy.Editor.Components
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                    ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
 
                                     break;
                                 }
@@ -306,7 +306,7 @@ namespace BetterLegacy.Editor.Components
                                     selectedKeyframe.values[shift ? 1 : 0] = val;
 
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                    ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
 
                                     break;
                                 }
@@ -364,7 +364,7 @@ namespace BetterLegacy.Editor.Components
                                     selectedKeyframe.values[shift ? 1 : 0] = !shift ? Mathf.Clamp(val, 0, BeatmapTheme.OBJECT_COLORS_COUNT - 1) : Mathf.Clamp(val, 0f, 1f);
 
                                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                                    ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
 
                                     break;
                                 }
@@ -474,7 +474,7 @@ namespace BetterLegacy.Editor.Components
                         }
 
                         RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                        ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                        ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
                         break;
                     }
                 case TimelineObject.TimelineReferenceType.PrefabObject: {

@@ -32,7 +32,7 @@ namespace BetterLegacy.Editor.Components
                 return;
 
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.RenderObjectKeyframesDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                ObjectEditor.inst.Dialog.Timeline.RenderDialog(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             else if (EditorTimeline.inst.CurrentSelection.isPrefabObject)
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
         }

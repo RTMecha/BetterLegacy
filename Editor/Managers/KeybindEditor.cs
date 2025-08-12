@@ -102,7 +102,7 @@ namespace BetterLegacy.Editor.Managers
                 if (selectionType == SelectionType.Object)
                 {
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                    ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
                 }
                 if (selectionType == SelectionType.Prefab)
                 {
@@ -117,7 +117,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             if (selectionType == SelectionType.Object)
-                ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
             if (selectionType == SelectionType.Prefab)
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
         }
@@ -1341,7 +1341,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
             {
-                var selected = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
+                var selected = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected);
 
                 foreach (var timelineObject in selected)
                 {
@@ -1377,7 +1377,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
             {
-                var selected = EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected);
+                var selected = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected);
 
                 foreach (var timelineObject in selected)
                 {
@@ -1583,8 +1583,8 @@ namespace BetterLegacy.Editor.Managers
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.SetCurrentKeyframe(bm, ObjEditor.inst.currentKeyframeKind, 0, true);
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, 0, true);
                 }
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
@@ -1601,8 +1601,8 @@ namespace BetterLegacy.Editor.Managers
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.SetCurrentKeyframe(bm, ObjEditor.inst.currentKeyframeKind, bm.events[ObjEditor.inst.currentKeyframeKind].Count - 1, true);
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1, true);
                 }
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
@@ -1619,8 +1619,8 @@ namespace BetterLegacy.Editor.Managers
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.SetCurrentKeyframe(bm, ObjEditor.inst.currentKeyframeKind, Mathf.Clamp(ObjEditor.inst.currentKeyframe + 1, 0, bm.events[ObjEditor.inst.currentKeyframeKind].Count - 1), true);
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex + 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
                 }
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
@@ -1640,8 +1640,8 @@ namespace BetterLegacy.Editor.Managers
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                 {
                     var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.SetCurrentKeyframe(bm, ObjEditor.inst.currentKeyframeKind, Mathf.Clamp(ObjEditor.inst.currentKeyframe - 1, 0, bm.events[ObjEditor.inst.currentKeyframeKind].Count - 1), true);
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex - 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
                 }
             }
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
@@ -1850,10 +1850,10 @@ namespace BetterLegacy.Editor.Managers
                     timelineKeyframe.RenderPos();
                 }
 
-            if (ObjEditor.inst.ObjectView.activeInHierarchy && EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected).Count() > 0 && !EditorTimeline.inst.isOverMainTimeline)
+            if (ObjEditor.inst.ObjectView.activeInHierarchy && EditorTimeline.inst.CurrentSelection.isBeatmapObject && EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected).Count() > 0 && !EditorTimeline.inst.isOverMainTimeline)
             {
                 var startTime = EditorTimeline.inst.CurrentSelection.Time;
-                foreach (var timelineKeyframe in EditorTimeline.inst.CurrentSelection.InternalTimelineObjects.Where(x => x.Selected))
+                foreach (var timelineKeyframe in EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected))
                 {
                     if (timelineKeyframe.Index != 0 && !timelineKeyframe.Locked)
                         timelineKeyframe.Time = RTEditor.SnapToBPM(timelineKeyframe.Time + startTime) - startTime;
@@ -1862,7 +1862,7 @@ namespace BetterLegacy.Editor.Managers
                 var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
                 EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.CurrentSelection);
                 RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                ObjectEditor.inst.RenderKeyframes(bm);
+                ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
             }
 
             if (RTEditor.DraggingPlaysSound)

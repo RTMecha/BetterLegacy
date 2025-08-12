@@ -4,8 +4,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-using LSFunctions;
-
 using TMPro;
 
 using BetterLegacy.Configs;
@@ -32,9 +30,6 @@ namespace BetterLegacy.Editor.Data.Timeline
             isBeatmapObject = TimelineReference == TimelineReferenceType.BeatmapObject;
             isPrefabObject = TimelineReference == TimelineReferenceType.PrefabObject;
             isBackgroundObject = TimelineReference == TimelineReferenceType.BackgroundObject;
-
-            if (isBeatmapObject)
-                InternalTimelineObjects = new List<TimelineKeyframe>();
         }
 
         #region Properties
@@ -220,11 +215,6 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// Gets and sets the stored timeline scrollbar position of the object. Specifically used for the object keyframe timeline.
         /// </summary>
         public float TimelinePosition { get; set; }
-
-        /// <summary>
-        /// The internal keyframes an object stores. Only used for Beatmap Objects.
-        /// </summary>
-        public List<TimelineKeyframe> InternalTimelineObjects { get; set; }
 
         /// <summary>
         /// What kind of object <see cref="data"/> is.

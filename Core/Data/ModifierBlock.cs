@@ -4,7 +4,6 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data
 {
@@ -59,7 +58,12 @@ namespace BetterLegacy.Core.Data
             this.CopyModifyableData(orig);
         }
 
-        public override void ReadJSON(JSONNode jn) => this.ReadModifiersJSON(jn);
+        public override void ReadJSON(JSONNode jn)
+        {
+            this.ReadModifiersJSON(jn);
+            if (!Modifiers.IsEmpty())
+                this.UpdateFunctions();
+        }
 
         public override JSONNode ToJSON()
         {

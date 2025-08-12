@@ -69,8 +69,6 @@ namespace BetterLegacy.Editor.Managers
 
         public Image timelineSliderHandle;
         public Image timelineSliderRuler;
-        public Image keyframeTimelineSliderHandle;
-        public Image keyframeTimelineSliderRuler;
 
         public bool isOverMainTimeline;
         public bool changingTime;
@@ -183,9 +181,6 @@ namespace BetterLegacy.Editor.Managers
         {
             timelineSliderHandle.color = EditorConfig.Instance.TimelineCursorColor.Value;
             timelineSliderRuler.color = EditorConfig.Instance.TimelineCursorColor.Value;
-
-            keyframeTimelineSliderHandle.color = EditorConfig.Instance.KeyframeCursorColor.Value;
-            keyframeTimelineSliderRuler.color = EditorConfig.Instance.KeyframeCursorColor.Value;
         }
 
         public void UpdateTimeChange()
@@ -572,9 +567,9 @@ namespace BetterLegacy.Editor.Managers
                     timelineObject.RenderPosLength();
             }
 
-            if (CurrentSelection && CurrentSelection.isBeatmapObject && CurrentSelection.InternalTimelineObjects.Count > 0)
-                for (int i = 0; i < CurrentSelection.InternalTimelineObjects.Count; i++)
-                    CurrentSelection.InternalTimelineObjects[i].RenderVisibleState();
+            if (CurrentSelection && CurrentSelection.isBeatmapObject && CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Count > 0)
+                for (int i = 0; i < CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Count; i++)
+                    CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes[i].RenderVisibleState();
 
             for (int i = 0; i < timelineKeyframes.Count; i++)
                 timelineKeyframes[i].RenderVisibleState();

@@ -1738,9 +1738,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < EventCount; i++)
             {
                 allEvents.Add(new List<EventKeyframe>());
-                if (jn[EventTypes[i]] != null)
-                    for (int j = 0; j < jn[EventTypes[i]].Count; j++)
-                        allEvents[i].Add(EventKeyframe.Parse(jn[EventTypes[i]][j], i, DefaultKeyframes[i].values.Length));
+                if (jn[EventTypes[i]] == null)
+                    continue;
+
+                for (int j = 0; j < jn[EventTypes[i]].Count; j++)
+                {
+                    var defaultKeyframe = DefaultKeyframes[i];
+                    allEvents[i].Add(EventKeyframe.Parse(jn[EventTypes[i]][j], i, defaultKeyframe.values.Length, defaultKeyframe.randomValues.Length, defaultKeyframe.values, defaultKeyframe.randomValues));
+                }
             }
 
             if (clamp)

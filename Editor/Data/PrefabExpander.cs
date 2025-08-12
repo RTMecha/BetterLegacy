@@ -112,7 +112,7 @@ namespace BetterLegacy.Editor.Data
                     EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
 
                 if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && prefab.beatmapObjects.Count > 0)
-                    ObjectEditor.inst.ClearKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                    ObjectEditor.inst.Dialog.Timeline.ClearKeyframes();
 
                 if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1 || prefab.backgroundObjects.Count > 1)
                     EditorManager.inst.ClearPopups();

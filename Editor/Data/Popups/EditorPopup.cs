@@ -98,6 +98,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string DEFAULT_TAGS_POPUP = "Default Tags Popup";
         public const string LEVEL_COLLECTION_POPUP = "Level Collection Popup";
         public const string ASSET_POPUP = "Asset Popup";
+        public const string ANIMATIONS_POPUP = "Animations Popup";
 
         #endregion
 

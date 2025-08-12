@@ -535,7 +535,8 @@ namespace BetterLegacy.Editor.Managers
                     {
                         for (int j = 0; j < jn["events"][GameData.EventTypes[i]].Count; j++)
                         {
-                            var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, GameData.DefaultKeyframes[i].values.Length));
+                            var d = GameData.DefaultKeyframes[i];
+                            var timelineObject = new TimelineKeyframe(EventKeyframe.Parse(jn["events"][GameData.EventTypes[i]][j], i, d.values.Length, d.randomValues.Length, d.values, d.randomValues));
                             timelineObject.Type = i;
                             timelineObject.Index = j;
                             copiedEventKeyframes.Add(timelineObject);
@@ -906,17 +907,7 @@ namespace BetterLegacy.Editor.Managers
 
             var easing = dialog.transform.Find("curves").GetComponent<Dropdown>();
 
-            TriggerHelper.AddEventTriggers(easing.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
-            {
-                if (!EditorConfig.Instance.ScrollOnEasing.Value)
-                    return;
-
-                var pointerEventData = (PointerEventData)eventData;
-                if (pointerEventData.scrollDelta.y > 0f)
-                    easing.value = easing.value == 0 ? easing.options.Count - 1 : easing.value - 1;
-                if (pointerEventData.scrollDelta.y < 0f)
-                    easing.value = easing.value == easing.options.Count - 1 ? 0 : easing.value + 1;
-            }));
+            TriggerHelper.AddEventTriggers(easing.gameObject, TriggerHelper.ScrollDelta(easing));
 
 
             var topPanel = dialog.transform.GetChild(0);

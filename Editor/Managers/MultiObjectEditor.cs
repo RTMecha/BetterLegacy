@@ -613,9 +613,9 @@ namespace BetterLegacy.Editor.Managers
                              foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                              {
                                  var bm = timelineObject.GetData<BeatmapObject>();
-                                 foreach (var tkf in timelineObject.InternalTimelineObjects)
+                                 foreach (var tkf in bm.TimelineKeyframes)
                                      Destroy(tkf.GameObject);
-                                 timelineObject.InternalTimelineObjects.Clear();
+                                 bm.TimelineKeyframes.Clear();
                                  for (int i = 0; i < bm.events.Count; i++)
                                  {
                                      bm.events[i].Sort((a, b) => a.time.CompareTo(b.time));
@@ -625,8 +625,8 @@ namespace BetterLegacy.Editor.Managers
                                  }
                                  if (EditorTimeline.inst.SelectedObjects.Count == 1)
                                  {
-                                     ObjectEditor.inst.ResizeKeyframeTimeline(bm);
-                                     ObjectEditor.inst.RenderKeyframes(bm);
+                                     ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(bm);
+                                     ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(bm);
                                  }
 
                                  RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
@@ -2340,17 +2340,7 @@ namespace BetterLegacy.Editor.Managers
                 curves.onValueChanged.ClearAll();
                 curves.options.Insert(0, new Dropdown.OptionData("None (Doesn't Set Easing)"));
 
-                TriggerHelper.AddEventTriggers(curves.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
-                {
-                    if (!EditorConfig.Instance.ScrollOnEasing.Value)
-                        return;
-
-                    var pointerEventData = (PointerEventData)baseEventData;
-                    if (pointerEventData.scrollDelta.y > 0f)
-                        curves.value = curves.value == 0 ? curves.options.Count - 1 : curves.value - 1;
-                    if (pointerEventData.scrollDelta.y < 0f)
-                        curves.value = curves.value == curves.options.Count - 1 ? 0 : curves.value + 1;
-                }));
+                TriggerHelper.AddEventTriggers(curves.gameObject, TriggerHelper.ScrollDelta(curves));
 
                 EditorThemeManager.AddDropdown(curves);
 
@@ -2727,7 +2717,7 @@ namespace BetterLegacy.Editor.Managers
 
                             for (int i = 0; i < bm.events.Count; i++)
                             {
-                                var copiedKeyframeData = ObjectEditor.inst.GetCopiedData(i);
+                                var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(i);
                                 if (copiedKeyframeData == null)
                                     continue;
 
@@ -2755,7 +2745,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 for (int i = 0; i < bm.events.Count; i++)
                                 {
-                                    var copiedKeyframeData = ObjectEditor.inst.GetCopiedData(i);
+                                    var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(i);
                                     if (copiedKeyframeData == null)
                                         continue;
 
@@ -3799,7 +3789,7 @@ namespace BetterLegacy.Editor.Managers
         {
             GeneratePasteKeyframeData(parent, () =>
             {
-                var copiedKeyframeData = ObjectEditor.inst.GetCopiedData(type);
+                var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(type);
                 if (copiedKeyframeData == null)
                 {
                     EditorManager.inst.DisplayNotification($"{name} keyframe data not copied yet.", 2f, EditorManager.NotificationType.Error);
@@ -3824,7 +3814,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
             }, _val =>
             {
-                var copiedKeyframeData = ObjectEditor.inst.GetCopiedData(type);
+                var copiedKeyframeData = ObjectEditor.inst.Dialog.Timeline.GetCopiedData(type);
                 string name = type switch
                 {
                     0 => "Position",

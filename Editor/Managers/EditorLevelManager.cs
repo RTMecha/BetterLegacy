@@ -672,14 +672,6 @@ namespace BetterLegacy.Editor.Managers
                 var timelineObject = EditorTimeline.inst.timelineObjects[i];
                 if (timelineObject.GameObject)
                     Destroy(timelineObject.GameObject);
-
-                if (timelineObject.InternalTimelineObjects != null)
-                    for (int j = 0; j < timelineObject.InternalTimelineObjects.Count; j++)
-                    {
-                        var kf = timelineObject.InternalTimelineObjects[j];
-                        if (kf.GameObject)
-                            Destroy(kf.GameObject);
-                    }
                 EditorTimeline.inst.timelineObjects[i] = null;
             }
             EditorTimeline.inst.timelineObjects.Clear();

@@ -8,13 +8,12 @@ using LSFunctions;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
-using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Configs
@@ -3452,8 +3451,12 @@ namespace BetterLegacy.Configs
 
         void TimelineColorsChanged()
         {
-            if (CoreHelper.InEditor)
-                EditorTimeline.inst.UpdateTimelineColors();
+            if (!CoreHelper.InEditor)
+                return;
+
+            EditorTimeline.inst.UpdateTimelineColors();
+
+            KeyframeTimeline.AllTimelines.ForLoop(keyframeTimeline => keyframeTimeline?.SetCursorColor(KeyframeCursorColor.Value));
         }
 
         void UpdateDefaultThemeValues()

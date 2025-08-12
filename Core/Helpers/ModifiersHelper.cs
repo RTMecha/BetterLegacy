@@ -1261,24 +1261,24 @@ namespace BetterLegacy.Core.Helpers
 
             #region Player Only
             
-            new ModifierAction(nameof(ModifierActions.setCustomObjectActive),  ModifierActions.setCustomObjectActive, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.setIdleAnimation),  ModifierActions.setIdleAnimation, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.playAnimation),  ModifierActions.playAnimation, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.setCustomObjectActive),  ModifierActions.setCustomObjectActive, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.setCustomObjectIdle),  ModifierActions.setCustomObjectIdle, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.setIdleAnimation),  ModifierActions.setIdleAnimation, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.playAnimation),  ModifierActions.playAnimation, ModifierCompatibility.FullPlayerCompatible),
             new ModifierAction(nameof(ModifierActions.kill),  ModifierActions.kill, ModifierCompatibility.PAPlayerCompatible),
             new ModifierAction(nameof(ModifierActions.hit),  ModifierActions.hit, ModifierCompatibility.PAPlayerCompatible),
             new ModifierAction(nameof(ModifierActions.boost),  ModifierActions.boost, ModifierCompatibility.PAPlayerCompatible),
             new ModifierAction(nameof(ModifierActions.shoot),  ModifierActions.shoot, ModifierCompatibility.PAPlayerCompatible),
             new ModifierAction(nameof(ModifierActions.pulse),  ModifierActions.pulse, ModifierCompatibility.PAPlayerCompatible),
             new ModifierAction(nameof(ModifierActions.jump),  ModifierActions.jump, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.jump),  ModifierActions.jump, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getHealth),  ModifierActions.getHealth, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getLives),  ModifierActions.getLives, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getMaxHealth),  ModifierActions.getMaxHealth, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getMaxLives),  ModifierActions.getMaxLives, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getIndex),  ModifierActions.getIndex, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getMove),  ModifierActions.getMove, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getMoveX),  ModifierActions.getMoveX, ModifierCompatibility.PAPlayerCompatible),
-            new ModifierAction(nameof(ModifierActions.getMoveY),  ModifierActions.getMoveY, ModifierCompatibility.PAPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getHealth),  ModifierActions.getHealth, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getLives),  ModifierActions.getLives, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getMaxHealth),  ModifierActions.getMaxHealth, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getMaxLives),  ModifierActions.getMaxLives, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getIndex),  ModifierActions.getIndex, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getMove),  ModifierActions.getMove, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getMoveX),  ModifierActions.getMoveX, ModifierCompatibility.FullPlayerCompatible),
+            new ModifierAction(nameof(ModifierActions.getMoveY),  ModifierActions.getMoveY, ModifierCompatibility.FullPlayerCompatible),
 
             #endregion
 

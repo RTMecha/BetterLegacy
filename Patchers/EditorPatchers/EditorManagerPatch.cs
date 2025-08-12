@@ -87,17 +87,7 @@ namespace BetterLegacy.Patchers
                 dropdown.ClearOptions();
                 dropdown.AddOptions(easings);
 
-                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
-                {
-                    if (!EditorConfig.Instance.ScrollOnEasing.Value)
-                        return;
-
-                    var pointerEventData = (PointerEventData)baseEventData;
-                    if (pointerEventData.scrollDelta.y > 0f)
-                        dropdown.value = dropdown.value == 0 ? dropdown.options.Count - 1 : dropdown.value - 1;
-                    if (pointerEventData.scrollDelta.y < 0f)
-                        dropdown.value = dropdown.value == dropdown.options.Count - 1 ? 0 : dropdown.value + 1;
-                }));
+                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
             }
 
             RTEditor.EasingDropdowns = easingDropdowns;
@@ -580,47 +570,24 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool handleViewShortcutsPrefix()
         {
-            var config = EditorConfig.Instance;
-            if (config == null)
+            float multiply = Input.GetKey(KeyCode.LeftControl) ? 2f : Input.GetKey(KeyCode.LeftShift) ? 0.1f : 1f;
+
+            if (Input.GetKey(EditorConfig.Instance.BinControlKey.Value))
             {
-                Debug.LogError($"For some reason EditorConfig is null.");
+                if (InputDataManager.inst.editorActions.ZoomIn.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadPlus) || Input.GetKeyDown(KeyCode.Plus)))
+                    EditorTimeline.inst.SetBinScroll(Mathf.Clamp01(EditorTimeline.inst.BinScroll - EditorConfig.Instance.BinControlScrollAmount.Value * multiply));
+                if (InputDataManager.inst.editorActions.ZoomOut.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadMinus) || Input.GetKeyDown(KeyCode.Minus)))
+                    EditorTimeline.inst.SetBinScroll(Mathf.Clamp01(EditorTimeline.inst.BinScroll + EditorConfig.Instance.BinControlScrollAmount.Value * multiply));
                 return false;
             }
 
-            try
+            if (!Instance.IsOverObjTimeline && EditorTimeline.inst.isOverMainTimeline)
             {
-                float multiply = Input.GetKey(KeyCode.LeftControl) ? 2f : Input.GetKey(KeyCode.LeftShift) ? 0.1f : 1f;
-
-                if (Input.GetKey(config.BinControlKey.Value))
-                {
-                    if (InputDataManager.inst.editorActions.ZoomIn.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadPlus) || Input.GetKeyDown(KeyCode.Plus)))
-                        EditorTimeline.inst.SetBinScroll(Mathf.Clamp01(EditorTimeline.inst.BinScroll - config.BinControlScrollAmount.Value * multiply));
-                    if (InputDataManager.inst.editorActions.ZoomOut.WasPressed && !(Input.GetKeyDown(KeyCode.KeypadMinus) || Input.GetKeyDown(KeyCode.Minus)))
-                        EditorTimeline.inst.SetBinScroll(Mathf.Clamp01(EditorTimeline.inst.BinScroll + config.BinControlScrollAmount.Value * multiply));
-                    return false;
-                }
-
-                if (ObjectEditor.inst && ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.IsCurrent && Instance.IsOverObjTimeline && !CoreHelper.IsUsingInputField && !EditorTimeline.inst.isOverMainTimeline)
-                {
-                    if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
-                        ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat + config.KeyframeZoomAmount.Value * multiply;
-                    if (InputDataManager.inst.editorActions.ZoomOut.WasPressed)
-                        ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat - config.KeyframeZoomAmount.Value * multiply;
-                }
-
-                if (!Instance.IsOverObjTimeline && EditorTimeline.inst.isOverMainTimeline)
-                {
-                    if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
-                        Instance.Zoom = Instance.zoomFloat + config.MainZoomAmount.Value * multiply;
-                    if (InputDataManager.inst.editorActions.ZoomOut.WasPressed)
-                        Instance.Zoom = Instance.zoomFloat - config.MainZoomAmount.Value * multiply;
-                }
+                if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
+                    Instance.Zoom = Instance.zoomFloat + EditorConfig.Instance.MainZoomAmount.Value * multiply;
+                if (InputDataManager.inst.editorActions.ZoomOut.WasPressed)
+                    Instance.Zoom = Instance.zoomFloat - EditorConfig.Instance.MainZoomAmount.Value * multiply;
             }
-            catch
-            {
-
-            }
-
             return false;
         }
 

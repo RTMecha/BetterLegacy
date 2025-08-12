@@ -1,12 +1,12 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-using BetterLegacy.Configs;
+using LSFunctions;
+
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -14,208 +14,60 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Data.Timeline;
+using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// Editor class that manages custom animations.
+    /// </summary>
     public class AnimationEditor : MonoBehaviour
     {
+        #region Init
+
+        /// <summary>
+        /// The <see cref="AnimationEditor"/> global instance reference.
+        /// </summary>
         public static AnimationEditor inst;
 
+        /// <summary>
+        /// Initializes <see cref="AnimationEditor"/>.
+        /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(AnimationEditor), EditorManager.inst.transform.parent).AddComponent<AnimationEditor>();
 
         void Awake()
         {
             inst = this;
 
-            StartCoroutine(GenerateUI());
-        }
-
-        void Update()
-        {
-            var config = EditorConfig.Instance;
-            float multiply = Input.GetKey(KeyCode.LeftControl) ? 2f : Input.GetKey(KeyCode.LeftShift) ? 0.1f : 1f;
-
-            if (dialog.activeInHierarchy
-                && isOverTimeline
-                && !CoreHelper.IsUsingInputField
-                && !EditorTimeline.inst.isOverMainTimeline)
+            try
             {
-                if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
-                    Zoom = zoomFloat + config.KeyframeZoomAmount.Value * multiply;
-                if (InputDataManager.inst.editorActions.ZoomOut.WasPressed)
-                    Zoom = zoomFloat - config.KeyframeZoomAmount.Value * multiply;
+                Dialog = new AnimationEditorDialog();
+                Dialog.Init();
+
+                Popup = RTEditor.inst.GeneratePopup(EditorPopup.ANIMATIONS_POPUP, "Animations", Vector2.zero, new Vector2(600f, 400f));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
             }
         }
 
-        public IEnumerator GenerateUI()
-        {
-            dialog = EditorManager.inst.GetDialog("Object Editor").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "AnimationEditor");
-            dialog.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-            dialog.gameObject.SetActive(false);
-            dialogData = dialog.transform.Find("data").AsRT();
-            left = dialogData.Find("left").AsRT();
-            right = dialogData.Find("right").AsRT();
-            content = left.Find("Scroll View/Viewport/Content").AsRT();
+        #endregion
 
-            var panel = left.GetChild(0);
-            panel.Find("bg").GetComponent<Image>().color = new Color(1f, 0.24f, 0.24f);
-            panel.Find("text").GetComponent<Text>().text = "- Animation Editor -";
+        #region Values
 
-            #region Deleting
+        public AnimationEditorDialog Dialog { get; set; }
 
-            string[] names = new string[]
-            {
-                "tags_label",
-                "Tags Scroll View",
-                "autokill",
-                "parent",
-                "parent_more",
-                "origin",
-                "shape",
-                "shapesettings",
-                "spacer",
-                "depth",
-                "rendertype_label",
-                "rendertype",
-                "collapselabel",
-                "applyprefab",
-                "assignlabel",
-                "assign",
-                "remove",
-                "int_variable",
-                "ignore life",
-                "active",
-                "Modifiers Scroll View",
-            };
-            var list = new List<GameObject>();
-            for (int i = 0; i < content.childCount; i++)
-            {
-                var child = content.GetChild(i);
-
-                if (child.name == "id")
-                {
-                    list.Add(child.Find("ldm").gameObject);
-                }
-
-                if (i == 1)
-                {
-                    list.Add(child.Find("text (1)").gameObject);
-                }
-
-                if (child.name == "name")
-                {
-                    list.Add(child.Find("object-type").gameObject);
-                }
-
-                if (child.name == "time")
-                {
-                    list.Add(child.Find("lock").gameObject);
-                }
-
-                if (child.name == "editor")
-                {
-                    list.Add(child.Find("bin").gameObject);
-                }
-                
-                if (i == 22)
-                {
-                    list.Add(child.GetChild(1).gameObject);
-                }
-
-                if (names.Contains(child.name) || i == 7|| i == 9 || i == 12 || i == 14 || i == 17)
-                {
-                    list.Add(child.gameObject);
-                }
-            }
-
-            timeline = dialog.transform.Find("timeline/Scroll View/Viewport").AsRT();
-            timelineLeft = timeline.Find("id/left").AsRT();
-            timelineRight = timeline.Find("id/right").AsRT();
-
-            list.Add(timelineLeft.Find("position").gameObject);
-            list.Add(timelineLeft.Find("scale").gameObject);
-            list.Add(timelineLeft.Find("rotation").gameObject);
-            list.Add(timelineLeft.Find("color").gameObject);
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                Destroy(list[i]);
-            }
-
-            #endregion
-
-            var desc = content.Find("name").gameObject.Duplicate(content, "desc", 3);
-            desc.transform.AsRT().sizeDelta = new Vector2(351f, 74f);
-            desc.transform.Find("name").AsRT().sizeDelta = new Vector2(351f, 74f);
-            desc.transform.Find("name/Text").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
-            desc.transform.Find("name/Placeholder").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
-            desc.transform.Find("name").GetComponent<InputField>().lineType = InputField.LineType.MultiLineNewline;
-
-            var descLabel = content.Find("label").gameObject.Duplicate(content, "label", 3);
-            descLabel.transform.GetChild(0).GetComponent<Text>().text = "Description";
-
-            content.Find("editor/layers").GetComponent<ContrastColors>().Init(content.Find("editor/layers").GetChild(0).GetComponent<Text>(), content.Find("editor/layers").GetComponent<Image>());
-            timelineSlider = timeline.Find("Content/time_slider").GetComponent<Slider>();
-            timelinePosScrollbar = timeline.parent.GetComponent<ScrollRect>().horizontalScrollbar;
-            timelineGrid = timeline.Find("Content/grid").AsRT();
-            zoomSlider = timeline.parent.Find("zoom-panel/Slider").GetComponent<Slider>();
-
-            TriggerHelper.AddEventTriggers(timeline.Find("Content").gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => { isOverTimeline = true; }), TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => { isOverTimeline = false; }));
-
-            #region Markers
-
-            markers = timeline.Find("Content/time_slider/Markers").AsRT();
-
-            #endregion
-
-            yield break;
-        }
-
-        public GameObject dialog;
-        public RectTransform dialogData;
-        public RectTransform left;
-        public RectTransform right;
-        public RectTransform content;
-        public RectTransform timeline;
-        public RectTransform timelineLeft;
-        public RectTransform timelineRight;
-        public RectTransform timelineGrid;
-        public RectTransform markers;
-
-        public Slider zoomSlider;
-        public Slider timelineSlider;
-        public Scrollbar timelinePosScrollbar;
-        public InputField layerInputField;
-
-        public bool isOverTimeline;
-
-        public List<TimelineKeyframe> timelineKeyframes = new List<TimelineKeyframe>();
-        public List<TimelineMarker> timelineMarkers = new List<TimelineMarker>();
-
-        public RectTransform timelineParent;
-
-        float currentTime;
-        public float CurrentTime { get => Mathf.Clamp(currentTime, 0f, float.MaxValue); set => currentTime = Mathf.Clamp(value, 0f, float.MaxValue); }
-
-        int layer;
-        public int Layer { get => Mathf.Clamp(layer, 0, int.MaxValue); set => layer = Mathf.Clamp(value, 0, int.MaxValue); }
-
-        public float Zoom
-        {
-            get => zoomVal;
-            set => SetTimeline(value);
-        }
-
-        public float zoomFloat;
-        public float zoomVal;
-
-        public int CurrentObject { get; set; }
-
-        public static string NoEventLabel => "??? (No event yet)";
+        public ContentPopup Popup { get; set; }
 
         public PAAnimation CurrentAnimation { get; set; }
+
+        #endregion
+
+        #region Methods
 
         public void Test()
         {
@@ -238,230 +90,177 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void RenderEditor(PAAnimation animation)
+        #region Editor
+
+        public void OpenDialog(PAAnimation animation)
         {
-            //CurrentAnimation = animation;
-            //var id = content.Find("id/text").GetComponent<Text>();
-            //id.text = $"ID: {animation.id}";
-
-            //var clickable = content.Find("id").gameObject.GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
-
-            //clickable.onClick = pointerEventData =>
-            //{
-            //    EditorManager.inst.DisplayNotification($"Copied ID from {animation.name}!", 2f, EditorManager.NotificationType.Success);
-            //    LSText.CopyToClipboard(animation.id);
-            //};
-
-            //var name = content.Find("name/name").GetComponent<InputField>();
-            //name.onValueChanged.ClearAll();
-            //name.text = animation.name;
-            //name.onValueChanged.AddListener(_val => { animation.name = _val; });
-            
-            //var desc = content.Find("desc/name").GetComponent<InputField>();
-            //desc.onValueChanged.ClearAll();
-            //desc.text = animation.desc;
-            //desc.onValueChanged.AddListener(_val => { animation.desc = _val; });
-            
-            //var time = content.Find("time/time").GetComponent<InputField>();
-            //time.onValueChanged.ClearAll();
-            //time.text = animation.StartTime.ToString();
-            //time.onValueChanged.AddListener(_val =>
-            //{
-            //    if (float.TryParse(_val, out float result))
-            //        animation.StartTime = result;
-            //});
-
-            //TriggerHelper.IncreaseDecreaseButtons(time, max: float.MaxValue, t: content.Find("time"));
-            //TriggerHelper.AddEventTriggers(content.Find("time").gameObject, TriggerHelper.ScrollDelta(time, max: float.MaxValue));
-
-            //var layers = content.Find("editor/layers").GetComponent<InputField>();
-            //var layersImage = content.Find("editor/layers").GetComponent<Image>();
-
-            //layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
-            //layers.onValueChanged.ClearAll();
-            //layers.text = Layer.ToString();
-            //layers.onValueChanged.AddListener(_val =>
-            //{
-            //    if (int.TryParse(_val, out int result))
-            //    {
-            //        Layer = result;
-            //        layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
-
-            //        RenderBins(animation);
-            //    }
-            //});
-
-            //TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, max: int.MaxValue));
-
-            //RenderBins(animation);
-            //RenderMarkers(animation);
-            //ResizeKeyframeTimeline(animation);
+            Dialog.Open();
+            RenderDialog(animation);
         }
 
-        public void RenderBins(PAAnimation animation)
+        public void RenderDialog(PAAnimation animation)
         {
-            //var layer = Layer + 1;
+            CurrentAnimation = animation;
 
-            //for (int i = 0; i < Mathf.Clamp(animation.objects[CurrentObject].animationBins.Count, 4, int.MaxValue); i++)
-            //{
-            //    var child = i % 4;
-            //    var num = Mathf.Clamp(layer * 4, 0, layer * 4);
+            Dialog.IDText.text = $"ID: {animation.id}";
+            var idClickable = Dialog.IDBase.gameObject.GetOrAddComponent<Clickable>();
+            idClickable.onClick = pointerEventData =>
+            {
+                EditorManager.inst.DisplayNotification($"Copied ID from {animation.name}!", 2f, EditorManager.NotificationType.Success);
+                LSText.CopyToClipboard(animation.id);
+            };
 
-            //    if (child >= timelineLeft.childCount)
-            //        return;
+            Dialog.ReferenceField.SetTextWithoutNotify(animation.ReferenceID);
+            Dialog.ReferenceField.onValueChanged.NewListener(_val => animation.ReferenceID = _val);
 
-            //    var text = timelineLeft.GetChild(child).GetComponent<Text>();
+            Dialog.NameField.SetTextWithoutNotify(animation.name);
+            Dialog.NameField.onValueChanged.NewListener(_val => animation.name = _val);
+            Dialog.DescriptionField.SetTextWithoutNotify(animation.description);
+            Dialog.DescriptionField.onValueChanged.NewListener(_val => animation.description = _val);
 
-            //    if (i >= num - 4 && i < num && i < animation.objects[CurrentObject].animationBins.Count)
-            //        text.text = animation.objects[CurrentObject].animationBins[i].name;
-            //    else if (i < num)
-            //        text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
-            //}
-        }
+            Dialog.StartTimeField.SetTextWithoutNotify(animation.StartTime.ToString());
+            Dialog.StartTimeField.OnValueChanged.NewListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                    animation.StartTime = num;
+            });
 
-        public void RenderMarkers(PAAnimation animation)
-        {
-            //var dottedLine = ObjEditor.inst.KeyframeEndPrefab.GetComponent<Image>().sprite;
-            //LSHelpers.DeleteChildren(markers);
+            TriggerHelper.IncreaseDecreaseButtons(Dialog.StartTimeField, max: float.MaxValue);
+            TriggerHelper.AddEventTriggers(Dialog.StartTimeField.gameObject, TriggerHelper.ScrollDelta(Dialog.StartTimeField.inputField, max: float.MaxValue));
 
-            //timelineMarkers.Clear();
+            Dialog.AnimatePositionToggle.SetIsOnWithoutNotify(animation.animatePosition);
+            Dialog.AnimatePositionToggle.onValueChanged.NewListener(_val => animation.animatePosition = _val);
+            Dialog.AnimateScaleToggle.SetIsOnWithoutNotify(animation.animateScale);
+            Dialog.AnimateScaleToggle.onValueChanged.NewListener(_val => animation.animateScale = _val);
+            Dialog.AnimateRotationToggle.SetIsOnWithoutNotify(animation.animateRotation);
+            Dialog.AnimateRotationToggle.onValueChanged.NewListener(_val => animation.animateRotation = _val);
+            Dialog.AnimateColorToggle.SetIsOnWithoutNotify(animation.animateColor);
+            Dialog.AnimateColorToggle.onValueChanged.NewListener(_val => animation.animateColor = _val);
+            Dialog.TransitionToggle.SetIsOnWithoutNotify(animation.transition);
+            Dialog.TransitionToggle.onValueChanged.NewListener(_val => animation.transition = _val);
 
-            //for (int i = 0; i < animation.markers.Count; i++)
-            //{
-            //    var marker = (Marker)animation.markers[i];
+            RenderCustomUIDisplay(animation);
 
-            //    if (marker.time < 0f)
-            //        continue;
-
-            //    int index = i;
-
-            //    var gameObject = MarkerEditor.inst.markerPrefab.Duplicate(markers, $"Marker {index}");
-            //    var pos = marker.time;
-            //    UIManager.SetRectTransform(gameObject.transform.AsRT(), new Vector2(0f, -12f), new Vector2(pos, 1f), new Vector2(pos, 1f), new Vector2(0.5f, 1f), new Vector2(12f, 12f));
-
-            //    var timelineMarker = new TimelineMarker
-            //    {
-            //        GameObject = gameObject,
-            //        Handle = gameObject.GetComponent<Image>(),
-            //        Line = gameObject.transform.Find("line").GetComponent<Image>(),
-            //        Marker = marker,
-            //        Index = index,
-            //        RectTransform = gameObject.transform.AsRT(),
-            //        Text = gameObject.GetComponentInChildren<Text>(),
-            //    };
-
-            //    timelineMarker.Handle.color = MarkerEditor.inst.markerColors[Mathf.Clamp(marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
-            //    timelineMarker.Text.text = marker.name;
-            //    timelineMarker.Line.rectTransform.sizeDelta = new Vector2(5f, 301f);
-            //    timelineMarker.Line.sprite = dottedLine;
-            //    timelineMarker.Line.type = Image.Type.Tiled;
-
-            //    TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
-            //    {
-            //        var pointerEventData = (PointerEventData)eventData;
-
-            //        if (pointerEventData.button == PointerEventData.InputButton.Left)
-            //        {
-            //            CoreHelper.Log($"Select marker: {index}");
-            //            //RTMarkerEditor.inst.SetCurrentMarker(timelineMarker);
-            //            //AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
-            //        }
-
-            //        if (pointerEventData.button == PointerEventData.InputButton.Right)
-            //            CoreHelper.Log($"Delete marker: {index}");
-            //            //RTMarkerEditor.inst.DeleteMarker(index);
-
-            //        if (pointerEventData.button == PointerEventData.InputButton.Middle)
-            //            CoreHelper.Log($"Set time to marker: {index}");
-            //            //AudioManager.inst.SetMusicTime(marker.time);
-            //    }));
-
-            //    timelineMarkers.Add(timelineMarker);
-            //}
+            Dialog.Timeline.RenderKeyframes(animation);
+            Dialog.Timeline.RenderDialog(animation);
+            Dialog.Timeline.ResizeKeyframeTimeline(animation);
         }
 
         /// <summary>
-        /// Sets the Object Keyframe timeline zoom and position.
+        /// Renders the custom keyframe UI.
         /// </summary>
-        /// <param name="zoom">The amount to zoom in.</param>
-        /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
-        /// <param name="render">If the timeline should render.</param>
-        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
+        public void RenderCustomUIDisplay(PAAnimation animation)
         {
-            //float prevZoom = zoomFloat;
-            //zoomFloat = Mathf.Clamp01(zoom);
-            //zoomVal =
-            //    LSMath.InterpolateOverCurve(ObjEditor.inst.ZoomCurve, ObjEditor.inst.zoomBounds.x, ObjEditor.inst.zoomBounds.y, zoomFloat);
-
-            //if (render)
-            //{
-            //    ResizeKeyframeTimeline(CurrentAnimation);
-            //    RenderKeyframes(CurrentAnimation);
-            //}
-
-            //float timelineCalc = timelineSlider.value;
-            //if (AudioManager.inst.CurrentAudioSource.clip != null)
-            //{
-            //    float time = CurrentTime;
-            //    float objectLifeLength = CurrentAnimation.GetLength(CurrentObject) + ObjEditor.inst.ObjectLengthOffset;
-
-            //    timelineCalc = time / objectLifeLength;
-            //}
-
-            //timelinePosScrollbar.value =
-            //    position >= 0f ? position : timelineCalc;
-
-            //zoomSlider.onValueChanged.ClearAll();
-            //zoomSlider.value = zoomFloat;
-            //zoomSlider.onValueChanged.AddListener(_val => { Zoom = _val; });
-
-            //if (log)
-            //    CoreHelper.Log($"SET ANIMATION ZOOM\n" +
-            //        $"ZoomFloat: {zoomFloat}\n" +
-            //        $"ZoomVal: {zoomVal}\n" +
-            //        $"ZoomBounds: {ObjEditor.inst.zoomBounds}\n" +
-            //        $"Timeline Position: {timelinePosScrollbar.value}");
+            Dialog.keyframeDialogs[0].InitCustomUI(
+                animation.EditorData.GetDisplay("position/x", CustomUIDisplay.DefaultPositionXDisplay),
+                animation.EditorData.GetDisplay("position/y", CustomUIDisplay.DefaultPositionYDisplay),
+                animation.EditorData.GetDisplay("position/z", CustomUIDisplay.DefaultPositionZDisplay));
+            Dialog.keyframeDialogs[0].EventValueElements[2].GameObject.SetActive(RTEditor.ShowModdedUI);
+            Dialog.keyframeDialogs[1].InitCustomUI(
+                animation.EditorData.GetDisplay("scale/x", CustomUIDisplay.DefaultScaleXDisplay),
+                animation.EditorData.GetDisplay("scale/y", CustomUIDisplay.DefaultScaleYDisplay));
+            Dialog.keyframeDialogs[2].InitCustomUI(
+                animation.EditorData.GetDisplay("rotation/x", CustomUIDisplay.DefaultRotationDisplay));
         }
 
-        public float TimeTimelineCalc(float _time) => _time * 14f * zoomVal + 5f;
+        #endregion
 
-        public GameObject keyframeEnd;
-        public void ResizeKeyframeTimeline(PAAnimation animation)
+        #region List
+
+        /// <summary>
+        /// Opens the animation list popup.
+        /// </summary>
+        /// <param name="animations">List of animations to display.</param>
+        /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
+        public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null)
         {
-            // ObjEditor.inst.ObjectLengthOffset is the offset from the last keyframe. Could allow for more timeline space.
-            //float objectLifeLength = animation.GetLength(CurrentObject) + ObjEditor.inst.ObjectLengthOffset;
-            //float x = TimeTimelineCalc(objectLifeLength);
-
-            //timeline.Find("Content").AsRT().sizeDelta = new Vector2(x, 0f);
-            //timelineGrid.sizeDelta = new Vector2(x, 122f);
-
-            //timelineSlider.minValue = animation.StartTime + 0.001f;
-            //timelineSlider.maxValue = animation.StartTime + objectLifeLength;
-
-            //if (!keyframeEnd)
-            //{
-            //    timelineGrid.DeleteChildren();
-            //    keyframeEnd = ObjEditor.inst.KeyframeEndPrefab.Duplicate(timelineGrid, "end keyframe");
-            //}
-
-            //var rectTransform = keyframeEnd.transform.AsRT();
-            //rectTransform.sizeDelta = new Vector2(4f, 122f);
-            //rectTransform.anchoredPosition = new Vector2(animation.GetLength(CurrentObject) * Zoom * 14f, 0f);
+            Popup.Open();
+            RenderPopup(animations, onPlay);
         }
 
-        public void RenderKeyframes(PAAnimation animation)
+        /// <summary>
+        /// Renders the animation list popup.
+        /// </summary>
+        /// <param name="animations">List of animations to display.</param>
+        /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
+        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null)
         {
+            Popup.ClearContent();
+            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay));
 
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Popup.Content);
+            add.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Add new Animation";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.NewListener(() =>
+            {
+                animations.Add(new PAAnimation("New Animation", "This is the default description!"));
+                RenderPopup(animations, onPlay);
+            });
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+
+            for (int i = 0; i < animations.Count; i++)
+            {
+                var index = i;
+                var animation = animations[i];
+
+                if (!RTString.SearchString(Popup.SearchTerm, animation.name, animation.ReferenceID))
+                    continue;
+
+                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, "anim");
+                var storage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
+                storage.button.onClick.ClearAll();
+                var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
+                contextClickable.onClick = pointerEventData =>
+                {
+                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    {
+                        var buttonFunctions = new List<ButtonFunction>()
+                            {
+                                new ButtonFunction("Edit", () =>
+                                {
+                                    OpenDialog(animation);
+                                }),
+                                new ButtonFunction("Play", () =>
+                                {
+                                    if (onPlay == null)
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Cannot play the animation as no object is associated with it.", 2f, EditorManager.NotificationType.Warning);
+                                        return;
+                                    }
+
+                                    onPlay.Invoke(animation);
+                                    EditorManager.inst.DisplayNotification($"Played animation!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
+                                {
+                                    animations.RemoveAt(index);
+                                    RenderPopup(animations, onPlay);
+                                    RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup)),
+                            };
+
+                        EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                        return;
+                    }
+
+                    OpenDialog(animation);
+                };
+
+                storage.image.sprite = EditorSprites.PlaySprite;
+                storage.label.text = animation.name + $" [ {animation.ReferenceID} ]";
+
+                EditorThemeManager.ApplyGraphic(storage.image, ThemeGroup.Light_Text);
+                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(storage.label);
+            }
         }
 
-        public void RenderKeyframe(int type, EventKeyframe eventKeyframe)
-        {
+        #endregion
 
-        }
-
-        public void RenderMarker()
-        {
-
-        }
+        #endregion
     }
 }

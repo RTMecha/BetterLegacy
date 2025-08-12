@@ -24,6 +24,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
+using BetterLegacy.Editor.Data.Dialogs;
 
 using Object = UnityEngine.Object;
 
@@ -2726,6 +2727,42 @@ namespace BetterLegacy.Core
         public static bool TryFindAnimations(this IAnimationController animationController, Predicate<RTAnimation> predicate, out List<RTAnimation> animations) => animationController.Animations.TryFindAll(predicate, out animations);
 
         #endregion
+
+        #endregion
+
+        #region Editor
+
+        /// <summary>
+        /// Opens an object keyframe editor.
+        /// </summary>
+        /// <param name="type">The type of object keyframe.</param>
+        public static void OpenKeyframeDialog(this IAnimationDialog animationDialog, int type)
+        {
+            for (int i = 0; i < animationDialog.KeyframeDialogs.Count; i++)
+            {
+                var active = i == type;
+                animationDialog.KeyframeDialogs[i].SetActive(active);
+                if (active)
+                    animationDialog.CurrentKeyframeDialog = animationDialog.KeyframeDialogs[i];
+            }
+        }
+
+        /// <summary>
+        /// Checks if <see cref="CurrentKeyframeDialog"/> is of a specific keyframe type.
+        /// </summary>
+        /// <param name="type">The type of object keyframe.</param>
+        /// <returns>Returns true if the current keyframe dialog type matches the specific type, otherwise returns false.</returns>
+        public static bool IsCurrentKeyframeType(this IAnimationDialog animationDialog, int type) => animationDialog.CurrentKeyframeDialog && animationDialog.CurrentKeyframeDialog.type == type;
+
+        /// <summary>
+        /// Closes the keyframe dialogs.
+        /// </summary>
+        public static void CloseKeyframeDialogs(this IAnimationDialog animationDialog)
+        {
+            for (int i = 0; i < animationDialog.KeyframeDialogs.Count; i++)
+                animationDialog.KeyframeDialogs[i].SetActive(false);
+            animationDialog.CurrentKeyframeDialog = null;
+        }
 
         #endregion
 

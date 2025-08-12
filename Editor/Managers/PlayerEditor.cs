@@ -14,6 +14,7 @@ using Crosstales.FB;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Components.Player;
 using BetterLegacy.Core.Data;
@@ -35,16 +36,9 @@ namespace BetterLegacy.Editor.Managers
     /// </summary>
     public class PlayerEditor : MonoBehaviour
     {
+        #region Init
+
         public static PlayerEditor inst;
-
-        public string modelSearchTerm;
-        public int playerModelIndex = 0;
-        public string CustomObjectID { get; set; }
-
-        public bool editControls;
-
-        public PlayerEditorDialog Dialog { get; set; }
-        public ContentPopup ModelsPopup { get; set; }
 
         public static void Init() => Creator.NewGameObject(nameof(PlayerEditor), EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
 
@@ -61,34 +55,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogException(ex);
             }
 
-            StartCoroutine(GenerateUI());
-        }
-
-        public enum Tab
-        {
-            Global,
-            Base, // includes stretch
-            GUI,
-            Head,
-            Boost,
-            Spawners, // Bullet and Pulse
-            Tail, // All tail related parts go here
-            Custom
-        }
-
-        public static Tab ParseTab(string str)
-        {
-            return
-                str.Contains("Base") && !str.Contains("GUI") && !str.Contains("Tail") || str.Contains("Stretch") ? Tab.Base :
-                !str.Contains("Pulse") && str.Contains("Head") || str.Contains("Face") ? Tab.Head :
-                str.Contains("GUI") ? Tab.GUI :
-                str.Contains("Boost") && !str.Contains("Tail") ? Tab.Boost :
-                str.Contains("Pulse") || str.Contains("Bullet") ? Tab.Spawners :
-                str.Contains("Tail") ? Tab.Tail : Tab.Custom;
-        }
-
-        public IEnumerator GenerateUI()
-        {
             try
             {
                 Dialog = new PlayerEditorDialog();
@@ -104,9 +70,38 @@ namespace BetterLegacy.Editor.Managers
                 modelSearchTerm = _val;
                 StartCoroutine(RefreshModels());
             });
-
-            yield break;
         }
+
+        #endregion
+
+        #region Values
+
+        public string modelSearchTerm;
+        public int playerModelIndex = 0;
+        public string CustomObjectID { get; set; }
+
+        public bool editControls;
+
+        public PlayerEditorDialog Dialog { get; set; }
+        public ContentPopup ModelsPopup { get; set; }
+
+        public Tab CurrentTab { get; set; } = Tab.Base;
+
+        public enum Tab
+        {
+            Global,
+            Base, // includes stretch
+            GUI,
+            Head,
+            Boost,
+            Spawners, // Bullet and Pulse
+            Tail, // All tail related parts go here
+            Custom
+        }
+
+        #endregion
+
+        #region Methods
 
         public void ShowTab(Tab tab)
         {
@@ -2023,6 +2018,17 @@ namespace BetterLegacy.Editor.Managers
 
             RenderObject(Dialog.CustomObjectTab, customObject);
 
+            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, animation =>
+            {
+                if (!PlayerManager.Players.TryGetAt(playerModelIndex, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.customObjects.TryFind(x => x.id == CustomObjectID, out RTPlayer.RTCustomPlayerObject customObject))
+                    return;
+
+                var runtimeAnimation = new RTAnimation("Custom Animation");
+                runtimeAnimation.SetDefaultOnComplete(player.RuntimePlayer.animationController);
+                player.RuntimePlayer.ApplyAnimation(runtimeAnimation, animation, customObject);
+                player.RuntimePlayer.animationController.Play(runtimeAnimation);
+            }));
+
             CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
         }
 
@@ -2877,6 +2883,6 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
         }
 
-        public Tab CurrentTab { get; set; } = Tab.Base;
+        #endregion
     }
 }

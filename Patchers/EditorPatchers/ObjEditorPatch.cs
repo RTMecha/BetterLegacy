@@ -9,6 +9,7 @@ using HarmonyLib;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers
@@ -33,54 +34,6 @@ namespace BetterLegacy.Patchers
                 }
 
                 CoreHelper.LogInit(__instance.className);
-
-                var beginDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, eventData =>
-                {
-                    var pointerEventData = (PointerEventData)eventData;
-                    __instance.DragStartPos = pointerEventData.position * EditorManager.inst.ScreenScaleInverse;
-                    if (pointerEventData.button == PointerEventData.InputButton.Middle)
-                    {
-                        ObjectEditor.inst.StartTimelineDrag();
-                        return;
-                    }
-
-                    __instance.SelectionBoxImage.gameObject.SetActive(true);
-                    __instance.SelectionRect = default;
-                });
-
-                var dragTrigger = TriggerHelper.CreateEntry(EventTriggerType.Drag, eventData =>
-                {
-                    if (ObjectEditor.inst.movingTimeline)
-                        return;
-
-                    var vector = ((PointerEventData)eventData).position * EditorManager.inst.ScreenScaleInverse;
-
-                    __instance.SelectionRect.xMin = vector.x < __instance.DragStartPos.x ? vector.x : __instance.DragStartPos.x;
-                    __instance.SelectionRect.xMax = vector.x < __instance.DragStartPos.x ? __instance.DragStartPos.x : vector.x;
-                    __instance.SelectionRect.yMin = vector.y < __instance.DragStartPos.y ? vector.y : __instance.DragStartPos.y;
-                    __instance.SelectionRect.yMax = vector.y < __instance.DragStartPos.y ? __instance.DragStartPos.y : vector.y;
-
-                    __instance.SelectionBoxImage.rectTransform.offsetMin = __instance.SelectionRect.min;
-                    __instance.SelectionBoxImage.rectTransform.offsetMax = __instance.SelectionRect.max;
-                });
-
-                var endDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.EndDrag, eventData =>
-                {
-                    var pointerEventData = (PointerEventData)eventData;
-                    __instance.DragEndPos = pointerEventData.position;
-                    __instance.SelectionBoxImage.gameObject.SetActive(false);
-
-                    if (ObjectEditor.inst.movingTimeline)
-                    {
-                        ObjectEditor.inst.movingTimeline = false;
-                        return;
-                    }
-
-                    CoroutineHelper.StartCoroutine(ObjectEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)));
-                });
-
-                foreach (var gameObject in __instance.SelectionArea)
-                    TriggerHelper.AddEventTriggers(gameObject, beginDragTrigger, dragTrigger, endDragTrigger);
             }
 
             EditorHelper.LogAvailableInstances<ObjEditor>();
@@ -107,10 +60,10 @@ namespace BetterLegacy.Patchers
             var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
             if (__1)
             {
-                ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
-                ObjectEditor.inst.RenderKeyframes(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+                ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
             }
-            float f = ObjEditor.inst.objTimelineSlider.value;
+            float f = ObjectEditor.inst.Dialog.Timeline.Cursor.value;
             if (AudioManager.inst.CurrentAudioSource.clip != null)
             {
                 float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
@@ -127,8 +80,8 @@ namespace BetterLegacy.Patchers
         public static IEnumerator UpdateTimelineScrollRect(float _delay, float _val)
         {
             yield return CoroutineHelper.Seconds(_delay);
-            if (ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.TimelinePosScrollbar)
-                ObjectEditor.inst.Dialog.TimelinePosScrollbar.value = _val;
+            if (ObjectEditor.inst.Dialog && ObjectEditor.inst.Dialog.Timeline && ObjectEditor.inst.Dialog.Timeline.PosScrollbar)
+                ObjectEditor.inst.Dialog.Timeline.PosScrollbar.value = _val;
 
             yield break;
         }
@@ -190,7 +143,7 @@ namespace BetterLegacy.Patchers
         static bool CopyAllSelectedEventsPrefix()
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.CopyAllSelectedEvents(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                ObjectEditor.inst.Dialog.Timeline.CopyAllSelectedEvents(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -215,7 +168,7 @@ namespace BetterLegacy.Patchers
         static bool SetCurrentKeyframePrefix(int __0, bool __1 = false)
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.SetCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
+                ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
 
@@ -224,7 +177,7 @@ namespace BetterLegacy.Patchers
         static bool SetCurrentKeyframePrefix(int __0, int __1, bool __2 = false, bool __3 = false)
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.SetCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
+                ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
 
@@ -233,7 +186,7 @@ namespace BetterLegacy.Patchers
         static bool AddCurrentKeyframePrefix(int __0, bool __1 = false)
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.AddCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
+                ObjectEditor.inst.Dialog.Timeline.AddCurrentKeyframe(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>(), __0, __1);
             return false;
         }
 
@@ -242,7 +195,7 @@ namespace BetterLegacy.Patchers
         static bool ResizeKeyframeTimelinePrefix()
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.ResizeKeyframeTimeline(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -250,9 +203,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetAudioTimePrefix(float __0)
         {
-            if (Instance.changingTime)
+            if (ObjectEditor.inst.Dialog.Timeline.changingTime)
             {
-                Instance.newTime = __0;
+                ObjectEditor.inst.Dialog.Timeline.time = __0;
                 AudioManager.inst.SetMusicTime(Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
             }
             return false;
@@ -271,7 +224,7 @@ namespace BetterLegacy.Patchers
         static bool CreateKeyframesPrefix()
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.CreateKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                ObjectEditor.inst.Dialog.Timeline.CreateKeyframes(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -343,7 +296,7 @@ namespace BetterLegacy.Patchers
         static bool UpdateKeyframeOrderPrefix(bool _setCurrent = true)
         {
             if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                ObjectEditor.inst.UpdateKeyframeOrder(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
+                ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>());
             return false;
         }
 
@@ -359,7 +312,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool posCalcPrefix(ref float __result, float __0)
         {
-            __result = ObjectEditor.TimeTimelineCalc(__0);
+            __result = KeyframeTimeline.TimeTimelineCalc(__0);
             return false;
         }
 
@@ -367,7 +320,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool timeCalcPrefix(ref float __result)
         {
-            __result = ObjectEditor.MouseTimelineCalc();
+            __result = ObjectEditor.inst.Dialog.Timeline.MouseTimelineCalc();
             return false;
         }
 
@@ -451,7 +404,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(ref float value)
         {
-            ObjectEditor.inst.SetTimelineZoom(value);
+            KeyframeTimeline.CurrentTimeline?.SetTimelineZoom(value);
             return false;
         }
     }
