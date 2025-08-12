@@ -1,4 +1,12 @@
-﻿# snapshot-2025.8.11 - (pre-1.8.0) [Aug 12, 2025]
+﻿# ???
+## Features
+### Editor
+- You can now edit Player object animations by going to the Custom tab in the Player Editor, selecting a custom object and clicking "View Animations".
+- Added "setCustomObjectIdle" modifier. Player animations no longer override the idle state of the object.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.11 - (pre-1.8.0) [Aug 12, 2025]
 ## Fixes
 - Hotfix for uploader data breaking saves.
 
