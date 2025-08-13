@@ -1,4 +1,18 @@
-﻿# snapshot-2025.8.13 - (pre-1.8.0) [Aug 13, 2025]
+﻿# ???
+## Features
+### Core
+- Added player spawn animation.
+
+### Editor
+- You can now return to the Player Editor from the Animation Editor by clicking the "Return" button.
+
+## Fixes
+- Fixed Player animations not playing if there is no idle animation.
+- Fixed searching Custom Player Objects not working.
+
+------------------------------------------------------------------------------------------
+
+# snapshot-2025.8.13 - (pre-1.8.0) [Aug 13, 2025]
 ## Changes
 ### Editor
 - Players now respawn when UpdateEverything keybind is used.
