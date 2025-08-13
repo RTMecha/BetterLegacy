@@ -3935,6 +3935,15 @@ namespace BetterLegacy.Editor.Data.Elements
                         if (!customPlayerObject)
                             break;
 
+                        ITransformable transformable = null;
+                        var player = PlayerEditor.inst.CurrentPlayer;
+                        if (player && player.RuntimePlayer)
+                        {
+                            var id = modifier.GetValue(0);
+                            if (!string.IsNullOrEmpty(id))
+                                transformable = player.RuntimePlayer.customObjects.Find(x => x.id == id);
+                        }
+
                         var referenceIDContextMenu = referenceID.GetOrAddComponent<ContextClickable>();
                         referenceIDContextMenu.onClick = pointerEventData =>
                         {
@@ -3947,7 +3956,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
                                     {
                                         referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
-                                    });
+                                    }, transformable);
                                 }));
                         };
 
@@ -3960,6 +3969,15 @@ namespace BetterLegacy.Editor.Data.Elements
                         if (!customPlayerObject)
                             break;
 
+                        ITransformable transformable = null;
+                        var player = PlayerEditor.inst.CurrentPlayer;
+                        if (player && player.RuntimePlayer)
+                        {
+                            var id = modifier.GetValue(0);
+                            if (!string.IsNullOrEmpty(id))
+                                transformable = player.RuntimePlayer.customObjects.Find(x => x.id == id);
+                        }
+
                         var referenceIDContextMenu = referenceID.GetOrAddComponent<ContextClickable>();
                         referenceIDContextMenu.onClick = pointerEventData =>
                         {
@@ -3972,7 +3990,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     AnimationEditor.inst.OpenPopup(customPlayerObject.animations, PlayerEditor.inst.PlayAnimation, animation =>
                                     {
                                         referenceID.transform.Find("Input").GetComponent<InputField>().text = animation.ReferenceID;
-                                    });
+                                    }, transformable);
                                 }));
                         };
 

@@ -80,6 +80,7 @@ namespace BetterLegacy.Editor.Managers
         public int playerModelIndex = 0;
         public string CustomObjectID { get; set; }
 
+        public PAPlayer CurrentPlayer => PlayerManager.Players.TryGetAt(playerModelIndex, out PAPlayer player) ? player : null;
         public PlayerModel CurrentModel => PlayersData.Current.GetPlayerModel(playerModelIndex);
         public CustomPlayerObject CurrentCustomObject => !string.IsNullOrEmpty(CustomObjectID) ? CurrentModel.customObjects.Find(x => x.id == CustomObjectID) : null;
 
@@ -2021,7 +2022,16 @@ namespace BetterLegacy.Editor.Managers
 
             RenderObject(Dialog.CustomObjectTab, customObject);
 
-            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, PlayAnimation));
+            ITransformable transformable = null;
+            var player = CurrentPlayer;
+            if (player && player.RuntimePlayer)
+            {
+                var id = CustomObjectID;
+                if (!string.IsNullOrEmpty(id))
+                    transformable = player.RuntimePlayer.customObjects.Find(x => x.id == id);
+            }
+
+            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, PlayAnimation, currentObject: transformable));
 
             CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
         }
