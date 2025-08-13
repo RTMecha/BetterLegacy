@@ -175,29 +175,50 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Global
 
             GlobalTab.RespawnPlayers = SetupButton("Respawn Players", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.RespawnPlayers.ShowInDefault = true;
             GlobalTab.UpdateProperties = SetupButton("Update Properties", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.UpdateProperties.ShowInDefault = true;
 
             GlobalTab.SpawnPlayers = SetupBool("Spawn Players", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.SpawnPlayers.ShowInDefault = true;
             GlobalTab.RespawnImmediately = SetupBool("Respawn Immediately", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.RespawnImmediately.ShowInDefault = true;
             GlobalTab.AllowCustomPlayerModels = SetupBool("Allow Custom Player Models", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.AllowCustomPlayerModels.ShowInDefault = true;
             GlobalTab.AllowPlayerModelControls = SetupBool("Allow Player Model Controls", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.AllowPlayerModelControls.ShowInDefault = true;
 
             GlobalTab.Speed = SetupNumber("Global Speed", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.Speed.ShowInDefault = true;
             GlobalTab.LockBoost = SetupBool("Global Lock Boost", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LockBoost.ShowInDefault = true;
             GlobalTab.GameMode = SetupDropdown("Global Gamemode", CoreHelper.StringToOptionData("Regular", "Platformer"), PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.GameMode.ShowInDefault = true;
             GlobalTab.MaxHealth = SetupNumber("Global Max Health", PlayerEditor.Tab.Global, ValueType.Int, editorTab: GlobalTab);
+            GlobalTab.MaxHealth.ShowInDefault = true;
             GlobalTab.MaxJumpCount = SetupNumber("Global Max Jump Count", PlayerEditor.Tab.Global, ValueType.Int, editorTab: GlobalTab);
+            GlobalTab.MaxJumpCount.ShowInDefault = true;
             GlobalTab.MaxJumpBoostCount = SetupNumber("Global Max Jump Boost Count", PlayerEditor.Tab.Global, ValueType.Int, editorTab: GlobalTab);
+            GlobalTab.MaxJumpBoostCount.ShowInDefault = true;
             GlobalTab.JumpGravity = SetupNumber("Global Jump Gravity", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.JumpGravity.ShowInDefault = true;
             GlobalTab.JumpIntensity = SetupNumber("Global Jump Intensity", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.JumpIntensity.ShowInDefault = true;
 
             GlobalTab.LimitPlayer = SetupBool("Limit Player", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LimitPlayer.ShowInDefault = true;
             GlobalTab.LimitMoveSpeed = SetupVector2("Limit Move Speed", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LimitMoveSpeed.ShowInDefault = true;
             GlobalTab.LimitBoostSpeed = SetupVector2("Limit Boost Speed", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LimitBoostSpeed.ShowInDefault = true;
             GlobalTab.LimitBoostCooldown = SetupVector2("Limit Boost Cooldown", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LimitBoostCooldown.ShowInDefault = true;
             GlobalTab.LimitBoostMinTime = SetupVector2("Limit Boost Min Time", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LimitBoostMinTime.ShowInDefault = true;
             GlobalTab.LimitBoostMaxTime = SetupVector2("Limit Boost Max Time", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LimitBoostMaxTime.ShowInDefault = true;
             GlobalTab.LimitHitCooldown = SetupVector2("Limit Hit Cooldown", PlayerEditor.Tab.Global, editorTab: GlobalTab);
+            GlobalTab.LimitHitCooldown.ShowInDefault = true;
 
             #endregion
 
