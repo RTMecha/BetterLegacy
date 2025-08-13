@@ -81,5 +81,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="axis">The axis of the transform value to get.</param>
         /// <param name="value">Value to assign to the offset's axis.</param>
         public void SetTransform(int type, int axis, float value);
+
+        /// <summary>
+        /// Interpolates an animation onto the object.
+        /// </summary>
+        /// <param name="animation">Animation to apply.</param>
+        /// <param name="t">Time to interpolate.</param>
+        public void InterpolateAnimation(PAAnimation animation, float t);
     }
 }

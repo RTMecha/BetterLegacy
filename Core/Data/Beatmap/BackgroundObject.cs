@@ -754,6 +754,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         public IPrefabable AsPrefabable() => this;
         public ITransformable AsTransformable() => this;
 
+        public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
+
         #region Evaluation
 
         public void SetOtherObjectVariables(Dictionary<string, float> variables)

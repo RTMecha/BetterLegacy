@@ -1893,6 +1893,34 @@ namespace BetterLegacy.Core
         /// </summary>
         public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, modifyable.ReferenceType));
 
+        /// <summary>
+        /// Interpolates an animation onto the objects' transform offset.
+        /// </summary>
+        /// <param name="animation">Animation to apply.</param>
+        /// <param name="t">Time to interpolate.</param>
+        public static void InterpolateAnimationOffset(this ITransformable transformable, PAAnimation animation, float t)
+        {
+            var allEvents = animation.Events;
+            for (int i = 0; i < 3; i++)
+            {
+                if (i >= allEvents.Count)
+                    break;
+
+                var events = animation.GetEventKeyframes(i);
+                if (events.IsEmpty())
+                    continue;
+
+                if (i == 2)
+                {
+                    transformable.SetTransform(i, 2, animation.Interpolate(i, 0, t));
+                    continue;
+                }
+
+                for (int j = 0; j < events[0].values.Length; j++)
+                    transformable.SetTransform(i, j, animation.Interpolate(i, j, t));
+            }
+        }
+
         #region Beatmap
 
         /// <summary>

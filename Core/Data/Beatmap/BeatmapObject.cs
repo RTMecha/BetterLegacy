@@ -1878,6 +1878,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
+        public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
+
         #endregion
 
         #region Evaluation
