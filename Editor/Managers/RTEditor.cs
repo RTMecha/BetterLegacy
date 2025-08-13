@@ -2264,7 +2264,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 case EditorDialog.OBJECT_EDITOR: {
                         ObjectEditor.inst.PasteKeyframes();
-                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(KeyframeTimeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
                 case EditorDialog.BACKGROUND_EDITOR: {
@@ -2286,7 +2286,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         AnimationEditor.inst.Dialog.Timeline.PasteKeyframes(AnimationEditor.inst.CurrentAnimation);
-                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
+                        EditorManager.inst.DisplayNotification($"Pasted Object Keyframe{(KeyframeTimeline.copiedObjectKeyframes.Count > 1 ? "s" : "")}", 1f, EditorManager.NotificationType.Success);
                         break;
                     }
             }

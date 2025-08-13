@@ -16,6 +16,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
+using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Timeline;
 using BetterLegacy.Editor.Managers;
 
@@ -334,7 +335,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void PasteKeyframes()
         {
-            var kfs = ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes;
+            var kfs = KeyframeTimeline.copiedObjectKeyframes;
 
             if (kfs.IsEmpty())
             {
@@ -375,7 +376,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void RepeatPasteKeyframes(int repeatCount, float repeatOffsetTime)
         {
-            var kfs = ObjectEditor.inst.Dialog.Timeline.copiedObjectKeyframes;
+            var kfs = KeyframeTimeline.copiedObjectKeyframes;
 
             if (kfs.IsEmpty())
             {

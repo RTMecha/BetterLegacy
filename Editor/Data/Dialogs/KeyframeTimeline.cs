@@ -334,7 +334,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public int currentKeyframeType;
         public int currentKeyframeIndex;
 
-        public List<TimelineKeyframe> copiedObjectKeyframes = new List<TimelineKeyframe>();
+        public static List<TimelineKeyframe> copiedObjectKeyframes = new List<TimelineKeyframe>();
 
         public EventKeyframe CopiedPositionData { get; set; }
         public EventKeyframe CopiedScaleData { get; set; }
@@ -452,6 +452,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 eventKeyframe.time -= num;
 
                 copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = type, Index = index, isObjectKeyframe = true });
+            }
+        }
+
+        public static void CopyAllKeyframes(IAnimatable animatable)
+        {
+            copiedObjectKeyframes.Clear();
+
+            var events = animatable.Events;
+            for (int i = 0; i < events.Count; i++)
+            {
+                for (int j = 0; j < events[i].Count; j++)
+                {
+                    var eventKeyframe = events[i][j];
+                    copiedObjectKeyframes.Add(new TimelineKeyframe(eventKeyframe) { Type = i, Index = j, isObjectKeyframe = true });
+                }
             }
         }
 
