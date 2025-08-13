@@ -25,6 +25,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Components;
+using BetterLegacy.Editor.Managers;
 
 using Ease = BetterLegacy.Core.Animation.Ease;
 
@@ -2197,6 +2198,9 @@ namespace BetterLegacy.Core.Components.Player
                     if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != customObject.currentIdleAnimation)
                         return;
 
+                    if (CoreHelper.InEditor && AnimationEditor.inst && AnimationEditor.inst.CurrentAnimation && AnimationEditor.inst.CurrentAnimation.id == animation.id)
+                        return;
+
                     var length = animation.GetLength();
                     var origPos = reference.position;
                     var origSca = reference.scale;
@@ -2768,6 +2772,8 @@ namespace BetterLegacy.Core.Components.Player
             circleCollider2D.isTrigger = enabled;
             polygonCollider2D.isTrigger = enabled;
         }
+
+        public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
 
         #region Particles
 
@@ -3829,6 +3835,7 @@ namespace BetterLegacy.Core.Components.Player
 
             public void ResetOffsets()
             {
+                anim = ObjectTransform.Default;
                 positionOffset = Vector3.zero;
                 scaleOffset = Vector3.zero;
                 rotationOffset = Vector3.zero;
@@ -3895,6 +3902,39 @@ namespace BetterLegacy.Core.Components.Player
             public IPrefabable AsPrefabable() => null;
 
             public ITransformable AsTransformable() => this;
+
+            public void InterpolateAnimation(PAAnimation animation, float t)
+            {
+                var allEvents = animation.Events;
+                for (int i = 0; i < 3; i++)
+                {
+                    if (i >= allEvents.Count)
+                        break;
+
+                    var events = animation.GetEventKeyframes(i);
+                    if (events.IsEmpty())
+                        continue;
+
+                    switch (i)
+                    {
+                        case 0: {
+                                anim.position.x = animation.Interpolate(i, 0, t);
+                                anim.position.y = animation.Interpolate(i, 1, t);
+                                anim.position.z = animation.Interpolate(i, 2, t);
+                                break;
+                            }
+                        case 1: {
+                                anim.scale.x = animation.Interpolate(i, 0, t);
+                                anim.scale.y = animation.Interpolate(i, 1, t);
+                                break;
+                            }
+                        case 2: {
+                                anim.rotation = animation.Interpolate(i, 0, t);
+                                break;
+                            }
+                    }
+                }
+            }
 
             public void SetCustomActive(bool active) => this.active = active;
         }
