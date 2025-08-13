@@ -306,7 +306,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (animatable is BeatmapObject beatmapObject)
                 ObjectEditor.inst.RenderDialog(beatmapObject);
             if (animatable is PAAnimation animation)
-                AnimationEditor.inst.RenderDialog(animation);
+                AnimationEditor.inst.RenderDialog(animation, AnimationEditor.inst.currentOnReturn);
         }
     }
 

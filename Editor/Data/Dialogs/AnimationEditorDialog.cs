@@ -21,6 +21,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Top Properties
 
+        public Button ReturnButton { get; set; }
         public RectTransform IDBase { get; set; }
         public Text IDText { get; set; }
 
@@ -101,6 +102,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             panel.Find("text").GetComponent<Text>().text = "- Animation Editor -";
 
             CoreHelper.DestroyChildren(Content);
+
+            var returnButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "return");
+            var returnButtonStorage = returnButton.GetComponent<FunctionButtonStorage>();
+            ReturnButton = returnButtonStorage.button;
+            returnButtonStorage.label.text = "Return";
+            EditorThemeManager.AddSelectable(ReturnButton, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(returnButtonStorage.label, ThemeGroup.Function_2_Text);
 
             SetupID();
             SetupReference();

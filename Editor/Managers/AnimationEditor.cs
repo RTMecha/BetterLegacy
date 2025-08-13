@@ -122,6 +122,8 @@ namespace BetterLegacy.Editor.Managers
 
         public ITransformable CurrentObject { get; set; }
 
+        public Action currentOnReturn;
+
         #endregion
 
         #region Methods
@@ -149,15 +151,20 @@ namespace BetterLegacy.Editor.Managers
 
         #region Editor
 
-        public void OpenDialog(PAAnimation animation)
+        public void OpenDialog(PAAnimation animation, Action onReturn = null)
         {
             Dialog.Open();
-            RenderDialog(animation);
+            RenderDialog(animation, onReturn);
         }
 
-        public void RenderDialog(PAAnimation animation)
+        public void RenderDialog(PAAnimation animation, Action onReturn = null)
         {
+            currentOnReturn = onReturn;
+
             CurrentAnimation = animation;
+
+            Dialog.ReturnButton.gameObject.SetActive(onReturn != null);
+            Dialog.ReturnButton.onClick.NewListener(() => onReturn?.Invoke());
 
             Dialog.IDText.text = $"ID: {animation.id}";
             var idClickable = Dialog.IDBase.gameObject.GetOrAddComponent<Clickable>();
@@ -177,6 +184,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction(PlayerModel.IDLE_ANIM, () => Dialog.ReferenceField.text = PlayerModel.IDLE_ANIM),
+                    new ButtonFunction(PlayerModel.SPAWN_ANIM, () => Dialog.ReferenceField.text = PlayerModel.SPAWN_ANIM),
                     new ButtonFunction(PlayerModel.BOOST_ANIM, () => Dialog.ReferenceField.text = PlayerModel.BOOST_ANIM),
                     new ButtonFunction(PlayerModel.HEAL_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HEAL_ANIM),
                     new ButtonFunction(PlayerModel.HIT_ANIM, () => Dialog.ReferenceField.text = PlayerModel.HIT_ANIM),
@@ -245,10 +253,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
-        public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null)
+        public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null)
         {
             Popup.Open();
-            RenderPopup(animations, onPlay, onSelect, currentObject);
+            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
         }
 
         /// <summary>
@@ -256,12 +264,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
-        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null)
+        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null, Action onReturn = null)
         {
             CurrentObject = currentObject;
 
             Popup.ClearContent();
-            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect, currentObject));
+            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect, currentObject, onReturn));
 
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(Popup.Content);
             add.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
@@ -278,7 +286,7 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Create New", () =>
                         {
                             animations.Add(new PAAnimation("New Animation", "This is the default description!"));
-                            RenderPopup(animations, onPlay, onSelect, currentObject);
+                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                         }),
                         new ButtonFunction("Create From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
                         {
@@ -292,7 +300,7 @@ namespace BetterLegacy.Editor.Managers
                             var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
                             animation.CopyAnimatableData(beatmapObject);
                             animations.Add(animation);
-                            RenderPopup(animations, onPlay, onSelect, currentObject);
+                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                         }),
                         new ButtonFunction(true),
                         new ButtonFunction("Copy All", () =>
@@ -309,14 +317,14 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             animations.AddRange(copiedAnimations.Select(x => x.Copy()));
-                            RenderPopup(animations, onPlay, onSelect, currentObject);
+                            RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                             EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
                         }));
                     return;
                 }
 
                 animations.Add(new PAAnimation("New Animation", "This is the default description!"));
-                RenderPopup(animations, onPlay, onSelect, currentObject);
+                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
             };
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
@@ -340,7 +348,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var buttonFunctions = new List<ButtonFunction>()
                         {
-                            new ButtonFunction("Edit", () => OpenDialog(animation)),
+                            new ButtonFunction("Edit", () => OpenDialog(animation, onReturn)),
                             new ButtonFunction("Play", () =>
                             {
                                 if (onPlay == null)
@@ -355,7 +363,7 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
                             {
                                 animations.RemoveAt(index);
-                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                                 RTEditor.inst.HideWarningPopup();
                             }, RTEditor.inst.HideWarningPopup)),
                             new ButtonFunction(true),
@@ -384,7 +392,7 @@ namespace BetterLegacy.Editor.Managers
                                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
                                 animation.CopyAnimatableData(beatmapObject);
                                 if (Dialog.IsCurrent && Dialog.Timeline.CurrentObject == animation)
-                                    RenderDialog(animation);
+                                    RenderDialog(animation, onReturn);
                             }),
                             new ButtonFunction(true),
                             new ButtonFunction("Copy", () =>
@@ -407,7 +415,7 @@ namespace BetterLegacy.Editor.Managers
                                 }
 
                                 animations.AddRange(copiedAnimations.Select(x => x.Copy()));
-                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                                 EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
                             }),
                             new ButtonFunction(true),
@@ -422,7 +430,7 @@ namespace BetterLegacy.Editor.Managers
                                 }
 
                                 animations.Move(index, index - 1);
-                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                             }),
                             new ButtonFunction("Move Down", () =>
                             {
@@ -433,17 +441,17 @@ namespace BetterLegacy.Editor.Managers
                                 }
 
                                 animations.Move(index, index + 1);
-                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                             }),
                             new ButtonFunction("Move to Start", () =>
                             {
                                 animations.Move(index, 0);
-                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                             }),
                             new ButtonFunction("Move to End", () =>
                             {
                                 animations.Move(index, animations.Count - 1);
-                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
                             }),
                         };
 
@@ -457,7 +465,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    OpenDialog(animation);
+                    OpenDialog(animation, onReturn);
                 };
 
                 storage.image.sprite = EditorSprites.PlaySprite;
