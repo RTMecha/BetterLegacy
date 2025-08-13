@@ -409,12 +409,12 @@ namespace BetterLegacy.Editor.Data.Popups
         /// <param name="close">Runs when the user clicks the close popup button.</param>
         public void UpdateCloseFunction(Action close)
         {
-            CloseButton.onClick.ClearAll();
-            CloseButton.onClick.AddListener(() =>
-            {
-                Close();
-                close?.Invoke();
-            });
+            if (CloseButton)
+                CloseButton.onClick.NewListener(() =>
+                {
+                    Close();
+                    close?.Invoke();
+                });
         }
 
         /// <summary>
@@ -464,6 +464,16 @@ namespace BetterLegacy.Editor.Data.Popups
                 CoreHelper.LogException(ex);
                 customEditorAnimation = null;
             }
+        }
+
+        /// <summary>
+        /// Sets the editor popup title.
+        /// </summary>
+        /// <param name="title">Title of the editor popup.</param>
+        public void SetTitle(string title)
+        {
+            this.title = title;
+            RenderTitle();
         }
 
         /// <summary>

@@ -2031,7 +2031,11 @@ namespace BetterLegacy.Editor.Managers
                     transformable = player.RuntimePlayer.customObjects.Find(x => x.id == id);
             }
 
-            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, PlayAnimation, currentObject: transformable));
+            Dialog.CustomObjectTab.ViewAnimations.Button.onClick.NewListener(() => AnimationEditor.inst.OpenPopup(customObject.animations, PlayAnimation, currentObject: transformable, onReturn: () =>
+            {
+                Dialog.Open();
+                CoroutineHelper.StartCoroutine(RefreshEditor());
+            }));
 
             CoroutineHelper.StartCoroutine(Dialog.CustomObjectTab.Modifiers.Modifiers.RenderModifiers(customObject));
         }
@@ -2049,6 +2053,7 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshModels(Action<PlayerModel> onSelect = null)
         {
+            ModelsPopup.SetTitle("Player Models");
             ModelsPopup.ClearContent();
             ModelsPopup.SearchField.onValueChanged.NewListener(_val =>
             {
@@ -2177,7 +2182,13 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshCustomObjects()
         {
+            ModelsPopup.SetTitle("Custom Objects");
             ModelsPopup.ClearContent();
+            ModelsPopup.SearchField.onValueChanged.NewListener(_val =>
+            {
+                modelSearchTerm = _val;
+                StartCoroutine(RefreshCustomObjects());
+            });
 
             var currentModel = PlayersData.Current.GetPlayerModel(playerModelIndex);
 
@@ -2212,6 +2223,9 @@ namespace BetterLegacy.Editor.Managers
             foreach (var customObject in currentModel.customObjects)
             {
                 int index = num;
+                if (!RTString.SearchString(modelSearchTerm, customObject.name))
+                    continue;
+
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.Content, customObject.name);
                 var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
