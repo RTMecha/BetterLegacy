@@ -166,6 +166,8 @@ namespace BetterLegacy.Editor.Managers
         {
             if (inputFieldStorage.inputField)
                 AddInputField(inputFieldStorage.inputField);
+            if (inputFieldStorage.subButton)
+                AddSelectable(inputFieldStorage.subButton, ThemeGroup.Function_2, false);
             if (inputFieldStorage.addButton)
                 AddSelectable(inputFieldStorage.addButton, ThemeGroup.Function_2, false);
             if (inputFieldStorage.leftGreaterButton)
@@ -184,6 +186,8 @@ namespace BetterLegacy.Editor.Managers
         {
             if (inputFieldStorage.inputField)
                 ApplyInputField(inputFieldStorage.inputField);
+            if (inputFieldStorage.subButton)
+                ApplySelectable(inputFieldStorage.subButton, ThemeGroup.Function_2, false);
             if (inputFieldStorage.addButton)
                 ApplySelectable(inputFieldStorage.addButton, ThemeGroup.Function_2, false);
             if (inputFieldStorage.leftGreaterButton)
