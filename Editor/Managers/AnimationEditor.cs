@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,7 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Popups;
@@ -28,9 +30,7 @@ namespace BetterLegacy.Editor.Managers
     {
         /*
          TOOD:
-        - Copy & Paste animations
-        - Autoplay animations, similar to animating beatmap objects at runtime
-        - Animation library
+        - Global animation library
          */
 
         #region Init
@@ -53,6 +53,14 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog = new AnimationEditorDialog();
                 Dialog.Init();
+                Dialog.GameObject.AddComponent<ActiveState>().onStateChanged = enabled =>
+                {
+                    if (!enabled)
+                    {
+                        CurrentObject = null;
+                        CurrentAnimation = null;
+                    }    
+                };
 
                 Popup = RTEditor.inst.GeneratePopup(EditorPopup.ANIMATIONS_POPUP, "Animations", Vector2.zero, new Vector2(600f, 400f));
 
@@ -73,6 +81,33 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        void Update()
+        {
+            if (CurrentObject == null || !Dialog.IsCurrent || !CurrentAnimation)
+                return;
+
+            var t = Dialog.Timeline.Cursor.value;
+            var allEvents = CurrentAnimation.Events;
+            for (int i = 0; i < 3; i++)
+            {
+                if (i >= allEvents.Count)
+                    break;
+
+                var events = CurrentAnimation.GetEventKeyframes(i);
+                if (events.IsEmpty())
+                    continue;
+
+                if (i == 2)
+                {
+                    CurrentObject.SetTransform(i, 2, CurrentAnimation.Interpolate(i, 0, t));
+                    continue;
+                }
+
+                for (int j = 0; j < events[0].values.Length; j++)
+                    CurrentObject.SetTransform(i, j, CurrentAnimation.Interpolate(i, j, t));
+            }
+        }
+
         #endregion
 
         #region Values
@@ -82,6 +117,10 @@ namespace BetterLegacy.Editor.Managers
         public ContentPopup Popup { get; set; }
 
         public PAAnimation CurrentAnimation { get; set; }
+
+        public List<PAAnimation> copiedAnimations = new List<PAAnimation>();
+
+        public ITransformable CurrentObject { get; set; }
 
         #endregion
 
@@ -206,10 +245,10 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
-        public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null)
+        public void OpenPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null)
         {
             Popup.Open();
-            RenderPopup(animations, onPlay, onSelect);
+            RenderPopup(animations, onPlay, onSelect, currentObject);
         }
 
         /// <summary>
@@ -217,10 +256,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         /// <param name="animations">List of animations to display.</param>
         /// <param name="onPlay">Function to run when the user wants to play the animation.</param>
-        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null)
+        public void RenderPopup(List<PAAnimation> animations, Action<PAAnimation> onPlay = null, Action<PAAnimation> onSelect = null, ITransformable currentObject = null)
         {
+            CurrentObject = currentObject;
+
             Popup.ClearContent();
-            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect));
+            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect, currentObject));
 
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(Popup.Content);
             add.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
@@ -237,30 +278,45 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Create New", () =>
                         {
                             animations.Add(new PAAnimation("New Animation", "This is the default description!"));
-                            RenderPopup(animations, onPlay, onSelect);
+                            RenderPopup(animations, onPlay, onSelect, currentObject);
                         }),
-                        new ButtonFunction("Create From Object", () =>
+                        new ButtonFunction("Create From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
                         {
-                            EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                            if (!timelineObject.isBeatmapObject)
                             {
-                                if (!timelineObject.isBeatmapObject)
-                                {
-                                    EditorManager.inst.DisplayNotification("Cannot apply animation from non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
-                                    return;
-                                }
+                                EditorManager.inst.DisplayNotification("Cannot apply animation from non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
 
-                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
-                                animation.CopyAnimatableData(beatmapObject);
-                                animations.Add(animation);
-                                RenderPopup(animations, onPlay, onSelect);
-                            };
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            var animation = new PAAnimation(beatmapObject.name, "This is the default description!");
+                            animation.CopyAnimatableData(beatmapObject);
+                            animations.Add(animation);
+                            RenderPopup(animations, onPlay, onSelect, currentObject);
+                        }),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy All", () =>
+                        {
+                            copiedAnimations = new List<PAAnimation>(animations.Select(x => x.Copy()));
+                            EditorManager.inst.DisplayNotification($"Copied all animations.", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonFunction("Paste", () =>
+                        {
+                            if (copiedAnimations.IsEmpty())
+                            {
+                                EditorManager.inst.DisplayNotification($"No copied animations yet!", 2F, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            animations.AddRange(copiedAnimations.Select(x => x.Copy()));
+                            RenderPopup(animations, onPlay, onSelect, currentObject);
+                            EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
                         }));
                     return;
                 }
 
                 animations.Add(new PAAnimation("New Animation", "This is the default description!"));
-                RenderPopup(animations, onPlay, onSelect);
+                RenderPopup(animations, onPlay, onSelect, currentObject);
             };
 
             EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
@@ -283,62 +339,113 @@ namespace BetterLegacy.Editor.Managers
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
                         var buttonFunctions = new List<ButtonFunction>()
+                        {
+                            new ButtonFunction("Edit", () => OpenDialog(animation)),
+                            new ButtonFunction("Play", () =>
                             {
-                                new ButtonFunction("Edit", () =>
+                                if (onPlay == null)
                                 {
-                                    OpenDialog(animation);
-                                }),
-                                new ButtonFunction("Play", () =>
-                                {
-                                    if (onPlay == null)
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Cannot play the animation as no object is associated with it.", 2f, EditorManager.NotificationType.Warning);
-                                        return;
-                                    }
+                                    EditorManager.inst.DisplayNotification($"Cannot play the animation as no object is associated with it.", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
 
-                                    onPlay.Invoke(animation);
-                                    EditorManager.inst.DisplayNotification($"Played animation!", 2f, EditorManager.NotificationType.Success);
-                                }),
-                                new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
+                                onPlay.Invoke(animation);
+                                EditorManager.inst.DisplayNotification($"Played animation!", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this animation?", () =>
+                            {
+                                animations.RemoveAt(index);
+                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Apply To Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                            {
+                                if (!timelineObject.isBeatmapObject)
                                 {
-                                    animations.RemoveAt(index);
-                                    RenderPopup(animations, onPlay, onSelect);
-                                    RTEditor.inst.HideWarningPopup();
-                                }, RTEditor.inst.HideWarningPopup)),
-                                new ButtonFunction(true),
-                                new ButtonFunction("Apply To Object", () =>
-                                {
-                                    EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
-                                    {
-                                        if (!timelineObject.isBeatmapObject)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Cannot apply animation to non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
-                                            return;
-                                        }
+                                    EditorManager.inst.DisplayNotification("Cannot apply animation to non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
 
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        beatmapObject.CopyAnimatableData(animation);
-                                        if (ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.ID == beatmapObject.id)
-                                            ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
-                                    };
-                                }),
-                                new ButtonFunction("Copy From Object", () =>
+                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                beatmapObject.CopyAnimatableData(animation);
+                                if (ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.ID == beatmapObject.id)
+                                    ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
+                                RTLevel.Current.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                            }),
+                            new ButtonFunction("Copy From Object", () => EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
+                            {
+                                if (!timelineObject.isBeatmapObject)
                                 {
-                                    EditorTimeline.inst.onSelectTimelineObject = timelineObject =>
-                                    {
-                                        if (!timelineObject.isBeatmapObject)
-                                        {
-                                            EditorManager.inst.DisplayNotification("Cannot apply animation from non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
-                                            return;
-                                        }
+                                    EditorManager.inst.DisplayNotification("Cannot apply animation from non-beatmap object.", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
 
-                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                                        animation.CopyAnimatableData(beatmapObject);
-                                        if (Dialog.IsCurrent && Dialog.Timeline.CurrentObject == animation)
-                                            RenderDialog(animation);
-                                    };
-                                }),
-                            };
+                                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                animation.CopyAnimatableData(beatmapObject);
+                                if (Dialog.IsCurrent && Dialog.Timeline.CurrentObject == animation)
+                                    RenderDialog(animation);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Copy", () =>
+                            {
+                                copiedAnimations.Clear();
+                                copiedAnimations.Add(animation.Copy());
+                                EditorManager.inst.DisplayNotification($"Copied animation.", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonFunction("Copy All", () =>
+                            {
+                                copiedAnimations = new List<PAAnimation>(animations.Select(x => x.Copy()));
+                                EditorManager.inst.DisplayNotification($"Copied all animations.", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonFunction("Paste", () =>
+                            {
+                                if (copiedAnimations.IsEmpty())
+                                {
+                                    EditorManager.inst.DisplayNotification($"No copied animations yet!", 2F, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                animations.AddRange(copiedAnimations.Select(x => x.Copy()));
+                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                                EditorManager.inst.DisplayNotification($"Pasted animations.", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Copy Keyframes", () => KeyframeTimeline.CopyAllKeyframes(animation)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Move Up", () =>
+                            {
+                                if (index <= 0)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                animations.Move(index, index - 1);
+                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                            }),
+                            new ButtonFunction("Move Down", () =>
+                            {
+                                if (index >= animations.Count - 1)
+                                {
+                                    EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                animations.Move(index, index + 1);
+                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                            }),
+                            new ButtonFunction("Move to Start", () =>
+                            {
+                                animations.Move(index, 0);
+                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                            }),
+                            new ButtonFunction("Move to End", () =>
+                            {
+                                animations.Move(index, animations.Count - 1);
+                                RenderPopup(animations, onPlay, onSelect, currentObject);
+                            }),
+                        };
 
                         EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                         return;
