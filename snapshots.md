@@ -1,4 +1,7 @@
-﻿# snapshot-2025.8.12 - (pre-1.8.0) [Aug 13, 2025]
+﻿# ???
+- Fixed the currently selected Custom Player Object being removed when deleting a different custom object.
+
+# snapshot-2025.8.12 - (pre-1.8.0) [Aug 13, 2025]
 ## Features
 ### Editor
 - You can now edit Player object animations by going to the Custom tab in the Player Editor, selecting a custom object and clicking "View Animations".
