@@ -2235,7 +2235,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
                                 {
-                                    currentModel.customObjects.RemoveAll(x => x.id == CustomObjectID);
+                                    currentModel.customObjects.RemoveAt(index);
                                     StartCoroutine(RefreshCustomObjects());
                                     StartCoroutine(RefreshEditor());
                                     PlayerManager.UpdatePlayerModels();
@@ -2300,7 +2300,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", () =>
                     {
-                        currentModel.customObjects.RemoveAll(x => x.id == CustomObjectID);
+                        currentModel.customObjects.RemoveAt(index);
                         StartCoroutine(RefreshCustomObjects());
                         StartCoroutine(RefreshEditor());
                         PlayerManager.UpdatePlayerModels();
