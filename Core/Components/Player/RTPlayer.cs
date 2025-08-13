@@ -1357,8 +1357,8 @@ namespace BetterLegacy.Core.Components.Player
             if (playerNeedsUpdating)
             {
                 playerNeedsUpdating = false;
-                Spawn();
                 UpdateModel();
+                Spawn();
             }
         }
 
@@ -2191,6 +2191,7 @@ namespace BetterLegacy.Core.Components.Player
                     return;
                 }
 
+                bool hasIdle = false;
                 reference.animations.ForLoop(animation =>
                 {
                     if (string.IsNullOrEmpty(animation.ReferenceID) || animation.ReferenceID.ToLower().Remove(" ") != customObject.currentIdleAnimation)
@@ -2224,7 +2225,20 @@ namespace BetterLegacy.Core.Components.Player
                     }
                     else
                         customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z + customObject.anim.rotation);
+                    hasIdle = true;
                 });
+
+                // no idle animation was found so update transforms
+                if (!hasIdle)
+                {
+                    var origPos = reference.position;
+                    var origSca = reference.scale;
+                    var origRot = reference.rotation;
+
+                    customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z) + customObject.anim.position;
+                    customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
+                    customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z + customObject.anim.rotation);
+                }
             });
         }
 
@@ -3313,9 +3327,9 @@ namespace BetterLegacy.Core.Components.Player
             if (!reference || reference.animations == null || reference.animations.IsEmpty())
                 return;
 
-            for (int j = 0; j < reference.animations.Count; j++)
+            for (int i = 0; i < reference.animations.Count; i++)
             {
-                var animation = reference.animations[j];
+                var animation = reference.animations[i];
                 if (string.IsNullOrEmpty(animation.ReferenceID))
                     continue;
 
@@ -3323,6 +3337,12 @@ namespace BetterLegacy.Core.Components.Player
 
                 switch (animation.ReferenceID.ToLower().Remove(" "))
                 {
+                    case PlayerModel.SPAWN_ANIM: {
+                            if (!spawnAnimationCustom)
+                                spawnAnimationCustom = new RTAnimation("Player Spawn Custom Animation");
+                            runtimeAnim = spawnAnimationCustom;
+                            break;
+                        }
                     case PlayerModel.BOOST_ANIM: {
                             if (!boostAnimationCustom)
                                 boostAnimationCustom = new RTAnimation("Player Boost Custom Animation");
@@ -3384,7 +3404,7 @@ namespace BetterLegacy.Core.Components.Player
                     var positionKeyframes = ObjectConverter.GetVector3Keyframes(animation, animation.positionKeyframes, ObjectConverter.DefaultVector3Keyframe);
 
                     if (animation.transition && customObject.gameObject)
-                        positionKeyframes[0].SetValue(customObject.gameObject.transform.localPosition);
+                        positionKeyframes[0].SetValue(customObject.anim.position);
 
                     runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, pos =>
                     {
@@ -3397,7 +3417,7 @@ namespace BetterLegacy.Core.Components.Player
                     var scaleKeyframes = ObjectConverter.GetVector2Keyframes(animation, animation.scaleKeyframes, ObjectConverter.DefaultVector2Keyframe);
 
                     if (animation.transition && customObject.gameObject)
-                        scaleKeyframes[0].SetValue(customObject.gameObject.transform.localScale);
+                        scaleKeyframes[0].SetValue(customObject.anim.scale);
 
                     runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, sca =>
                     {
@@ -3410,7 +3430,7 @@ namespace BetterLegacy.Core.Components.Player
                     var rotationKeyframes = ObjectConverter.GetFloatKeyframes(animation, animation.rotationKeyframes, 0, ObjectConverter.DefaultFloatKeyframe);
 
                     if (animation.transition && customObject.gameObject)
-                        rotationKeyframes[0].SetValue(customObject.gameObject.transform.localEulerAngles.z);
+                        rotationKeyframes[0].SetValue(customObject.anim.rotation);
 
                     runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, rot =>
                     {

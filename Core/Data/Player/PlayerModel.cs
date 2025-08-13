@@ -227,6 +227,7 @@ namespace BetterLegacy.Core.Data.Player
         }
 
         public const string IDLE_ANIM = "idle";
+        public const string SPAWN_ANIM = "spawn";
         public const string BOOST_ANIM = "boost";
         public const string HEAL_ANIM = "heal";
         public const string HIT_ANIM = "hit";
