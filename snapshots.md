@@ -1,5 +1,13 @@
-﻿# ???
+﻿# snapshot-2025.8.13 - (pre-1.8.0) [Aug 13, 2025]
+## Changes
+### Editor
+- Players now respawn when UpdateEverything keybind is used.
+
+## Fixes
 - Fixed the currently selected Custom Player Object being removed when deleting a different custom object.
+- Fixed Player animations snapping and resetting when done. They now offset from the idle animation and stay at the last animated values until animated again.
+
+------------------------------------------------------------------------------------------
 
 # snapshot-2025.8.12 - (pre-1.8.0) [Aug 13, 2025]
 ## Features
