@@ -380,7 +380,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     }),
                     new ButtonFunction("Set Min", () =>
                     {
-                        RTEditor.inst.ShowNameEditor("Set minimum value", "Max", Display.min.ToString(), "Set", () =>
+                        RTEditor.inst.ShowNameEditor("Set minimum value", "Min", Display.min.ToString(), "Set", () =>
                         {
                             if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float min))
                                 return;
