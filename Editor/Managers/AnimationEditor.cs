@@ -53,17 +53,21 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog = new AnimationEditorDialog();
                 Dialog.Init();
+                // clear cached values when the editor closes.
                 Dialog.GameObject.AddComponent<ActiveState>().onStateChanged = enabled =>
                 {
                     if (!enabled)
                     {
+                        playing = false;
+                        CurrentObject?.ResetOffsets();
                         CurrentObject = null;
                         CurrentAnimation = null;
-                    }    
+                    }
                 };
 
                 Popup = RTEditor.inst.GeneratePopup(EditorPopup.ANIMATIONS_POPUP, "Animations", Vector2.zero, new Vector2(600f, 400f));
 
+                // allow for storing level animations.
                 EditorHelper.AddEditorDropdown("View Animations", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.PlaySprite, () =>
                 {
                     if (!EditorManager.inst.hasLoadedLevel)
@@ -86,77 +90,122 @@ namespace BetterLegacy.Editor.Managers
             if (CurrentObject == null || !Dialog.IsCurrent || !CurrentAnimation)
                 return;
 
-            var t = Dialog.Timeline.Cursor.value;
-            var allEvents = CurrentAnimation.Events;
-            for (int i = 0; i < 3; i++)
+            // dynamically play the current animation using a timer.
+            if (playing)
             {
-                if (i >= allEvents.Count)
-                    break;
-
-                var events = CurrentAnimation.GetEventKeyframes(i);
-                if (events.IsEmpty())
-                    continue;
-
-                if (i == 2)
+                sequence.Update();
+                if (sequence.time > CurrentAnimation.GetLength())
                 {
-                    CurrentObject.SetTransform(i, 2, CurrentAnimation.Interpolate(i, 0, t));
-                    continue;
+                    sequence.Reset();
+                    sequence.Update();
+                    CoreHelper.Log($"Reset");
                 }
-
-                for (int j = 0; j < events[0].values.Length; j++)
-                    CurrentObject.SetTransform(i, j, CurrentAnimation.Interpolate(i, j, t));
+                CurrentTime = sequence.time;
             }
+
+            CurrentObject.InterpolateAnimation(CurrentAnimation, CurrentTime);
         }
 
         #endregion
 
         #region Values
 
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
         public AnimationEditorDialog Dialog { get; set; }
 
+        /// <summary>
+        /// Popup list of the editor.
+        /// </summary>
         public ContentPopup Popup { get; set; }
 
+        /// <summary>
+        /// Currently selected animation.
+        /// </summary>
         public PAAnimation CurrentAnimation { get; set; }
 
+        /// <summary>
+        /// Copied list of animations.
+        /// </summary>
         public List<PAAnimation> copiedAnimations = new List<PAAnimation>();
 
+        /// <summary>
+        /// Currently selected object to apply animations to.
+        /// </summary>
         public ITransformable CurrentObject { get; set; }
 
+        /// <summary>
+        /// Current interpolated time.
+        /// </summary>
+        public float CurrentTime
+        {
+            get => Dialog.Timeline.Cursor.value;
+            set => Dialog.Timeline.Cursor.value = value;
+        }
+
+        /// <summary>
+        /// Function to run when the return button is clicked.
+        /// </summary>
         public Action currentOnReturn;
+
+        /// <summary>
+        /// Dynamic sequence for interpolated time.
+        /// </summary>
+        public RTTimer sequence;
+
+        /// <summary>
+        /// If the editor timeline is automatically playing.
+        /// </summary>
+        public bool playing;
 
         #endregion
 
         #region Methods
 
-        public void Test()
-        {
-            var boostAnimation = new PAAnimation("Test", "Test description");
-            boostAnimation.ReferenceID = "boost";
-            boostAnimation.positionKeyframes.Add(new EventKeyframe(0.3f, new float[] { 10f, 0f, 0f }, "OutSine"));
-            boostAnimation.positionKeyframes.Add(new EventKeyframe(0.4f, new float[] { 0f, 0f, 0f }, "InSine"));
-
-            var idleAnimation = new PAAnimation("Test", "Test description");
-            idleAnimation.ReferenceID = "idle";
-            idleAnimation.positionKeyframes.Add(new EventKeyframe(1f, new float[] { 3f, 0f, 0f }, "InOutSine"));
-            idleAnimation.positionKeyframes.Add(new EventKeyframe(2f, new float[] { 0f, 0f, 0f }, "InOutSine"));
-
-            if (PlayerManager.Players.TryGetAt(0, out PAPlayer player) && player.RuntimePlayer && player.PlayerModel && player.RuntimePlayer.Model.customObjects.TryGetAt(0, out CustomPlayerObject customObject))
-            {
-                customObject.animations.Clear();
-                customObject.animations.Add(boostAnimation);
-                customObject.animations.Add(idleAnimation);
-                player.RuntimePlayer.UpdateModel();
-            }
-        }
-
         #region Editor
 
+        /// <summary>
+        /// Toggles the playing state.
+        /// </summary>
+        public void TogglePlaying()
+        {
+            if (!playing)
+                sequence.Reset();
+
+            playing = !playing;
+        }
+
+        /// <summary>
+        /// Starts playing the current animation.
+        /// </summary>
+        public void Play()
+        {
+            sequence.Reset();
+            playing = true;
+        }
+
+        /// <summary>
+        /// Stops playing the current animation.
+        /// </summary>
+        public void Stop() => playing = false;
+
+        /// <summary>
+        /// Opens the editor dialog and sets the animation to edit.
+        /// </summary>
+        /// <param name="animation">Animation to edit.</param>
+        /// <param name="onReturn">Function to run when the return button is clicked.</param>
         public void OpenDialog(PAAnimation animation, Action onReturn = null)
         {
             Dialog.Open();
             RenderDialog(animation, onReturn);
         }
 
+        /// <summary>
+        /// Renders the editor dialog and sets the animation to edit.
+        /// </summary>
+        /// <param name="animation">Animation to edit.</param>
+        /// <param name="onReturn">Function to run when the return button is clicked.</param>
         public void RenderDialog(PAAnimation animation, Action onReturn = null)
         {
             currentOnReturn = onReturn;

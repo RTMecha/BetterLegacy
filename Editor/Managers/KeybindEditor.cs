@@ -1218,7 +1218,16 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
         }
 
-        public static void TogglePlayingSong(Keybind keybind) => EditorManager.inst.TogglePlayingSong();
+        public static void TogglePlayingSong(Keybind keybind)
+        {
+            if (AnimationEditor.inst.Dialog.IsCurrent)
+            {
+                AnimationEditor.inst.TogglePlaying();
+                return;
+            }
+
+            EditorManager.inst.TogglePlayingSong();
+        }
 
         public static void IncreaseKeyframeValue(Keybind keybind)
         {
