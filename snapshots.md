@@ -5,10 +5,15 @@
 
 ### Editor
 - You can now return to the Player Editor from the Animation Editor by clicking the "Return" button.
+- The Animation Editor can now play the current animation just like with regular objects.
 
 ## Fixes
 - Fixed Player animations not playing if there is no idle animation.
 - Fixed searching Custom Player Objects not working.
+- Fixed values in the Player Editor Global tab not appearing under default models.
+- Fixed "setRenderTypeOther" modifier having the name "rigidbodyOther".
+- The Animation Editor now prevents the currently selected animation from being the Players' idle animation.
+- Fixed Level modifiers not running on level reload.
 
 ------------------------------------------------------------------------------------------
 
