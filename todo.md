@@ -1,4 +1,7 @@
 ﻿# TODO
+Current: Animation Editor
+Next: Keybind Editor rework
+
 ## Features
 ### Core
 - Online multiplayer.  
@@ -58,29 +61,26 @@
 
 ### Example
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)  
-  Update: 1.11.0  
+  Update: 1.10.0  
 - Example customization. (technically doable now, just would like it to be doable via JSON)
 
 ### Editor
-- Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)  
-  Update: 1.14.0  
-- Interface editor.  
-  Update: 1.8.0+  
+- Collab sharing via server  
+  Update: 1.8.0  
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)  
   Update: 1.8.0  
-- Collab sharing via server  
-  Update: 1.8.0+  
 - Editor online backups / version control  
   Update: 1.8.0+  
-- Sprite / audio asset list popup that show images & sounds in the game data and level folder.  
-  Update: 1.8.0  
+- Interface editor.  
+  Update: 1.8.0+  
+- Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)  
+  Update: 1.14.0  
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
 
 ### Modifiers
-- Transition time for applyAnimation modifiers.
 - prizeObject action modifier  
   Update: 1.9.0  
   Details: rewards the player with a prefab, theme, player model or player toolkit item.
@@ -98,6 +98,9 @@
   Update: 1.8.0
   Notes:  
   - Same as downloadLevel except for level collections.
+- despawnPrefab modifier.
+  Notes:  
+  - Despawns the Runtime Prefab Object. If the prefab was spawned from a modifier, clear the modifier.
 
 ### Effects
 - Camera Jiggle event keyframe (instead of a single thing that doesn't change throughout the entire level)  
@@ -115,15 +118,15 @@
 ### Editor
 - Multi language support.
 - Rework the level combiner into just a selection system.
+- Keybind editor rework.
 - Make Editor Documentation read from a json file.  
   Update: 1.8.0  
 - Give Editor Documentation a cover image so people know what a specific document is talking about.  
   Update: 1.8.0  
 - Undo / redo everything.  
-  Update: 1.13.0  
+  Update: 1.10.0  
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
 - New Editor Layer types [Object Only, Prefab Object Only]
-- Update the sprite asset.
 - Documentation & tooltips.
 - Possible multi object editor rework???
 - Update the file browser UI to include more info / functions.
@@ -148,6 +151,8 @@
 - Game Timeline Editor. (skipping regions, custom images, etc)
 - Glow object that acts like bloom.
 - Ignore start time object spawn?
+- Transition time for applyAnimation modifiers.
+- Update the TextMeshPro sprite asset.
 
 
 ## Demos
