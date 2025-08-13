@@ -1038,7 +1038,6 @@ namespace BetterLegacy.Editor.Managers
                     modifier.Result = default;
                 });
             }
-
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
             {
                 backgroundObject.modifiers.ForLoop(modifier =>
@@ -1047,6 +1046,16 @@ namespace BetterLegacy.Editor.Managers
                     modifier.Result = default;
                 });
             }
+            foreach (var prefabObject in GameData.Current.prefabObjects)
+            {
+                prefabObject.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, prefabObject, null);
+                    modifier.Result = default;
+                });
+            }
+
+            PlayerManager.RespawnPlayers();
         }
 
         public static void UpdateObject(Keybind keybind)
