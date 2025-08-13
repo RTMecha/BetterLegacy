@@ -2185,9 +2185,9 @@ namespace BetterLegacy.Core.Components.Player
                     var origSca = reference.scale;
                     var origRot = reference.rotation;
 
-                    customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z);
-                    customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z);
-                    customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z);
+                    customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z) + customObject.anim.position;
+                    customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
+                    customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z + customObject.anim.rotation);
                     return;
                 }
 
@@ -2204,26 +2204,26 @@ namespace BetterLegacy.Core.Components.Player
                     if (animation.animatePosition)
                     {
                         var position = GameData.InterpolateVector3Keyframes(animation.positionKeyframes, time % length);
-                        customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position + customObject.positionOffset);
+                        customObject.gameObject.transform.localPosition = (new Vector3(origPos.x, origPos.y, reference.depth) + position + customObject.positionOffset + customObject.anim.position);
                     }
                     else
-                        customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z);
+                        customObject.gameObject.transform.localPosition = new Vector3(origPos.x + customObject.positionOffset.x, origPos.y + customObject.positionOffset.y, reference.depth + customObject.positionOffset.z) + customObject.anim.position;
 
                     if (animation.animateScale)
                     {
                         var scale = GameData.InterpolateVector2Keyframes(animation.scaleKeyframes, time % length);
-                        customObject.gameObject.transform.localScale = (new Vector3(origSca.x * scale.x + customObject.scaleOffset.x, origSca.y * scale.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z));
+                        customObject.gameObject.transform.localScale = new Vector3(origSca.x * scale.x + customObject.scaleOffset.x, origSca.y * scale.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
                     }
                     else
-                        customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z);
+                        customObject.gameObject.transform.localScale = new Vector3(origSca.x + customObject.scaleOffset.x, origSca.y + customObject.scaleOffset.y, 1f + customObject.scaleOffset.z) * customObject.anim.scale;
 
                     if (animation.animateRotation)
                     {
                         var rotation = GameData.InterpolateFloatKeyframes(animation.rotationKeyframes, time % length, 0);
-                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + rotation + customObject.rotationOffset.z);
+                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + rotation + customObject.rotationOffset.z + customObject.anim.rotation);
                     }
                     else
-                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z);
+                        customObject.gameObject.transform.localEulerAngles = new Vector3(customObject.rotationOffset.x, customObject.rotationOffset.y, origRot + customObject.rotationOffset.z + customObject.anim.rotation);
                 });
             });
         }
@@ -3386,11 +3386,9 @@ namespace BetterLegacy.Core.Components.Player
                     if (animation.transition && customObject.gameObject)
                         positionKeyframes[0].SetValue(customObject.gameObject.transform.localPosition);
 
-                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, vector =>
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector3>(positionKeyframes, pos =>
                     {
-                        //customObject.idle = false;
-                        if (customObject.gameObject)
-                            customObject.gameObject.transform.localPosition = (new Vector3(reference.position.x, reference.position.y, reference.depth) + vector);
+                        customObject.anim.position = pos;
                     }, interpolateOnComplete: true));
                 }
             if (animation.animateScale)
@@ -3401,11 +3399,9 @@ namespace BetterLegacy.Core.Components.Player
                     if (animation.transition && customObject.gameObject)
                         scaleKeyframes[0].SetValue(customObject.gameObject.transform.localScale);
 
-                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, vector =>
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<Vector2>(scaleKeyframes, sca =>
                     {
-                        //customObject.idle = false;
-                        if (customObject.gameObject)
-                            customObject.gameObject.transform.localScale = (new Vector3(reference.scale.x, reference.scale.y, 1f) * vector);
+                        customObject.anim.scale = sca;
                     }, interpolateOnComplete: true));
                 }
             if (animation.animateRotation)
@@ -3416,11 +3412,9 @@ namespace BetterLegacy.Core.Components.Player
                     if (animation.transition && customObject.gameObject)
                         rotationKeyframes[0].SetValue(customObject.gameObject.transform.localEulerAngles.z);
 
-                    runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, x =>
+                    runtimeAnim.animationHandlers.Add(new AnimationHandler<float>(rotationKeyframes, rot =>
                     {
-                        //customObject.idle = false;
-                        if (customObject.gameObject)
-                            customObject.gameObject.transform.localEulerAngles = (new Vector3(0f, 0f, reference.rotation + x));
+                        customObject.anim.rotation = rot;
                     }, interpolateOnComplete: true));
                 }
 
@@ -3800,6 +3794,8 @@ namespace BetterLegacy.Core.Components.Player
             public TextMeshPro text;
             public bool idle = true;
             public string currentIdleAnimation = PlayerModel.IDLE_ANIM;
+
+            public ObjectTransform anim = ObjectTransform.Default;
 
             public Vector3 positionOffset;
             public Vector3 scaleOffset;
