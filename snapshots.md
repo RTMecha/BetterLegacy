@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.8.14 - (pre-1.8.0) [Aug 14, 2025]
 ## Features
 ### Core
 - Added player spawn animation.
@@ -6,6 +6,21 @@
 ### Editor
 - You can now return to the Player Editor from the Animation Editor by clicking the "Return" button.
 - The Animation Editor can now play the current animation just like with regular objects.
+- Overhauled the keybind editor to include a new "Keybind Profile" system. Due to this, you will need to setup your keybinds again.
+- With the new profile system, a "SwitchKeybindProfile" function was added to the keybind functions.
+- Added "SetPitch" keybind.
+- Added "ToggleObjectDragHelper" keybind.
+
+## Changes
+### Editor
+- Renamed keybind function "OpenPrefabDialog" to "OpenPrefabCreator" to make it more clear as to what it does.
+- Renamed keybind function "ToggleEditor" to "TogglePreview".
+- Renamed keybind function "GoToCurrent" to "GoToCurrentTime".
+- Renamed keybind function "ToggleObjectDragger" to "ToggleObjectDragging".
+- Renamed keybind function "SaveBeatmap" to "SaveLevel".
+- Renamed keybind function "OpenBeatmapPopup" to "OpenLevelPopup".
+- Renamed keybind function "OpenSaveAs" to "SaveLevelCopy".
+- Renamed keybind function "OpenNewLevel" to "CreateNewLevel".
 
 ## Fixes
 - Fixed Player animations not playing if there is no idle animation.
