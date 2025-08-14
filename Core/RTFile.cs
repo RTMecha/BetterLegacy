@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 
 using UnityEngine;
 
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core
@@ -454,6 +455,19 @@ namespace BetterLegacy.Core
         }
 
         public static string BytesToString(byte[] bytes) => Encoding.UTF8.GetString(bytes);
+
+        /// <summary>
+        /// Creates a new <typeparamref name="T"/> from a file.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to create. Must have a parameterless constructor.</typeparam>
+        /// <param name="path">File path to read from.</param>
+        /// <returns>Returns the created object.</returns>
+        public static T CreateFromFile<T>(string path) where T : PAObject<T>, IFile, new()
+        {
+            var file = new T();
+            file.ReadFromFile(path);
+            return file;
+        }
 
         #endregion
 
