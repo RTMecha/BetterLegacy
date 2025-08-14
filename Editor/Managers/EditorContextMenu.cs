@@ -150,6 +150,54 @@ namespace BetterLegacy.Editor.Managers
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
         }
 
+        public static List<ButtonFunction> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<ButtonFunction>()
+        {
+            new ButtonFunction("Move Up", () =>
+            {
+                if (index <= 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, index - 1);
+                onMove?.Invoke();
+            }),
+            new ButtonFunction("Move Down", () =>
+            {
+                if (index >= list.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item down since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, index + 1);
+                onMove?.Invoke();
+            }),
+            new ButtonFunction("Move to Start", () =>
+            {
+                if (index == 0)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item to the start since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, 0);
+                onMove?.Invoke();
+            }),
+            new ButtonFunction("Move to End", () =>
+            {
+                if (index == list.Count - 1)
+                {
+                    EditorManager.inst.DisplayNotification("Could not move item to the end since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                list.Move(index, list.Count - 1);
+                onMove?.Invoke();
+            }),
+        };
+
         #endregion
     }
 }
