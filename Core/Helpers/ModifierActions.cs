@@ -3301,9 +3301,9 @@ namespace BetterLegacy.Core.Helpers
                 var colors = solidObject.GetColors();
                 var startColorName = modifier.GetValue(0);
                 var endColorName = modifier.GetValue(1);
-                if (string.IsNullOrEmpty(startColorName))
+                if (!string.IsNullOrEmpty(startColorName))
                     variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
-                if (string.IsNullOrEmpty(endColorName))
+                if (!string.IsNullOrEmpty(endColorName))
                     variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
             }
         }
@@ -3315,18 +3315,18 @@ namespace BetterLegacy.Core.Helpers
                 var colors = solidObject.GetColors();
                 var startOpacityName = modifier.GetValue(0);
                 var endOpacityName = modifier.GetValue(1);
-                if (string.IsNullOrEmpty(startOpacityName))
+                if (!string.IsNullOrEmpty(startOpacityName))
                     variables[startOpacityName] = colors.startColor.a.ToString();
-                if (string.IsNullOrEmpty(endOpacityName))
+                if (!string.IsNullOrEmpty(endOpacityName))
                     variables[endOpacityName] = colors.endColor.a.ToString();
             }
             else if (reference is BeatmapObject beatmapObject)
             {
                 var startOpacityName = modifier.GetValue(0);
                 var endOpacityName = modifier.GetValue(1);
-                if (string.IsNullOrEmpty(startOpacityName))
+                if (!string.IsNullOrEmpty(startOpacityName))
                     variables[startOpacityName] = (-(beatmapObject.Interpolate(3, 1) - 1f)).ToString();
-                if (string.IsNullOrEmpty(endOpacityName))
+                if (!string.IsNullOrEmpty(endOpacityName))
                     variables[endOpacityName] = (-(beatmapObject.Interpolate(3, 6) - 1f)).ToString();
             }
         }
