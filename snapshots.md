@@ -1,7 +1,12 @@
-﻿# ???
+﻿# snapshot-2025.8.15 - (pre-1.8.0) [Aug 15, 2025]
 ## Changes
 ### Editor
 - Removed the Level Combiner dialog as you can just select multiple levels in the Open Level Popup, right click them and select "Combine".
+
+## Fixes
+- Fixed keybind functions not being set on first load.
+
+-------------------------------------------------------------------
 
 # snapshot-2025.8.14 - (pre-1.8.0) [Aug 14, 2025]
 ## Features
