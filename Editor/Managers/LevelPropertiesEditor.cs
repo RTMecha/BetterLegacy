@@ -15,6 +15,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 
@@ -198,27 +199,14 @@ namespace BetterLegacy.Editor.Managers
                 CoroutineHelper.StartCoroutine(modifierBlockDialog.RenderModifiers(modifierBlock));
             }
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.ModifierBlocksContent, "Add");
-            add.transform.AsRT().sizeDelta = new Vector2(763f, 32f);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Modifier Block";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            var contextClickable = add.GetOrAddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                CreateNewModifierBlock();
-            };
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.ModifierBlocksContent);
+            add.Text = "Add Modifier Block";
+            add.OnClick.NewListener(CreateNewModifierBlock);
 
             var paste = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.ModifierBlocksContent, "Paste");
-            paste.transform.AsRT().sizeDelta = new Vector2(763f, 32f);
-            var pasteText = paste.transform.Find("Text").GetComponent<Text>();
-            pasteText.text = "Paste Modifier Blocks";
-            var pasteButton = paste.GetComponent<Button>();
-            pasteButton.onClick.ClearAll();
+            var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
+            pasteStorage.Text = "Paste Modifier Blocks";
+            pasteStorage.OnClick.ClearAll();
             var pasteContextClickable = paste.GetOrAddComponent<ContextClickable>();
             pasteContextClickable.onClick = pointerEventData =>
             {
@@ -331,8 +319,8 @@ namespace BetterLegacy.Editor.Managers
                 PasteModifierBlocks(GameData.Current.modifierBlocks, copiedModifierBlocks);
             };
 
-            EditorThemeManager.ApplyGraphic(pasteButton.image, ThemeGroup.Paste, true);
-            EditorThemeManager.ApplyGraphic(pasteText, ThemeGroup.Paste_Text);
+            EditorThemeManager.ApplyGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
+            EditorThemeManager.ApplyGraphic(pasteStorage.label, ThemeGroup.Paste_Text);
         }
 
         #endregion

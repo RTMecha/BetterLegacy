@@ -436,15 +436,9 @@ namespace BetterLegacy.Editor.Managers
         {
             Dialog.ClearContent();
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.Content);
-            add.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add new Achievement";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(CreateNewAchievement);
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.Content);
+            add.Text = "Add new Achievement";
+            add.OnClick.NewListener(CreateNewAchievement);
 
             int num = 0;
             foreach (var achievement in achievements)

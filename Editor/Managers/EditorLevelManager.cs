@@ -402,11 +402,9 @@ namespace BetterLegacy.Editor.Managers
             var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
             if (currentLevelCollection)
             {
-                var add = PrefabEditor.inst.CreatePrefab.Duplicate(OpenLevelPopup.Content, "add");
-                var addText = add.transform.Find("Text").GetComponent<Text>();
-                addText.text = "Add Level";
-                var addButton = add.GetComponent<Button>();
-                addButton.onClick.NewListener(() =>
+                var add = EditorPrefabHolder.Instance.CreateAddButton(OpenLevelPopup.Content);
+                add.Text = "Add Level";
+                add.OnClick.NewListener(() =>
                 {
                     var levelInfo = new LevelInfo();
                     levelInfo.id = PAObjectBase.GetNumberID();
@@ -420,9 +418,6 @@ namespace BetterLegacy.Editor.Managers
                         LoadLevels();
                     });
                 });
-
-                EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-                EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
                 foreach (var levelInfo in currentLevelCollection.levelInformation)
                 {
@@ -561,19 +556,14 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(folderButtonStorageFolder.label);
             }
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(LevelCollectionPopup.Content, "add");
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Create Empty Collection";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(LevelCollectionPopup.Content);
+            add.Text = "Create Empty Collection";
+            add.OnClick.NewListener(() =>
             {
                 var collection = CreateNewLevelCollection();
                 collection.Save();
                 LoadLevelCollections();
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             if (!RTFile.DirectoryExists(fullPath))
             {
@@ -1742,12 +1732,10 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
             }
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(LevelCollectionDialog.TagsContent, "Add");
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Tag";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            var contextClickable = add.GetOrAddComponent<ContextClickable>();
+            var add = EditorPrefabHolder.Instance.CreateAddButton(LevelCollectionDialog.TagsContent);
+            add.Text = "Add Tag";
+            add.OnClick.ClearAll();
+            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = pointerEventData =>
             {
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
@@ -1776,9 +1764,6 @@ namespace BetterLegacy.Editor.Managers
                 levelCollection.Save();
                 RenderLevelCollectionTags(levelCollection);
             };
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
         }
 
         public void OpenIconSelector(LevelCollection levelCollection)

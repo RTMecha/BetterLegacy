@@ -1734,8 +1734,7 @@ namespace BetterLegacy.Editor.Managers
 
         IEnumerator IRenderPrefabTypesPopup(string current, Action<string> onSelect)
         {
-            prefabTypeReloadButton.onClick.ClearAll();
-            prefabTypeReloadButton.onClick.AddListener(() =>
+            prefabTypeReloadButton.onClick.NewListener(() =>
             {
                 StartCoroutine(LoadPrefabTypes());
                 RenderPrefabTypesPopup(NewPrefabTypeID, onSelect);
@@ -1743,13 +1742,9 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.PrefabTypesPopup.ClearContent();
 
-            var createPrefabType = PrefabEditor.inst.CreatePrefab.Duplicate(RTEditor.inst.PrefabTypesPopup.Content, "Create Prefab Type");
-            createPrefabType.transform.AsRT().sizeDelta = new Vector2(402f, 32f);
-            var createPrefabTypeText = createPrefabType.transform.Find("Text").GetComponent<Text>();
-            createPrefabTypeText.text = "Create New Prefab Type";
-            var createPrefabTypeButton = createPrefabType.GetComponent<Button>();
-            createPrefabTypeButton.onClick.ClearAll();
-            createPrefabTypeButton.onClick.AddListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(RTEditor.inst.PrefabTypesPopup.Content);
+            add.Text = "Create Prefab Type";
+            add.OnClick.NewListener(() =>
             {
                 string name = "New Type";
                 int n = 0;
@@ -1769,9 +1764,6 @@ namespace BetterLegacy.Editor.Managers
                 RenderPrefabTypesPopup(current, onSelect);
             });
 
-            EditorThemeManager.ApplyGraphic(createPrefabTypeButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(createPrefabTypeText, ThemeGroup.Add_Text);
-
             int num = 0;
             foreach (var prefabType in prefabTypes)
             {
@@ -1779,9 +1771,8 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = prefabTypePrefab.Duplicate(RTEditor.inst.PrefabTypesPopup.Content, prefabType.name);
 
                 var toggle = gameObject.transform.Find("Toggle").GetComponent<Toggle>();
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = current == prefabType.id;
-                toggle.onValueChanged.AddListener(_val =>
+                toggle.SetIsOnWithoutNotify(current == prefabType.id);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     onSelect?.Invoke(prefabType.id);
                     RenderPrefabTypesPopup(prefabType.id, onSelect);
@@ -2747,25 +2738,17 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns the created game object.</returns>
         public GameObject CreatePrefabButton(Transform parent, string name, Action<PointerEventData> action)
         {
-            var gameObject = PrefabEditor.inst.CreatePrefab.Duplicate(parent, "add new prefab");
-            var text = gameObject.GetComponentInChildren<Text>();
-            text.text = name;
+            var add = EditorPrefabHolder.Instance.CreateAddButton(parent, "add new prefab");
+            add.Text = name;
+            add.OnClick.ClearAll();
 
-            var hoverSize = EditorConfig.Instance.PrefabButtonHoverSize.Value;
-
-            var hover = gameObject.AddComponent<HoverUI>();
+            var hover = add.gameObject.AddComponent<HoverUI>();
             hover.animateSca = true;
             hover.animatePos = false;
-            hover.size = hoverSize;
+            hover.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
 
-            var createNewButton = gameObject.GetComponent<Button>();
-            createNewButton.onClick.ClearAll();
-
-            var contextClickable = gameObject.AddComponent<ContextClickable>();
+            var contextClickable = add.gameObject.AddComponent<ContextClickable>();
             contextClickable.onClick = action;
-
-            EditorThemeManager.ApplyGraphic(createNewButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(text, ThemeGroup.Add_Text);
 
             return gameObject;
         }

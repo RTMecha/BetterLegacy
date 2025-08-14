@@ -114,18 +114,13 @@ namespace BetterLegacy.Editor.Managers
         {
             Popup.ClearContent();
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Popup.Content);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Pin Editor Layer";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
+            add.Text = "Pin Current Editor Layer";
+            add.OnClick.NewListener(() =>
             {
                 PinCurrentEditorLayer();
                 RenderPopup();
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var pinnedEditorLayer in RTEditor.inst.editorInfo.pinnedEditorLayers)

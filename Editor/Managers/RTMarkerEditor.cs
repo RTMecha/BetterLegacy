@@ -336,19 +336,13 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.LayersContent, "Add");
-            add.transform.localScale = Vector3.one;
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Layer";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.LayersContent);
+            add.Text = "Add Layer";
+            add.OnClick.NewListener(() =>
             {
-                marker.layers.Add(0);
+                marker.layers.Add(EditorTimeline.inst.Layer);
                 RenderLayers(marker);
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
         }
 
         /// <summary>

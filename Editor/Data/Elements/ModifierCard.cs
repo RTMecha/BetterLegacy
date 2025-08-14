@@ -5209,13 +5209,9 @@ namespace BetterLegacy.Editor.Data.Elements
             var baseAdd = Creator.NewUIObject("add", layout);
             baseAdd.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(baseAdd.transform, "add");
-            var addText = add.transform.GetChild(0).GetComponent<Text>();
-            addText.text = text;
-            RectValues.Default.AnchoredPosition(105f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(add.transform.AsRT());
-
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(baseAdd.transform);
+            add.Text = text;
+            add.OnClick.NewListener(() =>
             {
                 onAdd?.Invoke();
 
@@ -5234,9 +5230,6 @@ namespace BetterLegacy.Editor.Data.Elements
                 });
                 Update(modifier, reference);
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
             return baseAdd;
         }
 

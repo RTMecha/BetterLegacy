@@ -33,7 +33,7 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.LogInit(__instance.className);
 
-            // Prefab Type Icon
+            // Prefab Panel Prefab
             {
                 var gameObject = PrefabEditor.inst.AddPrefab.Duplicate(__instance.transform, PrefabEditor.inst.AddPrefab.name);
 
@@ -65,6 +65,16 @@ namespace BetterLegacy.Patchers
                 storage.deleteButton = tf.Find("delete").GetComponent<Button>();
 
                 PrefabEditor.inst.AddPrefab = gameObject;
+            }
+
+            // Add Prefab Prefab
+            {
+                var gameObject = PrefabEditor.inst.CreatePrefab.Duplicate(__instance.transform, PrefabEditor.inst.CreatePrefab.name);
+                gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+                var storage = gameObject.AddComponent<FunctionButtonStorage>();
+                storage.button = gameObject.GetComponent<Button>();
+                storage.label = gameObject.transform.Find("Text").GetComponent<Text>();
+                PrefabEditor.inst.CreatePrefab = gameObject;
             }
 
             return false;

@@ -27,11 +27,7 @@ namespace BetterLegacy.Editor.Managers
         void Awake()
         {
             inst = this;
-            StartCoroutine(SetupUI());
-        }
 
-        IEnumerator SetupUI()
-        {
             try
             {
                 Dialog = new SettingEditorDialog();
@@ -58,8 +54,6 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(colorPrefab.transform, "Delete");
             UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(748f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(32f, 32f));
-
-            yield break;
         }
 
         #endregion
@@ -96,9 +90,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetBPMSlider(Slider slider, InputField input)
         {
-            slider.onValueChanged.ClearAll();
-            slider.value = RTEditor.inst.editorInfo.bpm;
-            slider.onValueChanged.AddListener(_val =>
+            slider.SetValueWithoutNotify(RTEditor.inst.editorInfo.bpm);
+            slider.onValueChanged.NewListener(_val =>
             {
                 MetaData.Current.song.bpm = _val;
                 RTEditor.inst.editorInfo.bpm = _val;
@@ -109,9 +102,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetBPMInputField(Slider slider, InputField input)
         {
-            input.onValueChanged.ClearAll();
-            input.text = RTEditor.inst.editorInfo.bpm.ToString();
-            input.onValueChanged.AddListener(_val =>
+            input.SetTextWithoutNotify(RTEditor.inst.editorInfo.bpm.ToString());
+            input.onValueChanged.NewListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 120f);
                 MetaData.Current.song.bpm = bpm;
@@ -123,9 +115,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetBPMOffsetSlider(Slider slider, InputField input)
         {
-            slider.onValueChanged.ClearAll();
-            slider.value = RTEditor.inst.editorInfo.bpmOffset;
-            slider.onValueChanged.AddListener(_val =>
+            slider.SetValueWithoutNotify(RTEditor.inst.editorInfo.bpmOffset);
+            slider.onValueChanged.NewListener(_val =>
             {
                 RTEditor.inst.editorInfo.bpmOffset = _val;
                 SetBPMOffsetInputField(slider, input);
@@ -136,9 +127,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetBPMOffsetInputField(Slider slider, InputField input)
         {
-            input.onValueChanged.ClearAll();
-            input.text = RTEditor.inst.editorInfo.bpmOffset.ToString();
-            input.onValueChanged.AddListener(_val =>
+            input.SetTextWithoutNotify(RTEditor.inst.editorInfo.bpmOffset.ToString());
+            input.onValueChanged.NewListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 0f);
                 RTEditor.inst.editorInfo.bpmOffset = bpm;
@@ -150,9 +140,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetBPMTimingSlider(Slider slider, InputField input)
         {
-            slider.onValueChanged.ClearAll();
-            slider.value = RTEditor.inst.editorInfo.timeSignature;
-            slider.onValueChanged.AddListener(_val =>
+            slider.SetValueWithoutNotify(RTEditor.inst.editorInfo.timeSignature);
+            slider.onValueChanged.NewListener(_val =>
             {
                 RTEditor.inst.editorInfo.timeSignature = _val;
                 SetBPMTimingInputField(slider, input);
@@ -163,9 +152,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SetBPMTimingInputField(Slider slider, InputField input)
         {
-            input.onValueChanged.ClearAll();
-            input.text = RTEditor.inst.editorInfo.timeSignature.ToString();
-            input.onValueChanged.AddListener(_val =>
+            input.SetTextWithoutNotify(RTEditor.inst.editorInfo.timeSignature.ToString());
+            input.onValueChanged.NewListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 0f);
                 RTEditor.inst.editorInfo.timeSignature = bpm;
@@ -223,22 +211,14 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(Dialog.MarkerColorsContent);
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.MarkerColorsContent, "Add");
-
-            ((RectTransform)add.transform).sizeDelta = new Vector2(402f, 32f);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Marker Color";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.MarkerColorsContent);
+            add.Text = "Add Marker Color";
+            add.OnClick.NewListener(() =>
             {
-                MarkerEditor.inst.markerColors.Add(LSColors.pink500);
+                MarkerEditor.inst.markerColors.Add(RTColors.errorColor);
                 RTEditor.inst.SaveGlobalSettings();
                 RenderMarkerColors();
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var markerColor in MarkerEditor.inst.markerColors)
@@ -253,21 +233,18 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true, 2);
 
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.onValueChanged.ClearAll();
-                input.onEndEdit.ClearAll();
-                input.text = LSColors.ColorToHex(markerColor);
-                input.onValueChanged.AddListener(_val =>
+                input.SetTextWithoutNotify(LSColors.ColorToHex(markerColor));
+                input.onValueChanged.NewListener(_val =>
                 {
                     MarkerEditor.inst.markerColors[index] = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                     image.color = MarkerEditor.inst.markerColors[index];
                 });
-                input.onEndEdit.AddListener(_val => { RTEditor.inst.SaveGlobalSettings(); });
+                input.onEndEdit.NewListener(_val => RTEditor.inst.SaveGlobalSettings());
 
                 EditorThemeManager.ApplyInputField(input);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(() =>
+                deleteStorage.button.onClick.NewListener(() =>
                 {
                     MarkerEditor.inst.markerColors.RemoveAt(index);
                     RenderMarkerColors();
@@ -285,22 +262,14 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(Dialog.LayerColorsContent);
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.LayerColorsContent, "Add");
-
-            ((RectTransform)add.transform).sizeDelta = new Vector2(402f, 32f);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Layer Color";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.LayerColorsContent);
+            add.Text = "Add Layer Color";
+            add.OnClick.NewListener(() =>
             {
-                EditorManager.inst.layerColors.Add(LSColors.pink500);
+                EditorManager.inst.layerColors.Add(RTColors.errorColor);
                 RTEditor.inst.SaveGlobalSettings();
                 RenderLayerColors();
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var layerColor in EditorManager.inst.layerColors)
@@ -315,21 +284,18 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true, 2);
 
                 var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.onValueChanged.ClearAll();
-                input.onEndEdit.ClearAll();
-                input.text = LSColors.ColorToHex(layerColor);
-                input.onValueChanged.AddListener(_val =>
+                input.SetTextWithoutNotify(LSColors.ColorToHex(layerColor));
+                input.onValueChanged.NewListener(_val =>
                 {
                     EditorManager.inst.layerColors[index] = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                     image.color = EditorManager.inst.layerColors[index];
                 });
-                input.onEndEdit.AddListener(_val => { RTEditor.inst.SaveGlobalSettings(); });
+                input.onEndEdit.NewListener(_val => RTEditor.inst.SaveGlobalSettings());
 
                 EditorThemeManager.ApplyInputField(input);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(() =>
+                deleteStorage.button.onClick.NewListener(() =>
                 {
                     EditorManager.inst.layerColors.RemoveAt(index);
                     RenderLayerColors();

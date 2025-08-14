@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using TMPro;
 
 using BetterLegacy.Core.Components;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Prefabs
 {
@@ -43,6 +44,18 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject Tag { get; set; }
 
         public GameObject Dialog { get; set; }
+
+        public FunctionButtonStorage CreateAddButton(Transform parent, string name = "add", bool applyThemes = true)
+        {
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(parent, name);
+            var addStorage = add.GetComponent<FunctionButtonStorage>();
+            if (applyThemes)
+            {
+                EditorThemeManager.ApplyGraphic(addStorage.button.image, ThemeGroup.Add, true);
+                EditorThemeManager.ApplyGraphic(addStorage.label, ThemeGroup.Add_Text);
+            }
+            return addStorage;
+        }
     }
 
     public class EditorDialogStorage : MonoBehaviour
@@ -124,6 +137,18 @@ namespace BetterLegacy.Core.Prefabs
         [SerializeField]
         public Text label;
 
+        public Button.ButtonClickedEvent OnClick
+        {
+            get => button.onClick;
+            set => button.onClick = value;
+        }
+
+        public string Text
+        {
+            get => label.text;
+            set => label.text = value;
+        }
+
         public void Assign() => Assign(transform.GetChild(0));
 
         public void Assign(Transform labelTransform)
@@ -135,6 +160,12 @@ namespace BetterLegacy.Core.Prefabs
 
     public class SpriteFunctionButtonStorage : FunctionButtonStorage
     {
+        public Sprite Icon
+        {
+            get => image.sprite;
+            set => image.sprite = value;
+        }
+
         [SerializeField]
         public Image image;
     }

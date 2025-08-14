@@ -420,13 +420,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
             }
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.CollaboratorsContent, "Add");
-            add.transform.AsRT().sizeDelta = new Vector2(717f, 32f);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Collaborator";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            var contextClickable = add.GetOrAddComponent<ContextClickable>();
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.CollaboratorsContent);
+            add.Text = "Add Collaborator";
+            add.OnClick.ClearAll();
+
+            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = pointerEventData =>
             {
                 if (metadata.uploaders == null)
@@ -450,9 +448,6 @@ namespace BetterLegacy.Editor.Managers
                         MetadataEditor.inst.OpenDialog();
                     }));
             };
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             bool hasID = !string.IsNullOrEmpty(metadata.serverID); // Only check for server id.
 
@@ -641,12 +636,11 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Dialog.TagsContent, "Add");
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Tag";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            var contextClickable = add.GetOrAddComponent<ContextClickable>();
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.TagsContent);
+            add.Text = "Add Tag";
+            add.OnClick.ClearAll();
+
+            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = pointerEventData =>
             {
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
@@ -693,9 +687,6 @@ namespace BetterLegacy.Editor.Managers
                         MetadataEditor.inst.OpenDialog();
                     }));
             };
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
         }
 
         #endregion

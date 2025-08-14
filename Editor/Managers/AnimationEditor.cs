@@ -53,16 +53,17 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog = new AnimationEditorDialog();
                 Dialog.Init();
+
                 // clear cached values when the editor closes.
                 Dialog.GameObject.AddComponent<ActiveState>().onStateChanged = enabled =>
                 {
-                    if (!enabled)
-                    {
-                        playing = false;
-                        CurrentObject?.ResetOffsets();
-                        CurrentObject = null;
-                        CurrentAnimation = null;
-                    }
+                    if (enabled)
+                        return;
+
+                    playing = false;
+                    CurrentObject?.ResetOffsets();
+                    CurrentObject = null;
+                    CurrentAnimation = null;
                 };
 
                 Popup = RTEditor.inst.GeneratePopup(EditorPopup.ANIMATIONS_POPUP, "Animations", Vector2.zero, new Vector2(600f, 400f));
@@ -320,13 +321,10 @@ namespace BetterLegacy.Editor.Managers
             Popup.ClearContent();
             Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(animations, onPlay, onSelect, currentObject, onReturn));
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(Popup.Content);
-            add.transform.AsRT().sizeDelta = new Vector2(350f, 32f);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add new Animation";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            var addContextMenu = add.GetOrAddComponent<ContextClickable>();
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
+            add.Text = "Add new Animation";
+            add.OnClick.ClearAll();
+            var addContextMenu = add.gameObject.GetOrAddComponent<ContextClickable>();
             addContextMenu.onClick = pointerEventData =>
             {
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
@@ -375,9 +373,6 @@ namespace BetterLegacy.Editor.Managers
                 animations.Add(new PAAnimation("New Animation", "This is the default description!"));
                 RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
             };
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             for (int i = 0; i < animations.Count; i++)
             {
@@ -470,39 +465,8 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonFunction(true),
                             new ButtonFunction("Copy Keyframes", () => KeyframeTimeline.CopyAllKeyframes(animation)),
                             new ButtonFunction(true),
-                            new ButtonFunction("Move Up", () =>
-                            {
-                                if (index <= 0)
-                                {
-                                    EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
-                                    return;
-                                }
-
-                                animations.Move(index, index - 1);
-                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
-                            }),
-                            new ButtonFunction("Move Down", () =>
-                            {
-                                if (index >= animations.Count - 1)
-                                {
-                                    EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
-                                    return;
-                                }
-
-                                animations.Move(index, index + 1);
-                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
-                            }),
-                            new ButtonFunction("Move to Start", () =>
-                            {
-                                animations.Move(index, 0);
-                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
-                            }),
-                            new ButtonFunction("Move to End", () =>
-                            {
-                                animations.Move(index, animations.Count - 1);
-                                RenderPopup(animations, onPlay, onSelect, currentObject, onReturn);
-                            }),
                         };
+                        buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(animations, index, () => RenderPopup(animations, onPlay, onSelect, currentObject, onReturn)));
 
                         EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                         return;

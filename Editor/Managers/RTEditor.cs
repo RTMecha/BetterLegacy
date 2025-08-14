@@ -1119,8 +1119,6 @@ namespace BetterLegacy.Editor.Managers
 
         public ContentPopup FontSelectorPopup { get; set; }
 
-        public ContentPopup KeybindListPopup { get; set; }
-
         #endregion
 
         #region Dragging
@@ -4977,19 +4975,13 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(dialog.TagsContent, "Add");
-            add.transform.localScale = Vector3.one;
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Tag";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.TagsContent);
+            add.Text = "Add Tag";
+            add.OnClick.NewListener(() =>
             {
                 modifyable.Tags.Add("New Tag");
                 RenderTags(modifyable, dialog);
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
         }
 
         public void RenderParent(IParentable parentable, IParentDialog dialog)
@@ -6066,6 +6058,38 @@ namespace BetterLegacy.Editor.Managers
                 RotCloseEaseConfig = EditorConfig.Instance.DefaultModifiersPopupRotCloseEase,
             },
             new EditorAnimation(EditorPopup.KEYBIND_LIST_POPUP)
+            {
+                ActiveConfig = EditorConfig.Instance.KeybindListPopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.KeybindListPopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.KeybindListPopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.KeybindListPopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.KeybindListPopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.KeybindListPopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.KeybindListPopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.KeybindListPopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.KeybindListPopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.KeybindListPopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.KeybindListPopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.KeybindListPopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.KeybindListPopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.KeybindListPopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.KeybindListPopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.KeybindListPopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.KeybindListPopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.KeybindListPopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.KeybindListPopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.KeybindListPopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.KeybindListPopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.KeybindListPopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.KeybindListPopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.KeybindListPopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.KeybindListPopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.KeybindListPopupRotCloseEase,
+            },
+            new EditorAnimation(EditorPopup.KEYBIND_FUNCTION_POPUP)
             {
                 ActiveConfig = EditorConfig.Instance.KeybindListPopupActive,
 

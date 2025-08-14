@@ -1924,20 +1924,15 @@ namespace BetterLegacy.Editor.Managers
             var content = Dialog.CustomObjectTab.VisibilitySettings.GameObject.transform.Find("ScrollRect/Mask/Content");
             LSHelpers.DeleteChildren(content);
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(content, "Add");
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add Visiblity Setting";
-            ((RectTransform)add.transform).sizeDelta = new Vector2(760f, 32f);
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.NewListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(content);
+            add.Text = "Add Visibilty Setting";
+            add.OnClick.NewListener(() =>
             {
                 var newVisibility = new CustomPlayerObject.Visibility();
                 newVisibility.command = IntToVisibility(0);
                 customObject.visibilitySettings.Add(newVisibility);
                 StartCoroutine(RefreshEditor());
             });
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var visibility in customObject.visibilitySettings)
@@ -2197,9 +2192,9 @@ namespace BetterLegacy.Editor.Managers
             if (isDefault)
                 yield break;
 
-            var createNew = PrefabEditor.inst.CreatePrefab.Duplicate(ModelsPopup.Content, "Create");
-            var createNewButton = createNew.GetComponent<Button>();
-            createNewButton.onClick.NewListener(() =>
+            var add = EditorPrefabHolder.Instance.CreateAddButton(ModelsPopup.Content, "Create");
+            add.Text = "Create Custom Object";
+            add.OnClick.NewListener(() =>
             {
                 var customObject = new CustomPlayerObject();
                 var id = LSText.randomNumString(16);
@@ -2212,12 +2207,6 @@ namespace BetterLegacy.Editor.Managers
                 StartCoroutine(RefreshEditor());
                 PlayerManager.UpdatePlayerModels();
             });
-
-            var createNewText = createNew.transform.GetChild(0).GetComponent<Text>();
-            createNewText.text = "Create custom object";
-
-            EditorThemeManager.ApplyGraphic(createNewButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(createNewText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var customObject in currentModel.customObjects)
