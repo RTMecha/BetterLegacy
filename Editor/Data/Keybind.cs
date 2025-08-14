@@ -18,7 +18,7 @@ namespace BetterLegacy.Editor.Data
 
         public Keybind(string name, params Key[] keys) : this()
         {
-            this.name = name;
+            Name = name;
             this.keys = keys.ToList();
         }
 

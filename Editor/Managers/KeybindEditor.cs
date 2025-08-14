@@ -64,7 +64,7 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(Cut), Cut),
                     new KeybindFunction(nameof(Copy), Copy),
                     new KeybindFunction(nameof(Paste), Paste, new Keybind.Setting("Remove Prefab Instance ID", "False")),
-                    new KeybindFunction(nameof(Duplicate), Duplicate),
+                    new KeybindFunction(nameof(Duplicate), Duplicate, new Keybind.Setting("Remove Prefab Instance ID", "False")),
                     new KeybindFunction(nameof(Delete), Delete),
 
                     #endregion
@@ -284,8 +284,7 @@ namespace BetterLegacy.Editor.Managers
             if (!CurrentProfile)
                 return;
 
-            if (!CoreHelper.IsUsingInputField && !dragging && EditorManager.inst.isEditing && Application.isFocused &&
-                (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !EventsConfig.Instance.EditorCamEnabled.Value))
+            if (!CoreHelper.IsUsingInputField && !dragging && EditorManager.inst.isEditing && Application.isFocused && (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
                 var keybinds = CurrentProfile.keybinds;
                 foreach (var keybind in keybinds)
