@@ -1,4 +1,9 @@
-﻿# snapshot-2025.8.14 - (pre-1.8.0) [Aug 14, 2025]
+﻿# ???
+## Changes
+### Editor
+- Removed the Level Combiner dialog as you can just select multiple levels in the Open Level Popup, right click them and select "Combine".
+
+# snapshot-2025.8.14 - (pre-1.8.0) [Aug 14, 2025]
 ## Features
 ### Core
 - Added player spawn animation.
