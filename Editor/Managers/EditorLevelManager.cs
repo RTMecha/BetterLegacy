@@ -1924,6 +1924,8 @@ namespace BetterLegacy.Editor.Managers
             LevelInfoDialog.SubmitButton.onClick.NewListener(() => onSubmit?.Invoke());
         }
 
+        #region Functions
+
         /// <summary>
         /// Converts a level to VG format and outputs it to the exports folder.
         /// </summary>
@@ -2049,6 +2051,123 @@ namespace BetterLegacy.Editor.Managers
             RTFile.MoveDirectory(folderPath, RTFile.CombinePaths(recyclingPath, Path.GetFileName(folderPath)));
             LoadLevels();
         }
+
+        public GameData combinedGameData;
+
+        /// <summary>
+        /// Combines all selected editor levels into one.
+        /// </summary>
+        /// <param name="savePath">Path to save the level to.</param>
+        public void Combine(string savePath, Action onCombined = null) => Combine(savePath, LevelPanels.Where(x => x.Selected && x.Item && RTFile.FileExists(x.Item.GetFile(x.Item.CurrentFile))), onCombined);
+
+        /// <summary>
+        /// Combines editor levels into one.
+        /// </summary>
+        /// <param name="savePath">Path to save the level to.</param>
+        /// <param name="selected">Editor levels to combine.</param>
+        public void Combine(string savePath, IEnumerable<LevelPanel> selected, Action onCombined = null)
+        {
+            var combineList = new List<GameData>();
+
+            foreach (var levelPanel in selected)
+            {
+                Debug.Log($"{EditorManager.inst.className}Parsing GameData from {levelPanel.Item.FolderName}");
+                combineList.Add(levelPanel.Item.LoadGameData());
+            }
+
+            Debug.Log($"{EditorManager.inst.className}Can Combine: {combineList.Count > 0 && !string.IsNullOrEmpty(savePath)}" +
+                $"\nGameData Count: {combineList.Count}" +
+                $"\nSavePath: {savePath}");
+
+            if (combineList.Count < 2)
+            {
+                EditorManager.inst.DisplayNotification("More than one level needs to be selected.", 1f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(savePath))
+            {
+                EditorManager.inst.DisplayNotification("Cannot combine with an empty path!", 1f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var combinedGameData = GameData.Combiner.Combine(combineList.ToArray());
+            this.combinedGameData = combinedGameData;
+
+            var levelFile = EditorConfig.Instance.CombinerOutputFormat.Value switch
+            {
+                ArrhythmiaType.LS => Level.LEVEL_LSB,
+                ArrhythmiaType.VG => Level.LEVEL_VGD,
+                _ => "",
+            };
+
+            string save = savePath;
+            if (!save.Contains(levelFile) && save.LastIndexOf('/') == save.Length - 1)
+                save += levelFile;
+            else if (!save.Contains("/" + levelFile))
+                save += "/" + levelFile;
+
+            if (!save.Contains(RTEditor.inst.BeatmapsPath) && !save.Contains(RTEditor.inst.EditorPath))
+                save = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.EditorPath, save);
+            else if (!save.Contains(RTEditor.inst.BeatmapsPath))
+                save = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, save);
+            else if (!save.Contains(RTEditor.inst.BasePath))
+                save = RTFile.CombinePaths(RTEditor.inst.BasePath, save);
+
+            foreach (var levelPanel in selected)
+            {
+                var file = levelPanel.Item.GetFile(levelPanel.Item.CurrentFile);
+                if (!RTFile.FileExists(file))
+                    return;
+
+                var directory = Path.GetDirectoryName(save);
+                RTFile.CreateDirectory(directory);
+
+                var files1 = Directory.GetFiles(Path.GetDirectoryName(file));
+
+                foreach (var file2 in files1)
+                {
+                    string dir = Path.GetDirectoryName(file2);
+                    RTFile.CreateDirectory(dir);
+
+                    var copyTo = file2.Replace(Path.GetDirectoryName(file), directory);
+                    if (EditorConfig.Instance.CombinerOutputFormat.Value == ArrhythmiaType.VG)
+                        copyTo = copyTo
+                            .Replace(Level.LEVEL_OGG, Level.AUDIO_OGG)
+                            .Replace(Level.LEVEL_WAV, Level.AUDIO_WAV)
+                            .Replace(Level.LEVEL_MP3, Level.AUDIO_MP3)
+                            .Replace(Level.LEVEL_JPG, Level.COVER_JPG)
+                            ;
+
+                    var fileName = Path.GetFileName(file2);
+                    if (fileName != Level.LEVEL_LSB && fileName != Level.LEVEL_VGD && fileName != Level.METADATA_LSB && fileName != Level.METADATA_VGM && !RTFile.FileExists(copyTo))
+                        File.Copy(file2, copyTo);
+                }
+            }
+
+            if (EditorConfig.Instance.CombinerOutputFormat.Value == ArrhythmiaType.LS)
+            {
+                selected.First().Item.metadata?.WriteToFile(save.Replace(Level.LEVEL_LSB, Level.METADATA_LSB));
+
+                combinedGameData.SaveData(save, () =>
+                {
+                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(selected.Select(x => x.Name).ToArray())} to {savePath} in the LS format!", 3f, EditorManager.NotificationType.Success);
+                    onCombined?.Invoke();
+                }, true);
+            }
+            else
+            {
+                selected.First().Item.metadata?.WriteToFileVG(save.Replace(Level.LEVEL_VGD, Level.METADATA_VGM).Replace(Level.LEVEL_LSB, Level.METADATA_VGM));
+
+                combinedGameData.SaveDataVG(save.Replace(FileFormat.LSB.Dot(), FileFormat.VGD.Dot()), () =>
+                {
+                    EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(selected.Select(x => x.Name).ToArray())} to {savePath} in the VG format!", 3f, EditorManager.NotificationType.Success);
+                    onCombined?.Invoke();
+                });
+            }
+        }
+
+        #endregion
 
         #region Story Development
 

@@ -280,76 +280,6 @@ namespace BetterLegacy.Editor.Data.Elements
             Render();
         }
 
-        /// <summary>
-        /// Initializes the level panel in the level combiner.
-        /// </summary>
-        public void InitLevelCombiner()
-        {
-            if (isFolder)
-                return;
-
-            var folder = Path;
-            var metadata = Item.metadata;
-
-            if (CombinerGameObject)
-                CoreHelper.Destroy(CombinerGameObject, true);
-
-            var gameObjectBase = Creator.NewUIObject($"Folder [{Name}]", LevelCombiner.editorDialogContent);
-            CombinerGameObject = gameObjectBase;
-
-            var image = gameObjectBase.AddComponent<Image>();
-
-            EditorThemeManager.ApplyGraphic(image, ThemeGroup.Function_1, true);
-
-            CombinerGameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
-
-            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(CombinerGameObject.transform, "Button");
-            UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(740f, 32f));
-            var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-
-            var hoverUI = gameObject.AddComponent<HoverUI>();
-            hoverUI.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
-            hoverUI.animatePos = false;
-            hoverUI.animateSca = true;
-
-            folderButtonStorage.label.text = DisplayName;
-
-            folderButtonStorage.label.horizontalOverflow = EditorConfig.Instance.OpenLevelTextHorizontalWrap.Value;
-            folderButtonStorage.label.verticalOverflow = EditorConfig.Instance.OpenLevelTextVerticalWrap.Value;
-            folderButtonStorage.label.fontSize = EditorConfig.Instance.OpenLevelTextFontSize.Value;
-
-            gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                desc = "<#" + LSColors.ColorToHex(metadata.song.DifficultyType.Color) + ">" + metadata.artist.name + " - " + metadata.song.title,
-                hint = "</color>" + metadata.song.description
-            });
-
-            folderButtonStorage.button.onClick.AddListener(() =>
-            {
-                combinerSelected = !combinerSelected;
-                image.enabled = combinerSelected;
-            });
-            image.enabled = combinerSelected;
-
-            var icon = Creator.NewUIObject("icon", gameObject.transform);
-            icon.layer = 5;
-            var iconImage = icon.AddComponent<Image>();
-
-            var iconPosition = EditorConfig.Instance.OpenLevelCoverPosition.Value;
-            iconPosition.x += -75f;
-            icon.transform.AsRT().anchoredPosition = iconPosition;
-            icon.transform.AsRT().sizeDelta = EditorConfig.Instance.OpenLevelCoverScale.Value;
-
-            iconImage.sprite = Item.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
-
-            EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-            EditorThemeManager.ApplyLightText(folderButtonStorage.label);
-
-            string difficultyName = difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)];
-
-            CombinerSetActive(RTString.SearchString(LevelCombiner.searchTerm, Name, metadata.song.title, metadata.artist.name, metadata.creator.name, metadata.song.description, difficultyName));
-        }
-
         public override void Render()
         {
             RenderIcon();
@@ -612,7 +542,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             {
                                 RTEditor.inst.ShowNameEditor("Combiner", "Combined Level name", "Combine", () =>
                                 {
-                                    LevelCombiner.inst.Combine(RTEditor.inst.folderCreatorName.text, EditorLevelManager.inst.SelectedLevels, EditorLevelManager.inst.LoadLevels);
+                                    EditorLevelManager.inst.Combine(RTEditor.inst.folderCreatorName.text, EditorLevelManager.inst.SelectedLevels, EditorLevelManager.inst.LoadLevels);
                                 });
                             }),
                             new ButtonFunction(true),

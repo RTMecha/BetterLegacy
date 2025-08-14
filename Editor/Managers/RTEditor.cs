@@ -731,7 +731,6 @@ namespace BetterLegacy.Editor.Managers
             KeybindEditor.Init();
             PlayerEditor.Init();
             ModifiersEditor.Init();
-            LevelCombiner.Init();
             AchievementEditor.Init();
             LevelPropertiesEditor.Init();
             AssetEditor.Init();
