@@ -6951,7 +6951,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || modifier.HasResult())
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;
@@ -7000,7 +7000,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || modifier.HasResult() || reference is not ITransformable transformable)
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;
@@ -7051,7 +7051,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(13, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(13, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;
@@ -7105,7 +7105,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;
@@ -7152,7 +7152,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant)
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;
@@ -7205,7 +7205,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || reference is not ITransformable transformable)
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(11, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;
@@ -7260,7 +7260,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(12, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;
@@ -7318,7 +7318,7 @@ namespace BetterLegacy.Core.Helpers
             if (modifier.constant || modifier.HasResult() || reference is not IPrefabable prefabable)
                 return;
 
-            var prefab = ModifiersHelper.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
+            var prefab = GameData.Current.GetPrefab(modifier.GetInt(4, 0, variables), modifier.GetValue(0, variables));
 
             if (!prefab)
                 return;

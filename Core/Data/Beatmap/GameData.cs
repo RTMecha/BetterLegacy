@@ -1836,6 +1836,23 @@ namespace BetterLegacy.Core.Data.Beatmap
         public void UpdateUsedThemes() => beatmapThemes = GetUsedThemes(ThemeManager.inst.CustomThemes);
 
         /// <summary>
+        /// Gets a Prefab from a specific source.
+        /// </summary>
+        /// <param name="findType">Type to search.
+        /// <br>0 = Index</br>
+        /// <br>1 = Name</br>
+        /// <br>2 = ID</br></param>
+        /// <param name="reference">Reference to find a Prefab by.</param>
+        /// <returns>Returns a found prefab.</returns>
+        public Prefab GetPrefab(int findType, string reference) => findType switch
+        {
+            0 => prefabs.GetAt(Parser.TryParse(reference, -1)),
+            1 => prefabs.Find(x => x.name == reference),
+            2 => prefabs.Find(x => x.id == reference),
+            _ => null,
+        };
+
+        /// <summary>
         /// Gets closest event keyframe to current time.
         /// </summary>
         /// <param name="_type">Event Keyframe Type</param>

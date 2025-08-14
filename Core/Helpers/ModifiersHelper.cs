@@ -2273,14 +2273,6 @@ namespace BetterLegacy.Core.Helpers
 
         public static string GetSaveFile(string file) => RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile", file + FileFormat.SES.Dot());
 
-        public static Prefab GetPrefab(int findType, string reference) => findType switch
-        {
-            0 => GameData.Current.prefabs.GetAt(Parser.TryParse(reference, -1)),
-            1 => GameData.Current.prefabs.Find(x => x.name == reference),
-            2 => GameData.Current.prefabs.Find(x => x.id == reference),
-            _ => null,
-        };
-
         public static void SetParent(IParentable child, BeatmapObject parent) => SetParent(child, parent.id);
 
         public static void SetParent(IParentable child, string parent)
