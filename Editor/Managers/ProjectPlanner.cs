@@ -66,8 +66,7 @@ namespace BetterLegacy.Editor.Managers
             close.transform.AsRT().sizeDelta = new Vector2(48f, 48f);
 
             var closeButton = close.GetComponent<Button>();
-            closeButton.onClick.ClearAll();
-            closeButton.onClick.AddListener(() => { Close(); });
+            closeButton.onClick.NewListener(Close);
 
             EditorThemeManager.AddSelectable(closeButton, ThemeGroup.Close);
 
@@ -124,9 +123,8 @@ namespace BetterLegacy.Editor.Managers
                 searchBase.transform.GetChild(0).AsRT().sizeDelta = new Vector2(0f, 48f);
 
                 var searchField = searchBase.transform.GetChild(0).GetComponent<InputField>();
-                searchField.onValueChanged.ClearAll();
-                ((Text)searchField.placeholder).text = "Search...";
-                searchField.onValueChanged.AddListener(_val =>
+                searchField.GetPlaceholderText().text = "Search...";
+                searchField.onValueChanged.NewListener(_val =>
                 {
                     CoreHelper.Log($"Searching {_val}");
                     SearchTerm = _val;
@@ -142,8 +140,7 @@ namespace BetterLegacy.Editor.Managers
                 addNewItem.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                 var addNewItemText = addNewItemStorage.label;
                 addNewItemText.text = "Add New Item";
-                addNewItemStorage.button.onClick.ClearAll();
-                addNewItemStorage.button.onClick.AddListener(() =>
+                addNewItemStorage.button.onClick.NewListener(() =>
                 {
                     CoreHelper.Log($"Create new {tabNames[CurrentTab]}");
                     var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PlannersPath);
@@ -292,8 +289,7 @@ namespace BetterLegacy.Editor.Managers
                 reload.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                 var reloadText = reloadStorage.label;
                 reloadText.text = "Reload";
-                reloadStorage.button.onClick.ClearAll();
-                reloadStorage.button.onClick.AddListener(() => { Load(); });
+                reloadStorage.button.onClick.NewListener(Load);
 
                 reloadStorage.button.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(reloadStorage.button, ThemeGroup.Function_2);
@@ -2269,9 +2265,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 int index = num;
 
-                tab.onValueChanged.ClearAll();
-                tab.isOn = index == CurrentTab;
-                tab.onValueChanged.AddListener(_val =>
+                tab.SetIsOnWithoutNotify(index == CurrentTab);
+                tab.onValueChanged.NewListener(_val =>
                 {
                     CurrentTab = index;
                     RenderTabs();
@@ -2361,16 +2356,14 @@ namespace BetterLegacy.Editor.Managers
             editors[0].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_1];
 
-            documentEditorName.onValueChanged.ClearAll();
-            documentEditorName.onEndEdit.ClearAll();
-            documentEditorName.text = document.Name;
-            documentEditorName.onValueChanged.AddListener(_val =>
+            documentEditorName.SetTextWithoutNotify(document.Name);
+            documentEditorName.onValueChanged.NewListener(_val =>
             {
                 document.Name = _val;
                 document.NameUI.text = _val;
                 documentTitle.text = document.Name;
             });
-            documentEditorName.onEndEdit.AddListener(_val => SaveDocuments());
+            documentEditorName.onEndEdit.NewListener(_val => SaveDocuments());
 
             HandleDocumentEditor(document);
             HandleDocumentEditorPreview(document);
@@ -2378,17 +2371,15 @@ namespace BetterLegacy.Editor.Managers
 
         void HandleDocumentEditor(DocumentPlanner document)
         {
-            documentEditorText.onValueChanged.ClearAll();
-            documentEditorText.onEndEdit.ClearAll();
-            documentEditorText.text = document.Text;
-            documentEditorText.onValueChanged.AddListener(_val =>
+            documentEditorText.SetTextWithoutNotify(document.Text);
+            documentEditorText.onValueChanged.NewListener(_val =>
             {
                 document.Text = _val;
                 document.TextUI.text = _val;
 
                 HandleDocumentEditorPreview(document);
             });
-            documentEditorText.onEndEdit.AddListener(_val => SaveDocuments());
+            documentEditorText.onEndEdit.NewListener(_val => SaveDocuments());
         }
 
         void HandleDocumentEditorPreview(DocumentPlanner document)
@@ -2396,17 +2387,15 @@ namespace BetterLegacy.Editor.Managers
             DocumentFullViewActive = true;
             documentFullView.SetActive(true);
             documentTitle.text = document.Name;
-            documentInputField.onValueChanged.ClearAll();
-            documentInputField.onEndEdit.ClearAll();
-            documentInputField.text = document.Text;
-            documentInputField.onValueChanged.AddListener(_val =>
+            documentInputField.SetTextWithoutNotify(document.Text);
+            documentInputField.onValueChanged.NewListener(_val =>
             {
                 document.Text = _val;
                 document.TextUI.text = _val;
 
                 HandleDocumentEditor(document);
             });
-            documentInputField.onEndEdit.AddListener(_val => SaveDocuments());
+            documentInputField.onEndEdit.NewListener(_val => SaveDocuments());
         }
 
         public void OpenTODOEditor(TODOPlanner todo)
@@ -2414,17 +2403,14 @@ namespace BetterLegacy.Editor.Managers
             editors[1].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_2];
 
-            todoEditorText.onValueChanged.ClearAll();
-            todoEditorText.text = todo.Text;
-            todoEditorText.onValueChanged.AddListener(_val =>
+            todoEditorText.SetTextWithoutNotify(todo.Text);
+            todoEditorText.onValueChanged.NewListener(_val =>
             {
                 todo.Text = _val;
                 todo.TextUI.text = _val;
             });
-            todoEditorText.onEndEdit.ClearAll();
-            todoEditorText.onEndEdit.AddListener(_val => SaveTODO());
-            todoEditorMoveUpButton.onClick.ClearAll();
-            todoEditorMoveUpButton.onClick.AddListener(() =>
+            todoEditorText.onEndEdit.NewListener(_val => SaveTODO());
+            todoEditorMoveUpButton.onClick.NewListener(() =>
             {
                 if (!todos.TryFindIndex(x => x.ID == todo.ID, out int index))
                     return;
@@ -2438,8 +2424,7 @@ namespace BetterLegacy.Editor.Managers
                 foreach (var todo in todos)
                     todo.Init();
             });
-            todoEditorMoveDownButton.onClick.ClearAll();
-            todoEditorMoveDownButton.onClick.AddListener(() =>
+            todoEditorMoveDownButton.onClick.NewListener(() =>
             {
                 if (!todos.TryFindIndex(x => x.ID == todo.ID, out int index))
                     return;
@@ -2460,38 +2445,31 @@ namespace BetterLegacy.Editor.Managers
             editors[2].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_3];
 
-            characterEditorName.onValueChanged.ClearAll();
-            characterEditorName.text = character.Name;
-            characterEditorName.onValueChanged.AddListener(_val =>
+            characterEditorName.SetTextWithoutNotify(character.Name);
+            characterEditorName.onValueChanged.NewListener(_val =>
             {
                 character.Name = _val;
                 character.DetailsUI.text = character.FormatDetails;
             });
-            characterEditorName.onEndEdit.ClearAll();
-            characterEditorName.onEndEdit.AddListener(_val => character.Save());
+            characterEditorName.onEndEdit.NewListener(_val => character.Save());
 
-            characterEditorGender.onValueChanged.ClearAll();
-            characterEditorGender.text = character.Gender;
-            characterEditorGender.onValueChanged.AddListener(_val =>
+            characterEditorGender.SetTextWithoutNotify(character.Gender);
+            characterEditorGender.onValueChanged.NewListener(_val =>
             {
                 character.Gender = _val;
                 character.DetailsUI.text = character.FormatDetails;
             });
-            characterEditorGender.onEndEdit.ClearAll();
-            characterEditorGender.onEndEdit.AddListener(_val => character.Save());
+            characterEditorGender.onEndEdit.NewListener(_val => character.Save());
 
-            characterEditorDescription.onValueChanged.ClearAll();
-            characterEditorDescription.text = character.Description;
-            characterEditorDescription.onValueChanged.AddListener(_val =>
+            characterEditorDescription.SetTextWithoutNotify(character.Description);
+            characterEditorDescription.onValueChanged.NewListener(_val =>
             {
                 character.Description = _val;
                 character.DescriptionUI.text = character.Description;
             });
-            characterEditorDescription.onEndEdit.ClearAll();
-            characterEditorDescription.onEndEdit.AddListener(_val => character.Save());
+            characterEditorDescription.onEndEdit.NewListener(_val => character.Save());
 
-            characterEditorProfileSelector.onClick.ClearAll();
-            characterEditorProfileSelector.onClick.AddListener(() =>
+            characterEditorProfileSelector.onClick.NewListener(() =>
             {
                 var editorPath = RTFile.ApplicationDirectory;
                 string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, "png", "jpg");
@@ -2525,19 +2503,16 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = tagPrefab.Duplicate(characterEditorTraitsContent, index.ToString());
                     gameObject.transform.localScale = Vector3.one;
                     var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                    input.onValueChanged.ClearAll();
-                    input.onEndEdit.ClearAll();
-                    input.text = tag;
-                    input.onValueChanged.AddListener(_val =>
+                    input.SetTextWithoutNotify(tag);
+                    input.onValueChanged.NewListener(_val =>
                     {
                         character.CharacterTraits[index] = _val;
                         character.DetailsUI.text = character.FormatDetails;
                     });
-                    input.onEndEdit.AddListener(_val => { character.Save(); });
+                    input.onEndEdit.NewListener(_val => character.Save());
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
-                    delete.onClick.ClearAll();
-                    delete.onClick.AddListener(() =>
+                    delete.onClick.NewListener(() =>
                     {
                         character.CharacterTraits.RemoveAt(index);
                         character.DetailsUI.text = character.FormatDetails;
@@ -2548,12 +2523,9 @@ namespace BetterLegacy.Editor.Managers
                     num++;
                 }
 
-                var add = PrefabEditor.inst.CreatePrefab.Duplicate(characterEditorTraitsContent, "Add");
-                add.transform.localScale = Vector3.one;
-                add.transform.Find("Text").GetComponent<Text>().text = "Add Trait";
-                var addButton = add.GetComponent<Button>();
-                addButton.onClick.ClearAll();
-                addButton.onClick.AddListener(() =>
+                var add = EditorPrefabHolder.Instance.CreateAddButton(characterEditorTraitsContent);
+                add.Text = "Add Trait";
+                add.OnClick.NewListener(() =>
                 {
                     character.CharacterTraits.Add("New Detail");
                     character.DetailsUI.text = character.FormatDetails;
@@ -2573,19 +2545,16 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = tagPrefab.Duplicate(characterEditorLoreContent, index.ToString());
                     gameObject.transform.localScale = Vector3.one;
                     var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                    input.onValueChanged.ClearAll();
-                    input.onEndEdit.ClearAll();
-                    input.text = tag;
-                    input.onValueChanged.AddListener(_val =>
+                    input.SetTextWithoutNotify(tag);
+                    input.onValueChanged.NewListener(_val =>
                     {
                         character.CharacterLore[index] = _val;
                         character.DetailsUI.text = character.FormatDetails;
                     });
-                    input.onEndEdit.AddListener(_val => { character.Save(); });
+                    input.onEndEdit.NewListener(_val => character.Save());
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
-                    delete.onClick.ClearAll();
-                    delete.onClick.AddListener(() =>
+                    delete.onClick.NewListener(() =>
                     {
                         character.CharacterLore.RemoveAt(index);
                         character.DetailsUI.text = character.FormatDetails;
@@ -2596,12 +2565,9 @@ namespace BetterLegacy.Editor.Managers
                     num++;
                 }
 
-                var add = PrefabEditor.inst.CreatePrefab.Duplicate(characterEditorLoreContent, "Add");
-                add.transform.localScale = Vector3.one;
-                add.transform.Find("Text").GetComponent<Text>().text = "Add Lore";
-                var addButton = add.GetComponent<Button>();
-                addButton.onClick.ClearAll();
-                addButton.onClick.AddListener(() =>
+                var add = EditorPrefabHolder.Instance.CreateAddButton(characterEditorLoreContent);
+                add.Text = "Add Lore";
+                add.OnClick.NewListener(() =>
                 {
                     character.CharacterLore.Add("New Detail");
                     character.DetailsUI.text = character.FormatDetails;
@@ -2621,19 +2587,16 @@ namespace BetterLegacy.Editor.Managers
                     var gameObject = tagPrefab.Duplicate(characterEditorAbilitiesContent, index.ToString());
                     gameObject.transform.localScale = Vector3.one;
                     var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                    input.onValueChanged.ClearAll();
-                    input.onEndEdit.ClearAll();
-                    input.text = tag;
-                    input.onValueChanged.AddListener(_val =>
+                    input.SetTextWithoutNotify(tag);
+                    input.onValueChanged.NewListener(_val =>
                     {
                         character.CharacterAbilities[index] = _val;
                         character.DetailsUI.text = character.FormatDetails;
                     });
-                    input.onEndEdit.AddListener(_val => { character.Save(); });
+                    input.onEndEdit.NewListener(_val => character.Save());
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
-                    delete.onClick.ClearAll();
-                    delete.onClick.AddListener(() =>
+                    delete.onClick.NewListener(() =>
                     {
                         character.CharacterAbilities.RemoveAt(index);
                         character.DetailsUI.text = character.FormatDetails;
@@ -2644,12 +2607,9 @@ namespace BetterLegacy.Editor.Managers
                     num++;
                 }
 
-                var add = PrefabEditor.inst.CreatePrefab.Duplicate(characterEditorAbilitiesContent, "Add");
-                add.transform.localScale = Vector3.one;
-                add.transform.Find("Text").GetComponent<Text>().text = "Add Ability";
-                var addButton = add.GetComponent<Button>();
-                addButton.onClick.ClearAll();
-                addButton.onClick.AddListener(() =>
+                var add = EditorPrefabHolder.Instance.CreateAddButton(characterEditorAbilitiesContent);
+                add.Text = "Add Ability";
+                add.OnClick.NewListener(() =>
                 {
                     character.CharacterAbilities.Add("New Detail");
                     character.DetailsUI.text = character.FormatDetails;
@@ -2665,15 +2625,13 @@ namespace BetterLegacy.Editor.Managers
             editors[3].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_4];
 
-            timelineEditorName.onValueChanged.ClearAll();
-            timelineEditorName.text = timeline.Name;
-            timelineEditorName.onValueChanged.AddListener(_val =>
+            timelineEditorName.SetTextWithoutNotify(timeline.Name);
+            timelineEditorName.onValueChanged.NewListener(_val =>
             {
                 timeline.Name = _val;
                 timeline.NameUI.text = _val;
             });
-            timelineEditorName.onEndEdit.ClearAll();
-            timelineEditorName.onEndEdit.AddListener(_val => SaveTimelines());
+            timelineEditorName.onEndEdit.NewListener(_val => SaveTimelines());
         }
 
         public void OpenEventEditor(TimelinePlanner.Event level)
@@ -2682,35 +2640,28 @@ namespace BetterLegacy.Editor.Managers
             editors[4].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_4];
 
-            eventEditorName.onValueChanged.ClearAll();
-            eventEditorName.text = level.Name;
-            eventEditorName.onValueChanged.AddListener(_val =>
+            eventEditorName.SetTextWithoutNotify(level.Name);
+            eventEditorName.onValueChanged.NewListener(_val =>
             {
                 level.Name = _val;
                 level.NameUI.text = $"{level.ElementType}: {level.Name}";
             });
-            eventEditorName.onEndEdit.ClearAll();
-            eventEditorName.onEndEdit.AddListener(_val => SaveTimelines());
+            eventEditorName.onEndEdit.NewListener(_val => SaveTimelines());
 
-            eventEditorDescription.onValueChanged.ClearAll();
-            eventEditorDescription.text = level.Description;
-            eventEditorDescription.onValueChanged.AddListener(_val =>
+            eventEditorDescription.SetTextWithoutNotify(level.Description);
+            eventEditorDescription.onValueChanged.NewListener(_val =>
             {
                 level.Description = _val;
                 level.DescriptionUI.text = _val;
             });
-            eventEditorDescription.onEndEdit.ClearAll();
-            eventEditorDescription.onEndEdit.AddListener(_val => SaveTimelines());
+            eventEditorDescription.onEndEdit.NewListener(_val => SaveTimelines());
 
-            eventEditorPath.onValueChanged.ClearAll();
-            eventEditorPath.text = level.Path == null ? "" : level.Path;
-            eventEditorPath.onValueChanged.AddListener(_val => { level.Path = _val; });
-            eventEditorPath.onEndEdit.ClearAll();
-            eventEditorPath.onEndEdit.AddListener(_val => SaveTimelines());
+            eventEditorPath.SetTextWithoutNotify(level.Path ?? string.Empty);
+            eventEditorPath.onValueChanged.NewListener(_val => level.Path = _val);
+            eventEditorPath.onEndEdit.NewListener(_val => SaveTimelines());
 
-            eventEditorType.onValueChanged.ClearAll();
-            eventEditorType.value = (int)level.ElementType;
-            eventEditorType.onValueChanged.AddListener(_val =>
+            eventEditorType.SetValueWithoutNotify((int)level.ElementType);
+            eventEditorType.onValueChanged.NewListener(_val =>
             {
                 level.ElementType = (TimelinePlanner.Event.Type)_val;
                 level.NameUI.text = $"{level.ElementType}: {level.Name}";
@@ -2723,20 +2674,17 @@ namespace BetterLegacy.Editor.Managers
             editors[5].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_5];
 
-            scheduleEditorDescription.onValueChanged.ClearAll();
-            scheduleEditorDescription.text = schedule.Description;
-            scheduleEditorDescription.onValueChanged.AddListener(_val =>
+            scheduleEditorDescription.SetTextWithoutNotify(schedule.Description);
+            scheduleEditorDescription.onValueChanged.NewListener(_val =>
             {
                 schedule.Description = _val;
                 schedule.TextUI.text = schedule.Text;
                 schedule.hasBeenChecked = false;
             });
-            scheduleEditorDescription.onEndEdit.ClearAll();
-            scheduleEditorDescription.onEndEdit.AddListener(_val => SaveSchedules());
+            scheduleEditorDescription.onEndEdit.NewListener(_val => SaveSchedules());
 
-            scheduleEditorYear.onValueChanged.ClearAll();
-            scheduleEditorYear.text = schedule.DateTime.Year.ToString();
-            scheduleEditorYear.onValueChanged.AddListener(_val =>
+            scheduleEditorYear.SetTextWithoutNotify(schedule.DateTime.Year.ToString());
+            scheduleEditorYear.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int year))
                 {
@@ -2752,9 +2700,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            scheduleEditorMonth.onValueChanged.ClearAll();
-            scheduleEditorMonth.value = schedule.DateTime.Month - 1;
-            scheduleEditorMonth.onValueChanged.AddListener(_val =>
+            scheduleEditorMonth.SetValueWithoutNotify(schedule.DateTime.Month - 1);
+            scheduleEditorMonth.onValueChanged.NewListener(_val =>
             {
                 var dateTime = schedule.DateTime;
 
@@ -2767,9 +2714,8 @@ namespace BetterLegacy.Editor.Managers
                 SaveSchedules();
             });
 
-            scheduleEditorDay.onValueChanged.ClearAll();
-            scheduleEditorDay.text = schedule.DateTime.Day.ToString();
-            scheduleEditorDay.onValueChanged.AddListener(_val =>
+            scheduleEditorDay.SetTextWithoutNotify(schedule.DateTime.Day.ToString());
+            scheduleEditorDay.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int day))
                 {
@@ -2785,9 +2731,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            scheduleEditorHour.onValueChanged.ClearAll();
-            scheduleEditorHour.text = schedule.DateTime.Hour.ToString();
-            scheduleEditorHour.onValueChanged.AddListener(_val =>
+            scheduleEditorHour.SetTextWithoutNotify(schedule.DateTime.Hour.ToString());
+            scheduleEditorHour.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int hour))
                 {
@@ -2805,9 +2750,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            scheduleEditorMinute.onValueChanged.ClearAll();
-            scheduleEditorMinute.text = schedule.DateTime.Minute.ToString();
-            scheduleEditorMinute.onValueChanged.AddListener(_val =>
+            scheduleEditorMinute.SetTextWithoutNotify(schedule.DateTime.Minute.ToString());
+            scheduleEditorMinute.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int minute))
                 {
@@ -2829,25 +2773,21 @@ namespace BetterLegacy.Editor.Managers
             editors[6].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_6];
 
-            noteEditorName.onValueChanged.ClearAll();
-            noteEditorName.text = note.Name;
-            noteEditorName.onValueChanged.AddListener(_val =>
+            noteEditorName.SetTextWithoutNotify(note.Name);
+            noteEditorName.onValueChanged.NewListener(_val =>
             {
                 note.Name = _val;
                 note.TitleUI.text = $"Note - {note.Name}";
             });
-            noteEditorName.onEndEdit.ClearAll();
-            noteEditorName.onEndEdit.AddListener(_val => SaveNotes());
+            noteEditorName.onEndEdit.NewListener(_val => SaveNotes());
 
-            noteEditorText.onValueChanged.ClearAll();
-            noteEditorText.text = note.Text;
-            noteEditorText.onValueChanged.AddListener(_val =>
+            noteEditorText.SetTextWithoutNotify(note.Text);
+            noteEditorText.onValueChanged.NewListener(_val =>
             {
                 note.Text = _val;
                 note.TextUI.text = _val;
             });
-            noteEditorText.onEndEdit.ClearAll();
-            noteEditorText.onEndEdit.AddListener(_val => SaveNotes());
+            noteEditorText.onEndEdit.NewListener(_val => SaveNotes());
 
             noteEditorColors.Clear();
             LSHelpers.DeleteChildren(noteEditorColorsParent);
@@ -2860,8 +2800,7 @@ namespace BetterLegacy.Editor.Managers
 
             SetNoteColors(note);
 
-            noteEditorReset.onClick.ClearAll();
-            noteEditorReset.onClick.AddListener(() =>
+            noteEditorReset.onClick.NewListener(() =>
             {
                 note.Position = Vector2.zero;
                 note.Scale = Vector2.one;
@@ -2877,12 +2816,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 int index = num;
 
-                var color = index < MarkerEditor.inst.markerColors.Count ? MarkerEditor.inst.markerColors[index] : LSColors.red700;
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = index == note.Color;
+                var color = index < MarkerEditor.inst.markerColors.Count ? MarkerEditor.inst.markerColors[index] : RTColors.errorColor;
                 toggle.image.color = color;
-                ((Image)toggle.graphic).color = new Color(0.078f, 0.067f, 0.067f, 1f);
-                toggle.onValueChanged.AddListener(_val =>
+                toggle.graphic.color = new Color(0.078f, 0.067f, 0.067f, 1f);
+                toggle.SetIsOnWithoutNotify(index == note.Color);
+                toggle.onValueChanged.NewListener(_val =>
                 {
                     note.Color = index;
                     SetNoteColors(note);
@@ -2897,30 +2835,20 @@ namespace BetterLegacy.Editor.Managers
             editors[7].SetActive(true); editorTitlePanel.gameObject.SetActive(true);
             editorTitlePanel.color = EditorThemeManager.CurrentTheme.ColorGroups[ThemeGroup.Tab_Color_7];
 
-            ostEditorPath.onValueChanged.ClearAll();
-            ostEditorPath.onEndEdit.ClearAll();
-            ostEditorPath.text = ost.Path;
-            ostEditorPath.onValueChanged.AddListener(_val => { ost.Path = _val; });
-            ostEditorPath.onEndEdit.AddListener(_val => { SaveOST(); });
+            ostEditorPath.SetTextWithoutNotify(ost.Path);
+            ostEditorPath.onValueChanged.NewListener(_val => { ost.Path = _val; });
+            ostEditorPath.onEndEdit.NewListener(_val => SaveOST());
 
-            ostEditorName.onValueChanged.ClearAll();
-            ostEditorName.onEndEdit.ClearAll();
-            ostEditorName.text = ost.Name;
-            ostEditorName.onValueChanged.AddListener(_val =>
+            ostEditorName.SetTextWithoutNotify(ost.Name);
+            ostEditorName.onValueChanged.NewListener(_val =>
             {
                 ost.Name = _val;
                 ost.TextUI.text = _val;
             });
-            ostEditorName.onEndEdit.AddListener(_val => SaveOST());
-
-            ostEditorPlay.onClick.ClearAll();
-            ostEditorPlay.onClick.AddListener(ost.Play);
-
-            ostEditorStop.onClick.ClearAll();
-            ostEditorStop.onClick.AddListener(StopOST);
-
-            ostEditorUseGlobal.onClick.ClearAll();
-            ostEditorUseGlobal.onClick.AddListener(() =>
+            ostEditorName.onEndEdit.NewListener(_val => SaveOST());
+            ostEditorPlay.onClick.NewListener(ost.Play);
+            ostEditorStop.onClick.NewListener(StopOST);
+            ostEditorUseGlobal.onClick.NewListener(() =>
             {
                 ost.UseGlobal = !ost.UseGlobal;
                 ostEditorUseGlobalText.text = ost.UseGlobal.ToString();
@@ -2929,9 +2857,8 @@ namespace BetterLegacy.Editor.Managers
 
             ostEditorUseGlobalText.text = ost.UseGlobal.ToString();
 
-            ostEditorIndex.onValueChanged.ClearAll();
-            ostEditorIndex.text = ost.Index.ToString();
-            ostEditorIndex.onValueChanged.AddListener(_val =>
+            ostEditorIndex.SetTextWithoutNotify(ost.Index.ToString());
+            ostEditorIndex.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
