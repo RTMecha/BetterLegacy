@@ -1,4 +1,11 @@
-﻿# snapshot-2025.8.15 - (pre-1.8.0) [Aug 15, 2025]
+﻿# snapshot-2025.8.16 - (pre-1.8.0) [Aug 15, 2025]
+## Fixes
+- Fixed getVisualColor and getVisualOpacity modifiers not working.
+- Fixed an error where Prefabs wouldn't load.
+
+-------------------------------------------------------------------
+
+# snapshot-2025.8.15 - (pre-1.8.0) [Aug 15, 2025]
 ## Changes
 ### Editor
 - Removed the Level Combiner dialog as you can just select multiple levels in the Open Level Popup, right click them and select "Combine".
