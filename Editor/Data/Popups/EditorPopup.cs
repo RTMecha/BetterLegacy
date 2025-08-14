@@ -87,6 +87,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string AUTOSAVE_POPUP = "Autosave Popup";
         public const string THEME_POPUP = "Theme Popup";
         public const string KEYBIND_LIST_POPUP = "Keybind List Popup";
+        public const string KEYBIND_FUNCTION_POPUP = "Keybind Function Popup";
         public const string PLAYER_MODELS_POPUP = "Player Models Popup";
         public const string DEFAULT_MODIFIERS_POPUP = "Default Modifiers Popup";
         public const string DOCUMENTATION_POPUP = "Documentation Popup";

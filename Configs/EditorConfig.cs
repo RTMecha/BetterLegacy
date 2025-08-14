@@ -34,7 +34,6 @@ namespace BetterLegacy.Configs
             ObjectEditor.RenderPrefabTypeIcon = TimelineObjectPrefabTypeIcon.Value;
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
             ObjectEditor.HideVisualElementsWhenObjectIsEmpty = HideVisualElementsWhenObjectIsEmpty.Value;
-            KeybindEditor.AllowKeys = AllowEditorKeybindsWithEditorCam.Value;
             RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
             RTThemeEditor.themesPerPage = ThemesPerPage.Value;
             RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
@@ -3411,7 +3410,6 @@ namespace BetterLegacy.Configs
         {
             SetPreviewConfig();
 
-            KeybindEditor.AllowKeys = AllowEditorKeybindsWithEditorCam.Value;
             ObjectEditor.RenderPrefabTypeIcon = TimelineObjectPrefabTypeIcon.Value;
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
             RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;

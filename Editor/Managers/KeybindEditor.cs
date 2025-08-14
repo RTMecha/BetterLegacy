@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
@@ -28,38 +30,248 @@ using SelectionType = ObjEditor.ObjectSelection.SelectionType;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// Editor class that manages custom keybinds.
+    /// </summary>
     public class KeybindEditor : MonoBehaviour
     {
-        public static string className = "[<color=#F44336>KeybindManager</color>] \n";
+        #region Init
+
+        /// <summary>
+        /// The <see cref="KeybindEditor"/> global instance reference.
+        /// </summary>
         public static KeybindEditor inst;
 
-        public static string FilePath => $"{RTFile.ApplicationDirectory}settings/keybinds{FileFormat.LSS.Dot()}";
-
-        public bool isPressingKey;
-
-        public int currentKey;
-
-        public static bool AllowKeys { get; set; }
-
-        public EditorDialog Dialog { get; set; }
-
+        /// <summary>
+        /// Initializes <see cref="KeybindEditor"/>.
+        /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(KeybindEditor), EditorManager.inst.transform.parent).AddComponent<KeybindEditor>();
 
         void Awake()
         {
             inst = this;
 
-            if (!RTFile.FileExists(FilePath))
-                FirstInit();
-            else
-                Load();
-
-            GenerateKeybindEditorPopupDialog();
-
             try
             {
-                Dialog = new EditorDialog(EditorDialog.KEYBIND_EDITOR);
+                keybindFunctions = new List<KeybindFunction>()
+                {
+                    #region Main
+
+                    new KeybindFunction(nameof(TogglePlayingSong), TogglePlayingSong),
+                    new KeybindFunction(nameof(TogglePreview), TogglePreview),
+                    new KeybindFunction(nameof(Undo), Undo),
+                    new KeybindFunction(nameof(Redo), Redo),
+                    new KeybindFunction(nameof(Cut), Cut),
+                    new KeybindFunction(nameof(Copy), Copy),
+                    new KeybindFunction(nameof(Paste), Paste, new Keybind.Setting("Remove Prefab Instance ID", "False")),
+                    new KeybindFunction(nameof(Duplicate), Duplicate),
+                    new KeybindFunction(nameof(Delete), Delete),
+
+                    #endregion
+
+                    #region Timeline
+                    
+                    new KeybindFunction(nameof(SetLayer), SetLayer, new Keybind.Setting("Layer", "0")),
+                    new KeybindFunction(nameof(AddLayer), AddLayer, new Keybind.Setting("Layer", "1")),
+                    new KeybindFunction(nameof(ToggleEventLayer), ToggleEventLayer),
+
+                    new KeybindFunction(nameof(GoToCurrentTime), GoToCurrentTime),
+                    new KeybindFunction(nameof(GoToStart), GoToStart),
+                    new KeybindFunction(nameof(GoToEnd), GoToEnd),
+
+                    new KeybindFunction(nameof(ToggleBPMSnap), ToggleBPMSnap),
+                    new KeybindFunction(nameof(ForceSnapBPM), ForceSnapBPM),
+
+                    new KeybindFunction(nameof(AddTimelineBin), AddTimelineBin),
+                    new KeybindFunction(nameof(RemoveTimelineBin), RemoveTimelineBin),
+                    new KeybindFunction(nameof(SetTimelineBin), SetTimelineBin, new Keybind.Setting("Count", "60")),
+
+                    #endregion
+
+                    #region Object
+
+                    new KeybindFunction(nameof(UpdateEverything), UpdateEverything),
+                    new KeybindFunction(nameof(UpdateObject), UpdateObject),
+
+                    new KeybindFunction(nameof(SetSongTimeAutokill), SetSongTimeAutokill),
+
+                    new KeybindFunction(nameof(SwapLockSelection), SwapLockSelection),
+                    new KeybindFunction(nameof(ToggleLockSelection), ToggleLockSelection),
+
+                    new KeybindFunction(nameof(SwapCollapseSelection), SwapCollapseSelection),
+                    new KeybindFunction(nameof(ToggleCollapseSelection), ToggleCollapseSelection),
+
+                    new KeybindFunction(nameof(SetObjectLayer), SetObjectLayer, new Keybind.Setting("Amount", "0")),
+                    new KeybindFunction(nameof(AddObjectLayer), AddObjectLayer, new Keybind.Setting("Amount", "1")),
+
+                    new KeybindFunction(nameof(CycleObjectTypeUp), CycleObjectTypeUp),
+                    new KeybindFunction(nameof(CycleObjectTypeDown), CycleObjectTypeDown),
+
+                    new KeybindFunction(nameof(SelectNextObject), SelectNextObject),
+                    new KeybindFunction(nameof(SelectPreviousObject), SelectPreviousObject),
+
+                    new KeybindFunction(nameof(HideSelection), HideSelection),
+                    new KeybindFunction(nameof(UnhideHiddenObjects), UnhideHiddenObjects),
+                    new KeybindFunction(nameof(ToggleHideSelection), ToggleHideSelection),
+
+                    new KeybindFunction(nameof(ToggleObjectDragging), ToggleObjectDragging),
+                    new KeybindFunction(nameof(ToggleObjectDragHelper), ToggleObjectDragHelper),
+
+                    new KeybindFunction(nameof(TransformPosition), TransformPosition, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
+                    new KeybindFunction(nameof(TransformScale), TransformScale, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
+                    new KeybindFunction(nameof(TransformRotation), TransformRotation, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
+
+                    new KeybindFunction(nameof(ParentPicker), ParentPicker),
+
+                    new KeybindFunction(nameof(ResetIntegerVariables), ResetIntegerVariables),
+
+                    #endregion
+
+                    #region Prefab
+
+                    new KeybindFunction(nameof(OpenPrefabCreator), OpenPrefabCreator, new Keybind.Setting("External", "True")),
+                    new KeybindFunction(nameof(CollapsePrefab), CollapsePrefab),
+                    new KeybindFunction(nameof(ExpandPrefab), ExpandPrefab),
+                    new KeybindFunction(nameof(SpawnPrefab), SpawnPrefab, new Keybind.Setting("Search Prefab Using", "0"), new Keybind.Setting("Prefab Reference", "")),
+                    new KeybindFunction(nameof(SpawnSelectedQuickPrefab), SpawnSelectedQuickPrefab),
+
+                    #endregion
+
+                    #region Marker
+                    
+                    new KeybindFunction(nameof(CreateNewMarker), CreateNewMarker),
+                    new KeybindFunction(nameof(JumpToNextMarker), JumpToNextMarker),
+                    new KeybindFunction(nameof(JumpToPreviousMarker), JumpToPreviousMarker),
+
+                    #endregion
+
+                    #region Save / Load
+                    
+                    new KeybindFunction(nameof(SaveLevel), SaveLevel),
+                    new KeybindFunction(nameof(OpenLevelPopup), OpenLevelPopup),
+                    new KeybindFunction(nameof(SaveLevelCopy), SaveLevelCopy),
+                    new KeybindFunction(nameof(CreateNewLevel), CreateNewLevel),
+
+                    #endregion
+
+                    #region Keyframe
+                    
+                    new KeybindFunction(nameof(SetFirstKeyframeInType), SetFirstKeyframeInType),
+                    new KeybindFunction(nameof(SetLastKeyframeInType), SetLastKeyframeInType),
+                    new KeybindFunction(nameof(SetNextKeyframeInType), SetNextKeyframeInType),
+                    new KeybindFunction(nameof(SetPreviousKeyframeInType), SetPreviousKeyframeInType),
+                    new KeybindFunction(nameof(IncreaseKeyframeValue), IncreaseKeyframeValue, new Keybind.Setting("Type", "0"), new Keybind.Setting("Index", "0"), new Keybind.Setting("Value Index", "0"), new Keybind.Setting("Amount", "0")),
+                    new KeybindFunction(nameof(DecreaseKeyframeValue), DecreaseKeyframeValue, new Keybind.Setting("Type", "0"), new Keybind.Setting("Index", "0"), new Keybind.Setting("Value Index", "0"), new Keybind.Setting("Amount", "0")),
+                    new KeybindFunction(nameof(SetKeyframeValue), SetKeyframeValue, new Keybind.Setting("Type", "0"), new Keybind.Setting("Index", "0"), new Keybind.Setting("Value Index", "0"), new Keybind.Setting("Amount", "0")),
+
+                    #endregion
+
+                    #region Game
+                    
+                    new KeybindFunction(nameof(ToggleZenMode), ToggleZenMode),
+                    new KeybindFunction(nameof(CycleGameMode), CycleGameMode),
+                    new KeybindFunction(nameof(AddPitch), AddPitch, new Keybind.Setting("Pitch", "0.1")),
+                    new KeybindFunction(nameof(SetPitch), SetPitch, new Keybind.Setting("Pitch", "1")),
+                    new KeybindFunction(nameof(UpdateSeed), UpdateSeed),
+
+                    #endregion
+
+                    #region Info
+
+                    new KeybindFunction(nameof(ToggleShowHelp), ToggleShowHelp),
+                    new KeybindFunction(nameof(ToggleMouseTooltip), ToggleMouseTooltip),
+
+                    #endregion
+
+                    new KeybindFunction(nameof(ToggleProjectPlanner), ToggleProjectPlanner),
+                    new KeybindFunction(nameof(SwitchKeybindProfile), SwitchKeybindProfile, new Keybind.Setting("Profile ID", string.Empty)),
+                };
+
+                Load();
+
+                Dialog = new KeybindEditorDialog();
                 Dialog.Init();
+
+                // clear cached values when the editor closes.
+                Dialog.GameObject.AddComponent<ActiveState>().onStateChanged = enabled =>
+                {
+                    if (enabled)
+                        return;
+
+                    RTEditor.inst.selectingKey = false;
+                    RTEditor.inst.setKey = null;
+
+                    if (FunctionPopup.IsOpen)
+                        FunctionPopup.Close();
+                };
+
+                Popup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_LIST_POPUP, "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f),
+                    refreshSearch: _val => RenderPopup(), placeholderText: "Search for keybind...");
+
+                FunctionPopup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_LIST_POPUP, "Select a Function", Vector2.zero, new Vector2(300f, 400f),
+                    refreshSearch: _val => RenderFunctionPopup(), placeholderText: "Search for function...");
+
+                var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(Popup.TopPanel, "Reload");
+                RectValues.TopRightAnchored.AnchoredPosition(-64f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(reload.transform.AsRT());
+                var reloadButton = reload.GetComponent<Button>();
+                reloadButton.onClick.NewListener(Load);
+
+                reloadButton.image.sprite = EditorSprites.ReloadSprite;
+                EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
+
+                // Key Prefab
+                {
+                    keyPrefab = Creator.NewUIObject("Key", transform);
+                    keyPrefab.transform.AsRT().sizeDelta = new Vector2(400f, 32f);
+                    var image = keyPrefab.AddComponent<Image>();
+                    image.color = new Color(0.2f, 0.2f, 0.2f);
+
+                    var horizontalLayoutGroup = keyPrefab.AddComponent<HorizontalLayoutGroup>();
+                    horizontalLayoutGroup.childControlWidth = false;
+                    horizontalLayoutGroup.childForceExpandWidth = false;
+                    horizontalLayoutGroup.spacing = 4;
+
+                    var keyTypeDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(keyPrefab.transform, "Key Type");
+
+                    keyTypeDropdown.transform.AsRT().sizeDelta = new Vector2(220f, 32f);
+
+                    var keyTypeDropdownDD = keyTypeDropdown.GetComponent<Dropdown>();
+                    keyTypeDropdownDD.onValueChanged.ClearAll();
+                    keyTypeDropdownDD.options = Enum.GetNames(typeof(Keybind.Key.Type)).Select(x => new Dropdown.OptionData(x)).ToList();
+                    keyTypeDropdownDD.value = 0;
+
+                    var watchKey = EditorPrefabHolder.Instance.Function1Button.Duplicate(keyPrefab.transform, "Key Watcher");
+                    var text = watchKey.transform.GetChild(0).GetComponent<Text>();
+                    text.text = "Set Key";
+                    watchKey.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
+
+                    var keyCodeDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(keyPrefab.transform, "Key Code");
+
+                    keyCodeDropdown.transform.AsRT().sizeDelta = new Vector2(360f, 32f);
+
+                    var keyCodeDropdownDD = keyCodeDropdown.GetComponent<Dropdown>();
+                    keyCodeDropdownDD.onValueChanged.ClearAll();
+                    keyCodeDropdownDD.value = 0;
+                    keyCodeDropdownDD.options.Clear();
+
+                    var hide = keyCodeDropdown.GetComponent<HideDropdownOptions>();
+                    hide.DisabledOptions.Clear();
+                    hide.remove = true;
+                    var keyCodes = Enum.GetValues(typeof(KeyCode));
+                    for (int i = 0; i < keyCodes.Length; i++)
+                    {
+                        var str = Enum.GetName(typeof(KeyCode), i) ?? "Invalid Value";
+
+                        hide.DisabledOptions.Add(string.IsNullOrEmpty(Enum.GetName(typeof(KeyCode), i)));
+
+                        keyCodeDropdownDD.options.Add(new Dropdown.OptionData(str));
+                    }
+
+                    var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(keyPrefab.transform, "Delete");
+                    delete.transform.AsRT().anchoredPosition = new Vector2(744f, -16f);
+                }
+
+                EditorHelper.AddEditorDropdown("Edit Keybinds", "", "Edit", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), OpenPopup);
             }
             catch (Exception ex)
             {
@@ -69,31 +281,32 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
+            if (!CurrentProfile)
+                return;
+
             if (!CoreHelper.IsUsingInputField && !dragging && EditorManager.inst.isEditing && Application.isFocused &&
-                (AllowKeys || !EventsConfig.Instance.EditorCamEnabled.Value))
+                (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
+                var keybinds = CurrentProfile.keybinds;
                 foreach (var keybind in keybinds)
                 {
-                    if (EditorManager.inst.editorState != EditorManager.EditorState.Main && keybind.Name != "ToggleProjectPlanner"
-                        || !EditorManager.inst.hasLoadedLevel && keybind.Name != "ToggleShowHelp" && keybind.Name != "TogglePlayingSong" && keybind.Name != "OpenBeatmapPopup"
-                        && keybind.Name != "SaveBeatmap" && keybind.Name != "ToggleProjectPlanner")
+                    if (EditorManager.inst.editorState != EditorManager.EditorState.Main && keybind.Name != nameof(ToggleProjectPlanner) ||
+                        !EditorManager.inst.hasLoadedLevel && keybind.Name != nameof(ToggleShowHelp) && keybind.Name != nameof(TogglePlayingSong) &&
+                        keybind.Name != nameof(OpenLevelPopup) && keybind.Name != nameof(SaveLevel) && keybind.Name != nameof(ToggleProjectPlanner))
                         continue;
 
-                    if (!keybind.watchingKeybind)
-                        keybind.Activate();
-                    else
-                    {
-                        var watch = CoreHelper.GetKeyCodeDown();
-                        if (watch != KeyCode.None)
-                            keybind.keys[Mathf.Clamp(currentKey, 0, keybind.keys.Count - 1)].KeyCode = watch;
-                    }
+                    var active = keybind.Check() && !isPressingKey;
+                    isPressingKey = active;
+                    if (!active)
+                        continue;
+
+                    keybind.Activate();
+                    lastKeybind = keybind;
                 }
             }
 
             if (Input.GetMouseButtonDown(0))
-            {
                 dragging = false;
-            }
 
             if (Input.GetMouseButtonDown(1) && selectedKeyframe && originalValues != null && dragging)
             {
@@ -122,475 +335,222 @@ namespace BetterLegacy.Editor.Managers
                 RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
         }
 
+        #endregion
+
+        #region Values
+
+        /// <summary>
+        /// Dialog of the editor.
+        /// </summary>
+        public KeybindEditorDialog Dialog { get; set; }
+
+        /// <summary>
+        /// Popup list of the editor.
+        /// </summary>
+        public ContentPopup Popup { get; set; }
+
+        /// <summary>
+        /// Keybind Function popup list of the editor.
+        /// </summary>
+        public ContentPopup FunctionPopup { get; set; }
+
+        GameObject keyPrefab;
+
+        /// <summary>
+        /// Currently selected keybind profile.
+        /// </summary>
+        public KeybindProfile CurrentProfile { get; set; }
+
+        /// <summary>
+        /// List of loaded keybind profiles.
+        /// </summary>
+        public List<KeybindProfile> profiles = new List<KeybindProfile>();
+
+        /// <summary>
+        /// Currently selected keybind.
+        /// </summary>
+        public Keybind CurrentKeybind { get; set; }
+
+        /// <summary>
+        /// Folder where keybinds are stored.
+        /// </summary>
+        public string KeybindsFolder => RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/keybinds");
+
+        /// <summary>
+        /// File where main keybind settings are stored.
+        /// </summary>
+        public string KeybindEditorSettings => RTFile.CombinePaths(RTFile.ApplicationDirectory, "settings/keybind_settings" + FileFormat.LSS.Dot());
+
+        /// <summary>
+        /// ID of the currently selected profile.
+        /// </summary>
+        public string currentProfileID;
+
+        /// <summary>
+        /// If a keybind is active.
+        /// </summary>
+        public bool isPressingKey;
+
+        /// <summary>
+        /// The last activated keybind.
+        /// </summary>
+        public Keybind lastKeybind;
+
+        #region Transform
+
+        public bool createKeyframe = true;
+        public bool useNearest = true;
+        public bool usePrevious = false;
+
+        public int currentType;
+
+        public bool dragging;
+
+        public BeatmapObject beatmapObject;
+        public PrefabObject prefabObject;
+
+        public bool setKeyframeValues;
+        public Vector2 dragKeyframeValues;
+        public EventKeyframe selectedKeyframe;
+        public float[] originalValues;
+        public Vector2 dragOffset;
+        float dragOffsetFloat;
+        float dragKeyframeValuesFloat;
+        public SelectObject.Axis firstDirection = SelectObject.Axis.Static;
+
+        public SelectionType selectionType;
+
+        #endregion
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Creates the default profile.
+        /// </summary>
         public void FirstInit()
         {
-            AddDefaultKeybind(ActionType.SaveBeatmap, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.S));
-            AddDefaultKeybind(ActionType.OpenBeatmapPopup, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.O));
-
-            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "0" } },
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha1));
-            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "1" } },
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha2));
-            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "2" } },
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha3));
-            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "3" } },
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha4));
-            AddDefaultKeybind(ActionType.SetLayer, new Dictionary<string, string> { { "Layer", "4" } },
-                new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha5));
-
-            AddDefaultKeybind(ActionType.ToggleEventLayer, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.E));
-            AddDefaultKeybind(ActionType.Undo, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z));
-            AddDefaultKeybind(ActionType.Redo, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z));
-            AddDefaultKeybind(ActionType.TogglePlayingSong, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Space));
-            AddDefaultKeybind(ActionType.SwapLockSelection, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.L));
-            AddDefaultKeybind(ActionType.UpdateObject, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R));
-            AddDefaultKeybind(ActionType.UpdateEverything, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.T));
-            AddDefaultKeybind(ActionType.SetFirstKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma));
-            AddDefaultKeybind(ActionType.SetLastKeyframeInType, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
-            AddDefaultKeybind(ActionType.SetPreviousKeyframeInType, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma));
-            AddDefaultKeybind(ActionType.SetNextKeyframeInType, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period));
-            AddDefaultKeybind(ActionType.AddPitch, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.UpArrow));
-            AddDefaultKeybind(ActionType.SubPitch, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.DownArrow));
-            AddDefaultKeybind(ActionType.ToggleShowHelp, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H));
-            AddDefaultKeybind(ActionType.GoToCurrent, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Insert));
-            AddDefaultKeybind(ActionType.GoToStart, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Home));
-            AddDefaultKeybind(ActionType.GoToEnd, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.End));
-            AddDefaultKeybind(ActionType.CreateNewMarker, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.M));
-            AddDefaultKeybind(ActionType.SpawnSelectedQuickPrefab, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Slash));
-            AddDefaultKeybind(ActionType.Cut, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.X));
-            AddDefaultKeybind(ActionType.Copy, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.C));
-            AddDefaultKeybind(ActionType.Paste, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.V));
-            AddDefaultKeybind(ActionType.Duplicate, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.D));
-            AddDefaultKeybind(ActionType.Delete, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Backspace));
-            AddDefaultKeybind(ActionType.Delete, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Delete));
-            AddDefaultKeybind(ActionType.ToggleZenMode, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z));
-            AddDefaultKeybind(ActionType.TransformPosition, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.G));
-            AddDefaultKeybind(ActionType.TransformScale, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Y));
-            AddDefaultKeybind(ActionType.TransformRotation, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl));
-            AddDefaultKeybind(ActionType.ToggleProjectPlanner, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.F10));
-            AddDefaultKeybind(ActionType.ParentPicker, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.P));
-
-            AddDefaultKeybind(ActionType.AddTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.KeypadPlus));
-            AddDefaultKeybind(ActionType.AddTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Equals));
-            AddDefaultKeybind(ActionType.RemoveTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.KeypadMinus));
-            AddDefaultKeybind(ActionType.RemoveTimelineBin, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.Tab), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Minus));
-
-            AddDefaultKeybind(ActionType.AddLayer, new Dictionary<string, string> { { "Layer", "1" } }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageUp));
-            AddDefaultKeybind(ActionType.AddLayer, new Dictionary<string, string> { { "Layer", "-1" } }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.PageDown));
-
-            AddDefaultKeybind(ActionType.SetSongTimeAutokill, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.K));
-            AddDefaultKeybind(ActionType.HideSelection, new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H));
-            AddDefaultKeybind(ActionType.UnhideHiddenObjects, new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H));
-
+            profiles.Clear();
+            RTFile.CreateDirectory(KeybindsFolder);
+            var profile = KeybindProfile.DefaultProfile;
+            profiles.Add(profile);
+            CurrentProfile = profile;
+            currentProfileID = profile.id;
             Save();
         }
 
-        void AddDefaultKeybind(ActionType actionType, params Keybind.Key[] keys)
-        {
-            keybinds.Add(new Keybind(LSText.randomNumString(16), keys.ToList(), (int)actionType));
-        }
-        
-        void AddDefaultKeybind(ActionType actionType, Dictionary<string, string> settings, params Keybind.Key[] keys)
-        {
-            keybinds.Add(new Keybind(LSText.randomNumString(16), keys.ToList(), (int)actionType, settings));
-        }
-
+        /// <summary>
+        /// Saves all loaded keybind profiles to the keybinds folder.
+        /// </summary>
         public void Save()
         {
-            var jn = JSON.Parse("{}");
-            for (int i = 0; i < keybinds.Count; i++)
+            for (int i = 0; i < profiles.Count; i++)
             {
-                jn["keybinds"][i] = keybinds[i].ToJSON();
+                var profile = profiles[i];
+                profile.WriteToFile(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName()));
             }
 
-            RTFile.WriteToFile(FilePath, jn.ToString());
+            var jn = Parser.NewJSONObject();
+            jn["current_profile_id"] = currentProfileID ?? string.Empty;
+            RTFile.WriteToFile(KeybindEditorSettings, jn.ToString(3));
         }
 
+        /// <summary>
+        /// Loads the keybind profiles from the keybinds folder.
+        /// </summary>
         public void Load()
         {
-            if (RTFile.FileExists(FilePath))
+            if (Dialog && Dialog.IsCurrent)
+                Dialog.Close();
+            if (FunctionPopup && FunctionPopup.IsOpen)
+                FunctionPopup.Close();
+
+            profiles.Clear();
+
+            if (!RTFile.DirectoryExists(KeybindsFolder))
             {
-                var jn = JSON.Parse(RTFile.ReadFromFile(FilePath));
-                for (int i = 0; i < jn["keybinds"].Count; i++)
-                    keybinds.Add(Keybind.Parse(jn["keybinds"][i]));
-            }
-        }
-
-        #region Dialog
-
-        public Transform editorDialog;
-        public Dropdown actionDropdown;
-        public RectTransform keysContent;
-        public RectTransform settingsContent;
-
-        public GameObject keyPrefab;
-        public GameObject settingsPrefab;
-
-        public string searchTerm = "";
-
-        public void GenerateKeybindEditorPopupDialog()
-        {
-            var popup = RTEditor.inst.GeneratePopup(EditorPopup.KEYBIND_LIST_POPUP, "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f), _val =>
-            {
-                searchTerm = _val;
-                RefreshKeybindPopup();
-            }, placeholderText: "Search for keybind...");
-            RTEditor.inst.KeybindListPopup = popup;
-
-            var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(popup.TopPanel, "Reload");
-            RectValues.TopRightAnchored.AnchoredPosition(-64f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(reload.transform.AsRT());
-            var reloadButton = reload.GetComponent<Button>();
-            reloadButton.onClick.ClearAll();
-            reloadButton.onClick.AddListener(() =>
-            {
-                RTEditor.inst.ShowWarningPopup("Are you sure you want to reset the keybinds list to the default? This <b>will</b> remove all custom keybinds you have setup and cannot be undone.", () =>
-                {
-                    keybinds.Clear();
-                    FirstInit();
-                    RefreshKeybindPopup();
-                    Dialog.Close();
-                    RTEditor.inst.HideWarningPopup();
-                }, RTEditor.inst.HideWarningPopup);
-            });
-
-            reloadButton.image.sprite = EditorSprites.ReloadSprite;
-            EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
-
-            editorDialog = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "KeybindEditor").transform;
-            editorDialog.AsRT().anchoredPosition = new Vector2(0f, 16f);
-            editorDialog.AsRT().sizeDelta = new Vector2(0f, 32f);
-            var dialogStorage = editorDialog.GetComponent<EditorDialogStorage>();
-
-            dialogStorage.topPanel.color = LSColors.HexToColor("D89356");
-            dialogStorage.title.text = "- Keybind Editor -";
-
-            Destroy(editorDialog.Find("Text").gameObject);
-
-            var clickable = editorDialog.gameObject.AddComponent<ActiveState>();
-            clickable.onStateChanged = enabled =>
-            {
-                if (enabled)
-                    return;
-
-                RTEditor.inst.selectingKey = false;
-                RTEditor.inst.setKey = null;
-            };
-
-            var data = Creator.NewUIObject("data", editorDialog);
-            data.transform.AsRT().sizeDelta = new Vector2(765f, 300f);
-            var dataVLG = data.AddComponent<VerticalLayoutGroup>();
-            dataVLG.childControlHeight = false;
-            dataVLG.childForceExpandHeight = false;
-            dataVLG.spacing = 4f;
-
-            var action = Creator.NewUIObject("action", data.transform);
-            action.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
-            var actionHLG = action.AddComponent<HorizontalLayoutGroup>();
-            actionHLG.childControlWidth = false;
-            actionHLG.childForceExpandWidth = false;
-
-            var title = EditorManager.inst.GetDialog("Prefab Editor").Dialog.Find("data/name/title").gameObject
-                .Duplicate(action.transform, "title");
-            title.GetComponent<Text>().text = "Action";
-
-            var actionDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(action.transform, "dropdown");
-
-            actionDropdown.transform.AsRT().sizeDelta = new Vector2(632f, 32f);
-
-            this.actionDropdown = actionDropdown.GetComponent<Dropdown>();
-            this.actionDropdown.onValueChanged.ClearAll();
-            this.actionDropdown.options = KeybinderMethods.Select(x => new Dropdown.OptionData(x.Method.Name)).ToList();
-            this.actionDropdown.value = 0;
-
-            // Keys list
-            var keysScrollRect = Creator.NewUIObject("ScrollRect", data.transform);
-            keysScrollRect.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
-            keysScrollRect.transform.AsRT().sizeDelta = new Vector2(400f, 250f);
-            var keysScrollRectSR = keysScrollRect.AddComponent<ScrollRect>();
-            keysScrollRectSR.horizontal = false;
-
-            var keysMaskGO = Creator.NewUIObject("Mask", keysScrollRect.transform);
-            UIManager.SetRectTransform(keysMaskGO.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
-            var keysMaskImage = keysMaskGO.AddComponent<Image>();
-            keysMaskImage.color = new Color(1f, 1f, 1f, 0.04f);
-            keysMaskGO.AddComponent<Mask>();
-
-            var keysContentGO = Creator.NewUIObject("Content", keysMaskGO.transform);
-            keysContent = keysContentGO.transform.AsRT();
-            UIManager.SetRectTransform(keysContent, new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(400f, 250f));
-
-            var keysContentCSF = keysContentGO.AddComponent<ContentSizeFitter>();
-            keysContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
-            keysContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
-
-            var keysContentVLG = keysContentGO.AddComponent<VerticalLayoutGroup>();
-            keysContentVLG.childControlHeight = false;
-            keysContentVLG.childForceExpandHeight = false;
-            keysContentVLG.spacing = 4f;
-
-            var keysContentLE = keysContentGO.AddComponent<LayoutElement>();
-            keysContentLE.layoutPriority = 10000;
-            keysContentLE.minWidth = 760;
-
-            keysScrollRectSR.content = keysContent;
-
-            // Settings list
-            var settingsScrollRect = Creator.NewUIObject("ScrollRect Settings", data.transform);
-            settingsScrollRect.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
-            settingsScrollRect.transform.AsRT().sizeDelta = new Vector2(400f, 250f);
-            var settingsScrollRectSR = settingsScrollRect.AddComponent<ScrollRect>();
-
-            var settingsMaskGO = Creator.NewUIObject("Mask", settingsScrollRect.transform);
-            UIManager.SetRectTransform(settingsMaskGO.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
-            var settingsMaskImage = settingsMaskGO.AddComponent<Image>();
-            settingsMaskImage.color = new Color(1f, 1f, 1f, 0.04f);
-            settingsMaskGO.AddComponent<Mask>();
-
-            var settingsContentGO = Creator.NewUIObject("Content", settingsMaskGO.transform);
-            settingsContent = settingsContentGO.transform.AsRT();
-            UIManager.SetRectTransform(settingsContent, new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(400f, 250f));
-
-            var settingsContentCSF = settingsContentGO.AddComponent<ContentSizeFitter>();
-            settingsContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
-            settingsContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
-
-            var settingsContentVLG = settingsContentGO.AddComponent<VerticalLayoutGroup>();
-            settingsContentVLG.childControlHeight = false;
-            settingsContentVLG.childForceExpandHeight = false;
-            settingsContentVLG.spacing = 4f;
-
-            var settingsContentLE = settingsContentGO.AddComponent<LayoutElement>();
-            settingsContentLE.layoutPriority = 10000;
-            settingsContentLE.minWidth = 760;
-
-            settingsScrollRectSR.content = settingsContent;
-
-            // Key Prefab
-            {
-                keyPrefab = Creator.NewUIObject("Key", transform);
-                keyPrefab.transform.AsRT().sizeDelta = new Vector2(400f, 32f);
-                var image = keyPrefab.AddComponent<Image>();
-                image.color = new Color(0.2f, 0.2f, 0.2f);
-
-                var horizontalLayoutGroup = keyPrefab.AddComponent<HorizontalLayoutGroup>();
-                horizontalLayoutGroup.childControlWidth = false;
-                horizontalLayoutGroup.childForceExpandWidth = false;
-                horizontalLayoutGroup.spacing = 4;
-
-                var keyTypeDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(keyPrefab.transform, "Key Type");
-
-                keyTypeDropdown.transform.AsRT().sizeDelta = new Vector2(220f, 32f);
-
-                var keyTypeDropdownDD = keyTypeDropdown.GetComponent<Dropdown>();
-                keyTypeDropdownDD.onValueChanged.ClearAll();
-                keyTypeDropdownDD.options = Enum.GetNames(typeof(Keybind.Key.Type)).Select(x => new Dropdown.OptionData(x)).ToList();
-                keyTypeDropdownDD.value = 0;
-
-                var watchKey = EditorPrefabHolder.Instance.Function1Button.Duplicate(keyPrefab.transform, "Key Watcher");
-                var text = watchKey.transform.GetChild(0).GetComponent<Text>();
-                text.text = "Set Key";
-                watchKey.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
-
-                var keyCodeDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(keyPrefab.transform, "Key Code");
-
-                keyCodeDropdown.transform.AsRT().sizeDelta = new Vector2(360f, 32f);
-
-                var keyCodeDropdownDD = keyCodeDropdown.GetComponent<Dropdown>();
-                keyCodeDropdownDD.onValueChanged.ClearAll();
-                keyCodeDropdownDD.value = 0;
-                keyCodeDropdownDD.options.Clear();
-
-                var hide = keyCodeDropdown.GetComponent<HideDropdownOptions>();
-                hide.DisabledOptions.Clear();
-                hide.remove = true;
-                var keyCodes = Enum.GetValues(typeof(KeyCode));
-                for (int i = 0; i < keyCodes.Length; i++)
-                {
-                    var str = Enum.GetName(typeof(KeyCode), i) ?? "Invalid Value";
-
-                    hide.DisabledOptions.Add(string.IsNullOrEmpty(Enum.GetName(typeof(KeyCode), i)));
-
-                    keyCodeDropdownDD.options.Add(new Dropdown.OptionData(str));
-                }
-
-                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(keyPrefab.transform, "Delete");
-                delete.transform.AsRT().anchoredPosition = new Vector2(744f, -16f);
+                FirstInit();
+                return;
             }
 
-            EditorHelper.AddEditorDialog(EditorDialog.KEYBIND_EDITOR, editorDialog.gameObject);
-
-            EditorHelper.AddEditorDropdown("Edit Keybinds", "", "Edit", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), OpenPopup);
-
-            // Editor Themes
+            var files = Directory.GetFiles(KeybindsFolder);
+            for (int i = 0; i < files.Length; i++)
             {
-                EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
-
-                EditorThemeManager.AddLightText(editorDialog.Find("data/action/title").GetComponent<Text>());
-
-                EditorThemeManager.AddDropdown(this.actionDropdown);
-            }
-        }
-
-        public void OpenPopup()
-        {
-            RTEditor.inst.KeybindListPopup.Open();
-            RefreshKeybindPopup();
-        }
-
-        public void RefreshKeybindPopup()
-        {
-            RTEditor.inst.KeybindListPopup.ClearContent();
-
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(RTEditor.inst.KeybindListPopup.Content);
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add new Keybind";
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(() =>
-            {
-                var keybind = new Keybind(LSText.randomNumString(16), new List<Keybind.Key> { new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha0) }, 1, Settings[1]);
-                keybinds.Add(keybind);
-                RefreshKeybindPopup();
-
-                Dialog.Open();
-                RefreshKeybindEditor(keybind);
-            });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
-
-            int num = 0;
-            foreach (var keybind in keybinds)
-            {
-                int index = num;
-
-                var name = keybind.Name;
-
-                if (!RTString.SearchString(searchTerm, name))
-                {
-                    num++;
+                var file = files[i];
+                var format = RTFile.GetFileFormat(file);
+                if (format != FileFormat.LSS)
                     continue;
+
+                try
+                {
+                    profiles.Add(RTFile.CreateFromFile<KeybindProfile>(file));
                 }
-
-                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTEditor.inst.KeybindListPopup.Content, name);
-
-                EditorThemeManager.ApplySelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                var button = gameObject.transform.Find("Image").gameObject.AddComponent<Button>();
-                button.onClick.AddListener(() =>
+                catch (Exception ex)
                 {
-                    Dialog.Open();
-                    RefreshKeybindEditor(keybind);
-                });
-
-                EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.Null, true);
-
-                var ed1 = new GameObject("Edit");
-                ed1.transform.SetParent(gameObject.transform.Find("Image"));
-                ed1.transform.localScale = Vector3.one;
-
-                var rt = ed1.AddComponent<RectTransform>();
-                rt.anchoredPosition = Vector2.zero;
-                rt.sizeDelta = new Vector2(32f, 32f);
-
-                var hover = gameObject.transform.Find("Image").gameObject.AddComponent<HoverUI>();
-                hover.animatePos = false;
-                hover.animateSca = true;
-                hover.size = 1.1f;
-
-                var image = ed1.AddComponent<Image>();
-                image.sprite = EditorSprites.EditSprite;
-                image.color = Color.black;
-
-                if (keybind.keys != null && keybind.keys.Count > 0)
-                {
-                    name += " [";
-                    for (int i = 0; i < keybind.keys.Count; i++)
-                    {
-                        name += $"{keybind.keys[i].InteractType}: {keybind.keys[i].KeyCode}";
-                        if (i != keybind.keys.Count - 1)
-                            name += ", ";
-                    }
-                    name += "]";
+                    CoreHelper.LogError($"Failed to load keybind profile due to the exception: {ex}");
                 }
-
-                if (keybind.settings != null && keybind.settings.Count > 0)
-                {
-                    name += " (";
-                    for (int i = 0; i < keybind.settings.Count; i++)
-                    {
-                        name += $"{keybind.settings.ElementAt(i).Key}: {keybind.settings.ElementAt(i).Value}";
-                        if (i != keybind.settings.Count - 1)
-                            name += ", ";
-                    }
-                    name += ")";
-                }
-
-                var nameText = gameObject.transform.Find("folder-name").GetComponent<Text>();
-                nameText.text = name;
-
-                EditorThemeManager.ApplyLightText(nameText);
-
-                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete").GetComponent<DeleteButtonStorage>();
-                UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(580f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(32f, 32f));
-                delete.button.onClick.ClearAll();
-                delete.button.onClick.AddListener(() =>
-                {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
-                    {
-                        keybinds.RemoveAt(index);
-                        RefreshKeybindPopup();
-                        Save();
-                        RTEditor.inst.HideWarningPopup();
-                    }, RTEditor.inst.HideWarningPopup);
-                });
-
-                EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
-
-                num++;
             }
+
+            if (RTFile.FileExists(KeybindEditorSettings))
+            {
+                var file = RTFile.ReadFromFile(KeybindEditorSettings);
+                var jn = JSON.Parse(file);
+                currentProfileID = jn["current_profile_id"];
+            }
+
+            if (!string.IsNullOrEmpty(currentProfileID))
+                CurrentProfile = profiles.TryFind(x => x.id == currentProfileID, out KeybindProfile currentProfile) ? currentProfile : KeybindProfile.DefaultProfile;
+            else
+                CurrentProfile = profiles.TryGetAt(0, out KeybindProfile currentProfile) ? currentProfile : KeybindProfile.DefaultProfile;
         }
 
-        public void RefreshKeybindEditor(Keybind keybind)
+        /// <summary>
+        /// Displays the no profile selected error notification.
+        /// </summary>
+        public void NoProfileSelectedError() => EditorManager.inst.DisplayNotification($"No keybind profile selected!", 2f, EditorManager.NotificationType.Error);
+
+        #region Editor
+
+        /// <summary>
+        /// Opens the editor dialog and sets the keybind to edit.
+        /// </summary>
+        /// <param name="keybind">Keybind to edit.</param>
+        public void OpenDialog(Keybind keybind)
         {
-            actionDropdown.onValueChanged.ClearAll();
-            actionDropdown.value = keybind.ActionType;
-            actionDropdown.onValueChanged.AddListener(_val =>
-            {
-                keybind.ActionType = _val;
-                var settings = Settings;
-                keybind.settings = settings[_val] ?? new Dictionary<string, string>();
-                RefreshKeybindPopup();
-                RefreshKeybindEditor(keybind);
-                Save();
-            });
+            Dialog.Open();
+            RenderDialog(keybind);
+        }
 
-            LSHelpers.DeleteChildren(keysContent);
+        /// <summary>
+        /// Renders the editor dialog and sets the keybind to edit.
+        /// </summary>
+        /// <param name="keybind">Keybind to edit.</param>
+        public void RenderDialog(Keybind keybind)
+        {
+            CurrentKeybind = keybind;
 
-            var add = PrefabEditor.inst.CreatePrefab.Duplicate(keysContent, "Add Key");
-            var addText = add.transform.Find("Text").GetComponent<Text>();
-            addText.text = "Add new Key";
-            ((RectTransform)add.transform).sizeDelta = new Vector2(760f, 32f);
-            var addButton = add.GetComponent<Button>();
-            addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(() =>
+            Dialog.SelectActionButton.Text = keybind.Name + " (Click to select a function)";
+            Dialog.SelectActionButton.OnClick.NewListener(OpenFunctionPopup);
+
+            Dialog.ClearKeys();
+            
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.KeysContent, "Add Key");
+            add.Text = "Add new Key";
+            add.button.onClick.NewListener(() =>
             {
                 var key = new Keybind.Key(Keybind.Key.Type.Down, KeyCode.None);
                 keybind.keys.Add(key);
-                RefreshKeybindPopup();
-                RefreshKeybindEditor(keybind);
+                RenderPopupIfOpen();
+                RenderDialog(keybind);
                 Save();
             });
-
-            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var key in keybind.keys)
             {
                 int index = num;
-                var gameObject = keyPrefab.Duplicate(keysContent, "Key");
+                var gameObject = keyPrefab.Duplicate(Dialog.KeysContent, "Key");
                 var type = gameObject.transform.Find("Key Type").GetComponent<Dropdown>();
                 var watch = gameObject.transform.Find("Key Watcher").GetComponent<FunctionButtonStorage>();
                 var code = gameObject.transform.Find("Key Code").GetComponent<Dropdown>();
@@ -600,38 +560,32 @@ namespace BetterLegacy.Editor.Managers
                 var text = gameObject.transform.Find("Key Watcher").GetChild(0).GetComponent<Text>();
                 text.text = "Set Key";
 
-                type.onValueChanged.ClearAll();
-                type.value = (int)key.InteractType;
-                type.onValueChanged.AddListener(_val =>
+                type.SetValueWithoutNotify((int)key.InteractType);
+                type.onValueChanged.NewListener(_val =>
                 {
                     key.InteractType = (Keybind.Key.Type)_val;
-                    if (RTEditor.inst.KeybindListPopup.IsOpen)
-                        RefreshKeybindPopup();
+                    RenderPopupIfOpen();
                     Save();
                     text.text = "Set Key";
                 });
 
                 EditorThemeManager.ApplyDropdown(type);
 
-                watch.button.onClick.ClearAll();
-                watch.button.onClick.AddListener(() =>
+                watch.button.onClick.NewListener(() =>
                 {
                     RTEditor.inst.selectingKey = true;
                     RTEditor.inst.setKey = keyCode =>
                     {
                         key.KeyCode = keyCode;
-                        if (RTEditor.inst.KeybindListPopup.IsOpen)
-                            RefreshKeybindPopup();
+                        RenderPopupIfOpen();
                         Save();
                         text.text = "Set Key";
 
-                        code.onValueChanged.ClearAll();
-                        code.value = (int)key.KeyCode;
-                        code.onValueChanged.AddListener(_val =>
+                        code.SetValueWithoutNotify((int)key.KeyCode);
+                        code.onValueChanged.NewListener(_val =>
                         {
                             key.KeyCode = (KeyCode)_val;
-                            if (RTEditor.inst.KeybindListPopup.IsOpen)
-                                RefreshKeybindPopup();
+                            RenderPopupIfOpen();
                             Save();
                             text.text = "Set Key";
                         });
@@ -643,13 +597,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(watch.button.image, ThemeGroup.Function_1, true);
                 EditorThemeManager.ApplyGraphic(watch.label, ThemeGroup.Function_1_Text);
 
-                code.onValueChanged.ClearAll();
-                code.value = (int)key.KeyCode;
-                code.onValueChanged.AddListener(_val =>
+                code.SetValueWithoutNotify((int)key.KeyCode);
+                code.onValueChanged.NewListener(_val =>
                 {
                     key.KeyCode = (KeyCode)_val;
-                    if (RTEditor.inst.KeybindListPopup.IsOpen)
-                        RefreshKeybindPopup();
+                    RenderPopupIfOpen();
                     Save();
                     text.text = "Set Key";
                 });
@@ -657,13 +609,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyDropdown(code);
 
                 var delete = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                delete.button.onClick.ClearAll();
-                delete.button.onClick.AddListener(() =>
+                delete.button.onClick.NewListener(() =>
                 {
                     keybind.keys.RemoveAt(index);
-                    if (RTEditor.inst.KeybindListPopup.IsOpen)
-                        RefreshKeybindPopup();
-                    RefreshKeybindEditor(keybind);
+                    RenderPopupIfOpen();
+                    RenderDialog(keybind);
                     Save();
                 });
 
@@ -673,14 +623,14 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            LSHelpers.DeleteChildren(settingsContent);
+            Dialog.ClearSettings();
 
             num = 0;
             foreach (var setting in keybind.settings)
             {
                 int index = num;
 
-                var key = setting.Key;
+                var key = setting.key;
                 switch (key.ToLower())
                 {
                     case "external":
@@ -688,10 +638,10 @@ namespace BetterLegacy.Editor.Managers
                     case "remove prefab instance id":
                     case "create keyframe":
                     case "use nearest":
-                    case "use previous":
-                        {
-                            var bar = Creator.NewUIObject("input [BOOL]", settingsContent);
+                    case "use previous": {
+                            var bar = Creator.NewUIObject("input", Dialog.SettingsContent);
                             bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+
                             var layout = bar.AddComponent<HorizontalLayoutGroup>();
                             layout.childControlHeight = false;
                             layout.childControlWidth = false;
@@ -699,38 +649,34 @@ namespace BetterLegacy.Editor.Managers
                             layout.childForceExpandWidth = false;
                             layout.spacing = 8f;
 
-                            var image = bar.AddComponent<Image>();
-                            image.color = new Color(1f, 1f, 1f, 0.03f);
+                            bar.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.03f);
 
-                            TooltipHelper.AddHoverTooltip(bar, setting.Key, "");
+                            TooltipHelper.AddHoverTooltip(bar, setting.key, string.Empty);
 
-                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(bar.transform, "", 0);
-                            var labelText = l.transform.GetChild(0).GetComponent<Text>();
-                            labelText.text = setting.Key;
-                            l.transform.AsRT().sizeDelta = new Vector2(688f, 32f);
+                            var labels = EditorPrefabHolder.Instance.Labels.Duplicate(bar.transform, "label", 0);
+                            var labelText = labels.transform.GetChild(0).GetComponent<Text>();
+                            labelText.text = setting.key;
+                            labels.transform.AsRT().sizeDelta = new Vector2(688f, 32f);
 
-                            var x = EditorPrefabHolder.Instance.Toggle.Duplicate(bar.transform);
-
-                            var xt = x.GetComponent<Toggle>();
-                            xt.onValueChanged.ClearAll();
-                            xt.isOn = Parser.TryParse(setting.Value, false);
-                            xt.onValueChanged.AddListener(_val =>
+                            var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(bar.transform).GetComponent<Toggle>();
+                            toggle.SetIsOnWithoutNotify(Parser.TryParse(setting.value, false));
+                            toggle.onValueChanged.NewListener(_val =>
                             {
-                                keybind.settings[setting.Key] = _val.ToString();
+                                setting.value = _val.ToString();
                                 Save();
                             });
 
-                            EditorThemeManager.ApplyToggle(xt);
+                            EditorThemeManager.ApplyToggle(toggle);
 
                             break;
                         }
 
                     case "dialog":
-                    case "id":
-                    case "code":
-                        {
-                            var bar = Creator.NewUIObject("input [BOOL]", settingsContent);
+                    case "profile id":
+                    case "id": {
+                            var bar = Creator.NewUIObject("input", Dialog.SettingsContent);
                             bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+
                             var layout = bar.AddComponent<HorizontalLayoutGroup>();
                             layout.childControlHeight = false;
                             layout.childControlWidth = false;
@@ -738,121 +684,114 @@ namespace BetterLegacy.Editor.Managers
                             layout.childForceExpandWidth = false;
                             layout.spacing = 8f;
 
-                            var image = bar.AddComponent<Image>();
-                            image.color = new Color(1f, 1f, 1f, 0.03f);
+                            bar.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.03f);
 
-                            TooltipHelper.AddHoverTooltip(bar, setting.Key, "");
+                            TooltipHelper.AddHoverTooltip(bar, setting.key, string.Empty);
 
-                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(bar.transform, "", 0);
-                            var labelText = l.transform.GetChild(0).GetComponent<Text>();
-                            labelText.text = setting.Key;
-                            l.transform.AsRT().sizeDelta = new Vector2(354f, 20f);
+                            var labels = EditorPrefabHolder.Instance.Labels.Duplicate(bar.transform, "label", 0);
+                            var labelText = labels.transform.GetChild(0).GetComponent<Text>();
+                            labelText.text = setting.key;
+                            labels.transform.AsRT().sizeDelta = new Vector2(354f, 20f);
 
-                            var x = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(bar.transform);
-                            Destroy(x.GetComponent<HoverTooltip>());
+                            var inputField = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(bar.transform).GetComponent<InputField>();
+                            Destroy(inputField.GetComponent<HoverTooltip>());
+                            inputField.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
+                            inputField.characterValidation = InputField.CharacterValidation.None;
+                            inputField.characterLimit = 0;
+                            inputField.textComponent.fontSize = 18;
+                            inputField.SetTextWithoutNotify(setting.value);
+                            inputField.onValueChanged.NewListener(_val => setting.value = _val);
+                            inputField.onEndEdit.NewListener(_val => Save());
 
-                            x.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
-
-                            var xif = x.GetComponent<InputField>();
-                            xif.onValueChanged.ClearAll();
-                            xif.onEndEdit.ClearAll();
-                            xif.characterValidation = InputField.CharacterValidation.None;
-                            xif.characterLimit = 0;
-                            xif.text = setting.Value;
-                            xif.textComponent.fontSize = 18;
-                            xif.onValueChanged.AddListener(_val => keybind.settings[setting.Key] = _val);
-                            xif.onEndEdit.AddListener(_val => Save());
-
-                            EditorThemeManager.ApplyInputField(xif, ThemeGroup.Input_Field);
+                            EditorThemeManager.ApplyInputField(inputField, ThemeGroup.Input_Field);
 
                             break;
                         }
 
-                    case "eventtype":
-                    case "eventindex":
-                    case "eventvalue":
-                    case "layer":
+                    case "type":
                     case "index":
-                    case "count":
-                        {
-                            var x = EditorPrefabHolder.Instance.NumberInputField.Duplicate(settingsContent, "input [INT]");
-                            var inputFieldStorage = x.GetComponent<InputFieldStorage>();
+                    case "value":
+                    case "value index":
+                    case "layer":
+                    case "amount":
+                    case "count": {
+                            var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(Dialog.SettingsContent, "input");
+                            var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
 
-                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(x.transform, "", 0);
-                            var labelText = l.transform.GetChild(0).GetComponent<Text>();
-                            labelText.text = setting.Key;
-                            l.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
+                            var labels = EditorPrefabHolder.Instance.Labels.Duplicate(gameObject.transform, "label", 0);
+                            var labelText = labels.transform.GetChild(0).GetComponent<Text>();
+                            labelText.text = setting.key;
+                            labels.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
 
-                            var image = x.AddComponent<Image>();
-                            image.color = new Color(1f, 1f, 1f, 0.03f);
+                            gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.03f);
 
-                            TooltipHelper.AddHoverTooltip(x, setting.Key, "");
+                            TooltipHelper.AddHoverTooltip(gameObject, setting.key, string.Empty);
 
-                            inputFieldStorage.inputField.onValueChanged.ClearAll();
-                            inputFieldStorage.inputField.onEndEdit.ClearAll();
                             inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
-                            inputFieldStorage.inputField.text = Parser.TryParse(setting.Value, 0).ToString();
-                            inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
+                            inputFieldStorage.inputField.SetTextWithoutNotify(Parser.TryParse(setting.value, 0f).ToString());
+                            inputFieldStorage.inputField.onValueChanged.NewListener(_val =>
                             {
-                                if (int.TryParse(_val, out int result) && keybind.settings.ContainsKey(setting.Key))
-                                    keybind.settings[setting.Key] = result.ToString();
+                                switch (keybind.Name)
+                                {
+                                    case nameof(SetPitch):
+                                    case nameof(AddPitch):
+                                    case nameof(IncreaseKeyframeValue):
+                                    case nameof(DecreaseKeyframeValue):
+                                    case nameof(SetKeyframeValue): {
+                                            if (float.TryParse(_val, out float result))
+                                                setting.value = result.ToString();
+                                            break;
+                                        }
+                                    case nameof(SetLayer):
+                                    case nameof(AddLayer):
+                                    case nameof(SetTimelineBin):
+                                    case nameof(AddObjectLayer):
+                                    case nameof(SetObjectLayer): {
+                                            if (int.TryParse(_val, out int result))
+                                                setting.value = result.ToString();
+                                            break;
+                                        }
+                                }
                             });
-                            inputFieldStorage.inputField.onEndEdit.AddListener(_val => Save());
-
-                            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
-
-                            TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
-
-                            EditorThemeManager.ApplyInputField(inputFieldStorage.inputField, ThemeGroup.Input_Field);
+                            inputFieldStorage.inputField.onEndEdit.NewListener(_val => Save());
 
                             Destroy(inputFieldStorage.rightGreaterButton.gameObject);
                             Destroy(inputFieldStorage.middleButton.gameObject);
                             Destroy(inputFieldStorage.leftGreaterButton.gameObject);
 
-                            EditorThemeManager.ApplySelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.ApplySelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                            TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
+                            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+
+                            EditorThemeManager.ApplyInputField(inputFieldStorage);
 
                             break;
                         }
+                    case "search prefab using": {
+                            var bar = Creator.NewUIObject("input", Dialog.SettingsContent);
+                            bar.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-                    case "eventamount":
-                        {
-                            var x = EditorPrefabHolder.Instance.NumberInputField.Duplicate(settingsContent, "input [FLOAT]");
-                            var inputFieldStorage = x.GetComponent<InputFieldStorage>();
+                            var layout = bar.AddComponent<HorizontalLayoutGroup>();
+                            layout.childControlHeight = false;
+                            layout.childControlWidth = false;
+                            layout.childForceExpandHeight = true;
+                            layout.childForceExpandWidth = false;
+                            layout.spacing = 8f;
 
-                            var l = EditorPrefabHolder.Instance.Labels.Duplicate(x.transform, "", 0);
-                            var labelText = l.transform.GetChild(0).GetComponent<Text>();
-                            labelText.text = setting.Key;
-                            l.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
+                            bar.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.03f);
 
-                            var image = x.AddComponent<Image>();
-                            image.color = new Color(1f, 1f, 1f, 0.03f);
+                            TooltipHelper.AddHoverTooltip(bar, setting.key, string.Empty);
 
-                            TooltipHelper.AddHoverTooltip(x, setting.Key, "");
+                            var labels = EditorPrefabHolder.Instance.Labels.Duplicate(bar.transform, "label", 0);
+                            var labelText = labels.transform.GetChild(0).GetComponent<Text>();
+                            labelText.text = setting.key;
+                            labels.transform.AsRT().sizeDelta = new Vector2(354f, 20f);
 
-                            inputFieldStorage.inputField.onValueChanged.ClearAll();
-                            inputFieldStorage.inputField.onEndEdit.ClearAll();
-                            inputFieldStorage.inputField.characterValidation = InputField.CharacterValidation.None;
-                            inputFieldStorage.inputField.text = Parser.TryParse(setting.Value, 0f).ToString();
-                            inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float result) && keybind.settings.ContainsKey(setting.Key))
-                                    keybind.settings[setting.Key] = result.ToString();
-                            });
-                            inputFieldStorage.inputField.onEndEdit.AddListener(_val => Save());
+                            var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(bar.transform).GetComponent<Dropdown>();
+                            dropdown.options = CoreHelper.StringToOptionData("Index", "Name", "ID");
+                            dropdown.SetValueWithoutNotify(Parser.TryParse(setting.value, 0));
+                            dropdown.onValueChanged.NewListener(_val => setting.value = _val.ToString());
 
-                            TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
-
-                            TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
-
-                            EditorThemeManager.ApplyInputField(inputFieldStorage.inputField, ThemeGroup.Input_Field);
-
-                            Destroy(inputFieldStorage.rightGreaterButton.gameObject);
-                            Destroy(inputFieldStorage.middleButton.gameObject);
-                            Destroy(inputFieldStorage.leftGreaterButton.gameObject);
-
-                            EditorThemeManager.ApplySelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
-                            EditorThemeManager.ApplySelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplyDropdown(dropdown);
 
                             break;
                         }
@@ -864,361 +803,409 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #region Methods
+        #region List
 
-        public enum ActionType
+        /// <summary>
+        /// Opens the keybind list popup.
+        /// </summary>
+        public void OpenPopup()
         {
-            CustomCode, // 0
-            ToggleEditor, // 1
-            UpdateEverything, // 2
-            UpdateObject, // 3
-            OpenPrefabDialog, // 4
-            CollapsePrefab, // 5
-            ExpandPrefab, // 6
-            SetSongTimeAutokill, // 7
-            OpenDialog, // 8
-            SaveBeatmap, // 9
-            OpenBeatmapPopup, // 10
-            SetLayer, // 11
-            ToggleEventLayer, // 12
-            Undo, // 13
-            Redo, // 14
-            TogglePlayingSong, // 15
-            IncreaseKeyframeValue, // 16
-            DecreaseKeyframeValue, // 17
-            SetKeyframeValue, // 18
-            SwapLockSelection, // 19
-            ToggleLockSelection, // 20
-            SwapCollapseSelection, // 21
-            ToggleCollapseSelection, // 22
-            AddObjectLayer, // 23
-            SubObjectLayer, // 24
-            CycleObjectTypeUp, // 25
-            CycleObjectTypeDown, // 26
-            JumpToNextMarker, // 27
-            JumpToPreviousMarker, // 28
-            OpenSaveAs, // 29
-            OpenNewLevel, // 30
-            ToggleBPMSnap, // 31
-            SelectNextObject, // 32
-            SelectPreviousObject, // 33
-            SetFirstKeyframeInType, // 34
-            SetLastKeyframeInType, // 35
-            SetNextKeyframeInType, // 36
-            SetPreviousKeyframeInType, // 37
-            AddPitch, // 38
-            SubPitch, // 39
-            ToggleShowHelp, // 40
-            GoToCurrent, // 41
-            GoToStart, // 42
-            GoToEnd, // 43
-            CreateNewMarker, // 44
-            SpawnPrefab, // 45
-            Cut, // 46
-            Copy, // 47
-            Paste, // 48
-            Duplicate, // 49
-            Delete, // 50
-            ToggleObjectDragger, // 51
-            ToggleZenMode, // 52
-            CycleGameMode, // 53
-            TransformPosition, //54
-            TransformScale, //55
-            TransformRotation, //56
-            SpawnSelectedQuickPrefab, //57
-            ResetIntegerVariables, // 58
-            ToggleProjectPlanner, // 59
-            ForceSnapBPM, // 60
-            AddLayer, // 61
-            ParentPicker, // 62
-            ToggleMouseTooltip, // 63
-            AddTimelineBin, // 64
-            RemoveTimelineBin, // 65
-            SetTimelineBin, // 66
-            HideSelection, // 67
-            UnhideHiddenObjects, // 68
-            ToggleHideSelection, // 69
-            UpdateSeed, // 70
+            Popup.Open();
+            RenderPopup();
         }
 
-        public static List<Action<Keybind>> KeybinderMethods { get; } = new List<Action<Keybind>>
+        /// <summary>
+        /// Renders the keybind list popup if it's currently open.
+        /// </summary>
+        public void RenderPopupIfOpen()
         {
-            CustomCode, // 0
-            ToggleEditor, // 1
-            UpdateEverything, // 2
-            UpdateObject, // 3
-            OpenPrefabDialog, // 4
-            CollapsePrefab, // 5
-            ExpandPrefab, // 6
-            SetSongTimeAutokill, // 7
-            OpenDialog, // 8
-            SaveBeatmap, // 9
-            OpenBeatmapPopup, // 10
-            SetLayer, // 11
-            ToggleEventLayer, // 12
-            Undo, // 13
-            Redo, // 14
-            TogglePlayingSong, // 15
-            IncreaseKeyframeValue, // 16
-            DecreaseKeyframeValue, // 17
-            SetKeyframeValue, // 18
-            SwapLockSelection, // 19
-            ToggleLockSelection, // 20
-            SwapCollapseSelection, // 21
-            ToggleCollapseSelection, // 22
-            AddObjectLayer, // 23
-            SubObjectLayer, // 24
-            CycleObjectTypeUp, // 25
-            CycleObjectTypeDown, // 26
-            JumpToNextMarker, // 27
-            JumpToPreviousMarker, // 28
-            OpenSaveAs, // 29
-            OpenNewLevel, // 30
-            ToggleBPMSnap, // 31
-            SelectNextObject, // 32
-            SelectPreviousObject, // 33
-            SetFirstKeyframeInType, // 34
-            SetLastKeyframeInType, // 35
-            SetNextKeyframeInType, // 36
-            SetPreviousKeyframeInType, // 37
-            AddPitch, // 38
-            SubPitch, // 39
-            ToggleShowHelp, // 40
-            GoToCurrent, // 41
-            GoToStart, // 42
-            GoToEnd, // 43
-            CreateNewMarker, // 44
-            SpawnPrefab, // 45
-            Cut, // 46
-            Copy, // 47
-            Paste, // 48
-            Duplicate, // 49
-            Delete, // 50
-            ToggleObjectDragger, // 51
-            ToggleZenMode, // 52
-            CycleGameMode, // 53
-            TransformPosition, //54
-            TransformScale, //55
-            TransformRotation, //56
-            SpawnSelectedQuickPrefab, //57
-            ResetIntegerVariables, // 58
-            ToggleProjectPlanner, // 59
-            ForceSnapBPM, // 60
-            AddLayer, // 61
-            ParentPicker, // 62
-            ToggleMouseTooltip, // 63
-            AddTimelineBin, // 64
-            RemoveTimelineBin, // 65
-            SetTimelineBin, // 66
-            HideSelection, // 67
-            UnhideHiddenObjects, // 68
-            ToggleHideSelection, // 69
-            UpdateSeed, // 70
-        };
-
-        public static void CustomCode(Keybind keybind)
-        {
-            if (keybind.settings.ContainsKey("Code"))
-                RTCode.Evaluate(keybind.DefaultCode + keybind.settings["Code"]);
+            if (Popup.IsOpen)
+                RenderPopup();
         }
 
-        public static void ToggleEditor(Keybind keybind) => RTEditor.inst.TogglePreview();
-
-        public static void UpdateEverything(Keybind keybind)
+        /// <summary>
+        /// Renders the keybind list popup.
+        /// </summary>
+        public void RenderPopup()
         {
-            RandomHelper.UpdateSeed();
-            RTLevel.Reinit();
-
-            // reset modifiers
-            foreach (var beatmapObject in GameData.Current.beatmapObjects)
+            if (!CurrentProfile)
             {
-                beatmapObject.modifiers.ForLoop(modifier =>
-                {
-                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
-                    modifier.Result = default;
-                });
-            }
-            foreach (var backgroundObject in GameData.Current.backgroundObjects)
-            {
-                backgroundObject.modifiers.ForLoop(modifier =>
-                {
-                    modifier.Inactive?.Invoke(modifier, backgroundObject, null);
-                    modifier.Result = default;
-                });
-            }
-            foreach (var prefabObject in GameData.Current.prefabObjects)
-            {
-                prefabObject.modifiers.ForLoop(modifier =>
-                {
-                    modifier.Inactive?.Invoke(modifier, prefabObject, null);
-                    modifier.Result = default;
-                });
-            }
-
-            PlayerManager.RespawnPlayers();
-        }
-
-        public static void UpdateObject(Keybind keybind)
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                switch (timelineObject.TimelineReference)
-                {
-                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                            beatmapObject.customParent = null;
-                            beatmapObject.customShape = -1;
-                            beatmapObject.customShapeOption = -1;
-                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
-                            beatmapObject.modifiers.ForEach(modifier =>
-                            {
-                                modifier.Inactive?.Invoke(modifier, beatmapObject, null);
-                                modifier.Result = default;
-                            });
-
-                            break;
-                        }
-                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.customParent = null;
-                            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
-                            prefabObject.modifiers.ForEach(modifier =>
-                            {
-                                modifier.Inactive?.Invoke(modifier, prefabObject, null);
-                                modifier.Result = default;
-                            });
-
-                            break;
-                        }
-                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-                            backgroundObject.customShape = -1;
-                            backgroundObject.customShapeOption = -1;
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
-                            backgroundObject.modifiers.ForEach(modifier =>
-                            {
-                                modifier.Inactive?.Invoke(modifier, backgroundObject, null);
-                                modifier.Result = default;
-                            });
-
-                            break;
-                        }
-                }
-            }
-
-            RTLevel.Current?.RecalculateObjectStates();
-        }
-
-        public static void OpenPrefabDialog(Keybind keybind)
-        {
-            if (keybind.settings.TryGetValue("External", out string setting) && bool.TryParse(setting, out bool external))
-                RTPrefabEditor.inst.createInternal = !external;
-
-            RTPrefabEditor.inst.OpenDialog();
-        }
-
-        public static void CollapsePrefab(Keybind keybind)
-        {
-            if (EditorTimeline.inst.SelectedBeatmapObjects.Count != 1)
+                RenderProfilePopup();
                 return;
+            }
 
-            if (EditorTimeline.inst.CurrentSelection.isBeatmapObject && !string.IsNullOrEmpty(EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().prefabInstanceID) ||
-                EditorTimeline.inst.CurrentSelection.isBackgroundObject && !string.IsNullOrEmpty(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>().prefabInstanceID))
-                RTPrefabEditor.inst.CollapseCurrentPrefab();
-        }
+            Popup.ClearContent();
 
-        public static void ExpandPrefab(Keybind keybind)
-        {
-            if (EditorTimeline.inst.SelectedPrefabObjects.Count == 1 && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject)
-                RTPrefabEditor.inst.ExpandCurrentPrefab();
-        }
-
-        public static void SetSongTimeAutokill(Keybind keybind)
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            var select = EditorManager.inst.folderButtonPrefab.Duplicate(Popup.Content, "select").GetComponent<FunctionButtonStorage>();
+            select.Text = "Select Profile";
+            select.OnClick.NewListener(() =>
             {
-                switch (timelineObject.TimelineReference)
+                CurrentProfile = null;
+                currentProfileID = null;
+                RenderPopup();
+                Save();
+            });
+            EditorThemeManager.ApplySelectable(select.button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(select.label);
+
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
+            add.Text = "Add new Keybind";
+            add.OnClick.NewListener(() =>
+            {
+                if (!CurrentProfile)
                 {
-                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
-
-                            beatmapObject.autoKillType = AutoKillType.SongTime;
-                            beatmapObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
-                            beatmapObject.editorData.collapse = true;
-
-                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL, false);
-                            break;
-                        }
-                    case TimelineObject.TimelineReferenceType.PrefabObject: {
-                            var prefabObject = timelineObject.GetData<PrefabObject>();
-
-                            prefabObject.autoKillType = PrefabAutoKillType.SongTime;
-                            prefabObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
-                            prefabObject.editorData.collapse = true;
-
-                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL, false);
-                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
-
-                            break;
-                        }
-                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
-
-                            backgroundObject.autoKillType = AutoKillType.SongTime;
-                            backgroundObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
-                            backgroundObject.editorData.collapse = true;
-
-                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL, false);
-                            break;
-                        }
+                    NoProfileSelectedError();
+                    return;
                 }
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
-            RTLevel.Current?.Sort();
-        }
 
-        public static void OpenDialog(Keybind keybind)
-        {
-            if (CoreHelper.InEditor && keybind.settings.TryGetValue("Dialog", out string dialog) && EditorManager.inst.EditorDialogsDictionary.ContainsKey(dialog))
-                RTEditor.inst.ShowDialog(dialog);
-        }
+                var keybind = new Keybind(nameof(TogglePlayingSong), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha0));
+                CurrentProfile.keybinds.Add(keybind);
+                RenderPopup();
+                OpenDialog(keybind);
+            });
 
-        public static void SaveBeatmap(Keybind keybind) => EditorLevelManager.inst.SaveLevel();
-
-        public static void OpenBeatmapPopup(Keybind keybind) => EditorManager.inst.OpenBeatmapPopup();
-
-        public static void SetLayer(Keybind keybind)
-        {
-            if (keybind.settings.TryGetValue("Layer", out string layerSetting) && int.TryParse(layerSetting, out int layer))
-                EditorTimeline.inst.SetLayer(layer);
-        }
-
-        public static void ToggleEventLayer(Keybind keybind)
-            => EditorTimeline.inst.SetLayer(EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects ? EditorTimeline.LayerType.Events : EditorTimeline.LayerType.Objects);
-
-        public static void Undo(Keybind keybind)
-        {
-            if (!RTEditor.inst.ienumRunning)
+            int num = 0;
+            foreach (var keybind in CurrentProfile.keybinds)
             {
-                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
-                EditorManager.inst.Undo();
+                int index = num;
+
+                var name = keybind.Name;
+
+                if (!RTString.SearchString(Popup.SearchTerm, name))
+                {
+                    num++;
+                    continue;
+                }
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Popup.Content, name);
+                var storage = gameObject.GetComponent<FunctionButtonStorage>();
+                if (keybind.keys != null && keybind.keys.Count > 0)
+                {
+                    name += " [";
+                    for (int i = 0; i < keybind.keys.Count; i++)
+                    {
+                        name += $"{keybind.keys[i].InteractType}: {keybind.keys[i].KeyCode}";
+                        if (i != keybind.keys.Count - 1)
+                            name += ", ";
+                    }
+                    name += "]";
+                }
+                if (keybind.settings != null && keybind.settings.Count > 0)
+                {
+                    name += " (";
+                    for (int i = 0; i < keybind.settings.Count; i++)
+                    {
+                        var setting = keybind.settings[i];
+                        name += $"{setting.key}: {setting.value}";
+                        if (i != keybind.settings.Count - 1)
+                            name += ", ";
+                    }
+                    name += ")";
+                }
+                storage.Text = name;
+                storage.OnClick.ClearAll();
+
+                var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
+                contextClickable.onClick = pointerEventData =>
+                {
+                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    {
+                        var buttonFunctions = new List<ButtonFunction>()
+                        {
+                            new ButtonFunction("Edit", () => OpenDialog(keybind)),
+                            new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
+                            {
+                                if (!CurrentProfile)
+                                {
+                                    NoProfileSelectedError();
+                                    return;
+                                }
+
+                                CurrentProfile.keybinds.RemoveAt(index);
+                                RenderPopup();
+                                Save();
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup)),
+                            new ButtonFunction(true),
+                        };
+                        buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(CurrentProfile.keybinds, index, () =>
+                        {
+                            RenderPopup();
+                            Save();
+                        }));
+                        EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+                        return;
+                    }
+                    OpenDialog(keybind);
+                };
+
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete").GetComponent<DeleteButtonStorage>();
+                RectValues.LeftAnchored.AnchoredPosition(580f, 0f).Pivot(1f, 1f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
+                delete.button.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
+                {
+                    if (!CurrentProfile)
+                    {
+                        NoProfileSelectedError();
+                        return;
+                    }
+
+                    CurrentProfile.keybinds.RemoveAt(index);
+                    RenderPopup();
+                    Save();
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup));
+
+                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(storage.label);
+                EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+                num++;
             }
-            else
-                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
         }
 
-        public static void Redo(Keybind keybind)
+        /// <summary>
+        /// Renders the keybind profile list popup.
+        /// </summary>
+        public void RenderProfilePopup()
         {
-            if (!RTEditor.inst.ienumRunning)
+            Popup.ClearContent();
+
+            var add = EditorPrefabHolder.Instance.CreateAddButton(Popup.Content);
+            add.Text = "Add new Profile";
+            add.OnClick.ClearAll();
+            var addContextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
+            addContextClickable.onClick = pointerEventData =>
             {
-                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
-                EditorManager.inst.Redo();
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Create Default", () => RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
+                        {
+                            var name = RTEditor.inst.folderCreatorName.text;
+                            if (string.IsNullOrEmpty(name))
+                            {
+                                EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            CreateProfile(name, () => KeybindProfile.DefaultProfile);
+                            RTEditor.inst.HideNameEditor();
+                        })),
+                        new ButtonFunction("Create Empty", () => RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
+                        {
+                            var name = RTEditor.inst.folderCreatorName.text;
+                            if (string.IsNullOrEmpty(name))
+                            {
+                                EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            CreateProfile(name, () => new KeybindProfile("Default"));
+                            RTEditor.inst.HideNameEditor();
+                        })));
+                    return;
+                }
+
+                RTEditor.inst.ShowNameEditor("Keybind Profile Creator", "Profile Name", "Create", () =>
+                {
+                    var name = RTEditor.inst.folderCreatorName.text;
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
+
+                    CreateProfile(name, () => KeybindProfile.DefaultProfile);
+                    RTEditor.inst.HideNameEditor();
+                });
+            };
+
+            int num = 0;
+            foreach (var profile in profiles)
+            {
+                int index = num;
+
+                var name = profile.name;
+
+                if (!RTString.SearchString(Popup.SearchTerm, name))
+                {
+                    num++;
+                    continue;
+                }
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Popup.Content, name);
+                var storage = gameObject.GetComponent<FunctionButtonStorage>();
+                storage.Text = name;
+                storage.OnClick.ClearAll();
+
+                var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
+                contextClickable.onClick = pointerEventData =>
+                {
+                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Open", () =>
+                            {
+                                currentProfileID = profile.id;
+                                CurrentProfile = profile;
+                                Save();
+                                RenderPopup();
+                            }),
+                            new ButtonFunction("Rename", () => RTEditor.inst.ShowNameEditor("Rename Keybind Profile", "Profile Name", "Rename", () =>
+                            {
+                                var name = RTEditor.inst.folderCreatorName.text;
+                                if (string.IsNullOrEmpty(name))
+                                {
+                                    EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                var origName = profile.name;
+                                RTFile.DeleteFile(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName()));
+                                profile.name = name;
+
+                                int attempts = 0;
+                                while (RTFile.FileExists(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName())))
+                                {
+                                    profile.name = name + $" {attempts}";
+                                    attempts++;
+                                    if (attempts > 20)
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Failed to create new profile.", 2f, EditorManager.NotificationType.Error);
+                                        profile.name = origName;
+                                        Save();
+                                        return;
+                                    }
+                                }
+
+                                Save();
+                            })),
+                            new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this profile? You cannot undo this.", () =>
+                            {
+                                if (profiles.Count == 1)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Cannot delete only profile.", 2f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                profiles.RemoveAt(index);
+                                RTFile.DeleteFile(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName()));
+                                Save();
+                                RenderPopup();
+
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Reset Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to reset the keybinds in this profile? You cannot undo this.", () =>
+                            {
+                                profile.keybinds = KeybindProfile.GetDefaultKeybinds();
+                                Save();
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup)),
+                            new ButtonFunction("Clear Keybinds", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to clear all keybinds from this profile? You cannot undo this.", () =>
+                            {
+                                profile.keybinds.Clear();
+                                Save();
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Copy ID", () =>
+                            {
+                                LSText.CopyToClipboard(profile.id);
+                                EditorManager.inst.DisplayNotification($"Copied keybind profile ID to clipboard!", 2f, EditorManager.NotificationType.Success);
+                            }));
+                        return;
+                    }
+
+                    currentProfileID = profile.id;
+                    CurrentProfile = profile;
+                    Save();
+                    RenderPopup();
+                };
+
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete").GetComponent<DeleteButtonStorage>();
+                RectValues.LeftAnchored.AnchoredPosition(580f, 0f).Pivot(1f, 1f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());
+                delete.button.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
+                {
+                    if (profiles.Count == 1)
+                    {
+                        EditorManager.inst.DisplayNotification($"Cannot delete only profile.", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    profiles.RemoveAt(index);
+                    RTFile.DeleteFile(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName()));
+                    Save();
+                    RenderPopup();
+
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup));
+
+                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(storage.label);
+                EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+                num++;
             }
-            else
-                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
         }
 
-        public static void TogglePlayingSong(Keybind keybind)
+        /// <summary>
+        /// Opens the keybind function list popup.
+        /// </summary>
+        public void OpenFunctionPopup()
+        {
+            FunctionPopup.Open();
+            RenderFunctionPopup();
+        }
+
+        /// <summary>
+        /// Renders the keybind function list popup.
+        /// </summary>
+        public void RenderFunctionPopup()
+        {
+            FunctionPopup.ClearContent();
+
+            for (int i = 0; i < keybindFunctions.Count; i++)
+            {
+                int index = i;
+                var function = keybindFunctions[i];
+                var name = function.name;
+
+                if (!RTString.SearchString(FunctionPopup.SearchTerm, name))
+                    continue;
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(FunctionPopup.Content, name);
+                var storage = gameObject.GetComponent<FunctionButtonStorage>();
+                storage.Text = name;
+                storage.OnClick.NewListener(() =>
+                {
+                    if (CurrentKeybind)
+                    {
+                        CurrentKeybind.Name = name;
+                        RenderDialog(CurrentKeybind);
+                    }
+                    FunctionPopup.Close();
+                });
+
+                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(storage.label);
+            }
+        }
+
+        #endregion
+
+        #region Keybind Functions
+
+        /// <summary>
+        /// List of keybind functions.
+        /// </summary>
+        public List<KeybindFunction> keybindFunctions;
+
+        #region Main
+
+        public void TogglePlayingSong(Keybind keybind)
         {
             if (AnimationEditor.inst.Dialog.IsCurrent)
             {
@@ -1229,340 +1216,81 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.TogglePlayingSong();
         }
 
-        public static void IncreaseKeyframeValue(Keybind keybind)
+        public void TogglePreview(Keybind keybind) => RTEditor.inst.TogglePreview();
+
+        public void Undo(Keybind keybind)
         {
-            var type = keybind.settings.TryGetValue("EventType", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
-            var index = keybind.settings.TryGetValue("EventIndex", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
-            var value = keybind.settings.TryGetValue("EventValue", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
-            var amount = keybind.settings.TryGetValue("EventAmount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
-
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            if (!RTEditor.inst.ienumRunning)
             {
-                if (timelineObject.isBeatmapObject)
-                {
-                    var bm = timelineObject.GetData<BeatmapObject>();
-
-                    type = Mathf.Clamp(type, 0, bm.events.Count - 1);
-                    index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
-                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
-
-                    var val = bm.events[type][index].values[value];
-
-                    if (type == 3 && val == 0)
-                        val = Mathf.Clamp(val + amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
-                    else
-                        val += amount;
-
-                    bm.events[type][index].values[value] = val;
-
-                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                }
-                if (timelineObject.isPrefabObject)
-                {
-                    var po = timelineObject.GetData<PrefabObject>();
-
-                    type = Mathf.Clamp(type, 0, po.events.Count - 1);
-                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
-
-                    po.events[type].values[value] += amount;
-
-                    RTLevel.Current?.UpdatePrefab(po, PrefabObjectContext.TRANSFORM_OFFSET);
-                }
+                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
+                EditorManager.inst.Undo();
             }
+            else
+                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
         }
 
-        public static void DecreaseKeyframeValue(Keybind keybind)
+        public void Redo(Keybind keybind)
         {
-            var type = keybind.settings.TryGetValue("EventType", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
-            var index = keybind.settings.TryGetValue("EventIndex", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
-            var value = keybind.settings.TryGetValue("EventValue", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
-            var amount = keybind.settings.TryGetValue("EventAmount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
-
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            if (!RTEditor.inst.ienumRunning)
             {
-                if (timelineObject.isBeatmapObject)
-                {
-                    var bm = timelineObject.GetData<BeatmapObject>();
-
-                    type = Mathf.Clamp(type, 0, bm.events.Count - 1);
-                    index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
-                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
-
-                    var val = bm.events[type][index].values[value];
-
-                    if (type == 3 && val == 0)
-                        val = Mathf.Clamp(val - amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
-                    else
-                        val -= amount;
-
-                    bm.events[type][index].values[value] = val;
-
-                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                }
-                if (timelineObject.isPrefabObject)
-                {
-                    var po = timelineObject.GetData<PrefabObject>();
-
-                    type = Mathf.Clamp(type, 0, po.events.Count - 1);
-                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
-
-                    po.events[type].values[value] -= amount;
-
-                    RTLevel.Current?.UpdatePrefab(po, PrefabObjectContext.TRANSFORM_OFFSET);
-                }
+                EditorManager.inst.DisplayNotification("Performing task, please wait...", 1f, EditorManager.NotificationType.Success);
+                EditorManager.inst.Redo();
             }
+            else
+                EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
         }
 
-        public static void SetKeyframeValue(Keybind keybind)
+        public void Cut(Keybind keybind) => RTEditor.inst.Cut();
+
+        public void Copy(Keybind keybind) => RTEditor.inst.Copy();
+
+        public void Paste(Keybind keybind)
         {
-            var type = keybind.settings.TryGetValue("EventType", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
-            var index = keybind.settings.TryGetValue("EventIndex", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
-            var value = keybind.settings.TryGetValue("EventValue", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
-            var amount = keybind.settings.TryGetValue("EventAmount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
+            bool regen = true;
 
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                if (timelineObject.isBeatmapObject)
-                {
-                    var bm = timelineObject.GetData<BeatmapObject>();
+            if (keybind.TryGetSetting("Remove Prefab Instance ID", out string value) && bool.TryParse(value, out bool result))
+                regen = result;
 
-                    type = Mathf.Clamp(type, 0, bm.events.Count - 1);
-                    index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
-                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
-
-                    var val = bm.events[type][index].values[value];
-
-                    if (type == 3 && val == 0)
-                        val = Mathf.Clamp(amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
-                    else
-                        val = amount;
-
-                    bm.events[type][index].values[value] = val;
-
-                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
-                }
-                if (timelineObject.isPrefabObject)
-                {
-                    var po = timelineObject.GetData<PrefabObject>();
-
-                    type = Mathf.Clamp(type, 0, po.events.Count - 1);
-                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
-
-                    po.events[type].values[value] = amount;
-
-                    RTLevel.Current?.UpdatePrefab(po, PrefabObjectContext.TRANSFORM_OFFSET);
-                }
-            }
+            RTEditor.inst.Paste(regen);
         }
 
-        public static void SwapLockSelection(Keybind keybind)
+        public void Duplicate(Keybind keybind)
         {
-            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-            {
-                var selected = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected);
+            bool regen = true;
 
-                foreach (var timelineObject in selected)
-                {
-                    if (timelineObject.Index == 0)
-                        continue;
+            if (keybind.TryGetSetting("Remove Prefab Instance ID", out string value) && bool.TryParse(value, out bool result))
+                regen = result;
 
-                    timelineObject.Locked = !timelineObject.Locked;
-                    timelineObject.Render();
-                }
-
-                return;
-            }
-
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                {
-                    timelineObject.Locked = !timelineObject.Locked;
-                    timelineObject.RenderIcons();
-                }
-                return;
-            }
-
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                timelineObject.Locked = !timelineObject.Locked;
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
+            RTEditor.inst.Duplicate(regen);
         }
 
-        public static bool loggled = true;
-        public static void ToggleLockSelection(Keybind keybind)
+        public void Delete(Keybind keybind) => RTEditor.inst.Delete();
+
+        #endregion
+
+        #region Timeline
+
+        public void SetLayer(Keybind keybind)
         {
-            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-            {
-                var selected = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected);
-
-                foreach (var timelineObject in selected)
-                {
-                    if (timelineObject.Index == 0)
-                        continue;
-
-                    timelineObject.Locked = loggled;
-                    timelineObject.Render();
-                }
-
-                loggled = !loggled;
-                return;
-            }
-
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                {
-                    timelineObject.Locked = loggled;
-                    timelineObject.RenderIcons();
-                }
-
-                loggled = !loggled;
-                return;
-            }
-
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                timelineObject.Locked = loggled;
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
-
-            loggled = !loggled;
+            if (keybind.TryGetSetting("Layer", out string layerSetting) && int.TryParse(layerSetting, out int layer))
+                EditorTimeline.inst.SetLayer(layer);
         }
 
-        public static void SwapCollapseSelection(Keybind keybind)
+        public void AddLayer(Keybind keybind)
         {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                timelineObject.Collapse = !timelineObject.Collapse;
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
+            if (keybind.TryGetSetting("Layer", out string layerSetting) && int.TryParse(layerSetting, out int layer))
+                EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer + layer);
         }
 
-        public static bool coggled = true;
-        public static void ToggleCollapseSelection(Keybind keybind)
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                timelineObject.Collapse = coggled;
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
+        public void ToggleEventLayer(Keybind keybind) => EditorTimeline.inst.SetLayer(EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects ? EditorTimeline.LayerType.Events : EditorTimeline.LayerType.Objects);
 
-            coggled = !coggled;
-        }
+        public void GoToCurrentTime(Keybind keybind) => EditorManager.inst.timelineScrollRectBar.value = AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
 
-        public static void AddObjectLayer(Keybind keybind)
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                timelineObject.Layer++;
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
-        }
+        public void GoToStart(Keybind keybind) => EditorManager.inst.timelineScrollRectBar.value = 0f;
 
-        public static void SubObjectLayer(Keybind keybind)
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                if (timelineObject.Layer > 0)
-                    timelineObject.Layer--;
+        public void GoToEnd(Keybind keybind) => EditorManager.inst.timelineScrollRectBar.value = 1f;
 
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
-        }
-
-        public static void CycleObjectTypeUp(Keybind keybind)
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                if (!timelineObject.isBeatmapObject)
-                    continue;
-
-                var bm = timelineObject.GetData<BeatmapObject>();
-
-                bm.objectType++;
-
-                if ((int)bm.objectType > Enum.GetNames(typeof(BeatmapObject.ObjectType)).Length)
-                    bm.objectType = 0;
-
-                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
-            RTLevel.Current?.RecalculateObjectStates();
-        }
-
-        public static void CycleObjectTypeDown(Keybind keybind)
-        {
-            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-            {
-                if (!timelineObject.isBeatmapObject)
-                    continue;
-
-                var bm = timelineObject.GetData<BeatmapObject>();
-
-                var e = (int)bm.objectType - 1;
-
-                if (e < 0)
-                    e = Enum.GetValues(bm.objectType.GetType()).Length - 1;
-
-                bm.objectType = (BeatmapObject.ObjectType)e;
-
-                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
-                EditorTimeline.inst.RenderTimelineObject(timelineObject);
-            }
-            RTLevel.Current?.RecalculateObjectStates();
-        }
-
-        public static void JumpToNextMarker(Keybind keybind)
-        {
-            if (!GameData.Current || GameData.Current.data.markers.Count <= 0)
-                return;
-
-            RTMarkerEditor.inst.OrderMarkers();
-
-            var currentMarker = GameData.Current.data.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
-
-            if (currentMarker + 1 < 0)
-                return;
-
-            var marker = GameData.Current.data.markers[Mathf.Clamp(currentMarker + 1, 0, GameData.Current.data.markers.Count - 1)];
-
-            if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
-                RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
-        }
-
-        public static void JumpToPreviousMarker(Keybind keybind)
-        {
-            if (!GameData.Current || GameData.Current.data.markers.Count <= 0)
-                return;
-
-            RTMarkerEditor.inst.OrderMarkers();
-
-            var currentMarker = GameData.Current.data.markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time - 0.005f);
-
-            if (currentMarker < 0)
-                return;
-
-            var marker = GameData.Current.data.markers[Mathf.Clamp(currentMarker, 0, GameData.Current.data.markers.Count - 1)];
-
-            if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
-                RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
-        }
-
-        public static void OpenSaveAs(Keybind keybind)
-        {
-            EditorManager.inst.ClearPopups();
-            RTEditor.inst.SaveAsPopup.Open();
-        }
-
-        public static void OpenNewLevel(Keybind keybind)
-        {
-            EditorManager.inst.ClearPopups();
-            EditorLevelManager.inst.NewLevelPopup.Open();
-        }
-
-        public static void ToggleBPMSnap(Keybind keybind)
+        public void ToggleBPMSnap(Keybind keybind)
         {
             try
             {
@@ -1573,255 +1301,8 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"Had an error in trying to set snap BPM UI.\nException: {ex}");
             }
         }
-
-        public static void SelectNextObject(Keybind keybind)
-        {
-            var currentSelection = EditorTimeline.inst.CurrentSelection;
-
-            var index = EditorTimeline.inst.timelineObjects.IndexOf(currentSelection);
-
-            if (index + 1 < EditorTimeline.inst.timelineObjects.Count)
-                EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[index + 1], EditorConfig.Instance.BringToSelection.Value);
-        }
-
-        public static void SelectPreviousObject(Keybind keybind)
-        {
-            var currentSelection = EditorTimeline.inst.CurrentSelection;
-
-            var index = EditorTimeline.inst.timelineObjects.IndexOf(currentSelection);
-
-            if (index - 1 >= 0)
-                EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[index - 1], EditorConfig.Instance.BringToSelection.Value);
-        }
-
-        public static void SetFirstKeyframeInType(Keybind keybind)
-        {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-            {
-                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                {
-                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, 0, true);
-                }
-            }
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
-            }
-        }
-
-        public static void SetLastKeyframeInType(Keybind keybind)
-        {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-            {
-                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                {
-                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1, true);
-                }
-            }
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.events[EventEditor.inst.currentEventType].Count - 1);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
-            }
-        }
-
-        public static void SetNextKeyframeInType(Keybind keybind)
-        {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-            {
-                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                {
-                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex + 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
-                }
-            }
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                int count = GameData.Current.events[EventEditor.inst.currentEventType].Count;
-                int num = EventEditor.inst.currentEvent + 1 >= count ? count - 1 : EventEditor.inst.currentEvent + 1;
-
-                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
-            }
-        }
-
-        public static void SetPreviousKeyframeInType(Keybind keybind)
-        {
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
-            {
-                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                {
-                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
-                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
-                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex - 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
-                }
-            }
-            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
-            {
-                int num = EventEditor.inst.currentEvent - 1 < 0 ? 0 : EventEditor.inst.currentEvent - 1;
-
-                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
-            }
-        }
-
-        public static void AddPitch(Keybind keybind)
-        {
-            if (RTLevel.Current && RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset += 0.1f;
-            else
-                AudioManager.inst.pitch += 0.1f;
-
-        }
-
-        public static void SubPitch(Keybind keybind)
-        {
-            if (RTLevel.Current && RTLevel.Current.eventEngine)
-                RTLevel.Current.eventEngine.pitchOffset -= 0.1f;
-            else
-                AudioManager.inst.pitch -= 0.1f;
-        }
-
-        public static void ToggleShowHelp(Keybind keybind) => EditorManager.inst.SetShowHelp(!EditorManager.inst.showHelp);
-
-        public static void GoToCurrent(Keybind keybind)
-            => EditorManager.inst.timelineScrollRectBar.value = AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
-
-        public static void GoToStart(Keybind keybind) => EditorManager.inst.timelineScrollRectBar.value = 0f;
-
-        public static void GoToEnd(Keybind keybind) => EditorManager.inst.timelineScrollRectBar.value = 1f;
-
-        public static void CreateNewMarker(Keybind keybind) => MarkerEditor.inst.CreateNewMarker();
-
-        public static void SpawnPrefab(Keybind keybind)
-        {
-            bool useExternal = keybind.settings.TryGetValue("External", out string external) && bool.TryParse(external, out useExternal);
-            var prefabs = (useExternal ? RTPrefabEditor.inst.PrefabPanels.Select(x => x.Item).ToList() : GameData.Current.prefabs);
-
-            if (keybind.settings.TryGetValue("UseID", out string useIDSetting) && bool.TryParse(useIDSetting, out bool boolean) && keybind.settings.TryGetValue("ID", out string id) && boolean)
-            {
-                if (string.IsNullOrEmpty(id))
-                {
-                    EditorManager.inst.DisplayNotification("Could not find any Prefab to place as the set ID was empty!", 2.5f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                if (prefabs.TryFind(x => x.id == id, out Prefab prefab))
-                    RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
-
-                return;
-            }
-
-            if (keybind.settings.TryGetValue("Index", out string indexSetting) && int.TryParse(indexSetting, out int index))
-            {
-                if (index < 0 || index >= prefabs.Count)
-                {
-                    EditorManager.inst.DisplayNotification("The index was not in the range of the Prefab count, so could not place any prefabs.", 3f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                if (prefabs[index] != null)
-                    RTPrefabEditor.inst.AddPrefabObjectToLevel(prefabs[index]);
-            }
-        }
-
-        public static void Cut(Keybind keybind) => RTEditor.inst.Cut();
-
-        public static void Copy(Keybind keybind) => RTEditor.inst.Copy();
-
-        public static void Paste(Keybind keybind)
-        {
-            bool regen = true;
-
-            if (keybind.settings.ContainsKey("Remove Prefab Instance ID") && bool.TryParse(keybind.settings["Remove Prefab Instance ID"], out bool result))
-                regen = result;
-
-            RTEditor.inst.Paste(regen);
-        }
-
-        public static void Duplicate(Keybind keybind)
-        {
-            bool regen = true;
-
-            if (keybind.settings.ContainsKey("Remove Prefab Instance ID") && bool.TryParse(keybind.settings["Remove Prefab Instance ID"], out bool result))
-                regen = result;
-
-            RTEditor.inst.Duplicate(regen);
-        }
-
-        public static void Delete(Keybind keybind) => RTEditor.inst.Delete();
-
-        public static void ToggleObjectDragger(Keybind keybind) => EditorConfig.Instance.ObjectDraggerEnabled.Value = !EditorConfig.Instance.ObjectDraggerEnabled.Value;
-
-        public static void ToggleZenMode(Keybind keybind)
-        {
-            CoreConfig.Instance.ChallengeModeSetting.Value = CoreConfig.Instance.ChallengeModeSetting.Value != ChallengeMode.Zen ? ChallengeMode.Zen : ChallengeMode.Normal;
-            EditorManager.inst.DisplayNotification($"Set Zen Mode {(CoreConfig.Instance.ChallengeModeSetting.Value == ChallengeMode.Zen ? "On" : "Off")}", 2f, EditorManager.NotificationType.Success);
-        }
-
-        public static void CycleGameMode(Keybind keybind)
-        {
-            var current = CoreConfig.Instance.ChallengeModeSetting.Value;
-            var values = current.GetValues();
-            var index = Array.IndexOf(values, current);
-            index++;
-            if (index >= values.Length)
-                index = 0;
-            CoreConfig.Instance.ChallengeModeSetting.Value = values[index];
-
-            EditorManager.inst.DisplayNotification($"Set Game Mode to {CoreConfig.Instance.ChallengeModeSetting.Value.DisplayName} Mode!", 2f, EditorManager.NotificationType.Success);
-        }
-
-        public static void TransformPosition(Keybind keybind)
-        {
-            inst.createKeyframe = keybind.settings.TryGetValue("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
-            inst.useNearest = keybind.settings.TryGetValue("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
-            inst.usePrevious = keybind.settings.TryGetValue("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
-
-            inst.SetValues(0);
-        }
-
-        public static void TransformScale(Keybind keybind)
-        {
-            inst.createKeyframe = keybind.settings.TryGetValue("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
-            inst.useNearest = keybind.settings.TryGetValue("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
-            inst.usePrevious = keybind.settings.TryGetValue("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
-
-            inst.SetValues(1);
-        }
-
-        public static void TransformRotation(Keybind keybind)
-        {
-            inst.createKeyframe = keybind.settings.TryGetValue("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
-            inst.useNearest = keybind.settings.TryGetValue("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
-            inst.usePrevious = keybind.settings.TryGetValue("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
-
-            inst.SetValues(2);
-        }
-
-        public static void SpawnSelectedQuickPrefab(Keybind keybind)
-        {
-            if (RTPrefabEditor.inst.currentQuickPrefab)
-                RTPrefabEditor.inst.AddPrefabObjectToLevel(RTPrefabEditor.inst.currentQuickPrefab, RTPrefabEditor.inst.quickPrefabTarget?.InterpolateChain());
-            else
-                EditorManager.inst.DisplayNotification("No selected quick prefab!", 1f, EditorManager.NotificationType.Error);
-        }
-
-        public static void ResetIntegerVariables(Keybind keybind)
-        {
-            foreach (var beatmapObject in GameData.Current.beatmapObjects)
-                beatmapObject.integerVariable = 0;
-        }
-
-        public static void ToggleProjectPlanner(Keybind keybind) => ProjectPlanner.inst?.ToggleState();
-
-        public static void ForceSnapBPM(Keybind keybind)
+        
+        public void ForceSnapBPM(Keybind keybind)
         {
             var markers = GameData.Current.data.markers;
             var currentMarker = MarkerEditor.inst.currentMarker;
@@ -1890,38 +1371,331 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public static void AddLayer(Keybind keybind)
+        public void AddTimelineBin(Keybind keybind) => EditorTimeline.inst.AddBin();
+
+        public void RemoveTimelineBin(Keybind keybind) => EditorTimeline.inst.RemoveBin();
+
+        public void SetTimelineBin(Keybind keybind)
         {
-            if (keybind.settings.TryGetValue("Layer", out string layerSetting) && int.TryParse(layerSetting, out int layer))
-                EditorTimeline.inst.SetLayer(EditorTimeline.inst.Layer + layer);
-        }
-
-        public static void ParentPicker(Keybind keybind)
-        {
-            if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject)
-                return;
-
-            RTEditor.inst.parentPickerEnabled = true;
-        }
-
-        public static void ToggleMouseTooltip(Keybind keybind)
-        {
-            var o = !EditorConfig.Instance.MouseTooltipDisplay.Value;
-            EditorConfig.Instance.MouseTooltipDisplay.Value = o;
-            EditorManager.inst.DisplayNotification($"Set tooltip {(o ? "on" : "off")}", 1.5f, EditorManager.NotificationType.Success);
-        }
-
-        public static void AddTimelineBin(Keybind keybind) => EditorTimeline.inst.AddBin();
-
-        public static void RemoveTimelineBin(Keybind keybind) => EditorTimeline.inst.RemoveBin();
-
-        public static void SetTimelineBin(Keybind keybind)
-        {
-            if (keybind.settings.TryGetValue("Count", out string str) && int.TryParse(str, out int count))
+            if (keybind.TryGetSetting("Count", out string str) && int.TryParse(str, out int count))
                 EditorTimeline.inst.SetBinCount(count);
         }
 
-        public static void HideSelection(Keybind keybind)
+        #endregion
+
+        #region Object
+
+        public void UpdateEverything(Keybind keybind)
+        {
+            RandomHelper.UpdateSeed();
+            RTLevel.Reinit();
+
+            // reset modifiers
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
+            {
+                beatmapObject.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    modifier.Result = default;
+                });
+            }
+            foreach (var backgroundObject in GameData.Current.backgroundObjects)
+            {
+                backgroundObject.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, backgroundObject, null);
+                    modifier.Result = default;
+                });
+            }
+            foreach (var prefabObject in GameData.Current.prefabObjects)
+            {
+                prefabObject.modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, prefabObject, null);
+                    modifier.Result = default;
+                });
+            }
+
+            PlayerManager.RespawnPlayers();
+        }
+
+        public void UpdateObject(Keybind keybind)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            beatmapObject.customParent = null;
+                            beatmapObject.customShape = -1;
+                            beatmapObject.customShapeOption = -1;
+                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
+                            beatmapObject.modifiers.ForEach(modifier =>
+                            {
+                                modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                                modifier.Result = default;
+                            });
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+                            prefabObject.customParent = null;
+                            RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                            prefabObject.modifiers.ForEach(modifier =>
+                            {
+                                modifier.Inactive?.Invoke(modifier, prefabObject, null);
+                                modifier.Result = default;
+                            });
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                            backgroundObject.customShape = -1;
+                            backgroundObject.customShapeOption = -1;
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                            backgroundObject.modifiers.ForEach(modifier =>
+                            {
+                                modifier.Inactive?.Invoke(modifier, backgroundObject, null);
+                                modifier.Result = default;
+                            });
+
+                            break;
+                        }
+                }
+            }
+
+            RTLevel.Current?.RecalculateObjectStates();
+        }
+        
+        public void SetSongTimeAutokill(Keybind keybind)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+
+                            beatmapObject.autoKillType = AutoKillType.SongTime;
+                            beatmapObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
+                            beatmapObject.editorData.collapse = true;
+
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL, false);
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            var prefabObject = timelineObject.GetData<PrefabObject>();
+
+                            prefabObject.autoKillType = PrefabAutoKillType.SongTime;
+                            prefabObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
+                            prefabObject.editorData.collapse = true;
+
+                            RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.AUTOKILL, false);
+                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            var backgroundObject = timelineObject.GetData<BackgroundObject>();
+
+                            backgroundObject.autoKillType = AutoKillType.SongTime;
+                            backgroundObject.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
+                            backgroundObject.editorData.collapse = true;
+
+                            RTLevel.Current?.UpdateBackgroundObject(backgroundObject, BackgroundObjectContext.AUTOKILL, false);
+                            break;
+                        }
+                }
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+            RTLevel.Current?.Sort();
+        }
+
+        public void SwapLockSelection(Keybind keybind)
+        {
+            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+            {
+                var selected = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected);
+
+                foreach (var timelineObject in selected)
+                {
+                    if (timelineObject.Index == 0)
+                        continue;
+
+                    timelineObject.Locked = !timelineObject.Locked;
+                    timelineObject.Render();
+                }
+
+                return;
+            }
+
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+            {
+                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                {
+                    timelineObject.Locked = !timelineObject.Locked;
+                    timelineObject.RenderIcons();
+                }
+                return;
+            }
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                timelineObject.Locked = !timelineObject.Locked;
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+        }
+
+        public bool loggled = true;
+        public void ToggleLockSelection(Keybind keybind)
+        {
+            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.Dialog.IsCurrent && EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+            {
+                var selected = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Where(x => x.Selected);
+
+                foreach (var timelineObject in selected)
+                {
+                    if (timelineObject.Index == 0)
+                        continue;
+
+                    timelineObject.Locked = loggled;
+                    timelineObject.Render();
+                }
+
+                loggled = !loggled;
+                return;
+            }
+
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+            {
+                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                {
+                    timelineObject.Locked = loggled;
+                    timelineObject.RenderIcons();
+                }
+
+                loggled = !loggled;
+                return;
+            }
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                timelineObject.Locked = loggled;
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+
+            loggled = !loggled;
+        }
+
+        public void SwapCollapseSelection(Keybind keybind)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                timelineObject.Collapse = !timelineObject.Collapse;
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+        }
+
+        public bool coggled = true;
+        public void ToggleCollapseSelection(Keybind keybind)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                timelineObject.Collapse = coggled;
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+
+            coggled = !coggled;
+        }
+
+        public void AddObjectLayer(Keybind keybind)
+        {
+            int amount = keybind.GetSettingOrDefault("Amount", 1);
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                timelineObject.Layer += amount;
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+        }
+
+        public void SetObjectLayer(Keybind keybind)
+        {
+            int layer = keybind.GetSettingOrDefault("Layer", 0);
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                timelineObject.Layer = layer;
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+        }
+
+        public void CycleObjectTypeUp(Keybind keybind)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                if (!timelineObject.isBeatmapObject)
+                    continue;
+
+                var bm = timelineObject.GetData<BeatmapObject>();
+
+                bm.objectType++;
+
+                if ((int)bm.objectType > Enum.GetNames(typeof(BeatmapObject.ObjectType)).Length)
+                    bm.objectType = 0;
+
+                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+            RTLevel.Current?.RecalculateObjectStates();
+        }
+
+        public void CycleObjectTypeDown(Keybind keybind)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                if (!timelineObject.isBeatmapObject)
+                    continue;
+
+                var bm = timelineObject.GetData<BeatmapObject>();
+
+                var e = (int)bm.objectType - 1;
+
+                if (e < 0)
+                    e = Enum.GetValues(bm.objectType.GetType()).Length - 1;
+
+                bm.objectType = (BeatmapObject.ObjectType)e;
+
+                RTLevel.Current?.UpdateObject(bm, ObjectContext.OBJECT_TYPE);
+                EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+            RTLevel.Current?.RecalculateObjectStates();
+        }
+
+        public void SelectNextObject(Keybind keybind)
+        {
+            var currentSelection = EditorTimeline.inst.CurrentSelection;
+
+            var index = EditorTimeline.inst.timelineObjects.IndexOf(currentSelection);
+
+            if (index + 1 < EditorTimeline.inst.timelineObjects.Count)
+                EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[index + 1], EditorConfig.Instance.BringToSelection.Value);
+        }
+
+        public void SelectPreviousObject(Keybind keybind)
+        {
+            var currentSelection = EditorTimeline.inst.CurrentSelection;
+
+            var index = EditorTimeline.inst.timelineObjects.IndexOf(currentSelection);
+
+            if (index - 1 >= 0)
+                EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.timelineObjects[index - 1], EditorConfig.Instance.BringToSelection.Value);
+        }
+        
+        public void HideSelection(Keybind keybind)
         {
             int hiddenCount = 0;
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -1951,7 +1725,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Hidden [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
         }
 
-        public static void UnhideHiddenObjects(Keybind keybind)
+        public void UnhideHiddenObjects(Keybind keybind)
         {
             int hiddenCount = 0;
             foreach (var timelineObject in EditorTimeline.inst.timelineObjects)
@@ -1984,7 +1758,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Unhidden [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
         }
 
-        public static void ToggleHideSelection(Keybind keybind)
+        public void ToggleHideSelection(Keybind keybind)
         {
             int hiddenCount = 0;
             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -2014,153 +1788,462 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.DisplayNotification($"Toggled hidden state of [{hiddenCount}] objects!", 2f, EditorManager.NotificationType.Success);
         }
 
-        public static void UpdateSeed(Keybind keybind) => RTLevel.Current.InitSeed();
+        public void ToggleObjectDragging(Keybind keybind) => EditorConfig.Instance.ObjectDraggerEnabled.Value = !EditorConfig.Instance.ObjectDraggerEnabled.Value;
 
-        #endregion
+        public void ToggleObjectDragHelper(Keybind keybind) => EditorConfig.Instance.ObjectDraggerHelper.Value = !EditorConfig.Instance.ObjectDraggerHelper.Value;
 
-        #region Settings
-
-        public List<Dictionary<string, string>> Settings => new List<Dictionary<string, string>>
+        public void TransformPosition(Keybind keybind)
         {
-            new Dictionary<string, string>
-            {
-                { "Code", "Debug.Log($\"{EditorManagement.Functions.Editors.KeybindManager.className} This is an example! You can use the keybind variable to check any settings you may have.\");" }
-            }, // 0
-            null, // 1
-            null, // 2
-            null, // 3
-            new Dictionary<string, string>
-            {
-                { "External", "True" }
-            }, // 4
-            null, // 5
-            null, // 6
-            null, // 7
-            new Dictionary<string, string>
-            {
-                { "Dialog", "Open File Popup" }
-            }, // 8
-            null, // 9
-            null, // 10
-            new Dictionary<string, string>
-            {
-                { "Layer", "0" }
-            }, // 11
-            null, // 12
-            null, // 13
-            null, // 14
-            null, // 15
-            new Dictionary<string, string>
-            {
-                { "EventType", "0" },
-                { "EventIndex", "0" },
-                { "EventValue", "0" },
-                { "EventAmount", "0" },
-            }, // 16
-            new Dictionary<string, string>
-            {
-                { "EventType", "0" },
-                { "EventIndex", "0" },
-                { "EventValue", "0" },
-                { "EventAmount", "0" },
-            }, // 17
-            new Dictionary<string, string>
-            {
-                { "EventType", "0" },
-                { "EventIndex", "0" },
-                { "EventValue", "0" },
-                { "EventAmount", "0" },
-            }, // 18
-            null, // 19
-            null, // 20
-            null, // 21
-            null, // 22
-            null, // 23
-            null, // 24
-            null, // 25
-            null, // 26
-            null, // 27
-            null, // 28
-            null, // 29
-            null, // 30
-            null, // 31
-            null, // 32
-            null, // 33
-            null, // 34
-            null, // 35
-            null, // 36
-            null, // 37
-            null, // 38
-            null, // 39
-            null, // 40
-            null, // 41
-            null, // 42
-            null, // 43
-            null, // 44
-            new Dictionary<string, string>
-            {
-                { "External", "False" },
-                { "UseID", "False" },
-                { "ID", "" },
-                { "Index", "0" }
-            }, // 45
-            null, // 46
-            null, // 47
-            new Dictionary<string, string>
-            {
-                { "Remove Prefab Instance ID", "True" }
-            }, // 48
-            new Dictionary<string, string>
-            {
-                { "Remove Prefab Instance ID", "True" }
-            }, // 49
-            null, // 50
-            null, // 51
-            null, // 52
-            null, // 53
-            new Dictionary<string, string>
-            {
-                { "Create Keyframe", "True" },
-                { "Use Nearest", "True" },
-                { "Use Previous", "False" },
-            }, // 54
-            new Dictionary<string, string>
-            {
-                { "Create Keyframe", "True" },
-                { "Use Nearest", "True" },
-                { "Use Previous", "False" },
-            }, // 55
-            new Dictionary<string, string>
-            {
-                { "Create Keyframe", "True" },
-                { "Use Nearest", "True" },
-                { "Use Previous", "False" },
-            }, // 56
-            null, // 57
-            null, // 58
-            null, // 59
-            null, // 60
-            new Dictionary<string, string>
-            {
-                { "Layer", "1" }
-            }, // 61
-            null, // 62
-            null, // 63
-            null, // 64 (AddBin)
-            null, // 65 (RemoveBin)
-            new Dictionary<string, string>
-            {
-                { "Count", "30" }
-            }, // 66 (SetBinCount)
-            null, // 67
-            null, // 68
-            null, // 69
-            null, // 70
-        };
+            this.createKeyframe = keybind.TryGetSetting("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
+            this.useNearest = keybind.TryGetSetting("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
+            this.usePrevious = keybind.TryGetSetting("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
+
+            SetValues(0);
+        }
+
+        public void TransformScale(Keybind keybind)
+        {
+            this.createKeyframe = keybind.TryGetSetting("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
+            this.useNearest = keybind.TryGetSetting("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
+            this.usePrevious = keybind.TryGetSetting("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
+
+            SetValues(1);
+        }
+
+        public void TransformRotation(Keybind keybind)
+        {
+            this.createKeyframe = keybind.TryGetSetting("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
+            this.useNearest = keybind.TryGetSetting("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
+            this.usePrevious = keybind.TryGetSetting("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
+
+            SetValues(2);
+        }
+
+        public void ParentPicker(Keybind keybind)
+        {
+            if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject && !EditorTimeline.inst.CurrentSelection.isPrefabObject)
+                return;
+
+            RTEditor.inst.parentPickerEnabled = true;
+        }
+
+        public void ResetIntegerVariables(Keybind keybind)
+        {
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
+                beatmapObject.integerVariable = 0;
+        }
 
         #endregion
 
-        #region Functions
+        #region Prefab
+
+        public void OpenPrefabCreator(Keybind keybind)
+        {
+            RTPrefabEditor.inst.createInternal = keybind.TryGetSetting("External", out string setting) && bool.TryParse(setting, out bool external) && !external;
+            RTPrefabEditor.inst.OpenDialog();
+        }
+
+        public void CollapsePrefab(Keybind keybind)
+        {
+            if (EditorTimeline.inst.SelectedObjects.Count == 1 && EditorTimeline.inst.CurrentSelection.TryGetPrefabable(out IPrefabable prefabable) && !string.IsNullOrEmpty(prefabable.PrefabInstanceID))
+                RTPrefabEditor.inst.Collapse(prefabable, prefabable is IEditable editable ? editable.EditorData : null);
+        }
+
+        public void ExpandPrefab(Keybind keybind)
+        {
+            if (EditorTimeline.inst.SelectedPrefabObjects.Count == 1 && EditorTimeline.inst.CurrentSelection && EditorTimeline.inst.CurrentSelection.isPrefabObject)
+                RTPrefabEditor.inst.ExpandCurrentPrefab();
+        }
+
+        public void SpawnPrefab(Keybind keybind)
+        {
+            var search = keybind.GetSettingOrDefault("Search Prefab Using", 0);
+            var reference = keybind.GetSettingOrDefault("Prefab Reference", string.Empty);
+            if (string.IsNullOrEmpty(reference))
+                return;
+
+            var prefab = GameData.Current.GetPrefab(search, reference);
+            if (prefab)
+                RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
+        }
+
+        public void SpawnSelectedQuickPrefab(Keybind keybind)
+        {
+            if (RTPrefabEditor.inst.currentQuickPrefab)
+                RTPrefabEditor.inst.AddPrefabObjectToLevel(RTPrefabEditor.inst.currentQuickPrefab, RTPrefabEditor.inst.quickPrefabTarget?.InterpolateChain());
+            else
+                EditorManager.inst.DisplayNotification("No selected quick prefab!", 1f, EditorManager.NotificationType.Error);
+        }
+
+        #endregion
+
+        #region Marker
+
+        public void CreateNewMarker(Keybind keybind) => MarkerEditor.inst.CreateNewMarker();
+
+        public void JumpToNextMarker(Keybind keybind)
+        {
+            if (!GameData.Current || GameData.Current.data.markers.Count <= 0)
+                return;
+
+            RTMarkerEditor.inst.OrderMarkers();
+
+            var currentMarker = GameData.Current.data.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
+
+            if (currentMarker + 1 < 0)
+                return;
+
+            var marker = GameData.Current.data.markers[Mathf.Clamp(currentMarker + 1, 0, GameData.Current.data.markers.Count - 1)];
+
+            if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
+        }
+
+        public void JumpToPreviousMarker(Keybind keybind)
+        {
+            if (!GameData.Current || GameData.Current.data.markers.Count <= 0)
+                return;
+
+            RTMarkerEditor.inst.OrderMarkers();
+
+            var currentMarker = GameData.Current.data.markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time - 0.005f);
+
+            if (currentMarker < 0)
+                return;
+
+            var marker = GameData.Current.data.markers[Mathf.Clamp(currentMarker, 0, GameData.Current.data.markers.Count - 1)];
+
+            if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
+        }
+
+        #endregion
+
+        #region Save / Load
+
+        public void SaveLevel(Keybind keybind) => EditorLevelManager.inst.SaveLevel();
+
+        public void OpenLevelPopup(Keybind keybind) => EditorManager.inst.OpenBeatmapPopup();
+
+        public void SaveLevelCopy(Keybind keybind)
+        {
+            EditorManager.inst.ClearPopups();
+            RTEditor.inst.SaveAsPopup.Open();
+        }
+
+        public void CreateNewLevel(Keybind keybind)
+        {
+            EditorManager.inst.ClearPopups();
+            EditorLevelManager.inst.NewLevelPopup.Open();
+        }
+
+        #endregion
+
+        #region Keyframe
+
+        public void SetFirstKeyframeInType(Keybind keybind)
+        {
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            {
+                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                {
+                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, 0, true);
+                }
+            }
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+            {
+                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+            }
+        }
+
+        public void SetLastKeyframeInType(Keybind keybind)
+        {
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            {
+                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                {
+                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1, true);
+                }
+            }
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+            {
+                RTEventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.events[EventEditor.inst.currentEventType].Count - 1);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+            }
+        }
+
+        public void SetNextKeyframeInType(Keybind keybind)
+        {
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            {
+                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                {
+                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex + 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
+                }
+            }
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+            {
+                int count = GameData.Current.events[EventEditor.inst.currentEventType].Count;
+                int num = EventEditor.inst.currentEvent + 1 >= count ? count - 1 : EventEditor.inst.currentEvent + 1;
+
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+            }
+        }
+
+        public void SetPreviousKeyframeInType(Keybind keybind)
+        {
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects)
+            {
+                if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
+                {
+                    var bm = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                    ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(bm);
+                    ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(bm, ObjectEditor.inst.Dialog.Timeline.currentKeyframeType, Mathf.Clamp(ObjectEditor.inst.Dialog.Timeline.currentKeyframeIndex - 1, 0, bm.events[ObjectEditor.inst.Dialog.Timeline.currentKeyframeType].Count - 1), true);
+                }
+            }
+            if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
+            {
+                int num = EventEditor.inst.currentEvent - 1 < 0 ? 0 : EventEditor.inst.currentEvent - 1;
+
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
+                AudioManager.inst.SetMusicTime(GameData.Current.events[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].time);
+            }
+        }
+
+        public void IncreaseKeyframeValue(Keybind keybind)
+        {
+            var type = keybind.TryGetSetting("Type", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
+            var index = keybind.TryGetSetting("Index", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
+            var value = keybind.TryGetSetting("Value Index", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
+            var amount = keybind.TryGetSetting("Amount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                if (timelineObject.isBeatmapObject)
+                {
+                    var bm = timelineObject.GetData<BeatmapObject>();
+
+                    type = Mathf.Clamp(type, 0, bm.events.Count - 1);
+                    index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
+                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
+
+                    var val = bm.events[type][index].values[value];
+
+                    if (type == 3 && val == 0)
+                        val = Mathf.Clamp(val + amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
+                    else
+                        val += amount;
+
+                    bm.events[type][index].values[value] = val;
+
+                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                }
+                if (timelineObject.isPrefabObject)
+                {
+                    var po = timelineObject.GetData<PrefabObject>();
+
+                    type = Mathf.Clamp(type, 0, po.events.Count - 1);
+                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
+
+                    po.events[type].values[value] += amount;
+
+                    RTLevel.Current?.UpdatePrefab(po, PrefabObjectContext.TRANSFORM_OFFSET);
+                }
+            }
+        }
+
+        public void DecreaseKeyframeValue(Keybind keybind)
+        {
+            var type = keybind.TryGetSetting("Type", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
+            var index = keybind.TryGetSetting("Index", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
+            var value = keybind.TryGetSetting("Value Index", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
+            var amount = keybind.TryGetSetting("Amount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                if (timelineObject.isBeatmapObject)
+                {
+                    var bm = timelineObject.GetData<BeatmapObject>();
+
+                    type = Mathf.Clamp(type, 0, bm.events.Count - 1);
+                    index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
+                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
+
+                    var val = bm.events[type][index].values[value];
+
+                    if (type == 3 && val == 0)
+                        val = Mathf.Clamp(val - amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
+                    else
+                        val -= amount;
+
+                    bm.events[type][index].values[value] = val;
+
+                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                }
+                if (timelineObject.isPrefabObject)
+                {
+                    var po = timelineObject.GetData<PrefabObject>();
+
+                    type = Mathf.Clamp(type, 0, po.events.Count - 1);
+                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
+
+                    po.events[type].values[value] -= amount;
+
+                    RTLevel.Current?.UpdatePrefab(po, PrefabObjectContext.TRANSFORM_OFFSET);
+                }
+            }
+        }
+
+        public void SetKeyframeValue(Keybind keybind)
+        {
+            var type = keybind.TryGetSetting("Type", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
+            var index = keybind.TryGetSetting("Index", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
+            var value = keybind.TryGetSetting("Value Index", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
+            var amount = keybind.TryGetSetting("Amount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
+
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                if (timelineObject.isBeatmapObject)
+                {
+                    var bm = timelineObject.GetData<BeatmapObject>();
+
+                    type = Mathf.Clamp(type, 0, bm.events.Count - 1);
+                    index = Mathf.Clamp(index, 0, bm.events[type].Count - 1);
+                    value = Mathf.Clamp(value, 0, bm.events[type][index].values.Length - 1);
+
+                    var val = bm.events[type][index].values[value];
+
+                    if (type == 3 && val == 0)
+                        val = Mathf.Clamp(amount, 0, ThemeManager.inst.Current.objectColors.Count - 1);
+                    else
+                        val = amount;
+
+                    bm.events[type][index].values[value] = val;
+
+                    RTLevel.Current?.UpdateObject(bm, ObjectContext.KEYFRAMES);
+                }
+                if (timelineObject.isPrefabObject)
+                {
+                    var po = timelineObject.GetData<PrefabObject>();
+
+                    type = Mathf.Clamp(type, 0, po.events.Count - 1);
+                    value = Mathf.Clamp(value, 0, po.events[type].values.Length - 1);
+
+                    po.events[type].values[value] = amount;
+
+                    RTLevel.Current?.UpdatePrefab(po, PrefabObjectContext.TRANSFORM_OFFSET);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Game
+
+        public void ToggleZenMode(Keybind keybind)
+        {
+            CoreConfig.Instance.ChallengeModeSetting.Value = CoreConfig.Instance.ChallengeModeSetting.Value != ChallengeMode.Zen ? ChallengeMode.Zen : ChallengeMode.Normal;
+            EditorManager.inst.DisplayNotification($"Set Zen Mode {(CoreConfig.Instance.ChallengeModeSetting.Value == ChallengeMode.Zen ? "On" : "Off")}", 2f, EditorManager.NotificationType.Success);
+        }
+
+        public void CycleGameMode(Keybind keybind)
+        {
+            var current = CoreConfig.Instance.ChallengeModeSetting.Value;
+            var values = current.GetValues();
+            var index = Array.IndexOf(values, current);
+            index++;
+            if (index >= values.Length)
+                index = 0;
+            CoreConfig.Instance.ChallengeModeSetting.Value = values[index];
+
+            EditorManager.inst.DisplayNotification($"Set Game Mode to {CoreConfig.Instance.ChallengeModeSetting.Value.DisplayName} Mode!", 2f, EditorManager.NotificationType.Success);
+        }
+
+        public void AddPitch(Keybind keybind)
+        {
+            var pitch = RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.pitchOffset : AudioManager.inst.pitch;
+            pitch += keybind.GetSettingOrDefault("Pitch", 0.1f);
+            AudioManager.inst.SetPitch(pitch);
+        }
+
+        public void SetPitch(Keybind keybind) => AudioManager.inst.SetPitch(keybind.GetSettingOrDefault("Pitch", 1.0f));
+
+        public void UpdateSeed(Keybind keybind) => RTLevel.Current.InitSeed();
+
+        #endregion
+
+        #region Info
+
+        public void ToggleShowHelp(Keybind keybind) => EditorManager.inst.SetShowHelp(!EditorManager.inst.showHelp);
+
+        public void ToggleMouseTooltip(Keybind keybind)
+        {
+            var o = !EditorConfig.Instance.MouseTooltipDisplay.Value;
+            EditorConfig.Instance.MouseTooltipDisplay.Value = o;
+            EditorManager.inst.DisplayNotification($"Set tooltip {(o ? "on" : "off")}", 1.5f, EditorManager.NotificationType.Success);
+        }
+
+        #endregion
+
+        public void ToggleProjectPlanner(Keybind keybind) => ProjectPlanner.inst?.ToggleState();
+
+        public void SwitchKeybindProfile(Keybind keybind)
+        {
+            if (!keybind.TryGetSetting("Profile ID", out string value) || string.IsNullOrEmpty(value) || !profiles.TryFind(x => x.id == value, out KeybindProfile keybindProfile))
+                return;
+
+            currentProfileID = keybindProfile.id;
+            CurrentProfile = keybindProfile;
+            RenderPopupIfOpen();
+        }
+
+        #endregion
+
+        #region Misc
+
+        /// <summary>
+        /// Creates a new keybind profile.
+        /// </summary>
+        /// <param name="name">Name of the profile to set.</param>
+        /// <param name="getProfile">Default profile settings.</param>
+        public void CreateProfile(string name, Func<KeybindProfile> getProfile)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                EditorManager.inst.DisplayNotification($"Please set a name!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            RTFile.CreateDirectory(KeybindsFolder);
+            var profile = getProfile.Invoke();
+            profile.name = name;
+
+            int attempts = 0;
+            while (RTFile.FileExists(RTFile.CombinePaths(KeybindsFolder, profile.GetFileName())))
+            {
+                profile.name = name + $" {attempts}";
+                attempts++;
+                if (attempts > 20)
+                {
+                    EditorManager.inst.DisplayNotification($"Failed to create new profile.", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
+            }
+
+            profiles.Add(profile);
+            CurrentProfile = profile;
+            currentProfileID = profile.id;
+            Save();
+            RenderPopup();
+        }
 
         public void SetValues(int type)
         {
@@ -2315,40 +2398,8 @@ namespace BetterLegacy.Editor.Managers
             originalValues = selectedKeyframe.values.Copy();
         }
 
-        public bool createKeyframe = true;
-        public bool useNearest = true;
-        public bool usePrevious = false;
-
-        public int currentType;
-
-        public bool dragging;
-
-        public BeatmapObject beatmapObject;
-        public PrefabObject prefabObject;
-
-        public bool setKeyframeValues;
-        public Vector2 dragKeyframeValues;
-        public EventKeyframe selectedKeyframe;
-        public float[] originalValues;
-        public Vector2 dragOffset;
-        float dragOffsetFloat;
-        float dragKeyframeValuesFloat;
-        public SelectObject.Axis firstDirection = SelectObject.Axis.Static;
-
-        public SelectionType selectionType;
-
         #endregion
 
-        public bool KeyCodeHandler(Keybind keybind)
-        {
-            var active = keybind.keys.Count > 0 && keybind.keys.All(x => Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.Pressed ||
-            Input.GetKeyDown(x.KeyCode) && x.InteractType == Keybind.Key.Type.Down ||
-            !Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.Up || !Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.NotPressed) && !isPressingKey;
-
-            isPressingKey = active;
-            return active;
-        }
-
-        public List<Keybind> keybinds = new List<Keybind>();
+        #endregion
     }
 }

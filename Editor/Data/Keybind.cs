@@ -6,119 +6,197 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
-    public class Keybind
+    public class Keybind : PAObject<Keybind>
     {
-        public Keybind(string id, List<Key> keys, int actionType, Dictionary<string, string> settings = null)
-        {
-            this.id = id;
-            this.keys = keys;
-            ActionType = actionType;
-            this.settings = settings ?? new Dictionary<string, string>();
+        public Keybind() => id = GetNumberID();
 
-            if (settings == null && actionType >= 0 && actionType < KeybindEditor.inst.Settings.Count)
+        public Keybind(string name, params Key[] keys) : this()
+        {
+            this.name = name;
+            this.keys = keys.ToList();
+        }
+
+        public Keybind(string name, List<Setting> settings, params Key[] keys) : this(name, keys) => this.settings = settings;
+
+        #region Values
+
+        public List<Setting> settings = new List<Setting>();
+        public KeyCode KeyCode { get; set; }
+        public KeyCode KeyCodeDown { get; set; }
+
+        public int ActionType
+        {
+            get => KeybindEditor.inst && KeybindEditor.inst.keybindFunctions.TryFindIndex(x => x.name == Name, out int index) ? index : -1;
+            set
             {
-                var setting = KeybindEditor.inst.Settings[actionType];
-                if (setting != null)
-                    foreach (var keyValuePair in setting)
-                    {
-                        if (!this.settings.ContainsKey(keyValuePair.Key))
-                            this.settings.Add(keyValuePair.Key, keyValuePair.Value);
-                    }
+                if (!KeybindEditor.inst || !KeybindEditor.inst.keybindFunctions.TryGetAt(value, out KeybindFunction keybindFunction))
+                {
+                    Name = string.Empty;
+                    action = null;
+                    settings = new List<Setting>();
+                    return;
+                }
+
+                Name = keybindFunction.name;
+                action = keybindFunction.action;
+                settings = new List<Setting>(keybindFunction.settings.Select(x => x.Copy()));
             }
         }
 
-        public static Keybind Parse(JSONNode jn)
+        Action<Keybind> action;
+
+        string name = string.Empty;
+        public string Name
         {
-            string id = jn["id"];
+            get => name;
+            set
+            {
+                name = value;
+                if (string.IsNullOrEmpty(name))
+                    return;
 
-            int actionType = jn["action"].AsInt;
+                if (!KeybindEditor.inst || !KeybindEditor.inst.keybindFunctions.TryFind(x => x.name == name, out KeybindFunction keybindFunction))
+                {
+                    action = null;
+                    settings = new List<Setting>();
+                    return;
+                }
 
-            var keys = new List<Key>();
+                action = keybindFunction.action;
+                settings = keybindFunction.settings == null ? new List<Setting>() : new List<Setting>(keybindFunction.settings.Select(x => x.Copy()));
+            }
+        }
+
+        /// <summary>
+        /// List of keys to check.
+        /// </summary>
+        public List<Key> keys = new List<Key>();
+
+        #endregion
+
+        #region Methods
+
+        public override void CopyData(Keybind orig, bool newID = true)
+        {
+            id = newID ? GetNumberID() : orig.id;
+
+            Name = orig.Name;
+            keys = new List<Key>(orig.keys.Select(x => x.Copy()));
+            settings = new List<Setting>(orig.settings.Select(x => x.Copy()));
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            id = jn["id"];
+
+            Name = jn["name"] ?? string.Empty;
+            keys = new List<Key>();
             for (int i = 0; i < jn["keys"].Count; i++)
                 keys.Add(Key.Parse(jn["keys"][i]));
 
-            var dictionary = new Dictionary<string, string>();
-
             for (int i = 0; i < jn["settings"].Count; i++)
             {
-                if (!dictionary.ContainsKey(jn["settings"][i]))
-                    dictionary.Add(jn["settings"][i]["type"], jn["settings"][i]["value"]);
+                var setting = Setting.Parse(jn["settings"][i]);
+                settings.OverwriteAdd((x, index) => x.key == setting.key, setting);
             }
-
-            var setting = KeybindEditor.inst.Settings[actionType];
-            if (setting != null)
-            {
-                foreach (var keyValuePair in setting)
-                {
-                    if (!dictionary.ContainsKey(keyValuePair.Key))
-                        dictionary.Add(keyValuePair.Key, keyValuePair.Value);
-                }
-            }
-
-            return new Keybind(id, keys, actionType, dictionary);
         }
 
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
-            jn["id"] = id;
-            jn["name"] = Name;
-
-            jn["action"] = ActionType.ToString();
+            jn["id"] = id ?? GetNumberID();
+            jn["name"] = Name ?? string.Empty;
             for (int i = 0; i < keys.Count; i++)
-            {
                 jn["keys"][i] = keys[i].ToJSON();
-            }
-
             for (int i = 0; i < settings.Count; i++)
-            {
-                var element = settings.ElementAt(i);
-                jn["settings"][i]["type"] = element.Key;
-                jn["settings"][i]["value"] = element.Value;
-            }
+                jn["settings"][i] = settings[i].ToJSON();
 
             return jn;
         }
 
-        public void Activate()
-        {
-            if (KeybindEditor.inst.KeyCodeHandler(this))
-                Action?.Invoke(this);
-        }
+        /// <summary>
+        /// Checks if the keybind is able to activate.
+        /// </summary>
+        /// <returns>Returns true if the keybind can activate, otherwise returns false.</returns>
+        public bool Check() => !keys.IsEmpty() && keys.All(x => x.Check());
 
-        public string id;
-        public Dictionary<string, string> settings = new Dictionary<string, string>();
-        public KeyCode KeyCode { get; set; }
-        public KeyCode KeyCodeDown { get; set; }
-        public int ActionType { get; set; }
-        public Action<Keybind> Action
+        /// <summary>
+        /// Runs the keybind function.
+        /// </summary>
+        public void Activate() => action?.Invoke(this);
+
+        /// <summary>
+        /// Tries to a setting from the keybind.
+        /// </summary>
+        /// <param name="key">Key of the setting.</param>
+        /// <param name="setting">Setting result.</param>
+        /// <returns>Returns true if a setting was found, otherwise returns false.</returns>
+        public bool TryGetSetting(string key, out Setting setting) => settings.TryFind(x => x.key == key, out setting);
+
+        /// <summary>
+        /// Tries to a settings' value from the keybind.
+        /// </summary>
+        /// <param name="key">Key of the setting.</param>
+        /// <param name="value">Setting result.</param>
+        /// <returns>Returns true if a setting was found, otherwise returns false.</returns>
+        public bool TryGetSetting(string key, out string value)
         {
-            get
+            if (settings.TryFind(x => x.key == key, out Setting setting))
             {
-                if (ActionType < 0 || ActionType > KeybindEditor.KeybinderMethods.Count - 1)
-                    return keybind => { Debug.LogError($"{KeybindEditor.className}No action assigned to key!"); };
-
-                return KeybindEditor.KeybinderMethods[ActionType];
+                value = setting.value;
+                return true;
             }
+            value = default;
+            return false;
         }
 
-        public string Name => ActionType >= 0 && ActionType < KeybindEditor.KeybinderMethods.Count ? KeybindEditor.KeybinderMethods[ActionType].Method.Name : "Invalid method";
+        /// <summary>
+        /// Gets a settings' value if the setting exists, otherwise gets a default value.
+        /// </summary>
+        /// <param name="key">Key of the setting.</param>
+        /// <param name="defaultValue">Default value to return if no setting is found.</param>
+        /// <returns>Returns the setting value if a setting is found, otherwise returns the default value.</returns>
+        public string GetSettingOrDefault(string key, string defaultValue) => TryGetSetting(key, out string value) ? value : defaultValue;
 
-        public bool watchingKeybind;
+        /// <summary>
+        /// Gets a settings' value if the setting exists, otherwise gets a default value.
+        /// </summary>
+        /// <param name="key">Key of the setting.</param>
+        /// <param name="defaultValue">Default value to return if no setting is found.</param>
+        /// <returns>Returns the setting value if a setting is found, otherwise returns the default value.</returns>
+        public float GetSettingOrDefault(string key, float defaultValue) => Parser.TryParse(GetSettingOrDefault(key, defaultValue.ToString()), defaultValue);
 
-        public string DefaultCode => $"var keybind = EditorManagement.Functions.Editors.KeybindManager.inst.keybinds.Find(x => x.id == \"{id}\");{Environment.NewLine}";
+        /// <summary>
+        /// Gets a settings' value if the setting exists, otherwise gets a default value.
+        /// </summary>
+        /// <param name="key">Key of the setting.</param>
+        /// <param name="defaultValue">Default value to return if no setting is found.</param>
+        /// <returns>Returns the setting value if a setting is found, otherwise returns the default value.</returns>
+        public int GetSettingOrDefault(string key, int defaultValue) => Parser.TryParse(GetSettingOrDefault(key, defaultValue.ToString()), defaultValue);
 
-        public List<Key> keys = new List<Key>();
+        /// <summary>
+        /// Gets a settings' value if the setting exists, otherwise gets a default value.
+        /// </summary>
+        /// <param name="key">Key of the setting.</param>
+        /// <param name="defaultValue">Default value to return if no setting is found.</param>
+        /// <returns>Returns the setting value if a setting is found, otherwise returns the default value.</returns>
+        public bool GetSettingOrDefault(string key, bool defaultValue) => Parser.TryParse(GetSettingOrDefault(key, defaultValue.ToString()), defaultValue);
 
         public override string ToString() => Name;
 
-        public class Key
+        #endregion
+
+        public class Key : PAObject<Key>
         {
+            public Key() { }
+
             public Key(Type type, KeyCode keyCode)
             {
                 InteractType = type;
@@ -136,14 +214,69 @@ namespace BetterLegacy.Editor.Data
             public Type InteractType { get; set; }
             public KeyCode KeyCode { get; set; }
 
-            public static Key Parse(JSONNode jn) => new Key((Type)jn["type"].AsInt, (KeyCode)jn["key"].AsInt);
-
-            public JSONNode ToJSON()
+            public override void CopyData(Key orig, bool newID = true)
             {
-                var jn = JSON.Parse("{}");
+                InteractType = orig.InteractType;
+                KeyCode = orig.KeyCode;
+            }
 
-                jn["type"] = ((int)InteractType).ToString();
-                jn["key"] = ((int)KeyCode).ToString();
+            public override void ReadJSON(JSONNode jn)
+            {
+                InteractType = (Type)jn["type"].AsInt;
+                KeyCode = (KeyCode)jn["key"].AsInt;
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                jn["type"] = (int)InteractType;
+                jn["key"] = (int)KeyCode;
+
+                return jn;
+            }
+
+            public bool Check() => InteractType switch
+            {
+                Type.Down => Input.GetKeyDown(KeyCode),
+                Type.Pressed => Input.GetKey(KeyCode),
+                Type.Up => Input.GetKeyUp(KeyCode),
+                Type.NotPressed => !Input.GetKey(KeyCode),
+                _ => false,
+            };
+        }
+
+        public class Setting : PAObject<Setting>
+        {
+            public Setting() { }
+
+            public Setting(string key, string value)
+            {
+                this.key = key;
+                this.value = value;
+            }
+
+            public string key = string.Empty;
+            public string value = string.Empty;
+
+            public override void CopyData(Setting orig, bool newID = true)
+            {
+                key = orig.key;
+                value = orig.value;
+            }
+
+            public override void ReadJSON(JSONNode jn)
+            {
+                key = jn["type"];
+                value = jn["value"] ?? string.Empty;
+            }
+
+            public override JSONNode ToJSON()
+            {
+                var jn = Parser.NewJSONObject();
+
+                jn["type"] = key;
+                jn["value"] = value ?? string.Empty;
 
                 return jn;
             }
