@@ -1917,15 +1917,14 @@ namespace BetterLegacy.Editor.Managers
             while (!PrefabEditor.inst || !PrefabEditor.inst.externalContent)
                 yield return null;
 
-            for (int i = PrefabPanels.Count - 1; i >= 0; i--)
+            PrefabPanels.ForLoopReverse((prefabPanel, index) =>
             {
-                var prefabPanel = PrefabPanels[i];
-                if (prefabPanel.Dialog == PrefabDialog.External)
-                {
-                    Destroy(prefabPanel.GameObject);
-                    PrefabPanels.RemoveAt(i);
-                }
-            }
+                if (prefabPanel.Dialog != PrefabDialog.External)
+                    return;
+
+                CoreHelper.Delete(prefabPanel.GameObject);
+                PrefabPanels.RemoveAt(index);
+            });
 
             if (!prefabExternalAddButton)
             {
@@ -1966,13 +1965,11 @@ namespace BetterLegacy.Editor.Managers
                     createInternal = false;
                 });
             }
-            else
-            {
-                var hover = prefabExternalAddButton.GetComponent<HoverUI>();
-                hover.animateSca = true;
-                hover.animatePos = false;
-                hover.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
-            }
+
+            var hover = prefabExternalAddButton.GetOrAddComponent<HoverUI>();
+            hover.animateSca = true;
+            hover.animatePos = false;
+            hover.size = EditorConfig.Instance.PrefabButtonHoverSize.Value;
 
             while (loadingPrefabTypes)
                 yield return null;
@@ -2017,7 +2014,6 @@ namespace BetterLegacy.Editor.Managers
             prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)) != RTEditor.inst.BeatmapsPath);
 
             var directories = Directory.GetDirectories(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), "*", SearchOption.TopDirectoryOnly);
-
             for (int i = 0; i < directories.Length; i++)
             {
                 var directory = directories[i];
@@ -2027,14 +2023,13 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var files = Directory.GetFiles(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
-
             for (int i = 0; i < files.Length; i++)
             {
                 var file = files[i];
                 var jn = JSON.Parse(RTFile.ReadFromFile(file));
 
                 var prefab = Prefab.Parse(jn);
-                prefab.beatmapObjects.ForEach(x => (x as BeatmapObject).RemovePrefabReference());
+                prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
                 prefab.filePath = RTFile.ReplaceSlash(file);
 
                 var prefabPanel = new PrefabPanel(PrefabDialog.External, i);
