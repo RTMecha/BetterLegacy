@@ -1,4 +1,32 @@
-﻿# snapshot-2025.8.16 - (pre-1.8.0) [Aug 15, 2025]
+﻿# snapshot-2025.8.17 - (pre-1.8.0) [Aug 21, 2025]
+## Features
+### Core
+- Added "objectActive" and "objectCustomActive" trigger modifiers. These check if the objects' active state is true.
+- Prefab Objects now have a depth offset value.
+
+### Example Companion
+- You can now close Example's chat bubble by clicking it. Useful if his dialogue gets in the way of something.
+
+### Editor
+- Custom Keyframe UI display now allows for editing Input Field scrolling, setting the current value to reset value and interactible state of the value.
+
+## Changes
+### Core
+- The return modifier now resets the trigger check.
+- Reworked updateObject modifiers to make it more clear what it does and to be more consistent with other modifiers. Includes new reinitLevel and updateObjectOther modifiers. These modifiers now have a Respawn value as well.
+
+### Editor
+- The default profile now includes JumpToPreviousMarker, JumpToNextMarker, ForceSnapBPM and ToggleBPMSnap.
+- ToggleBPMSnap keybind function now notifies the user about whether the BPM snap was turned on or off.
+
+## Fixes
+- Fixed Song Time Autokill type not working properly with Prefab Objects.
+- Fixed Prefab Object spawn time & despawn time not being updated when the Prefab Object is being dragged around.
+- Fixed spawnPrefab modifiers throwing a constant error when the spawned Prefab Object is removed.
+
+-------------------------------------------------------------------
+
+# snapshot-2025.8.16 - (pre-1.8.0) [Aug 15, 2025]
 ## Fixes
 - Fixed getVisualColor and getVisualOpacity modifiers not working.
 - Fixed an error where Prefabs wouldn't load.
