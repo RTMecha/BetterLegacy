@@ -119,6 +119,11 @@ namespace BetterLegacy.Core.Runtime
         public Queue<Action> postTick = new Queue<Action>();
 
         /// <summary>
+        /// Schedule of actions to run at specific times.
+        /// </summary>
+        public RTScheduler scheduler = new RTScheduler();
+
+        /// <summary>
         /// Ticks the runtime level.
         /// </summary>
         public virtual void Tick()
@@ -139,6 +144,7 @@ namespace BetterLegacy.Core.Runtime
             OnBackgroundObjectsTick(); // bgs update fifth
 
             PostTick();
+            ScheduleTick();
         }
 
         /// <summary>
@@ -158,6 +164,11 @@ namespace BetterLegacy.Core.Runtime
             while (postTick != null && !postTick.IsEmpty())
                 postTick.Dequeue()?.Invoke();
         }
+
+        /// <summary>
+        /// Ticks the scheduler.
+        /// </summary>
+        public void ScheduleTick() => scheduler?.Tick(CurrentTime);
 
         /// <summary>
         /// Clears the runtime levels' data.
@@ -1265,8 +1276,32 @@ namespace BetterLegacy.Core.Runtime
                         break;
                     }
                 case PrefabObjectContext.TIME: {
-                        prefabEngine?.spawner?.RecalculateObjectStates();
-                        prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+                        var prefab = prefabObject.GetPrefab();
+                        if (!prefab)
+                            break;
+
+                        if (prefabObject.runtimeModifiers)
+                        {
+                            prefabObject.runtimeModifiers.orderMatters = prefabObject.orderModifiers;
+                            prefabObject.runtimeModifiers.StartTime = prefabObject.ignoreLifespan ? -SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset;
+                            prefabObject.runtimeModifiers.KillTime = prefabObject.ignoreLifespan ? SoundManager.inst.MusicLength : prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration;
+                            prefabObject.runtimeModifiers.SetActive(prefabObject.ModifiersActive);
+                        }
+
+                        if (!runtimePrefabObject)
+                            break;
+
+                        runtimePrefabObject.StartTime = prefabObject.StartTime + prefab.offset;
+                        runtimePrefabObject.KillTime = prefabObject.StartTime + prefab.offset + prefabObject.SpawnDuration;
+
+                        if (sort)
+                        {
+                            prefabEngine?.spawner?.RecalculateObjectStates();
+                            prefabModifiersEngine?.spawner?.RecalculateObjectStates();
+                        }
+
+                        runtimePrefabObject.SetActive(prefabObject.Alive);
+
                         break;
                     }
                 case PrefabObjectContext.AUTOKILL: {

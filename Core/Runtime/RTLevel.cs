@@ -284,6 +284,7 @@ namespace BetterLegacy.Core.Runtime
             sw = null;
 
             PostTick();
+            ScheduleTick();
         }
 
         public override void Clear()
