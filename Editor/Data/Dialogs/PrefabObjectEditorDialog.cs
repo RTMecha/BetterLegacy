@@ -91,6 +91,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Toggle[] RotationRandomToggles { get; set; }
         public InputField[] RandomIntervalFields { get; set; } = new InputField[3];
 
+        public InputFieldStorage DepthField { get; set; }
+
         #endregion
 
         #region Repeat
@@ -415,7 +417,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(r_position, Complexity.Normal);
 
             var randomPrefab = ObjEditor.inst.KeyframeDialogs[0].transform.Find("random").gameObject;
-            var randomPositionLabel = RTEditor.GenerateLabels("position-random-label", LeftContent, new Label("Randomize"));
+            var randomPositionLabel = RTEditor.GenerateLabels("position-random-label", LeftContent, "Randomize");
             var randomPosition = randomPrefab.Duplicate(LeftContent, "position-random");
             CoreHelper.DestroyChildren(randomPosition.transform, x => x.name == "homing-static" || x.name == "homing-dynamic");
 
@@ -469,7 +471,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(r_scaLabel, Complexity.Normal);
             EditorHelper.SetComplexity(r_scale, Complexity.Normal);
 
-            var randomScaleLabel = RTEditor.GenerateLabels("scale-random-label", LeftContent, new Label("Randomize"));
+            var randomScaleLabel = RTEditor.GenerateLabels("scale-random-label", LeftContent, "Randomize");
             var randomScale = randomPrefab.Duplicate(LeftContent, "scale-random");
             CoreHelper.DestroyChildren(randomScale.transform, x => x.name == "homing-static" || x.name == "homing-dynamic");
 
@@ -487,7 +489,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(randomScale, Complexity.Normal);
 
             // Rotation
-            var rotLabel = RTEditor.GenerateLabels("rot label", LeftContent, new Label("Rotation Offset"));
+            var rotLabel = RTEditor.GenerateLabels("rot label", LeftContent, "Rotation Offset");
 
             var rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "rotation");
             var rotationStorage = rotation.GetComponent<InputFieldStorage>();
@@ -501,7 +503,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorHelper.SetComplexity(rotLabel, Complexity.Normal);
             EditorHelper.SetComplexity(rotation, Complexity.Normal);
 
-            var r_rotLabel = RTEditor.GenerateLabels("r_rotation label", LeftContent, new Label("Random"));
+            var r_rotLabel = RTEditor.GenerateLabels("r_rotation label", LeftContent, "Random");
 
             var r_rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "r_rotation");
             var r_rotationStorage = r_rotation.GetComponent<InputFieldStorage>();
@@ -528,6 +530,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorHelper.SetComplexity(randomRotationLabel, Complexity.Normal);
             EditorHelper.SetComplexity(randomRotation, Complexity.Normal);
+
+            // Depth
+            var depthLabel = RTEditor.GenerateLabels("depth label", LeftContent, "Depth");
+            var depth = EditorPrefabHolder.Instance.NumberInputField.Duplicate(LeftContent, "depth");
+            DepthField = depth.GetComponent<InputFieldStorage>();
+            CoreHelper.Delete(DepthField.middleButton);
+            TriggerHelper.InversableField(DepthField);
+            EditorThemeManager.AddInputField(DepthField);
+
+            EditorHelper.SetComplexity(depthLabel, Complexity.Normal);
+            EditorHelper.SetComplexity(depth, Complexity.Advanced);
 
             #endregion
 

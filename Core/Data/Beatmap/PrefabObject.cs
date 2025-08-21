@@ -57,6 +57,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public List<EventKeyframe> events = new List<EventKeyframe>();
 
+        public float depth;
+
         #region Prefab
 
         /// <summary>
@@ -225,11 +227,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 var prefab = this.GetPrefab();
                 var st = StartTime + prefab.offset;
+                var time = this.GetParentRuntime().CurrentTime;
                 return autoKillType switch
                 {
-                    PrefabAutoKillType.Regular => this.GetParentRuntime().FixedTime >= st && this.GetParentRuntime().FixedTime <= st + GetObjectLifeLength(prefab, noAutokill: true),
-                    PrefabAutoKillType.SongTime => this.GetParentRuntime().FixedTime >= st && this.GetParentRuntime().FixedTime <= autoKillOffset,
-                    PrefabAutoKillType.StartTimeOffset => this.GetParentRuntime().FixedTime >= st && this.GetParentRuntime().FixedTime <= st + autoKillOffset,
+                    PrefabAutoKillType.Regular => time >= st && time <= st + GetObjectLifeLength(prefab, noAutokill: true),
+                    PrefabAutoKillType.SongTime => time >= st && time <= autoKillOffset,
+                    PrefabAutoKillType.StartTimeOffset => time >= st && time <= st + autoKillOffset,
                     _ => false,
                 };
             }
@@ -315,9 +318,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             get
             {
-                var startTime = ignoreLifespan ? 0f : StartTime;
-                var killTime = ignoreLifespan ? SoundManager.inst.MusicLength : StartTime + SpawnDuration;
-                return AudioManager.inst.CurrentAudioSource.time >= startTime && AudioManager.inst.CurrentAudioSource.time <= killTime;
+                var prefab = this.GetPrefab();
+                var startTime = ignoreLifespan ? 0f : StartTime + prefab.offset;
+                var killTime = ignoreLifespan ? SoundManager.inst.MusicLength : StartTime + prefab.offset + SpawnDuration;
+                var time = this.GetParentRuntime().CurrentTime;
+                return time >= startTime && time <= killTime;
             }
         }
 
@@ -506,6 +511,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             expanded = jn["exp"].AsBool;
 
+            depth = jn["d"].AsFloat;
+
             events.Clear();
 
             if (jn["e"] != null)
@@ -616,6 +623,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (expanded)
                 jn["exp"] = expanded;
+
+            if (depth != 0f)
+                jn["d"] = depth;
 
             jn["e"]["pos"]["x"] = events[0].values[0];
             jn["e"]["pos"]["y"] = events[0].values[1];
@@ -799,7 +809,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             bool hasRot = events.Count > 2 && events[2] && events[2].values.Length > 0;
 
-            transform.position = new Vector3(hasPosX ? events[0].values[0] : 0f, hasPosY ? events[0].values[1] : 0f, 0f);
+            transform.position = new Vector3(hasPosX ? events[0].values[0] : 0f, hasPosY ? events[0].values[1] : 0f, depth);
             transform.scale = new Vector2(hasScaX ? events[1].values[0] : 1f, hasScaY ? events[1].values[1] : 1f);
             transform.rotation = hasRot ? events[2].values[0] : 0f;
 

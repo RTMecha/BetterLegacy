@@ -687,6 +687,18 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(randomIntervalField);
                 TriggerHelper.AddEventTriggers(randomIntervalField.gameObject, TriggerHelper.ScrollDelta(randomIntervalField, max: float.MaxValue));
             }
+
+            PrefabObjectEditor.DepthField.SetTextWithoutNotify(prefabObject.depth.ToString());
+            PrefabObjectEditor.DepthField.OnValueChanged.NewListener(_val =>
+            {
+                if (!float.TryParse(_val, out float num))
+                    return;
+
+                prefabObject.depth = num;
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+            });
+            TriggerHelper.IncreaseDecreaseButtons(PrefabObjectEditor.DepthField);
+            TriggerHelper.AddEventTriggers(PrefabObjectEditor.DepthField.gameObject, TriggerHelper.ScrollDelta(PrefabObjectEditor.DepthField.inputField));
         }
 
         public void RenderPrefabObjectRepeat(PrefabObject prefabObject)
