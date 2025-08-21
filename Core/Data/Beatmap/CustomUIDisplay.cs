@@ -57,6 +57,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string multiValue = "1";
 
+        /// <summary>
+        /// If the UI is interactible.
+        /// </summary>
+        public bool interactible = true;
+
         #region InputField
 
         /// <summary>
@@ -178,6 +183,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 type = (UIType)jn["type"].AsInt;
 
             multiValue = jn["multi_val"] ?? "1";
+            interactible = jn["interact"] != null ? jn["interact"].AsBool : true;
 
             switch (type)
             {
@@ -232,6 +238,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (multiValue != "1")
                 jn["multi_val"] = multiValue ?? "1";
+            if (!interactible)
+                jn["interact"] = interactible;
+
             switch (type)
             {
                 case UIType.InputField: {
@@ -280,6 +289,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             type = other.type;
 
             multiValue = other.multiValue;
+            interactible = other.interactible;
 
             overrideScroll = other.overrideScroll;
             scrollAmount = other.scrollAmount;

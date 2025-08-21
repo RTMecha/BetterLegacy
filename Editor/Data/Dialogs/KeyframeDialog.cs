@@ -343,6 +343,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             TriggerHelper.InversableField(Field);
 
+            Field.SetInteractible(Display.interactible);
+
             if (!Field.eventTrigger)
                 Field.eventTrigger = Field.gameObject.AddComponent<EventTrigger>();
 
@@ -364,6 +366,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             2 => "0",
                             _ => string.Empty,
                         };
+                    }),
+                    new ButtonFunction(Display.interactible ? "Lock Value" : "Unlock Value", () =>
+                    {
+                        Display.interactible = !Display.interactible;
+                        UpdateDisplay(animatable);
+                        EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Set Max", () =>
@@ -390,7 +398,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
-                    new ButtonFunction("Set Reset Value", () =>
+                    new ButtonFunction("Set Reset", () =>
                     {
                         RTEditor.inst.ShowNameEditor("Set reset value", "Reset", Display.resetValue.ToString(), "Set", () =>
                         {
@@ -401,6 +409,44 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
+                    }),
+                    new ButtonFunction("Set Current Reset", () =>
+                    {
+                        if (!float.TryParse(Field.Text, out float resetValue))
+                            return;
+
+                        Display.resetValue = resetValue;
+                        UpdateDisplay(animatable);
+                    }),
+                    new ButtonFunction("Set Scroll Amount", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set scroll amount", "Amount", Display.scrollAmount.ToString(), "Set", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                                return;
+
+                            Display.scrollAmount = max;
+                            UpdateDisplay(animatable);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction("Set Scroll Multiply", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set scroll multiply", "Multiply", Display.scrollMultiply.ToString(), "Set", () =>
+                        {
+                            if (!float.TryParse(RTEditor.inst.folderCreatorName.text, out float max))
+                                return;
+
+                            Display.scrollMultiply = max;
+                            UpdateDisplay(animatable);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
+                    new ButtonFunction($"Override Scroll [{(Display.overrideScroll ? "On" : "Off")}]", () =>
+                    {
+                        Display.overrideScroll = !Display.overrideScroll;
+                        UpdateDisplay(animatable);
+                        EditorManager.inst.DisplayNotification(Display.overrideScroll ? "Custom scroll is now used." : "Regular scroll is now used.", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Change to Dropdown", () =>
@@ -630,6 +676,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             var isSingle = selected.Count() == 1;
 
+            Dropdown.interactable = Display.interactible;
+
             var contextMenu = Dropdown.gameObject.GetOrAddComponent<ContextClickable>();
             contextMenu.onClick = eventData =>
             {
@@ -640,6 +688,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     new ButtonFunction("Reset Value", () =>
                     {
                         Dropdown.value = 0;
+                    }),
+                    new ButtonFunction(Display.interactible ? "Lock Value" : "Unlock Value", () =>
+                    {
+                        Display.interactible = !Display.interactible;
+                        UpdateDisplay(animatable);
+                        EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Add Entry", () =>
@@ -786,6 +840,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var offValue = getOffValue?.Invoke() ?? 0f;
             var onValue = getOnValue?.Invoke() ?? 1f;
 
+            Toggle.interactable = Display.interactible;
+
             var contextMenu = Toggle.gameObject.GetOrAddComponent<ContextClickable>();
             contextMenu.onClick = eventData =>
             {
@@ -796,6 +852,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     new ButtonFunction("Reset Value", () =>
                     {
                         Toggle.isOn = false;
+                    }),
+                    new ButtonFunction(Display.interactible ? "Lock Value" : "Unlock Value", () =>
+                    {
+                        Display.interactible = !Display.interactible;
+                        UpdateDisplay(animatable);
+                        EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
                     new ButtonFunction("Set On Value", () =>
