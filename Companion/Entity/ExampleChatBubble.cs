@@ -64,6 +64,8 @@ namespace BetterLegacy.Companion.Entity
             dialogueText.transform.AsRT().anchoredPosition = Vector2.zero;
             dialogueText.transform.AsRT().sizeDelta = new Vector2(280f, 140f);
 
+            dialogueImage.AddComponent<ExampleClickable>().onClick = pointerEventData => Close();
+
             var text = dialogueText.AddComponent<Text>();
             text.font = Font.GetDefault();
             text.fontSize = 22;
@@ -726,7 +728,15 @@ namespace BetterLegacy.Companion.Entity
             };
 
             CompanionManager.inst.animationController.Play(currentChatAnimation);
+        }
 
+        /// <summary>
+        /// Closes the chat bubble.
+        /// </summary>
+        public void Close()
+        {
+            SetScale(Vector2.zero);
+            currentChatAnimation?.onComplete?.Invoke();
         }
 
         /// <summary>
