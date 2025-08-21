@@ -90,6 +90,8 @@ namespace BetterLegacy.Core.Data.Player
         /// </summary>
         public bool Alive => RuntimePlayer;
 
+        public bool CustomActive { get; set; } = true;
+
         public RTPlayer RuntimePlayer { get; set; }
 
 
@@ -131,7 +133,11 @@ namespace BetterLegacy.Core.Data.Player
 
         #region Methods
 
-        public void SetCustomActive(bool active) => RuntimePlayer?.SetActive(active);
+        public void SetCustomActive(bool active)
+        {
+            CustomActive = active;
+            RuntimePlayer?.SetActive(active);
+        }
 
         public void UpdatePlayerModel()
         {

@@ -3821,6 +3821,8 @@ namespace BetterLegacy.Core.Components.Player
             public bool idle = true;
             public string currentIdleAnimation = PlayerModel.IDLE_ANIM;
 
+            public bool CustomActive { get; set; } = true;
+
             public ObjectTransform anim = ObjectTransform.Default;
 
             public Vector3 positionOffset;
@@ -3936,7 +3938,11 @@ namespace BetterLegacy.Core.Components.Player
                 }
             }
 
-            public void SetCustomActive(bool active) => this.active = active;
+            public void SetCustomActive(bool active)
+            {
+                CustomActive = active;
+                this.active = active;
+            }
         }
 
         /// <summary>

@@ -225,7 +225,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 var startTime = ignoreLifespan ? 0f : StartTime;
                 var killTime = ignoreLifespan ? SoundManager.inst.MusicLength : StartTime + SpawnDuration;
-                return AudioManager.inst.CurrentAudioSource.time >= startTime && AudioManager.inst.CurrentAudioSource.time <= killTime;
+                var time = this.GetParentRuntime().CurrentTime;
+                return time >= startTime && time <= killTime;
             }
         }
 

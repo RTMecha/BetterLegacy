@@ -36,6 +36,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float KillTime { get; set; }
         public bool Active { get; set; }
 
+        public bool CustomActive { get; set; } = true;
+
         public BeatmapObject beatmapObject;
 
         public List<ParentObject> parentObjects;
@@ -162,6 +164,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         /// <param name="active">Active state to set.</param>
         public void SetCustomActive(bool active)
         {
+            CustomActive = active;
+
             if (!Parent)
                 return;
 

@@ -33,6 +33,8 @@ namespace BetterLegacy.Core.Runtime.Objects
         public float KillTime { get; set; }
         public bool Active { get; set; }
 
+        public bool CustomActive { get; set; } = true;
+
         public BackgroundObject backgroundObject;
 
         public bool hidden;
@@ -92,6 +94,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public void SetCustomActive(bool active)
         {
+            CustomActive = active;
             if (backgroundObject)
                 backgroundObject.Enabled = active;
         }
