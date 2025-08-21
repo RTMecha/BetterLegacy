@@ -14,6 +14,7 @@ using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
+using BetterLegacy.Core.Runtime.Objects;
 
 // ignore naming styles since modifiers are named like this.
 #pragma warning disable IDE1006 // Naming Styles
@@ -1400,6 +1401,17 @@ namespace BetterLegacy.Core.Helpers
         public static bool isFocused(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => Application.isFocused;
 
         public static bool isFullscreen(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => Screen.fullScreen;
+
+        public static bool objectActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var runtimeObject = reference.GetRuntimeObject();
+            return runtimeObject != null ? runtimeObject.Active : false;
+        }
+
+        public static bool objectCustomActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            return reference is ICustomActivatable customActivatable ? customActivatable.CustomActive : false;
+        }
 
         public static bool objectAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {

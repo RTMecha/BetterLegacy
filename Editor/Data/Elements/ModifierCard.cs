@@ -3656,7 +3656,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Speed", 8, 1f);
 
                         if (!isMulti)
-                            BoolGenerator(modifier, reference, "Permanent", 9, false);
+                            BoolGenerator(modifier, reference, "Don't Despawn On Inactive", 9, false);
 
                         SingleGenerator(modifier, reference, "Time", valueIndex, 0f);
                         BoolGenerator(modifier, reference, "Time Relative", valueIndex + 1, true);
@@ -3679,7 +3679,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         if (!isMulti)
-                            BoolGenerator(modifier, reference, "Permanent", 5, false);
+                            BoolGenerator(modifier, reference, "Don't Despawn On Inactive", 5, false);
 
                         SingleGenerator(modifier, reference, "Time", 2, 0f);
                         BoolGenerator(modifier, reference, "Time Relative", 3, true);
@@ -3778,9 +3778,15 @@ namespace BetterLegacy.Editor.Data.Elements
                 //        break;
                 //    }
                 case nameof(ModifierActions.updateObject): {
+                        BoolGenerator(modifier, reference, "Respawn", 0);
+
+                        break;
+                    }
+                case nameof(ModifierActions.updateObjectOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        BoolGenerator(modifier, reference, "Respawn", 1);
 
                         break;
                     }
