@@ -5212,10 +5212,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public GameObject AddGenerator<T>(Modifier modifier, T reference, string text, Action onAdd)
         {
-            var baseAdd = Creator.NewUIObject("add", layout);
-            baseAdd.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-
-            var add = EditorPrefabHolder.Instance.CreateAddButton(baseAdd.transform);
+            var add = EditorPrefabHolder.Instance.CreateAddButton(layout);
             add.Text = text;
             add.OnClick.NewListener(() =>
             {
@@ -5236,7 +5233,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 });
                 Update(modifier, reference);
             });
-            return baseAdd;
+            return add.gameObject;
         }
 
         #endregion
