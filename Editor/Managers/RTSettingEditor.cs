@@ -181,9 +181,8 @@ namespace BetterLegacy.Editor.Managers
             float sizeRandom = 64 * UnityEngine.Random.Range(0.5f, 1f);
             loadingDoggoRect.sizeDelta = new Vector2(sizeRandom, sizeRandom);
 
-            Dialog.BPMToggle.onValueChanged.ClearAll();
-            Dialog.BPMToggle.isOn = RTEditor.inst.editorInfo.bpmSnapActive;
-            Dialog.BPMToggle.onValueChanged.AddListener(_val => RTEditor.inst.editorInfo.bpmSnapActive = _val);
+            Dialog.BPMToggle.SetIsOnWithoutNotify(RTEditor.inst.editorInfo.bpmSnapActive);
+            Dialog.BPMToggle.onValueChanged.NewListener(_val => RTEditor.inst.editorInfo.bpmSnapActive = _val);
 
             SetBPMSlider(Dialog.BPMSlider, Dialog.BPMInput);
             SetBPMInputField(Dialog.BPMSlider, Dialog.BPMInput);
