@@ -1,6 +1,6 @@
 ﻿# TODO
-Current: Animation Editor
-Next: Keybind Editor rework
+Current: Misc
+Next: Misc
 
 ## Features
 ### Core
@@ -52,6 +52,8 @@ Next: Keybind Editor rework
   - The current song can be set from the loaded audio tracks via modifiers.
   - Tracks can be loaded / unloaded via modifiers.
 - Event Modifiers layer that interpolate through a sequence and pass the variables to the modifiers.
+- Metadata controller config that can be used via modifiers.
+- End level music via custom audio source.
 
 ### Story
 - Chapter 1.  
@@ -114,6 +116,7 @@ Next: Keybind Editor rework
 ### Core
 - Merge all effect managers into single EffectsManager.
 - Summary and note as much as I can (or need to).
+- Rework audio transition system.
 
 ### Editor
 - Multi language support.
@@ -136,6 +139,7 @@ Next: Keybind Editor rework
 
 ### Fixes
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
+- Fix else if.
 
 
 ## Ideas
