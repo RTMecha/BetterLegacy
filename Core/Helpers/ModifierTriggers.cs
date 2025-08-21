@@ -1410,7 +1410,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool objectCustomActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            return reference is ICustomActivatable customActivatable ? customActivatable.CustomActive : false;
+            var runtimeObject = reference.GetRuntimeObject();
+            return runtimeObject is ICustomActivatable customActivatable ? customActivatable.CustomActive : false;
         }
 
         public static bool objectAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
