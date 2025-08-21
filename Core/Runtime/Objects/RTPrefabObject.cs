@@ -139,6 +139,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             }
 
             PostTick();
+            ScheduleTick();
         }
 
         public override void Clear()
@@ -158,7 +159,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public float KillTime { get; set; }
 
-        public override float GetStartTime() => PrefabObject.StartTime + Prefab.offset;
+        public override float GetStartTime() => PrefabObject.StartTime + Prefab.offset + ParentRuntime.GetStartTime();
 
         public void SetActive(bool active)
         {
@@ -311,6 +312,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                         beatmapObjectCopy.autoKillType = AutoKillType.SongTime;
                         beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? ((prefabObject.StartTime * prefabObject.Speed) + prefab.offset) - prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                     }
+
+                    if (beatmapObjectCopy.autoKillType == AutoKillType.SongTime)
+                        beatmapObjectCopy.autoKillOffset -= GetStartTime();
 
                     if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
                         GameData.Current.assets.sprites.Add(spriteAsset.Copy());
