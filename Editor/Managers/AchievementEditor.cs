@@ -135,6 +135,12 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
+                if (achievements.IsEmpty())
+                {
+                    RTFile.DeleteFile(EditorLevelManager.inst.CurrentLevel.GetFile(Level.ACHIEVEMENTS_LSA));
+                    return;
+                }
+
                 var jn = Parser.NewJSONObject();
                 for (int i = 0; i < achievements.Count; i++)
                     jn["achievements"][i] = achievements[i].ToJSON();
