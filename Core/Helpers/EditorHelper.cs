@@ -577,8 +577,17 @@ namespace BetterLegacy.Core.Helpers
                             timelineObject.GetData<BackgroundObject>().modifiers.ForLoop(modifier =>
                             {
                                 var name = modifier.Name;
-                                if (name == nameof(ModifierActions.updateObjects)|| name == nameof(ModifierTriggers.objectCollide) || name.Contains("Other") || name.Contains("copy"))
-                                    modifier.prefabInstanceOnly = true;
+                                if (ModifiersHelper.IsGroupModifier(name))
+                                    modifier.prefabInstanceOnly = enabled;
+                            });
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            timelineObject.GetData<PrefabObject>().modifiers.ForLoop(modifier =>
+                            {
+                                var name = modifier.Name;
+                                if (ModifiersHelper.IsGroupModifier(name))
+                                    modifier.prefabInstanceOnly = enabled;
                             });
                             break;
                         }
