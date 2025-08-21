@@ -154,6 +154,8 @@ namespace BetterLegacy.Editor.Data
             new Keybind(nameof(KeybindEditor.SetLastKeyframeInType), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period)),
             new Keybind(nameof(KeybindEditor.SetPreviousKeyframeInType), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Comma)),
             new Keybind(nameof(KeybindEditor.SetNextKeyframeInType), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Period)),
+            new Keybind(nameof(KeybindEditor.JumpToPreviousMarker), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.LeftBracket)),
+            new Keybind(nameof(KeybindEditor.JumpToNextMarker), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.RightBracket)),
             new Keybind(nameof(KeybindEditor.AddPitch), new List<Setting> { new Setting("Pitch", "0.1") }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.UpArrow)),
             new Keybind(nameof(KeybindEditor.AddPitch), new List<Setting> { new Setting("Pitch", "-0.1") }, new Keybind.Key(Keybind.Key.Type.Down, KeyCode.DownArrow)),
             new Keybind(nameof(KeybindEditor.ToggleShowHelp), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H)),
@@ -192,6 +194,9 @@ namespace BetterLegacy.Editor.Data
             new Keybind(nameof(KeybindEditor.SetSongTimeAutokill), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.K)),
             new Keybind(nameof(KeybindEditor.HideSelection), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H)),
             new Keybind(nameof(KeybindEditor.UnhideHiddenObjects), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.H)),
+
+            new Keybind(nameof(KeybindEditor.ForceSnapBPM), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.J)),
+            new Keybind(nameof(KeybindEditor.ToggleBPMSnap), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftAlt), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.S)),
         };
 
         #endregion

@@ -1291,14 +1291,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void ToggleBPMSnap(Keybind keybind)
         {
-            try
-            {
-                RTSettingEditor.inst.Dialog.BPMToggle.isOn = !RTSettingEditor.inst.Dialog.BPMToggle.isOn;
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Had an error in trying to set snap BPM UI.\nException: {ex}");
-            }
+            var value = !RTEditor.inst.editorInfo.bpmSnapActive;
+            RTEditor.inst.editorInfo.bpmSnapActive = value;
+            EditorManager.inst.DisplayNotification($"Set BPM snap {(value ? "on": "off")}!", 2f, EditorManager.NotificationType.Success);
         }
         
         public void ForceSnapBPM(Keybind keybind)
