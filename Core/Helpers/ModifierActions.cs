@@ -7610,12 +7610,15 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var reinsert = modifier.GetBool(0, true, variables);
-            if (reference is BeatmapObject beatmapObject)
-                beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: reinsert);
-            if (reference is BackgroundObject backgroundObject)
-                backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert);
-            if (reference is PrefabObject prefabObject)
-                prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                if (reference is BeatmapObject beatmapObject)
+                    beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: reinsert);
+                if (reference is BackgroundObject backgroundObject)
+                    backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert);
+                if (reference is PrefabObject prefabObject)
+                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert);
+            });
         }
         
         public static void updateObjectOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -7624,21 +7627,23 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var prefabables = GameData.Current.FindPrefabablesWithTag(modifier, prefabable, modifier.GetValue(0));
-            var reinsert = modifier.GetBool(1, true, variables);
-
             if (prefabables.IsEmpty())
                 return;
 
-            foreach (var other in prefabables)
+            var reinsert = modifier.GetBool(1, true, variables);
+            RTLevel.Current.postTick.Enqueue(() =>
             {
-                if (other is BeatmapObject beatmapObject)
-                    beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: reinsert, recalculate: false);
-                if (other is BackgroundObject backgroundObject)
-                    backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert, recalculate: false);
-                if (other is PrefabObject prefabObject)
-                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert, recalculate: false);
-            }
-            RTLevel.Current?.RecalculateObjectStates();
+                foreach (var other in prefabables)
+                {
+                    if (other is BeatmapObject beatmapObject)
+                        beatmapObject.GetParentRuntime()?.UpdateObject(beatmapObject, reinsert: reinsert, recalculate: false);
+                    if (other is BackgroundObject backgroundObject)
+                        backgroundObject.GetParentRuntime()?.UpdateBackgroundObject(backgroundObject, reinsert: reinsert, recalculate: false);
+                    if (other is PrefabObject prefabObject)
+                        prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert, recalculate: false);
+                }
+                RTLevel.Current?.RecalculateObjectStates();
+            });
         }
         
         public static void setParent(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
