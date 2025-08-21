@@ -1,4 +1,17 @@
-﻿# snapshot-2025.8.17 - (pre-1.8.0) [Aug 21, 2025]
+﻿# ???
+## Features
+### Core
+- Updated demo (Beatmap.zip) files to include some prefabs that demonstrate more features.
+
+## Fixes
+- Fixed objectCustomActive modifier not working.
+- Fixed "Add" buttons not properly displaying in the modifier card UI.
+- Fixed achievements file being saved regardless of if the list is empty or not.
+- Fixed updateObject modifiers throwing an error.
+
+-------------------------------------------------------------------
+
+# snapshot-2025.8.17 - (pre-1.8.0) [Aug 21, 2025]
 ## Features
 ### Core
 - Added "objectActive" and "objectCustomActive" trigger modifiers. These check if the objects' active state is true.
