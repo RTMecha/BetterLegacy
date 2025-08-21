@@ -126,7 +126,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersAll(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null) => RunModifiersAll(null, null, modifiers, reference, variables);
+        public static ModifierLoopResult RunModifiersAll(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null) => RunModifiersAll(null, null, modifiers, reference, variables);
 
         /// <summary>
         /// The original way modifiers run.
@@ -134,7 +134,7 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersAll(List<Modifier> triggers, List<Modifier> actions, List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null)
+        public static ModifierLoopResult RunModifiersAll(List<Modifier> triggers, List<Modifier> actions, List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null)
         {
             if (triggers == null || actions == null)
             {
@@ -179,7 +179,7 @@ namespace BetterLegacy.Core.Helpers
                         if (act.Name == "return")
                             returned = true;
                     });
-                    return;
+                    return new ModifierLoopResult(returned, true, Modifier.Type.Action, modifiers.Count);
                 }
 
                 // Deactivate both action and trigger modifiers
@@ -194,7 +194,7 @@ namespace BetterLegacy.Core.Helpers
                         modifier.Inactive = action.function;
                     modifier.RunInactive(modifier, reference, variables);
                 });
-                return;
+                return new ModifierLoopResult(false, false, Modifier.Type.Action, modifiers.Count);
             }
 
             actions.ForLoop(act =>
@@ -212,6 +212,7 @@ namespace BetterLegacy.Core.Helpers
                     act.Action = action.function;
                 act.RunAction(act, reference, variables);
             });
+            return new ModifierLoopResult(false, true, Modifier.Type.Action, modifiers.Count);
         }
 
         /// <summary>
@@ -220,8 +221,9 @@ namespace BetterLegacy.Core.Helpers
         /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
         /// <param name="modifiers">The list of modifiers to run.</param>
         /// <param name="active">If the object is active.</param>
-        public static void RunModifiersLoop(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
+        public static ModifierLoopResult RunModifiersLoop(List<Modifier> modifiers, IModifierReference reference, Dictionary<string, string> variables = null, int sequence = 0, int end = 0)
         {
+            bool continued = false;
             bool returned = false;
             bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
             Modifier.Type previousType = Modifier.Type.Action;
@@ -240,8 +242,9 @@ namespace BetterLegacy.Core.Helpers
                 var isAction = modifier.type == Modifier.Type.Action;
                 var isTrigger = modifier.type == Modifier.Type.Trigger;
 
-                if (returned)
+                if (continued)
                 {
+                    modifier.running = false;
                     index++;
                     continue;
                 }
@@ -348,6 +351,41 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }
 
+                if (name == "return" || name == "continue") // return stops the loop (any), continue moves it to the next loop (forLoop only)
+                {
+                    // Set modifier inactive state
+                    if (!result && !(!modifier.active && !modifier.running))
+                    {
+                        modifier.active = false;
+                        modifier.running = false;
+                        result = false;
+                    }
+
+                    if (modifier.active || !result || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount) // don't return
+                        result = false;
+
+                    if (!modifier.running)
+                        modifier.runCount++;
+
+                    // Only occur once
+                    if (!modifier.constant && sequence + 1 >= end)
+                        modifier.active = true;
+
+                    modifier.running = result;
+
+                    if (result)
+                    {
+                        continued = true;
+                        returned = name == "return";
+                    }
+
+                    result = true;
+
+                    previousType = modifier.type;
+                    index++;
+                    continue;
+                }
+
                 // Set modifier inactive state
                 if (!result && !(!modifier.active && !modifier.running))
                 {
@@ -378,16 +416,13 @@ namespace BetterLegacy.Core.Helpers
                 modifier.running = true;
 
                 if (isAction && result) // Only run modifier if result is true
-                {
                     modifier.RunAction(modifier, reference, variables);
-
-                    if (name == "return" || name == "continue") // return stops the loop, continue moves it to the next loop
-                        returned = true;
-                }
 
                 previousType = modifier.type;
                 index++;
             }
+
+            return new ModifierLoopResult(returned, result, previousType, index);
         }
 
         #endregion
@@ -706,6 +741,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierTriggers.requireSignal), ModifierTriggers.requireSignal),
             new ModifierTrigger(nameof(ModifierTriggers.isFocused), ModifierTriggers.isFocused),
             new ModifierTrigger(nameof(ModifierTriggers.isFullscreen), ModifierTriggers.isFullscreen),
+            new ModifierTrigger(nameof(ModifierTriggers.objectActive), ModifierTriggers.objectActive),
+            new ModifierTrigger(nameof(ModifierTriggers.objectCustomActive), ModifierTriggers.objectCustomActive),
             new ModifierTrigger(nameof(ModifierTriggers.objectAlive), ModifierTriggers.objectAlive, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierTrigger(nameof(ModifierTriggers.objectSpawned), ModifierTriggers.objectSpawned, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierTrigger(nameof(ModifierTriggers.fromPrefab), ModifierTriggers.fromPrefab),
@@ -1203,8 +1240,10 @@ namespace BetterLegacy.Core.Helpers
             #region Updates
 
             // update
+            new ModifierAction(nameof(ModifierActions.reinitLevel),  ModifierActions.reinitLevel, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.updateObjects),  ModifierActions.updateObjects, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierActions.updateObject),  ModifierActions.updateObject, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierAction(nameof(ModifierActions.updateObjectOther),  ModifierActions.updateObjectOther, ModifierCompatibility.FullBeatmapCompatible),
 
             // parent
             new ModifierAction(nameof(ModifierActions.setParent),  ModifierActions.setParent, ModifierCompatibility.BeatmapObjectCompatible.WithPrefabObject(true)),
@@ -1987,7 +2026,6 @@ namespace BetterLegacy.Core.Helpers
         #region Internal Functions
 
         public static bool IsGroupModifier(string name) =>
-            name == nameof(ModifierActions.updateObject) ||
             name == nameof(ModifierActions.setParent) ||
             name == nameof(ModifierTriggers.objectCollide) ||
             name == nameof(ModifierTriggers.axisEquals) ||
@@ -2534,6 +2572,22 @@ namespace BetterLegacy.Core.Helpers
     }
 
     #endregion
+
+    public struct ModifierLoopResult
+    {
+        public ModifierLoopResult(bool returned, bool result, Modifier.Type previousType, int index)
+        {
+            this.returned = returned;
+            this.result = result;
+            this.previousType = previousType;
+            this.index = index;
+        }
+
+        public bool returned;
+        public bool result;
+        public Modifier.Type previousType;
+        public int index;
+    }
 
     public class ModifierTrigger
     {

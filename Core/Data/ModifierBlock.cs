@@ -31,18 +31,15 @@ namespace BetterLegacy.Core.Data
         /// Runs the modifiers loop.
         /// </summary>
         /// <param name="reference">Modifier object reference.</param>
-        public void Run(T reference, Dictionary<string, string> variables = null)
+        public ModifierLoopResult Run(T reference, Dictionary<string, string> variables = null)
         {
             if (IsEmpty())
-                return;
+                return default;
 
             if (variables == null)
                 variables = new Dictionary<string, string>();
 
-            if (OrderModifiers)
-                ModifiersHelper.RunModifiersLoop(Modifiers, reference, variables);
-            else
-                ModifiersHelper.RunModifiersAll(Modifiers, reference, variables);
+            return OrderModifiers ? ModifiersHelper.RunModifiersLoop(Modifiers, reference, variables) : ModifiersHelper.RunModifiersAll(Modifiers, reference, variables);
         }
 
         /// <summary>
