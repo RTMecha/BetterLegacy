@@ -253,6 +253,8 @@ namespace BetterLegacy.Core.Data.Player
         public Version Version { get; set; } = LegacyPlugin.ModVersion;
         public bool needsUpdate;
 
+        public string creator;
+
         public bool IsDefault { get; set; }
 
         public Assets assets = new Assets();
@@ -327,6 +329,8 @@ namespace BetterLegacy.Core.Data.Player
 
         public override void CopyData(PlayerModel orig, bool newID = true)
         {
+            creator = orig.creator;
+
             faceControlActive = orig.faceControlActive;
             facePosition = orig.facePosition;
 
@@ -356,6 +360,8 @@ namespace BetterLegacy.Core.Data.Player
                 Version = new Version(jn["version"]);
             else
                 needsUpdate = true;
+
+            creator = jn["creator"];
 
             this.ReadUploadableJSON(jn);
 
@@ -410,6 +416,9 @@ namespace BetterLegacy.Core.Data.Player
             var jn = Parser.NewJSONObject();
 
             jn["version"] = Version.ToString();
+
+            if (!string.IsNullOrEmpty(creator))
+                jn["creator"] = creator;
 
             this.WriteUploadableJSON(jn);
 

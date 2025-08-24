@@ -55,6 +55,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string filePath;
 
         /// <summary>
+        /// Creator of the prefab.
+        /// </summary>
+        public string creator;
+
+        /// <summary>
         /// Description of the Prefab.
         /// </summary>
         public string description;
@@ -233,6 +238,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             type = jn["type"].AsInt;
             typeID = jn["type_id"];
             offset = jn["offset"].AsFloat;
+            creator = jn["creator"];
             description = jn["desc"] ?? string.Empty;
             if (string.IsNullOrEmpty(typeID))
                 typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
@@ -305,11 +311,14 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["type_id"] = typeID;
             jn["offset"] = offset;
 
-            this.WriteUploadableJSON(jn);
             this.WritePrefabJSON(jn);
 
+            if (!string.IsNullOrEmpty(creator))
+                jn["creator"] = creator;
             if (!string.IsNullOrEmpty(description))
                 jn["desc"] = description;
+
+            this.WriteUploadableJSON(jn);
 
             #region Write Contents
 

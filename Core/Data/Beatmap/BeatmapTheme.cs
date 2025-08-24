@@ -42,6 +42,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public ThemePanel themePanel;
 
+        /// <summary>
+        /// Creator of the theme.
+        /// </summary>
+        public string creator;
+
         #region Server
 
         public string ServerID { get; set; }
@@ -255,6 +260,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             id = jn["id"] ?? ThemeManager.inst.ThemeCount.ToString();
             name = jn["name"] ?? "name your themes!";
+            creator = jn["creator"];
             this.ReadUploadableJSON(jn);
 
             guiColor = jn["gui"] != null ? ((string)jn["gui"]).Length == 8 ? LSColors.HexToColorAlpha(jn["gui"]) : LSColors.HexToColor(jn["gui"]) : LSColors.gray800;
@@ -336,6 +342,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             jn["id"] = id;
             jn["name"] = name;
+            if (!string.IsNullOrEmpty(creator))
+                jn["creator"] = creator;
             this.WriteUploadableJSON(jn);
 
             jn["gui_ex"] = GameData.SaveOpacityToThemes ? RTColors.ColorToHex(guiAccentColor) : LSColors.ColorToHex(guiAccentColor);
