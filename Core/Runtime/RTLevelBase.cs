@@ -263,7 +263,6 @@ namespace BetterLegacy.Core.Runtime
             }
 
             var runtimeObject = beatmapObject.runtimeObject;
-
             if (!runtimeObject)
                 return;
 
@@ -444,9 +443,6 @@ namespace BetterLegacy.Core.Runtime
 
                         runtimeObject.SetActive(beatmapObject.Alive);
 
-                        foreach (var levelParent in runtimeObject.parentObjects)
-                            levelParent.timeOffset = levelParent.beatmapObject.StartTime;
-
                         break;
                     } // StartTime
                 case ObjectContext.AUTOKILL: {
@@ -596,13 +592,8 @@ namespace BetterLegacy.Core.Runtime
                             beatmapObject.runtimeModifiers.SetActive(beatmapObject.ModifiersActive);
                         }
 
-                        if (!runtimeObject)
-                        {
-                            RecacheSequences(beatmapObject);
-                            break;
-                        }
-
-                        runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
+                        if (runtimeObject)
+                            runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
                         RecacheSequences(beatmapObject);
 
                         break;

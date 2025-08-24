@@ -171,7 +171,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             {
                 var localTime = time;
                 var parentObject = parentChain.ParentObjects[i];
-                var timeOffset = parentObject.timeOffset;
+                var timeOffset = parentObject.beatmapObject.StartTime;
 
                 if (totalScale == Vector3.zero) // stop interpolating entire parent chain if any of the parents scale is zero due to scale being multiplied.
                     break;

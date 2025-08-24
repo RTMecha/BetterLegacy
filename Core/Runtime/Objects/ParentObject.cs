@@ -16,8 +16,6 @@ namespace BetterLegacy.Core.Runtime.Objects
         public Sequence<Vector2> scaleSequence;
         public Sequence<float> rotationSequence;
 
-        public float timeOffset;
-
         public bool parentAnimatePosition;
         public bool parentAnimateScale;
         public bool parentAnimateRotation;

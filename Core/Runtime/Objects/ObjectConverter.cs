@@ -222,8 +222,6 @@ namespace BetterLegacy.Core.Runtime.Objects
                         scaleSequence = cachedSequences.ScaleSequence,
                         rotationSequence = cachedSequences.RotationSequence,
 
-                        timeOffset = beatmapObject.StartTime,
-
                         parentAnimatePosition = beatmapObject.GetParentType(0),
                         parentAnimateScale = beatmapObject.GetParentType(1),
                         parentAnimateRotation = beatmapObject.GetParentType(2),
@@ -262,8 +260,6 @@ namespace BetterLegacy.Core.Runtime.Objects
                         positionSequence = new Sequence<Vector3>(pos),
                         scaleSequence = new Sequence<Vector2>(sca),
                         rotationSequence = new Sequence<float>(rot),
-
-                        timeOffset = beatmapObject.StartTime,
 
                         parentAnimatePosition = beatmapObject.GetParentType(0),
                         parentAnimateScale = beatmapObject.GetParentType(1),
@@ -657,7 +653,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public CachedSequences CreateSequence(BeatmapObject beatmapObject)
         {
-            var collection = new CachedSequences();
+            var collection = beatmapObject.cachedSequences ?? new CachedSequences();
             UpdateCachedSequence(beatmapObject, collection);
             return collection;
         }
@@ -675,6 +671,13 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 if (beatmapObject.gradientType != 0)
                     collection.SecondaryColorSequence = GetColorSequence(beatmapObject, beatmapObject.events[3], DefaultThemeKeyframe, true);
+                else
+                    collection.SecondaryColorSequence = null;
+            }
+            else
+            {
+                collection.ColorSequence = null;
+                collection.SecondaryColorSequence = null;
             }
         }
 
