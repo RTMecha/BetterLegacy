@@ -717,6 +717,14 @@ namespace BetterLegacy.Core.Data
             ControllerOnly
         }
 
+        /// <summary>
+        /// URL to the videos' site.
+        /// </summary>
+        public string VideoURL => AlephNetwork.GetURL(URLSource.Video, videoLinkType, videoLink);
+
+        public int videoLinkType;
+        public string videoLink;
+
         #endregion
 
         #region Methods
@@ -735,6 +743,9 @@ namespace BetterLegacy.Core.Data
 
             preferredPlayerCount = orig.preferredPlayerCount;
             preferredControlType = orig.preferredControlType;
+
+            videoLinkType = orig.videoLinkType;
+            videoLink = orig.videoLink;
         }
 
         public override void ReadJSONVG(JSONNode jn, Version version = default)
@@ -816,6 +827,12 @@ namespace BetterLegacy.Core.Data
                 jn["preferred_players"] = (int)preferredPlayerCount;
             if (preferredControlType != PreferredControlType.AnyDevice)
                 jn["preferred_control"] = (int)preferredControlType;
+
+            if (!string.IsNullOrEmpty(videoLink))
+            {
+                jn["video_link"] = videoLink;
+                jn["video_link_type"] = videoLinkType;
+            }
 
             return jn;
         }

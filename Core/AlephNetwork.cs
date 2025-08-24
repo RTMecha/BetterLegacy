@@ -86,6 +86,7 @@ namespace BetterLegacy.Core
                 URLSource.Artist => ArtistLinks,
                 URLSource.Song => SongLinks,
                 URLSource.Creator => CreatorLinks,
+                URLSource.Video => VideoLinks,
                 _ => null,
             };
 
@@ -105,7 +106,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// <see cref="URLSource.Song"/> list.
         /// </summary>
-        public static List<DataManager.LinkType> SongLinks => new List<DataManager.LinkType>
+        public static List<DataManager.LinkType> SongLinks { get; } = new List<DataManager.LinkType>
         {
             new DataManager.LinkType("Spotify", "https://open.spotify.com/{0}"),
             new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
@@ -117,7 +118,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// <see cref="URLSource.Artist"/> list.
         /// </summary>
-        public static List<DataManager.LinkType> ArtistLinks => new List<DataManager.LinkType>
+        public static List<DataManager.LinkType> ArtistLinks { get; } = new List<DataManager.LinkType>
         {
             new DataManager.LinkType("Spotify", "https://open.spotify.com/artist/{0}"),
             new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
@@ -129,13 +130,22 @@ namespace BetterLegacy.Core
         /// <summary>
         /// <see cref="URLSource.Creator"/> list.
         /// </summary>
-        public static List<DataManager.LinkType> CreatorLinks => new List<DataManager.LinkType>
+        public static List<DataManager.LinkType> CreatorLinks { get; } = new List<DataManager.LinkType>
         {
             new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
             new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
             new DataManager.LinkType("Discord", "https://discord.gg/{0}"),
             new DataManager.LinkType("Patreon", "https://patreon.com/{0}"),
             new DataManager.LinkType("Twitter", "https://twitter.com/{0}"),
+        };
+
+        /// <summary>
+        /// <see cref="URLSource.Video"/> list.
+        /// </summary>
+        public static List<DataManager.LinkType> VideoLinks { get; } = new List<DataManager.LinkType>
+        {
+            new DataManager.LinkType("YouTube", "https://www.youtube.com/watch?v={0}"),
+            new DataManager.LinkType("Streamable", "https://streamable.com/{0}"),
         };
 
         #endregion

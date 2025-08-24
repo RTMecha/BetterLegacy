@@ -312,6 +312,45 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.DescriptionField.SetTextWithoutNotify(metadata.song.description);
             Dialog.DescriptionField.onValueChanged.NewListener(_val => metadata.song.description = _val);
+
+            Dialog.OpenVideoURLButton.onClick.NewListener(() =>
+            {
+                if (!string.IsNullOrEmpty(metadata.beatmap.VideoURL))
+                    Application.OpenURL(metadata.beatmap.VideoURL);
+            });
+
+            Dialog.VideoLinkField.SetTextWithoutNotify(metadata.beatmap.videoLink);
+            Dialog.VideoLinkField.onEndEdit.NewListener(_val =>
+            {
+                string oldVal = metadata.beatmap.videoLink;
+                metadata.beatmap.videoLink = _val;
+                EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
+                {
+                    metadata.beatmap.videoLink = _val;
+                    MetadataEditor.inst.OpenDialog();
+                }, () =>
+                {
+                    metadata.beatmap.videoLink = oldVal;
+                    MetadataEditor.inst.OpenDialog();
+                }));
+            });
+
+            Dialog.VideoLinkTypeDropdown.options = AlephNetwork.VideoLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            Dialog.VideoLinkTypeDropdown.SetValueWithoutNotify(metadata.beatmap.videoLinkType);
+            Dialog.VideoLinkTypeDropdown.onValueChanged.NewListener(_val =>
+            {
+                int oldVal = metadata.beatmap.videoLinkType;
+                metadata.beatmap.videoLinkType = _val;
+                EditorManager.inst.history.Add(new History.Command("Change Artist Link", () =>
+                {
+                    metadata.beatmap.videoLinkType = _val;
+                    MetadataEditor.inst.OpenDialog();
+                }, () =>
+                {
+                    metadata.beatmap.videoLinkType = oldVal;
+                    MetadataEditor.inst.OpenDialog();
+                }));
+            });
         }
 
         public void RenderSettings(MetaData metadata)

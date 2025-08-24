@@ -717,7 +717,8 @@ namespace BetterLegacy
     {
         Song,
         Artist,
-        Creator
+        Creator,
+        Video,
     }
 
     /// <summary>

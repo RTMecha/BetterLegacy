@@ -65,6 +65,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform DifficultyContent { get; set; }
 
+        public Button OpenVideoURLButton { get; set; }
+        public InputField VideoLinkField { get; set; }
+        public Dropdown VideoLinkTypeDropdown { get; set; }
+
         #endregion
 
         public RectTransform IconBase { get; set; }
@@ -306,10 +310,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 #region Level
 
                 var levelBase = Creator.NewUIObject("level", Content);
-                RectValues.Default.SizeDelta(764f, 400f).AssignToRectTransform(levelBase.transform.AsRT());
+                RectValues.Default.SizeDelta(764f, 460f).AssignToRectTransform(levelBase.transform.AsRT());
                 new Labels(Labels.InitSettings.Default.Parent(levelBase.transform).Rect(labelRect), new Label("Level") { fontStyle = FontStyle.Bold, });
                 var level = Creator.NewUIObject("info", levelBase.transform);
-                RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 340f).AssignToRectTransform(level.transform.AsRT());
+                RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 400f).AssignToRectTransform(level.transform.AsRT());
                 var levelLayout = level.AddComponent<VerticalLayoutGroup>();
                 levelLayout.childControlHeight = false;
                 levelLayout.childForceExpandHeight = false;
@@ -376,6 +380,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 scroll.viewport = tagViewport.transform.AsRT();
                 scroll.content = tagContent.transform.AsRT();
+
+                new Labels(Labels.InitSettings.Default.Parent(level.transform), "Video Link");
+                var videoLinkBase = linkPrefab.Duplicate(level.transform, "video link");
+                videoLinkBase.transform.AsRT().sizeDelta = new Vector2(718f, 32f);
+
+                var openVideoLinkButton = videoLinkBase.transform.Find("open url").GetComponent<DeleteButtonStorage>();
+                OpenVideoURLButton = openVideoLinkButton.button;
+                EditorThemeManager.AddGraphic(openVideoLinkButton.baseImage, ThemeGroup.Copy, true);
+                EditorThemeManager.AddGraphic(openVideoLinkButton.image, ThemeGroup.Copy_Text);
+
+                VideoLinkTypeDropdown = videoLinkBase.transform.Find("type").GetComponent<Dropdown>();
+                VideoLinkTypeDropdown.options = AlephNetwork.VideoLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+                EditorThemeManager.AddDropdown(VideoLinkTypeDropdown);
+
+                VideoLinkField = videoLinkBase.transform.Find("input").GetComponent<InputField>();
+                VideoLinkField.textComponent.alignment = TextAnchor.MiddleLeft;
+                EditorThemeManager.AddInputField(VideoLinkField);
 
                 #endregion
 
