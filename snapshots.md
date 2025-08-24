@@ -2,10 +2,12 @@
 ## Features
 ### Core
 - Updated demo (Beatmap.zip) files to include some prefabs that demonstrate more features.
-- Added else trigger modifier. This inverts the current trigger modifier check.
+- Added else trigger modifier. This inverts the current trigger modifier check. It can be used either as a "not gate" or after a set of triggers & actions to act as an "else" statement in programming.
+- Levels now include a video link, where you can provide a recorded video of the level. The link can only be the ID of the video, or after the "watch?v=" part of the link.
 
 ### Editor
 - Added custom label editing to Custom Keyframe UI display.
+- You can now right click the "ID" value in achievment modifiers to select an achievement.
 
 ## Changes
 ### Core
