@@ -1162,7 +1162,8 @@ namespace BetterLegacy.Core.Runtime.Events
         {
             themeLerp = x;
 
-            ThemeManager.inst.Current.Lerp(ThemeManager.inst.GetTheme(prevTheme), ThemeManager.inst.GetTheme(nextTheme), x);
+            var theme = ThemeManager.inst.GetTheme(prevTheme);
+            ThemeManager.inst.Current.Lerp(theme, prevTheme == nextTheme ? theme : ThemeManager.inst.GetTheme(nextTheme), x);
         }
 
         #endregion

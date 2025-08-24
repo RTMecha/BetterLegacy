@@ -797,8 +797,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     var beatmapTheme = BeatmapTheme.ParseVG(jn["themes"][i]);
 
-                    if (!string.IsNullOrEmpty(beatmapTheme.VGID) && !idConversion.ContainsKey(beatmapTheme.VGID))
-                        idConversion.Add(beatmapTheme.VGID, beatmapTheme.id);
+                    if (!string.IsNullOrEmpty(beatmapTheme.VGID))
+                        idConversion.TryAdd(beatmapTheme.VGID, beatmapTheme.id);
 
                     gameData.beatmapThemes.Add(beatmapTheme);
 

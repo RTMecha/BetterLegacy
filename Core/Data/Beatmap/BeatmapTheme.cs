@@ -200,7 +200,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
             id = LSText.randomNumString(ID_LENGTH);
-            VGID = jn["id"] ?? "";
+            VGID = jn["id"] ?? string.Empty;
 
             name = jn["name"] ?? "name your themes!";
 
