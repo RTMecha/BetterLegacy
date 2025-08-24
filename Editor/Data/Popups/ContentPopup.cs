@@ -1,12 +1,15 @@
 ﻿using System;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Popups
@@ -28,7 +31,7 @@ namespace BetterLegacy.Editor.Data.Popups
             this.placeholderText = placeholderText;
         }
 
-        #region Properties
+        #region Values
 
         /// <summary>
         /// Search field of the editor popup.
@@ -54,10 +57,6 @@ namespace BetterLegacy.Editor.Data.Popups
         /// Gets and sets the search input field text.
         /// </summary>
         public string SearchTerm { get => SearchField.text; set => SearchField.text = value; }
-
-        #endregion
-
-        #region Fields
 
         /// <summary>
         /// Refresh search function.
@@ -202,6 +201,51 @@ namespace BetterLegacy.Editor.Data.Popups
             SearchField.onValueChanged.ClearAll();
             SearchTerm = searchTerm;
             SearchField.onValueChanged.AddListener(_val => onSearch?.Invoke(_val));
+        }
+
+        /// <summary>
+        /// Generates a list button.
+        /// </summary>
+        /// <param name="name">Name to display on the button.</param>
+        /// <param name="onClick">Function to run when the button is clicked.</param>
+        public FunctionButtonStorage GenerateListButton(string name, Action<PointerEventData> onClick)
+        {
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(Content, "anim");
+            var storage = gameObject.GetComponent<FunctionButtonStorage>();
+            storage.button.onClick.ClearAll();
+            var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
+            contextClickable.onClick = onClick;
+
+            storage.label.text = name;
+
+            EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(storage.label);
+
+            return storage;
+        }
+
+        /// <summary>
+        /// Generates a list button.
+        /// </summary>
+        /// <param name="name">Name to display on the button.</param>
+        /// <param name="sprite">Sprite to display on the button.</param>
+        /// <param name="onClick">Function to run when the button is clicked.</param>
+        public SpriteFunctionButtonStorage GenerateListButton(string name, Sprite sprite, Action<PointerEventData> onClick)
+        {
+            var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Content, "anim");
+            var storage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
+            storage.button.onClick.ClearAll();
+            var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
+            contextClickable.onClick = onClick;
+
+            storage.image.sprite = sprite;
+            storage.label.text = name;
+
+            EditorThemeManager.ApplyGraphic(storage.image, ThemeGroup.Light_Text);
+            EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+            EditorThemeManager.ApplyLightText(storage.label);
+
+            return storage;
         }
 
         #endregion
