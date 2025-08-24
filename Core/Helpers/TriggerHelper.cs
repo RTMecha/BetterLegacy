@@ -395,10 +395,12 @@ namespace BetterLegacy.Core.Helpers
             // double click
             if (pointerEventData.clickCount > 1 && (!timelineKeyframe.timeline || !timelineKeyframe.timeline.draggingKeyframes) && !EventEditor.inst.eventDrag)
             {
-                if (timelineKeyframe.animatable is BeatmapObject)
-                    AudioManager.inst.SetMusicTime(timelineKeyframe.isObjectKeyframe && EditorTimeline.inst.CurrentSelection.isBeatmapObject ? EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().StartTime + timelineKeyframe.Time : timelineKeyframe.Time);
+                if (timelineKeyframe.animatable != null)
+                    AudioManager.inst.SetMusicTime(timelineKeyframe.animatable.StartTime + timelineKeyframe.Time);
                 else if (timelineKeyframe.timeline && timelineKeyframe.timeline.Cursor)
                     timelineKeyframe.timeline.Cursor.value = timelineKeyframe.Time;
+                else
+                    AudioManager.inst.SetMusicTime(timelineKeyframe.Time);
                 return;
             }
 
