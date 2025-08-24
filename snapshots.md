@@ -4,6 +4,8 @@
 - Updated demo (Beatmap.zip) files to include some prefabs that demonstrate more features.
 - Added else trigger modifier. This inverts the current trigger modifier check. It can be used either as a "not gate" or after a set of triggers & actions to act as an "else" statement in programming.
 - Levels now include a video link, where you can provide a recorded video of the level. The link can only be the ID of the video, or after the "watch?v=" part of the link.
+- Added onCheckpoint and onMarker trigger modifiers. These trigger when a checkpoint / marker matching the provided values is reached.
+- Added callModifierBlockTrigger trigger modifier. This does the same thing as the regular callModifierBlock action modifier, except this modifier checks for the final trigger state of the modifier block.
 
 ### Editor
 - Added custom label editing to Custom Keyframe UI display.
