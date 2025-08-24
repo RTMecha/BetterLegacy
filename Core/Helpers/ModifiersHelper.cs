@@ -226,6 +226,8 @@ namespace BetterLegacy.Core.Helpers
             bool continued = false;
             bool returned = false;
             bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
+            bool triggered = false; // If the first "or gate" argument is true, then ignore the rest.
+            int triggerIndex = 0;
             Modifier.Type previousType = Modifier.Type.Action;
             int index = 0;
             while (index < modifiers.Count)
@@ -242,6 +244,7 @@ namespace BetterLegacy.Core.Helpers
                 var isAction = modifier.type == Modifier.Type.Action;
                 var isTrigger = modifier.type == Modifier.Type.Trigger;
 
+                // Continue to the end of the modifier loop and set all modifiers to not running.
                 if (continued)
                 {
                     modifier.running = false;
@@ -328,27 +331,51 @@ namespace BetterLegacy.Core.Helpers
                 if (isTrigger)
                 {
                     if (previousType == Modifier.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
-                        result = true;
+                    {
+                        if (name != "else")
+                            result = true;
+                        triggered = false;
+                        triggerIndex = 0;
+                    }
 
                     if (modifier.active || modifier.triggerCount > 0 && modifier.runCount >= modifier.triggerCount)
                     {
                         modifier.triggered = false;
                         result = false;
                     }
+                    else if (name == "else") // else triggers inverse the previous trigger result
+                    {
+                        var innerResult = result;
+                        result = !innerResult;
+                        modifier.triggered = !innerResult;
+                    }
                     else
                     {
                         var innerResult = modifier.not ? !modifier.RunTrigger(modifier, reference, variables) : modifier.RunTrigger(modifier, reference, variables);
+                        var elseIf = triggerIndex > 0 && modifier.elseIf;
+
+                        if (elseIf)
+                        {
+                            if (result) // If result is already active, set triggered to true
+                                triggered = true;
+                            else // Otherwise set the result to modifier trigger result
+                                result = innerResult;
+                        }
+                        else if (!triggered && !innerResult)
+                            result = false;
 
                         // Allow trigger to turn result to true again if "elseIf" is on
-                        if (modifier.elseIf && !result && innerResult)
-                            result = true;
+                        //if (modifier.elseIf && !result && innerResult)
+                        //    result = true;
 
-                        if (!modifier.elseIf && !innerResult)
-                            result = false;
+                        //if (!modifier.elseIf && !innerResult)
+                        //    result = false;
 
                         modifier.triggered = innerResult;
                         previousType = modifier.type;
                     }
+
+                    triggerIndex++;
                 }
 
                 if (name == "return" || name == "continue") // return stops the loop (any), continue moves it to the next loop (forLoop only)
@@ -2653,5 +2680,18 @@ namespace BetterLegacy.Core.Helpers
         public static implicit operator ModifierInactive(Action<Modifier, IModifierReference, Dictionary<string, string>> function) => new ModifierInactive(string.Empty, function);
 
         public static implicit operator ModifierInactive(KeyValuePair<string, Action<Modifier, IModifierReference, Dictionary<string, string>>> keyValuePair) => new ModifierInactive(keyValuePair.Key, keyValuePair.Value);
+    }
+
+    public class TriggerTest
+    {
+        public TriggerTest() { }
+        public TriggerTest(bool active, bool elseIf)
+        {
+            this.active = active;
+            this.elseIf = elseIf;
+        }
+
+        public bool active;
+        public bool elseIf;
     }
 }

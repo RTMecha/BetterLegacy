@@ -345,7 +345,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 TriggerHelper.AddEventTriggers(countField.gameObject, TriggerHelper.ScrollDeltaInt(countField, 1, 0, int.MaxValue));
             }
 
-            if (modifier.type == Modifier.Type.Trigger)
+            if (name != "else" && modifier.type == Modifier.Type.Trigger)
             {
                 var not = ModifiersEditor.inst.booleanBar.Duplicate(layout, "Not");
                 not.transform.localScale = Vector3.one;
