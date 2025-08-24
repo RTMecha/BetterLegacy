@@ -150,7 +150,7 @@ namespace BetterLegacy.Editor.Managers
                         RTBackgroundEditor.inst.RenderBin(timelineObject.GetData<BackgroundObject>());
                 }
 
-                if (RTEditor.inst.dragBinOffset != binOffset && !selectedObjects.All(x => x.Locked))
+                if (RTEditor.inst.dragBinOffset != binOffset && !Input.GetKey(KeyCode.LeftAlt) && !selectedObjects.All(x => x.Locked))
                 {
                     if (hasChanged && RTEditor.DraggingPlaysSound)
                         SoundManager.inst.PlaySound(DefaultSounds.UpDown, 0.4f, 0.6f);
@@ -166,7 +166,7 @@ namespace BetterLegacy.Editor.Managers
                 timeOffset = Mathf.Clamp(timeOffset, 0f, musicLength);
             timeOffset = Mathf.Round(timeOffset * 1000f) / 1000f;
 
-            if (RTEditor.inst.dragOffset != timeOffset && !EditorTimeline.inst.SelectedObjects.All(x => x.Locked))
+            if (RTEditor.inst.dragOffset != timeOffset && !Input.GetKey(KeyCode.LeftAlt) &&!EditorTimeline.inst.SelectedObjects.All(x => x.Locked))
             {
                 if (RTEditor.DraggingPlaysSound && (RTEditor.inst.editorInfo.bpmSnapActive || !RTEditor.DraggingPlaysSoundBPM))
                     SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive ? 0.6f : 0.1f, 0.7f);
@@ -200,14 +200,6 @@ namespace BetterLegacy.Editor.Managers
                                 runtimeObject.KillTime = beatmapObject.StartTime + beatmapObject.SpawnDuration;
 
                                 runtimeObject.SetActive(beatmapObject.Alive);
-
-                                for (int i = 0; i < runtimeObject.parentObjects.Count; i++)
-                                {
-                                    var levelParent = runtimeObject.parentObjects[i];
-                                    var parent = levelParent.beatmapObject;
-
-                                    levelParent.timeOffset = parent.StartTime;
-                                }
                             }
 
                             if (selectedObjects.Count == 1)
