@@ -770,7 +770,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
 
-            if (changed && !selected.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineCalc + ObjEditor.inst.mouseOffsetXForDrag)
+            if (changed && !Input.GetKey(KeyCode.LeftAlt) && !selected.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineCalc + ObjEditor.inst.mouseOffsetXForDrag)
             {
                 if (RTEditor.DraggingPlaysSound && (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjectKeyframes.Value || !RTEditor.DraggingPlaysSoundBPM))
                     SoundManager.inst.PlaySound(DefaultSounds.LeftRight, RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsObjectKeyframes.Value ? 0.6f : 0.1f, 0.8f);
