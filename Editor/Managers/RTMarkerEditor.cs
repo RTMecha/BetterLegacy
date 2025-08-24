@@ -462,7 +462,7 @@ namespace BetterLegacy.Editor.Managers
         public void CreateNewMarker(float time)
         {
             Marker marker;
-            if (GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f && (x.layers.IsEmpty() || x.layers.Contains(EditorTimeline.inst.Layer)), out Marker baseMarker))
+            if (GameData.Current.data.markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f && (x.VisibleOnLayer(EditorTimeline.inst.Layer)), out Marker baseMarker))
                 marker = baseMarker;
             else
             {

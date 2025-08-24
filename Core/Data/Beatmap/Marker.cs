@@ -89,7 +89,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override JSONNode ToJSONVG()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["ID"] = LSText.randomString(16);
 
@@ -103,7 +103,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
             if (!string.IsNullOrEmpty(name))
                 jn["name"] = name;
 
@@ -120,6 +120,13 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             return jn;
         }
+
+        /// <summary>
+        /// Checks if the marker is visible on a layer.
+        /// </summary>
+        /// <param name="layer">Layer to check.</param>
+        /// <returns>Returns true if the marker is visible on the layer or the layers list is empty, otherwise returns false.</returns>
+        public bool VisibleOnLayer(int layer) => layers.IsEmpty() || layers.Contains(layer);
 
         #endregion
 
