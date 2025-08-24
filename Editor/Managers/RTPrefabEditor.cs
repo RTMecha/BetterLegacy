@@ -2104,11 +2104,9 @@ namespace BetterLegacy.Editor.Managers
             var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.Dialog == PrefabDialog.External;
 
-            PrefabExternalEditor.NameField.onValueChanged.ClearAll();
-            PrefabExternalEditor.NameField.onEndEdit.ClearAll();
-            PrefabExternalEditor.NameField.text = prefab.name;
-            PrefabExternalEditor.NameField.onValueChanged.AddListener(_val => prefab.name = _val);
-            PrefabExternalEditor.NameField.onEndEdit.AddListener(_val =>
+            PrefabExternalEditor.NameField.SetTextWithoutNotify(prefab.name);
+            PrefabExternalEditor.NameField.onValueChanged.NewListener(_val => prefab.name = _val);
+            PrefabExternalEditor.NameField.onEndEdit.NewListener(_val =>
             {
                 if (!isExternal)
                 {
@@ -2160,11 +2158,9 @@ namespace BetterLegacy.Editor.Managers
                 });
             });
 
-            PrefabExternalEditor.DescriptionField.onValueChanged.ClearAll();
-            PrefabExternalEditor.DescriptionField.onEndEdit.ClearAll();
-            PrefabExternalEditor.DescriptionField.text = prefab.description;
-            PrefabExternalEditor.DescriptionField.onValueChanged.AddListener(_val => prefab.description = _val);
-            PrefabExternalEditor.DescriptionField.onEndEdit.AddListener(_val =>
+            PrefabExternalEditor.DescriptionField.SetTextWithoutNotify(prefab.description);
+            PrefabExternalEditor.DescriptionField.onValueChanged.NewListener(_val => prefab.description = _val);
+            PrefabExternalEditor.DescriptionField.onEndEdit.NewListener(_val =>
             {
                 if (!isExternal)
                 {
@@ -2393,21 +2389,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void OpenPopup()
         {
-            foreach (var editorPopup in RTEditor.inst.editorPopups)
-            {
-                if (editorPopup.Name == EditorPopup.PREFAB_POPUP)
-                {
-                    if (editorPopup.IsOpen)
-                        continue;
-
-                    editorPopup.Open();
-
-                    continue;
-                }
-
-                editorPopup.Close();
-            }
-
+            RTEditor.inst.PrefabPopups.Open();
             RenderPopup();
         }
 
@@ -2421,22 +2403,19 @@ namespace BetterLegacy.Editor.Managers
             PrefabEditor.inst.internalPrefabDialog.gameObject.SetActive(true);
             PrefabEditor.inst.externalPrefabDialog.gameObject.SetActive(true);
 
-            selectQuickPrefabButton.onClick.ClearAll();
-            selectQuickPrefabButton.onClick.AddListener(() =>
+            selectQuickPrefabButton.onClick.NewListener(() =>
             {
                 selectQuickPrefabText.text = "<color=#669e37>Selecting</color>";
                 StartCoroutine(RefreshInternalPrefabs(true));
             });
 
-            PrefabEditor.inst.externalSearch.onValueChanged.ClearAll();
-            PrefabEditor.inst.externalSearch.onValueChanged.AddListener(_val =>
+            PrefabEditor.inst.externalSearch.onValueChanged.NewListener(_val =>
             {
                 PrefabEditor.inst.externalSearchStr = _val;
                 StartCoroutine(RenderExternalPrefabs());
             });
 
-            PrefabEditor.inst.internalSearch.onValueChanged.ClearAll();
-            PrefabEditor.inst.internalSearch.onValueChanged.AddListener(_val =>
+            PrefabEditor.inst.internalSearch.onValueChanged.NewListener(_val =>
             {
                 PrefabEditor.inst.internalSearchStr = _val;
                 StartCoroutine(RefreshInternalPrefabs());
@@ -2505,9 +2484,8 @@ namespace BetterLegacy.Editor.Managers
 
                 var selectionToggle = selection.GetComponent<Toggle>();
 
-                selectionToggle.onValueChanged.ClearAll();
-                selectionToggle.isOn = timelineObject.Selected;
-                selectionToggle.onValueChanged.AddListener(_val => timelineObject.Selected = _val);
+                selectionToggle.SetIsOnWithoutNotify(timelineObject.Selected);
+                selectionToggle.onValueChanged.NewListener(_val => timelineObject.Selected = _val);
                 EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
             }
         }
