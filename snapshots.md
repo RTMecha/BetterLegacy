@@ -2,12 +2,25 @@
 ## Features
 ### Core
 - Updated demo (Beatmap.zip) files to include some prefabs that demonstrate more features.
+- Added else trigger modifier. This inverts the current trigger modifier check.
+
+### Editor
+- Added custom label editing to Custom Keyframe UI display.
+
+## Changes
+### Core
+- The "Else if" toggle on trigger modifiers now allows for multiple "or gate" conditions. (e.g. trigger a is false, trigger b has else if on and is true and trigger c is true, which allows the modifier actions to run)
+
+### Editor
+- Simplified the editor popup animation register code to make it easier to add new popups.
+- Holding alt while BPM snap is on no longer plays the BPM snap sound.
 
 ## Fixes
 - Fixed objectCustomActive modifier not working.
 - Fixed "Add" buttons not properly displaying in the modifier card UI.
 - Fixed achievements file being saved regardless of if the list is empty or not.
 - Fixed updateObject modifiers throwing an error.
+- Fixed dragging an empty object not updating the time offset of child objects.
 
 -------------------------------------------------------------------
 
