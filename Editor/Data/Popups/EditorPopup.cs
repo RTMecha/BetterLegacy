@@ -174,7 +174,7 @@ namespace BetterLegacy.Editor.Data.Popups
                 return;
             }
 
-            if (play && !editorAnimation && RTEditor.inst.editorAnimations.TryFind(x => x.name == Name, out EditorAnimation dialogAnimation))
+            if (play && !editorAnimation && EditorConfig.Instance.editorAnimations.TryFind(x => x.name == Name, out EditorAnimation dialogAnimation))
                 editorAnimation = dialogAnimation;
 
             if (play && editorAnimation && IsOpen != active)
@@ -188,7 +188,7 @@ namespace BetterLegacy.Editor.Data.Popups
 
                 var dialog = GameObject.transform;
 
-                var scrollbar = dialog.GetComponentsInChildren<Scrollbar>().ToList();
+                var scrollbar = dialog.GetComponentsInChildren<Scrollbar>();
                 var scrollAmounts = scrollbar.Select(x => x.value).ToList();
 
                 var animation = new RTAnimation("Popup Open");
@@ -232,7 +232,7 @@ namespace BetterLegacy.Editor.Data.Popups
                             pos.x = x;
                             dialog.localScale = pos;
 
-                            for (int i = 0; i < scrollbar.Count; i++)
+                            for (int i = 0; i < scrollbar.Length; i++)
                                 scrollbar[i].value = scrollAmounts[i];
                         }
                     }),
@@ -248,7 +248,7 @@ namespace BetterLegacy.Editor.Data.Popups
                             pos.y = x;
                             dialog.localScale = pos;
 
-                            for (int i = 0; i < scrollbar.Count; i++)
+                            for (int i = 0; i < scrollbar.Length; i++)
                                 scrollbar[i].value = scrollAmounts[i];
                         }
                     }),
