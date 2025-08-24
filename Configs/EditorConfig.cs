@@ -1865,8 +1865,50 @@ namespace BetterLegacy.Configs
             RegisterPopupAnimation(EditorPopup.QUICK_ACTIONS_POPUP);
             RegisterPopupAnimation(EditorPopup.PARENT_SELECTOR);
             RegisterPopupAnimation(EditorPopup.PREFAB_POPUP);
-            RegisterPopupAnimation(EditorPopup.OBJECT_OPTIONS_POPUP);
-            RegisterPopupAnimation(EditorPopup.BG_OPTIONS_POPUP);
+            RegisterPopupAnimation(EditorPopup.OBJECT_OPTIONS_POPUP, new EditorAnimatonDefaults
+            {
+                active = true,
+                animatePosition = true,
+                openPos = new Vector2(-35f, 57f),
+                closePos = new Vector2(-35f, 22f),
+                openPosDuration = new Vector2(0f, 0.6f),
+                closePosDuration = new Vector2(0f, 0.1f),
+                openPosXEase = Easing.OutElastic,
+                openPosYEase = Easing.OutElastic,
+                closePosXEase = Easing.InCirc,
+                closePosYEase = Easing.InCirc,
+                animateScale = true,
+                openSca = Vector2.one,
+                closeSca = new Vector2(1f, 0f),
+                openScaDuration = new Vector2(0.6f, 0.6f),
+                closeScaDuration = new Vector2(0.1f, 0.1f),
+                openScaXEase = Easing.OutElastic,
+                openScaYEase = Easing.OutElastic,
+                closeScaXEase = Easing.InCirc,
+                closeScaYEase = Easing.InCirc,
+            });
+            RegisterPopupAnimation(EditorPopup.BG_OPTIONS_POPUP, new EditorAnimatonDefaults
+            {
+                active = true,
+                animatePosition = true,
+                openPos = new Vector2(0f, 57f),
+                closePos = new Vector2(0f, 22f),
+                openPosDuration = new Vector2(0f, 0.6f),
+                closePosDuration = new Vector2(0f, 0.1f),
+                openPosXEase = Easing.OutElastic,
+                openPosYEase = Easing.OutElastic,
+                closePosXEase = Easing.InCirc,
+                closePosYEase = Easing.InCirc,
+                animateScale = true,
+                openSca = Vector2.one,
+                closeSca = new Vector2(1f, 0f),
+                openScaDuration = new Vector2(0.6f, 0.6f),
+                closeScaDuration = new Vector2(0.1f, 0.1f),
+                openScaXEase = Easing.OutElastic,
+                openScaYEase = Easing.OutElastic,
+                closeScaXEase = Easing.InCirc,
+                closeScaYEase = Easing.InCirc,
+            });
             RegisterPopupAnimation(EditorPopup.BROWSER_POPUP);
             RegisterPopupAnimation(EditorPopup.OBJECT_SEARCH_POPUP);
             RegisterPopupAnimation(EditorPopup.OBJECT_TEMPLATES_POPUP);
@@ -1940,39 +1982,116 @@ namespace BetterLegacy.Configs
 
         public List<EditorAnimation> editorAnimations = new List<EditorAnimation>();
 
-        void RegisterPopupAnimation(string name)
+        struct EditorAnimatonDefaults
+        {
+            public static EditorAnimatonDefaults Default => new EditorAnimatonDefaults
+            {
+                active = true,
+                animatePosition = false,
+                animateScale = true,
+                openSca = Vector2.one,
+                openScaDuration = new Vector2(0.6f, 0.6f),
+                closeScaDuration = new Vector2(0.1f, 0.1f),
+                openScaXEase = Easing.OutElastic,
+                openScaYEase = Easing.OutElastic,
+                closeScaXEase = Easing.InCirc,
+                closeScaYEase = Easing.InCirc,
+                animateRotation = false,
+            };
+
+            public bool active;
+
+            #region Position
+
+            public bool animatePosition;
+
+            public Vector2 openPos;
+            public Vector2 closePos;
+            public Vector2 openPosDuration;
+            public Vector2 closePosDuration;
+            public Easing openPosXEase;
+            public Easing openPosYEase;
+            public Easing closePosXEase;
+            public Easing closePosYEase;
+
+            #endregion
+
+            #region Scale
+
+            public bool animateScale;
+
+            public Vector2 openSca;
+            public Vector2 closeSca;
+            public Vector2 openScaDuration;
+            public Vector2 closeScaDuration;
+            public Easing openScaXEase;
+            public Easing openScaYEase;
+            public Easing closeScaXEase;
+            public Easing closeScaYEase;
+
+            #endregion
+
+            #region Rotation
+
+            public bool animateRotation;
+
+            public float openRot;
+            public float closeRot;
+            public float openRotDuration;
+            public float closeRotDuration;
+            public Easing openRotEase;
+            public Easing closeRotEase;
+
+            #endregion
+        }
+
+        void RegisterPopupAnimation(string name) => RegisterPopupAnimation(name, EditorAnimatonDefaults.Default);
+
+        void RegisterPopupAnimation(string name, EditorAnimatonDefaults defaults)
         {
             var editorAnimation = new EditorAnimation(name);
 
-            editorAnimation.ActiveConfig = Bind(this, ANIMATIONS, $"{name} Active", true, "If the popup animation should play.");
+            editorAnimation.ActiveConfig = Bind(this, ANIMATIONS, $"{name} Active", defaults.active, "If the popup animation should play.");
 
-            editorAnimation.PosActiveConfig = Bind(this, ANIMATIONS, $"{name} Animate Position", false, "If position should be animated.");
-            editorAnimation.PosOpenConfig = Bind(this, ANIMATIONS, $"{name} Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            editorAnimation.PosCloseConfig = Bind(this, ANIMATIONS, $"{name} Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            editorAnimation.PosOpenDurationConfig = Bind(this, ANIMATIONS, $"{name} Open Position Duration", Vector2.zero, "The duration of opening.");
-            editorAnimation.PosCloseDurationConfig = Bind(this, ANIMATIONS, $"{name} Close Position Duration", Vector2.zero, "The duration of closing.");
-            editorAnimation.PosXOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Position X Ease", Easing.Linear, "The easing of opening.");
-            editorAnimation.PosXCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Position X Ease", Easing.Linear, "The easing of opening.");
-            editorAnimation.PosYOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Position Y Ease", Easing.Linear, "The easing of opening.");
-            editorAnimation.PosYCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Position Y Ease", Easing.Linear, "The easing of opening.");
+            #region Position
 
-            editorAnimation.ScaActiveConfig = Bind(this, ANIMATIONS, $"{name} Animate Scale", true, "If scale should be animated.");
-            editorAnimation.ScaOpenConfig = Bind(this, ANIMATIONS, $"{name} Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            editorAnimation.ScaCloseConfig = Bind(this, ANIMATIONS, $"{name} Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            editorAnimation.ScaOpenDurationConfig = Bind(this, ANIMATIONS, $"{name} Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            editorAnimation.ScaCloseDurationConfig = Bind(this, ANIMATIONS, $"{name} Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            editorAnimation.ScaXOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Scale X Ease", Easing.OutElastic, "The easing of opening.");
-            editorAnimation.ScaXCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Scale X Ease", Easing.InCirc, "The easing of opening.");
-            editorAnimation.ScaYOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Scale Y Ease", Easing.OutElastic, "The easing of opening.");
-            editorAnimation.ScaYCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Scale Y Ease", Easing.InCirc, "The easing of opening.");
-            
-            editorAnimation.RotActiveConfig = Bind(this, ANIMATIONS, $"{name} Animate Rotation", false, "If rotation should be animated.");
-            editorAnimation.RotOpenConfig = Bind(this, ANIMATIONS, $"{name} Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            editorAnimation.RotCloseConfig = Bind(this, ANIMATIONS, $"{name} Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            editorAnimation.RotOpenDurationConfig = Bind(this, ANIMATIONS, $"{name} Open Rotation Duration", 0f, "The duration of opening.");
-            editorAnimation.RotCloseDurationConfig = Bind(this, ANIMATIONS, $"{name} Close Rotation Duration", 0f, "The duration of closing.");
-            editorAnimation.RotOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Rotation Ease", Easing.Linear, "The easing of opening.");
-            editorAnimation.RotCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Rotation Ease", Easing.Linear, "The easing of opening.");
+            editorAnimation.PosActiveConfig = Bind(this, ANIMATIONS, $"{name} Animate Position", defaults.animatePosition, "If position should be animated.");
+            editorAnimation.PosOpenConfig = Bind(this, ANIMATIONS, $"{name} Open Position", defaults.openPos, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            editorAnimation.PosCloseConfig = Bind(this, ANIMATIONS, $"{name} Close Position", defaults.closePos, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            editorAnimation.PosOpenDurationConfig = Bind(this, ANIMATIONS, $"{name} Open Position Duration", defaults.openPosDuration, "The duration of opening.");
+            editorAnimation.PosCloseDurationConfig = Bind(this, ANIMATIONS, $"{name} Close Position Duration", defaults.closePosDuration, "The duration of closing.");
+            editorAnimation.PosXOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Position X Ease", defaults.openPosXEase, "The easing of opening.");
+            editorAnimation.PosXCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Position X Ease", defaults.closePosXEase, "The easing of closing.");
+            editorAnimation.PosYOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Position Y Ease", defaults.openPosYEase, "The easing of opening.");
+            editorAnimation.PosYCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Position Y Ease", defaults.closePosYEase, "The easing of closing.");
+
+            #endregion
+
+            #region Scale
+
+            editorAnimation.ScaActiveConfig = Bind(this, ANIMATIONS, $"{name} Animate Scale", defaults.animateScale, "If scale should be animated.");
+            editorAnimation.ScaOpenConfig = Bind(this, ANIMATIONS, $"{name} Open Scale", defaults.openSca, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            editorAnimation.ScaCloseConfig = Bind(this, ANIMATIONS, $"{name} Close Scale", defaults.closeSca, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            editorAnimation.ScaOpenDurationConfig = Bind(this, ANIMATIONS, $"{name} Open Scale Duration", defaults.openScaDuration, "The duration of opening.");
+            editorAnimation.ScaCloseDurationConfig = Bind(this, ANIMATIONS, $"{name} Close Scale Duration", defaults.closeScaDuration, "The duration of closing.");
+            editorAnimation.ScaXOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Scale X Ease", defaults.openScaXEase, "The easing of opening.");
+            editorAnimation.ScaXCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Scale X Ease", defaults.closeScaXEase, "The easing of closing.");
+            editorAnimation.ScaYOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Scale Y Ease", defaults.openScaYEase, "The easing of opening.");
+            editorAnimation.ScaYCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Scale Y Ease", defaults.closeScaYEase, "The easing of closing.");
+
+            #endregion
+
+            #region Rotation
+
+            editorAnimation.RotActiveConfig = Bind(this, ANIMATIONS, $"{name} Animate Rotation", defaults.animateRotation, "If rotation should be animated.");
+            editorAnimation.RotOpenConfig = Bind(this, ANIMATIONS, $"{name} Open Rotation", defaults.openRot, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            editorAnimation.RotCloseConfig = Bind(this, ANIMATIONS, $"{name} Close Rotation", defaults.closeRot, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            editorAnimation.RotOpenDurationConfig = Bind(this, ANIMATIONS, $"{name} Open Rotation Duration", defaults.openRotDuration, "The duration of opening.");
+            editorAnimation.RotCloseDurationConfig = Bind(this, ANIMATIONS, $"{name} Close Rotation Duration", defaults.closeRotDuration, "The duration of closing.");
+            editorAnimation.RotOpenEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Open Rotation Ease", defaults.openRotEase, "The easing of opening.");
+            editorAnimation.RotCloseEaseConfig = BindEnum(this, ANIMATIONS, $"{name} Close Rotation Ease", defaults.closeRotEase, "The easing of closing.");
+
+            #endregion
 
             editorAnimations.Add(editorAnimation);
         }
