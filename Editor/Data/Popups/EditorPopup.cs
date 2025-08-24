@@ -100,6 +100,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string LEVEL_COLLECTION_POPUP = "Level Collection Popup";
         public const string ASSET_POPUP = "Asset Popup";
         public const string ANIMATIONS_POPUP = "Animations Popup";
+        public const string ACHIEVEMENTS_POPUP = "Achievements Popup";
 
         #endregion
 

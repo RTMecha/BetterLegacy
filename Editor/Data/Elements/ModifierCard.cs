@@ -3708,24 +3708,56 @@ namespace BetterLegacy.Editor.Data.Elements
                 #region Ranking
                     
                 case nameof(ModifierActions.unlockAchievement): {
-                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference)))
+                                );
+                        };
 
                         break;
                     }
                 case nameof(ModifierActions.lockAchievement): {
-                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference)))
+                                );
+                        };
 
                         break;
                     }
                 case nameof(ModifierActions.getAchievementUnlocked): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
-                        StringGenerator(modifier, reference, "ID", 1);
+                        StringGenerator(modifier, reference, "ID", 1).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(1, achievement.id, reference)))
+                                );
+                        };
                         BoolGenerator(modifier, reference, "Global", 2);
 
                         break;
                     }
                 case nameof(ModifierTriggers.achievementUnlocked): {
-                        StringGenerator(modifier, reference, "ID", 0);
+                        StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Select Achievement", () => AchievementEditor.inst.OpenPopup(achievement => SetValue(0, achievement.id, reference)))
+                                );
+                        };
                         BoolGenerator(modifier, reference, "Global", 1);
 
                         break;
@@ -4745,6 +4777,20 @@ namespace BetterLegacy.Editor.Data.Elements
             modifier.active = false;
             modifier.runCount = 0;
             modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
+        }
+
+        public void SetValue<T>(int index, string value, T reference)
+        {
+            Modifier.SetValue(index, value);
+            var scrollbar = dialog.Scrollbar;
+            var scrollValue = scrollbar ? scrollbar.value : 0f;
+            RenderModifier(reference);
+            CoroutineHelper.PerformAtNextFrame(() =>
+            {
+                if (scrollbar)
+                    scrollbar.value = scrollValue;
+            });
+            Update(Modifier, reference);
         }
 
         #endregion

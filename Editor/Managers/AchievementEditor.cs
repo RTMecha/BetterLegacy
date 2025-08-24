@@ -20,6 +20,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -54,6 +55,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorPrefabHolder.Instance.DeleteButton.Duplicate(achievementListButtonPrefab.transform, "delete");
 
                 EditorHelper.AddEditorDropdown("Edit Achievements", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.ExclaimSprite, OpenDialog);
+
+                Popup = RTEditor.inst.GeneratePopup(EditorPopup.ACHIEVEMENTS_POPUP, "Achievements", Vector2.zero, new Vector2(600f, 400f));
             }
             catch (Exception ex)
             {
@@ -69,6 +72,11 @@ namespace BetterLegacy.Editor.Managers
         /// Dialog of the editor.
         /// </summary>
         public AchievementEditorDialog Dialog { get; set; }
+
+        /// <summary>
+        /// Popup of the editor.
+        /// </summary>
+        public ContentPopup Popup { get; set; }
 
         /// <summary>
         /// The current achievement.
@@ -502,6 +510,51 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(deleteButton.image, ThemeGroup.Delete_Text);
 
                 num++;
+            }
+        }
+
+        /// <summary>
+        /// Opens the achievement list popup.
+        /// </summary>
+        /// <param name="onSelect">Function to run when the achievement is selected.</param>
+        public void OpenPopup(Action<Achievement> onSelect)
+        {
+            Popup.Open();
+            RenderPopup(onSelect);
+        }
+
+        /// <summary>
+        /// Renders the achievement list popup.
+        /// </summary>
+        /// <param name="onSelect">Function to run when the achievement is selected.</param>
+        public void RenderPopup(Action<Achievement> onSelect)
+        {
+            Popup.ClearContent();
+            Popup.SearchField.onValueChanged.NewListener(_val => RenderPopup(onSelect));
+
+            for (int i = 0; i < achievements.Count; i++)
+            {
+                var achievement = achievements[i];
+                if (!RTString.SearchString(Popup.SearchTerm, achievement.name, new SearchMatcher(achievement.id, SearchMatchType.Exact)))
+                    continue;
+
+                Popup.GenerateListButton($"{achievement.id} - {achievement.name}", pointerEventData =>
+                {
+                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Edit", () => OpenDialog(achievement)));
+                        return;
+                    }
+
+                    if (onSelect != null)
+                    {
+                        onSelect.Invoke(achievement);
+                        return;
+                    }
+
+                    OpenDialog(achievement);
+                });
             }
         }
 
