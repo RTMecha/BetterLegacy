@@ -772,7 +772,10 @@ namespace BetterLegacy.Core.Helpers
             new ModifierTrigger(nameof(ModifierTriggers.objectCustomActive), ModifierTriggers.objectCustomActive),
             new ModifierTrigger(nameof(ModifierTriggers.objectAlive), ModifierTriggers.objectAlive, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierTrigger(nameof(ModifierTriggers.objectSpawned), ModifierTriggers.objectSpawned, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierTriggers.onMarker), ModifierTriggers.onMarker),
+            new ModifierTrigger(nameof(ModifierTriggers.onCheckpoint), ModifierTriggers.onCheckpoint),
             new ModifierTrigger(nameof(ModifierTriggers.fromPrefab), ModifierTriggers.fromPrefab),
+            new ModifierTrigger(nameof(ModifierTriggers.callModifierBlockTrigger), ModifierTriggers.callModifierBlockTrigger, ModifierCompatibility.LevelControlCompatible),
 
             #endregion
 

@@ -4172,6 +4172,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierTriggers.callModifierBlockTrigger): {
+                        StringGenerator(modifier, reference, "Function Name", 0);
+
+                        break;
+                    }
 
                 case "forLoop": {
                         StringGenerator(modifier, reference, "Variable Name", 0);
@@ -4601,6 +4606,19 @@ namespace BetterLegacy.Editor.Data.Elements
                             options.Add(new Dropdown.OptionData(Enum.GetName(typeof(Language), i) ?? "Invalid Value"));
 
                         DropdownGenerator(modifier, reference, "Language", 0, options);
+
+                        break;
+                    }
+
+                case nameof(ModifierTriggers.onMarker): {
+                        StringGenerator(modifier, reference, "Name", 0);
+                        ColorGenerator(modifier, reference, "Color", 1, MarkerEditor.inst.markerColors);
+                        IntegerGenerator(modifier, reference, "Layer", 2);
+
+                        break;
+                    }
+                case nameof(ModifierTriggers.onCheckpoint): {
+                        StringGenerator(modifier, reference, "Name", 0);
 
                         break;
                     }
@@ -5083,7 +5101,15 @@ namespace BetterLegacy.Editor.Data.Elements
             }
         }
 
-        public GameObject ColorGenerator<T>(Modifier modifier, T reference, string label, int type, int colorSource = 0)
+        public GameObject ColorGenerator<T>(Modifier modifier, T reference, string label, int type, int colorSource = 0) => ColorGenerator(modifier, reference, label, type, colorSource switch
+        {
+            0 => CoreHelper.CurrentBeatmapTheme.objectColors,
+            1 => CoreHelper.CurrentBeatmapTheme.backgroundColors,
+            2 => CoreHelper.CurrentBeatmapTheme.effectColors,
+            _ => null,
+        });
+
+        public GameObject ColorGenerator<T>(Modifier modifier, T reference, string label, int type, List<Color> colors)
         {
             var startColorBase = ModifiersEditor.inst.numberInput.Duplicate(layout, label);
             startColorBase.transform.localScale = Vector3.one;
@@ -5107,13 +5133,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
             var colorPrefab = startColors.transform.GetChild(0).gameObject;
             colorPrefab.transform.SetParent(ModifiersEditor.inst.transform);
-            var colors = colorSource switch
-            {
-                0 => CoreHelper.CurrentBeatmapTheme.objectColors,
-                1 => CoreHelper.CurrentBeatmapTheme.backgroundColors,
-                2 => CoreHelper.CurrentBeatmapTheme.effectColors,
-                _ => null,
-            };
 
             CoreHelper.DestroyChildren(startColors.transform);
 

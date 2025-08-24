@@ -1405,13 +1405,12 @@ namespace BetterLegacy.Core.Helpers
         public static bool objectActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var runtimeObject = reference.GetRuntimeObject();
-            return runtimeObject != null ? runtimeObject.Active : false;
+            return runtimeObject != null && runtimeObject.Active;
         }
 
         public static bool objectCustomActive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var runtimeObject = reference.GetRuntimeObject();
-            return runtimeObject is ICustomActivatable customActivatable ? customActivatable.CustomActive : false;
+            return reference.GetRuntimeObject() is ICustomActivatable customActivatable && customActivatable.CustomActive;
         }
 
         public static bool objectAlive(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -1453,6 +1452,42 @@ namespace BetterLegacy.Core.Helpers
         }
 
         public static bool fromPrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => reference is IPrefabable prefabable && prefabable.FromPrefab;
+
+        public static bool onMarker(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var name = modifier.GetValue(0, variables);
+            var color = modifier.GetInt(1, -1, variables);
+            var layer = modifier.GetInt(2, -1, variables);
+            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastMarkerIndex(x => (string.IsNullOrEmpty(name) || x.name == name) && (color == -1 || x.color == color) && (layer == -1 || x.VisibleOnLayer(layer))));
+            var newIndex = GameData.Current.data.GetLastMarkerIndex(x => (string.IsNullOrEmpty(name) || x.name == name) && (color == -1 || x.color == color) && (layer == -1 || x.VisibleOnLayer(layer)));
+            if (index != newIndex)
+            {
+                modifier.Result = newIndex;
+                return true;
+            }
+            return false;
+        }
+
+        public static bool onCheckpoint(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var name = modifier.GetValue(0, variables);
+            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastCheckpointIndex(x => (string.IsNullOrEmpty(name) || x.name == name)));
+            var newIndex = GameData.Current.data.GetLastCheckpointIndex(x => (string.IsNullOrEmpty(name) || x.name == name));
+            if (index != newIndex)
+            {
+                modifier.Result = newIndex;
+                return true;
+            }
+            return false;
+        }
+
+        public static bool callModifierBlockTrigger(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var name = modifier.GetValue(0, variables);
+            if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock<IModifierReference> modifierBlock))
+                return modifierBlock.Run(reference, variables).result;
+            return false;
+        }
 
         #endregion
 

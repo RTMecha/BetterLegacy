@@ -107,10 +107,48 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Gets the index of the last checkpoint in time.
+        /// </summary>
+        /// <param name="predicate">Match predicate.</param>
+        /// <returns>Returns the last checkpoints' index.</returns>
+        public int GetLastCheckpointIndex(System.Predicate<Checkpoint> predicate)
+        {
+            var index = checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time && predicate(x));
+            return index < 0 ? 0 : index;
+        }
+
+        /// <summary>
         /// Gets the last checkpoint in time.
         /// </summary>
         /// <returns>Returns the last checkpoint.</returns>
-        public Checkpoint GetLastCheckpoint() => checkpoints[GetLastCheckpointIndex()];
+        public Checkpoint GetLastCheckpoint() => checkpoints.GetAtOrDefault(GetLastCheckpointIndex(), null);
+
+        /// <summary>
+        /// Gets the index of the last marker in time.
+        /// </summary>
+        /// <returns>Returns the last markers' index.</returns>
+        public int GetLastMarkerIndex()
+        {
+            var index = markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
+            return index < 0 ? 0 : index;
+        }
+
+        /// <summary>
+        /// Gets the index of the last marker in time.
+        /// </summary>
+        /// <param name="predicate">Match predicate.</param>
+        /// <returns>Returns the last markers' index.</returns>
+        public int GetLastMarkerIndex(System.Predicate<Marker> predicate)
+        {
+            var index = markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time && predicate(x));
+            return index;
+        }
+
+        /// <summary>
+        /// Gets the last marker in time.
+        /// </summary>
+        /// <returns>Returns the last marker.</returns>
+        public Marker GetLastMarker() => markers.GetAtOrDefault(GetLastMarkerIndex(), null);
 
         #endregion
     }
