@@ -139,7 +139,6 @@ Next: Misc
 
 ### Fixes
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
-- Fix else if.
 
 
 ## Ideas
