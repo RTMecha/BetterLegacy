@@ -382,11 +382,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!RTString.SearchString(Popup.SearchTerm, animation.name, animation.ReferenceID))
                     continue;
 
-                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(Popup.Content, "anim");
-                var storage = gameObject.GetComponent<SpriteFunctionButtonStorage>();
-                storage.button.onClick.ClearAll();
-                var contextClickable = gameObject.GetOrAddComponent<ContextClickable>();
-                contextClickable.onClick = pointerEventData =>
+                Popup.GenerateListButton($"{animation.name} [ {animation.ReferenceID} ]", EditorSprites.PlaySprite, pointerEventData =>
                 {
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
@@ -479,14 +475,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     OpenDialog(animation, onReturn);
-                };
-
-                storage.image.sprite = EditorSprites.PlaySprite;
-                storage.label.text = animation.name + $" [ {animation.ReferenceID} ]";
-
-                EditorThemeManager.ApplyGraphic(storage.image, ThemeGroup.Light_Text);
-                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(storage.label);
+                });
             }
         }
 
