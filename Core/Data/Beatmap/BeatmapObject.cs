@@ -892,7 +892,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                 gradientRotation = jn["gr"].AsFloat;
 
             if (jn["text"] != null)
-                text = jn["text"];
+                text = jn["text"].Value
+                    // To fix alpha screwing the font up
+                    .Replace("<font=LiberationSans>", "<font=LiberationSans SDF>").Replace("<font=\"LiberationSans\">", "<font=\"LiberationSans SDF\">")
+                    .Replace("<font=Inconsolata>", "<font=Inconsolata Variable>").Replace("<font=\"Inconsolata\">", "<font=\"Inconsolata Variable\">")
+                    .Replace("<font=liberationsans>", "<font=LiberationSans SDF>").Replace("<font=\"liberationsans\">", "<font=\"LiberationSans SDF\">")
+                    .Replace("<font=liberationSans>", "<font=LiberationSans SDF>").Replace("<font=\"liberationSans\">", "<font=\"LiberationSans SDF\">")
+                    .Replace("<font=inconsolata>", "<font=Inconsolata Variable>").Replace("<font=\"inconsolata\">", "<font=\"Inconsolata Variable\">");
 
             if (jn["ak_t"] != null)
                 autoKillType = (AutoKillType)jn["ak_t"].AsInt;
