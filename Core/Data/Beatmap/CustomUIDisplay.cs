@@ -18,10 +18,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// If the UI data should serialize to JSON.
         /// </summary>
         public bool ShouldSerialize =>
-            !string.IsNullOrEmpty(path) || type != UIType.InputField || multiValue != "1" || // base
+            !string.IsNullOrEmpty(path) || type != UIType.InputField || !string.IsNullOrEmpty(label) || multiValue != "1" || !interactible || // base
             overrideScroll && (scrollAmount != 0.1f || scrollMultiply != 10.0f) || min != 0.0f || max != 0.0f || resetValue != 0.0f || // input field
             !options.IsEmpty() || // dropdown
-            offValue != 0.0f || onValue != 1.0f; // toggle
+            !string.IsNullOrEmpty(toggleLabel) || offValue != 0.0f || onValue != 1.0f; // toggle
 
         /// <summary>
         /// Represents the location of the custom UI.
@@ -51,6 +51,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             /// </summary>
             Toggle,
         }
+
+        /// <summary>
+        /// Label to display above the UI.
+        /// </summary>
+        public string label = string.Empty;
 
         /// <summary>
         /// Value to display with multiple selections.
@@ -110,7 +115,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <summary>
         /// Label to display on the element.
         /// </summary>
-        public string label = string.Empty;
+        public string toggleLabel = string.Empty;
 
         /// <summary>
         /// Value to set when toggle is on.
@@ -182,8 +187,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["type"] != null)
                 type = (UIType)jn["type"].AsInt;
 
+            label = jn["l"] ?? string.Empty;
             multiValue = jn["multi_val"] ?? "1";
-            interactible = jn["interact"] != null ? jn["interact"].AsBool : true;
+            interactible = jn["interact"] == null || jn["interact"].AsBool;
 
             switch (type)
             {
@@ -216,8 +222,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                         break;
                     }
                 case UIType.Toggle: {
+                        if (jn["tl"] != null)
+                            toggleLabel = jn["tl"];
                         if (jn["label"] != null)
-                            label = jn["label"];
+                            toggleLabel = jn["label"];
                         if (jn["off_val"] != null)
                             offValue = jn["off_val"].AsFloat;
                         if (jn["on_val"] != null)
@@ -236,6 +244,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (type != UIType.InputField)
                 jn["type"] = (int)type;
 
+            if (!string.IsNullOrEmpty(label))
+                jn["l"] = label;
             if (multiValue != "1")
                 jn["multi_val"] = multiValue ?? "1";
             if (!interactible)
@@ -266,8 +276,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                         break;
                     }
                 case UIType.Toggle: {
-                        if (!string.IsNullOrEmpty(label))
-                            jn["label"] = label;
+                        if (!string.IsNullOrEmpty(toggleLabel))
+                            jn["tl"] = toggleLabel;
                         if (offValue != 0.0f)
                             jn["off_val"] = offValue;
                         if (onValue != 1.0f)
@@ -288,6 +298,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             type = other.type;
 
+            label = other.label;
             multiValue = other.multiValue;
             interactible = other.interactible;
 
@@ -300,7 +311,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             options = new List<Option>(other.options.Select(x => x.Copy()));
 
-            label = other.label;
+            toggleLabel = other.toggleLabel;
             offValue = other.offValue;
             onValue = other.onValue;
         }

@@ -28,7 +28,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public KeyframeDialog(int type) => this.type = type;
 
-        #region Properties
+        #region Values
 
         /// <summary>
         /// Name of the keyframes' type.
@@ -59,6 +59,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public GameObject CurvesLabel { get; set; }
         public Dropdown CurvesDropdown { get; set; }
         public InputFieldStorage EventTimeField { get; set; }
+        public List<Text> EventValueLabels { get; set; }
         public Transform EventValuesParent { get; set; }
         public List<InputFieldStorage> EventValueFields { get; set; }
         public List<KeyframeElement> EventValueElements { get; set; }
@@ -78,10 +79,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #endregion
-
-        #region Fields
-
         /// <summary>
         /// The type of the keyframe. (e.g. position, scale, etc)
         /// </summary>
@@ -96,6 +93,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         /// If the keyframe is from an object.
         /// </summary>
         public bool isObjectKeyframe;
+
+        public List<string> originalLabels;
 
         #endregion
 
@@ -127,6 +126,27 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     if (GameObject.transform.TryFind(Name.ToLower(), out Transform valuesTransform))
                     {
                         EventValuesParent = valuesTransform;
+                        var siblingIndex = valuesTransform.GetSiblingIndex();
+                        try
+                        {
+                            if (siblingIndex - 1 >= 0)
+                            {
+                                var labels = GameObject.transform.GetChild(siblingIndex - 1);
+                                originalLabels = new List<string>(labels.childCount);
+                                EventValueLabels = new List<Text>(labels.childCount);
+                                for (int i = 0; i < labels.childCount; i++)
+                                {
+                                    var label = labels.GetChild(i).GetComponent<Text>();
+                                    originalLabels.Add(label ? label.text : string.Empty);
+                                    EventValueLabels.Add(label);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreHelper.LogException(ex);
+                        }
+
                         EventValueFields = new List<InputFieldStorage>();
                         EventValueElements = new List<KeyframeElement>();
                         if (!isObjectKeyframe)
@@ -283,24 +303,76 @@ namespace BetterLegacy.Editor.Data.Dialogs
     {
         public KeyframeElement(string path) => this.path = path;
 
+        #region Values
+
+        /// <summary>
+        /// Parent keyframe dialog.
+        /// </summary>
         public KeyframeDialog Dialog { get; set; }
 
+        /// <summary>
+        /// Game object of the element.
+        /// </summary>
         public GameObject GameObject { get; set; }
 
+        /// <summary>
+        /// Custom UI display.
+        /// </summary>
         public CustomUIDisplay Display { get; set; }
 
+        /// <summary>
+        /// Path of the element.
+        /// </summary>
         public string path;
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Initializes the keyframe element.
+        /// </summary>
+        /// <param name="dialog">Parent keyframe dialog.</param>
+        /// <param name="parent">Transform to parent the element to.</param>
+        /// <param name="name">Name of the element.</param>
+        /// <param name="display">Custom UI display.</param>
         public abstract void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display);
 
+        /// <summary>
+        /// Renders the keyframe element.
+        /// </summary>
+        /// <param name="type">
+        /// Type of the keyframe.
+        /// <br>0 - Position</br>
+        /// <br>1 - Scale</br>
+        /// <br>2 - Rotation</br>
+        /// <br>3 - Color</br>
+        /// </param>
+        /// <param name="valueIndex">
+        /// Index of the keyframe value.
+        /// <br>0 - X</br>
+        /// <br>1 - Y</br>
+        /// <br>2 - Z</br>
+        /// </param>
+        /// <param name="selected">Collection of selected keyframes.</param>
+        /// <param name="firstKF">First selected keyframe.</param>
+        /// <param name="animatable">Animatable object.</param>
         public abstract void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable);
 
+        /// <summary>
+        /// OVerwrites the display element.
+        /// </summary>
+        /// <param name="animatable">Animatable object.</param>
         public void UpdateDisplay(IAnimatable animatable)
         {
             animatable.EditorData.displays.OverwriteAdd((x, index) => x.path == path, Display);
             RenderDialog(animatable);
         }
 
+        /// <summary>
+        /// Renders the parent keyframe dialog.
+        /// </summary>
+        /// <param name="animatable">Animatable object.</param>
         public void RenderDialog(IAnimatable animatable)
         {
             if (animatable is BeatmapObject beatmapObject)
@@ -308,18 +380,44 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (animatable is PAAnimation animation)
                 AnimationEditor.inst.RenderDialog(animation, AnimationEditor.inst.currentOnReturn);
         }
+
+        #endregion
     }
 
     public class KeyframeInputField : KeyframeElement
     {
         public KeyframeInputField(string path) : base(path) { }
 
+        #region Values
+
+        /// <summary>
+        /// Field element.
+        /// </summary>
         public InputFieldStorage Field { get; set; }
 
+        /// <summary>
+        /// Minimum limit.
+        /// </summary>
         public Func<float> getMin;
+
+        /// <summary>
+        /// Maximum limit.
+        /// </summary>
         public Func<float> getMax;
+
+        /// <summary>
+        /// Value to reset to when "Reset Value" button is clicked.
+        /// </summary>
         public Func<float> getResetValue;
+
+        /// <summary>
+        /// Value to display when multiple keyframes are used.
+        /// </summary>
         public Func<string> getMultiValue;
+
+        #endregion
+
+        #region Methods
 
         public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
         {
@@ -339,6 +437,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
+            if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
+                label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
+
             var isSingle = selected.Count() == 1;
 
             TriggerHelper.InversableField(Field);
@@ -374,6 +475,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
+                    new ButtonFunction("Set Label", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
+                        {
+                            Display.label = RTEditor.inst.folderCreatorName.text;
+                            UpdateDisplay(animatable);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
                     new ButtonFunction("Set Max", () =>
                     {
                         RTEditor.inst.ShowNameEditor("Set maximum value", "Max", Display.max.ToString(), "Set", () =>
@@ -625,19 +735,44 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             Field.GetComponent<HorizontalLayoutGroup>().spacing = isSingle ? 8f : 0f;
         }
+
+        #endregion
     }
 
     public class KeyframeDropdown : KeyframeElement
     {
         public KeyframeDropdown(string path) : base(path) { }
 
+        #region Values
+
+        /// <summary>
+        /// Dropdown element.
+        /// </summary>
         public Dropdown Dropdown { get; set; }
 
+        /// <summary>
+        /// Button that applies the selected value to all selected keyframes.
+        /// </summary>
         public Button Apply { get; set; }
 
+        /// <summary>
+        /// List of options for the dropdown.
+        /// </summary>
         public Func<List<Dropdown.OptionData>> getOptions;
+
+        /// <summary>
+        /// Value selector.
+        /// </summary>
         public Func<int, float> getValue;
+
+        /// <summary>
+        /// Value to display when multiple keyframes are used.
+        /// </summary>
         public Func<string> getMultiValue;
+
+        #endregion
+
+        #region Methods
 
         public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
         {
@@ -674,6 +809,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
+            if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
+                label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
+
             var isSingle = selected.Count() == 1;
 
             Dropdown.interactable = Display.interactible;
@@ -696,6 +834,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
+                    new ButtonFunction("Set Label", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
+                        {
+                            Display.label = RTEditor.inst.folderCreatorName.text;
+                            UpdateDisplay(animatable);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
                     new ButtonFunction("Add Entry", () =>
                     {
                         RTEditor.inst.ShowNameEditor("Add Dropdown Option", "Entry Name", "Value", "Next", () =>
@@ -785,19 +932,44 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
         }
+
+        #endregion
     }
 
     public class KeyframeToggle : KeyframeElement
     {
         public KeyframeToggle(string path) : base(path) { }
 
+        #region Values
+
+        /// <summary>
+        /// Toggle element.
+        /// </summary>
         public Toggle Toggle { get; set; }
 
+        /// <summary>
+        /// Button that applies the selected value to all selected keyframes.
+        /// </summary>
         public Button Apply { get; set; }
 
+        /// <summary>
+        /// Value to set when toggle is on.
+        /// </summary>
         public Func<float> getOnValue;
+
+        /// <summary>
+        /// Value to set when toggle is off.
+        /// </summary>
         public Func<float> getOffValue;
+
+        /// <summary>
+        /// Value to display when multiple keyframes are used.
+        /// </summary>
         public Func<string> getMultiValue;
+
+        #endregion
+
+        #region Methods
 
         public override void Init(KeyframeDialog dialog, Transform parent, string name, CustomUIDisplay display)
         {
@@ -815,7 +987,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var toggle = EditorPrefabHolder.Instance.ToggleButton.Duplicate(GameObject.transform, "toggle");
             var toggleStorage = toggle.GetComponent<ToggleButtonStorage>();
             Toggle = toggleStorage.toggle;
-            toggleStorage.label.text = !string.IsNullOrEmpty(display.label) ? display.label : "On";
+            toggleStorage.label.text = !string.IsNullOrEmpty(display.toggleLabel) ? display.toggleLabel : "On";
             EditorThemeManager.ApplyToggle(toggleStorage.toggle, graphic: toggleStorage.label);
 
             var toggleLayoutElement = toggle.GetOrAddComponent<LayoutElement>();
@@ -836,6 +1008,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public override void Render(int type, int valueIndex, IEnumerable<TimelineKeyframe> selected, TimelineKeyframe firstKF, IAnimatable animatable)
         {
+            if (Dialog.EventValueLabels.TryGetAt(valueIndex, out Text label) && label)
+                label.text = !string.IsNullOrEmpty(Display.label) ? Display.label : Dialog.originalLabels[valueIndex];
+
             var isSingle = selected.Count() == 1;
             var offValue = getOffValue?.Invoke() ?? 0f;
             var onValue = getOnValue?.Invoke() ?? 1f;
@@ -860,6 +1035,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         EditorManager.inst.DisplayNotification($"{(Display.interactible ? "Unlocked" : "Locked")} editor.", 2f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
+                    new ButtonFunction("Set Label", () =>
+                    {
+                        RTEditor.inst.ShowNameEditor("Set label", "Label", Display.label, "Set", () =>
+                        {
+                            Display.label = RTEditor.inst.folderCreatorName.text;
+                            UpdateDisplay(animatable);
+                            RTEditor.inst.HideNameEditor();
+                        });
+                    }),
                     new ButtonFunction("Set On Value", () =>
                     {
                         RTEditor.inst.ShowNameEditor("Set on value", "On", Display.onValue.ToString(), "Set", () =>
@@ -884,11 +1068,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                             RTEditor.inst.HideNameEditor();
                         });
                     }),
-                    new ButtonFunction("Set Label", () =>
+                    new ButtonFunction("Set Toggle Label", () =>
                     {
-                        RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.label) ? Display.label : "On", "Set", () =>
+                        RTEditor.inst.ShowNameEditor("Set label", "Label", !string.IsNullOrEmpty(Display.toggleLabel) ? Display.toggleLabel : "On", "Set", () =>
                         {
-                            Display.label = RTEditor.inst.folderCreatorName.text;
+                            Display.toggleLabel = RTEditor.inst.folderCreatorName.text;
                             UpdateDisplay(animatable);
                             RTEditor.inst.HideNameEditor();
                         });
@@ -948,5 +1132,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
             });
         }
+
+        #endregion
     }
 }
