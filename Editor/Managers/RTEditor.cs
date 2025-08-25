@@ -4159,12 +4159,21 @@ namespace BetterLegacy.Editor.Managers
             preview.transform.AsRT().anchorMax = Vector2.zero;
             preview.transform.AsRT().anchorMin = Vector2.zero;
 
-            var previewObject = Creator.NewUIObject("Object", preview.transform);
-            previewObject.transform.AsRT().sizeDelta = new Vector2(16f, 16f);
+            var basePreviewObject = Creator.NewUIObject("Base", preview.transform);
+            var size = EditorConfig.Instance.ObjectDraggerHelperSize.Value;
+            var outlineSize = EditorConfig.Instance.ObjectDraggerHelperOutlineSize.Value;
+            basePreviewObject.transform.AsRT().sizeDelta = new Vector2(size + outlineSize, size + outlineSize);
+            var basePreviewImage = basePreviewObject.AddComponent<Image>();
+            basePreviewImage.sprite = EditorSprites.CircleSprite;
+            basePreviewImage.color = Color.black;
+
+            var previewObject = Creator.NewUIObject("Object", basePreviewObject.transform);
+            previewObject.transform.AsRT().sizeDelta = new Vector2(size, size);
             var previewObjectImage = previewObject.AddComponent<Image>();
             previewObjectImage.sprite = EditorSprites.CircleSprite;
 
             SelectObjectHelper = previewObject.AddComponent<SelectObjectHelper>();
+            SelectObjectHelper.baseImage = basePreviewImage;
             SelectObjectHelper.image = previewObjectImage;
             previewObject.AddComponent<EventTrigger>().triggers = new List<EventTrigger.Entry>
             {

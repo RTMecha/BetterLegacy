@@ -116,6 +116,8 @@ namespace BetterLegacy.Editor.Managers
 
                     new KeybindFunction(nameof(ToggleObjectDragging), ToggleObjectDragging),
                     new KeybindFunction(nameof(ToggleObjectDragHelper), ToggleObjectDragHelper),
+                    new KeybindFunction(nameof(SetObjectDragHelperAxisX), SetObjectDragHelperAxisX),
+                    new KeybindFunction(nameof(SetObjectDragHelperAxisY), SetObjectDragHelperAxisY),
 
                     new KeybindFunction(nameof(TransformPosition), TransformPosition, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
                     new KeybindFunction(nameof(TransformScale), TransformScale, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
@@ -1785,6 +1787,18 @@ namespace BetterLegacy.Editor.Managers
         public void ToggleObjectDragging(Keybind keybind) => EditorConfig.Instance.ObjectDraggerEnabled.Value = !EditorConfig.Instance.ObjectDraggerEnabled.Value;
 
         public void ToggleObjectDragHelper(Keybind keybind) => EditorConfig.Instance.ObjectDraggerHelper.Value = !EditorConfig.Instance.ObjectDraggerHelper.Value;
+
+        public void SetObjectDragHelperAxisX(Keybind keybind)
+        {
+            if (RTEditor.inst.SelectObjectHelper && RTEditor.inst.SelectObjectHelper.dragging)
+                RTEditor.inst.SelectObjectHelper.firstDirection = SelectObject.Axis.PosX;
+        }
+        
+        public void SetObjectDragHelperAxisY(Keybind keybind)
+        {
+            if (RTEditor.inst.SelectObjectHelper && RTEditor.inst.SelectObjectHelper.dragging)
+                RTEditor.inst.SelectObjectHelper.firstDirection = SelectObject.Axis.PosY;
+        }
 
         public void TransformPosition(Keybind keybind)
         {

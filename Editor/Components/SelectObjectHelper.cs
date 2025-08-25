@@ -21,14 +21,27 @@ namespace BetterLegacy.Editor.Components
         {
             cachedActive = Active;
 
+            if (!baseImage)
+                return;
+
             if (image)
+            {
+                baseImage.enabled = cachedActive;
                 image.enabled = cachedActive;
+                var size = EditorConfig.Instance.ObjectDraggerHelperSize.Value;
+                var outlineSize = EditorConfig.Instance.ObjectDraggerHelperOutlineSize.Value;
+                baseImage.rectTransform.sizeDelta = new Vector2(size + outlineSize, size + outlineSize);
+                image.rectTransform.sizeDelta = new Vector2(size, size);
+
+                baseImage.color = EditorConfig.Instance.ObjectDraggerHelperOutlineColor.Value;
+                image.color = EditorConfig.Instance.ObjectDraggerHelperColor.Value;
+            }
 
             if (!cachedActive)
                 return;
 
             if (EditorTimeline.inst.CurrentSelection.TryGetData(out ITransformable transformable))
-                transform.position = Camera.main.WorldToScreenPoint(transformable.GetFullPosition());
+                baseImage.rectTransform.position = Camera.main.WorldToScreenPoint(transformable.GetFullPosition());
         }
 
         public void PointerDown(BaseEventData eventData)
@@ -39,113 +52,134 @@ namespace BetterLegacy.Editor.Components
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Go to Timeline Object", () => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.CurrentSelection, true)),
                             new ButtonFunction(true),
-                            new ButtonFunction("Hide", () =>
+                            new ButtonFunction(EditorTimeline.inst.CurrentSelection.Hidden ? "Unhide" : "Hide", () =>
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                var timelineObject = EditorTimeline.inst.CurrentSelection;
+                                timelineObject.Hidden = !timelineObject.Hidden;
+                                switch (timelineObject.TimelineReference)
                                 {
-                                    timelineObject.Hidden = true;
-                                    switch (timelineObject.TimelineReference)
-                                    {
-                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
+                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
 
-                                                break;
-                                            }
-                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
+                                            break;
+                                        }
+                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
 
-                                                break;
-                                            }
-                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
+                                            break;
+                                        }
+                                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                            RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
 
-                                                break;
-                                            }
-                                    }
+                                            break;
+                                        }
                                 }
                             }),
-                            new ButtonFunction("Unhide", () =>
+                            new ButtonFunction(EditorTimeline.inst.CurrentSelection.SelectableInPreview ? "Prevent Preview Selection" : "Allow Preview Selection", () =>
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                                var timelineObject = EditorTimeline.inst.CurrentSelection;
+                                timelineObject.SelectableInPreview = !timelineObject.SelectableInPreview;
+                                if (timelineObject.isBackgroundObject) // background objects aren't selectable in the preview atm
+                                    return;
+
+                                timelineObject.SelectableInPreview = true;
+                                switch (timelineObject.TimelineReference)
                                 {
-                                    timelineObject.Hidden = false;
-                                    switch (timelineObject.TimelineReference)
-                                    {
-                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.HIDE);
+                                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                            RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
 
-                                                break;
-                                            }
-                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.HIDE);
+                                            break;
+                                        }
+                                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                            RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
 
-                                                break;
-                                            }
-                                        case TimelineObject.TimelineReferenceType.BackgroundObject: {
-                                                RTLevel.Current?.UpdateBackgroundObject(timelineObject.GetData<BackgroundObject>(), BackgroundObjectContext.HIDE);
-
-                                                break;
-                                            }
-                                    }
+                                            break;
+                                        }
                                 }
                             }),
-                            new ButtonFunction("Preview Selectable", () =>
+                            new ButtonFunction(true),
+                            new ButtonFunction("Drag Position", () =>
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                                {
-                                    if (timelineObject.isBackgroundObject)
-                                        continue;
-
-                                    timelineObject.SelectableInPreview = true;
-                                    switch (timelineObject.TimelineReference)
-                                    {
-                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
-
-                                                break;
-                                            }
-                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
-
-                                                break;
-                                            }
-                                    }
-                                }
+                                EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Position;
+                                EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Position}!", 2f, EditorManager.NotificationType.Success);
                             }),
-                            new ButtonFunction("Preview Unselectable", () =>
+                            new ButtonFunction("Drag Scale", () =>
                             {
-                                foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                                {
-                                    if (timelineObject.isBackgroundObject)
-                                        continue;
-
-                                    timelineObject.SelectableInPreview = false;
-                                    switch (timelineObject.TimelineReference)
-                                    {
-                                        case TimelineObject.TimelineReferenceType.BeatmapObject: {
-                                                RTLevel.Current?.UpdateObject(timelineObject.GetData<BeatmapObject>(), ObjectContext.SELECTABLE);
-
-                                                break;
-                                            }
-                                        case TimelineObject.TimelineReferenceType.PrefabObject: {
-                                                RTLevel.Current?.UpdatePrefab(timelineObject.GetData<PrefabObject>(), PrefabObjectContext.SELECTABLE);
-
-                                                break;
-                                            }
-                                    }
-                                }
+                                EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Scale;
+                                EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Scale}!", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonFunction("Drag Rotation", () =>
+                            {
+                                EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Rotation;
+                                EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Rotation}!", 2f, EditorManager.NotificationType.Success);
+                            }),
+                            new ButtonFunction("Drag Color", () =>
+                            {
+                                EditorConfig.Instance.ObjectDraggerHelperType.Value = TransformType.Color;
+                                EditorManager.inst.DisplayNotification($"Changed {EditorConfig.Instance.ObjectDraggerHelperType.Key} to {TransformType.Color}!", 2f, EditorManager.NotificationType.Success);
                             })
                             );
                         break;
                     }
                 case PointerEventData.InputButton.Middle: {
-                        var selectedKeyframe = EditorTimeline.inst.CurrentSelection.TimelineReference switch
+                        if (EditorTimeline.inst.CurrentSelection.isBeatmapObject)
                         {
-                            TimelineObject.TimelineReferenceType.BeatmapObject => EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>().GetOrCreateKeyframe((int)EditorConfig.Instance.ObjectDraggerHelperType.Value, EditorConfig.Instance.ObjectDraggerCreatesKeyframe.Value),
-                            TimelineObject.TimelineReferenceType.PrefabObject => EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>().events.GetAt((int)EditorConfig.Instance.ObjectDraggerHelperType.Value),
-                            _ => null,
-                        };
+                            var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
+                            var time = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
+                            var type = (int)EditorConfig.Instance.ObjectDraggerHelperType.Value;
+                            var previousKeyframe = beatmapObject.events[type].FindLast(x => x.time <= time);
 
+                            if (RTMath.Distance(time, previousKeyframe.time) < 0.01f)
+                                return;
+
+                            var val = beatmapObject.InterpolateChain();
+
+                            var eventKeyfame = ObjectEditor.inst.Dialog.Timeline.CreateEventKeyframe(
+                                animatable: beatmapObject,
+                                time: time,
+                                type: type,
+                                previousKeyframe: previousKeyframe,
+                                openDialog: false);
+
+                            switch (type)
+                            {
+                                case 0: {
+                                        eventKeyfame.values[0] = val.position.x;
+                                        eventKeyfame.values[1] = val.position.y;
+                                        eventKeyfame.values[2] = val.position.z;
+                                        break;
+                                    }
+                                case 1: {
+                                        eventKeyfame.values[0] = val.scale.x;
+                                        eventKeyfame.values[1] = val.scale.y;
+                                        break;
+                                    }
+                                case 2: {
+                                        eventKeyfame.values[0] = val.rotation;
+                                        break;
+                                    }
+                            }
+
+                            ObjectEditor.inst.Dialog.Timeline.UpdateKeyframeOrder(beatmapObject);
+                            ObjectEditor.inst.Dialog.Timeline.RenderKeyframes(beatmapObject);
+
+                            var keyframe = beatmapObject.events[type].FindLastIndex(x => x.id == eventKeyfame.id);
+                            if (keyframe < 0)
+                                keyframe = 0;
+
+                            ObjectEditor.inst.Dialog.Timeline.SetCurrentKeyframe(beatmapObject, type, keyframe, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
+                            ObjectEditor.inst.Dialog.Timeline.ResizeKeyframeTimeline(beatmapObject);
+
+                            ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
+                            ObjectEditor.inst.Dialog.Timeline.RenderMarkers(beatmapObject);
+
+                            if (!beatmapObject)
+                                return;
+
+                            // Keyframes affect both physical object and timeline object.
+                            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+                            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                        }
                         break;
                     }
             }
@@ -558,10 +592,11 @@ namespace BetterLegacy.Editor.Components
         Vector2 dragKeyframeValues;
         public EventKeyframe selectedKeyframe;
         Vector2 dragOffset;
-        Axis firstDirection = Axis.Static;
+        public Axis firstDirection = Axis.Static;
 
         #endregion
 
+        public Image baseImage;
         public Image image;
     }
 }
