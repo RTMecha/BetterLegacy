@@ -1,42 +1,93 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Player;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class PrizeObject : PAObject<PrizeObject>
+    /*
+     Notes:
+    - Prize objects will be in a separate "prizes" folder. You can import objects from this folder directly into the level.
+    - Prize objects that are awarded to the user are stored in a "prizes.lspo" file.
+     */
+
+    /// <summary>
+    /// Represents a set of objects that is awarded to the user.
+    /// </summary>
+    public class PrizeObject : PAObject<PrizeObject>, IFile
     {
         public PrizeObject() => id = GetNumberID();
 
+        #region Values
+
+        /// <summary>
+        /// Name of the prize.
+        /// </summary>
+        public string name = string.Empty;
+
+        /// <summary>
+        /// The objects to be rewarded.
+        /// </summary>
+        public List<PAObjectBase> objects;
+
+        public FileFormat FileFormat => FileFormat.LSPO;
+
+        #endregion
+
+        #region Methods
+
         public override void CopyData(PrizeObject orig, bool newID = true)
         {
-            obj = orig.obj; // atm can only copy the instance reference
+            name = orig.name;
+            objects = new List<PAObjectBase>(orig.objects.Select(x => CopyObj(x)));
+        }
+
+        PAObjectBase CopyObj(PAObjectBase obj)
+        {
+            if (obj is BeatmapObject beatmapObject)
+                return beatmapObject.Copy();
+            if (obj is BackgroundLayer backgroundLayer)
+                return backgroundLayer.Copy();
+            if (obj is BackgroundObject backgroundObject)
+                return backgroundObject.Copy();
+            if (obj is PrefabObject prefabObject)
+                return prefabObject.Copy();
+            if (obj is Prefab prefab)
+                return prefab.Copy();
+            if (obj is BeatmapTheme beatmapTheme)
+                return beatmapTheme.Copy();
+            if (obj is Modifier modifier)
+                return modifier.Copy();
+            if (obj is ModifierBlock modifierBlock)
+                return modifierBlock.Copy();
+            if (obj is PlayerModel playerModel)
+                return playerModel.Copy();
+            if (obj is PlayerItem playerItem)
+                return playerItem.Copy();
+            if (obj is PAAnimation animation)
+                return animation.Copy();
+            return null;
         }
 
         public override void ReadJSON(JSONNode jn)
         {
-            unlockConditions = Parser.TryParse(jn["unlock_conditions"], UnlockConditions.LevelCompletion);
-            unlockData = jn["unlock_data"];
+            name = jn["name"] ?? string.Empty;
 
-            if (jn["objs"] != null)
-            {
-                var list = new List<PAObjectBase>();
-
-                for (int i = 0; i < jn["objs"].Count; i++)
-                {
-                    var itemJN = jn["objs"][i];
-                    var obj = ParseObj(itemJN);
-                    if (obj)
-                        list.Add(ParseObj(itemJN));
-                }
-
-                obj = list;
+            if (jn["objs"] == null)
                 return;
-            }
 
-            obj = ParseObj(jn);
+            objects = new List<PAObjectBase>();
+
+            for (int i = 0; i < jn["objs"].Count; i++)
+            {
+                var itemJN = jn["objs"][i];
+                var obj = ParseObj(itemJN);
+                if (obj)
+                    objects.Add(ParseObj(itemJN));
+            }
         }
 
         PAObjectBase ParseObj(JSONNode itemJN)
@@ -51,13 +102,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 nameof(PrefabObject) => PrefabObject.Parse(obj),
                 nameof(Prefab) => Prefab.Parse(obj),
                 nameof(BeatmapTheme) => BeatmapTheme.Parse(obj),
-
-                // todo: rework modifier reference system so this can be done
-                //nameof(ModifierBase) => ModifierBase.Parse(itemJN["obj"]),
-                // todo: rework playermodel to be PAObject
-                //nameof(PlayerModel) => PlayerModel.Parse(itemJN["obj"]),
-
+                nameof(Modifier) => Modifier.Parse(obj),
+                nameof(ModifierBlock) => ModifierBlock.Parse(obj),
+                nameof(PlayerModel) => PlayerModel.Parse(obj),
                 nameof(PlayerItem) => PlayerItem.Parse(obj),
+                nameof(PAAnimation) => PAAnimation.Parse(obj),
                 _ => null,
             };
         }
@@ -66,30 +115,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         {
             var jn = Parser.NewJSONObject();
 
-            if (unlockConditions != UnlockConditions.LevelCompletion)
-                jn["unlock_conditions"] = (int)unlockConditions;
-            if (!string.IsNullOrEmpty(unlockData))
-                jn["unlock_data"] = unlockData;
+            if (!string.IsNullOrEmpty(name))
+                jn["name"] = name;
 
-            if (obj is List<PAObjectBase> list)
+            int num = 0;
+            for (int i = 0; i < objects.Count; i++)
             {
-                int num = 0;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    var item = list[i];
-                    var objJN = ObjToJSON(item);
-                    if (objJN == null)
-                        continue;
+                var item = objects[i];
+                var objJN = ObjToJSON(item);
+                if (objJN == null)
+                    continue;
 
-                    jn["objs"][num] = objJN;
-                    num++;
-                }
-            }
-            else if (obj is PAObjectBase paObj)
-            {
-                var objJN = ObjToJSON(paObj);
-                if (objJN != null)
-                    jn = objJN;
+                jn["objs"][num] = objJN;
+                num++;
             }
 
             return jn;
@@ -107,35 +145,66 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        /// <summary>
-        /// Condition type to unlock the Prize Object by.
-        /// </summary>
-        public UnlockConditions unlockConditions;
-
-        /// <summary>
-        /// Data reference for <see cref="unlockConditions"/>.
-        /// </summary>
-        public string unlockData;
-
-        public enum UnlockConditions
+        static void Test()
         {
-            /// <summary>
-            /// Unlocks after level completion. No rank is required.
-            /// </summary>
-            LevelCompletion,
-            /// <summary>
-            /// Unlocks after level completion. Requires a specific rank.
-            /// </summary>
-            LevelCompletionRanked,
-            /// <summary>
-            /// Unlocks via the prizeObject modifier.
-            /// </summary>
-            Modifier,
+            var prize = new PrizeObject();
+
+            prize.AddObject(new BeatmapObject());
+
+            var beatmapObject = prize.GetObject<BeatmapObject>(0);
         }
 
         /// <summary>
-        /// The object to be rewarded.
+        /// Gets an object from the package.
         /// </summary>
-        public object obj;
+        /// <typeparam name="T">Type of the object.</typeparam>
+        /// <param name="index">Index of the object to get.</param>
+        /// <returns>Returns the object casted into the type.</returns>
+        public T GetObject<T>(int index) where T : PAObject<T>, new()
+        {
+            var obj = objects.GetAtOrDefault(index, null);
+            return obj is T paObj ? paObj : null;
+        }
+
+        /// <summary>
+        /// Adds an object to the package.
+        /// </summary>
+        /// <param name="obj">Object to add.</param>
+        public void AddObject(PAObjectBase obj)
+        {
+            if (!obj)
+                return;
+
+            objects.OverwriteAdd((other, index) => other && obj.id == other.id, obj);
+        }
+
+        public string GetFileName() => RTFile.FormatLegacyFileName(name) + FileFormat.Dot();
+
+        public void ReadFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var fileName = GetFileName();
+            if (!path.EndsWith(fileName))
+                path = RTFile.CombinePaths(path, fileName);
+
+            var file = RTFile.ReadFromFile(path);
+            if (string.IsNullOrEmpty(file))
+                return;
+
+            ReadJSON(JSON.Parse(file));
+        }
+
+        public void WriteToFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var jn = ToJSON();
+            RTFile.WriteToFile(path, jn.ToString());
+        }
+
+        #endregion
     }
 }

@@ -577,6 +577,10 @@ namespace BetterLegacy
         /// Legacy Achievement file format.
         /// </summary>
         LSA,
+        /// <summary>
+        /// Legacy Prize file format.
+        /// </summary>
+        LSPO,
 
         #endregion
 

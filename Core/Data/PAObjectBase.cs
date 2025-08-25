@@ -3,6 +3,7 @@
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Player;
 
 namespace BetterLegacy.Core.Data
@@ -84,10 +85,14 @@ namespace BetterLegacy.Core.Data
                 return PAObjectType.BeatmapTheme;
             if (obj is Modifier)
                 return PAObjectType.Modifier;
+            if (obj is ModifierBlock)
+                return PAObjectType.ModifierBlock;
             if (obj is PlayerModel)
                 return PAObjectType.PlayerModel;
             if (obj is PlayerItem)
                 return PAObjectType.PlayerItem;
+            if (obj is PAAnimation)
+                return PAObjectType.PAAnimation;
 
             return PAObjectType.Null;
         }

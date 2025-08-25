@@ -11,7 +11,9 @@
         Prefab,
         BeatmapTheme,
         Modifier,
+        ModifierBlock,
         PlayerModel,
         PlayerItem,
+        PAAnimation,
     }
 }
