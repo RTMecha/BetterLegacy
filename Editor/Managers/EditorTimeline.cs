@@ -585,8 +585,13 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
         public TimelineObject GetTimelineObject(IEditable editable)
         {
-            if (editable is IPrefabable prefabable && prefabable.FromPrefab && timelineObjects.TryFind(x => x.isPrefabObject && x.ID == prefabable.PrefabInstanceID, out TimelineObject timelineObject))
-                return timelineObject;
+            if (editable is IPrefabable prefabable)
+            {
+                if (prefabable.FromPrefab && prefabable.TryGetPrefabObject(out PrefabObject prefabObject) && prefabObject.timelineObject)
+                    return prefabObject.timelineObject;
+                else if (prefabable.FromPrefab)
+                    return null;
+            }
 
             if (!editable.TimelineObject)
                 editable.TimelineObject = new TimelineObject(editable);
