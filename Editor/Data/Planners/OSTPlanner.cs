@@ -7,6 +7,7 @@ using TMPro;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
@@ -56,7 +57,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 audioSource.clip = audioClip;
                 audioSource.playOnAwake = true;
                 audioSource.loop = false;
-                audioSource.volume = DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * AudioManager.inst.masterVol;
+                audioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
                 audioSource.Play();
 
                 playing = true;
@@ -78,7 +79,7 @@ namespace BetterLegacy.Editor.Data.Planners
                 audioSource.clip = audioClip;
                 audioSource.playOnAwake = true;
                 audioSource.loop = false;
-                audioSource.volume = DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * AudioManager.inst.masterVol;
+                audioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
                 audioSource.Play();
 
                 playing = true;

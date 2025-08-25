@@ -68,7 +68,7 @@ namespace BetterLegacy.Menus
             else
                 AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
 
-            CurrentAudioSource.volume = DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * AudioManager.inst.masterVol;
+            CurrentAudioSource.volume = SoundManager.inst.MusicVolume * AudioManager.inst.masterVol;
 
             if (!CurrentInterface)
                 return;

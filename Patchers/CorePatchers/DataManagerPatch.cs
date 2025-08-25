@@ -75,9 +75,6 @@ namespace BetterLegacy.Patchers
             __instance.indexToLangauge.Add(4, "russian");
             __instance.indexToLangauge.Add(5, "pirate");
 
-            __instance.UpdateSettingString("versionNumber", ProjectArrhythmia.GAME_VERSION);
-            __instance.UpdateSettingBool("CanEdit", true);
-
             if (RTFile.FileExists(RTFile.ApplicationDirectory + $"settings/menu{FileFormat.LSS.Dot()}"))
             {
                 string rawProfileJSON = RTFile.ReadFromFile(RTFile.ApplicationDirectory + $"settings/menu{FileFormat.LSS.Dot()}");

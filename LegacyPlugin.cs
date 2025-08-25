@@ -54,6 +54,8 @@ namespace BetterLegacy
 
         public static string LevelStartupPath { get; set; }
 
+        public static bool CanEdit { get; set; } = true;
+
         void Awake()
         {
             inst = this;

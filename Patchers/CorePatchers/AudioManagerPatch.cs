@@ -15,10 +15,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix(AudioManager __instance)
         {
-            __instance.masterVol = (float)DataManager.inst.GetSettingInt("MasterVolume", 9) / 9f;
-
-            __instance.musicVol = (float)DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * __instance.masterVol * (RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.audioVolume : 1f) * SoundManager.musicVolume;
-            __instance.sfxVol = (float)DataManager.inst.GetSettingInt("EffectsVolume", 9) / 9f * __instance.masterVol;
+            __instance.masterVol = SoundManager.inst.MasterVolume;
+            __instance.musicVol = SoundManager.inst.MusicVolume * __instance.masterVol * (RTLevel.Current && RTLevel.Current.eventEngine ? RTLevel.Current.eventEngine.audioVolume : 1f) * SoundManager.musicVolume;
+            __instance.sfxVol = SoundManager.inst.SFXVolume * __instance.masterVol;
 
             if (!__instance.isFading)
                 __instance.CurrentAudioSource.volume = __instance.musicVol;

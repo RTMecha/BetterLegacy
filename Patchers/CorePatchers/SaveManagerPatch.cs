@@ -11,41 +11,25 @@ using BetterLegacy.Core.Helpers;
 namespace BetterLegacy.Patchers
 {
     [HarmonyPatch(typeof(SaveManager))]
-    public class SaveManagerPatch : MonoBehaviour
+    public class SaveManagerPatch
     {
-        [HarmonyPatch(nameof(SaveManager.ApplySettingsFile))]
-        [HarmonyPostfix]
-        static void ApplySettingsFilePostfix()
+        [HarmonyPatch(nameof(SaveManager.Start))]
+        [HarmonyPrefix]
+        static bool StartPrefix()
         {
-            CoreConfig.Instance.prevFullscreen = CoreConfig.Instance.Fullscreen.Value;
-            CoreConfig.Instance.prevResolution = CoreConfig.Instance.Resolution.Value;
-            CoreConfig.Instance.prevMasterVol = CoreConfig.Instance.MasterVol.Value;
-            CoreConfig.Instance.prevMusicVol = CoreConfig.Instance.MusicVol.Value;
-            CoreConfig.Instance.prevSFXVol = CoreConfig.Instance.SFXVol.Value;
-            CoreConfig.Instance.prevLanguage = CoreConfig.Instance.Language.Value;
-            CoreConfig.Instance.prevControllerRumble = CoreConfig.Instance.ControllerRumble.Value;
-
-            DataManager.inst.UpdateSettingBool("FullScreen", CoreConfig.Instance.Fullscreen.Value);
-            DataManager.inst.UpdateSettingInt("Resolution_i", (int)CoreConfig.Instance.Resolution.Value);
-            DataManager.inst.UpdateSettingInt("MasterVolume", CoreConfig.Instance.MasterVol.Value);
-            DataManager.inst.UpdateSettingInt("MusicVolume", CoreConfig.Instance.MusicVol.Value);
-            DataManager.inst.UpdateSettingInt("EffectsVolume", CoreConfig.Instance.SFXVol.Value);
-            DataManager.inst.UpdateSettingInt("Language_i", (int)CoreConfig.Instance.Language.Value);
-            DataManager.inst.UpdateSettingBool("ControllerVibrate", CoreConfig.Instance.ControllerRumble.Value);
+            ProjectArrhythmia.Window.ApplySettings();
+            return false;
         }
+
+        [HarmonyPatch(nameof(SaveManager.ApplySettingsFile))]
+        [HarmonyPrefix]
+        static bool ApplySettingsFilePrefix() => false;
 
         [HarmonyPatch(nameof(SaveManager.ApplyVideoSettings))]
         [HarmonyPrefix]
         static bool ApplyVideoSettingsPrefix()
         {
-            var resolution = CoreHelper.CurrentResolution;
-            Screen.SetResolution((int)resolution.x, (int)resolution.y, CoreConfig.Instance.Fullscreen.Value);
-            
-            QualitySettings.vSyncCount = CoreConfig.Instance.VSync.Value ? 1 : 0;
-            QualitySettings.antiAliasing = DataManager.inst.GetSettingEnum("AntiAliasing", 0);
-            Application.targetFrameRate = CoreConfig.Instance.FPSLimit.Value;
-            CoreHelper.Log($"Apply Video Settings\nResolution: [{Screen.currentResolution}]\nFullscreen: [{Screen.fullScreen}]\nVSync Count: [{QualitySettings.vSyncCount}]");
-
+            ProjectArrhythmia.Window.ApplySettings();
             return false;
         }
 

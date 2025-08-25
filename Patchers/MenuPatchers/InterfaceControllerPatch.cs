@@ -49,14 +49,6 @@ namespace BetterLegacy.Patchers
                     __instance.quickElements.Add(quickElement.Key, quickElement.Value);
             }
 
-            DataManager.inst.UpdateSettingString("colon", ":");
-
-            if (!DataManager.inst.HasKey("MasterVolume"))
-                __instance.ResetAudioSettings();
-
-            if (!DataManager.inst.HasKey("Resolution_i"))
-                __instance.ResetVideoSettings();
-
             InputDataManager.inst.BindMenuKeys();
             __instance.MainPanel = __instance.transform.Find("Panel");
 

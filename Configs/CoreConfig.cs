@@ -39,6 +39,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> Fullscreen { get; set; }
 
         /// <summary>
+        /// If fullscreen should behave as a maximized window without a border.
+        /// </summary>
+        public Setting<bool> BorderlessFullscreen { get; set; }
+
+        /// <summary>
         /// The size of the game window in pixels.
         /// </summary>
         public Setting<ResolutionType> Resolution { get; set; }
@@ -82,117 +87,6 @@ namespace BetterLegacy.Configs
         /// If the controllers should vibrate.
         /// </summary>
         public Setting<bool> ControllerRumble { get; set; }
-
-        /// <summary>
-        /// Updates fullscreen.
-        /// </summary>
-        /// <param name="value">Value to update.</param>
-        void SetFullscreen(bool value)
-        {
-            prevFullscreen = Fullscreen.Value;
-
-            DataManager.inst.UpdateSettingBool("FullScreen", value);
-            SaveManager.inst.ApplyVideoSettings();
-            SaveManager.inst.UpdateSettingsFile(false);
-        }
-
-        /// <summary>
-        /// Updates resolution.
-        /// </summary>
-        /// <param name="value">Value to update.</param>
-        void SetResolution(ResolutionType value)
-        {
-            prevResolution = Resolution.Value;
-
-            DataManager.inst.UpdateSettingInt("Resolution_i", value);
-
-            var resolution = value.Resolution;
-
-            DataManager.inst.UpdateSettingFloat("Resolution_x", resolution.x);
-            DataManager.inst.UpdateSettingFloat("Resolution_y", resolution.y);
-
-            SaveManager.inst.ApplyVideoSettings();
-            SaveManager.inst.UpdateSettingsFile(false);
-        }
-
-        /// <summary>
-        /// Updates master volume.
-        /// </summary>
-        /// <param name="value">Value to update.</param>
-        void SetMasterVol(int value)
-        {
-            prevMasterVol = MasterVol.Value;
-
-            DataManager.inst.UpdateSettingInt("MasterVolume", value);
-
-            SaveManager.inst.UpdateSettingsFile(false);
-        }
-
-        /// <summary>
-        /// Updates music volume.
-        /// </summary>
-        /// <param name="value">Value to update.</param>
-        void SetMusicVol(int value)
-        {
-            prevMusicVol = MusicVol.Value;
-
-            DataManager.inst.UpdateSettingInt("MusicVolume", value);
-
-            SaveManager.inst.UpdateSettingsFile(false);
-        }
-
-        /// <summary>
-        /// Updates sfx volume.
-        /// </summary>
-        /// <param name="value">Value to update.</param>
-        void SetSFXVol(int value)
-        {
-            prevSFXVol = SFXVol.Value;
-
-            DataManager.inst.UpdateSettingInt("EffectsVolume", value);
-
-            SaveManager.inst.UpdateSettingsFile(false);
-        }
-
-        /// <summary>
-        /// Updates language.
-        /// </summary>
-        /// <param name="value">Value to update.</param>
-        void SetLanguage(Language value)
-        {
-            prevLanguage = Language.Value;
-
-            DataManager.inst.UpdateSettingInt("Language_i", (int)value);
-
-            SaveManager.inst.UpdateSettingsFile(false);
-        }
-
-        /// <summary>
-        /// Updates controller rumble.
-        /// </summary>
-        /// <param name="value">Value to update.</param>
-        void SetControllerRumble(bool value)
-        {
-            prevControllerRumble = ControllerRumble.Value;
-
-            DataManager.inst.UpdateSettingBool("ControllerVibrate", value);
-
-            SaveManager.inst.UpdateSettingsFile(false);
-        }
-
-        public bool prevFullscreen;
-
-        public ResolutionType prevResolution = ResolutionType.p720;
-
-        public int prevMasterVol;
-
-        public int prevMusicVol;
-
-        public int prevSFXVol;
-
-        public Language prevLanguage;
-
-        public bool prevControllerRumble;
 
         #endregion
 
@@ -448,6 +342,7 @@ namespace BetterLegacy.Configs
             OpenConfigKey = BindEnum(this, SETTINGS, "Open Config Key", KeyCode.F12, "The key to press to open the Config Manager.");
             FullscreenKey = BindEnum(this, SETTINGS, "Fullscreen Key", KeyCode.F11, "The key to toggle fullscreen.");
             Fullscreen = Bind(this, SETTINGS, "Fullscreen", false, "If game window should cover the entire screen or not.");
+            BorderlessFullscreen = Bind(this, SETTINGS, "Borderless Fullscreen", false, "If fullscreen should behave as a maximized window without a border.");
             Resolution = Bind(this, SETTINGS, "Resolution", ResolutionType.p720, "The size of the game window in pixels.");
             VSync = Bind(this, SETTINGS, "VSync", true, "If FPS matches your monitors refresh rate.");
             FPSLimit = Bind(this, SETTINGS, "FPS Limit", -1, "The amount the FPS is limited to. If the number is -1, it is unlimited.");
@@ -551,16 +446,12 @@ namespace BetterLegacy.Configs
         {
             SettingChanged += UpdateSettings;
             DisplayName.SettingChanged += DisplayNameChanged;
-            Fullscreen.SettingChanged += DefaultSettingsChanged;
-            Resolution.SettingChanged += DefaultSettingsChanged;
+            Fullscreen.SettingChanged += ResolutionChanged;
+            BorderlessFullscreen.SettingChanged += ResolutionChanged;
+            Resolution.SettingChanged += ResolutionChanged;
             MasterVol.SettingChanged += SFXVolumeChanged;
             MusicVol.SettingChanged += MusicVolumeChanged;
             SFXVol.SettingChanged += SFXVolumeChanged;
-            MasterVol.SettingChanged += DefaultSettingsChanged;
-            MusicVol.SettingChanged += DefaultSettingsChanged;
-            SFXVol.SettingChanged += DefaultSettingsChanged;
-            Language.SettingChanged += DefaultSettingsChanged;
-            ControllerRumble.SettingChanged += DefaultSettingsChanged;
             LDM.SettingChanged += LDMChanged;
             ChallengeModeSetting.SettingChanged += ChallengeModeChanged;
             ShowBackgroundObjects.SettingChanged += ShowBackgroundObjectsChanged;
@@ -590,7 +481,7 @@ namespace BetterLegacy.Configs
 
         void FPSChanged()
         {
-            SaveManager.inst.ApplyVideoSettings();
+            ProjectArrhythmia.Window.ApplySettings();
         }
 
         void DebugInfoChanged() => Core.Managers.DebugInfo.Init();
@@ -635,21 +526,10 @@ namespace BetterLegacy.Configs
 
         void ShowBackgroundObjectsChanged() => RTLevel.Current?.UpdateBackgroundObjects();
 
-        void DefaultSettingsChanged()
-        {
-            CoreHelper.UpdateValue(prevFullscreen, Fullscreen.Value, SetFullscreen);
-            CoreHelper.UpdateValue(prevResolution, Resolution.Value, SetResolution);
-            CoreHelper.UpdateValue(prevMasterVol, MasterVol.Value, SetMasterVol);
-            CoreHelper.UpdateValue(prevMusicVol, MusicVol.Value, SetMusicVol);
-            CoreHelper.UpdateValue(prevSFXVol, SFXVol.Value, SetSFXVol);
-            CoreHelper.UpdateValue(prevControllerRumble, ControllerRumble.Value, SetControllerRumble);
-            CoreHelper.UpdateValue(prevLanguage, Language.Value, SetLanguage);
-        }
+        void ResolutionChanged() => ProjectArrhythmia.Window.ApplySettings();
 
         void DisplayNameChanged()
         {
-            DataManager.inst.UpdateSettingString("s_display_name", DisplayName.Value);
-
             LegacyPlugin.player.sprName = DisplayName.Value;
 
             if (SteamWrapper.inst)
