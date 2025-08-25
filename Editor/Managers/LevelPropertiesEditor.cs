@@ -4,7 +4,6 @@ using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 using LSFunctions;
 
@@ -14,6 +13,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
@@ -61,13 +61,13 @@ namespace BetterLegacy.Editor.Managers
 
         public LevelPropertiesEditorDialog Dialog { get; set; }
 
-        public List<ModifierBlock<IModifierReference>> copiedModifierBlocks = new List<ModifierBlock<IModifierReference>>();
+        public List<ModifierBlock> copiedModifierBlocks = new List<ModifierBlock>();
 
         #endregion
 
         #region Methods
 
-        public void CopyModifierBlock(ModifierBlock<IModifierReference> modifierBlock)
+        public void CopyModifierBlock(ModifierBlock modifierBlock)
         {
             copiedModifierBlocks.Clear();
             copiedModifierBlocks.Add(modifierBlock.Copy());
@@ -75,14 +75,14 @@ namespace BetterLegacy.Editor.Managers
             RenderDialog();
         }
 
-        public void CopyModifierBlocks(List<ModifierBlock<IModifierReference>> modifierBlocks)
+        public void CopyModifierBlocks(List<ModifierBlock> modifierBlocks)
         {
-            copiedModifierBlocks = new List<ModifierBlock<IModifierReference>>(modifierBlocks.Select(x => x.Copy()));
+            copiedModifierBlocks = new List<ModifierBlock>(modifierBlocks.Select(x => x.Copy()));
             EditorManager.inst.DisplayNotification($"Copied modifier blocks!", 2f, EditorManager.NotificationType.Success);
             RenderDialog();
         }
 
-        public void PasteModifierBlocks(List<ModifierBlock<IModifierReference>> modifierBlocks, List<ModifierBlock<IModifierReference>> copied)
+        public void PasteModifierBlocks(List<ModifierBlock> modifierBlocks, List<ModifierBlock> copied)
         {
             if (copied.IsEmpty())
             {
@@ -97,7 +97,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void CreateNewModifierBlock()
         {
-            var modifierBlock = new ModifierBlock<IModifierReference>("newModifierBlock", ModifierReferenceType.ModifierBlock);
+            var modifierBlock = new ModifierBlock("newModifierBlock", ModifierReferenceType.ModifierBlock);
             GameData.Current.modifierBlocks.Add(modifierBlock);
             RenderDialog();
         }
@@ -173,7 +173,7 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonFunction(true),
                             new ButtonFunction("Copy to JSON", () =>
                             {
-                                var jn = Parser.ModifierBlocksToJSON(new List<ModifierBlock<IModifierReference>> { modifierBlock });
+                                var jn = Parser.ModifierBlocksToJSON(new List<ModifierBlock> { modifierBlock });
                                 LSText.CopyToClipboard(jn.ToString(3));
                             }),
                             new ButtonFunction("Copy All to JSON", () =>
@@ -260,7 +260,7 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             var jn = JSON.Parse(text);
-                            var modifierBlocks = Parser.ParseModifierBlocks<IModifierReference>(jn, ModifierReferenceType.ModifierBlock);
+                            var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
                             PasteModifierBlocks(GameData.Current.modifierBlocks, modifierBlocks);
                         }),
                         new ButtonFunction("Paste from JSON (Overwrite)", () =>
@@ -273,7 +273,7 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             var jn = JSON.Parse(text);
-                            var modifierBlocks = Parser.ParseModifierBlocks<IModifierReference>(jn, ModifierReferenceType.ModifierBlock);
+                            var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
                             if (modifierBlocks.IsEmpty())
                             {
                                 EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);
@@ -303,7 +303,7 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             var jn = JSON.Parse(text);
-                            var modifierBlocks = Parser.ParseModifierBlocks<IModifierReference>(jn, ModifierReferenceType.ModifierBlock);
+                            var modifierBlocks = Parser.ParseModifierBlocks(jn, ModifierReferenceType.ModifierBlock);
                             if (modifierBlocks.IsEmpty())
                             {
                                 EditorManager.inst.DisplayNotification($"Nothing to paste!", 2f, EditorManager.NotificationType.Error);

@@ -11,6 +11,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -1484,7 +1485,7 @@ namespace BetterLegacy.Core.Helpers
         public static bool callModifierBlockTrigger(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var name = modifier.GetValue(0, variables);
-            if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock<IModifierReference> modifierBlock))
+            if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
                 return modifierBlock.Run(reference, variables).result;
             return false;
         }

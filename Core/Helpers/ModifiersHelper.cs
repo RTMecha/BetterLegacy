@@ -10,8 +10,8 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Core.Components.Player;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
@@ -2683,18 +2683,5 @@ namespace BetterLegacy.Core.Helpers
         public static implicit operator ModifierInactive(Action<Modifier, IModifierReference, Dictionary<string, string>> function) => new ModifierInactive(string.Empty, function);
 
         public static implicit operator ModifierInactive(KeyValuePair<string, Action<Modifier, IModifierReference, Dictionary<string, string>>> keyValuePair) => new ModifierInactive(keyValuePair.Key, keyValuePair.Value);
-    }
-
-    public class TriggerTest
-    {
-        public TriggerTest() { }
-        public TriggerTest(bool active, bool elseIf)
-        {
-            this.active = active;
-            this.elseIf = elseIf;
-        }
-
-        public bool active;
-        public bool elseIf;
     }
 }

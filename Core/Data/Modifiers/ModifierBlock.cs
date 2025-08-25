@@ -2,12 +2,11 @@
 
 using SimpleJSON;
 
-using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Modifiers
 {
-    public class ModifierBlock<T> : PAObject<ModifierBlock<T>>, IModifyable where T : IModifierReference
+    public class ModifierBlock : PAObject<ModifierBlock>, IModifyable
     {
         public ModifierBlock() { }
 
@@ -31,7 +30,7 @@ namespace BetterLegacy.Core.Data
         /// Runs the modifiers loop.
         /// </summary>
         /// <param name="reference">Modifier object reference.</param>
-        public ModifierLoopResult Run(T reference, Dictionary<string, string> variables = null)
+        public ModifierLoopResult Run(IModifierReference reference, Dictionary<string, string> variables = null)
         {
             if (IsEmpty())
                 return default;
@@ -49,7 +48,7 @@ namespace BetterLegacy.Core.Data
         /// <returns>Returns true if the list doesn't contain elements.</returns>
         public bool IsEmpty() => Modifiers.IsEmpty();
 
-        public override void CopyData(ModifierBlock<T> orig, bool newID = true)
+        public override void CopyData(ModifierBlock orig, bool newID = true)
         {
             Name = orig.Name;
             this.CopyModifyableData(orig);

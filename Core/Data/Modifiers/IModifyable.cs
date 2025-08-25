@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 
-using BetterLegacy.Core.Data.Beatmap;
-
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Modifiers
 {
     /// <summary>
     /// Indicates an object can run modifiers.

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects
@@ -15,7 +11,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         public RTPrefabModifiers(List<Modifier> modifiers, PrefabObject prefabObject, bool orderMatters, float startTime, float killTime, RTLevelBase parentRuntime)
         {
             this.modifiers = modifiers;
-            this.reference = prefabObject;
+            reference = prefabObject;
             this.orderMatters = orderMatters;
             UpdateCache();
 

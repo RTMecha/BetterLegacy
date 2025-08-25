@@ -6,6 +6,7 @@ using UnityEngine;
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Player

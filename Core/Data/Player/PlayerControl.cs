@@ -1,5 +1,7 @@
 ﻿using SimpleJSON;
 
+using BetterLegacy.Core.Data.Modifiers;
+
 namespace BetterLegacy.Core.Data.Player
 {
     /// <summary>
@@ -109,22 +111,22 @@ namespace BetterLegacy.Core.Data.Player
         /// <summary>
         /// Modifier block to run per player tick.
         /// </summary>
-        public ModifierBlock<PAPlayer> TickModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
+        public ModifierBlock TickModifierBlock { get; set; } = new ModifierBlock(ModifierReferenceType.PAPlayer);
 
         /// <summary>
         /// Modifier block to run per player boost.
         /// </summary>
-        public ModifierBlock<PAPlayer> BoostModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
+        public ModifierBlock BoostModifierBlock { get; set; } = new ModifierBlock(ModifierReferenceType.PAPlayer);
 
         /// <summary>
         /// Modifier block to run per player collision.
         /// </summary>
-        public ModifierBlock<PAPlayer> CollideModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
+        public ModifierBlock CollideModifierBlock { get; set; } = new ModifierBlock(ModifierReferenceType.PAPlayer);
 
         /// <summary>
         /// Modifier block to run per player death.
         /// </summary>
-        public ModifierBlock<PAPlayer> DeathModifierBlock { get; set; } = new ModifierBlock<PAPlayer>(ModifierReferenceType.PAPlayer);
+        public ModifierBlock DeathModifierBlock { get; set; } = new ModifierBlock(ModifierReferenceType.PAPlayer);
 
         #endregion
 
@@ -199,22 +201,22 @@ namespace BetterLegacy.Core.Data.Player
 
             if (jn["tick_modifier_block"] != null)
             {
-                TickModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["tick_modifier_block"]);
+                TickModifierBlock = ModifierBlock.Parse(jn["tick_modifier_block"]);
                 TickModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
             }
             if (jn["boost_modifier_block"] != null)
             {
-                BoostModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["boost_modifier_block"]);
+                BoostModifierBlock = ModifierBlock.Parse(jn["boost_modifier_block"]);
                 BoostModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
             }
             if (jn["collide_modifier_block"] != null)
             {
-                CollideModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["collide_modifier_block"]);
+                CollideModifierBlock = ModifierBlock.Parse(jn["collide_modifier_block"]);
                 CollideModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
             }
             if (jn["death_modifier_block"] != null)
             {
-                DeathModifierBlock = ModifierBlock<PAPlayer>.Parse(jn["death_modifier_block"]);
+                DeathModifierBlock = ModifierBlock.Parse(jn["death_modifier_block"]);
                 DeathModifierBlock.ReferenceType = ModifierReferenceType.PAPlayer;
             }
         }

@@ -12,6 +12,7 @@ using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -677,7 +678,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<Modifier> modifiers = new List<Modifier>();
 
-        public List<ModifierBlock<IModifierReference>> modifierBlocks = new List<ModifierBlock<IModifierReference>>();
+        public List<ModifierBlock> modifierBlocks = new List<ModifierBlock>();
 
         public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 
@@ -1194,7 +1195,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         gameData.modifiers.Add(modifier);
                 }
 
-            gameData.modifierBlocks = Parser.ParseModifierBlocks<IModifierReference>(jn["modifier_blocks"], ModifierReferenceType.ModifierBlock);
+            gameData.modifierBlocks = Parser.ParseModifierBlocks(jn["modifier_blocks"], ModifierReferenceType.ModifierBlock);
 
             gameData.data = BeatmapData.Parse(jn);
 

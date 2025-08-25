@@ -4,7 +4,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
-using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Managers

@@ -2,7 +2,7 @@
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
 
-namespace BetterLegacy.Core.Data
+namespace BetterLegacy.Core.Data.Modifiers
 {
     /// <summary>
     /// Indicates an object is a modifier reference.

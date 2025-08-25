@@ -3,10 +3,9 @@ using System.Collections.Generic;
 
 using SimpleJSON;
 
-using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 
-namespace BetterLegacy.Core.Data.Beatmap
+namespace BetterLegacy.Core.Data.Modifiers
 {
     public class Modifier : PAObject<Modifier>
     {

@@ -10,6 +10,7 @@ using LSFunctions;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
@@ -239,7 +240,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (NameField)
             {
                 NameField.gameObject.SetActive(RTEditor.ShowModdedUI);
-                if (modifyable is ModifierBlock<IModifierReference> modifierBlock)
+                if (modifyable is ModifierBlock modifierBlock)
                 {
                     NameField.SetTextWithoutNotify(modifierBlock.Name);
                     NameField.onValueChanged.NewListener(_val => modifierBlock.Name = _val);

@@ -9,6 +9,7 @@ using ILMath;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;

@@ -2,7 +2,7 @@
 
 using BetterLegacy.Core.Helpers;
 
-namespace BetterLegacy.Core.Data.Beatmap
+namespace BetterLegacy.Core.Data.Modifiers
 {
     /// <summary>
     /// Allows multiple modifiers to be compatible across multiple types of objects.

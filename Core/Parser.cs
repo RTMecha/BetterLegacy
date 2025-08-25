@@ -6,8 +6,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 
 using Version = BetterLegacy.Core.Data.Version;
 
@@ -177,14 +176,14 @@ namespace BetterLegacy.Core
                             jn.IsArray ? new Vector3Int(jn.Count > 0 ? jn[0].AsInt : defaultValue.x, jn.Count > 1 ? jn[1].AsInt : defaultValue.y, jn.Count > 2 ? jn[2].AsInt : defaultValue.z) :
                             new Vector3Int(jn["x"] == null ? defaultValue.x : jn["x"].AsInt, jn["y"] == null ? defaultValue.y : jn["y"].AsInt, jn["z"] == null ? defaultValue.z : jn["z"].AsInt);
 
-        public static List<ModifierBlock<T>> ParseModifierBlocks<T>(JSONNode jn, ModifierReferenceType referenceType) where T : IModifierReference
+        public static List<ModifierBlock> ParseModifierBlocks(JSONNode jn, ModifierReferenceType referenceType)
         {
-            var modifierBlocks = new List<ModifierBlock<T>>();
+            var modifierBlocks = new List<ModifierBlock>();
             if (jn != null)
                 for (int i = 0; i < jn.Count; i++)
                 {
                     var jnModifierBlock = jn[i];
-                    var modifierBlock = ModifierBlock<T>.Parse(jnModifierBlock);
+                    var modifierBlock = ModifierBlock.Parse(jnModifierBlock);
                     modifierBlock.Name = jnModifierBlock["name"];
                     modifierBlock.ReferenceType = referenceType;
                     modifierBlock.UpdateFunctions();
@@ -193,7 +192,7 @@ namespace BetterLegacy.Core
             return modifierBlocks;
         }
 
-        public static JSONNode ModifierBlocksToJSON<T>(List<ModifierBlock<T>> modifierBlocks) where T : IModifierReference
+        public static JSONNode ModifierBlocksToJSON(List<ModifierBlock> modifierBlocks)
         {
             var jn = NewJSONArray();
             for (int i = 0; i < modifierBlocks.Count; i++)

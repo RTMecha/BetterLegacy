@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects

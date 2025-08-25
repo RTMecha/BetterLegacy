@@ -11,6 +11,7 @@ using SimpleJSON;
 
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;

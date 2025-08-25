@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 
 using BetterLegacy.Core;
-using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 
 namespace BetterLegacy.Editor.Components
 {

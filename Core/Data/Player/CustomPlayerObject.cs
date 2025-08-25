@@ -8,6 +8,7 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 
 namespace BetterLegacy.Core.Data.Player
 {
