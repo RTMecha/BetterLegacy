@@ -10,6 +10,8 @@
 ### Editor
 - Added custom label editing to Custom Keyframe UI display.
 - You can now right click the "ID" value in achievment modifiers to select an achievement.
+- Added a few settings for the Object Drag Helper for customization.
+- Added "SetObjectDragHelperAxisX" and "SetObjectDragHelperAxisY" to keybind functions.
 
 ## Changes
 ### Core
