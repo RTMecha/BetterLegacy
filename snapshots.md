@@ -1,6 +1,7 @@
 ﻿# ???
 ## Features
 ### Core
+- Finally added Borderless Fullscreen. If the window is in fullscreen, it will not minimize when unfocused with this setting on.
 - Updated demo (Beatmap.zip) files to include some prefabs that demonstrate more features.
 - Added else trigger modifier. This inverts the current trigger modifier check. It can be used either as a "not gate" or after a set of triggers & actions to act as an "else" statement in programming.
 - Levels now include a video link, where you can provide a recorded video of the level. The link can only be the ID of the video, or after the "watch?v=" part of the link.
@@ -27,6 +28,7 @@
 - Fixed achievements file being saved regardless of if the list is empty or not.
 - Fixed updateObject modifiers throwing an error.
 - Fixed dragging an empty object not updating the time offset of child objects.
+- Fixed Window events persisting in menus.
 
 -------------------------------------------------------------------
 
