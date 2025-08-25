@@ -4,6 +4,7 @@ using UnityEngine;
 
 using HarmonyLib;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 
@@ -34,6 +35,8 @@ namespace BetterLegacy.Core.Managers
 
         void Awake() => inst = this;
 
+        public float MasterVolume => CoreConfig.Instance.MasterVol.Value / 9f;
+
         #endregion
 
         #region Playing State
@@ -57,6 +60,8 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #region Sound
+
+        public float SFXVolume => CoreConfig.Instance.SFXVol.Value / 9f;
 
         public AudioSource PlaySound(AudioClip clip, AudioSourceSettings settings) => PlaySound(Camera.main.gameObject, clip, settings);
 
@@ -137,6 +142,8 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #region Music
+
+        public float MusicVolume => CoreConfig.Instance.MusicVol.Value / 9f;
 
         /// <summary>
         /// Length of the current audio clip.
