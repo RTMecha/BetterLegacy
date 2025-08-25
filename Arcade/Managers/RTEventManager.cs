@@ -19,8 +19,6 @@ namespace BetterLegacy.Arcade.Managers
 
         public Camera uiCam;
 
-        public static bool windowPositionResolutionChanged = false;
-
         void Awake()
         {
             if (inst == null)

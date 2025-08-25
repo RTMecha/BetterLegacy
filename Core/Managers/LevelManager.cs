@@ -261,13 +261,13 @@ namespace BetterLegacy.Core.Managers
             }
 
             Debug.Log($"{className}Resetting Window resolution.");
-            if (RTEventManager.windowPositionResolutionChanged)
+            if (ProjectArrhythmia.Window.positionResolutionChanged)
             {
-                RTEventManager.windowPositionResolutionChanged = false;
-                WindowController.ResetResolution();
+                ProjectArrhythmia.Window.positionResolutionChanged = false;
+                ProjectArrhythmia.Window.ResetResolution();
             }
 
-            WindowController.ResetTitle();
+            ProjectArrhythmia.Window.ResetTitle();
 
             if (BackgroundManager.inst)
                 LSHelpers.DeleteChildren(BackgroundManager.inst.backgroundParent);

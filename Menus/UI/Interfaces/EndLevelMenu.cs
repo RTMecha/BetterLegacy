@@ -29,10 +29,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return;
             }
 
-            if (RTEventManager.windowPositionResolutionChanged)
+            if (ProjectArrhythmia.Window.positionResolutionChanged)
             {
-                RTEventManager.windowPositionResolutionChanged = false;
-                WindowController.ResetResolution();
+                ProjectArrhythmia.Window.positionResolutionChanged = false;
+                ProjectArrhythmia.Window.ResetResolution();
             }
 
             GameManager.inst.players.SetActive(false);

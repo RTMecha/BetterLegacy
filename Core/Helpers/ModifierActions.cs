@@ -7975,7 +7975,7 @@ namespace BetterLegacy.Core.Helpers
                     /*type: */ (EditorManager.NotificationType)modifier.GetInt(2, 0, variables));
         }
         
-        public static void setWindowTitle(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => WindowController.SetTitle(modifier.GetValue(0, variables));
+        public static void setWindowTitle(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => ProjectArrhythmia.Window.SetTitle(modifier.GetValue(0, variables));
 
         public static void setDiscordStatus(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {

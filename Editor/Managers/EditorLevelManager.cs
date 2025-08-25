@@ -651,7 +651,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorTimeline.inst.SetLayer(0, EditorTimeline.LayerType.Objects);
 
-            WindowController.ResetTitle();
+            ProjectArrhythmia.Window.ResetTitle();
 
             RandomHelper.UpdateSeed();
 

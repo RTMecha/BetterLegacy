@@ -912,8 +912,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetEditRenderAreaPrefix()
         {
-            if (Instance.hasLoadedLevel && RTEventManager.windowPositionResolutionChanged)
-                WindowController.ResetResolution();
+            if (Instance.hasLoadedLevel && ProjectArrhythmia.Window.positionResolutionChanged)
+                ProjectArrhythmia.Window.ResetResolution();
 
             if (InterfaceManager.inst && InterfaceManager.inst.CurrentInterface)
                 InterfaceManager.inst.CloseMenus();

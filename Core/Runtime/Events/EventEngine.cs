@@ -873,22 +873,27 @@ namespace BetterLegacy.Core.Runtime.Events
                     setWindow = true;
                     var res = DataManager.inst.resolutions[(int)CoreConfig.Instance.Resolution.Value];
 
-                    WindowController.SetResolution((int)res.x, (int)res.y, false);
+                    ProjectArrhythmia.Window.SetResolution((int)res.x, (int)res.y, false);
                 }
 
-                WindowController.SetWindowPos(
-                    WindowController.WindowHandle, 0, (int)(windowPosition.x * screenScale) + WindowController.WindowCenter.x, -(int)(windowPosition.y * screenScale) + WindowController.WindowCenter.y,
-                    forceWindow ? (int)(windowResolution.x * screenScale) : 0, forceWindow ? (int)(windowResolution.y * screenScale) : 0, forceWindow ? 0 : 1);
+                var windowOrigin = ProjectArrhythmia.Window.WindowOrigin;
+                ProjectArrhythmia.Window.SetPositionResolution(
+                    x: (int)(windowPosition.x * screenScale) + windowOrigin.x,
+                    y: -(int)(windowPosition.y * screenScale) + windowOrigin.y,
+                    width: forceWindow ? (int)(windowResolution.x * screenScale) : 0,
+                    height: forceWindow ? (int)(windowResolution.y * screenScale) : 0,
+                    windowFlags: forceWindow ? 0 : 1);
+
                 windowHasChanged = true;
-                RTEventManager.windowPositionResolutionChanged = true;
+                ProjectArrhythmia.Window.positionResolutionChanged = true;
             }
 
             if (forceWindow && !allowWindowPositioning && CoreHelper.InEditorPreview)
             {
                 setWindow = true;
-                WindowController.SetResolution((int)(windowResolution.x * screenScale), (int)(windowResolution.y * screenScale), false);
+                ProjectArrhythmia.Window.SetResolution((int)(windowResolution.x * screenScale), (int)(windowResolution.y * screenScale), false);
                 windowHasChanged = true;
-                RTEventManager.windowPositionResolutionChanged = true;
+                ProjectArrhythmia.Window.positionResolutionChanged = true;
             }
 
             if (CoreHelper.InEditor && EditorManager.inst.isEditing)
@@ -897,7 +902,7 @@ namespace BetterLegacy.Core.Runtime.Events
             if (!forceWindow && setWindow)
             {
                 setWindow = false;
-                WindowController.ResetResolution(false);
+                ProjectArrhythmia.Window.ResetResolution(false);
             }
 
             if (!playersCanMove)
