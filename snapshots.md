@@ -29,6 +29,7 @@
 - Fixed updateObject modifiers throwing an error.
 - Fixed dragging an empty object not updating the time offset of child objects.
 - Fixed Window events persisting in menus.
+- Fixed Editor colors for BG objects not rendering correctly.
 
 -------------------------------------------------------------------
 
