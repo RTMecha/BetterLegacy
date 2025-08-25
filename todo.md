@@ -78,6 +78,7 @@ Next: Misc
   Update: 1.8.0+  
 - Multiplayer editor (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)  
   Update: 1.14.0  
+- Hide random / relative toggles (if either is off, the keyframe will be forced to have the random / relative set to default / off)
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
@@ -117,6 +118,7 @@ Next: Misc
 - Merge all effect managers into single EffectsManager.
 - Summary and note as much as I can (or need to).
 - Rework audio transition system.
+- Update modifier caches.
 
 ### Editor
 - Multi language support.
@@ -138,7 +140,10 @@ Next: Misc
 
 
 ### Fixes
-- Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
+- Fix player tail shape editor
+- Fix whiteHole (offset)
+- Fix prefab instance data not being removed when loading a level
+- Fix camera parent not updating in parent search
 
 
 ## Ideas
