@@ -260,13 +260,9 @@ namespace BetterLegacy.Core.Managers
                 yield return null;
             }
 
-            Debug.Log($"{className}Resetting Window resolution.");
-            if (ProjectArrhythmia.Window.positionResolutionChanged)
-            {
-                ProjectArrhythmia.Window.positionResolutionChanged = false;
-                ProjectArrhythmia.Window.ResetResolution();
-            }
-
+            Debug.Log($"{className}Resetting window states.");
+            ProjectArrhythmia.Window.ResetPosition();
+            ProjectArrhythmia.Window.ApplySettings();
             ProjectArrhythmia.Window.ResetTitle();
 
             if (BackgroundManager.inst)

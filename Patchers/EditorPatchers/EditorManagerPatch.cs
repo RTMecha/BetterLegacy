@@ -279,7 +279,7 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.Log($"EDITOR START -> Can Edit?");
             Instance.GUI.SetActive(false);
-            Instance.canEdit = DataManager.inst.GetSettingBool("CanEdit", false);
+            Instance.canEdit = LegacyPlugin.CanEdit;
             Instance.isEditing = true;
 
             CoreHelper.Log($"EDITOR START -> Update Display name");
@@ -347,6 +347,8 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.Log($"EDITOR START -> {nameof(ArcadeHelper.ResetModifiedStates)}");
             ArcadeHelper.ResetModifiedStates();
+
+            ProjectArrhythmia.Window.ApplySettings();
             return false;
         }
 
@@ -912,8 +914,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetEditRenderAreaPrefix()
         {
-            if (Instance.hasLoadedLevel && ProjectArrhythmia.Window.positionResolutionChanged)
-                ProjectArrhythmia.Window.ResetResolution();
+            ProjectArrhythmia.Window.ResetPosition();
+            ProjectArrhythmia.Window.ApplySettings();
 
             if (InterfaceManager.inst && InterfaceManager.inst.CurrentInterface)
                 InterfaceManager.inst.CloseMenus();

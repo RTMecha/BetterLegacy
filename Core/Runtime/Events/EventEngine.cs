@@ -866,7 +866,7 @@ namespace BetterLegacy.Core.Runtime.Events
             RTGameManager.inst.video.gameObject.layer = videoBGRenderLayer == 0 ? 9 : 8;
 
             var screenScale = (float)Display.main.systemWidth / 1920f;
-            if (allowWindowPositioning && CoreHelper.InEditorPreview)
+            if (allowWindowPositioning && CoreHelper.InEditorPreview && !LevelManager.LevelEnded)
             {
                 if (!setWindow)
                 {
@@ -888,7 +888,7 @@ namespace BetterLegacy.Core.Runtime.Events
                 ProjectArrhythmia.Window.positionResolutionChanged = true;
             }
 
-            if (forceWindow && !allowWindowPositioning && CoreHelper.InEditorPreview)
+            if (forceWindow && !allowWindowPositioning && CoreHelper.InEditorPreview && !LevelManager.LevelEnded)
             {
                 setWindow = true;
                 ProjectArrhythmia.Window.SetResolution((int)(windowResolution.x * screenScale), (int)(windowResolution.y * screenScale), false);
@@ -902,7 +902,7 @@ namespace BetterLegacy.Core.Runtime.Events
             if (!forceWindow && setWindow)
             {
                 setWindow = false;
-                ProjectArrhythmia.Window.ResetResolution(false);
+                ProjectArrhythmia.Window.ApplySettings();
             }
 
             if (!playersCanMove)

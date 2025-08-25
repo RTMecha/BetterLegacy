@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
+using UnityEngine;
+
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 
 using Version = BetterLegacy.Core.Data.Version;
@@ -89,36 +92,48 @@ namespace BetterLegacy.Core
             /// <summary>
             /// Center origin of the window.
             /// </summary>
-            public static UnityEngine.Vector2Int WindowOrigin => new UnityEngine.Vector2Int((UnityEngine.Display.main.systemWidth - UnityEngine.Screen.width) / 2, (UnityEngine.Display.main.systemHeight - UnityEngine.Screen.height) / 2);
+            public static Vector2Int WindowOrigin => new Vector2Int((Display.main.systemWidth - Screen.width) / 2, (Display.main.systemHeight - Screen.height) / 2);
 
             /// <summary>
             /// The current position of the window.
             /// </summary>
-            public static UnityEngine.Vector2Int CurrentPosition { get; set; }
+            public static Vector2Int CurrentPosition { get; set; }
 
             /// <summary>
             /// The current resolution of the window.
             /// </summary>
-            public static UnityEngine.Vector2Int CurrentResolution { get; set; }
+            public static Vector2Int CurrentResolution { get; set; }
 
-            static IntPtr? windowHandle = null;
+            static HandleIntPtr handle;
             /// <summary>
             /// The window handle.
             /// </summary>
-            public static IntPtr WindowHandle
+            public static IntPtr Handle
             {
                 get
                 {
-                    if (!windowHandle.HasValue)
-                        windowHandle = FindWindow(null, UnityEngine.Application.productName);
-                    return windowHandle.Value;
+                    if (!handle)
+                        handle = new HandleIntPtr(FindWindow(null, Application.productName));
+                    return handle.peter;
                 }
+            }
+
+            class HandleIntPtr : Exists
+            {
+                public HandleIntPtr(IntPtr peter) => this.peter = peter;
+
+                public IntPtr peter;
             }
 
             /// <summary>
             /// Position or resolution changed.
             /// </summary>
             public static bool positionResolutionChanged;
+
+            /// <summary>
+            /// If the window is currently borderless.
+            /// </summary>
+            public static bool borderless;
 
             #endregion
 
@@ -127,13 +142,19 @@ namespace BetterLegacy.Core
             #region External
 
             [DllImport("user32.dll", EntryPoint = "SetWindowPos", SetLastError = true)]
-            public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
+            static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
 
             [DllImport("user32.dll", EntryPoint = "SetWindowText", CharSet = CharSet.Unicode)]
-            public static extern bool SetWindowText(IntPtr hwnd, string lpString);
+            static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
             [DllImport("user32.dll")]
-            public static extern IntPtr FindWindow(string className, string windowName);
+            static extern IntPtr FindWindow(string className, string windowName);
+
+            [DllImport("user32.dll")]
+            static extern IntPtr SetWindowLong(IntPtr hwnd, int _nIndex, uint dwNewLong);
+
+            [DllImport("user32.dll")]
+            static extern bool ShowWindow(IntPtr hwnd, int nCmdShow);
 
             #endregion
 
@@ -147,10 +168,8 @@ namespace BetterLegacy.Core
             /// <param name="windowFlags">Window flags.</param>
             public static void SetPositionResolution(int x, int y, int width, int height, int windowFlags)
             {
-                CurrentPosition = new UnityEngine.Vector2Int(x, y);
-                SetWindowPos(
-                    WindowHandle, 0, x, y,
-                    width, height, windowFlags);
+                CurrentPosition = new Vector2Int(x, y);
+                SetWindowPos(Handle, 0, x, y, width, height, windowFlags);
             }
 
             /// <summary>
@@ -160,8 +179,8 @@ namespace BetterLegacy.Core
             /// <param name="y">Position Y to set.</param>
             public static void SetPosition(int x, int y)
             {
-                CurrentPosition = new UnityEngine.Vector2Int(x, y);
-                SetWindowPos(WindowHandle, 0, x, y, 0, 0, 1);
+                CurrentPosition = new Vector2Int(x, y);
+                SetWindowPos(Handle, 0, x, y, 0, 0, 1);
             }
 
             /// <summary>
@@ -169,11 +188,11 @@ namespace BetterLegacy.Core
             /// </summary>
             /// <param name="value">Resolution type.</param>
             /// <param name="fullScreen">If the window should be fullscreen.</param>
-            public static void SetResolution(ResolutionType value, bool fullScreen = false)
+            public static void SetResolution(ResolutionType value, bool fullscreen = false)
             {
                 var resolution = value.Resolution;
 
-                SetResolution((int)resolution.x, (int)resolution.y, fullScreen);
+                SetResolution((int)resolution.x, (int)resolution.y, fullscreen);
             }
 
             /// <summary>
@@ -182,46 +201,77 @@ namespace BetterLegacy.Core
             /// <param name="width">Width to set.</param>
             /// <param name="height">Height to set.</param>
             /// <param name="fullScreen">If the window should be fullscreen.</param>
-            public static void SetResolution(int width, int height, bool fullScreen = false)
+            public static void SetResolution(int width, int height, bool fullscreen = false)
             {
-                CurrentResolution = new UnityEngine.Vector2Int(width, height);
+                CurrentResolution = new Vector2Int(width, height);
 
-                if (GameManager.inst && !CoreHelper.InEditor && (CoreHelper.Paused || CoreHelper.Finished))
-                    ResetResolution();
+                var borderless = CoreConfig.Instance.BorderlessFullscreen.Value;
+                if (!fullscreen && borderless)
+                {
+                    Window.borderless = false;
+                    Screen.fullScreen = true;
+                    CoroutineHelper.PerformAtNextFrame(() => Screen.SetResolution(width < 0 ? 1280 : width, height < 0 ? 720 : height, false));
+                    return;
+                }
 
-                UnityEngine.Screen.SetResolution(width < 0 ? 1280 : width, height < 0 ? 720 : height, fullScreen);
+                Screen.SetResolution(width < 0 ? 1280 : width, height < 0 ? 720 : height, fullscreen && !borderless);
+
+                // perform at next frame because unity is annoying
+                CoroutineHelper.PerformAtNextFrame(() => SetBorderState(borderless));
             }
 
             /// <summary>
-            /// Resets the window resolution.
+            /// Resets the window position.
             /// </summary>
-            /// <param name="setPosition">If the position should be set.</param>
-            public static void ResetResolution(bool setPosition = true)
+            public static void ResetPosition()
             {
-                if (!positionResolutionChanged)
-                    return;
+                var windowOrigin = WindowOrigin;
+                SetPosition(windowOrigin.x, windowOrigin.y);
+            }
 
-                positionResolutionChanged = false;
-
-                if (setPosition)
+            /// <summary>
+            /// Sets the borderless state of the window.
+            /// </summary>
+            /// <param name="borderless">Borderless state to set.</param>
+            public static void SetBorderState(bool borderless)
+            {
+                if (borderless)
                 {
-                    var windowOrigin = WindowOrigin;
-                    SetPosition(windowOrigin.x, windowOrigin.y);
+                    SetWindowLong(Handle, -16, 2415919104U);
+                    SetPositionResolution(0, 0, Display.main.systemWidth, Display.main.systemHeight, 0);
                 }
 
-                SetResolution(CoreConfig.Instance.Resolution.Value, CoreConfig.Instance.Fullscreen.Value);
+                Window.borderless = borderless;
             }
 
             /// <summary>
             /// Sets the window title.
             /// </summary>
             /// <param name="title">Title to set.</param>
-            public static void SetTitle(string title) => SetWindowText(WindowHandle, title);
+            public static void SetTitle(string title) => SetWindowText(Handle, title);
 
             /// <summary>
             /// Resets the window title.
             /// </summary>
-            public static void ResetTitle() => SetWindowText(WindowHandle, TITLE);
+            public static void ResetTitle() => SetTitle(TITLE);
+
+            /// <summary>
+            /// Applies the window settings.
+            /// </summary>
+            public static void ApplySettings()
+            {
+                SetResolution(CoreConfig.Instance.Resolution.Value, CoreConfig.Instance.Fullscreen.Value);
+
+                QualitySettings.vSyncCount = CoreConfig.Instance.VSync.Value ? 1 : 0;
+                QualitySettings.antiAliasing = 0;
+
+                int fps = CoreConfig.Instance.FPSLimit.Value;
+                if (fps != -1) // limit FPS if FPS is not set to unlimited.
+                    fps = RTMath.Clamp(fps, 15, int.MaxValue);
+
+                Application.targetFrameRate = fps;
+                CoreHelper.Log($"Apply Video Settings\nResolution: [{Screen.currentResolution}]\nFullscreen: [{Screen.fullScreen}]\nVSync Count: [{QualitySettings.vSyncCount}]");
+            }
 
             #endregion
         }

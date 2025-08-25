@@ -414,6 +414,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!CoreHelper.InGame)
                 CoreHelper.UpdateDiscordStatus($"Navigating {name}", "In Menu", "menu");
 
+            // reset to default settings when menus open
+            ProjectArrhythmia.Window.ResetPosition();
+            ProjectArrhythmia.Window.ApplySettings();
+
             if (loopingEvents != null)
             {
                 loopingEvents.loop = true;

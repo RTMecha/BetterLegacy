@@ -29,12 +29,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return;
             }
 
-            if (ProjectArrhythmia.Window.positionResolutionChanged)
-            {
-                ProjectArrhythmia.Window.positionResolutionChanged = false;
-                ProjectArrhythmia.Window.ResetResolution();
-            }
-
             GameManager.inst.players.SetActive(false);
             InputDataManager.inst.SetAllControllerRumble(0f);
             onGenerateUIFinish = () => InputDataManager.inst.SetAllControllerRumble(0f);
