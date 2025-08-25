@@ -257,6 +257,7 @@ namespace BetterLegacy.Editor.Managers
             RenderLayers(backgroundObject);
             RenderBin(backgroundObject);
             RenderIndex(backgroundObject);
+            RenderEditorColors(backgroundObject);
             RenderPrefabReference(backgroundObject);
 
             #endregion
