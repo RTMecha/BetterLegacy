@@ -346,62 +346,73 @@ namespace BetterLegacy.Editor.Managers
             new ObjectOption("Normal", "A regular square object that hits the player.", null),
             new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Helper;
-                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Helper;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Helper);
             }),
             new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = nameof(BeatmapObject.ObjectType.Decoration);
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Decoration);
             }),
             new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Solid;
-                bm.name = nameof(BeatmapObject.ObjectType.Solid);
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Solid;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Solid);
             }),
             new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = nameof(BeatmapObject.ObjectType.Helper);
-                bm.events[3][0].values[1] = 0.65f;
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = nameof(BeatmapObject.ObjectType.Helper);
+                beatmapObject.events[3][0].values[1] = 0.65f;
             }),
             new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Normal;
-                bm.name = "Collision";
-                bm.events[3][0].values[1] = 1f;
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Normal;
+                beatmapObject.name = "Collision";
+                beatmapObject.events[3][0].values[1] = 1f;
             }),
             new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Solid;
-                bm.name = "Collision";
-                bm.events[3][0].values[1] = 1f;
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Solid;
+                beatmapObject.name = "Collision";
+                beatmapObject.events[3][0].values[1] = 1f;
             }),
             new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = "Text";
-                bm.text = "A text object that can be used for dialogue.";
-                bm.shape = 4;
-                bm.shapeOption = 0;
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = "Text";
+                beatmapObject.text = "A text object that can be used for dialogue.";
+                beatmapObject.shape = 4;
+                beatmapObject.shapeOption = 0;
             }),
             new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
             {
-                var bm = timelineObject.GetData<BeatmapObject>();
-                bm.objectType = BeatmapObject.ObjectType.Decoration;
-                bm.name = "Text";
-                bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
-                bm.shape = 4;
-                bm.shapeOption = 0;
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.name = "Text";
+                beatmapObject.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
+                beatmapObject.shape = 4;
+                beatmapObject.shapeOption = 0;
                 if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == "textSequence", out Modifier modifier))
-                    bm.modifiers.Add(modifier.Copy());
+                    beatmapObject.modifiers.Add(modifier.Copy());
+            }),
+            new ObjectOption("Screen Overlay", "An object that covers the screen.", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+                beatmapObject.renderLayerType = BeatmapObject.RenderLayerType.UI;
+                beatmapObject.Parent = BeatmapObject.CAMERA_PARENT;
+                beatmapObject.ParentType = "111";
+                beatmapObject.events[1][0].values[0] = 1000f;
+                beatmapObject.events[1][0].values[1] = 1000f;
+                beatmapObject.editorData.selectable = false; // prevent overlay from being selectable in the preview area.
             }),
         };
 
