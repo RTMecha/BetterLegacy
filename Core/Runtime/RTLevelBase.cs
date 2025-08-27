@@ -635,7 +635,9 @@ namespace BetterLegacy.Core.Runtime
                         if (beatmapObject.selector)
                         {
                             CoreHelper.Destroy(beatmapObject.selector);
-                            break;
+                            beatmapObject.selector = null;
+                            if (!beatmapObject.editorData.selectable)
+                                break;
                         }
 
                         var obj = beatmapObject.runtimeObject.visualObject.gameObject.AddComponent<SelectObject>();
