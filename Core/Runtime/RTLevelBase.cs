@@ -815,11 +815,7 @@ namespace BetterLegacy.Core.Runtime
 
                 var lastParent = !noParents ? parentObjects[0]?.transform : null;
 
-                var p = converter.ToParentObject(beatmapObject, baseObject.gameObject);
-                if (!noParents)
-                    parentObjects.Insert(0, p);
-                else
-                    parentObjects.Add(p);
+                parentObjects.Insert(0, converter.ToParentObject(beatmapObject, baseObject.gameObject));
 
                 var firstParent = parentObjects[parentObjects.Count - 1];
                 var top = firstParent?.transform ?? baseObject;

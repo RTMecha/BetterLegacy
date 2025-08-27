@@ -124,11 +124,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                 visualObject.transform.localPosition = new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.Depth * 0.1f);
             visualObject.name = "Visual [ " + beatmapObject.name + " ]";
 
-            var p = ToParentObject(beatmapObject, baseObject);
-            if (!parentObjects.IsEmpty())
-                parentObjects.Insert(0, p);
-            else
-                parentObjects.Add(p);
+            parentObjects.Insert(0, ToParentObject(beatmapObject, baseObject));
 
             baseObject.name = beatmapObject.name;
 
