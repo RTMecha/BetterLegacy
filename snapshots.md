@@ -13,6 +13,7 @@
 - You can now right click the "ID" value in achievment modifiers to select an achievement.
 - Added a few settings for the Object Drag Helper for customization.
 - Added "SetObjectDragHelperAxisX" and "SetObjectDragHelperAxisY" to keybind functions.
+- Added "Screen Overlay" default object in the "More Options" popup. Good for fading the screen in / out.
 
 ## Changes
 ### Core
@@ -30,6 +31,7 @@
 - Fixed dragging an empty object not updating the time offset of child objects.
 - Fixed Window events persisting in menus.
 - Fixed Editor colors for BG objects not rendering correctly.
+- Fixed camera parenting not being set properly in some cases.
 
 -------------------------------------------------------------------
 
