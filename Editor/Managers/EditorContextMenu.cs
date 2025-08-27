@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
@@ -78,6 +79,40 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="buttonFunctions">The context menus' functions.</param>
+        public void AddContextMenu(GameObject gameObject, params ButtonFunction[] buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="leftClick">Function to run when the user left clicks.</param>
+        /// <param name="buttonFunctions">The context menus' functions.</param>
+        public void AddContextMenu(GameObject gameObject, Action leftClick, params ButtonFunction[] buttonFunctions)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.GetOrAddComponent<ContextClickable>().onClick = pointerEventData =>
+            {
+                switch (pointerEventData.button)
+                {
+                    case PointerEventData.InputButton.Left: {
+                            leftClick?.Invoke();
+                            break;
+                        }
+                    case PointerEventData.InputButton.Right: {
+                            ShowContextMenu(buttonFunctions);
+                            break;
+                        }
+                }
+            };
+        }
 
         /// <summary>
         /// Shows the editor context menu.
