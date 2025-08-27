@@ -55,7 +55,7 @@ namespace BetterLegacy.Core.Runtime.Objects
 
         public override Transform Parent { get; }
 
-        public override float FixedTime => UseCustomTime ? CustomTime : GetTime(ParentRuntime.GetStartTime() + ParentRuntime.FixedTime);
+        public override float FixedTime => UseCustomTime ? CustomTime : GetTime(/*ParentRuntime.GetStartTime() + */ParentRuntime.FixedTime); // why did i do that?
 
         /// <summary>
         /// Custom interpolation time.
