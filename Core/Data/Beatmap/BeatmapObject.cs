@@ -2121,15 +2121,19 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns true if the <see cref="BeatmapObject"/> was successfully parented, otherwise returns false.</returns>
         public bool TrySetParent(string beatmapObjectToParentTo, bool renderParent = true)
         {
-            var dictionary = new Dictionary<string, bool>();
-            var beatmapObjects = GameData.Current.beatmapObjects;
+            bool shouldParent = true; // true because we check CAMERA_PARENT next.
+            if (beatmapObjectToParentTo != CAMERA_PARENT)
+            {
+                var dictionary = new Dictionary<string, bool>();
+                var beatmapObjects = GameData.Current.beatmapObjects;
 
-            foreach (var obj in beatmapObjects)
-                dictionary[obj.id] = CanParent(obj, beatmapObjects);
+                foreach (var obj in beatmapObjects)
+                    dictionary[obj.id] = CanParent(obj, beatmapObjects);
 
-            dictionary[id] = false;
+                dictionary[id] = false;
 
-            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo, out bool value) && value;
+                shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo, out bool value) && value;
+            }
 
             if (shouldParent)
             {
