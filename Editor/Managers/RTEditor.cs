@@ -2664,6 +2664,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(prefabButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Prefab_Text);
 
             var objectButton = timelineBar.transform.Find("object").gameObject;
+            objectButton.GetComponent<Button>().onClick.ClearAll();
             EditorThemeManager.AddGraphic(objectButton.GetComponent<Image>(), ThemeGroup.Object, true);
             EditorThemeManager.AddGraphic(objectButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Object_Text);
 
@@ -2694,7 +2695,16 @@ namespace BetterLegacy.Editor.Managers
             objectContextMenu.onClick = eventData =>
             {
                 if (eventData.button != PointerEventData.InputButton.Right)
+                {
+                    if (EditorConfig.Instance.OpenCustomObjectOptions.Value)
+                    {
+                        ObjectEditor.inst.ShowObjectTemplates();
+                        return;
+                    }
+
+                    ObjectOptionsPopup.Open();
                     return;
+                }
 
                 EditorContextMenu.inst.ShowContextMenu(
                     new ButtonFunction("Options", ObjectOptionsPopup.Open),

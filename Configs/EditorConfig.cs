@@ -78,6 +78,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> AllowEditorKeybindsWithEditorCam { get; set; }
         public Setting<bool> RotationEventKeyframeResets { get; set; }
         public Setting<bool> RememberLastKeyframeType { get; set; }
+        public Setting<bool> OpenCustomObjectOptions { get; set; }
 
         #endregion
 
@@ -453,6 +454,7 @@ namespace BetterLegacy.Configs
             AllowEditorKeybindsWithEditorCam = Bind(this, GENERAL, "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
             RotationEventKeyframeResets = Bind(this, GENERAL, "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");
             RememberLastKeyframeType = Bind(this, GENERAL, "Remember Last Keyframe Type", false, "When an object is selected for the first time, it selects the previous objects' keyframe selection type. For example, say you had a color keyframe selected, this newly selected object will select the first color keyframe.");
+            OpenCustomObjectOptions = Bind(this, GENERAL, "Open Custom Object Creation Options", false, "If the extra object options popup should open instead of the default.");
 
             #endregion
 
