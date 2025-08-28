@@ -14,6 +14,7 @@
 - Added a few settings for the Object Drag Helper for customization.
 - Added "SetObjectDragHelperAxisX" and "SetObjectDragHelperAxisY" to keybind functions.
 - Added "Screen Overlay" default object in the "More Options" popup. Good for fading the screen in / out.
+- Added "Open Custom Object Creation Options" in Config Manager > Editor > General. This opens the custom object options popup by default when clicking the Object button.
 
 ## Changes
 ### Core
