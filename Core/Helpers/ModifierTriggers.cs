@@ -1456,28 +1456,33 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool onMarker(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
+
             var name = modifier.GetValue(0, variables);
             var color = modifier.GetInt(1, -1, variables);
             var layer = modifier.GetInt(2, -1, variables);
-            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastMarkerIndex(x => (string.IsNullOrEmpty(name) || x.name == name) && (color == -1 || x.color == color) && (layer == -1 || x.VisibleOnLayer(layer))));
-            var newIndex = GameData.Current.data.GetLastMarkerIndex(x => (string.IsNullOrEmpty(name) || x.name == name) && (color == -1 || x.color == color) && (layer == -1 || x.VisibleOnLayer(layer)));
+            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer)));
+            var newIndex = GameData.Current.data.GetLastMarkerIndex(x => x.Matches(name, color, layer));
             if (index != newIndex)
             {
                 modifier.Result = newIndex;
-                return true;
+                // if current pitch is forwards, check if new index is ahead, otherwise if pitch is backwards then check if new index is behind
+                return newIndex > index;
             }
             return false;
         }
 
         public static bool onCheckpoint(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            var forward = AudioManager.inst.CurrentAudioSource.pitch >= 0f;
+
             var name = modifier.GetValue(0, variables);
-            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastCheckpointIndex(x => (string.IsNullOrEmpty(name) || x.name == name)));
-            var newIndex = GameData.Current.data.GetLastCheckpointIndex(x => (string.IsNullOrEmpty(name) || x.name == name));
+            var index = modifier.GetResultOrDefault(() => GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name));
+            var newIndex = GameData.Current.data.GetLastCheckpointIndex(x => string.IsNullOrEmpty(name) || x.name == name);
             if (index != newIndex)
             {
                 modifier.Result = newIndex;
-                return true;
+                return newIndex > index;
             }
             return false;
         }

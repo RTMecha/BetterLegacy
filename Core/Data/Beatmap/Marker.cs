@@ -128,6 +128,15 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <returns>Returns true if the marker is visible on the layer or the layers list is empty, otherwise returns false.</returns>
         public bool VisibleOnLayer(int layer) => layers.IsEmpty() || layers.Contains(layer);
 
+        /// <summary>
+        /// Checks if a marker matches a set of parameters.
+        /// </summary>
+        /// <param name="name">Name to check. Can be left null or empty.</param>
+        /// <param name="color">Color to check. Can be left at -1.</param>
+        /// <param name="layer">Layer to check. Can be left at -1.</param>
+        /// <returns>Returns true if the marker matches, otherwise returns false.</returns>
+        public bool Matches(string name = null, int color = -1, int layer = -1) => (string.IsNullOrEmpty(name) || this.name == name) && (color == -1 || this.color == color) && (layer == -1 || VisibleOnLayer(layer));
+
         #endregion
 
         #region Operators

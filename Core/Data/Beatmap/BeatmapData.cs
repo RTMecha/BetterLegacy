@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using SimpleJSON;
@@ -97,6 +98,33 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Gets the index of the next checkpoint in time.
+        /// </summary>
+        /// <returns>Returns the next checkpoints' index.</returns>
+        public int GetNextCheckpointIndex()
+        {
+            var index = checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
+            return index < 0 ? 0 : index;
+        }
+
+        /// <summary>
+        /// Gets the index of the next checkpoint in time.
+        /// </summary>
+        /// <param name="predicate">Match predicate.</param>
+        /// <returns>Returns the next checkpoints' index.</returns>
+        public int GetNextCheckpointIndex(Predicate<Checkpoint> predicate)
+        {
+            var index = checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time && predicate(x));
+            return index < 0 ? 0 : index;
+        }
+
+        /// <summary>
+        /// Gets the next checkpoint in time.
+        /// </summary>
+        /// <returns>Returns the next checkpoint.</returns>
+        public Checkpoint GetNextCheckpoint() => checkpoints.GetAtOrDefault(GetNextCheckpointIndex(), null);
+
+        /// <summary>
         /// Gets the index of the last checkpoint in time.
         /// </summary>
         /// <returns>Returns the last checkpoints' index.</returns>
@@ -111,7 +139,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="predicate">Match predicate.</param>
         /// <returns>Returns the last checkpoints' index.</returns>
-        public int GetLastCheckpointIndex(System.Predicate<Checkpoint> predicate)
+        public int GetLastCheckpointIndex(Predicate<Checkpoint> predicate)
         {
             var index = checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time && predicate(x));
             return index < 0 ? 0 : index;
@@ -122,6 +150,33 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <returns>Returns the last checkpoint.</returns>
         public Checkpoint GetLastCheckpoint() => checkpoints.GetAtOrDefault(GetLastCheckpointIndex(), null);
+
+        /// <summary>
+        /// Gets the index of the next marker in time.
+        /// </summary>
+        /// <returns>Returns the next markers' index.</returns>
+        public int GetNextMarkerIndex()
+        {
+            var index = markers.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
+            return index < 0 ? 0 : index;
+        }
+
+        /// <summary>
+        /// Gets the index of the next marker in time.
+        /// </summary>
+        /// <param name="predicate">Match predicate.</param>
+        /// <returns>Returns the next markers' index.</returns>
+        public int GetNextMarkerIndex(Predicate<Marker> predicate)
+        {
+            var index = markers.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time && predicate(x));
+            return index < 0 ? 0 : index;
+        }
+
+        /// <summary>
+        /// Gets the next marker in time.
+        /// </summary>
+        /// <returns>Returns the next marker.</returns>
+        public Marker GetNextMarker() => markers.GetAtOrDefault(GetNextMarkerIndex(), null);
 
         /// <summary>
         /// Gets the index of the last marker in time.
@@ -138,7 +193,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="predicate">Match predicate.</param>
         /// <returns>Returns the last markers' index.</returns>
-        public int GetLastMarkerIndex(System.Predicate<Marker> predicate)
+        public int GetLastMarkerIndex(Predicate<Marker> predicate)
         {
             var index = markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time && predicate(x));
             return index;
