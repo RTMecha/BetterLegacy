@@ -258,6 +258,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                 Spawner.Prefabs.Add(subPrefabCopy);
             }
 
+            var startTime = GetStartTime();
+
             for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
             {
                 var objectIDs = new List<IDPair>(prefab.beatmapObjects.Count);
@@ -314,7 +316,7 @@ namespace BetterLegacy.Core.Runtime.Objects
                     }
 
                     if (beatmapObjectCopy.autoKillType == AutoKillType.SongTime)
-                        beatmapObjectCopy.autoKillOffset -= GetStartTime();
+                        beatmapObjectCopy.autoKillOffset -= startTime;
 
                     if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
                         GameData.Current.assets.sprites.Add(spriteAsset.Copy());
@@ -346,6 +348,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                         backgroundObjectCopy.autoKillType = AutoKillType.SongTime;
                         backgroundObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabAutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                     }
+
+                    if (backgroundObjectCopy.autoKillType == AutoKillType.SongTime)
+                        backgroundObjectCopy.autoKillOffset -= startTime;
 
                     if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
                         GameData.Current.assets.sprites.Add(spriteAsset.Copy());
@@ -405,6 +410,9 @@ namespace BetterLegacy.Core.Runtime.Objects
                     subPrefabObjectCopy.SetPrefabReference(prefabObject);
 
                     subPrefabObjectCopy.StartTime += timeToAdd;
+
+                    if (subPrefabObjectCopy.autoKillType == PrefabAutoKillType.SongTime)
+                        subPrefabObjectCopy.autoKillOffset -= startTime;
 
                     subPrefabObjectCopy.originalID = subPrefabObject.id;
                     GameData.Current.prefabObjects.Add(subPrefabObjectCopy);
