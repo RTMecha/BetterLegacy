@@ -78,6 +78,8 @@ namespace BetterLegacy.Editor.Data
 
         #region BPM
 
+        public bool analyzedBPM;
+
         public bool bpmSnapActive;
 
         public float bpm = 140f;
@@ -213,6 +215,9 @@ namespace BetterLegacy.Editor.Data
 
             if (jn["misc"] != null)
             {
+                if (jn["misc"]["bpm_analyzed"] != null)
+                    editorInfo.analyzedBPM = jn["misc"]["bpm_analyzed"].AsBool;
+
                 if (jn["misc"]["sn"] != null)
                     editorInfo.bpmSnapActive = jn["misc"]["sn"].AsBool;
                 if (jn["misc"]["bpm_snap_active"] != null)
@@ -280,6 +285,8 @@ namespace BetterLegacy.Editor.Data
                 }
             }
 
+            if (analyzedBPM)
+                jn["misc"]["bpm_analyzed"] = analyzedBPM;
             jn["misc"]["bpm_snap_active"] = bpmSnapActive;
             jn["misc"]["bpm"] = bpm;
             jn["misc"]["bpm_offset"] = bpmOffset;

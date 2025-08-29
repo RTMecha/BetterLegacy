@@ -892,6 +892,18 @@ namespace BetterLegacy.Editor.Managers
 
             // Load Settings like timeline position, editor layer, bpm active, etc
             RTEditor.inst.LoadSettings();
+
+            if (EditorConfig.Instance.AnalyzeBPMOnLevelLoad.Value && !RTEditor.inst.editorInfo.analyzedBPM)
+            {
+                yield return CoroutineHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
+                {
+                    RTEditor.inst.editorInfo.analyzedBPM = true;
+                    MetaData.Current.song.bpm = bpm;
+                    RTEditor.inst.editorInfo.bpm = bpm;
+                    EditorTimeline.inst.SetTimelineGridSize();
+                }));
+            }
+
             EditorTimeline.inst.RenderTimeline();
             EditorTimeline.inst.RenderBins();
 

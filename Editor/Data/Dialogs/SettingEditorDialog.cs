@@ -255,6 +255,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorManager.inst.DisplayNotification($"Detected a BPM of {bpm}! Applied it to editor settings.", 2f, EditorManager.NotificationType.Success);
 
                     BPMInput.text = bpm.ToString();
+                    RTEditor.inst.editorInfo.analyzedBPM = true;
                 }));
             });
 

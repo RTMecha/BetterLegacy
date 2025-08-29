@@ -279,6 +279,7 @@ namespace BetterLegacy.Configs
 
         #region BPM
 
+        public Setting<bool> AnalyzeBPMOnLevelLoad { get; set; }
         public Setting<bool> BPMSnapsObjects { get; set; }
         public Setting<bool> BPMSnapsObjectKeyframes { get; set; }
         public Setting<bool> BPMSnapsKeyframes { get; set; }
@@ -666,6 +667,7 @@ namespace BetterLegacy.Configs
 
             #region BPM
 
+            AnalyzeBPMOnLevelLoad = Bind(this, BPM, "Analyze BPM On Level Load", false, "If the BPM should be analyzed when the level loads.");
             BPMSnapsObjects = Bind(this, BPM, "Snap Objects", true, "Makes the start time of objects snap to the BPM.");
             BPMSnapsObjectKeyframes = Bind(this, BPM, "Snap Object Keyframes", false, "Makes the time of object keyframes snap to the BPM.");
             BPMSnapsKeyframes = Bind(this, BPM, "Snap Keyframes", true, "Makes the time of event keyframes snap to the BPM.");
