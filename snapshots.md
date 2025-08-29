@@ -1,4 +1,13 @@
-﻿# snapshot-2025.8.18 - (pre-1.8.0) [Aug 30, 2025]
+﻿# ???
+## Features
+### Editor
+- Added "Analyze BPM On Level Load" in > Config Manager > Editor > BPM.
+
+## Fixes
+- Fixed objects other than Beatmap Objects not having their song time autokill offset properly set when spawned from a prefab.
+- Fixed animation timeline being weird.
+
+# snapshot-2025.8.18 - (pre-1.8.0) [Aug 30, 2025]
 ## Features
 ### Core
 - Finally added Borderless Fullscreen. If the window is in fullscreen, it will not minimize when unfocused with this setting on.
