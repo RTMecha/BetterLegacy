@@ -16,6 +16,11 @@ namespace BetterLegacy.Core.Data
         public List<List<EventKeyframe>> Events { get; }
 
         /// <summary>
+        /// The full length of the animation.
+        /// </summary>
+        public float AnimLength { get; }
+
+        /// <summary>
         /// Animation start time.
         /// </summary>
         public float StartTime { get; set; }

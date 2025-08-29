@@ -54,6 +54,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         };
         public List<List<EventKeyframe>> Events => events;
 
+        public float AnimLength => GetObjectLifeLength();
+
         #region Parent
 
         public string ID { get => id; set => id = value; }

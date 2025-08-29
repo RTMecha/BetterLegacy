@@ -94,6 +94,8 @@ namespace BetterLegacy.Core.Data
             colorKeyframes,
         };
 
+        public float AnimLength => GetLength(true);
+
         public List<EventKeyframe> positionKeyframes = new List<EventKeyframe>();
         public List<EventKeyframe> scaleKeyframes = new List<EventKeyframe>();
         public List<EventKeyframe> rotationKeyframes = new List<EventKeyframe>();
