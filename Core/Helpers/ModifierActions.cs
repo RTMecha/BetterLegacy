@@ -2729,7 +2729,7 @@ namespace BetterLegacy.Core.Helpers
                 var transform = player.RuntimePlayer.rb.transform;
 
                 var vector = new Vector3(transform.position.x, transform.position.y, 0f);
-                var target = new Vector3(pos.x, pos.y, 0f);
+                var target = new Vector3(-pos.x, -pos.y, 0f);
 
                 transform.position += (target + vector) * moveDelay;
             });
@@ -2752,7 +2752,6 @@ namespace BetterLegacy.Core.Helpers
             if (!PlayerManager.Players.TryGetAt(index, out PAPlayer player) || !player.RuntimePlayer || !player.RuntimePlayer.rb)
                 return;
 
-
             // queue post tick so the position of the object is accurate.
             RTLevel.Current.postTick.Enqueue(() =>
             {
@@ -2764,7 +2763,7 @@ namespace BetterLegacy.Core.Helpers
                 var transform = player.RuntimePlayer.rb.transform;
 
                 var vector = new Vector3(transform.position.x, transform.position.y, 0f);
-                var target = new Vector3(pos.x, pos.y, 0f);
+                var target = new Vector3(-pos.x, -pos.y, 0f);
 
                 transform.position += (target + vector) * moveDelay;
             });
@@ -2800,7 +2799,7 @@ namespace BetterLegacy.Core.Helpers
                     var transform = player.RuntimePlayer.rb.transform;
 
                     var vector = new Vector3(transform.position.x, transform.position.y, 0f);
-                    var target = new Vector3(pos.x, pos.y, 0f);
+                    var target = new Vector3(-pos.x, -pos.y, 0f);
 
                     transform.position += (target + vector) * moveDelay;
                 });
