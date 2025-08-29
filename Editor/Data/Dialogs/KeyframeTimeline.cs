@@ -2182,11 +2182,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             CurrentTimeline = this;
             CurrentObject = animatable;
 
-            var beatmapObject = animatable as BeatmapObject;
-            var animation = animatable as PAAnimation;
-
             // ObjEditor.inst.ObjectLengthOffset is the offset from the last keyframe. Could allow for more timeline space.
-            float objectLifeLength = beatmapObject ? beatmapObject.GetObjectLifeLength() : animation ? animation.GetLength(true) : 999f;
+            float objectLifeLength = animatable.AnimLength;
             float x = TimeTimelineCalc(objectLifeLength + ObjEditor.inst.ObjectLengthOffset);
 
             Content.AsRT().sizeDelta = new Vector2(x, 0f);
