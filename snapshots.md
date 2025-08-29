@@ -1,4 +1,4 @@
-﻿# ???
+﻿# snapshot-2025.8.18 - (pre-1.8.0) [Aug 30, 2025]
 ## Features
 ### Core
 - Finally added Borderless Fullscreen. If the window is in fullscreen, it will not minimize when unfocused with this setting on.
@@ -15,6 +15,7 @@
 - Added "SetObjectDragHelperAxisX" and "SetObjectDragHelperAxisY" to keybind functions.
 - Added "Screen Overlay" default object in the "More Options" popup. Good for fading the screen in / out.
 - Added "Open Custom Object Creation Options" in Config Manager > Editor > General. This opens the custom object options popup by default when clicking the Object button.
+- Moved Object Creation settings from Editor > General to Editor > Creation, and added a few more settings for this tab.
 
 ## Changes
 ### Core
@@ -23,6 +24,7 @@
 ### Editor
 - Simplified the editor popup animation register code to make it easier to add new popups.
 - Holding alt while BPM snap is on no longer plays the BPM snap sound.
+- New No Autokill objects now have their object type set to Decoration by default.
 
 ## Fixes
 - Fixed objectCustomActive modifier not working.
