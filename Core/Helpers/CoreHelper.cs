@@ -920,7 +920,6 @@ namespace BetterLegacy.Core.Helpers
         {
             switch (preset)
             {
-                // Beginner
                 case UserPreferenceType.Beginner: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Simple;
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Legacy;
@@ -955,10 +954,11 @@ namespace BetterLegacy.Core.Helpers
                         PlayerConfig.Instance.PlaySoundB.Value = true;
                         PlayerConfig.Instance.PlaySoundR.Value = true;
 
+                        EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value = false;
+                        EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value = true;
+
                         break;
                     }
-
-                // Legacy
                 case UserPreferenceType.Legacy: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Legacy;
@@ -993,10 +993,11 @@ namespace BetterLegacy.Core.Helpers
                         PlayerConfig.Instance.PlaySoundB.Value = false;
                         PlayerConfig.Instance.PlaySoundR.Value = false;
 
+                        EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value = false;
+                        EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value = true;
+
                         break;
                     }
-
-                // Alpha
                 case UserPreferenceType.Alpha: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Modern;
@@ -1031,11 +1032,12 @@ namespace BetterLegacy.Core.Helpers
                         PlayerConfig.Instance.PlaySoundB.Value = false;
                         PlayerConfig.Instance.PlaySoundR.Value = false;
 
+                        EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value = true;
+                        EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value = true;
+
                         break;
                     }
-
-                // Modded
-                case UserPreferenceType.None: {
+                case UserPreferenceType.Modded: {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Advanced;
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Dark;
                         EditorConfig.Instance.RoundedUI.Value = true;
@@ -1068,6 +1070,9 @@ namespace BetterLegacy.Core.Helpers
                         PlayerConfig.Instance.QueueBoost.Value = true;
                         PlayerConfig.Instance.PlaySoundB.Value = true;
                         PlayerConfig.Instance.PlaySoundR.Value = true;
+
+                        EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value = false;
+                        EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value = false;
 
                         break;
                     }

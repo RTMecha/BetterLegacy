@@ -520,8 +520,18 @@ namespace BetterLegacy.Editor.Managers
             beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 5f;
             beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
+            beatmapObject.opacityCollision = EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value;
+            beatmapObject.autoTextAlign = EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value;
 
-            beatmapObject.parentType = EditorConfig.Instance.CreateObjectsScaleParentDefault.Value ? "111" : "101";
+            // setup default parent values
+            beatmapObject.SetParentType(0, EditorConfig.Instance.CreateObjectPositionParentDefault.Value);
+            beatmapObject.SetParentType(1, EditorConfig.Instance.CreateObjectScaleParentDefault.Value);
+            beatmapObject.SetParentType(2, EditorConfig.Instance.CreateObjectRotationParentDefault.Value);
+
+            // setup default keyframe values
+            beatmapObject.events[0][0].relative = EditorConfig.Instance.CreateObjectPositionKFRelativeDefault.Value;
+            beatmapObject.events[1][0].relative = EditorConfig.Instance.CreateObjectScaleKFRelativeDefault.Value;
+            beatmapObject.events[2][0].relative = EditorConfig.Instance.CreateObjectRotationKFRelativeDefault.Value;
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
                 EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
@@ -847,6 +857,7 @@ namespace BetterLegacy.Editor.Managers
             var bm = timelineObject.GetData<BeatmapObject>();
             bm.name = Seasons.IsAprilFools ? "dead" : "no autokill";
             bm.autoKillType = AutoKillType.NoAutokill;
+            bm.objectType = BeatmapObject.ObjectType.Decoration;
 
             if (EditorConfig.Instance.CreateObjectsatCameraCenter.Value)
             {

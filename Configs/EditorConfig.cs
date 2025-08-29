@@ -71,10 +71,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> PasteOffset { get; set; }
         public Setting<bool> BringToSelection { get; set; }
         public Setting<bool> SelectPasted { get; set; }
-        public Setting<bool> CreateObjectsatCameraCenter { get; set; }
-        public Setting<bool> SpawnPrefabsAtCameraCenter { get; set; }
-        public Setting<bool> CreateObjectsScaleParentDefault { get; set; }
-        public Setting<bool> CreateObjectModifierOrderDefault { get; set; }
         public Setting<bool> AllowEditorKeybindsWithEditorCam { get; set; }
         public Setting<bool> RotationEventKeyframeResets { get; set; }
         public Setting<bool> RememberLastKeyframeType { get; set; }
@@ -423,6 +419,22 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Creation
+
+        public Setting<bool> CreateObjectsatCameraCenter { get; set; }
+        public Setting<bool> SpawnPrefabsAtCameraCenter { get; set; }
+        public Setting<bool> CreateObjectPositionParentDefault { get; set; }
+        public Setting<bool> CreateObjectScaleParentDefault { get; set; }
+        public Setting<bool> CreateObjectRotationParentDefault { get; set; }
+        public Setting<bool> CreateObjectModifierOrderDefault { get; set; }
+        public Setting<bool> CreateObjectOpacityCollisionDefault { get; set; }
+        public Setting<bool> CreateObjectAutoTextAlignDefault { get; set; }
+        public Setting<bool> CreateObjectPositionKFRelativeDefault { get; set; }
+        public Setting<bool> CreateObjectScaleKFRelativeDefault { get; set; }
+        public Setting<bool> CreateObjectRotationKFRelativeDefault { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -447,10 +459,6 @@ namespace BetterLegacy.Configs
             PasteOffset = Bind(this, GENERAL, "Paste Offset", false, "When enabled objects that are pasted will be pasted at an offset based on the distance between the audio time and the copied object. Otherwise, the objects will be pasted at the earliest objects start time.");
             BringToSelection = Bind(this, GENERAL, "Bring To Selection", false, "When an object is selected (whether it be a regular object, a marker, etc), it will move the layer and audio time to that object.");
             SelectPasted = Bind(this, GENERAL, "Select Pasted Keyframes", false, "Select a pasted keyframe.");
-            CreateObjectsatCameraCenter = Bind(this, GENERAL, "Create Objects at Camera Center", true, "When an object is created, its position will be set to that of the camera's.");
-            SpawnPrefabsAtCameraCenter = Bind(this, GENERAL, "Spawn Prefabs at Camera Center", true, "When a Prefab object is placed into a level, its position will be set to that of the camera's.");
-            CreateObjectsScaleParentDefault = Bind(this, GENERAL, "Create Objects Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
-            CreateObjectModifierOrderDefault = Bind(this, GENERAL, "Create Objects Modifier Order Default", true, "The default value for new objects' Order Matters toggle.");
             AllowEditorKeybindsWithEditorCam = Bind(this, GENERAL, "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
             RotationEventKeyframeResets = Bind(this, GENERAL, "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");
             RememberLastKeyframeType = Bind(this, GENERAL, "Remember Last Keyframe Type", false, "When an object is selected for the first time, it selects the previous objects' keyframe selection type. For example, say you had a color keyframe selected, this newly selected object will select the first color keyframe.");
@@ -865,6 +873,23 @@ namespace BetterLegacy.Configs
             ModifiersCanLoadLevels = Bind(this, MODIFIERS, "Modifiers Can Load Levels", true, "Any modifiers with the \"loadLevel\" function will load the level whilst in the editor. This is only to prevent the loss of progress.");
             ModifiersSavesBackup = Bind(this, MODIFIERS, "Modifiers Saves Backup", true, "The current level will have a backup saved before a level is loaded using a loadLevel modifier or before the game has been quit.");
             ModifiersDisplayAchievements = Bind(this, MODIFIERS, "Modifiers Display Achievements", true, "If the achievement modifiers display the achievement they unlock in the editor regardless of unlock state.");
+
+            #endregion
+
+            #region Creation
+
+            CreateObjectsatCameraCenter = Bind(this, CREATION, "Create Object at Camera Center", false, "When an object is created, its position will be set to that of the camera's.");
+            SpawnPrefabsAtCameraCenter = Bind(this, CREATION, "Spawn Prefabs at Camera Center", false, "When a Prefab object is placed into a level, its position will be set to that of the camera's.");
+
+            CreateObjectPositionParentDefault = Bind(this, CREATION, "Object Position Parent Default", true, "The default value for new Beatmap Objects' Position Parent.");
+            CreateObjectScaleParentDefault = Bind(this, CREATION, "Object Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
+            CreateObjectRotationParentDefault = Bind(this, CREATION, "Object Rotation Parent Default", true, "The default value for new Beatmap Objects' Rotation Parent.");
+            CreateObjectModifierOrderDefault = Bind(this, CREATION, "Object Modifier Order Default", true, "The default value for new objects' Order Matters toggle.");
+            CreateObjectOpacityCollisionDefault = Bind(this, CREATION, "Object Opacity Collision Default", false, "The default value for new objects' Opacity Collision toggle.");
+            CreateObjectAutoTextAlignDefault = Bind(this, CREATION, "Object Auto Text Align Default", false, "The default value for new objects' Auto Text Align toggle.");
+            CreateObjectPositionKFRelativeDefault = Bind(this, CREATION, "Object Position KF Relative Default", false, "The default value for new objects' position keyframe relative toggle.");
+            CreateObjectScaleKFRelativeDefault = Bind(this, CREATION, "Object Scale KF Relative Default", false, "The default value for new objects' scale keyframe relative toggle.");
+            CreateObjectRotationKFRelativeDefault = Bind(this, CREATION, "Object Rotation KF Relative Default", true, "The default value for new objects' rotation keyframe relative toggle.");
 
             #endregion
 
@@ -1547,6 +1572,7 @@ namespace BetterLegacy.Configs
         public const string ANIMATIONS = "Animations";
         public const string PREVIEW = "Preview";
         public const string MODIFIERS = "Modifiers";
+        public const string CREATION = "Creation";
 
         #endregion
     }
