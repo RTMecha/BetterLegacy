@@ -108,7 +108,16 @@ namespace BetterLegacy.Editor.Managers
         /// Sets the main timeline zoom.
         /// </summary>
         /// <param name="zoom">The zoom to set to the timeline.</param>
-        public void SetTimelineZoom(float zoom) => SetTimeline(zoom, !AudioManager.inst.CurrentAudioSource.clip ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? GetTimelineTime(false) : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length);
+        public void SetTimelineZoom(float zoom)
+        {
+            float position = 0f;
+            if (EditorConfig.Instance.UseMouseAsZoomPoint.Value)
+                position = (float)((double)GetTimelineTime(false) / AudioManager.inst.CurrentAudioSource.clip.length);
+            else if (AudioManager.inst.CurrentAudioSource.clip)
+                position = (float)((double)AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length);
+
+            SetTimeline(zoom, position);
+        }
 
         /// <summary>
         /// Sets the main timeline zoom and position.
@@ -128,14 +137,12 @@ namespace BetterLegacy.Editor.Managers
                 if (render)
                     RenderTimeline();
 
-                EditorManager.inst.timelineScrollRectBar.onValueChanged.ClearAll();
-                EditorManager.inst.timelineScrollRectBar.value = position;
-                EditorManager.inst.timelineScrollRectBar.onValueChanged.AddListener(SetTimelineScroll);
+                EditorManager.inst.timelineScrollRectBar.SetValueWithoutNotify(position);
+                EditorManager.inst.timelineScrollRectBar.onValueChanged.NewListener(SetTimelineScroll);
                 SetTimelineScroll(position);
 
-                EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
-                EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
-                EditorManager.inst.zoomSlider.onValueChanged.AddListener(_val => EditorManager.inst.Zoom = _val);
+                EditorManager.inst.zoomSlider.SetValueWithoutNotify(EditorManager.inst.zoomFloat);
+                EditorManager.inst.zoomSlider.onValueChanged.NewListener(_val => EditorManager.inst.Zoom = _val);
             }
             catch (Exception ex)
             {
