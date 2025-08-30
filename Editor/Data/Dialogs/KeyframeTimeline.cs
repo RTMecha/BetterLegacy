@@ -797,7 +797,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             var beatmapObject = CurrentObject as BeatmapObject;
             float timelineCalc = Cursor.value;
-            if (AudioManager.inst.CurrentAudioSource.clip && beatmapObject)
+            if (EditorConfig.Instance.UseMouseAsZoomPoint.Value)
+                timelineCalc = MouseTimelineCalc() / Cursor.maxValue;
+            else if (AudioManager.inst.CurrentAudioSource.clip && beatmapObject)
             {
                 float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
                 float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
