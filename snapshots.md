@@ -1,5 +1,8 @@
 ﻿# ???
 ## Features
+### Core
+- Added setTheme modifier. This sets a custom fixed theme that overwrites the theme interpolation. (Does not currently allow for interpolation itself)
+
 ### Editor
 - Added "Analyze BPM On Level Load" in > Config Manager > Editor > BPM.
 - The animation timeline should now use the Use Mouse As Zoom Point setting.
