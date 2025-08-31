@@ -2179,6 +2179,17 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Checks if a level has been loaded. If the user is currently not in a level, a notification will display.
+        /// </summary>
+        /// <returns>Returns true if a level was loaded, otherwise returns false.</returns>
+        public bool hasLoadedLevel()
+        {
+            if (!EditorManager.inst.hasLoadedLevel)
+                EditorManager.inst.DisplayNotification($"Load a level first!", 2f, EditorManager.NotificationType.Warning);
+            return EditorManager.inst.hasLoadedLevel;
+        }
+
         #endregion
 
         #region Story Development
