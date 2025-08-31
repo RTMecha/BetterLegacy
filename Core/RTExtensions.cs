@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
@@ -25,6 +26,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
+using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 
 using Object = UnityEngine.Object;
@@ -2806,6 +2808,38 @@ namespace BetterLegacy.Core
             for (int i = 0; i < animationDialog.KeyframeDialogs.Count; i++)
                 animationDialog.KeyframeDialogs[i].SetActive(false);
             animationDialog.CurrentKeyframeDialog = null;
+        }
+
+        /// <summary>
+        /// Checks if an item can show on a page.
+        /// </summary>
+        /// <param name="pageUI">Page UI reference.</param>
+        /// <param name="index">Index of the item.</param>
+        /// <param name="perPage">Items per page.</param>
+        /// <returns>Returns true if the item is on the page, otherwise returns false.</returns>
+        public static bool InPage(this IPageUI pageUI, int index, int perPage)
+        {
+            int max = (pageUI.Page + 1) * perPage;
+            return index >= max - perPage && index < max;
+        }
+
+        /// <summary>
+        /// Renders the page field.
+        /// </summary>
+        /// <param name="pageUI">Page UI reference.</param>
+        public static void RenderPageField(this IPageUI pageUI)
+        {
+            var eventTrigger = pageUI.PageField.eventTrigger;
+            if (!eventTrigger)
+            {
+                eventTrigger = pageUI.PageField.inputField.gameObject.GetOrAddComponent<EventTrigger>();
+                pageUI.PageField.eventTrigger = eventTrigger;
+            }
+
+            eventTrigger.triggers.Clear();
+            var count = pageUI.MaxPageCount;
+            if (count > 0)
+                eventTrigger.triggers.Add(TriggerHelper.ScrollDeltaInt(pageUI.PageField.inputField, max: count));
         }
 
         #endregion

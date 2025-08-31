@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
@@ -31,16 +29,26 @@ namespace BetterLegacy.Editor.Data.Popups
 
         public int Page { get; set; }
 
-        public int MaxPageCount => getMaxPageCount?.Invoke() ?? 1;
+        public int MaxPageCount => getMaxPageCount?.Invoke() ?? int.MaxValue;
 
         public Func<int> getMaxPageCount;
 
         public override void Init()
         {
             base.Init();
+            InitPageField();
+        }
 
+        /// <summary>
+        /// Initializes the page field.
+        /// </summary>
+        public void InitPageField()
+        {
             var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(TopPanel, "page");
-            page.transform.AsRT().anchoredPosition = new Vector2(240f, 16f);
+            page.GetComponent<HorizontalLayoutGroup>().spacing = 4f;
+            //page.transform.AsRT().anchoredPosition = new Vector2(230f, 16f);
+            //page.transform.AsRT().sizeDelta = new Vector2(144f, 32f);
+            RectValues.RightAnchored.AnchoredPosition(-32f, 0f).SizeDelta(144f, 0f).AssignToRectTransform(page.transform.AsRT());
             PageField = page.GetComponent<InputFieldStorage>();
             PageField.inputField.SetTextWithoutNotify("0");
             PageField.inputField.onValueChanged.NewListener(_val =>

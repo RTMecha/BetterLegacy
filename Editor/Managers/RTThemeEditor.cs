@@ -441,7 +441,7 @@ namespace BetterLegacy.Editor.Managers
             themesLoading = false;
 
             if (refreshGUI)
-                yield return StartCoroutine(RenderThemeList());
+                RenderThemeList();
 
             yield break;
         }
@@ -500,20 +500,15 @@ namespace BetterLegacy.Editor.Managers
         public void RenderExternalThemesPopup()
         {
             Popup.ClearContent();
+            Popup.RenderPageField();
 
-            var layer = Popup.Page + 1;
-
-            TriggerHelper.AddEventTriggers(Popup.PageField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Popup.PageField.inputField, max: ThemeManager.inst.ThemeCount / themesPerPage));
-
-            int num = 0;
+            int index = 0;
             foreach (var beatmapTheme in ThemeManager.inst.AllThemes)
             {
-                int max = layer * themesPerPage;
-
                 var name = beatmapTheme.name ?? "theme";
-                if (!RTString.SearchString(Popup.SearchTerm, name) || num < max - themesPerPage || num >= max)
+                if (!RTString.SearchString(Popup.SearchTerm, name) || !Popup.InPage(index, themesPerPage))
                 {
-                    num++;
+                    index++;
                     continue;
                 }
 
@@ -608,7 +603,7 @@ namespace BetterLegacy.Editor.Managers
                 use.gameObject.SetActive(true);
                 convert.gameObject.SetActive(true);
 
-                num++;
+                index++;
             }
         }
 
@@ -629,16 +624,16 @@ namespace BetterLegacy.Editor.Managers
             Dialog.BGColors.ForLoop((img, index) => img.color = beatmapTheme.GetBGColor(index));
         }
 
-        public IEnumerator RenderThemeList()
+        public void RenderThemeList()
         {
             if (!GameData.Current)
-                yield break;
+                return;
 
             if (!loadingThemes && !EventEditor.inst.eventDrag)
             {
                 loadingThemes = true;
 
-                int num = 0;
+                int index = 0;
                 for (int i = 0; i < ThemePanels.Count; i++)
                 {
                     var themePanel = ThemePanels[i];
@@ -650,25 +645,20 @@ namespace BetterLegacy.Editor.Managers
                         searchBool = false;
 
                     if (searchBool)
-                        num++;
+                        index++;
 
                     if (!themePanel.GameObject)
                     {
                         throw new NullReferenceException($"Theme Panel object was null. Index: {i} Item: {themePanel.Item}");
                         //ThemePanels[i] = isFolder ? SetupThemePanel(themePanel.Path, false, i) : SetupThemePanel(themePanel.Item, Parser.TryParse(themePanel.Item.id, 0) < 10, themePanel.isDuplicate, false, i);
                     }
-                    ThemePanels[i].SetActive(num >= MinEventTheme && num < MaxEventTheme && searchBool);
+                    ThemePanels[i].SetActive(index >= MinEventTheme && index < MaxEventTheme && searchBool);
                 }
 
-                if (ThemesCount > eventThemesPerPage)
-                    TriggerHelper.AddEventTriggers(Dialog.PageField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(Dialog.PageField.inputField, max: ThemesCount / eventThemesPerPage));
-                else
-                    TriggerHelper.AddEventTriggers(Dialog.PageField.inputField.gameObject);
+                Dialog.RenderPageField();
 
                 loadingThemes = false;
             }
-
-            yield break;
         }
 
         /// <summary>
@@ -754,7 +744,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.EnableThemeWatcher();
 
-            CoroutineHelper.StartCoroutine(RenderThemeList());
+            RenderThemeList();
             RenderThemePreview();
             EventEditor.inst.showTheme = false;
             Dialog.Editor.SetActive(false);
@@ -852,7 +842,7 @@ namespace BetterLegacy.Editor.Managers
                     themePanel.Item = beatmapTheme;
                     themePanel.Render();
 
-                    CoroutineHelper.StartCoroutine(RenderThemeList());
+                    RenderThemeList();
                 }
 
                 RenderThemePreview();
@@ -894,7 +884,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         themePanel.Item = beatmapTheme;
                         themePanel.Render();
-                        CoroutineHelper.StartCoroutine(RenderThemeList());
+                        RenderThemeList();
                     }
 
                     themePanel.Use();
