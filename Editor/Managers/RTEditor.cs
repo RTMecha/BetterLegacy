@@ -447,7 +447,7 @@ namespace BetterLegacy.Editor.Managers
                 InfoPopup = new InfoPopup(EditorPopup.FILE_INFO_POPUP);
                 InfoPopup.Assign(InfoPopup.GetLegacyDialog().Dialog.gameObject);
 
-                ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
+                ParentSelectorPopup = new PageContentPopup(EditorPopup.PARENT_SELECTOR);
                 ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
                 ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
                 ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
@@ -708,7 +708,6 @@ namespace BetterLegacy.Editor.Managers
             SetupTimelineGrid();
             SetupNewFilePopup();
             CreatePreview();
-            CreateObjectSearch();
             CreateDebug();
             CreateAutosavePopup();
             CreateScreenshotsView();
@@ -812,6 +811,9 @@ namespace BetterLegacy.Editor.Managers
             EditorContextMenu.Init();
 
             SetupMiscEditorThemes();
+
+            ParentSelectorPopup.InitPageField();
+            ParentSelectorPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectEditor.ParentObjectsPerPage; // temp
         }
 
         #endregion
@@ -1090,7 +1092,7 @@ namespace BetterLegacy.Editor.Managers
 
         public InfoPopup InfoPopup { get; set; }
 
-        public ContentPopup ParentSelectorPopup { get; set; }
+        public PageContentPopup ParentSelectorPopup { get; set; }
 
         public EditorPopup SaveAsPopup { get; set; }
 
@@ -1110,8 +1112,6 @@ namespace BetterLegacy.Editor.Managers
         public EditorPopup WarningPopup { get; set; }
 
         public EditorPopup BrowserPopup { get; set; }
-
-        public ContentPopup ObjectSearchPopup { get; set; }
 
         public EditorPopup NamePopup { get; set; }
 
@@ -3663,7 +3663,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RTThemeEditor.inst.Dialog.Page = Mathf.Clamp(p, 0, RTThemeEditor.inst.Dialog.MaxPageCount);
 
-                    StartCoroutine(RTThemeEditor.inst.RenderThemeList());
+                    RTThemeEditor.inst.RenderThemeList();
                 }
             });
 
@@ -4179,19 +4179,6 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.CreateEntry(EventTriggerType.Drag, SelectObjectHelper.Drag),
                 TriggerHelper.CreateEntry(EventTriggerType.EndDrag, SelectObjectHelper.EndDrag),
             };
-        }
-
-        void CreateObjectSearch()
-        {
-            ObjectSearchPopup = GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
-
-            var dropdown = EditorHelper.AddEditorDropdown("Search Objects", "", "View", EditorSprites.SearchSprite, () =>
-            {
-                ObjectSearchPopup.Open();
-                ObjectEditor.inst.RefreshObjectSearch(x => EditorTimeline.inst.SetCurrentObject(EditorTimeline.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
-            });
-
-            EditorHelper.SetComplexity(dropdown, Complexity.Normal);
         }
 
         void CreateWarningPopup()
@@ -5206,8 +5193,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void RefreshFontSelector(Action<string> onFontSelected)
         {
-            FontSelectorPopup.SearchField.onValueChanged.ClearAll();
-            FontSelectorPopup.SearchField.onValueChanged.AddListener(_val => RefreshFontSelector(onFontSelected));
+            FontSelectorPopup.SearchField.onValueChanged.NewListener(_val => RefreshFontSelector(onFontSelected));
             FontSelectorPopup.ClearContent();
 
             foreach (var font in FontManager.inst.allFonts)

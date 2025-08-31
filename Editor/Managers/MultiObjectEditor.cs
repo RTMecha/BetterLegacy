@@ -3911,7 +3911,7 @@ namespace BetterLegacy.Editor.Managers
                         ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
                         {
                             SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
-                            RTEditor.inst.ObjectSearchPopup.Close();
+                            ObjectEditor.inst.ObjectSearchPopup.Close();
                         });
                     }),
                     new ButtonFunction($"Sync {nameContext} via Picker", () =>
@@ -3932,7 +3932,7 @@ namespace BetterLegacy.Editor.Managers
             ObjectEditor.inst.ShowObjectSearch(beatmapObject =>
             {
                 SyncObjectData(timelineObject => update?.Invoke(timelineObject, beatmapObject), renderTimelineObject, updateObject, updateContext);
-                RTEditor.inst.ObjectSearchPopup.Close();
+                ObjectEditor.inst.ObjectSearchPopup.Close();
             });
         }
 
