@@ -1,7 +1,7 @@
 ﻿# ???
 ## Features
 ### Core
-- Added setTheme modifier. This sets a custom fixed theme that overwrites the theme interpolation. (Does not currently allow for interpolation itself)
+- Added setTheme and lerpTheme action modifiers. This sets a custom fixed theme that overwrites the theme interpolation.
 
 ### Editor
 - Added "Analyze BPM On Level Load" in > Config Manager > Editor > BPM.
