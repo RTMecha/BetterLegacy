@@ -99,32 +99,28 @@ namespace BetterLegacy.Core.Managers
 
         public void UpdateAllThemes() => AllThemes = customThemes.IsEmpty() ? defaultThemes : defaultThemes.Union(customThemes).ToList();
 
-        public void AddTheme(BeatmapTheme beatmapTheme, Action<BeatmapTheme> onLoaded = null, Action<BeatmapTheme> onDuplicateFound = null)
+        public bool AddTheme(BeatmapTheme beatmapTheme)
         {
             CustomThemes.Add(beatmapTheme);
 
             if (!themeIDs.Contains(beatmapTheme.id))
             {
-                onLoaded?.Invoke(beatmapTheme);
-
                 themeIDs.Add(beatmapTheme.id);
+                return true;
             }
-            else
+
+            var list = CustomThemes.Where(x => x.id == beatmapTheme.id).ToList();
+            var str = string.Empty;
+            for (int j = 0; j < list.Count; j++)
             {
-                onDuplicateFound?.Invoke(beatmapTheme);
-
-                var list = CustomThemes.Where(x => x.id == beatmapTheme.id).ToList();
-                var str = "";
-                for (int j = 0; j < list.Count; j++)
-                {
-                    str += list[j].name;
-                    if (j != list.Count - 1)
-                        str += ", ";
-                }
-
-                if (CoreHelper.InEditor)
-                    EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
+                str += list[j].name;
+                if (j != list.Count - 1)
+                    str += ", ";
             }
+
+            if (CoreHelper.InEditor)
+                EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
+            return false;
         }
 
         public void Clear()

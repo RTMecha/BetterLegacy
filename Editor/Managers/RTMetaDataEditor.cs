@@ -1155,8 +1155,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var jn = JSON.Parse(json);
 
-                if (GameData.Current)
-                    GameData.Current.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "reload-level-backup.lsb"));
+                GameData.Current?.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "reload-level-backup.lsb"));
 
                 UploadedLevelsManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
             }, (string onError, long responseCode, string errorMsg) =>

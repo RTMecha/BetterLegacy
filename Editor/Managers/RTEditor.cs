@@ -687,6 +687,8 @@ namespace BetterLegacy.Editor.Managers
             var dialogStorage = prefabHolder.Dialog.AddComponent<EditorDialogStorage>();
             dialogStorage.topPanel = prefabHolder.Dialog.transform.GetChild(0).GetComponent<Image>();
             dialogStorage.title = dialogStorage.topPanel.transform.GetChild(0).GetComponent<Text>();
+
+            prefabHolder.ContentPopup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Popup");
         }
 
         // 5 - setup misc editor UI
@@ -1114,8 +1116,6 @@ namespace BetterLegacy.Editor.Managers
         public EditorPopup NamePopup { get; set; }
 
         public ContentPopup PrefabTypesPopup { get; set; }
-
-        public ContentPopup ThemesPopup { get; set; }
 
         public ContentPopup FontSelectorPopup { get; set; }
 
@@ -2490,6 +2490,14 @@ namespace BetterLegacy.Editor.Managers
             return editorPopup;
         }
 
+        public PageContentPopup GeneratePagePopup(string name, string title, Vector2? defaultPosition = null, Vector2? size = null, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
+        {
+            var editorPopup = new PageContentPopup(name, title, defaultPosition, size, refreshSearch, close, placeholderText);
+            editorPopup.Init();
+            editorPopups.Add(editorPopup);
+            return editorPopup;
+        }
+
         #region Internal
 
         void SetupTimelineBar()
@@ -3453,11 +3461,10 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.AssignTooltip(sortList, "Level Sort Dropdown");
 
             Destroy(sortList.GetComponent<HideDropdownOptions>());
-            levelOrderDropdown.onValueChanged.ClearAll();
             levelOrderDropdown.options.Clear();
             levelOrderDropdown.options = CoreHelper.StringToOptionData("Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created");
-            levelOrderDropdown.value = (int)levelSort;
-            levelOrderDropdown.onValueChanged.AddListener(_val =>
+            levelOrderDropdown.SetValueWithoutNotify((int)levelSort);
+            levelOrderDropdown.onValueChanged.NewListener(_val =>
             {
                 levelSort = (LevelSort)_val;
                 EditorLevelManager.inst.RenderLevels();
@@ -3472,9 +3479,8 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.AssignTooltip(checkDes, "Level Ascend Toggle");
 
             levelAscendToggle = checkDes.GetComponent<Toggle>();
-            levelAscendToggle.onValueChanged.ClearAll();
-            levelAscendToggle.isOn = levelAscend;
-            levelAscendToggle.onValueChanged.AddListener(_val =>
+            levelAscendToggle.SetIsOnWithoutNotify(levelAscend);
+            levelAscendToggle.onValueChanged.NewListener(_val =>
             {
                 levelAscend = _val;
                 EditorLevelManager.inst.RenderLevels();
@@ -3511,13 +3517,11 @@ namespace BetterLegacy.Editor.Managers
 
             editorPathField = levelPathGameObject.GetComponent<InputField>();
             editorPathField.characterValidation = InputField.CharacterValidation.None;
-            editorPathField.onValueChanged.ClearAll();
-            editorPathField.onEndEdit.ClearAll();
             editorPathField.textComponent.alignment = TextAnchor.MiddleLeft;
             editorPathField.textComponent.fontSize = 16;
-            editorPathField.text = EditorPath;
-            editorPathField.onValueChanged.AddListener(_val => EditorPath = _val);
-            editorPathField.onEndEdit.AddListener(_val => UpdateEditorPath(false));
+            editorPathField.SetTextWithoutNotify(EditorPath);
+            editorPathField.onValueChanged.NewListener(_val => EditorPath = _val);
+            editorPathField.onEndEdit.NewListener(_val => UpdateEditorPath(false));
 
             EditorThemeManager.AddInputField(editorPathField);
 
@@ -3581,13 +3585,11 @@ namespace BetterLegacy.Editor.Managers
 
             themePathField = themePathGameObject.GetComponent<InputField>();
             themePathField.characterValidation = InputField.CharacterValidation.None;
-            themePathField.onValueChanged.ClearAll();
-            themePathField.onEndEdit.ClearAll();
             themePathField.textComponent.alignment = TextAnchor.MiddleLeft;
             themePathField.textComponent.fontSize = 16;
-            themePathField.text = ThemePath;
-            themePathField.onValueChanged.AddListener(_val => ThemePath = _val);
-            themePathField.onEndEdit.AddListener(_val => UpdateThemePath(false));
+            themePathField.SetTextWithoutNotify(ThemePath);
+            themePathField.onValueChanged.NewListener(_val => ThemePath = _val);
+            themePathField.onEndEdit.NewListener(_val => UpdateThemePath(false));
 
             EditorThemeManager.AddInputField(themePathField);
 
@@ -3641,8 +3643,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             var themeListReloadButton = themeListReload.GetComponent<Button>();
-            themeListReloadButton.onClick.ClearAll();
-            themeListReloadButton.onClick.AddListener(() => UpdateThemePath(true));
+            themeListReloadButton.onClick.NewListener(() => UpdateThemePath(true));
 
             EditorThemeManager.AddSelectable(themeListReloadButton, ThemeGroup.Function_2, false);
 
@@ -3651,50 +3652,37 @@ namespace BetterLegacy.Editor.Managers
             var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
             UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
             var themePageStorage = themePage.GetComponent<InputFieldStorage>();
-            RTThemeEditor.eventPageStorage = themePageStorage;
             themePage.GetComponent<HorizontalLayoutGroup>().spacing = 2f;
             themePageStorage.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
 
             themePageStorage.inputField.GetComponent<LayoutElement>().minWidth = 60f;
-            themePageStorage.inputField.onValueChanged.ClearAll();
-            themePageStorage.inputField.text = "0";
-            themePageStorage.inputField.onValueChanged.AddListener(_val =>
+            themePageStorage.inputField.SetTextWithoutNotify("0");
+            themePageStorage.inputField.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
                 {
-                    RTThemeEditor.inst.eventThemePage = Mathf.Clamp(p, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage);
+                    RTThemeEditor.inst.Dialog.Page = Mathf.Clamp(p, 0, RTThemeEditor.inst.Dialog.MaxPageCount);
 
-                    StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                    StartCoroutine(RTThemeEditor.inst.RenderThemeList());
                 }
             });
 
-            themePageStorage.leftGreaterButton.onClick.ClearAll();
-            themePageStorage.leftGreaterButton.onClick.AddListener(() => themePageStorage.inputField.text = "0");
-
-            themePageStorage.leftButton.onClick.ClearAll();
-            themePageStorage.leftButton.onClick.AddListener(() =>
+            themePageStorage.leftGreaterButton.onClick.NewListener(() => themePageStorage.inputField.text = "0");
+            themePageStorage.leftButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(themePageStorage.inputField.text, out int p))
                     themePageStorage.inputField.text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
-
-            themePageStorage.rightButton.onClick.ClearAll();
-            themePageStorage.rightButton.onClick.AddListener(() =>
+            themePageStorage.rightButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(themePageStorage.inputField.text, out int p))
                     themePageStorage.inputField.text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
-
-            themePageStorage.rightGreaterButton.onClick.ClearAll();
-            themePageStorage.rightGreaterButton.onClick.AddListener(() => themePageStorage.inputField.text = (RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
+            themePageStorage.rightGreaterButton.onClick.NewListener(() => themePageStorage.inputField.text = (RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
 
             Destroy(themePageStorage.middleButton.gameObject);
 
-            EditorThemeManager.AddInputField(themePageStorage.inputField);
-            EditorThemeManager.AddSelectable(themePageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(themePageStorage.leftButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(themePageStorage.rightButton, ThemeGroup.Function_2, false);
-            EditorThemeManager.AddSelectable(themePageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.AddInputField(themePageStorage);
 
             #endregion
 
@@ -3709,13 +3697,11 @@ namespace BetterLegacy.Editor.Managers
 
             prefabPathField = prefabPathGameObject.GetComponent<InputField>();
             prefabPathField.characterValidation = InputField.CharacterValidation.None;
-            prefabPathField.onValueChanged.ClearAll();
-            prefabPathField.onEndEdit.ClearAll();
             prefabPathField.textComponent.alignment = TextAnchor.MiddleLeft;
             prefabPathField.textComponent.fontSize = 16;
-            prefabPathField.text = PrefabPath;
-            prefabPathField.onValueChanged.AddListener(_val => PrefabPath = _val);
-            prefabPathField.onEndEdit.AddListener(_val => UpdatePrefabPath(false));
+            prefabPathField.SetTextWithoutNotify(PrefabPath);
+            prefabPathField.onValueChanged.NewListener(_val => PrefabPath = _val);
+            prefabPathField.onEndEdit.NewListener(_val => UpdatePrefabPath(false));
 
             EditorThemeManager.AddInputField(prefabPathField);
 
@@ -3769,8 +3755,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             var prefabListReloadButton = prefabListReload.GetComponent<Button>();
-            prefabListReloadButton.onClick.ClearAll();
-            prefabListReloadButton.onClick.AddListener(() => UpdatePrefabPath(true));
+            prefabListReloadButton.onClick.NewListener(() => UpdatePrefabPath(true));
 
             EditorThemeManager.AddSelectable(prefabListReloadButton, ThemeGroup.Function_2, false);
 
@@ -5906,7 +5891,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         AchievementManager.inst.UnlockAchievement("time_machine");
                                         EditorLevelManager.inst.LoadLevels();
-                                    }, true);
+                                    });
 
                                     #endregion
                                 }

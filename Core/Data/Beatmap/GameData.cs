@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Represents a Project Arrhythmia level.
     /// </summary>
-    public class GameData : Exists, IModifyable, IModifierReference, IBeatmap
+    public class GameData : PAObject<GameData>, IModifyable, IModifierReference, IBeatmap
     {
         public GameData() { }
 
@@ -692,12 +692,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #region Methods
 
-        /// <summary>
-        /// Creates a copy of a <see cref="GameData"/>.
-        /// </summary>
-        /// <param name="orig">Original to copy.</param>
-        /// <returns>Returns a copied <see cref="GameData"/>.</returns>
-        public static GameData DeepCopy(GameData orig)
+        public override void CopyData(GameData orig, bool newID = true)
         {
             if (orig.beatmapObjects == null)
                 orig.beatmapObjects = new List<BeatmapObject>();
@@ -706,17 +701,18 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (orig.backgroundObjects == null)
                 orig.backgroundObjects = new List<BackgroundObject>();
 
-            var gameData = new GameData();
-            gameData.data = orig.data?.Copy();
-            gameData.beatmapObjects = new List<BeatmapObject>((from obj in orig.beatmapObjects
+            data = orig.data?.Copy();
+            beatmapObjects = new List<BeatmapObject>((from obj in orig.beatmapObjects
+                                                               select obj.Copy(false)));
+            backgroundLayers = new List<BackgroundLayer>((from obj in orig.backgroundLayers
                                                                    select obj.Copy(false)));
-            gameData.backgroundLayers = new List<BackgroundLayer>((from obj in orig.backgroundLayers
-                                                                   select obj.Copy(false)));
-            gameData.backgroundObjects = new List<BackgroundObject>((from obj in orig.backgroundObjects
-                                                                         select obj.Copy(false)));
+            backgroundObjects = new List<BackgroundObject>((from obj in orig.backgroundObjects
+                           
+                                                            select obj.Copy(false)));
+
+            events.Clear();
             for (int i = 0; i < orig.events.Count; i++)
-                gameData.events.Add(orig.events[i].Select(x => x.Copy()).ToList());
-            return gameData;
+                events.Add(orig.events[i].Select(x => x.Copy()).ToList());
         }
 
         /// <summary>
@@ -734,16 +730,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             _ => null,
         };
 
-        /// <summary>
-        /// Parses a level from JSON in the VG format.
-        /// </summary>
-        /// <param name="jn">VG JSON to parse.</param>
-        /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
-        /// <param name="version">The exact version the level is from.</param>
-        /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
-        public static GameData ParseVG(JSONNode jn, Version version = default)
+        public override void ReadJSONVG(JSONNode jn, Version version = default)
         {
-            var gameData = new GameData();
             var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
 
             CoreHelper.Log($"Parsing Version: {version}");
@@ -765,28 +753,28 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int j = 0; j < jnTrigger["event_data"].Count; j++)
                     actionModifier.SetValue(j, jnTrigger["event_data"][j]);
 
-                gameData.modifiers.Add(triggerModifier);
-                gameData.modifiers.Add(actionModifier);
+                modifiers.Add(triggerModifier);
+                modifiers.Add(actionModifier);
             }
 
             CoreHelper.Log($"Parsing BeatmapData");
-            gameData.data = BeatmapData.ParseVG(jn);
+            data = BeatmapData.ParseVG(jn);
 
             CoreHelper.Log($"Parsing Objects");
             for (int i = 0; i < jn["objects"].Count; i++)
-                gameData.beatmapObjects.Add(BeatmapObject.ParseVG(jn["objects"][i], version));
+                beatmapObjects.Add(BeatmapObject.ParseVG(jn["objects"][i], version));
 
             if (parseOptimizations)
-                for (int i = 0; i < gameData.beatmapObjects.Count; i++)
-                    gameData.beatmapObjects[i].SetAutokillToScale(gameData.beatmapObjects);
+                for (int i = 0; i < beatmapObjects.Count; i++)
+                    beatmapObjects[i].SetAutokillToScale(beatmapObjects);
 
             CoreHelper.Log($"Parsing Prefab Objects");
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
-                gameData.prefabObjects.Add(PrefabObject.ParseVG(jn["prefab_objects"][i]));
+                prefabObjects.Add(PrefabObject.ParseVG(jn["prefab_objects"][i]));
 
             CoreHelper.Log($"Parsing Prefabs");
             for (int i = 0; i < jn["prefabs"].Count; i++)
-                gameData.prefabs.Add(Prefab.ParseVG(jn["prefabs"][i], version));
+                prefabs.Add(Prefab.ParseVG(jn["prefabs"][i], version));
 
             Dictionary<string, string> idConversion = new Dictionary<string, string>();
 
@@ -801,7 +789,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     if (!string.IsNullOrEmpty(beatmapTheme.VGID))
                         idConversion.TryAdd(beatmapTheme.VGID, beatmapTheme.id);
 
-                    gameData.beatmapThemes.Add(beatmapTheme);
+                    beatmapThemes.Add(beatmapTheme);
 
                     beatmapTheme = null;
                 }
@@ -811,23 +799,23 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (jn["parallax_settings"] != null)
             {
-                gameData.mainBackgroundLayer = jn["parallax_settings"]["ml"].AsInt;
+                mainBackgroundLayer = jn["parallax_settings"]["ml"].AsInt;
                 // parse depth of field here when that event is added
                 for (int i = 0; i < jn["parallax_settings"]["l"].Count; i++)
                 {
                     var jnLayer = jn["parallax_settings"]["l"][i];
                     var backgroundLayer = BackgroundLayer.ParseVG(jnLayer, version);
-                    gameData.backgroundLayers.Add(backgroundLayer);
+                    backgroundLayers.Add(backgroundLayer);
                     for (int j = 0; j < jnLayer["o"].Count; j++)
                     {
                         var bg = BackgroundObject.ParseVG(jnLayer["o"][j], version);
                         bg.layer = backgroundLayer.id;
-                        gameData.backgroundObjects.Add(bg);
+                        backgroundObjects.Add(bg);
                     }
                 }
             }
 
-            gameData.events = new List<List<EventKeyframe>>();
+            events = new List<List<EventKeyframe>>();
 
             string breakContext = "";
             try
@@ -835,7 +823,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 CoreHelper.Log($"Parsing VG Event Keyframes");
                 // Move
                 breakContext = "Move";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][0].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -849,12 +837,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.time = kfjn["t"].AsFloat;
                     eventKeyframe.SetValues(kfjn["ev"][0].AsFloat, kfjn["ev"][1].AsFloat);
 
-                    gameData.events[0].Add(eventKeyframe);
+                    events[0].Add(eventKeyframe);
                 }
 
                 // Zoom
                 breakContext = "Zoom";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][1].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -868,12 +856,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.time = kfjn["t"].AsFloat;
                     eventKeyframe.SetValues(kfjn["ev"][0].AsFloat);
 
-                    gameData.events[1].Add(eventKeyframe);
+                    events[1].Add(eventKeyframe);
                 }
 
                 // Rotate
                 breakContext = "Rotate";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][2].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -887,12 +875,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.time = kfjn["t"].AsFloat;
                     eventKeyframe.SetValues(kfjn["ev"][0].AsFloat);
 
-                    gameData.events[2].Add(eventKeyframe);
+                    events[2].Add(eventKeyframe);
                 }
 
                 // Shake
                 breakContext = "Shake";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][3].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -910,12 +898,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     else
                         eventKeyframe.SetValues(kfjn["ev"][0].AsFloat, 1f, 1f);
 
-                    gameData.events[3].Add(eventKeyframe);
+                    events[3].Add(eventKeyframe);
                 }
 
                 // Theme
                 breakContext = "Theme";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][4].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -933,12 +921,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     else
                         eventKeyframe.SetValues(0f);
 
-                    gameData.events[4].Add(eventKeyframe);
+                    events[4].Add(eventKeyframe);
                 }
 
                 // Chroma
                 breakContext = "Chroma";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][5].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -952,12 +940,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.time = kfjn["t"].AsFloat;
                     eventKeyframe.SetValues(kfjn["ev"][0].AsFloat);
 
-                    gameData.events[5].Add(eventKeyframe);
+                    events[5].Add(eventKeyframe);
                 }
 
                 // Bloom
                 breakContext = "Bloom";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][6].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -976,12 +964,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         0f,
                         kfjn["ev"][2].AsFloat == 9f ? 18f : kfjn["ev"][2].AsFloat);
 
-                    gameData.events[6].Add(eventKeyframe);
+                    events[6].Add(eventKeyframe);
                 }
 
                 // Vignette
                 breakContext = "Vignette";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][7].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -1002,12 +990,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["ev"][5].AsFloat,
                         kfjn["ev"][6].AsFloat == 9f ? 18f : kfjn["ev"][6].AsFloat);
 
-                    gameData.events[7].Add(eventKeyframe);
+                    events[7].Add(eventKeyframe);
                 }
 
                 // Lens
                 breakContext = "Lens";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][8].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -1027,12 +1015,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         1f,
                         1f);
 
-                    gameData.events[8].Add(eventKeyframe);
+                    events[8].Add(eventKeyframe);
                 }
 
                 // Grain
                 breakContext = "Grain";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][9].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -1049,12 +1037,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["ev"][1].AsFloat,
                         kfjn["ev"][2].AsFloat);
 
-                    gameData.events[9].Add(eventKeyframe);
+                    events[9].Add(eventKeyframe);
                 }
 
                 // Hue
                 breakContext = "Hue";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][12].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -1069,21 +1057,21 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.SetValues(
                         kfjn["ev"][0].AsFloat);
 
-                    gameData.events[10].Add(eventKeyframe);
+                    events[10].Add(eventKeyframe);
                 }
 
-                gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[11].Add(DefaultKeyframes[11].Copy());
-                gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[12].Add(DefaultKeyframes[12].Copy());
-                gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[13].Add(DefaultKeyframes[13].Copy());
-                gameData.events.Add(new List<EventKeyframe>());
-                gameData.events[14].Add(DefaultKeyframes[14].Copy());
+                events.Add(new List<EventKeyframe>());
+                events[11].Add(DefaultKeyframes[11].Copy());
+                events.Add(new List<EventKeyframe>());
+                events[12].Add(DefaultKeyframes[12].Copy());
+                events.Add(new List<EventKeyframe>());
+                events[13].Add(DefaultKeyframes[13].Copy());
+                events.Add(new List<EventKeyframe>());
+                events[14].Add(DefaultKeyframes[14].Copy());
 
                 // Gradient
                 breakContext = "Gradient";
-                gameData.events.Add(new List<EventKeyframe>());
+                events.Add(new List<EventKeyframe>());
                 for (int i = 0; i < jn["events"][10].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
@@ -1102,13 +1090,13 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["ev"][3].AsFloat == 9f ? 19f : kfjn["ev"][3].AsFloat,
                         kfjn["ev"].Count > 4 ? kfjn["ev"][4].AsFloat : 0f);
 
-                    gameData.events[15].Add(eventKeyframe);
+                    events[15].Add(eventKeyframe);
                 }
 
                 for (int i = 16; i < DefaultKeyframes.Count; i++)
                 {
-                    gameData.events.Add(new List<EventKeyframe>());
-                    gameData.events[i].Add(DefaultKeyframes[i].Copy());
+                    events.Add(new List<EventKeyframe>());
+                    events[i].Add(DefaultKeyframes[i].Copy());
                 }
             }
             catch (Exception ex)
@@ -1122,11 +1110,11 @@ namespace BetterLegacy.Core.Data.Beatmap
             }
 
             CoreHelper.Log($"Checking keyframe counts");
-            ClampEventListValues(gameData.events);
+            ClampEventListValues(events);
 
-            if (jn["events"].Count > 13 && jn["events"][13] != null && gameData.events.Count > 36)
+            if (jn["events"].Count > 13 && jn["events"][13] != null && events.Count > 36)
             {
-                var playerForce = gameData.events[36];
+                var playerForce = events[36];
                 var firstKF = playerForce[0];
 
                 firstKF.id = LSText.randomNumString(8);
@@ -1148,30 +1136,20 @@ namespace BetterLegacy.Core.Data.Beatmap
                         kfjn["ev"][0].AsFloat,
                         kfjn["ev"][1].AsFloat);
 
-                    gameData.events[36].Add(eventKeyframe);
+                    events[36].Add(eventKeyframe);
                 }
             }
 
             //ConvertedGameData = gameData;
-
-            return gameData;
         }
 
-        /// <summary>
-        /// Parses a level from JSON in the LS format.
-        /// </summary>
-        /// <param name="jn">LS JSON to parse.</param>
-        /// <param name="parseThemes">If the levels' themes should overwrite the current global list of themes.</param>
-        /// <returns>Returns a parsed <see cref="GameData"/>.</returns>
-        public static GameData Parse(JSONNode jn)
+        public override void ReadJSON(JSONNode jn)
         {
-            var gameData = new GameData();
-
             //LastParsedJSON = jn;
             var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
 
             if (jn["ordmod"] != null)
-                gameData.OrderModifiers = jn["ordmod"].AsBool;
+                OrderModifiers = jn["ordmod"].AsBool;
 
             if (jn["modifiers"] != null)
                 for (int i = 0; i < jn["modifiers"].Count; i++)
@@ -1184,44 +1162,44 @@ namespace BetterLegacy.Core.Data.Beatmap
                         triggerModifier.triggerCount = jnModifier["retrigger"].AsInt;
                         var actionModifier = Modifier.Parse(jnModifier["action"]);
 
-                        gameData.modifiers.Add(triggerModifier);
-                        gameData.modifiers.Add(actionModifier);
+                        modifiers.Add(triggerModifier);
+                        modifiers.Add(actionModifier);
                         continue;
                     }
 
                     var modifier = Modifier.Parse(jnModifier);
                     ModifiersHelper.AssignModifierActions(modifier, ModifierReferenceType.GameData);
                     if (ModifiersHelper.VerifyModifier(modifier, ModifiersManager.inst.defaultLevelModifiers))
-                        gameData.modifiers.Add(modifier);
+                        modifiers.Add(modifier);
                 }
 
-            gameData.modifierBlocks = Parser.ParseModifierBlocks(jn["modifier_blocks"], ModifierReferenceType.ModifierBlock);
+            modifierBlocks = Parser.ParseModifierBlocks(jn["modifier_blocks"], ModifierReferenceType.ModifierBlock);
 
-            gameData.data = BeatmapData.Parse(jn);
+            data = BeatmapData.Parse(jn);
 
             for (int i = 0; i < jn["prefabs"].Count; i++)
             {
                 var prefab = Prefab.Parse(jn["prefabs"][i]);
-                if (gameData.prefabs.Find(x => x.id == prefab.id) == null)
-                    gameData.prefabs.Add(prefab);
+                if (prefabs.Find(x => x.id == prefab.id) == null)
+                    prefabs.Add(prefab);
             }
 
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
             {
                 var prefab = PrefabObject.Parse(jn["prefab_objects"][i]);
-                if (gameData.prefabObjects.Find(x => x.id == prefab.id) == null)
-                    gameData.prefabObjects.Add(prefab);
+                if (prefabObjects.Find(x => x.id == prefab.id) == null)
+                    prefabObjects.Add(prefab);
             }
 
             foreach (var theme in ThemeManager.inst.DefaultThemes)
-                gameData.beatmapThemes.Add(theme);
+                beatmapThemes.Add(theme);
 
             for (int i = 0; i < jn["themes"].Count; i++)
             {
                 if (string.IsNullOrEmpty(jn["themes"][i]["id"]))
                     continue;
 
-                gameData.beatmapThemes.Add(BeatmapTheme.Parse(jn["themes"][i]));
+                beatmapThemes.Add(BeatmapTheme.Parse(jn["themes"][i]));
             }
 
             for (int i = 0; i < jn["beatmap_objects"].Count; i++)
@@ -1229,31 +1207,31 @@ namespace BetterLegacy.Core.Data.Beatmap
                 var beatmapObject = BeatmapObject.Parse(jn["beatmap_objects"][i]);
 
                 // remove objects with duplicate ID's due to a stupid dev branch bug
-                if (gameData.beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
-                    gameData.beatmapObjects.RemoveAt(index);
+                if (beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
+                    beatmapObjects.RemoveAt(index);
 
-                gameData.beatmapObjects.Add(beatmapObject);
+                beatmapObjects.Add(beatmapObject);
             }
 
             if (parseOptimizations)
-                for (int i = 0; i < gameData.beatmapObjects.Count; i++)
-                    gameData.beatmapObjects[i].SetAutokillToScale(gameData.beatmapObjects);
-            
-            gameData.assets.Clear();
+                for (int i = 0; i < beatmapObjects.Count; i++)
+                    beatmapObjects[i].SetAutokillToScale(beatmapObjects);
+
+            assets.Clear();
             if (jn["assets"] != null)
-                gameData.assets.ReadJSON(jn["assets"]);
+                assets.ReadJSON(jn["assets"]);
 
             if (jn["bg_data"] != null)
-                gameData.mainBackgroundLayer = jn["bg_data"]["main_layer"].AsInt;
+                mainBackgroundLayer = jn["bg_data"]["main_layer"].AsInt;
 
             if (jn["bg_layers"] != null)
                 for (int i = 0; i < jn["bg_layers"].Count; i++)
-                    gameData.backgroundLayers.Add(BackgroundLayer.Parse(jn["bg_layers"][i]));
+                    backgroundLayers.Add(BackgroundLayer.Parse(jn["bg_layers"][i]));
 
             for (int i = 0; i < jn["bg_objects"].Count; i++)
-                gameData.backgroundObjects.Add(BackgroundObject.Parse(jn["bg_objects"][i]));
+                backgroundObjects.Add(BackgroundObject.Parse(jn["bg_objects"][i]));
 
-            gameData.events = ParseEventkeyframes(jn["events"], false);
+            events = ParseEventkeyframes(jn["events"], false);
 
             // Fix for some levels having a Y value in shake, resulting in a shake with a 0 x direction value.
             var shakeIsBroke = false;
@@ -1265,15 +1243,15 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
 
             if (shakeIsBroke)
-                for (int i = 0; i < gameData.events[3].Count; i++)
-                    gameData.events[3][i].SetValue(1, 1f);
+                for (int i = 0; i < events[3].Count; i++)
+                    events[3][i].SetValue(1, 1f);
 
             try
             {
-                if (gameData.data && gameData.data.level && Version.TryParse(gameData.data.level.modVersion, out Version modVersion) && modVersion < new Version(1, 3, 4))
+                if (data && data.level && Version.TryParse(data.level.modVersion, out Version modVersion) && modVersion < new Version(1, 3, 4))
                 {
-                    for (int i = 0; i < gameData.events[3].Count; i++)
-                        gameData.events[3][i].SetValue(3, 0f);
+                    for (int i = 0; i < events[3].Count; i++)
+                        events[3][i].SetValue(3, 0f);
                 }
             }
             catch (Exception ex)
@@ -1281,20 +1259,14 @@ namespace BetterLegacy.Core.Data.Beatmap
                 CoreHelper.LogException(ex);
             }
 
-            ClampEventListValues(gameData.events);
+            ClampEventListValues(events);
 
             if (jn["anims"] != null)
                 for (int i = 0; i < jn["anims"].Count; i++)
-                    gameData.animations.Add(PAAnimation.Parse(jn["anims"][i]));
-
-            return gameData;
+                    animations.Add(PAAnimation.Parse(jn["anims"][i]));
         }
 
-        /// <summary>
-        /// Writes the <see cref="GameData"/> to a VG format JSON.
-        /// </summary>
-        /// <returns>Returns a JSON object representing the <see cref="GameData"/>.</returns>
-        public JSONNode ToJSONVG()
+        public override JSONNode ToJSONVG()
         {
             var jn = Parser.NewJSONObject();
 
@@ -1581,12 +1553,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        /// <summary>
-        /// Writes the <see cref="GameData"/> to an LS format JSON.
-        /// </summary>
-        /// <param name="saveGameDataThemes">If the levels' themes should be written to the JSON.</param>
-        /// <returns>Returns a JSON object representing the <see cref="GameData"/>.</returns>
-        public JSONNode ToJSON(bool saveGameDataThemes = false)
+        public override JSONNode ToJSON()
         {
             CoreHelper.Log("Saving Beatmap");
             var jn = Parser.NewJSONObject();
@@ -1628,15 +1595,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["prefabs"][i] = prefabs[i].ToJSON();
 
             CoreHelper.Log($"Saving themes");
-            var levelThemes =
-                saveGameDataThemes ?
-                    beatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList() :
-                    ThemeManager.inst.CustomThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
 
-            for (int i = 0; i < levelThemes.Count; i++)
+            for (int i = 0; i < beatmapThemes.Count; i++)
             {
-                CoreHelper.Log($"Saving {levelThemes[i].id} - {levelThemes[i].name} to level!");
-                jn["themes"][i] = levelThemes[i].ToJSON();
+                CoreHelper.Log($"Saving {beatmapThemes[i]} to level!");
+                jn["themes"][i] = beatmapThemes[i].ToJSON();
             }
 
             CoreHelper.Log("Saving Checkpoints");
@@ -1679,12 +1642,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="path">The file to save to.</param>
         /// <param name="onSave">Function to run when saving is complete.</param>
         /// <param name="saveGameDataThemes">If the levels' themes should be written to the JSON.</param>
-        public void SaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
+        public void SaveData(string path, Action onSave = null)
         {
             if (EditorConfig.Instance.SaveAsync.Value)
-                CoroutineHelper.StartCoroutineAsync(ISaveData(path, onSave, saveGameDataThemes));
+                CoroutineHelper.StartCoroutineAsync(ISaveData(path, onSave));
             else
-                CoroutineHelper.StartCoroutine(ISaveData(path, onSave, saveGameDataThemes));
+                CoroutineHelper.StartCoroutine(ISaveData(path, onSave));
         }
 
         /// <summary>
@@ -1706,9 +1669,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="path">The file to save to.</param>
         /// <param name="onSave">Function to run when saving is complete.</param>
         /// <paramref name="saveGameDataThemes">If the levels' themes should be written to the JSON or not.</paramref>
-        public IEnumerator ISaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
+        public IEnumerator ISaveData(string path, Action onSave = null)
         {
-            var jn = ToJSON(saveGameDataThemes);
+            var jn = ToJSON();
             CoreHelper.Log($"Saving Entire Beatmap to {path}");
             RTFile.WriteToFile(path, jn.ToString());
 

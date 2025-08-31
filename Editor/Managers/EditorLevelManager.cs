@@ -2165,7 +2165,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     EditorManager.inst.DisplayNotification($"Combined {RTString.ArrayToString(selected.Select(x => x.Name).ToArray())} to {savePath} in the LS format!", 3f, EditorManager.NotificationType.Success);
                     onCombined?.Invoke();
-                }, true);
+                });
             }
             else
             {

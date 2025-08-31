@@ -1336,17 +1336,17 @@ namespace BetterLegacy.Configs
             if (!CoreHelper.InEditor)
                 return;
 
-            var p = Mathf.Clamp(RTThemeEditor.inst.eventThemePage, 0, ThemeManager.inst.ThemeCount / RTThemeEditor.eventThemesPerPage).ToString();
+            var p = Mathf.Clamp(RTThemeEditor.inst.Dialog.Page, 0, ThemeManager.inst.ThemeCount / RTThemeEditor.eventThemesPerPage).ToString();
 
-            if (RTThemeEditor.eventPageStorage.inputField.text != p)
+            if (RTThemeEditor.inst.Dialog.PageField.Text != p)
             {
-                RTThemeEditor.eventPageStorage.inputField.text = p;
+                RTThemeEditor.inst.Dialog.PageField.Text = p;
                 return;
             }
 
 
             if (RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy)
-                CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(RTThemeEditor.inst.Dialog.SearchTerm));
+                CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList());
         }
 
         void AutosaveChanged()

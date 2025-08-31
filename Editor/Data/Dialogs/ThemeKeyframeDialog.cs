@@ -19,7 +19,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     /// <summary>
     /// Represents the Theme Keyframe Dialog.
     /// </summary>
-    public class ThemeKeyframeDialog : KeyframeDialog, IContentUI
+    public class ThemeKeyframeDialog : KeyframeDialog, IContentUI, IPageUI
     {
         public ThemeKeyframeDialog() : base(4) { }
 
@@ -27,30 +27,21 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Content
 
-        /// <summary>
-        /// Search field of the theme keyframe dialog.
-        /// </summary>
         public InputField SearchField { get; set; }
 
-        /// <summary>
-        /// Content transform of the theme keyframe dialog.
-        /// </summary>
         public Transform Content { get; set; }
 
-        /// <summary>
-        /// Grid layout of the theme keyframe dialog' content.
-        /// </summary>
         public GridLayoutGroup Grid { get; set; }
 
-        /// <summary>
-        /// Scrollbar of the theme keyframe dialog' content.
-        /// </summary>
         public Scrollbar ContentScrollbar { get; set; }
 
-        /// <summary>
-        /// Gets and sets the search input field text.
-        /// </summary>
         public string SearchTerm { get => SearchField.text; set => SearchField.text = value; }
+
+        public InputFieldStorage PageField { get; set; }
+
+        public int Page { get; set; }
+
+        public int MaxPageCount => RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage;
 
         #endregion
 
@@ -100,6 +91,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Content
 
+            PageField = GameObject.transform.Find("themepathers/page").GetComponent<InputFieldStorage>();
             SearchField = GameObject.transform.Find("theme-search").GetComponent<InputField>();
             Content = GameObject.transform.Find("themes/viewport/content");
             ClearContent();

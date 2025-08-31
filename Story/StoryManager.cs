@@ -331,7 +331,7 @@ namespace BetterLegacy.Story
             var storyLevel = new StoryLevel
             {
                 id = id,
-                json = gameData.ToJSON(true).ToString(),
+                json = gameData.ToJSON().ToString(),
                 jsonPlayers = jnPlayers.ToString(),
                 metadata = new MetaData
                 {
@@ -432,7 +432,8 @@ namespace BetterLegacy.Story
 
                     var beatmapTheme = BeatmapTheme.Parse(jn["themes"][i]);
 
-                    ThemeManager.inst.AddTheme(beatmapTheme, gameData.beatmapThemes.Add);
+                    if (ThemeManager.inst.AddTheme(beatmapTheme));
+                        gameData.beatmapThemes.Add(beatmapTheme);
                 }
 
             ThemeManager.inst.UpdateAllThemes();
