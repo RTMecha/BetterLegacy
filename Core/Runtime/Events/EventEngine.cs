@@ -1167,8 +1167,12 @@ namespace BetterLegacy.Core.Runtime.Events
         {
             themeLerp = x;
 
-            var theme = ThemeManager.inst.GetTheme(prevTheme);
-            ThemeManager.inst.Current.Lerp(theme, prevTheme == nextTheme ? theme : ThemeManager.inst.GetTheme(nextTheme), x);
+            if (CustomTheme)
+                ThemeManager.inst.Current.Apply(CustomTheme);
+            else if (prevTheme == nextTheme)
+                ThemeManager.inst.Current.Apply(ThemeManager.inst.GetTheme(nextTheme));
+            else
+                ThemeManager.inst.Current.Lerp(ThemeManager.inst.GetTheme(prevTheme), ThemeManager.inst.GetTheme(nextTheme), x);
         }
 
         #endregion
@@ -1794,6 +1798,8 @@ namespace BetterLegacy.Core.Runtime.Events
         #endregion
 
         #region Variables
+
+        public BeatmapTheme CustomTheme { get; set; }
 
         public Vector3 Shake { get; set; }
 

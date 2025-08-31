@@ -440,6 +440,33 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Applies colors from another theme.
+        /// </summary>
+        /// <param name="theme"></param>
+        public void Apply(BeatmapTheme theme)
+        {
+            guiColor = theme.guiColor;
+            guiAccentColor = theme.guiAccentColor;
+            backgroundColor = theme.backgroundColor;
+
+            for (int i = 0; i < 4; i++)
+                playerColors[i] = theme.GetPlayerColor(i);
+
+            int maxObj = 9;
+            if (theme.objectColors.Count > 9 && theme.objectColors.Count > 9)
+                maxObj = 18;
+
+            for (int j = 0; j < maxObj; j++)
+                objectColors[j] = theme.GetObjColor(j);
+
+            for (int k = 0; k < 9; k++)
+                backgroundColors[k] = theme.GetBGColor(k);
+
+            for (int k = 0; k < 18; k++)
+                effectColors[k] = theme.GetFXColor(k);
+        }
+
+        /// <summary>
         /// Gets a player color from the theme.
         /// </summary>
         /// <param name="index">Index of the color.</param>

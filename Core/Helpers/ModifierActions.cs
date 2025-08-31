@@ -4213,6 +4213,21 @@ namespace BetterLegacy.Core.Helpers
 
         #region Color
 
+        public static void setTheme(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var themeID = modifier.GetValue(0, variables);
+            if (string.IsNullOrEmpty(themeID))
+            {
+                if (RTLevel.Current && RTLevel.Current.eventEngine)
+                    RTLevel.Current.eventEngine.CustomTheme = null;
+                return;
+            }
+
+            var theme = ThemeManager.inst.GetTheme(themeID);
+            if (theme && RTLevel.Current && RTLevel.Current.eventEngine)
+                RTLevel.Current.eventEngine.CustomTheme = theme;
+        }
+
         public static void addColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject)

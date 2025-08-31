@@ -2438,6 +2438,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierActions.setTheme): {
+                        StringGenerator(modifier, reference, "ID", 0);
+
+                        break;
+                    }
                 case nameof(ModifierActions.addColor): {
                         ColorGenerator(modifier, reference, "Color", 1);
 
