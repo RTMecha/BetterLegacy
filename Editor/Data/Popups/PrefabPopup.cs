@@ -22,10 +22,10 @@
         /// </summary>
         /// <param name="prefabDialog">Type of prefab popup to get.</param>
         /// <returns>Returns a prefab popup.</returns>
-        public ContentPopup GetPopup(PrefabDialog prefabDialog) => prefabDialog switch
+        public ContentPopup GetPopup(ObjectSource source) => source switch
         {
-            PrefabDialog.External => ExternalPrefabs,
-            PrefabDialog.Internal => InternalPrefabs,
+            ObjectSource.External => ExternalPrefabs,
+            ObjectSource.Internal => InternalPrefabs,
             _ => null,
         };
     }

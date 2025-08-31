@@ -31,7 +31,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
         public PrefabPanel(int index) => this.index = index;
 
-        public PrefabPanel(PrefabDialog dialog, int index) : this(index) => Dialog = dialog;
+        public PrefabPanel(ObjectSource source, int index) : this(index) => Source = source;
 
         #region Values
 
@@ -66,12 +66,12 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// What dialog this prefab panel is located in.
         /// </summary>
-        public PrefabDialog Dialog { get; set; }
+        public ObjectSource Source { get; set; }
 
         /// <summary>
         /// If the prefab panel is external.
         /// </summary>
-        public bool IsExternal => Dialog == PrefabDialog.External;
+        public bool IsExternal => Source == ObjectSource.External;
 
         /// <summary>
         /// The icon of the prefab panel.
@@ -224,7 +224,7 @@ namespace BetterLegacy.Editor.Data.Elements
             Label = folderButtonStorageFolder.label;
             HoverFocus = hover;
             Path = directory;
-            Dialog = PrefabDialog.External;
+            Source = ObjectSource.External;
             isFolder = true;
             IconImage = folderButtonStorageFolder.image;
 
@@ -238,9 +238,9 @@ namespace BetterLegacy.Editor.Data.Elements
                 CoreHelper.Destroy(gameObject);
 
             Item = prefab;
-            var dialog = Dialog;
+            var source = Source;
 
-            gameObject = PrefabEditor.inst.AddPrefab.Duplicate(RTEditor.inst.PrefabPopups.GetPopup(dialog).Content);
+            gameObject = PrefabEditor.inst.AddPrefab.Duplicate(RTEditor.inst.PrefabPopups.GetPopup(source).Content);
 
             var hover = gameObject.AddComponent<HoverUI>();
             hover.animateSca = true;
@@ -264,7 +264,7 @@ namespace BetterLegacy.Editor.Data.Elements
             EditorThemeManager.ApplyGraphic(typeImage, ThemeGroup.Null, true);
             EditorThemeManager.ApplyGraphic(typeImageShade, ThemeGroup.Null, true);
 
-            TooltipHelper.AssignTooltip(gameObject, $"{dialog} Prefab List Button", 3.2f);
+            TooltipHelper.AssignTooltip(gameObject, $"{source} Prefab List Button", 3.2f);
 
             addPrefabObject.onClick.ClearAll();
             delete.onClick.ClearAll();
@@ -280,7 +280,7 @@ namespace BetterLegacy.Editor.Data.Elements
             Path = prefab.filePath;
 
             Render();
-            SetActive(RTPrefabEditor.inst.ContainsName(Item, dialog));
+            SetActive(RTPrefabEditor.inst.ContainsName(Item, source));
         }
 
         public override void Render()
@@ -395,9 +395,9 @@ namespace BetterLegacy.Editor.Data.Elements
         public void UpdateFunction()
         {
             var prefab = Item;
-            switch (Dialog)
+            switch (Source)
             {
-                case PrefabDialog.Internal: {
+                case ObjectSource.Internal: {
                         Button.onClick = eventData =>
                         {
                             if (RTEditor.inst.prefabPickerEnabled)
@@ -477,7 +477,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         };
                         break;
                     }
-                case PrefabDialog.External: {
+                case ObjectSource.External: {
                         Button.onClick = eventData =>
                         {
                             if (RTEditor.inst.prefabPickerEnabled)
@@ -581,13 +581,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
             deleteButton.onClick.NewListener(() => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
             {
-                switch (Dialog)
+                switch (Source)
                 {
-                    case PrefabDialog.Internal: {
+                    case ObjectSource.Internal: {
                             RTPrefabEditor.inst.DeleteInternalPrefab(Item);
                             break;
                         }
-                    case PrefabDialog.External: {
+                    case ObjectSource.External: {
                             RTPrefabEditor.inst.DeleteExternalPrefab(this);
                             break;
                         }

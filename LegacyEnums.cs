@@ -2113,7 +2113,7 @@ namespace BetterLegacy
     /// <summary>
     /// Where a Prefab comes from.
     /// </summary>
-    public enum PrefabDialog
+    public enum ObjectSource
     {
         /// <summary>
         /// Prefab comes from internal level file.

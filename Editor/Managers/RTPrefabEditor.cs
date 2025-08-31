@@ -1931,7 +1931,7 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabPanels.ForLoopReverse((prefabPanel, index) =>
             {
-                if (prefabPanel.Dialog != PrefabDialog.External)
+                if (prefabPanel.Source != ObjectSource.External)
                     return;
 
                 CoreHelper.Delete(prefabPanel.GameObject);
@@ -2044,7 +2044,7 @@ namespace BetterLegacy.Editor.Managers
                 prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
                 prefab.filePath = RTFile.ReplaceSlash(file);
 
-                var prefabPanel = new PrefabPanel(PrefabDialog.External, i);
+                var prefabPanel = new PrefabPanel(ObjectSource.External, i);
                 prefabPanel.Init(prefab);
                 PrefabPanels.Add(prefabPanel);
             }
@@ -2102,7 +2102,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var prefab = prefabPanel.Item;
             var prefabType = prefab.GetPrefabType();
-            var isExternal = prefabPanel.Dialog == PrefabDialog.External;
+            var isExternal = prefabPanel.Source == ObjectSource.External;
 
             PrefabExternalEditor.NameField.SetTextWithoutNotify(prefab.name);
             PrefabExternalEditor.NameField.onValueChanged.NewListener(_val => prefab.name = _val);
@@ -2272,7 +2272,7 @@ namespace BetterLegacy.Editor.Managers
             var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}");
             prefab.filePath = file;
 
-            var prefabPanel = new PrefabPanel(PrefabDialog.External, count);
+            var prefabPanel = new PrefabPanel(ObjectSource.External, count);
             prefabPanel.Init(prefab);
             PrefabPanels.Add(prefabPanel);
 
@@ -2707,8 +2707,8 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < prefabs.Count; i++)
             {
                 var prefab = prefabs[i];
-                if (ContainsName(prefab, PrefabDialog.Internal) && (!filterUsed || GameData.Current.prefabObjects.Any(x => x.prefabID == prefab.id)))
-                    new PrefabPanel(PrefabDialog.Internal, i).Init(prefab);
+                if (ContainsName(prefab, ObjectSource.Internal) && (!filterUsed || GameData.Current.prefabObjects.Any(x => x.prefabID == prefab.id)))
+                    new PrefabPanel(ObjectSource.Internal, i).Init(prefab);
             }
 
             yield break;
@@ -2743,12 +2743,12 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public IEnumerator RenderExternalPrefabs()
         {
-            foreach (var prefabPanel in PrefabPanels.Where(x => x.Dialog == PrefabDialog.External))
+            foreach (var prefabPanel in PrefabPanels.Where(x => x.Source == ObjectSource.External))
             {
                 prefabPanel.SetActive(
                     prefabPanel.isFolder ?
                         RTString.SearchString(PrefabEditor.inst.externalSearchStr, Path.GetFileName(prefabPanel.Path)) :
-                        ContainsName(prefabPanel.Item, PrefabDialog.External));
+                        ContainsName(prefabPanel.Item, ObjectSource.External));
             }
 
             yield break;
@@ -2760,7 +2760,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefab">Prefab reference.</param>
         /// <param name="dialog">Prefabs' dialog.</param>
         /// <returns>Returns true if the prefab is being searched for, otherwise returns false.</returns>
-        public bool ContainsName(Prefab prefab, PrefabDialog dialog) => RTString.SearchString(dialog == PrefabDialog.External ? PrefabEditor.inst.externalSearchStr : PrefabEditor.inst.internalSearchStr, prefab.name, prefab.GetPrefabType().name);
+        public bool ContainsName(Prefab prefab, ObjectSource source) => RTString.SearchString(source == ObjectSource.External ? PrefabEditor.inst.externalSearchStr : PrefabEditor.inst.internalSearchStr, prefab.name, prefab.GetPrefabType().name);
 
         /// <summary>
         /// Imports a prefab into the internal prefabs list.
