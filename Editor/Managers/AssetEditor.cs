@@ -113,7 +113,7 @@ namespace BetterLegacy.Editor.Managers
         {
             Clear();
 
-            var files = Directory.GetFiles(RTFile.BasePath);
+            var files = Directory.GetFiles(RTFile.BasePath, "*", SearchOption.AllDirectories);
             for (int i = 0; i < files.Length; i++)
             {
                 var file = files[i];
