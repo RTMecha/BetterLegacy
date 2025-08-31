@@ -4228,6 +4228,28 @@ namespace BetterLegacy.Core.Helpers
                 RTLevel.Current.eventEngine.CustomTheme = theme;
         }
 
+        public static void lerpTheme(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var firstID = modifier.GetValue(0, variables);
+            var secondID = modifier.GetValue(1, variables);
+            if (string.IsNullOrEmpty(firstID) || string.IsNullOrEmpty(secondID))
+            {
+                if (RTLevel.Current && RTLevel.Current.eventEngine)
+                    RTLevel.Current.eventEngine.CustomTheme = null;
+                return;
+            }
+
+            if (!RTLevel.Current || !RTLevel.Current.eventEngine)
+                return;
+
+            if (!RTLevel.Current.eventEngine.CustomTheme)
+                RTLevel.Current.eventEngine.CustomTheme = ThemeManager.inst.Current.Copy();
+
+            var first = ThemeManager.inst.GetTheme(firstID);
+            var second = ThemeManager.inst.GetTheme(secondID);
+            RTLevel.Current.eventEngine.CustomTheme.Lerp(first, second, modifier.GetFloat(2, 0f, variables));
+        }
+
         public static void addColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || !beatmapObject.runtimeObject.visualObject)

@@ -1141,6 +1141,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierActions.mask),  ModifierActions.mask, ModifierCompatibility.BeatmapObjectCompatible),
 
             new ModifierAction(nameof(ModifierActions.setTheme),  ModifierActions.setTheme, ModifierCompatibility.LevelControlCompatible),
+            new ModifierAction(nameof(ModifierActions.lerpTheme),  ModifierActions.lerpTheme, ModifierCompatibility.LevelControlCompatible),
 
             // color
             new ModifierAction(nameof(ModifierActions.addColor),  ModifierActions.addColor, ModifierCompatibility.BeatmapObjectCompatible),

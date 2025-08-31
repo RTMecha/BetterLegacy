@@ -2443,6 +2443,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierActions.lerpTheme): {
+                        StringGenerator(modifier, reference, "Previous ID", 0);
+                        StringGenerator(modifier, reference, "Next ID", 1);
+                        SingleGenerator(modifier, reference, "Time", 2);
+
+                        break;
+                    }
                 case nameof(ModifierActions.addColor): {
                         ColorGenerator(modifier, reference, "Color", 1);
 
