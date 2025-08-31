@@ -2235,18 +2235,18 @@ namespace BetterLegacy.Editor.Managers
                                 new ButtonFunction($"Filter: Used [{(RTThemeEditor.inst.filterUsed ? "On": "Off")}]", () =>
                                 {
                                     RTThemeEditor.inst.filterUsed = !RTThemeEditor.inst.filterUsed;
-                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList());
+                                    RTThemeEditor.inst.RenderThemeList();
                                 }),
                                 new ButtonFunction($"Show Default [{(EditorConfig.Instance.ShowDefaultThemes.Value ? "On": "Off")}]", () =>
                                 {
                                     EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
-                                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList());
+                                    RTThemeEditor.inst.RenderThemeList();
                                 })
                                 );
                         };
 
-                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.NewListener(_val => CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList()));
-                        CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList());
+                        RTThemeEditor.inst.Dialog.SearchField.onValueChanged.NewListener(_val => RTThemeEditor.inst.RenderThemeList());
+                        RTThemeEditor.inst.RenderThemeList();
                         RTThemeEditor.inst.RenderThemePreview();
 
                         break;

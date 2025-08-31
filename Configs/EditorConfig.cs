@@ -1346,7 +1346,7 @@ namespace BetterLegacy.Configs
 
 
             if (RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy)
-                CoroutineHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList());
+                RTThemeEditor.inst.RenderThemeList();
         }
 
         void AutosaveChanged()
