@@ -114,7 +114,7 @@ namespace BetterLegacy.Editor.Data.Popups
             if (popup)
                 CoreHelper.Destroy(popup);
 
-            popup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(RTEditor.inst.popups, name);
+            popup = EditorPrefabHolder.Instance.ContentPopup.Duplicate(RTEditor.inst.popups, name);
             Assign(popup);
             popup.transform.localPosition = Vector3.zero;
 

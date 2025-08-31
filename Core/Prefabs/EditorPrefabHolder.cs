@@ -45,6 +45,8 @@ namespace BetterLegacy.Core.Prefabs
 
         public GameObject Dialog { get; set; }
 
+        public GameObject ContentPopup { get; set; }
+
         public FunctionButtonStorage CreateAddButton(Transform parent, string name = "add", bool applyThemes = true)
         {
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(parent, name);
@@ -56,6 +58,11 @@ namespace BetterLegacy.Core.Prefabs
             }
             return addStorage;
         }
+    }
+
+    public class EditorPopupStorage : MonoBehaviour
+    {
+
     }
 
     public class EditorDialogStorage : MonoBehaviour
