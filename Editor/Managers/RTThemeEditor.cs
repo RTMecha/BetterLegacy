@@ -574,7 +574,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int max = layer * themesPerPage;
 
-                var name = beatmapTheme.name == null ? "theme" : beatmapTheme.name;
+                var name = beatmapTheme.name ?? "theme";
                 if (!RTString.SearchString(themeSearch, name) || num < max - themesPerPage || num >= max)
                 {
                     num++;
