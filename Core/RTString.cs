@@ -1011,6 +1011,8 @@ namespace BetterLegacy.Core
         /// <returns>Returns true if a match is found, otherwise returns false.</returns>
         public abstract bool Match(string searchTerm);
 
+        public static implicit operator SearchMatcherBase(int value) => new SearchMatcher(value.ToString(), SearchMatchType.Exact);
+
         public static implicit operator SearchMatcherBase(string value) => new SearchMatcher(value);
 
         public static implicit operator SearchMatcherBase(string[] value) => new SearchArrayMatcher(value);
