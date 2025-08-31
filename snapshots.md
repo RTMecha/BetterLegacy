@@ -6,10 +6,13 @@
 ### Editor
 - Added "Analyze BPM On Level Load" in > Config Manager > Editor > BPM.
 - The animation timeline should now use the Use Mouse As Zoom Point setting.
+- Object and Parent Object Search Popups now have a page system.
 
 ## Fixes
 - Fixed objects other than Beatmap Objects not having their song time autokill offset properly set when spawned from a prefab.
 - Fixed animation timeline being weird.
+
+-------------------------------------------------------------------
 
 # snapshot-2025.8.18 - (pre-1.8.0) [Aug 30, 2025]
 ## Features
