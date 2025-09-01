@@ -1343,8 +1343,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             AutoKillType.NoAutokill => noAutokill ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
             AutoKillType.LastKeyframe => Length + offset,
             AutoKillType.LastKeyframeOffset => Length + autoKillOffset + offset,
-            AutoKillType.FixedTime => autoKillOffset,
-            AutoKillType.SongTime => (startTime >= autoKillOffset) ? 0.1f : (autoKillOffset - startTime),
+            AutoKillType.FixedTime => autoKillOffset + offset,
+            AutoKillType.SongTime => (startTime >= autoKillOffset ? 0.1f : autoKillOffset - startTime) + offset,
             _ => 0f,
         };
 
