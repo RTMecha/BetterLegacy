@@ -2241,7 +2241,10 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     EditorConfig.Instance.ShowDefaultThemes.Value = !EditorConfig.Instance.ShowDefaultThemes.Value;
                                     RTThemeEditor.inst.RenderThemeList();
-                                })
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
+                                new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes")
                                 );
                         };
 
@@ -3363,6 +3366,21 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.InversableField(posX);
                 TriggerHelper.InversableField(posY);
             }
+        }
+
+        public void SetKeyframeValue(int index, string input)
+        {
+            if (!RTMath.TryParse(input, 0f, out float value))
+                return;
+
+            foreach (var timelineObject in SelectedKeyframes)
+                timelineObject.eventKeyframe.values[index] = value;
+        }
+
+        public void SetKeyframeValue(int index, float value)
+        {
+            foreach (var timelineObject in SelectedKeyframes)
+                timelineObject.eventKeyframe.values[index] = value;
         }
 
         #endregion

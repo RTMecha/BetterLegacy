@@ -186,6 +186,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorThemeManager.ApplyGraphic(Label, ThemeGroup.List_Button_2_Text);
                         EditorThemeManager.ApplySelectable(DeleteButton, ThemeGroup.Delete_Keyframe_Button, false);
 
+                        TooltipHelper.AssignTooltip(gameObject, "Internal Theme List Button");
+
                         break;
                     }
                 case ObjectSource.External: {
@@ -277,6 +279,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         Item.themePanel = this;
                         isDefault = beatmapTheme.isDefault;
                         OriginalID = beatmapTheme.id;
+
+                        TooltipHelper.AssignTooltip(gameObject, "External Theme List Button");
 
                         break;
                     }
@@ -446,7 +450,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Use", Use),
                             new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
-                            new ButtonFunction("Export", () => RTThemeEditor.inst.ExportTheme(Item)),
+                            new ButtonFunction("Export", () => RTThemeEditor.inst.ExportTheme(Item), "Internal Theme Export"),
                             new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
                             new ButtonFunction(true),
                             new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
@@ -458,6 +462,8 @@ namespace BetterLegacy.Editor.Data.Elements
                                 else
                                     EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
                             }),
+                            new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
+                            new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"),
                             new ButtonFunction(true),
                             new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
                             );
@@ -465,7 +471,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         }
                     case ObjectSource.External: {
                         EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Use", Use),
+                            new ButtonFunction("Import", Use, "External Theme Import"),
+                            new ButtonFunction("Update", () =>
+                            {
+                                if (!GameData.Current.UpdateTheme(Item))
+                                    EditorManager.inst.DisplayNotification($"No theme was found to update!", 2f, EditorManager.NotificationType.Warning);
+                                else
+                                    RTThemeEditor.inst.LoadInternalThemes();
+                            }, "External Theme Update"),
                             new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
                             new ButtonFunction(true),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
@@ -637,13 +650,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             return;
                         }
 
-                        if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                        {
-                            foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                                timelineObject.eventKeyframe.values[0] = Parser.TryParse(Item.id, 0);
-                        }
-                        else
-                            RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Item.id, 0);
+                        RTEventEditor.inst.SetKeyframeValue(0, Parser.TryParse(Item.id, 0));
 
                         RTLevel.Current?.UpdateEvents(4);
                         RTThemeEditor.inst.RenderThemePreview();

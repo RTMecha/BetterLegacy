@@ -166,7 +166,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                         new ButtonFunction(true),
                         new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
-                        new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes));
+                        new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"));
                 };
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
