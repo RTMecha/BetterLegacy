@@ -3563,58 +3563,6 @@ namespace BetterLegacy.Editor.Managers
 
             #endregion
 
-            #region Theme Path
-
-            var themePathBase = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme").GetChild(2).gameObject
-                .Duplicate(EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme"), "themepathers", 8);
-
-            var importTheme = EditorPrefabHolder.Instance.Function2Button.Duplicate(themePathBase.transform, "import");
-            importTheme.transform.AsRT().anchoredPosition = new Vector2(50f, 20f);
-            importTheme.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
-            var importThemeStorage = importTheme.GetComponent<FunctionButtonStorage>();
-            importThemeStorage.Text = "Import";
-            importThemeStorage.OnClick.NewListener(() => RTThemeEditor.inst.OpenExternalThemesPopup());
-
-            EditorThemeManager.AddSelectable(importThemeStorage.button, ThemeGroup.Function_2);
-            EditorThemeManager.AddGraphic(importThemeStorage.label, ThemeGroup.Function_2_Text);
-
-            var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
-            UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
-            var themePageStorage = themePage.GetComponent<InputFieldStorage>();
-            themePage.GetComponent<HorizontalLayoutGroup>().spacing = 2f;
-            themePageStorage.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
-
-            themePageStorage.inputField.GetComponent<LayoutElement>().minWidth = 60f;
-            themePageStorage.inputField.SetTextWithoutNotify("0");
-            themePageStorage.inputField.onValueChanged.NewListener(_val =>
-            {
-                if (int.TryParse(_val, out int p))
-                {
-                    RTThemeEditor.inst.Dialog.Page = Mathf.Clamp(p, 0, RTThemeEditor.inst.Dialog.MaxPageCount);
-
-                    RTThemeEditor.inst.RenderThemeList();
-                }
-            });
-
-            themePageStorage.leftGreaterButton.onClick.NewListener(() => themePageStorage.inputField.text = "0");
-            themePageStorage.leftButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(themePageStorage.inputField.text, out int p))
-                    themePageStorage.inputField.text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
-            });
-            themePageStorage.rightButton.onClick.NewListener(() =>
-            {
-                if (int.TryParse(themePageStorage.inputField.text, out int p))
-                    themePageStorage.inputField.text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
-            });
-            themePageStorage.rightGreaterButton.onClick.NewListener(() => themePageStorage.inputField.text = (RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
-
-            Destroy(themePageStorage.middleButton.gameObject);
-
-            EditorThemeManager.AddInputField(themePageStorage);
-
-            #endregion
-
             #region Prefab Path
 
             var prefabPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(PrefabPopups.ExternalPrefabs.GameObject.transform, "prefabs path");

@@ -6,12 +6,11 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
-using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
@@ -23,7 +22,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
     {
         public ThemeKeyframeDialog() : base(4) { }
 
-        #region Properties
+        #region Values
 
         #region Content
 
@@ -42,6 +41,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public int Page { get; set; }
 
         public int MaxPageCount => RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage;
+
+        public GameObject themeAddButton;
 
         #endregion
 
@@ -75,12 +76,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Fields
-
-        public GameObject themeAddButton;
-
-        #endregion
-
         #region Methods
 
         public override void Init()
@@ -89,7 +84,53 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Content
 
-            PageField = GameObject.transform.Find("themepathers/page").GetComponent<InputFieldStorage>();
+            var themePathBase = GameObject.transform.GetChild(2).gameObject.Duplicate(GameObject.transform, "themepathers", 8);
+
+            var importTheme = EditorPrefabHolder.Instance.Function2Button.Duplicate(themePathBase.transform, "import");
+            importTheme.transform.AsRT().anchoredPosition = new Vector2(50f, 20f);
+            importTheme.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+            var importThemeStorage = importTheme.GetComponent<FunctionButtonStorage>();
+            importThemeStorage.Text = "Import";
+            importThemeStorage.OnClick.NewListener(() => RTThemeEditor.inst.OpenExternalThemesPopup());
+
+            EditorThemeManager.AddSelectable(importThemeStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(importThemeStorage.label, ThemeGroup.Function_2_Text);
+
+            var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
+            UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+            PageField = themePage.GetComponent<InputFieldStorage>();
+            themePage.GetComponent<HorizontalLayoutGroup>().spacing = 2f;
+            PageField.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
+
+            PageField.inputField.GetComponent<LayoutElement>().minWidth = 60f;
+            PageField.inputField.SetTextWithoutNotify("0");
+            PageField.inputField.onValueChanged.NewListener(_val =>
+            {
+                if (int.TryParse(_val, out int p))
+                {
+                    RTThemeEditor.inst.Dialog.Page = Mathf.Clamp(p, 0, RTThemeEditor.inst.Dialog.MaxPageCount);
+
+                    RTThemeEditor.inst.RenderThemeList();
+                }
+            });
+
+            PageField.leftGreaterButton.onClick.NewListener(() => PageField.inputField.text = "0");
+            PageField.leftButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(PageField.inputField.text, out int p))
+                    PageField.inputField.text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
+            });
+            PageField.rightButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(PageField.inputField.text, out int p))
+                    PageField.inputField.text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
+            });
+            PageField.rightGreaterButton.onClick.NewListener(() => PageField.inputField.text = (RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
+
+            CoreHelper.Delete(PageField.middleButton);
+
+            EditorThemeManager.AddInputField(PageField);
+
             SearchField = GameObject.transform.Find("theme-search").GetComponent<InputField>();
             Content = GameObject.transform.Find("themes/viewport/content");
             ClearContent();
@@ -122,7 +163,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor));
+                        new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
+                        new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes));
                 };
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
