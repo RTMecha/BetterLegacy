@@ -19,7 +19,6 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -826,7 +825,15 @@ namespace BetterLegacy.Editor.Managers
                 RenderExternalThemesPopup();
         }
 
-        public void RemoveUnusedThemes()
+        public void ClearInternalThemes() => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove all themes?", () =>
+        {
+            GameData.Current.beatmapThemes.Clear();
+
+            LoadInternalThemes();
+            RTEditor.inst.HideWarningPopup();
+        }, RTEditor.inst.HideWarningPopup);
+
+        public void RemoveUnusedThemes() => RTEditor.inst.ShowWarningPopup("Are you sure you want to remove unused themes?", () =>
         {
             GameData.Current.beatmapThemes.ForLoopReverse((beatmapTheme, index) =>
             {
@@ -835,7 +842,8 @@ namespace BetterLegacy.Editor.Managers
             });
 
             LoadInternalThemes();
-        }
+            RTEditor.inst.HideWarningPopup();
+        }, RTEditor.inst.HideWarningPopup);
 
         public void UpdateInternalThemeIndexes()
         {
