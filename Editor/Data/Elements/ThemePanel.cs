@@ -13,10 +13,8 @@ using Crosstales.FB;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
-using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Components;
@@ -272,7 +270,6 @@ namespace BetterLegacy.Editor.Data.Elements
                         convert.gameObject.SetActive(true);
 
                         GameObject = gameObject;
-                        UseButton = button;
                         Button = gameObject.GetOrAddComponent<FolderButtonFunction>();
                         Label = viewThemeStorage.text;
 
@@ -433,7 +430,8 @@ namespace BetterLegacy.Editor.Data.Elements
             if (!string.IsNullOrEmpty(Item.filePath))
                 Path = RTFile.ReplaceSlash(Item.filePath);
 
-            UseButton.onClick.NewListener(Use);
+            if (UseButton)
+                UseButton.onClick.NewListener(Use);
             Button.onClick = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
