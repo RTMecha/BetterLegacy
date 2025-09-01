@@ -162,7 +162,7 @@ namespace BetterLegacy.Companion.Entity
                 canvas.scaleFactor = CoreHelper.ScreenScale;
             }
 
-            if (!Application.isFocused || !Visible)
+            if ((!CoreConfig.Instance.BorderlessFullscreen.Value && !Application.isFocused) || !Visible)
                 return;
 
             for (int i = 0; i < parts.Count; i++)
