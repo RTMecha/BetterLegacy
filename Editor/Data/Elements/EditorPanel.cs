@@ -110,7 +110,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// <summary>
         /// Initializes the editor panel as a folder.
         /// </summary>
-        public abstract void Init(string directory);
+        public virtual void Init(string directory) { }
 
         /// <summary>
         /// Initializes the panel as a reference to the item.
@@ -182,6 +182,8 @@ namespace BetterLegacy.Editor.Data.Elements
             if (RTFile.TryReadFromFile(RTFile.CombinePaths(Path, $"folder_info{FileFormat.JSON.Dot()}"), out string file))
                 infoJN = JSON.Parse(file);
         }
+
+        public virtual int GetIndex() => -1;
 
         #endregion
     }

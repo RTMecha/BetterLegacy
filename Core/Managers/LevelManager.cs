@@ -305,9 +305,6 @@ namespace BetterLegacy.Core.Managers
             if (level.IsVG)
                 AchievementManager.inst.UnlockAchievement("time_traveler");
 
-            ThemeManager.inst.Clear();
-            for (int i = 0; i < GameData.Current.beatmapThemes.Count; i++)
-                ThemeManager.inst.AddTheme(GameData.Current.beatmapThemes[i]);
             ThemeManager.inst.UpdateAllThemes();
 
             Debug.Log($"{className}Setting paths...");

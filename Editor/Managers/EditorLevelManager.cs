@@ -863,7 +863,7 @@ namespace BetterLegacy.Editor.Managers
             RTMarkerEditor.inst.markerLoopBegin = null;
             RTMarkerEditor.inst.markerLoopEnd = null;
 
-            GameData.Current.UpdateUsedThemes();
+            RTThemeEditor.inst.LoadInternalThemes();
 
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 

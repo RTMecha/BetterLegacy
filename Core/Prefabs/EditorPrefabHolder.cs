@@ -392,10 +392,10 @@ namespace BetterLegacy.Core.Prefabs
         public List<Image> effectColors;
 
         [SerializeField]
-        public Button useButton;
+        public Button convertButton;
 
         [SerializeField]
-        public Button convertButton;
+        public DeleteButtonStorage deleteButton;
     }
 
     public class ThemePanelStorage : MonoBehaviour

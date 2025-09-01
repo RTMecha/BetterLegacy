@@ -31,6 +31,13 @@ namespace BetterLegacy.Editor.Data.Elements
     {
         public ThemePanel() { }
 
+        public ThemePanel(ObjectSource source, int index, bool isDuplicate = false)
+        {
+            Source = source;
+            this.index = index;
+            this.isDuplicate = isDuplicate;
+        }
+
         public ThemePanel(int index, bool isDuplicate = false)
         {
             this.index = index;
@@ -80,10 +87,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
         #region Data
 
+        public ObjectSource Source { get; set; }
+
         /// <summary>
         /// The original ID from the theme.
         /// </summary>
         public string OriginalID { get; set; }
+
+        public override string DisplayName => isFolder ? System.IO.Path.GetFileName(Path) : Source switch
+        {
+            ObjectSource.Internal => Item?.name,
+            ObjectSource.External => !Item ? string.Empty : $"{Item.name} [ ID: {Item.id} ]",
+            _ => string.Empty
+        };
 
         const string TOOLTIP_COLOR_BAR = "▓";
 
@@ -109,7 +125,8 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTThemeEditor.inst.Dialog.Content, $"Folder [{System.IO.Path.GetFileName(directory)}]", index + 2);
+            var gameObjectFolder = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(RTThemeEditor.inst.Popup.Content, $"Folder [{System.IO.Path.GetFileName(directory)}]");
+            gameObjectFolder.transform.AsRT().sizeDelta = new Vector2(600f, 32f);
             var folderButtonStorageFolder = gameObjectFolder.GetComponent<SpriteFunctionButtonStorage>();
             var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -140,33 +157,133 @@ namespace BetterLegacy.Editor.Data.Elements
             if (gameObject)
                 CoreHelper.Destroy(gameObject);
 
-            gameObject = EventEditor.inst.ThemePanel.Duplicate(RTThemeEditor.inst.Dialog.Content, "theme-panel", index + 2);
+            switch (Source)
+            {
+                case ObjectSource.Internal: {
+                        gameObject = EventEditor.inst.ThemePanel.Duplicate(RTThemeEditor.inst.Dialog.Content, "theme-panel", index + 1);
 
-            var storage = gameObject.GetComponent<ThemePanelStorage>();
+                        var storage = gameObject.GetComponent<ThemePanelStorage>();
 
-            GameObject = gameObject;
-            UseButton = storage.button;
-            Button = gameObject.AddComponent<FolderButtonFunction>();
-            EditButton = storage.edit;
-            DeleteButton = storage.delete;
-            Label = storage.text;
-            BaseImage = storage.baseImage;
+                        GameObject = gameObject;
+                        UseButton = storage.button;
+                        Button = gameObject.AddComponent<FolderButtonFunction>();
+                        EditButton = storage.edit;
+                        DeleteButton = storage.delete;
+                        Label = storage.text;
+                        BaseImage = storage.baseImage;
 
-            Item = beatmapTheme;
-            Item.themePanel = this;
-            isDefault = beatmapTheme.isDefault;
-            OriginalID = beatmapTheme.id;
+                        Item = beatmapTheme;
+                        Item.themePanel = this;
+                        isDefault = beatmapTheme.isDefault;
+                        OriginalID = beatmapTheme.id;
 
-            Colors.Add(storage.color1);
-            Colors.Add(storage.color2);
-            Colors.Add(storage.color3);
-            Colors.Add(storage.color4);
+                        Colors.Add(storage.color1);
+                        Colors.Add(storage.color2);
+                        Colors.Add(storage.color3);
+                        Colors.Add(storage.color4);
 
-            EditorThemeManager.ApplyGraphic(BaseImage, ThemeGroup.List_Button_2_Normal, true);
-            EditorThemeManager.ApplyGraphic(UseButton.image, ThemeGroup.Null, true);
-            EditorThemeManager.ApplyGraphic(EditButton.image, ThemeGroup.List_Button_2_Text);
-            EditorThemeManager.ApplyGraphic(Label, ThemeGroup.List_Button_2_Text);
-            EditorThemeManager.ApplySelectable(DeleteButton, ThemeGroup.Delete_Keyframe_Button, false);
+                        EditorThemeManager.ApplyGraphic(BaseImage, ThemeGroup.List_Button_2_Normal, true);
+                        EditorThemeManager.ApplyGraphic(UseButton.image, ThemeGroup.Null, true);
+                        EditorThemeManager.ApplyGraphic(EditButton.image, ThemeGroup.List_Button_2_Text);
+                        EditorThemeManager.ApplyGraphic(Label, ThemeGroup.List_Button_2_Text);
+                        EditorThemeManager.ApplySelectable(DeleteButton, ThemeGroup.Delete_Keyframe_Button, false);
+
+                        break;
+                    }
+                case ObjectSource.External: {
+                        var name = beatmapTheme.name;
+                        gameObject = RTThemeEditor.inst.themePopupPanelPrefab.Duplicate(RTThemeEditor.inst.Popup.Content, name);
+                        gameObject.transform.AsRT().sizeDelta = new Vector2(600f, 362f);
+                        gameObject.transform.localScale = Vector3.one;
+
+                        var viewThemeStorage = gameObject.GetComponent<ViewThemePanelStorage>();
+                        viewThemeStorage.text.text = $"{name} [ ID: {beatmapTheme.id} ]";
+
+                        for (int i = 0; i < viewThemeStorage.baseColors.Count; i++)
+                        {
+                            viewThemeStorage.baseColors[i].color = i == 0 ? beatmapTheme.backgroundColor : i == 1 ? beatmapTheme.guiAccentColor : beatmapTheme.guiAccentColor;
+                            EditorThemeManager.ApplyGraphic(viewThemeStorage.baseColors[i], ThemeGroup.Null, true);
+                        }
+                        for (int i = 0; i < viewThemeStorage.playerColors.Count; i++)
+                        {
+                            if (i < beatmapTheme.playerColors.Count)
+                            {
+                                viewThemeStorage.playerColors[i].color = beatmapTheme.playerColors[i];
+                                EditorThemeManager.ApplyGraphic(viewThemeStorage.playerColors[i], ThemeGroup.Null, true);
+                            }
+                            else
+                                viewThemeStorage.playerColors[i].gameObject.SetActive(false);
+                        }
+                        for (int i = 0; i < viewThemeStorage.objectColors.Count; i++)
+                        {
+                            if (i < beatmapTheme.objectColors.Count)
+                            {
+                                viewThemeStorage.objectColors[i].color = beatmapTheme.objectColors[i];
+                                EditorThemeManager.ApplyGraphic(viewThemeStorage.objectColors[i], ThemeGroup.Null, true);
+                            }
+                            else
+                                viewThemeStorage.objectColors[i].gameObject.SetActive(false);
+                        }
+                        for (int i = 0; i < viewThemeStorage.backgroundColors.Count; i++)
+                        {
+                            if (i < beatmapTheme.backgroundColors.Count)
+                            {
+                                viewThemeStorage.backgroundColors[i].color = beatmapTheme.backgroundColors[i];
+                                EditorThemeManager.ApplyGraphic(viewThemeStorage.backgroundColors[i], ThemeGroup.Null, true);
+                            }
+                            else
+                                viewThemeStorage.backgroundColors[i].gameObject.SetActive(false);
+                        }
+                        for (int i = 0; i < viewThemeStorage.effectColors.Count; i++)
+                        {
+                            if (i < beatmapTheme.effectColors.Count)
+                            {
+                                viewThemeStorage.effectColors[i].color = beatmapTheme.effectColors[i];
+                                EditorThemeManager.ApplyGraphic(viewThemeStorage.effectColors[i], ThemeGroup.Null, true);
+                            }
+                            else
+                                viewThemeStorage.effectColors[i].gameObject.SetActive(false);
+                        }
+
+                        var button = gameObject.GetComponent<Button>();
+
+                        var convert = viewThemeStorage.convertButton;
+                        var convertStorage = convert.GetComponent<FunctionButtonStorage>();
+                        convert.onClick.NewListener(() => RTThemeEditor.inst.ConvertTheme(beatmapTheme));
+
+                        var delete = viewThemeStorage.deleteButton;
+                        delete.button.onClick.NewListener(() => RTThemeEditor.inst.DeleteTheme(this));
+
+                        EditorThemeManager.ApplyLightText(viewThemeStorage.baseColorsText);
+                        EditorThemeManager.ApplyLightText(viewThemeStorage.playerColorsText);
+                        EditorThemeManager.ApplyLightText(viewThemeStorage.objectColorsText);
+                        EditorThemeManager.ApplyLightText(viewThemeStorage.backgroundColorsText);
+                        EditorThemeManager.ApplyLightText(viewThemeStorage.effectColorsText);
+
+                        EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                        EditorThemeManager.ApplyLightText(viewThemeStorage.text);
+                        EditorThemeManager.ApplySelectable(convert, ThemeGroup.Function_2);
+                        EditorThemeManager.ApplyGraphic(convertStorage.label, ThemeGroup.Function_2_Text);
+                        EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
+                        EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+                        button.onClick.ClearAll();
+
+                        convert.gameObject.SetActive(true);
+
+                        GameObject = gameObject;
+                        UseButton = button;
+                        Button = gameObject.GetOrAddComponent<FolderButtonFunction>();
+                        Label = viewThemeStorage.text;
+
+                        Item = beatmapTheme;
+                        Item.themePanel = this;
+                        isDefault = beatmapTheme.isDefault;
+                        OriginalID = beatmapTheme.id;
+
+                        break;
+                    }
+            }
 
             Render();
             SetActive(false);
@@ -196,11 +313,10 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorContextMenu.inst.ShowContextMenu(
                             new ButtonFunction("Open folder", () =>
                             {
-                                RTEditor.inst.themePathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                                RTThemeEditor.inst.Popup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                                 RTEditor.inst.UpdateThemePath(false);
                             }),
                             new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
                             new ButtonFunction(true),
                             new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
                             new ButtonFunction("Delete", () =>
@@ -307,7 +423,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         return;
                     }
 
-                    RTEditor.inst.themePathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
+                    RTThemeEditor.inst.Popup.PathField.text = path.Replace(RTEditor.inst.BeatmapsPath + "/", "");
                     RTEditor.inst.UpdateThemePath(false);
                 };
 
@@ -316,8 +432,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
             if (!string.IsNullOrEmpty(Item.filePath))
                 Path = RTFile.ReplaceSlash(Item.filePath);
-
-            RenderColors();
 
             UseButton.onClick.NewListener(Use);
             Button.onClick = pointerEventData =>
@@ -328,55 +442,86 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Use", Use),
-                    new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
-                    new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                    new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Cut", () =>
-                    {
-                        if (isDefault)
-                        {
-                            EditorManager.inst.DisplayNotification($"Cannot cut a default theme!", 1.5f, EditorManager.NotificationType.Warning);
-                            return;
+                switch (Source)
+                {
+                    case ObjectSource.Internal: {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Use", Use),
+                            new ButtonFunction("Edit", () => RTThemeEditor.inst.RenderThemeEditor(Item)),
+                            new ButtonFunction("Export", () => RTThemeEditor.inst.ExportTheme(Item)),
+                            new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Delete", () =>
+                            {
+                                if (!isDefault)
+                                    RTThemeEditor.inst.DeleteTheme(this);
+                                else
+                                    EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
+                            );
+                            break;
                         }
+                    case ObjectSource.External: {
+                        EditorContextMenu.inst.ShowContextMenu(
+                            new ButtonFunction("Use", Use),
+                            new ButtonFunction("Convert to VG", () => RTThemeEditor.inst.ConvertTheme(Item)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Cut", () =>
+                            {
+                                if (isDefault)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Cannot cut a default theme!", 1.5f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
 
-                        RTThemeEditor.inst.shouldCutTheme = true;
-                        RTThemeEditor.inst.copiedThemePath = Item.filePath;
-                        EditorManager.inst.DisplayNotification($"Cut {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
-                        CoreHelper.Log($"Cut theme: {RTThemeEditor.inst.copiedThemePath}");
-                    }),
-                    new ButtonFunction("Copy", () =>
-                    {
-                        if (isDefault)
-                        {
-                            EditorManager.inst.DisplayNotification($"Cannot copy a default theme!", 1.5f, EditorManager.NotificationType.Warning);
-                            return;
+                                RTThemeEditor.inst.shouldCutTheme = true;
+                                RTThemeEditor.inst.copiedThemePath = Item.filePath;
+                                EditorManager.inst.DisplayNotification($"Cut {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Cut theme: {RTThemeEditor.inst.copiedThemePath}");
+                            }),
+                            new ButtonFunction("Copy", () =>
+                            {
+                                if (isDefault)
+                                {
+                                    EditorManager.inst.DisplayNotification($"Cannot copy a default theme!", 1.5f, EditorManager.NotificationType.Warning);
+                                    return;
+                                }
+
+                                RTThemeEditor.inst.shouldCutTheme = false;
+                                RTThemeEditor.inst.copiedThemePath = Item.filePath;
+                                EditorManager.inst.DisplayNotification($"Copied {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Copied theme: {RTThemeEditor.inst.copiedThemePath}");
+                            }),
+                            new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
+                            new ButtonFunction("Delete", () =>
+                            {
+                                if (!isDefault)
+                                    RTThemeEditor.inst.DeleteTheme(this);
+                                else
+                                    EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
+                            );
+                            break;
                         }
-
-                        RTThemeEditor.inst.shouldCutTheme = false;
-                        RTThemeEditor.inst.copiedThemePath = Item.filePath;
-                        EditorManager.inst.DisplayNotification($"Copied {Item.name}!", 1.5f, EditorManager.NotificationType.Success);
-                        CoreHelper.Log($"Copied theme: {RTThemeEditor.inst.copiedThemePath}");
-                    }),
-                    new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme),
-                    new ButtonFunction("Delete", () =>
-                    {
-                        if (!isDefault)
-                            RTThemeEditor.inst.DeleteTheme(Item);
-                        else
-                            EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
-                    }),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
-                    );
+                }
             };
+
+            if (Source == ObjectSource.External)
+                return;
+
+            RenderColors();
+
             EditButton.onClick.NewListener(() => RTThemeEditor.inst.RenderThemeEditor(Item));
             DeleteButton.interactable = !isDefault;
-            DeleteButton.onClick.NewListener(() => RTThemeEditor.inst.DeleteTheme(Item));
+            DeleteButton.onClick.NewListener(() => RTThemeEditor.inst.DeleteTheme(this));
         }
 
         /// <summary>
@@ -392,7 +537,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 EditorSprites.OpenSprite;
         }
 
-        public override void RenderLabel() => RenderLabel(isFolder ? System.IO.Path.GetFileName(Path) : Item?.name);
+        public override void RenderLabel() => RenderLabel(DisplayName);
 
         public override void RenderLabel(string name) => Label.text = name;
 
@@ -450,6 +595,9 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public void RenderColors()
         {
+            if (Source == ObjectSource.External)
+                return;
+
             for (int j = 0; j < Colors.Count; j++)
                 Colors[j].color = Item.GetObjColor(j);
         }
@@ -479,28 +627,47 @@ namespace BetterLegacy.Editor.Data.Elements
         /// </summary>
         public void Use()
         {
-            if (isDuplicate)
+            switch (Source)
             {
-                var array = ThemeManager.inst.CustomThemes.Where(x => x.id == Item.id).Select(x => x.name).ToArray();
-                var str = RTString.ArrayToString(array);
+                case ObjectSource.Internal: {
+                        if (isDuplicate)
+                        {
+                            var array = RTThemeEditor.inst.InternalThemePanels.Where(x => x.Item && x.Item.id == Item.id).Select(x => x.Item.name).ToArray();
+                            var str = RTString.ArrayToString(array);
 
-                EditorManager.inst.DisplayNotification($"Unable to use Theme [{Item.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
-                return;
+                            EditorManager.inst.DisplayNotification($"Unable to use Theme [{Item.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
+                        if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
+                        {
+                            foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                                timelineObject.eventKeyframe.values[0] = Parser.TryParse(Item.id, 0);
+                        }
+                        else
+                            RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Item.id, 0);
+
+                        RTLevel.Current?.UpdateEvents(4);
+                        RTThemeEditor.inst.RenderThemePreview();
+
+                        break;
+                    }
+                case ObjectSource.External: {
+                        if (!GameData.Current.AddTheme(Item))
+                            EditorManager.inst.DisplayNotification($"Level already has a theme with the same ID.", 3f, EditorManager.NotificationType.Warning);
+                        else if (RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy)
+                            RTThemeEditor.inst.LoadInternalThemes();
+                        break;
+                    }
             }
-
-            if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-            {
-                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                    timelineObject.eventKeyframe.values[0] = Parser.TryParse(Item.id, 0);
-            }
-            else
-                RTEventEditor.inst.CurrentSelectedKeyframe.values[0] = Parser.TryParse(Item.id, 0);
-
-            RTLevel.Current?.UpdateEvents(4);
-            RTThemeEditor.inst.RenderThemePreview();
-
-            GameData.Current.UpdateUsedThemes();
         }
+
+        public override int GetIndex() => Source switch
+        {
+            ObjectSource.Internal => GameData.Current.beatmapThemes.FindIndex(x => x.id == Item.id),
+            ObjectSource.External => index,
+            _ => -1,
+        };
 
         public override string ToString() => isFolder ? System.IO.Path.GetFileName(Path) : Item?.ToString();
 

@@ -416,24 +416,14 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Update...");
             gameData.data.checkpoints = gameData.data.checkpoints.OrderBy(x => x.time).ToList();
 
-            CoreHelper.Log($"Set...");
-            foreach (var theme in ThemeManager.inst.DefaultThemes)
-                gameData.beatmapThemes.Add(theme);
-
-            CoreHelper.Log($"Clear...");
-            ThemeManager.inst.CustomThemes.Clear();
-            ThemeManager.inst.themeIDs.Clear();
-
+            CoreHelper.Log($"Parsing themes...");
             if (jn["themes"] != null)
                 for (int i = 0; i < jn["themes"].Count; i++)
                 {
                     if (string.IsNullOrEmpty(jn["themes"][i]["id"]))
                         continue;
 
-                    var beatmapTheme = BeatmapTheme.Parse(jn["themes"][i]);
-
-                    if (ThemeManager.inst.AddTheme(beatmapTheme));
-                        gameData.beatmapThemes.Add(beatmapTheme);
+                    gameData.AddTheme(BeatmapTheme.Parse(jn["themes"][i]));
                 }
 
             ThemeManager.inst.UpdateAllThemes();

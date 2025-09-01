@@ -52,9 +52,7 @@ namespace BetterLegacy.Core.Managers
 
         public BeatmapTheme Current { get; set; }
 
-        public List<string> themeIDs = new List<string>();
-
-        public int ThemeCount => defaultThemes.Count + customThemes.Count;
+        public int ThemeCount => defaultThemes.Count + GameData.Current.beatmapThemes.Count;
 
         public List<BeatmapTheme> AllThemes { get; set; }
 
@@ -65,17 +63,6 @@ namespace BetterLegacy.Core.Managers
             set
             {
                 defaultThemes = value;
-                UpdateAllThemes();
-            }
-        }
-
-        public List<BeatmapTheme> customThemes = new List<BeatmapTheme>();
-        public List<BeatmapTheme> CustomThemes
-        {
-            get => customThemes;
-            set
-            {
-                customThemes = value;
                 UpdateAllThemes();
             }
         }
@@ -97,37 +84,7 @@ namespace BetterLegacy.Core.Managers
         /// <returns>Returns the current theme.</returns>
         public BeatmapTheme GetTheme(int id) => AllThemes.TryFind(x => Parser.TryParse(x.id, 0) == id, out BeatmapTheme beatmapTheme) ? beatmapTheme : DefaultThemes[0];
 
-        public void UpdateAllThemes() => AllThemes = customThemes.IsEmpty() ? defaultThemes : defaultThemes.Union(customThemes).ToList();
-
-        public bool AddTheme(BeatmapTheme beatmapTheme)
-        {
-            CustomThemes.Add(beatmapTheme);
-
-            if (!themeIDs.Contains(beatmapTheme.id))
-            {
-                themeIDs.Add(beatmapTheme.id);
-                return true;
-            }
-
-            var list = CustomThemes.Where(x => x.id == beatmapTheme.id).ToList();
-            var str = string.Empty;
-            for (int j = 0; j < list.Count; j++)
-            {
-                str += list[j].name;
-                if (j != list.Count - 1)
-                    str += ", ";
-            }
-
-            if (CoreHelper.InEditor)
-                EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
-            return false;
-        }
-
-        public void Clear()
-        {
-            customThemes.Clear();
-            themeIDs.Clear();
-        }
+        public void UpdateAllThemes() => AllThemes = !GameData.Current || GameData.Current.beatmapThemes.IsEmpty() ? defaultThemes : defaultThemes.Union(GameData.Current.beatmapThemes).ToList();
 
         public void UpdateThemes()
         {

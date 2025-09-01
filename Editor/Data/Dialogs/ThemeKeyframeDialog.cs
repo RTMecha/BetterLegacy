@@ -41,7 +41,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public int Page { get; set; }
 
-        public int MaxPageCount => RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage;
+        public int MaxPageCount => RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage;
 
         #endregion
 
@@ -78,8 +78,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
         #region Fields
 
         public GameObject themeAddButton;
-
-        public GameObject themeUpFolderButton;
 
         #endregion
 
@@ -124,52 +122,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                        new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
-                        new ButtonFunction(true),
-                        new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
+                        new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor));
                 };
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.AddGraphic(themeAddButton.transform.Find("edit").GetComponent<Image>(), ThemeGroup.List_Button_2_Text);
                 EditorThemeManager.AddGraphic(themeAddButton.transform.Find("text").GetComponent<Text>(), ThemeGroup.List_Button_2_Text);
-            }
-
-            if (!themeUpFolderButton)
-            {
-                themeUpFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(Content, "back", 0);
-                var folderButtonStorageFolder = themeUpFolderButton.GetComponent<FunctionButtonStorage>();
-                var folderButtonFunctionFolder = themeUpFolderButton.AddComponent<FolderButtonFunction>();
-
-                var hoverUIFolder = themeUpFolderButton.AddComponent<HoverUI>();
-                hoverUIFolder.size = EditorConfig.Instance.OpenLevelButtonHoverSize.Value;
-                hoverUIFolder.animatePos = false;
-                hoverUIFolder.animateSca = true;
-
-                folderButtonStorageFolder.label.text = "< Up a folder";
-
-                folderButtonStorageFolder.button.onClick.ClearAll();
-                folderButtonFunctionFolder.onClick = eventData =>
-                {
-                    if (eventData.button == PointerEventData.InputButton.Right)
-                    {
-                        EditorContextMenu.inst.ShowContextMenu(
-                            new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath), () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); })),
-                            new ButtonFunction("Create theme", RTThemeEditor.inst.RenderThemeEditor),
-                            new ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
-
-                        return;
-                    }
-
-                    if (RTEditor.inst.themePathField.text == RTEditor.inst.ThemePath)
-                    {
-                        RTEditor.inst.themePathField.text = RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath)).Replace(RTEditor.inst.BeatmapsPath + "/", "");
-                        RTEditor.inst.UpdateThemePath(false);
-                    }
-                };
-
-                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_2);
-                EditorThemeManager.ApplyGraphic(folderButtonStorageFolder.label, ThemeGroup.List_Button_2_Text);
             }
 
             #endregion

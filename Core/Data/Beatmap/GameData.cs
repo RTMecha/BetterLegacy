@@ -1191,9 +1191,6 @@ namespace BetterLegacy.Core.Data.Beatmap
                     prefabObjects.Add(prefab);
             }
 
-            foreach (var theme in ThemeManager.inst.DefaultThemes)
-                beatmapThemes.Add(theme);
-
             for (int i = 0; i < jn["themes"].Count; i++)
             {
                 if (string.IsNullOrEmpty(jn["themes"][i]["id"]))
@@ -1381,9 +1378,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             var idsConverter = new Dictionary<string, string>();
 
             int themeIndex = 0;
-            var themes = ThemeManager.inst.CustomThemes.Where(x => events[4].Has(y => int.TryParse(x.id, out int id) && id == y.values[0]));
-            if (themes.Count() > 0)
-                foreach (var beatmapTheme in themes)
+            if (!beatmapThemes.IsEmpty())
+                foreach (var beatmapTheme in beatmapThemes)
                 {
                     beatmapTheme.VGID = LSText.randomString(16);
 
@@ -1795,9 +1791,41 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<BeatmapTheme> GetUsedThemes() => GetUsedThemes(beatmapThemes);
 
-        public List<BeatmapTheme> GetUsedThemes(List<BeatmapTheme> beatmapThemes) => events == null || events.Count <= 4 ? new List<BeatmapTheme>() : beatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(x.id, 0))).ToList();
+        public List<BeatmapTheme> GetUsedThemes(List<BeatmapTheme> beatmapThemes) => events == null || events.Count <= 4 ? new List<BeatmapTheme>() : beatmapThemes.Where(x => ThemeIsUsed(x)).ToList();
 
-        public void UpdateUsedThemes() => beatmapThemes = GetUsedThemes(ThemeManager.inst.CustomThemes);
+        public bool ThemeIsUsed(BeatmapTheme beatmapTheme) => Parser.TryParse(beatmapTheme.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(beatmapTheme.id, 0));
+
+        /// <summary>
+        /// Adds a theme.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to add.</param>
+        /// <returns>Returns true if the theme was successfully added, otherwise returns false.</returns>
+        public bool AddTheme(BeatmapTheme beatmapTheme)
+        {
+            if (!beatmapThemes.Has(x => x.id == beatmapTheme.id))
+            {
+                beatmapThemes.Add(beatmapTheme.Copy(false));
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Overwrites or adds a theme.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to overwrite or add.</param>
+        /// <returns>Returns true if a theme was overwritten, otherwise adds the theme and returns false.</returns>
+        public bool OverwriteTheme(BeatmapTheme beatmapTheme)
+        {
+            if (beatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int index))
+            {
+                beatmapThemes[index] = beatmapTheme;
+                return true;
+            }
+
+            beatmapThemes.Add(beatmapTheme);
+            return false;
+        }
 
         /// <summary>
         /// Gets a Prefab from a specific source.
@@ -2469,10 +2497,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                         }
 
                         foreach (var beatmapTheme in gameDatas[i].beatmapThemes)
-                        {
-                            if (!baseData.beatmapThemes.Has(x => x.id == beatmapTheme.id))
-                                baseData.beatmapThemes.Add(beatmapTheme);
-                        }
+                            baseData.AddTheme(beatmapTheme);
 
                         // Clearing
                         {

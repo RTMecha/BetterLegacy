@@ -323,7 +323,7 @@ namespace BetterLegacy.Editor.Data
 
             if (!string.IsNullOrEmpty(themePath) && RTEditor.inst.ThemePath != themePath)
             {
-                RTEditor.inst.themePathField.text = themePath;
+                RTThemeEditor.inst.Popup.PathField.text = themePath;
                 RTEditor.inst.UpdateThemePath(false);
             }
         }

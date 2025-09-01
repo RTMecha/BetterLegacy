@@ -447,7 +447,7 @@ namespace BetterLegacy.Editor.Managers
                 InfoPopup = new InfoPopup(EditorPopup.FILE_INFO_POPUP);
                 InfoPopup.Assign(InfoPopup.GetLegacyDialog().Dialog.gameObject);
 
-                ParentSelectorPopup = new PageContentPopup(EditorPopup.PARENT_SELECTOR);
+                ParentSelectorPopup = new ContentPopup(EditorPopup.PARENT_SELECTOR);
                 ParentSelectorPopup.Assign(ParentSelectorPopup.GetLegacyDialog().Dialog.gameObject);
                 ParentSelectorPopup.title = ParentSelectorPopup.Title.text;
                 ParentSelectorPopup.size = ParentSelectorPopup.GameObject.transform.AsRT().sizeDelta;
@@ -1092,7 +1092,7 @@ namespace BetterLegacy.Editor.Managers
 
         public InfoPopup InfoPopup { get; set; }
 
-        public PageContentPopup ParentSelectorPopup { get; set; }
+        public ContentPopup ParentSelectorPopup { get; set; }
 
         public EditorPopup SaveAsPopup { get; set; }
 
@@ -1139,7 +1139,6 @@ namespace BetterLegacy.Editor.Managers
         public Dropdown levelOrderDropdown;
         public Toggle levelAscendToggle;
         public InputField editorPathField;
-        public InputField themePathField;
         public InputField prefabPathField;
         public InputField levelCollectionPathField;
 
@@ -1608,7 +1607,7 @@ namespace BetterLegacy.Editor.Managers
 
             editorPathField.text = "editor";
             UpdateEditorPath(false);
-            themePathField.text = "themes";
+            RTThemeEditor.inst.Popup.PathField.text = "themes";
             UpdateThemePath(false);
             prefabPathField.text = "prefabs";
             UpdatePrefabPath(false);
@@ -1671,22 +1670,22 @@ namespace BetterLegacy.Editor.Managers
             var themePath = RTFile.CombinePaths(BeatmapsPath, ThemePath);
             if (!RTFile.DirectoryExists(themePath))
             {
-                themePathField.interactable = false;
+                RTThemeEditor.inst.Popup.PathField.interactable = false;
                 ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
                     RTFile.CreateDirectory(themePath);
 
                     SaveGlobalSettings();
 
-                    StartCoroutine(RTThemeEditor.inst.LoadThemes(true));
+                    CoroutineHelper.StartCoroutine(RTThemeEditor.inst.LoadThemes());
                     EventEditor.inst.RenderEventsDialog();
 
                     HideWarningPopup();
-                    themePathField.interactable = true;
+                    RTThemeEditor.inst.Popup.PathField.interactable = true;
                 }, () =>
                 {
                     HideWarningPopup();
-                    themePathField.interactable = true;
+                    RTThemeEditor.inst.Popup.PathField.interactable = true;
                 });
 
                 return;
@@ -1694,7 +1693,7 @@ namespace BetterLegacy.Editor.Managers
 
             SaveGlobalSettings();
 
-            StartCoroutine(RTThemeEditor.inst.LoadThemes(true));
+            CoroutineHelper.StartCoroutine(RTThemeEditor.inst.LoadThemes());
             EventEditor.inst.RenderEventsDialog();
         }
 
@@ -2046,7 +2045,7 @@ namespace BetterLegacy.Editor.Managers
         {
             yield return Ninja.JumpToUnity;
             CoreHelper.Log($"------- [UPDATING THEME FILEWATCHER] -------");
-            StartCoroutine(RTThemeEditor.inst.LoadThemes(RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy));
+            CoroutineHelper.StartCoroutine(RTThemeEditor.inst.LoadThemes());
             yield break;
         }
 
@@ -2485,14 +2484,6 @@ namespace BetterLegacy.Editor.Managers
         public ContentPopup GeneratePopup(string name, string title, Vector2? defaultPosition = null, Vector2? size = null, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
         {
             var editorPopup = new ContentPopup(name, title, defaultPosition, size, refreshSearch, close, placeholderText);
-            editorPopup.Init();
-            editorPopups.Add(editorPopup);
-            return editorPopup;
-        }
-
-        public PageContentPopup GeneratePagePopup(string name, string title, Vector2? defaultPosition = null, Vector2? size = null, Action<string> refreshSearch = null, Action close = null, string placeholderText = "Search...")
-        {
-            var editorPopup = new PageContentPopup(name, title, defaultPosition, size, refreshSearch, close, placeholderText);
             editorPopup.Init();
             editorPopups.Add(editorPopup);
             return editorPopup;
@@ -3577,77 +3568,15 @@ namespace BetterLegacy.Editor.Managers
             var themePathBase = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme").GetChild(2).gameObject
                 .Duplicate(EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme"), "themepathers", 8);
 
-            var themePathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(themePathBase.transform, "themes path");
-            themePathGameObject.transform.AsRT().anchoredPosition = new Vector2(80f, 0f);
-            themePathGameObject.transform.AsRT().sizeDelta = new Vector2(160f, 34f);
+            var importTheme = EditorPrefabHolder.Instance.Function2Button.Duplicate(themePathBase.transform, "import");
+            importTheme.transform.AsRT().anchoredPosition = new Vector2(50f, 20f);
+            importTheme.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+            var importThemeStorage = importTheme.GetComponent<FunctionButtonStorage>();
+            importThemeStorage.Text = "Import";
+            importThemeStorage.OnClick.NewListener(() => RTThemeEditor.inst.OpenExternalThemesPopup());
 
-            TooltipHelper.AssignTooltip(themePathGameObject, "Theme Path", 3f);
-
-            themePathField = themePathGameObject.GetComponent<InputField>();
-            themePathField.characterValidation = InputField.CharacterValidation.None;
-            themePathField.textComponent.alignment = TextAnchor.MiddleLeft;
-            themePathField.textComponent.fontSize = 16;
-            themePathField.SetTextWithoutNotify(ThemePath);
-            themePathField.onValueChanged.NewListener(_val => ThemePath = _val);
-            themePathField.onEndEdit.NewListener(_val => UpdateThemePath(false));
-
-            EditorThemeManager.AddInputField(themePathField);
-
-            var themeClickable = themePathGameObject.AddComponent<Clickable>();
-            themeClickable.onDown = pointerEventData =>
-            {
-                if (pointerEventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Set Theme folder", () =>
-                    {
-                        BrowserPopup.Open();
-                        RTFileBrowser.inst.UpdateBrowserFolder(_val =>
-                        {
-                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            themePathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                            EditorManager.inst.DisplayNotification($"Set Theme path to {ThemePath}!", 2f, EditorManager.NotificationType.Success);
-                            BrowserPopup.Close();
-                            UpdateThemePath(false);
-                        });
-                    }),
-                    new ButtonFunction("Open List in File Explorer", OpenThemeListFolder),
-                    new ButtonFunction("Set as Default for Level", () =>
-                    {
-                        editorInfo.themePath = themePath;
-                        EditorManager.inst.DisplayNotification($"Set current theme folder [ {themePath} ] as the default for the level!", 5f, EditorManager.NotificationType.Success);
-                    }, "Theme Default Path"),
-                    new ButtonFunction("Remove Default", () =>
-                    {
-                        editorInfo.themePath = null;
-                        EditorManager.inst.DisplayNotification($"Removed default theme folder.", 5f, EditorManager.NotificationType.Success);
-                    }, "Theme Default Path"));
-            };
-
-            EditorHelper.SetComplexity(themePathGameObject, Complexity.Advanced);
-
-            var themeListReload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(themePathBase.transform, "reload themes");
-            themeListReload.transform.AsRT().anchoredPosition = new Vector2(166f, 35f);
-            themeListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-            (themeListReload.GetComponent<HoverTooltip>() ?? themeListReload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
-            {
-                desc = "Refresh theme list",
-                hint = "Clicking this will reload the theme list."
-            });
-
-            var themeListReloadButton = themeListReload.GetComponent<Button>();
-            themeListReloadButton.onClick.NewListener(() => UpdateThemePath(true));
-
-            EditorThemeManager.AddSelectable(themeListReloadButton, ThemeGroup.Function_2, false);
-
-            themeListReloadButton.image.sprite = EditorSprites.ReloadSprite;
+            EditorThemeManager.AddSelectable(importThemeStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(importThemeStorage.label, ThemeGroup.Function_2_Text);
 
             var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
             UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -3671,14 +3600,14 @@ namespace BetterLegacy.Editor.Managers
             themePageStorage.leftButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(themePageStorage.inputField.text, out int p))
-                    themePageStorage.inputField.text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
+                    themePageStorage.inputField.text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
             themePageStorage.rightButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(themePageStorage.inputField.text, out int p))
-                    themePageStorage.inputField.text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
+                    themePageStorage.inputField.text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
-            themePageStorage.rightGreaterButton.onClick.NewListener(() => themePageStorage.inputField.text = (RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
+            themePageStorage.rightGreaterButton.onClick.NewListener(() => themePageStorage.inputField.text = (RTThemeEditor.inst.InternalThemesCount / RTThemeEditor.eventThemesPerPage).ToString());
 
             Destroy(themePageStorage.middleButton.gameObject);
 
