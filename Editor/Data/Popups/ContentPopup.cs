@@ -8,6 +8,7 @@ using LSFunctions;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
@@ -17,7 +18,7 @@ namespace BetterLegacy.Editor.Data.Popups
     /// <summary>
     /// Represents a popup that can contain items.
     /// </summary>
-    public class ContentPopup : EditorPopup, IContentUI
+    public class ContentPopup : EditorPopup, IContentUI, IPageUI
     {
         public ContentPopup(string name) : base(name) { }
 
@@ -67,6 +68,28 @@ namespace BetterLegacy.Editor.Data.Popups
         /// The placeholder string of the editor popups' search field.
         /// </summary>
         public string placeholderText = "Search...";
+
+        public RectTransform TopElements { get; set; }
+
+        #region Path
+
+        public InputField PathField { get; set; }
+
+        public Button ReloadButton { get; set; }
+
+        #endregion
+
+        #region Page
+
+        public InputFieldStorage PageField { get; set; }
+
+        public int Page { get; set; }
+
+        public int MaxPageCount => getMaxPageCount?.Invoke() ?? int.MaxValue;
+
+        public Func<int> getMaxPageCount;
+
+        #endregion
 
         #endregion
 
@@ -127,6 +150,19 @@ namespace BetterLegacy.Editor.Data.Popups
             EditorThemeManager.AddLightText(Title);
             EditorThemeManager.AddScrollbar(ContentScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
             EditorThemeManager.AddInputField(SearchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
+
+            if (TopPanel)
+            {
+                var topElements = Creator.NewUIObject("elements", TopPanel);
+                TopElements = topElements.transform.AsRT();
+                new RectValues(Vector2.zero, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.one, new Vector2(0f, 32f)).AssignToRectTransform(TopElements);
+                var topElementsLayout = topElements.AddComponent<HorizontalLayoutGroup>();
+                topElementsLayout.childControlHeight = true;
+                topElementsLayout.childControlWidth = false;
+                topElementsLayout.childForceExpandHeight = true;
+                topElementsLayout.childForceExpandWidth = false;
+                topElementsLayout.spacing = 2f;
+            }
 
             Render();
         }
@@ -246,6 +282,93 @@ namespace BetterLegacy.Editor.Data.Popups
             EditorThemeManager.ApplyLightText(storage.label);
 
             return storage;
+        }
+
+        /// <summary>
+        /// Initializes the path field.
+        /// </summary>
+        public void InitPath()
+        {
+            var path = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(TopElements, "editor path");
+            path.transform.AsRT().sizeDelta = new Vector2(104f, 32f);
+
+            PathField = path.GetComponent<InputField>();
+            PathField.characterValidation = InputField.CharacterValidation.None;
+            PathField.textComponent.alignment = TextAnchor.MiddleLeft;
+            PathField.textComponent.fontSize = 16;
+
+            EditorThemeManager.AddInputField(PathField);
+        }
+
+        /// <summary>
+        /// Initializes the reload button.
+        /// </summary>
+        public void InitReload()
+        {
+            var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(TopElements, "reload");
+            reload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+
+            reload.GetOrAddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = "Refresh list",
+                hint = "Clicking this will reload the list."
+            });
+
+            ReloadButton = reload.GetComponent<Button>();
+            ReloadButton.onClick.NewListener(EditorLevelManager.inst.LoadLevels);
+
+            EditorThemeManager.AddSelectable(ReloadButton, ThemeGroup.Function_2, false);
+
+            ReloadButton.image.sprite = EditorSprites.ReloadSprite;
+        }
+
+        /// <summary>
+        /// Initializes the page field.
+        /// </summary>
+        public void InitPageField()
+        {
+            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(TopElements, "page");
+            page.GetComponent<HorizontalLayoutGroup>().spacing = 4f;
+            page.transform.AsRT().sizeDelta = new Vector2(144f, 32f);
+
+            PageField = page.GetComponent<InputFieldStorage>();
+            PageField.inputField.SetTextWithoutNotify("0");
+            PageField.inputField.onValueChanged.NewListener(_val =>
+            {
+                if (int.TryParse(_val, out int p))
+                {
+                    Page = Mathf.Clamp(p, 0, MaxPageCount);
+                    SearchField?.onValueChanged?.Invoke(SearchField.text);
+                }
+            });
+
+            PageField.leftGreaterButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(PageField.inputField.text, out int p))
+                    PageField.inputField.text = "0";
+            });
+
+            PageField.leftButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(PageField.inputField.text, out int p))
+                    PageField.inputField.text = Mathf.Clamp(p - 1, 0, MaxPageCount).ToString();
+            });
+
+            PageField.rightButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(PageField.inputField.text, out int p))
+                    PageField.inputField.text = Mathf.Clamp(p + 1, 0, MaxPageCount).ToString();
+            });
+
+            PageField.rightGreaterButton.onClick.NewListener(() =>
+            {
+                if (int.TryParse(PageField.inputField.text, out int p))
+                    PageField.inputField.text = MaxPageCount.ToString();
+            });
+
+            CoreHelper.Delete(PageField.middleButton);
+
+            EditorThemeManager.AddInputField(PageField);
         }
 
         #endregion

@@ -72,8 +72,9 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateObjectSearch()
         {
-            ObjectSearchPopup = RTEditor.inst.GeneratePagePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
+            ObjectSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.OBJECT_SEARCH_POPUP, "Object Search", Vector2.zero, new Vector2(600f, 450f), placeholderText: "Search for object...");
             ObjectSearchPopup.getMaxPageCount = () => GameData.Current.beatmapObjects.FindAll(x => !x.FromPrefab).Count / ObjectsPerPage;
+            ObjectSearchPopup.InitPageField();
 
             var dropdown = EditorHelper.AddEditorDropdown("Search Objects", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.SearchSprite, ShowObjectSearch);
 
@@ -92,7 +93,7 @@ namespace BetterLegacy.Editor.Managers
 
         public ObjectEditorDialog Dialog { get; set; }
 
-        public PageContentPopup ObjectSearchPopup { get; set; }
+        public ContentPopup ObjectSearchPopup { get; set; }
 
         public static bool AllowTimeExactlyAtStart => false;
 
