@@ -2111,16 +2111,16 @@ namespace BetterLegacy
     }
 
     /// <summary>
-    /// Where a Prefab comes from.
+    /// Where an object comes from.
     /// </summary>
     public enum ObjectSource
     {
         /// <summary>
-        /// Prefab comes from internal level file.
+        /// Object comes from internal level file.
         /// </summary>
         Internal,
         /// <summary>
-        /// Prefab comes from external prefabs folder.
+        /// Object comes from an external folder.
         /// </summary>
         External
     }
