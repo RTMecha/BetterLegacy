@@ -1828,6 +1828,21 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
+        /// Updates a theme.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to update.</param>
+        /// <returns>Returns true if a theme was found and updated, otherwise returns false.</returns>
+        public bool UpdateTheme(BeatmapTheme beatmapTheme)
+        {
+            if (beatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int index))
+            {
+                beatmapThemes[index] = beatmapTheme;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Gets a Prefab from a specific source.
         /// </summary>
         /// <param name="findType">Type to search.
