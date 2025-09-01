@@ -256,7 +256,7 @@ namespace BetterLegacy.Core.Helpers
                     return RandomizeFloatKeyframe(eventKeyframe, index);
 
                 var round = eventKeyframe.randomValues.Length > 2 && eventKeyframe.randomValues[2] != 0f;
-                var hash = GetHash(id, kfIndex, CurrentSeed);
+                var hash = GetHash(id + kfIndex, CurrentSeed);
                 return eventKeyframe.RandomType switch
                 {
                     RandomType.Normal => round ?
@@ -282,8 +282,8 @@ namespace BetterLegacy.Core.Helpers
                 switch ((RandomType)eventKeyframe.random)
                 {
                     case RandomType.Normal: {
-                            var xHash = GetHash(id + "XXXXXXXXXXXX", kfIndex, CurrentSeed);
-                            var yHash = GetHash(id + "YYYYYYYYYYYY", kfIndex, CurrentSeed);
+                            var xHash = GetHash(id + kfIndex + "XXXXXXXXXXXX", CurrentSeed);
+                            var yHash = GetHash(id + kfIndex + "YYYYYYYYYYYY", CurrentSeed);
 
                             if (round)
                             {
@@ -302,22 +302,22 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case RandomType.BETA_SUPPORT: {
-                            var xHash = GetHash(id + "XXXXXXXXXXXX", kfIndex, CurrentSeed);
-                            var yHash = GetHash(id + "YYYYYYYYYYYY", kfIndex, CurrentSeed);
+                            var xHash = GetHash(id + kfIndex + "XXXXXXXXXXXX", CurrentSeed);
+                            var yHash = GetHash(id + kfIndex + "YYYYYYYYYYYY", CurrentSeed);
 
                             x = UnityEngine.Mathf.Round(SingleFromRange(xHash, eventKeyframe.values[0], eventKeyframe.randomValues[0]));
                             y = UnityEngine.Mathf.Round(SingleFromRange(yHash, eventKeyframe.values[1], eventKeyframe.randomValues[1]));
                             break;
                         }
                     case RandomType.Toggle: {
-                            var hash = GetHash(id, kfIndex, CurrentSeed);
+                            var hash = GetHash(id + kfIndex, CurrentSeed);
                             bool toggle = Single(hash) > 0.5f;
                             x = toggle ? eventKeyframe.values[0] : eventKeyframe.randomValues[0];
                             y = toggle ? eventKeyframe.values[1] : eventKeyframe.randomValues[1];
                             break;
                         }
                     case RandomType.Scale: {
-                            var hash = GetHash(id, kfIndex, CurrentSeed);
+                            var hash = GetHash(id + kfIndex, CurrentSeed);
                             float multiply = SingleFromRange(hash, eventKeyframe.randomValues[0], eventKeyframe.randomValues[1]);
 
                             if (round)
