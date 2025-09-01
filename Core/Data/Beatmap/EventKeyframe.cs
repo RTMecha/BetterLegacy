@@ -266,6 +266,19 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool IsHoming() => random == 5 || random == 6;
 
+        public Dictionary<string, float> GetKeyframeVariables(int index) => new Dictionary<string, float>
+        {
+            { "eventTime", time },
+            { "currentValue", values[index] }
+        };
+        
+        public Dictionary<string, float> GetKeyframeVariables(int xindex, int yindex) => new Dictionary<string, float>
+        {
+            { "eventTime", time },
+            { "currentValueX", values[xindex] },
+            { "currentValueY", values[yindex] }
+        };
+
         #endregion
 
         #region Operators
