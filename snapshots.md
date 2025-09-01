@@ -13,6 +13,7 @@
 - Fixed objects other than Beatmap Objects not having their song time autokill offset properly set when spawned from a prefab.
 - Fixed animation timeline being weird.
 - Fixed Asset Editor not showing files in sub-folders.
+- Fixed seed-based random not changing per-keyframe.
 
 -------------------------------------------------------------------
 
