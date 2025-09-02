@@ -3,6 +3,7 @@
 ### Core
 - Added "Apply Tail Delay" in Config Manager > Player > General. This forces the tail to not apply the Tail Base Time value. Older versions of PA does not apply the time value delay and ends up making it look nicer.
 - Added setTheme and lerpTheme action modifiers. This sets a custom fixed theme that overwrites the theme interpolation.
+- Themes can now be stored in Prefabs.
 
 ### Editor
 - Overhauled the theme system to have internal / external themes. The "View Themes" popup is now used for viewing and importing external themes and the theme keyframe is now for viewing internal level themes.
