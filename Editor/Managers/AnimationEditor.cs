@@ -71,7 +71,7 @@ namespace BetterLegacy.Editor.Managers
                 // allow for storing level animations.
                 EditorHelper.AddEditorDropdown("View Animations", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.PlaySprite, () =>
                 {
-                    if (EditorLevelManager.inst.hasLoadedLevel())
+                    if (EditorLevelManager.inst.HasLoadedLevel())
                         OpenPopup(GameData.Current.animations);
                 });
             }

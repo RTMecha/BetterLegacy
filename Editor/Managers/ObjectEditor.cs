@@ -2849,7 +2849,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObjects">List of <see cref="BeatmapObject"/> to render.</param>
         public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false, List<BeatmapObject> beatmapObjects = null)
         {
-            if (!EditorLevelManager.inst.hasLoadedLevel())
+            if (!EditorLevelManager.inst.HasLoadedLevel())
                 return;
 
             ObjectSearchPopup.Open();
