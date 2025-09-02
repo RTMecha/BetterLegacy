@@ -688,6 +688,14 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public RTLevelBase ParentRuntime { get; set; }
 
+        public enum DuplicateBehaviorType
+        {
+            Remove,
+            DontAdd,
+            Keep,
+        }
+        public static DuplicateBehaviorType DuplicateBehavior { get; set; } = DuplicateBehaviorType.Remove;
+
         #endregion
 
         #region Methods
@@ -1203,9 +1211,26 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 var beatmapObject = BeatmapObject.Parse(jn["beatmap_objects"][i]);
 
-                // remove objects with duplicate ID's due to a stupid dev branch bug
-                if (beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
-                    beatmapObjects.RemoveAt(index);
+                switch (DuplicateBehavior)
+                {
+                    case DuplicateBehaviorType.Remove: {
+                            // remove objects with duplicate ID's due to a stupid dev branch bug
+                            if (beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
+                                beatmapObjects.RemoveAt(index);
+
+                            break;
+                        }
+                    case DuplicateBehaviorType.DontAdd: {
+                            // don't add objects with duplicate ID's due to a stupid dev branch bug
+                            if (beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
+                                continue;
+
+                            break;
+                        }
+                    case DuplicateBehaviorType.Keep: {
+                            break;
+                        }
+                }
 
                 beatmapObjects.Add(beatmapObject);
             }
