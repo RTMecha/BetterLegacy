@@ -780,7 +780,11 @@ namespace BetterLegacy.Core
         public static string SecondsToTime(float seconds)
         {
             var timeSpan = TimeSpan.FromSeconds(seconds);
-            return seconds >= 86400f ? string.Format("{0:D0}:{1:D1}:{2:D2}:{3:D3}", timeSpan.Days, timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds) : string.Format("{0:D0}:{1:D1}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
+            if (seconds >= 86400f)
+                return string.Format("{0:D0}:{1:D1}:{2:D2}:{3:D3}.{4:D4}", timeSpan.Days, timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
+            if (seconds >= 3600f)
+                return string.Format("{0:D0}:{1:D1}:{2:D2}.{3:D3}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
+            return string.Format("{0:D0}:{1:D1}.{2:D2}", timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
         }
 
         public static string Percentage(float t, float length) => string.Format("{0:000}", (int)RTMath.Percentage(t, length));
