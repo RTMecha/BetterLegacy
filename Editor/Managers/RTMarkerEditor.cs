@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -15,7 +14,6 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
@@ -56,9 +54,33 @@ namespace BetterLegacy.Editor.Managers
             } // init dialog
         }
 
+        void Update()
+        {
+            if (dragging && Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
+                StopDragging();
+
+            for (int i = 0; i < timelineMarkers.Count; i++)
+            {
+                if (!timelineMarkers[i].dragging)
+                    continue;
+
+                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
+                timelineMarkers[i].RenderPosition();
+            }
+
+            if (dragging && CurrentMarker && Dialog.IsCurrent)
+                RenderTime(CurrentMarker.Marker);
+
+            if (EditorManager.inst.loading || !markerLooping || GameData.Current.data.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
+                return;
+
+            if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
+                AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+        }
+
         #endregion
 
-        #region Variables
+        #region Values
 
         public MarkerEditorDialog Dialog { get; set; }
 
@@ -101,31 +123,70 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        #endregion
+        #region Marker Functions
 
-        void Update()
+        /// <summary>
+        /// Functions to run from a markers' description.
+        /// </summary>
+        public List<MarkerFunction> markerFunctions = new List<MarkerFunction>
         {
-            if (dragging && Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
-                StopDragging();
-
-            for (int i = 0; i < timelineMarkers.Count; i++)
+            new MarkerFunction(new Regex(@"setLayer\((.*?)\)"), match =>
             {
-                if (!timelineMarkers[i].dragging)
-                    continue;
+                var matchGroup = match.Groups[1].ToString();
+                if (matchGroup.ToLower() == "events" || matchGroup.ToLower() == "check" || matchGroup.ToLower() == "event/check" || matchGroup.ToLower() == "event")
+                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Events);
+                else if (matchGroup.ToLower() == "object" || matchGroup.ToLower() == "objects")
+                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
+                else if (matchGroup.ToLower() == "toggle" || matchGroup.ToLower() == "swap")
+                    EditorTimeline.inst.SetLayer(EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects ? EditorTimeline.LayerType.Events : EditorTimeline.LayerType.Objects);
+                else if (int.TryParse(matchGroup, out int layer))
+                    EditorTimeline.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
+            }),
+            new MarkerFunction(new Regex(@"setBin\((.*?)\)"), match =>
+            {
+                var matchGroup = match.Groups[1].ToString();
+                if (int.TryParse(matchGroup, out int result))
+                    EditorTimeline.inst.SetBinPosition(result);
+            }),
+            new MarkerFunction(new Regex(@"setTimeline\((.*?)\)"), match =>
+            {
+                if (int.TryParse(match.Groups[1].ToString(), out int zoom))
+                    EditorTimeline.inst.SetTimeline(zoom, match.Groups.Count > 1 && float.TryParse(match.Groups[2].ToString(), out float position) ? position : -1f);
+            }),
+        };
 
-                timelineMarkers[i].Marker.time = Mathf.Round(Mathf.Clamp(EditorTimeline.inst.GetTimelineTime(RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsMarkers.Value), 0f, AudioManager.inst.CurrentAudioSource.clip.length) * 1000f) / 1000f;
-                timelineMarkers[i].RenderPosition();
+        /// <summary>
+        /// Runs a custom function from a marker.
+        /// </summary>
+        public class MarkerFunction
+        {
+            public MarkerFunction(Regex regex, Action<Match> result)
+            {
+                Regex = regex;
+                Result = result;
             }
 
-            if (dragging && CurrentMarker && Dialog.IsCurrent)
-                RenderTime(CurrentMarker.Marker);
+            /// <summary>
+            /// If the function should run automatically when the marker is opened.
+            /// </summary>
+            public bool Auto { get; set; } = true;
 
-            if (EditorManager.inst.loading || !markerLooping || GameData.Current.data.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
-                return;
+            /// <summary>
+            /// The pattern to search for in the markers' description.
+            /// </summary>
+            public Regex Regex { get; set; }
 
-            if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
-                AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+            /// <summary>
+            /// The match result.
+            /// </summary>
+            public Action<Match> Result { get; set; }
         }
+
+        #endregion
+
+        #endregion
+
+        #region Methods
 
         #region Editor Rendering
 
@@ -305,10 +366,7 @@ namespace BetterLegacy.Editor.Managers
                     marker.timelineMarker?.Render();
                 });
 
-                numberFieldStorage.middleButton.onClick.NewListener(() =>
-                {
-                    numberFieldStorage.inputField.text = EditorTimeline.inst.Layer.ToString();
-                });
+                numberFieldStorage.middleButton.onClick.NewListener(() => numberFieldStorage.inputField.text = EditorTimeline.inst.Layer.ToString());
 
                 TriggerHelper.IncreaseDecreaseButtonsInt(numberFieldStorage);
                 TriggerHelper.AddEventTriggers(numberFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(numberFieldStorage.inputField, max: int.MaxValue));
@@ -412,14 +470,14 @@ namespace BetterLegacy.Editor.Managers
                 if (!RTString.SearchString(MarkerEditor.inst.sortedName, marker.name) && !RTString.SearchString(MarkerEditor.inst.sortedName, marker.desc))
                 {
                     num++;
-                    if (marker.timelineMarker && marker.timelineMarker.listButton)
-                        marker.timelineMarker.listButton.Clear();
+                    if (marker.timelineMarker && marker.timelineMarker.panel)
+                        marker.timelineMarker.panel.Clear();
                     continue;
                 }
 
                 var index = num;
 
-                var markerButton = marker.timelineMarker.listButton;
+                var markerButton = marker.timelineMarker.panel;
 
                 var gameObject = MarkerEditor.inst.markerButtonPrefab.Duplicate(parent, marker.name);
                 markerButton.GameObject = gameObject;
@@ -824,8 +882,8 @@ namespace BetterLegacy.Editor.Managers
         public void SetTime(float time)
         {
             CurrentMarker.Marker.time = time;
-            if (CurrentMarker.listButton && CurrentMarker.listButton.Time)
-                CurrentMarker.listButton.RenderTime();
+            if (CurrentMarker.panel && CurrentMarker.panel.Time)
+                CurrentMarker.panel.RenderTime();
             OrderMarkers();
         }
 
@@ -843,65 +901,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
-
-        #region Marker Functions
-
-        /// <summary>
-        /// Functions to run from a markers' description.
-        /// </summary>
-        public List<MarkerFunction> markerFunctions = new List<MarkerFunction>
-        {
-            new MarkerFunction(new Regex(@"setLayer\((.*?)\)"), match =>
-            {
-                var matchGroup = match.Groups[1].ToString();
-                if (matchGroup.ToLower() == "events" || matchGroup.ToLower() == "check" || matchGroup.ToLower() == "event/check" || matchGroup.ToLower() == "event")
-                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Events);
-                else if (matchGroup.ToLower() == "object" || matchGroup.ToLower() == "objects")
-                    EditorTimeline.inst.SetLayer(EditorTimeline.LayerType.Objects);
-                else if (matchGroup.ToLower() == "toggle" || matchGroup.ToLower() == "swap")
-                    EditorTimeline.inst.SetLayer(EditorTimeline.inst.layerType == EditorTimeline.LayerType.Objects ? EditorTimeline.LayerType.Events : EditorTimeline.LayerType.Objects);
-                else if (int.TryParse(matchGroup, out int layer))
-                    EditorTimeline.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
-            }),
-            new MarkerFunction(new Regex(@"setBin\((.*?)\)"), match =>
-            {
-                var matchGroup = match.Groups[1].ToString();
-                if (int.TryParse(matchGroup, out int result))
-                    EditorTimeline.inst.SetBinPosition(result);
-            }),
-            new MarkerFunction(new Regex(@"setTimeline\((.*?)\)"), match =>
-            {
-                if (int.TryParse(match.Groups[1].ToString(), out int zoom))
-                    EditorTimeline.inst.SetTimeline(zoom, match.Groups.Count > 1 && float.TryParse(match.Groups[2].ToString(), out float position) ? position : -1f);
-            }),
-        };
-
-        /// <summary>
-        /// Runs a custom function from a marker.
-        /// </summary>
-        public class MarkerFunction
-        {
-            public MarkerFunction(Regex regex, Action<Match> result)
-            {
-                Regex = regex;
-                Result = result;
-            }
-
-            /// <summary>
-            /// If the function should run automatically when the marker is opened.
-            /// </summary>
-            public bool Auto { get; set; } = true;
-
-            /// <summary>
-            /// The pattern to search for in the markers' description.
-            /// </summary>
-            public Regex Regex { get; set; }
-
-            /// <summary>
-            /// The match result.
-            /// </summary>
-            public Action<Match> Result { get; set; }
-        }
 
         #endregion
     }

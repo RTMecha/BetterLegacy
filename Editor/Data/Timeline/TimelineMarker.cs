@@ -12,6 +12,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Timeline
@@ -22,14 +23,15 @@ namespace BetterLegacy.Editor.Data.Timeline
     public class TimelineMarker : Exists
     {
         public TimelineMarker() { }
+
         public TimelineMarker(Marker marker)
         {
             Marker = marker;
             marker.timelineMarker = this;
-            listButton = new MarkerButton(this);
+            panel = new MarkerPanel(this);
         }
 
-        #region Properties
+        #region Values
 
         #region UI
 
@@ -88,21 +90,17 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public Color Color => MarkerEditor.inst.markerColors[Mathf.Clamp(Marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
 
-        #endregion
-
-        #endregion
-
-        #region Fields
-
         /// <summary>
         /// If the timeline marker is being dragged.
         /// </summary>
         public bool dragging;
 
         /// <summary>
-        /// Marker button reference.
+        /// Marker panel reference.
         /// </summary>
-        public MarkerButton listButton;
+        public MarkerPanel panel;
+
+        #endregion
 
         #endregion
 
@@ -344,85 +342,5 @@ namespace BetterLegacy.Editor.Data.Timeline
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Provides a reference to the markers' button in the marker list.
-    /// </summary>
-    public class MarkerButton : Exists
-    {
-        public MarkerButton(TimelineMarker timelineMarker) => this.timelineMarker = timelineMarker;
-
-        readonly TimelineMarker timelineMarker;
-
-        /// <summary>
-        /// GameObject of the marker button.
-        /// </summary>
-        public GameObject GameObject { get; set; }
-
-        /// <summary>
-        /// Name text of the marker button.
-        /// </summary>
-        public Text Name { get; set; }
-
-        /// <summary>
-        /// Time text of the marker button.
-        /// </summary>
-        public Text Time { get; set; }
-
-        /// <summary>
-        /// Color image of the marker button.
-        /// </summary>
-        public Image Color { get; set; }
-
-        /// <summary>
-        /// Button component of the marker button.
-        /// </summary>
-        public Button Button { get; set; }
-
-        /// <summary>
-        /// Clears all <see cref="MarkerButton"/> data.
-        /// </summary>
-        public void Clear()
-        {
-            GameObject = null;
-            Name = null;
-            Time = null;
-            Color = null;
-            Button = null;
-        }
-
-        /// <summary>
-        /// Renders the marker button color.
-        /// </summary>
-        public void RenderColor() => RenderColor(timelineMarker.Color);
-
-        /// <summary>
-        /// Renders the marker button color.
-        /// </summary>
-        /// <param name="color">Color to set.</param>
-        public void RenderColor(Color color) => Color.color = color;
-
-        /// <summary>
-        /// Renders the marker button name.
-        /// </summary>
-        public void RenderName() => RenderName(timelineMarker.Marker.name);
-
-        /// <summary>
-        /// Renders the marker button name.
-        /// </summary>
-        /// <param name="name">Name to set.</param>
-        public void RenderName(string name) => Name.text = name;
-
-        /// <summary>
-        /// Renders the marker button time.
-        /// </summary>
-        public void RenderTime() => RenderTime(timelineMarker.Marker.time);
-
-        /// <summary>
-        /// Renders the marker button time.
-        /// </summary>
-        /// <param name="time">Time to set.</param>
-        public void RenderTime(float time) => Time.text = string.Format("{0:0}:{1:00}.{2:000}", Mathf.Floor(time / 60f), Mathf.Floor(time % 60f), Mathf.Floor(time * 1000f % 1000f));
     }
 }
