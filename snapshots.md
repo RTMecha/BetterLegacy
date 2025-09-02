@@ -1,11 +1,12 @@
 ﻿# ???
 ## Features
 ### Core
+- Added "Apply Tail Delay" in Config Manager > Player > General. This forces the tail to not apply the Tail Base Time value. Older versions of PA does not apply the time value delay and ends up making it look nicer.
 - Added setTheme and lerpTheme action modifiers. This sets a custom fixed theme that overwrites the theme interpolation.
 
 ### Editor
 - Overhauled the theme system to have internal / external themes. The "View Themes" popup is now used for viewing and importing external themes and the theme keyframe is now for viewing internal level themes.
-- Added "Analyze BPM On Level Load" in > Config Manager > Editor > BPM.
+- Added "Analyze BPM On Level Load" in Config Manager > Editor > BPM.
 - The animation timeline should now use the Use Mouse As Zoom Point setting.
 - Object and Parent Object Search Popups now have a page system.
 
