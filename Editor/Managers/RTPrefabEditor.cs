@@ -36,7 +36,11 @@ namespace BetterLegacy.Editor.Managers
     {
         public static RTPrefabEditor inst;
 
-        #region Variables
+        #region Values
+
+        public PrefabCreatorDialog PrefabCreator { get; set; }
+        public PrefabObjectEditorDialog PrefabObjectEditor { get; set; }
+        public PrefabEditorDialog PrefabEditorDialog { get; set; }
 
         public RectTransform prefabPopups;
         public Button selectQuickPrefabButton;
@@ -54,8 +58,6 @@ namespace BetterLegacy.Editor.Managers
 
         public bool createInternal;
 
-        public bool selectingPrefab;
-
         public GameObject prefabTypePrefab;
         public GameObject prefabTypeTogglePrefab;
 
@@ -68,9 +70,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool ImportPrefabsDirectly { get; set; }
 
-        public PrefabCreatorDialog PrefabCreator { get; set; }
-        public PrefabObjectEditorDialog PrefabObjectEditor { get; set; }
-        public PrefabExternalEditorDialog PrefabExternalEditor { get; set; }
+        public Action<Prefab> onSelectPrefab;
 
         #endregion
 
@@ -293,8 +293,8 @@ namespace BetterLegacy.Editor.Managers
                 PrefabCreator.Init();
                 PrefabObjectEditor = new PrefabObjectEditorDialog();
                 PrefabObjectEditor.Init();
-                PrefabExternalEditor = new PrefabExternalEditorDialog();
-                PrefabExternalEditor.Init();
+                PrefabEditorDialog = new PrefabEditorDialog();
+                PrefabEditorDialog.Init();
             }
             catch (Exception ex)
             {
@@ -1335,6 +1335,7 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.StartTime = startTime - originalPrefab.offset;
 
                 newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, prefabObjects, backgroundObjects: bgObjects, prefabs: originalPrefab.prefabs);
+                newPrefab.beatmapThemes = new List<BeatmapTheme>(originalPrefab.beatmapThemes.Select(x => x.Copy(false)));
                 newPrefab.defaultInstanceData = originalPrefab.defaultInstanceData?.Copy(false);
 
                 foreach (var other in prefabObjects)
@@ -1490,6 +1491,11 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.events[1].values[1] = anim.scale.y;
                 prefabObject.events[2].values[0] = anim.rotation;
             }
+
+            for (int i = 0; i < prefab.beatmapThemes.Count; i++)
+                GameData.Current.AddTheme(prefab.beatmapThemes[i]); // only add, don't overwrite
+            if (!prefab.beatmapThemes.IsEmpty())
+                RTThemeEditor.inst.LoadInternalThemes();
 
             GameData.Current.prefabObjects.Add(prefabObject);
 
@@ -2104,9 +2110,9 @@ namespace BetterLegacy.Editor.Managers
             var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.Source == ObjectSource.External;
 
-            PrefabExternalEditor.NameField.SetTextWithoutNotify(prefab.name);
-            PrefabExternalEditor.NameField.onValueChanged.NewListener(_val => prefab.name = _val);
-            PrefabExternalEditor.NameField.onEndEdit.NewListener(_val =>
+            PrefabEditorDialog.NameField.SetTextWithoutNotify(prefab.name);
+            PrefabEditorDialog.NameField.onValueChanged.NewListener(_val => prefab.name = _val);
+            PrefabEditorDialog.NameField.onEndEdit.NewListener(_val =>
             {
                 if (!isExternal)
                 {
@@ -2137,9 +2143,9 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.EnablePrefabWatcher();
             });
 
-            PrefabExternalEditor.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-            PrefabExternalEditor.TypeButton.button.image.color = prefabType.color;
-            PrefabExternalEditor.TypeButton.button.onClick.NewListener(() =>
+            PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+            PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
+            PrefabEditorDialog.TypeButton.button.onClick.NewListener(() =>
             {
                 OpenPrefabTypePopup(prefab.typeID, id =>
                 {
@@ -2147,8 +2153,8 @@ namespace BetterLegacy.Editor.Managers
                     prefab.typeID = id;
 
                     var prefabType = prefab.GetPrefabType();
-                    PrefabExternalEditor.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-                    PrefabExternalEditor.TypeButton.button.image.color = prefabType.color;
+                    PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                    PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
 
                     if (isExternal && !string.IsNullOrEmpty(prefab.filePath))
                         RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
@@ -2158,9 +2164,9 @@ namespace BetterLegacy.Editor.Managers
                 });
             });
 
-            PrefabExternalEditor.DescriptionField.SetTextWithoutNotify(prefab.description);
-            PrefabExternalEditor.DescriptionField.onValueChanged.NewListener(_val => prefab.description = _val);
-            PrefabExternalEditor.DescriptionField.onEndEdit.NewListener(_val =>
+            PrefabEditorDialog.DescriptionField.SetTextWithoutNotify(prefab.description);
+            PrefabEditorDialog.DescriptionField.onValueChanged.NewListener(_val => prefab.description = _val);
+            PrefabEditorDialog.DescriptionField.onEndEdit.NewListener(_val =>
             {
                 if (!isExternal)
                 {
@@ -2178,15 +2184,15 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.EnablePrefabWatcher();
             });
 
-            PrefabExternalEditor.ImportPrefabButton.gameObject.SetActive(isExternal);
-            PrefabExternalEditor.ImportPrefabButton.button.onClick.ClearAll();
+            PrefabEditorDialog.ImportPrefabButton.gameObject.SetActive(isExternal);
+            PrefabEditorDialog.ImportPrefabButton.button.onClick.ClearAll();
             if (isExternal)
-                PrefabExternalEditor.ImportPrefabButton.button.onClick.AddListener(() => ImportPrefabIntoLevel(prefab));
+                PrefabEditorDialog.ImportPrefabButton.button.onClick.AddListener(() => ImportPrefabIntoLevel(prefab));
 
-            PrefabExternalEditor.ConvertPrefabButton.gameObject.SetActive(isExternal);
-            PrefabExternalEditor.ConvertPrefabButton.button.onClick.ClearAll();
+            PrefabEditorDialog.ConvertPrefabButton.gameObject.SetActive(isExternal);
+            PrefabEditorDialog.ConvertPrefabButton.button.onClick.ClearAll();
             if (isExternal)
-                PrefabExternalEditor.ConvertPrefabButton.button.onClick.AddListener(() => ConvertPrefab(prefab));
+                PrefabEditorDialog.ConvertPrefabButton.button.onClick.AddListener(() => ConvertPrefab(prefab));
         }
 
         /// <summary>
@@ -2255,6 +2261,12 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabCreator.Close();
             OpenPopup();
+
+            if (prefab.prefabPanel)
+            {
+                PrefabEditorDialog.Open();
+                RenderPrefabExternalDialog(prefab.prefabPanel);
+            }
         }
 
         /// <summary>
