@@ -680,6 +680,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<ModifierBlock> modifierBlocks = new List<ModifierBlock>();
 
+        public List<BeatmapTheme> BeatmapThemes { get => beatmapThemes; set => beatmapThemes = value; }
         public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 
         public List<List<EventKeyframe>> events = new List<List<EventKeyframe>>();
@@ -702,21 +703,20 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void CopyData(GameData orig, bool newID = true)
         {
-            if (orig.beatmapObjects == null)
-                orig.beatmapObjects = new List<BeatmapObject>();
-            if (orig.events == null)
-                orig.events = new List<List<EventKeyframe>>();
-            if (orig.backgroundObjects == null)
-                orig.backgroundObjects = new List<BackgroundObject>();
+            if (!orig)
+                return;
 
             data = orig.data?.Copy();
-            beatmapObjects = new List<BeatmapObject>((from obj in orig.beatmapObjects
-                                                               select obj.Copy(false)));
-            backgroundLayers = new List<BackgroundLayer>((from obj in orig.backgroundLayers
-                                                                   select obj.Copy(false)));
-            backgroundObjects = new List<BackgroundObject>((from obj in orig.backgroundObjects
-                           
-                                                            select obj.Copy(false)));
+            beatmapObjects = new List<BeatmapObject>(orig.beatmapObjects.Select(x => x.Copy(false)));
+            backgroundLayers = new List<BackgroundLayer>(orig.backgroundLayers.Select(x => x.Copy(false)));
+            backgroundObjects = new List<BackgroundObject>(orig.backgroundObjects.Select(x => x.Copy(false)));
+            prefabObjects = new List<PrefabObject>(orig.prefabObjects.Select(x => x.Copy(false)));
+            prefabs = new List<Prefab>(orig.prefabs.Select(x => x.Copy(false)));
+            beatmapThemes = new List<BeatmapTheme>(orig.beatmapThemes.Select(x => x.Copy(false)));
+            animations = new List<PAAnimation>(orig.animations.Select(x => x.Copy(false)));
+            modifiers = new List<Modifier>(orig.modifiers.Select(x => x.Copy(false)));
+            modifierBlocks = new List<ModifierBlock>(orig.modifierBlocks.Select(x => x.Copy(false)));
+            mainBackgroundLayer = orig.mainBackgroundLayer;
 
             events.Clear();
             for (int i = 0; i < orig.events.Count; i++)
@@ -1185,20 +1185,23 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             data = BeatmapData.Parse(jn);
 
+            prefabs.Clear();
             for (int i = 0; i < jn["prefabs"].Count; i++)
             {
                 var prefab = Prefab.Parse(jn["prefabs"][i]);
-                if (prefabs.Find(x => x.id == prefab.id) == null)
+                if (!prefabs.Has(x => x.id == prefab.id))
                     prefabs.Add(prefab);
             }
 
+            prefabObjects.Clear();
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
             {
-                var prefab = PrefabObject.Parse(jn["prefab_objects"][i]);
-                if (prefabObjects.Find(x => x.id == prefab.id) == null)
-                    prefabObjects.Add(prefab);
+                var prefabObject = PrefabObject.Parse(jn["prefab_objects"][i]);
+                if (!prefabObjects.Has(x => x.id == prefabObject.id))
+                    prefabObjects.Add(prefabObject);
             }
 
+            beatmapThemes.Clear();
             for (int i = 0; i < jn["themes"].Count; i++)
             {
                 if (string.IsNullOrEmpty(jn["themes"][i]["id"]))
@@ -1207,6 +1210,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 beatmapThemes.Add(BeatmapTheme.Parse(jn["themes"][i]));
             }
 
+            beatmapObjects.Clear();
             for (int i = 0; i < jn["beatmap_objects"].Count; i++)
             {
                 var beatmapObject = BeatmapObject.Parse(jn["beatmap_objects"][i]);
@@ -1246,10 +1250,12 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["bg_data"] != null)
                 mainBackgroundLayer = jn["bg_data"]["main_layer"].AsInt;
 
+            backgroundLayers.Clear();
             if (jn["bg_layers"] != null)
                 for (int i = 0; i < jn["bg_layers"].Count; i++)
                     backgroundLayers.Add(BackgroundLayer.Parse(jn["bg_layers"][i]));
 
+            backgroundObjects.Clear();
             for (int i = 0; i < jn["bg_objects"].Count; i++)
                 backgroundObjects.Add(BackgroundObject.Parse(jn["bg_objects"][i]));
 
@@ -1283,6 +1289,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             ClampEventListValues(events);
 
+            animations.Clear();
             if (jn["anims"] != null)
                 for (int i = 0; i < jn["anims"].Count; i++)
                     animations.Add(PAAnimation.Parse(jn["anims"][i]));
@@ -1616,12 +1623,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["prefabs"][i] = prefabs[i].ToJSON();
 
             CoreHelper.Log($"Saving themes");
-
             for (int i = 0; i < beatmapThemes.Count; i++)
-            {
-                CoreHelper.Log($"Saving {beatmapThemes[i]} to level!");
                 jn["themes"][i] = beatmapThemes[i].ToJSON();
-            }
 
             CoreHelper.Log("Saving Checkpoints");
             for (int i = 0; i < data.checkpoints.Count; i++)
@@ -1819,53 +1822,6 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<BeatmapTheme> GetUsedThemes(List<BeatmapTheme> beatmapThemes) => events == null || events.Count <= 4 ? new List<BeatmapTheme>() : beatmapThemes.Where(x => ThemeIsUsed(x)).ToList();
 
         public bool ThemeIsUsed(BeatmapTheme beatmapTheme) => Parser.TryParse(beatmapTheme.id, 0) != 0 && events[4].Has(y => y.values[0] == Parser.TryParse(beatmapTheme.id, 0));
-
-        /// <summary>
-        /// Adds a theme.
-        /// </summary>
-        /// <param name="beatmapTheme">Theme to add.</param>
-        /// <returns>Returns true if the theme was successfully added, otherwise returns false.</returns>
-        public bool AddTheme(BeatmapTheme beatmapTheme)
-        {
-            if (!beatmapThemes.Has(x => x.id == beatmapTheme.id))
-            {
-                beatmapThemes.Add(beatmapTheme.Copy(false));
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Overwrites or adds a theme.
-        /// </summary>
-        /// <param name="beatmapTheme">Theme to overwrite or add.</param>
-        /// <returns>Returns true if a theme was overwritten, otherwise adds the theme and returns false.</returns>
-        public bool OverwriteTheme(BeatmapTheme beatmapTheme)
-        {
-            if (beatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int index))
-            {
-                beatmapThemes[index] = beatmapTheme;
-                return true;
-            }
-
-            beatmapThemes.Add(beatmapTheme);
-            return false;
-        }
-
-        /// <summary>
-        /// Updates a theme.
-        /// </summary>
-        /// <param name="beatmapTheme">Theme to update.</param>
-        /// <returns>Returns true if a theme was found and updated, otherwise returns false.</returns>
-        public bool UpdateTheme(BeatmapTheme beatmapTheme)
-        {
-            if (beatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int index))
-            {
-                beatmapThemes[index] = beatmapTheme;
-                return true;
-            }
-            return false;
-        }
 
         /// <summary>
         /// Gets a Prefab from a specific source.

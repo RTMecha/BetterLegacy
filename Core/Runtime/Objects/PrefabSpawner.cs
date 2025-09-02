@@ -33,5 +33,7 @@ namespace BetterLegacy.Core.Runtime.Objects
         public List<BackgroundObject> BackgroundObjects { get; set; } = new List<BackgroundObject>();
 
         public List<BackgroundLayer> BackgroundLayers { get; set; } = new List<BackgroundLayer>();
+
+        public List<BeatmapTheme> BeatmapThemes { get; set; }
     }
 }

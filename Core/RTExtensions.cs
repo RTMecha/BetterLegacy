@@ -2235,6 +2235,74 @@ namespace BetterLegacy.Core
                 yield return prefabObject;
         }
 
+        /// <summary>
+        /// Adds a theme.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to add.</param>
+        /// <returns>Returns true if the theme was successfully added, otherwise returns false.</returns>
+        public static bool AddTheme(this IBeatmap beatmap, BeatmapTheme beatmapTheme)
+        {
+            if (!beatmapTheme)
+                return false;
+
+            var beatmapThemes = beatmap.BeatmapThemes;
+            if (beatmapThemes == null)
+                return false;
+
+            if (!beatmapThemes.Has(x => x.id == beatmapTheme.id))
+            {
+                beatmapThemes.Add(beatmapTheme.Copy(false));
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Overwrites or adds a theme.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to overwrite or add.</param>
+        /// <returns>Returns true if a theme was overwritten, otherwise adds the theme and returns false.</returns>
+        public static bool OverwriteTheme(this IBeatmap beatmap, BeatmapTheme beatmapTheme)
+        {
+            if (!beatmapTheme)
+                return false;
+
+            var beatmapThemes = beatmap.BeatmapThemes;
+            if (beatmapThemes == null)
+                return false;
+
+            if (beatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int index))
+            {
+                beatmapThemes[index] = beatmapTheme;
+                return true;
+            }
+
+            beatmapThemes.Add(beatmapTheme);
+            return false;
+        }
+
+        /// <summary>
+        /// Updates a theme.
+        /// </summary>
+        /// <param name="beatmapTheme">Theme to update.</param>
+        /// <returns>Returns true if a theme was found and updated, otherwise returns false.</returns>
+        public static bool UpdateTheme(this IBeatmap beatmap, BeatmapTheme beatmapTheme)
+        {
+            if (!beatmapTheme)
+                return false;
+
+            var beatmapThemes = beatmap.BeatmapThemes;
+            if (beatmapThemes == null)
+                return false;
+
+            if (beatmapThemes.TryFindIndex(x => x.id == beatmapTheme.id, out int index))
+            {
+                beatmapThemes[index] = beatmapTheme;
+                return true;
+            }
+            return false;
+        }
+
         #endregion
 
         /// <summary>

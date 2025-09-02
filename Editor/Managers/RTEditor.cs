@@ -870,14 +870,16 @@ namespace BetterLegacy.Editor.Managers
 
         void UpdatePicker()
         {
-            if (Input.GetMouseButtonDown(1) && (parentPickerEnabled || prefabPickerEnabled || EditorTimeline.inst.onSelectTimelineObject != null))
+            var pickerActive = parentPickerEnabled || prefabPickerEnabled || EditorTimeline.inst.onSelectTimelineObject != null || RTPrefabEditor.inst.onSelectPrefab != null;
+            if (Input.GetMouseButtonDown(1) && pickerActive)
             {
                 parentPickerEnabled = false;
                 prefabPickerEnabled = false;
                 EditorTimeline.inst.onSelectTimelineObject = null;
+                RTPrefabEditor.inst.onSelectPrefab = null;
+                pickerActive = false;
             }
 
-            var pickerActive = parentPickerEnabled || prefabPickerEnabled || EditorTimeline.inst.onSelectTimelineObject != null;
             mousePicker?.SetActive(pickerActive);
 
             if (mousePicker && mousePickerRT && pickerActive)

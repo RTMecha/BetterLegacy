@@ -19,5 +19,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public List<BackgroundObject> BackgroundObjects { get; set; }
 
         public List<BackgroundLayer> BackgroundLayers { get; set; }
+
+        public List<BeatmapTheme> BeatmapThemes { get; set; }
     }
 }

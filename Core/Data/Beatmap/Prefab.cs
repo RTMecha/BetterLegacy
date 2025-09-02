@@ -6,6 +6,7 @@ using LSFunctions;
 using SimpleJSON;
 
 using BetterLegacy.Core.Runtime.Objects;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Core.Data.Beatmap
@@ -150,6 +151,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public List<BackgroundObject> backgroundObjects = new List<BackgroundObject>();
 
+        public List<BeatmapTheme> BeatmapThemes { get => beatmapThemes; set => beatmapThemes = value; }
+        /// <summary>
+        /// Contained themes.
+        /// </summary>
+        public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
+
         #endregion
 
         #region Server
@@ -170,6 +177,12 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         #endregion
 
+        #region Editor
+
+        public PrefabPanel prefabPanel;
+
+        #endregion
+
         #endregion
 
         #region Methods
@@ -184,6 +197,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             type = orig.type;
             typeID = orig.typeID;
 
+            beatmapThemes = new List<BeatmapTheme>();
+            if (!orig.beatmapThemes.IsEmpty())
+                beatmapThemes.AddRange(orig.beatmapThemes.Select(x => x.Copy(false)));
+            
             prefabs = new List<Prefab>();
             if (!orig.prefabs.IsEmpty())
                 prefabs.AddRange(orig.prefabs.Select(x => x.Copy(false)));
@@ -247,6 +264,15 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.ReadPrefabJSON(jn);
 
             #region Read Contents
+
+            beatmapThemes.Clear();
+            for (int i = 0; i < jn["themes"].Count; i++)
+            {
+                if (string.IsNullOrEmpty(jn["themes"][i]["id"]))
+                    continue;
+
+                beatmapThemes.Add(BeatmapTheme.Parse(jn["themes"][i]));
+            }
 
             prefabs.Clear();
             if (jn["prefabs"] != null)
@@ -321,6 +347,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             this.WriteUploadableJSON(jn);
 
             #region Write Contents
+
+            for (int i = 0; i < beatmapThemes.Count; i++)
+                jn["themes"][i] = beatmapThemes[i].ToJSON();
 
             for (int i = 0; i < prefabs.Count; i++)
                 jn["prefabs"][i] = prefabs[i].ToJSON();

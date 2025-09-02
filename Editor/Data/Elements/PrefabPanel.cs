@@ -238,6 +238,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 CoreHelper.Destroy(gameObject);
 
             Item = prefab;
+            Item.prefabPanel = this;
             var source = Source;
 
             gameObject = PrefabEditor.inst.AddPrefab.Duplicate(RTEditor.inst.PrefabPopups.GetPopup(source).Content);
@@ -400,6 +401,13 @@ namespace BetterLegacy.Editor.Data.Elements
                 case ObjectSource.Internal: {
                         Button.onClick = eventData =>
                         {
+                            if (RTPrefabEditor.inst.onSelectPrefab != null)
+                            {
+                                RTPrefabEditor.inst.onSelectPrefab.Invoke(Item);
+                                RTPrefabEditor.inst.onSelectPrefab = null;
+                                return;
+                            }
+
                             if (RTEditor.inst.prefabPickerEnabled)
                             {
                                 var prefabInstanceID = PAObjectBase.GetStringID();
@@ -460,7 +468,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonFunction(true),
                                     new ButtonFunction("Edit", () =>
                                     {
-                                        RTPrefabEditor.inst.PrefabExternalEditor.Open();
+                                        RTPrefabEditor.inst.PrefabEditorDialog.Open();
                                         RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                                     }),
                                     new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
@@ -519,7 +527,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
                                     new ButtonFunction("Open", () =>
                                     {
-                                        RTPrefabEditor.inst.PrefabExternalEditor.Open();
+                                        RTPrefabEditor.inst.PrefabEditorDialog.Open();
                                         RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                                     }),
                                     new ButtonFunction(true),
@@ -557,7 +565,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                             if (!RTPrefabEditor.ImportPrefabsDirectly)
                             {
-                                RTPrefabEditor.inst.PrefabExternalEditor.Open();
+                                RTPrefabEditor.inst.PrefabEditorDialog.Open();
                                 RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
                             }
                             else

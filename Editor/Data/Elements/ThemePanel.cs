@@ -465,7 +465,22 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction("Clear Themes", RTThemeEditor.inst.ClearInternalThemes),
                             new ButtonFunction("Remove Unused Themes", RTThemeEditor.inst.RemoveUnusedThemes, "Internal Remove Unused Themes"),
                             new ButtonFunction(true),
-                            new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item))
+                            new ButtonFunction("Shuffle ID", () => RTThemeEditor.inst.ShuffleThemeID(Item)),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Add to Prefab", () =>
+                            {
+                                RTPrefabEditor.inst.OpenPopup();
+                                RTPrefabEditor.inst.onSelectPrefab = prefab =>
+                                {
+                                    if (!Item)
+                                        return;
+
+                                    if (prefab.AddTheme(Item))
+                                        EditorManager.inst.DisplayNotification($"Added theme {Item} to the prefab.", 2f, EditorManager.NotificationType.Success);
+                                    else
+                                        EditorManager.inst.DisplayNotification($"Prefab already has a theme with the same ID!", 2f, EditorManager.NotificationType.Warning);
+                                };
+                            })
                             );
                             break;
                         }
