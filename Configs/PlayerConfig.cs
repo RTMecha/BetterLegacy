@@ -35,6 +35,7 @@ namespace BetterLegacy.Configs
         /// Changes the way the tail updates movement. FixedUpdate is recommended if the game gets laggy, but otherwise Update / LateUpdate is good for a smooth tail.
         /// </summary>
         public Setting<RTPlayer.TailUpdateMode> TailUpdateMode { get; set; }
+        public Setting<bool> ApplyTailDelay { get; set; }
 
         /// <summary>
         /// If boosting should be queued when you press it during boost cooldown.
@@ -129,6 +130,7 @@ namespace BetterLegacy.Configs
             #region General
 
             TailUpdateMode = BindEnum(this, GENERAL, "Tail Update Mode", RTPlayer.TailUpdateMode.FixedUpdate, "Changes the way the tail updates movement. FixedUpdate is recommended if the game gets laggy, but otherwise Update / LateUpdate is good for a smooth tail.");
+            ApplyTailDelay = Bind(this, GENERAL, "Apply Tail Delay", true, "If the Tail Base Time value should be used when updating tail elements.");
             QueueBoost = Bind(this, GENERAL, "Queue Boost", true, "If boosting should be queued when you press it during boost cooldown.");
 
             ZenEditorIncludesSolid = Bind(this, GENERAL, "Editor Zen Mode includes Solid", false, "Makes Player ignore solid objects in editor.");

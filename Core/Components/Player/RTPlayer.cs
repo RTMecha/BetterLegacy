@@ -1555,9 +1555,17 @@ namespace BetterLegacy.Core.Components.Player
                 if (!path[i].transform || !path[i].active)
                     continue;
 
-                num *= Vector3.Distance(path[i].lastPos, path[i].pos);
-                path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
-                path[i].lastPos = path[i].transform.position;
+                if (PlayerConfig.Instance.ApplyTailDelay.Value)
+                {
+                    num *= Vector3.Distance(path[i].lastPos, path[i].pos);
+                    path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
+                    path[i].lastPos = path[i].transform.position;
+                }
+                else
+                {
+                    path[i].transform.position = path[i].pos;
+                    path[i].lastPos = path[i].transform.position;
+                }
                 path[i].transform.rotation = path[i].rot;
             }
         }
