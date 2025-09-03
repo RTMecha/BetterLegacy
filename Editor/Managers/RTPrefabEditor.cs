@@ -20,6 +20,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
@@ -71,6 +72,32 @@ namespace BetterLegacy.Editor.Managers
         public static bool ImportPrefabsDirectly { get; set; }
 
         public Action<Prefab> onSelectPrefab;
+
+        public BeatmapObject quickPrefabTarget;
+        public bool selectingQuickPrefab;
+        public Prefab currentQuickPrefab;
+
+        public bool shouldCutPrefab;
+        public string copiedPrefabPath;
+
+        public bool prefabsLoading;
+
+        GameObject prefabExternalUpAFolderButton;
+        public GameObject prefabExternalAddButton;
+
+        public bool filterUsed;
+
+        public List<BeatmapTheme> selectedBeatmapThemes = new List<BeatmapTheme>();
+        public List<ModifierBlock> selectedModifierBlocks = new List<ModifierBlock>();
+
+        /// <summary>
+        /// List of Prefab types.
+        /// </summary>
+        public List<PrefabType> prefabTypes = new List<PrefabType>();
+
+        public bool advancedParent;
+
+        public PrefabObject copiedInstanceData;
 
         #endregion
 
@@ -303,10 +330,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #region Prefab Objects
-
-        public bool advancedParent;
-
-        public PrefabObject copiedInstanceData;
 
         public void UpdateOffsets(PrefabObject currentPrefab)
         {
@@ -1523,11 +1546,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Prefab Types
 
-        /// <summary>
-        /// List of Prefab types.
-        /// </summary>
-        public List<PrefabType> prefabTypes = new List<PrefabType>();
-
         void CreatePrefabTypesPopup()
         {
             var gameObject = Creator.NewUIObject("Prefab Types Popup", RTEditor.inst.popups, 9);
@@ -1911,20 +1929,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Prefabs
 
-        public BeatmapObject quickPrefabTarget;
-        public bool selectingQuickPrefab;
-        public Prefab currentQuickPrefab;
-
-        public bool shouldCutPrefab;
-        public string copiedPrefabPath;
-
-        public bool prefabsLoading;
-
-        GameObject prefabExternalUpAFolderButton;
-        public GameObject prefabExternalAddButton;
-
-        public bool filterUsed;
-
         public IEnumerator LoadPrefabs()
         {
             if (prefabsLoading)
@@ -2258,6 +2262,8 @@ namespace BetterLegacy.Editor.Managers
             prefab.creator = CoreConfig.Instance.DisplayName.Value;
             prefab.description = NewPrefabDescription;
             prefab.typeID = NewPrefabTypeID;
+            prefab.beatmapThemes = new List<BeatmapTheme>(selectedBeatmapThemes.Select(x => x.Copy(false)));
+            prefab.modifierBlocks = new List<ModifierBlock>(selectedModifierBlocks.Select(x => x.Copy(false)));
 
             foreach (var beatmapObject in prefab.beatmapObjects)
             {
@@ -2583,9 +2589,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderPrefabCreatorOffsetSlider()
         {
-            PrefabCreator.OffsetSlider.onValueChanged.ClearAll();
-            PrefabCreator.OffsetSlider.value = PrefabEditor.inst.NewPrefabOffset;
-            PrefabCreator.OffsetSlider.onValueChanged.AddListener(_val =>
+            PrefabCreator.OffsetSlider.SetValueWithoutNotify(PrefabEditor.inst.NewPrefabOffset);
+            PrefabCreator.OffsetSlider.onValueChanged.NewListener(_val =>
             {
                 PrefabEditor.inst.NewPrefabOffset = Mathf.Round(_val * 100f) / 100f;
                 RenderPrefabCreatorOffsetField();
@@ -2594,9 +2599,8 @@ namespace BetterLegacy.Editor.Managers
         
         public void RenderPrefabCreatorOffsetField()
         {
-            PrefabCreator.OffsetField.onValueChanged.ClearAll();
-            PrefabCreator.OffsetField.text = PrefabEditor.inst.NewPrefabOffset.ToString();
-            PrefabCreator.OffsetField.onValueChanged.AddListener(_val =>
+            PrefabCreator.OffsetField.SetTextWithoutNotify(PrefabEditor.inst.NewPrefabOffset.ToString());
+            PrefabCreator.OffsetField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {

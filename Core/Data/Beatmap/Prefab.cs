@@ -5,6 +5,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
@@ -157,6 +158,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public List<BeatmapTheme> beatmapThemes = new List<BeatmapTheme>();
 
+        public List<ModifierBlock> modifierBlocks = new List<ModifierBlock>();
+
         #endregion
 
         #region Server
@@ -221,6 +224,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             backgroundObjects = new List<BackgroundObject>();
             if (!orig.backgroundObjects.IsEmpty())
                 backgroundObjects.AddRange(orig.backgroundObjects.Select(x => x.Copy(false)));
+
+            modifierBlocks = new List<ModifierBlock>();
+            if (!orig.modifierBlocks.IsEmpty())
+                modifierBlocks.AddRange(orig.modifierBlocks.Select(x => x.Copy(false)));
 
             if (orig.defaultInstanceData)
                 defaultInstanceData = orig.defaultInstanceData.Copy();
@@ -298,6 +305,8 @@ namespace BetterLegacy.Core.Data.Beatmap
                 for (int i = 0; i < jn["bg_objects"].Count; i++)
                     backgroundObjects.Add(BackgroundObject.Parse(jn["bg_objects"][i]));
 
+            modifierBlocks = Parser.ParseModifierBlocks(jn["modifier_blocks"], ModifierReferenceType.GameData);
+
             if (jn["default"] != null)
                 defaultInstanceData = PrefabObject.Parse(jn["default"]);
 
@@ -346,6 +355,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["desc"] = description;
 
             this.WriteUploadableJSON(jn);
+
+            if (!modifierBlocks.IsEmpty())
+                jn["modifier_blocks"] = Parser.ModifierBlocksToJSON(modifierBlocks);
 
             #region Write Contents
 
