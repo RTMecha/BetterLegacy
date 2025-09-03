@@ -168,6 +168,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public override void CopyData(BeatmapTheme orig, bool newID = true)
         {
             name = orig.name;
+            creator = orig.creator;
             filePath = orig.filePath;
 
             playerColors = orig.playerColors.Clone();
@@ -392,6 +393,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public void Reset()
         {
+            creator = Configs.CoreConfig.Instance.DisplayName.Value;
+
             // clear
             playerColors.Clear();
             objectColors.Clear();

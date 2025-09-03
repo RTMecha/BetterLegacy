@@ -192,6 +192,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             description = orig.description;
             id = newID ? LSText.randomString(16) : orig.id;
             name = orig.name;
+            creator = orig.creator;
             offset = orig.offset;
             prefabObjects = orig.prefabObjects.Clone();
             type = orig.type;
