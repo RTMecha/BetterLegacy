@@ -6,6 +6,9 @@
 - Themes can now be stored in Prefabs.
 - Added a Creator value to Themes and Prefabs, so you can finally credit those assets.
 
+### Arcade
+- Online tab now automatically searches when you switch to that tab.
+
 ### Editor
 - Overhauled the Theme system to have internal / external themes. The "View Themes" popup is now used for viewing and importing external themes and the theme keyframe is now for viewing internal level themes.
 - Added "Analyze BPM On Level Load" in Config Manager > Editor > BPM.
