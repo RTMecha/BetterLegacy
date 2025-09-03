@@ -181,6 +181,11 @@ namespace BetterLegacy.Core.Data.Level
         public List<string> tags = new List<string>();
         public List<string> ArcadeTags { get => tags; set => tags = value; }
 
+        public string dateCreated = string.Empty;
+        public string dateEdited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+        public string datePublished = string.Empty;
+        public int versionNumber;
+
         #endregion
 
         #endregion
@@ -260,6 +265,17 @@ namespace BetterLegacy.Core.Data.Level
             collection.path = path;
             if (jn["entry_level_index"] != null)
                 collection.entryLevelIndex = jn["entry_level_index"].AsInt;
+
+            if (!string.IsNullOrEmpty(jn["beatmap"]["date_edited"]))
+                collection.dateEdited = jn["beatmap"]["date_edited"];
+            if (!string.IsNullOrEmpty(jn["beatmap"]["date_created"]))
+                collection.dateCreated = jn["beatmap"]["date_created"];
+            else
+                collection.dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            if (!string.IsNullOrEmpty(jn["date_published"]))
+                collection.datePublished = jn["date_published"];
+            if (jn["version_number"] != null)
+                collection.versionNumber = jn["version_number"].AsInt;
 
             collection.ReadUploadableJSON(jn);
 
@@ -406,7 +422,7 @@ namespace BetterLegacy.Core.Data.Level
                             }
 
                             InterfaceManager.inst.CloseMenus();
-                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}", bytes =>
+                            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{levelInfo.serverID}{FileFormat.JPG.Dot()}", bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
                                 ArcadeMenu.OnlineLevelIcons[levelInfo.serverID] = sprite;
@@ -600,6 +616,12 @@ namespace BetterLegacy.Core.Data.Level
                 jn["difficulty"] = difficulty;
             if (levelInformation.InRange(entryLevelIndex))
                 jn["entry_level_index"] = entryLevelIndex;
+
+            jn["date_created"] = dateCreated;
+            jn["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            if (!string.IsNullOrEmpty(datePublished))
+                jn["date_published"] = datePublished;
+            jn["version_number"] = versionNumber.ToString();
 
             this.WriteUploadableJSON(jn);
 

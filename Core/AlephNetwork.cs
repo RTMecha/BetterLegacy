@@ -33,7 +33,18 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Link to the Arcade server.
         /// </summary>
-        public static string ArcadeServerURL => !string.IsNullOrEmpty(Configs.CoreConfig.Instance.ArcadeServerURL.Value) ? Configs.CoreConfig.Instance.ArcadeServerURL.Value : ARCADE_SERVER_URL;
+        public static string ArcadeServerURL => !string.IsNullOrEmpty(Configs.CoreConfig.Instance.ArcadeServerURL.Value) ? RTFile.AppendEndSlash(Configs.CoreConfig.Instance.ArcadeServerURL.Value) : ARCADE_SERVER_URL;
+
+        public static string LevelURL => $"{ArcadeServerURL}api/level/";
+        public static string LevelSearchURL => $"{LevelURL}search";
+        public static string LevelCoverURL => $"{LevelURL}cover/";
+        public static string LevelDownloadURL => $"{LevelURL}zip/";
+        
+        public static string LevelCollectionURL => $"{ArcadeServerURL}api/levelcollection/";
+        public static string LevelCollectionSearchURL => $"{LevelCollectionURL}search";
+        public static string LevelCollectionCoverURL => $"{LevelCollectionURL}cover/";
+        public static string LevelCollectionBannerURL => $"{LevelCollectionURL}banner/";
+        public static string LevelCollectionDownloadURL => $"{LevelCollectionURL}zip/";
 
         #region Constants
 
@@ -632,7 +643,7 @@ namespace BetterLegacy.Core
 
             ProgressMenu.Init($"Downloading Arcade server level: {id} - {name}<br>Please wait...");
 
-            CoroutineHelper.StartCoroutine(DownloadBytes($"{ArcadeMenu.DownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
+            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelDownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
             {
                 if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
                 {
@@ -654,6 +665,42 @@ namespace BetterLegacy.Core
                 LevelManager.Levels.Add(level);
 
                 onDownload?.Invoke(level);
+            }, onError));
+        }
+
+        public static void DownloadLevelCollection(JSONObject jn, Action<LevelCollection> onDownload, Action<string> onError)
+        {
+            var name = jn["name"].Value;
+            string id = jn["id"];
+            name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
+            name = RTFile.ValidateDirectory(name);
+            var directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListSlash, $"{name} [{id}]");
+
+            ProgressMenu.Init($"Downloading Arcade server level collection: {id} - {name}<br>Please wait...");
+
+            CoroutineHelper.StartCoroutine(DownloadBytes($"{LevelCollectionDownloadURL}{id}{FileFormat.ZIP.Dot()}", ProgressMenu.Current.UpdateProgress, bytes =>
+            {
+                if (LevelManager.LevelCollections.TryFindIndex(x => x.serverID == id, out int existingLevelIndex)) // prevent multiple of the same level ID
+                {
+                    var existingLevel = LevelManager.LevelCollections[existingLevelIndex];
+                    RTFile.DeleteDirectory(existingLevel.path);
+                    LevelManager.LevelCollections.RemoveAt(existingLevelIndex);
+                }
+
+                RTFile.DeleteDirectory(directory);
+                RTFile.CreateDirectory(directory);
+
+                var zipFile = $"{directory}{FileFormat.ZIP.Dot()}";
+                File.WriteAllBytes(zipFile, bytes);
+                ZipFile.ExtractToDirectory(zipFile, directory);
+                RTFile.DeleteFile(zipFile);
+
+                var name = Path.GetFileName(directory);
+
+                var levelCollection = LevelCollection.Parse(directory, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(directory, LevelCollection.COLLECTION_LSCO))));
+                LevelManager.LevelCollections.Add(levelCollection);
+
+                onDownload?.Invoke(levelCollection);
             }, onError));
         }
 

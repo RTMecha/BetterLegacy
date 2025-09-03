@@ -148,7 +148,7 @@ namespace BetterLegacy.Editor.Managers
                                 iconImage.sprite = sprite;
                             else
                             {
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);
@@ -214,7 +214,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void DownloadLevel(string id, string directory, string name, Action onDownload = null)
         {
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.DownloadURL}{id}.zip", bytes =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelDownloadURL}{id}.zip", bytes =>
             {
                 RTFile.DeleteDirectory(directory);
                 Directory.CreateDirectory(directory);

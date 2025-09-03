@@ -36,9 +36,9 @@ namespace BetterLegacy.Editor.Managers
     {
         public static RTMetaDataEditor inst;
 
-        #region Variables
+        #region Values
 
-        bool uploading;
+        public bool uploading;
 
         public GameObject difficultyToggle;
         
@@ -398,7 +398,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderServer(MetaData metadata)
         {
-            Dialog.ServerVisibilityDropdown.options = CoreHelper.StringToOptionData("Public", "Unlisted", "Private");
+            Dialog.ServerVisibilityDropdown.options = CoreHelper.ToOptionData<ServerVisibility>();
             Dialog.ServerVisibilityDropdown.SetValueWithoutNotify((int)metadata.visibility);
             Dialog.ServerVisibilityDropdown.onValueChanged.NewListener(_val => metadata.visibility = (ServerVisibility)_val);
 
@@ -542,11 +542,11 @@ namespace BetterLegacy.Editor.Managers
             Dialog.UploadButtonText.text = hasID ? "Update" : "Upload";
             Dialog.UploadContextMenu.onClick = eventData =>
             {
-                if (eventData.button != UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
                 EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction("Upload / Update", UploadLevel),
+                    new ButtonFunction(hasID ? "Update" : "Upload", UploadLevel),
                     new ButtonFunction("Verify Level is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the level is on the Arcade server?", () =>
                     {
                         RTEditor.inst.HideWarningPopup();
@@ -778,7 +778,20 @@ namespace BetterLegacy.Editor.Managers
         #region Functions
 
         public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != Level.EDITOR_LSE && !file.Contains("waveform-") &&
-            RTFile.FileIsFormat(file, FileFormat.LSB, FileFormat.LSA, FileFormat.JPG, FileFormat.PNG, FileFormat.OGG, FileFormat.WAV, FileFormat.MP3, FileFormat.MP4);
+            RTFile.FileIsFormat(file,
+                FileFormat.LSB,
+                FileFormat.LSA,
+                FileFormat.LSCO,
+                FileFormat.LSPO,
+                FileFormat.LSP,
+                FileFormat.LST,
+                FileFormat.LSPL,
+                FileFormat.JPG,
+                FileFormat.PNG,
+                FileFormat.OGG,
+                FileFormat.WAV,
+                FileFormat.MP3,
+                FileFormat.MP4);
 
         public void OpenIconSelector()
         {
@@ -982,7 +995,7 @@ namespace BetterLegacy.Editor.Managers
                 var tempDirectory = RTFile.CombinePaths(exportPath, EditorManager.inst.currentLoadedLevel + "-temp/");
                 RTFile.CreateDirectory(tempDirectory);
                 var directory = RTFile.BasePath;
-                var files = Directory.GetFiles(directory);
+                var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
                 for (int i = 0; i < files.Length; i++)
                 {
                     var file = files[i];

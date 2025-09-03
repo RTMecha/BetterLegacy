@@ -24,8 +24,11 @@ namespace BetterLegacy.Arcade.Interfaces
         public static DownloadLevelMenu Current { get; set; }
 
         public static JSONObject CurrentOnlineLevel { get; set; }
+        public static int Type { get; set; }
 
         public Action<Level> onDownloadComplete;
+
+        public Action<LevelCollection> onDownloadCollectionComplete;
 
         public DownloadLevelMenu() : base()
         {
@@ -128,51 +131,51 @@ namespace BetterLegacy.Arcade.Interfaces
                 textColor = 6,
             });
 
-            elements.Add(new MenuText
+            if (Type == 0)
             {
-                id = "4624859539",
-                name = "Song",
-                rect = RectValues.Default.AnchoredPosition(-100f, 240f),
-                text = $"<size=40>Song:",
-                hideBG = true,
-                textColor = 6,
-            });
-
-            elements.Add(new MenuText
-            {
-                id = "638553",
-                name = "Song Button",
-                rect = RectValues.Default.AnchoredPosition(340f, 240f).SizeDelta(500f, 48f),
-                text = $" [ {jn["title"].Value} ]",
-                opacity = 0f,
-                color = 6,
-                textColor = 6,
-                length = 0.5f,
-                playBlipSound = true,
-            });
+                elements.Add(new MenuText
+                {
+                    id = "4624859539",
+                    name = "Song",
+                    rect = RectValues.Default.AnchoredPosition(-100f, 240f),
+                    text = $"<size=40>Song:",
+                    hideBG = true,
+                    textColor = 6,
+                });
+                elements.Add(new MenuText
+                {
+                    id = "638553",
+                    name = "Song Button",
+                    rect = RectValues.Default.AnchoredPosition(340f, 240f).SizeDelta(500f, 48f),
+                    text = $" [ {jn["title"].Value} ]",
+                    opacity = 0f,
+                    color = 6,
+                    textColor = 6,
+                    length = 0.5f,
+                    playBlipSound = true,
+                });
+                elements.Add(new MenuText
+                {
+                    id = "4624859539",
+                    name = "Artist",
+                    rect = RectValues.Default.AnchoredPosition(-100f, 190f),
+                    text = $"<size=40>Artist:",
+                    hideBG = true,
+                    textColor = 6,
+                });
+                elements.Add(new MenuText
+                {
+                    id = "638553",
+                    name = "Artist Button",
+                    rect = RectValues.Default.AnchoredPosition(340f, 190f).SizeDelta(500f, 48f),
+                    text = $" [ {jn["artist"].Value} ]",
+                    opacity = 0f,
+                    color = 6,
+                    textColor = 6,
+                    length = 0.5f,
+                });
+            }
             
-            elements.Add(new MenuText
-            {
-                id = "4624859539",
-                name = "Artist",
-                rect = RectValues.Default.AnchoredPosition(-100f, 190f),
-                text = $"<size=40>Artist:",
-                hideBG = true,
-                textColor = 6,
-            });
-
-            elements.Add(new MenuText
-            {
-                id = "638553",
-                name = "Artist Button",
-                rect = RectValues.Default.AnchoredPosition(340f, 190f).SizeDelta(500f, 48f),
-                text = $" [ {jn["artist"].Value} ]",
-                opacity = 0f,
-                color = 6,
-                textColor = 6,
-                length = 0.5f,
-            });
-
             elements.Add(new MenuText
             {
                 id = "4624859539",
@@ -182,7 +185,6 @@ namespace BetterLegacy.Arcade.Interfaces
                 hideBG = true,
                 textColor = 6,
             });
-
             elements.Add(new MenuText
             {
                 id = "638553",
@@ -205,7 +207,6 @@ namespace BetterLegacy.Arcade.Interfaces
                 hideBG = true,
                 textColor = 6,
             });
-            
             elements.Add(new MenuText
             {
                 id = "4624859539",
@@ -235,7 +236,7 @@ namespace BetterLegacy.Arcade.Interfaces
                 id = "4624859539",
                 name = "Tags",
                 rect = RectValues.Default.AnchoredPosition(250f, -200f).SizeDelta(800f, 100f),
-                text = "<size=22><b>Tags</b>: " + CurrentOnlineLevel["tags"].Value,
+                text = "<size=22><b>Tags</b>: " + jn["tags"].Value,
                 hideBG = true,
                 textColor = 6,
                 enableWordWrapping = true,
@@ -261,7 +262,6 @@ namespace BetterLegacy.Arcade.Interfaces
                     playBlipSound = true,
                     func = DownloadLevel,
                 });
-
                 elements.Add(new MenuButton
                 {
                     id = "498145857",
@@ -278,6 +278,43 @@ namespace BetterLegacy.Arcade.Interfaces
                     length = 0.5f,
                     playBlipSound = true,
                     func = () => PlayLevelMenu.Init(level),
+                });
+            }
+            else if (LevelManager.LevelCollections.TryFind(x => x.serverID == jn["id"], out LevelCollection levelCollection))
+            {
+                elements.Add(new MenuButton
+                {
+                    id = "3525734",
+                    name = "Download Button",
+                    rect = RectValues.Default.AnchoredPosition(-500f, -260f).SizeDelta(600f, 64f),
+                    selectionPosition = new Vector2Int(0, 1),
+                    text = "<size=40><b><align=center>[ UPDATE ]",
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = DownloadLevel,
+                });
+                elements.Add(new MenuButton
+                {
+                    id = "498145857",
+                    name = "Play Button",
+                    rect = RectValues.Default.AnchoredPosition(-500f, -360f).SizeDelta(600f, 64f),
+                    selectionPosition = new Vector2Int(0, 2),
+                    text = "<size=40><b><align=center>[ OPEN COLLECTION ]",
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () => LevelCollectionMenu.Init(levelCollection),
                 });
             }
             else
@@ -313,31 +350,61 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             var jn = CurrentOnlineLevel;
 
-            AlephNetwork.DownloadLevel(jn, level =>
+            switch (Type)
             {
-                CurrentOnlineLevel = null;
-                InterfaceManager.inst.CloseMenus();
+                case 0: {
+                        AlephNetwork.DownloadLevel(jn, level =>
+                        {
+                            CurrentOnlineLevel = null;
+                            InterfaceManager.inst.CloseMenus();
 
-                if (onDownloadComplete != null)
-                {
-                    onDownloadComplete(level);
-                    onDownloadComplete = null;
-                    return;
-                }
+                            if (onDownloadComplete != null)
+                            {
+                                onDownloadComplete(level);
+                                onDownloadComplete = null;
+                                return;
+                            }
 
-                if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                    PlayLevelMenu.Init(level);
-            }, onError =>
-            {
-                Close();
-                CoreHelper.Log($"Failed to download item: {jn}");
-            });
+                            if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
+                                PlayLevelMenu.Init(level);
+                        }, onError =>
+                        {
+                            Close();
+                            CoreHelper.Log($"Failed to download item: {jn}");
+                        });
+                        break;
+                    }
+                case 1: {
+                        AlephNetwork.DownloadLevelCollection(jn, levelCollection =>
+                        {
+                            CurrentOnlineLevel = null;
+                            Type = 0;
+                            InterfaceManager.inst.CloseMenus();
+
+                            if (onDownloadCollectionComplete != null)
+                            {
+                                onDownloadCollectionComplete(levelCollection);
+                                onDownloadCollectionComplete = null;
+                                return;
+                            }
+
+                            if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
+                                LevelCollectionMenu.Init(levelCollection);
+                        }, onError =>
+                        {
+                            Close();
+                            CoreHelper.Log($"Failed to download item: {jn}");
+                        });
+                        break;
+                    }
+            }
         }
 
-        public static void Init(JSONObject level)
+        public static void Init(JSONObject level, int type = 0)
         {
             RTBeatmap.Current?.Pause();
             CurrentOnlineLevel = level;
+            Type = type;
             Current = new DownloadLevelMenu();
         }
 
@@ -345,6 +412,7 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             RTBeatmap.Current?.Resume();
             CurrentOnlineLevel = null;
+            Type = 0;
             InterfaceManager.inst.CloseMenus();
 
             ArcadeMenu.Init();

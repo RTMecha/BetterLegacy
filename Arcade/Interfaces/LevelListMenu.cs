@@ -671,7 +671,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Online
 
-        public static string SearchURL { get; set; } = $"{AlephNetwork.ArcadeServerURL}api/level/search";
+        public static string SearchURL { get; set; } = AlephNetwork.LevelSearchURL;
 
         public static int OnlineSort { get; set; }
 
@@ -787,7 +787,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 button.icon = sprite;
                             else
                             {
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{ArcadeMenu.CoverURL}{id}.jpg", bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}.jpg", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);

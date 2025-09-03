@@ -43,6 +43,11 @@ namespace BetterLegacy.Arcade.Interfaces
             Steam
         }
 
+        public static Dictionary<Tab, int> SubTab { get; set; } = new Dictionary<Tab, int>()
+        {
+            { Tab.Online, 0 }
+        };
+
         public static Tab CurrentTab { get; set; }
         public static int[] Pages { get; set; } = new int[]
         {
@@ -394,7 +399,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             name = "Search Bar",
                             parentLayout = "online settings",
                             //rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 350f).SizeDelta(-126f, 64f),
-                            rect = RectValues.Default.SizeDelta(1300, 64f),
+                            rect = RectValues.Default.SizeDelta(1000, 64f),
                             text = currentSearch,
                             valueChangedFunc = SearchOnlineLevels,
                             placeholder = "Search levels...",
@@ -428,11 +433,34 @@ namespace BetterLegacy.Arcade.Interfaces
 
                         elements.Add(new MenuButton
                         {
+                            id = "25428852",
+                            name = "Search Button",
+                            text = $"<align=center><b>[ {(SubTab.GetValueOrDefault(Tab.Online, 0) == 0 ? "COLLECTIONS" : "LEVELS")} ]",
+                            parentLayout = "online settings",
+                            selectionPosition = new Vector2Int(1, 1),
+                            rect = RectValues.Default.SizeDelta(300f, 64f),
+                            func = () =>
+                            {
+                                SubTab[Tab.Online] = SubTab.GetValueOrDefault(Tab.Online, 0) == 0 ? 1 : 0;
+                                RefreshOnlineLevels().Start();
+                            },
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        });
+
+                        elements.Add(new MenuButton
+                        {
                             id = "32848924",
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "online settings",
-                            selectionPosition = new Vector2Int(1, 1),
+                            selectionPosition = new Vector2Int(2, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -457,7 +485,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "online settings",
-                            selectionPosition = new Vector2Int(2, 1),
+                            selectionPosition = new Vector2Int(3, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () => SetOnlineLevelsPage(Pages[(int)CurrentTab] + 1),
                             color = 6,
@@ -1220,7 +1248,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
             defaultSelection = new Vector2Int(1, 0);
             exitFunc = Exit;
-            if (CurrentTab != Tab.Steam || !ViewOnline)
+            if (CurrentTab != Tab.Online && (CurrentTab != Tab.Steam || !ViewOnline))
                 StartGeneration();
             onGenerateUIFinish = () =>
             {
@@ -1263,6 +1291,9 @@ namespace BetterLegacy.Arcade.Interfaces
                 };
             };
             InterfaceManager.inst.PlayMusic();
+
+            if (CurrentTab == Tab.Online)
+                CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
         }
 
         #region Local
@@ -1700,10 +1731,6 @@ namespace BetterLegacy.Arcade.Interfaces
 
         #region Online
 
-        public static string SearchURL => $"{AlephNetwork.ArcadeServerURL}api/level/search";
-        public static string CoverURL => $"{AlephNetwork.ArcadeServerURL}api/level/cover/";
-        public static string DownloadURL => $"{AlephNetwork.ArcadeServerURL}api/level/zip/";
-
         public static string OnlineSearch => Searches[1];
 
         public static int OnlineSort { get; set; }
@@ -1735,12 +1762,14 @@ namespace BetterLegacy.Arcade.Interfaces
 
             ClearOnlineLevelButtons();
 
+            var currentTab = SubTab.GetValueOrDefault(Tab.Online, 0);
+
             var page = Pages[1];
             int currentPage = page + 1;
 
             var search = OnlineSearch;
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page, OnlineSort, OnlineAscend);
+            string query = AlephNetwork.BuildQuery(currentTab == 0 ? AlephNetwork.LevelSearchURL : AlephNetwork.LevelCollectionSearchURL, search, page, OnlineSort, OnlineAscend);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1753,6 +1782,8 @@ namespace BetterLegacy.Arcade.Interfaces
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
             CoreHelper.Log($"Downloading from query.");
+
+            var coverURL = currentTab == 0 ? AlephNetwork.LevelCoverURL : AlephNetwork.LevelCollectionCoverURL;
 
             yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
             {
@@ -1791,7 +1822,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 name = "Level Button",
                                 parentLayout = "levels",
                                 selectionPosition = new Vector2Int(column, row),
-                                func = () => SelectOnlineLevel(item.AsObject),
+                                func = () => SelectOnlineLevel(item.AsObject, currentTab),
                                 iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                                 text = "<size=24>" + name,
                                 textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
@@ -1825,7 +1856,7 @@ namespace BetterLegacy.Arcade.Interfaces
                                 button.icon = sprite;
                             else
                             {
-                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{CoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
+                                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{coverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                                 {
                                     var sprite = SpriteHelper.LoadSprite(bytes);
                                     OnlineLevelIcons[id] = sprite;
@@ -1862,7 +1893,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public bool loadingOnlineLevels;
 
-        public void SelectOnlineLevel(JSONObject onlineLevel) => DownloadLevelMenu.Init(onlineLevel);
+        public void SelectOnlineLevel(JSONObject onlineLevel, int type) => DownloadLevelMenu.Init(onlineLevel.AsObject, type);
 
         #endregion
 
