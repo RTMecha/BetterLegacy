@@ -81,8 +81,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             CoreHelper.Delete(GameObject.transform.Find("spacer"));
             CoreHelper.Delete(GameObject.transform.Find("Text"));
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialogObject.transform, "Scroll View");
-            scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 696f);
+
+            var main = Creator.NewUIObject("Main", editorDialogObject.transform);
+            main.transform.AsRT().sizeDelta = new Vector2(765f, 696f);
+
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(main.transform, "Scroll View");
+            RectValues.Default.SizeDelta(745f, 696f).AssignToRectTransform(scrollView.transform.AsRT());
             Content = scrollView.transform.Find("Viewport/Content").AsRT();
 
             #region Setup

@@ -55,8 +55,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             editorDialog.transform.GetChild(1).AsRT().sizeDelta = new Vector2(765f, 24f);
 
-            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(editorDialog.transform, "Scroll View");
-            scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 696f);
+            var main = Creator.NewUIObject("Main", editorDialog.transform);
+            main.transform.AsRT().sizeDelta = new Vector2(765f, 668f);
+
+            var scrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(main.transform, "Scroll View");
+            RectValues.Default.SizeDelta(745f, 668f).AssignToRectTransform(scrollView.transform.AsRT());
             Content = scrollView.transform.Find("Viewport/Content").AsRT();
 
             CoreHelper.Delete(editorDialog.transform.GetChild(2));

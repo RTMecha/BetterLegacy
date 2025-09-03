@@ -72,6 +72,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public InputField EditorNameField { get; set; }
 
+        public InputField EditorCreatorField { get; set; }
+
         #endregion
 
         #endregion
@@ -254,13 +256,20 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddGraphic(shuffleIDText, ThemeGroup.Function_2_Text);
             }
 
-            Editor.transform.Find("theme").AsRT().sizeDelta = new Vector2(366f, 570f);
+            Editor.transform.Find("theme").AsRT().sizeDelta = new Vector2(366f, 530f);
             EditorNameField = Editor.transform.Find("name").GetComponent<InputField>();
-
+            EditorNameField.GetPlaceholderText().text = "Set name...";
             // fixes theme name not allowing non-alphabetical characters
             EditorNameField.characterValidation = InputField.CharacterValidation.None;
 
             EditorThemeManager.AddInputField(EditorNameField);
+
+            var creator = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Editor.transform, "creator", 2);
+            EditorCreatorField = creator.GetComponent<InputField>();
+            EditorCreatorField.GetPlaceholderText().text = "Set creator...";
+            EditorCreatorField.textComponent.alignment = TextAnchor.MiddleCenter;
+
+            EditorThemeManager.AddInputField(EditorCreatorField);
 
             for (int i = 0; i < EditorActions.childCount; i++)
             {
