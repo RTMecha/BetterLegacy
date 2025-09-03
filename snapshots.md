@@ -4,12 +4,14 @@
 - Added "Apply Tail Delay" in Config Manager > Player > General. This forces the tail to not apply the Tail Base Time value. Older versions of PA does not apply the time value delay and ends up making it look nicer.
 - Added setTheme and lerpTheme action modifiers. This sets a custom fixed theme that overwrites the theme interpolation.
 - Themes can now be stored in Prefabs.
+- Added a Creator value to Themes and Prefabs, so you can finally credit those assets.
 
 ### Editor
-- Overhauled the theme system to have internal / external themes. The "View Themes" popup is now used for viewing and importing external themes and the theme keyframe is now for viewing internal level themes.
+- Overhauled the Theme system to have internal / external themes. The "View Themes" popup is now used for viewing and importing external themes and the theme keyframe is now for viewing internal level themes.
 - Added "Analyze BPM On Level Load" in Config Manager > Editor > BPM.
 - The animation timeline should now use the Use Mouse As Zoom Point setting.
 - Object and Parent Object Search Popups now have a page system.
+- Tweaked some editor UI.
 
 ## Fixes
 - Fixed objects other than Beatmap Objects not having their song time autokill offset properly set when spawned from a prefab.
