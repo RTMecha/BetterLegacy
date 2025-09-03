@@ -910,6 +910,9 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.EditorNameField.SetTextWithoutNotify(PreviewTheme.name);
             Dialog.EditorNameField.onValueChanged.NewListener(_val => PreviewTheme.name = _val);
+            Dialog.EditorCreatorField.SetTextWithoutNotify(PreviewTheme.creator);
+            Dialog.EditorCreatorField.onValueChanged.NewListener(_val => PreviewTheme.creator = _val);
+
             Dialog.EditorCancel.onClick.NewListener(() => SetEditor(false));
 
             Dialog.EditorCreateNew.gameObject.SetActive(true);

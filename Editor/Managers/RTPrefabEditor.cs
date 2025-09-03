@@ -2104,11 +2104,52 @@ namespace BetterLegacy.Editor.Managers
         /// Renders the External Prefab Editor.
         /// </summary>
         /// <param name="prefabPanel"></param>
-        public void RenderPrefabExternalDialog(PrefabPanel prefabPanel)
+        public void RenderPrefabEditorDialog(PrefabPanel prefabPanel)
         {
             var prefab = prefabPanel.Item;
             var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.Source == ObjectSource.External;
+
+            PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+            PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
+            PrefabEditorDialog.TypeButton.button.onClick.NewListener(() =>
+            {
+                OpenPrefabTypePopup(prefab.typeID, id =>
+                {
+                    prefab.type = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                    prefab.typeID = id;
+
+                    var prefabType = prefab.GetPrefabType();
+                    PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                    PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
+
+                    if (isExternal && !string.IsNullOrEmpty(prefab.filePath))
+                        RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
+
+                    prefabPanel.RenderPrefabType(prefabType);
+                    prefabPanel.RenderTooltip(prefab, prefabType);
+                });
+            });
+
+            PrefabEditorDialog.CreatorField.SetTextWithoutNotify(prefab.creator);
+            PrefabEditorDialog.CreatorField.onValueChanged.NewListener(_val => prefab.creator = _val);
+            PrefabEditorDialog.CreatorField.onEndEdit.NewListener(_val =>
+            {
+                if (!isExternal)
+                {
+                    prefabPanel.RenderTooltip();
+                    return;
+                }
+
+                RTEditor.inst.DisablePrefabWatcher();
+
+                if (!string.IsNullOrEmpty(prefab.filePath))
+                    RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
+
+                prefabPanel.RenderTooltip();
+
+                RTEditor.inst.EnablePrefabWatcher();
+            });
 
             PrefabEditorDialog.NameField.SetTextWithoutNotify(prefab.name);
             PrefabEditorDialog.NameField.onValueChanged.NewListener(_val => prefab.name = _val);
@@ -2141,27 +2182,6 @@ namespace BetterLegacy.Editor.Managers
                 prefabPanel.RenderTooltip();
 
                 RTEditor.inst.EnablePrefabWatcher();
-            });
-
-            PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-            PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
-            PrefabEditorDialog.TypeButton.button.onClick.NewListener(() =>
-            {
-                OpenPrefabTypePopup(prefab.typeID, id =>
-                {
-                    prefab.type = PrefabType.LSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.VGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
-                    prefab.typeID = id;
-
-                    var prefabType = prefab.GetPrefabType();
-                    PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-                    PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
-
-                    if (isExternal && !string.IsNullOrEmpty(prefab.filePath))
-                        RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
-
-                    prefabPanel.RenderPrefabType(prefabType);
-                    prefabPanel.RenderTooltip(prefab, prefabType);
-                });
             });
 
             PrefabEditorDialog.DescriptionField.SetTextWithoutNotify(prefab.description);
@@ -2235,6 +2255,7 @@ namespace BetterLegacy.Editor.Managers
                     prefab.prefabs.Add(otherPefab.Copy(false));
             }
 
+            prefab.creator = CoreConfig.Instance.DisplayName.Value;
             prefab.description = NewPrefabDescription;
             prefab.typeID = NewPrefabTypeID;
 
@@ -2265,7 +2286,7 @@ namespace BetterLegacy.Editor.Managers
             if (prefab.prefabPanel)
             {
                 PrefabEditorDialog.Open();
-                RenderPrefabExternalDialog(prefab.prefabPanel);
+                RenderPrefabEditorDialog(prefab.prefabPanel);
             }
         }
 
