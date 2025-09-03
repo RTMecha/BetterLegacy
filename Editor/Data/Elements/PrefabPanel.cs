@@ -469,7 +469,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonFunction("Edit", () =>
                                     {
                                         RTPrefabEditor.inst.PrefabEditorDialog.Open();
-                                        RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
+                                        RTPrefabEditor.inst.RenderPrefabEditorDialog(this);
                                     }),
                                     new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
@@ -528,7 +528,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                     new ButtonFunction("Open", () =>
                                     {
                                         RTPrefabEditor.inst.PrefabEditorDialog.Open();
-                                        RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
+                                        RTPrefabEditor.inst.RenderPrefabEditorDialog(this);
                                     }),
                                     new ButtonFunction(true),
                                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
@@ -566,7 +566,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             if (!RTPrefabEditor.ImportPrefabsDirectly)
                             {
                                 RTPrefabEditor.inst.PrefabEditorDialog.Open();
-                                RTPrefabEditor.inst.RenderPrefabExternalDialog(this);
+                                RTPrefabEditor.inst.RenderPrefabEditorDialog(this);
                             }
                             else
                                 RTPrefabEditor.inst.ImportPrefabIntoLevel(Item);
