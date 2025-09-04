@@ -34,7 +34,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             if (init)
                 return;
 
-            var editorDialog = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "PrefabExternalDialog");
+            var editorDialog = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "PrefabEditorDialog");
             var editorDialogStorage = editorDialog.GetComponent<EditorDialogStorage>();
             editorDialog.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
@@ -106,11 +106,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             RTEditor.GenerateSpacer("spacer", Content, new Vector2(765f, 80f));
 
-            var buttonsBase = Creator.NewUIObject("buttons base", Content);
-            buttonsBase.transform.AsRT().sizeDelta = new Vector2(765f, 0f);
-
-            var buttons = Creator.NewUIObject("buttons", buttonsBase.transform);
-            buttons.transform.AsRT().sizeDelta = new Vector2(600f, 32f);
+            var buttons = Creator.NewUIObject("buttons", Content);
+            buttons.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
             var buttonsHLG = buttons.AddComponent<HorizontalLayoutGroup>();
             buttonsHLG.spacing = 60f;
