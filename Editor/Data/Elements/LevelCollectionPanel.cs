@@ -395,11 +395,9 @@ namespace BetterLegacy.Editor.Data.Elements
                     {
                         list = new List<ButtonFunction>()
                         {
-                            new ButtonFunction("Open", () =>
+                            new ButtonFunction("View Levels", () =>
                             {
                                 EditorLevelManager.inst.LoadLevelCollection(this);
-                                EditorLevelManager.inst.OpenLevelPopup.Close();
-                                //EditorLevelManager.inst.LevelCollectionPopup.Close();
                             }, "Level Panel Open"),
                             new ButtonFunction("Edit", () =>
                             {
@@ -511,8 +509,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
-                EditorLevelManager.inst.LoadLevelCollection(this);
-                //EditorLevelManager.inst.LevelCollectionPopup.Close();
+                EditorLevelManager.inst.OpenLevelCollectionEditor(Item);
             };
         }
 
