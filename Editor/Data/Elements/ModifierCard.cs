@@ -2573,6 +2573,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case nameof(ModifierFunctions.setOpacityOther): {
+                        PrefabGroupOnly(modifier, reference);
                         SingleGenerator(modifier, reference, "Amount", 0, 1f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
