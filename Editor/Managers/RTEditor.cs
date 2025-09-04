@@ -75,6 +75,28 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"There was an error with loading the shapes in the editor: {ex}");
             }
 
+            // do this before everything else
+            var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
+            var parentSelector = EditorManager.inst.GetDialog("Parent Selector").Dialog;
+            var saveAsPopup = EditorManager.inst.GetDialog("Save As Popup").Dialog;
+            var quickActionsPopup = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog;
+
+            var openFilePopupSelect = openFilePopup.gameObject.AddComponent<SelectGUI>();
+            openFilePopupSelect.target = openFilePopup;
+            openFilePopupSelect.ogPos = openFilePopup.position;
+
+            var parentSelectorSelect = parentSelector.gameObject.AddComponent<SelectGUI>();
+            parentSelectorSelect.target = parentSelector;
+            parentSelectorSelect.ogPos = parentSelector.position;
+
+            var saveAsPopupSelect = saveAsPopup.Find("New File Popup").gameObject.AddComponent<SelectGUI>();
+            saveAsPopupSelect.target = saveAsPopup;
+            saveAsPopupSelect.ogPos = saveAsPopup.position;
+
+            var quickActionsPopupSelect = quickActionsPopup.gameObject.AddComponent<SelectGUI>();
+            quickActionsPopupSelect.target = quickActionsPopup;
+            quickActionsPopupSelect.ogPos = quickActionsPopup.position;
+
             CoreHelper.Log($"RTEDITOR INIT -> {nameof(CacheEditor)}");
             CacheEditor();
             CoreHelper.Log($"RTEDITOR INIT -> {nameof(CacheSprites)}");
@@ -697,7 +719,6 @@ namespace BetterLegacy.Editor.Managers
             SetupNotificationValues();
             SetupTimelineBar();
             SetupTimelineTriggers();
-            SetupSelectGUI();
             SetupCreateObjects();
             SetupTitleBar();
             SetupDoggo();
@@ -3022,30 +3043,6 @@ namespace BetterLegacy.Editor.Managers
                 }),
                 TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => EditorTimeline.inst.isOverMainTimeline = false),
                 TriggerHelper.StartDragTrigger(), TriggerHelper.DragTrigger(), TriggerHelper.EndDragTrigger());
-        }
-
-        void SetupSelectGUI()
-        {
-            var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
-            var parentSelector = EditorManager.inst.GetDialog("Parent Selector").Dialog;
-            var saveAsPopup = EditorManager.inst.GetDialog("Save As Popup").Dialog;
-            var quickActionsPopup = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog;
-
-            var openFilePopupSelect = openFilePopup.gameObject.AddComponent<SelectGUI>();
-            openFilePopupSelect.target = openFilePopup;
-            openFilePopupSelect.ogPos = openFilePopup.position;
-
-            var parentSelectorSelect = parentSelector.gameObject.AddComponent<SelectGUI>();
-            parentSelectorSelect.target = parentSelector;
-            parentSelectorSelect.ogPos = parentSelector.position;
-
-            var saveAsPopupSelect = saveAsPopup.Find("New File Popup").gameObject.AddComponent<SelectGUI>();
-            saveAsPopupSelect.target = saveAsPopup;
-            saveAsPopupSelect.ogPos = saveAsPopup.position;
-
-            var quickActionsPopupSelect = quickActionsPopup.gameObject.AddComponent<SelectGUI>();
-            quickActionsPopupSelect.target = quickActionsPopup;
-            quickActionsPopupSelect.ogPos = quickActionsPopup.position;
         }
 
         void SetupCreateObjects()
