@@ -1,6 +1,7 @@
 ﻿# ???
 ## Features
 ### Core
+- Getting close to implementing level collections and level collaborating server-side, sit tight!
 - Added "Apply Tail Delay" in Config Manager > Player > General. This forces the tail to not apply the Tail Base Time value. Older versions of PA does not apply the time value delay and ends up making it look nicer.
 - Added setTheme and lerpTheme action modifiers. This sets a custom fixed theme that overwrites the theme interpolation.
 - Themes can now be stored in Prefabs.
