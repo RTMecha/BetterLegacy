@@ -417,7 +417,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
                 beatmapObject.shape = 4;
                 beatmapObject.shapeOption = 0;
-                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierActions.textSequence), out Modifier modifier))
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.textSequence), out Modifier modifier))
                     beatmapObject.modifiers.Add(modifier.Copy());
             }),
             new ObjectOption("Screen Overlay", "An object that covers the screen.", timelineObject =>

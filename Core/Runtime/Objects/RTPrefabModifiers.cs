@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Runtime.Objects
             StartTime = startTime;
             KillTime = killTime;
 
-            modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, reference.ReferenceType));
+            modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, reference.ReferenceType));
 
             runtimePrefabObject = prefabObject.runtimeObject;
         }

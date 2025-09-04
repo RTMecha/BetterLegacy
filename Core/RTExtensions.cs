@@ -1894,7 +1894,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Updates the modifier functions.
         /// </summary>
-        public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierActions(modifier, modifyable.ReferenceType));
+        public static void UpdateFunctions(this IModifyable modifyable) => modifyable.Modifiers.ForLoop(modifier => ModifiersHelper.AssignModifierFunctions(modifier, modifyable.ReferenceType));
 
         /// <summary>
         /// Interpolates an animation onto the objects' transform offset.

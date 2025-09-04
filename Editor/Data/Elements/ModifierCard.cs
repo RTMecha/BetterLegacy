@@ -439,12 +439,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.setActive): {
+                case nameof(ModifierFunctions.setActive): {
                         BoolGenerator(modifier, reference, "Active", 0, false);
 
                         break;
                     }
-                case nameof(ModifierActions.setActiveOther): {
+                case nameof(ModifierFunctions.setActiveOther): {
                         BoolGenerator(modifier, reference, "Active", 0, false);
                         StringGenerator(modifier, reference, "BG Group", 1);
 
@@ -464,33 +464,33 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Audio
 
-                case nameof(ModifierActions.setPitch): {
+                case nameof(ModifierFunctions.setPitch): {
                         SingleGenerator(modifier, reference, "Pitch", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.addPitch): {
+                case nameof(ModifierFunctions.addPitch): {
                         SingleGenerator(modifier, reference, "Pitch", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.setPitchMath): {
+                case nameof(ModifierFunctions.setPitchMath): {
                         StringGenerator(modifier, reference, "Pitch", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.addPitchMath): {
+                case nameof(ModifierFunctions.addPitchMath): {
                         StringGenerator(modifier, reference, "Pitch", 0);
 
                         break;
                     }
 
-                case nameof(ModifierActions.setMusicTime): {
+                case nameof(ModifierFunctions.setMusicTime): {
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.setMusicTimeMath): {
+                case nameof(ModifierFunctions.setMusicTimeMath): {
                         StringGenerator(modifier, reference, "Time", 0);
 
                         break;
@@ -501,13 +501,13 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "setMusicTimeAutokill): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.setMusicPlaying): {
+                case nameof(ModifierFunctions.setMusicPlaying): {
                         BoolGenerator(modifier, reference, "Playing", 0, false);
 
                         break;
                     }
 
-                case nameof(ModifierActions.playSound): {
+                case nameof(ModifierFunctions.playSound): {
                         var str = StringGenerator(modifier, reference, "Path", 0);
                         var search = str.transform.Find("Input").gameObject.AddComponent<ContextClickable>();
                         search.onClick = pointerEventData =>
@@ -590,7 +590,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playSoundOnline): {
+                case nameof(ModifierFunctions.playSoundOnline): {
                         StringGenerator(modifier, reference, "URL", 0);
                         SingleGenerator(modifier, reference, "Pitch", 1, 1f);
                         SingleGenerator(modifier, reference, "Volume", 2, 1f);
@@ -598,7 +598,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Pan Stereo", 4);
                         break;
                     }
-                case nameof(ModifierActions.playOnlineSound): {
+                case nameof(ModifierFunctions.playOnlineSound): {
                         StringGenerator(modifier, reference, "URL", 0);
                         SingleGenerator(modifier, reference, "Pitch", 1, 1f);
                         SingleGenerator(modifier, reference, "Volume", 2, 1f);
@@ -606,7 +606,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Pan Stereo", 4);
                         break;
                     }
-                case nameof(ModifierActions.playDefaultSound): {
+                case nameof(ModifierFunctions.playDefaultSound): {
                         var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, "Sound");
                         dd.transform.localScale = Vector3.one;
                         var labelText = dd.transform.Find("Text").GetComponent<Text>();
@@ -650,7 +650,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.audioSource): {
+                case nameof(ModifierFunctions.audioSource): {
                         var str = StringGenerator(modifier, reference, "Path", 0);
                         var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
                         search.onClick = pointerEventData =>
@@ -738,7 +738,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.loadSoundAsset): {
+                case nameof(ModifierFunctions.loadSoundAsset): {
                         StringGenerator(modifier, reference, "Asset Name", 0);
                         BoolGenerator(modifier, reference, "Load", 1);
                         BoolGenerator(modifier, reference, "Play", 2);
@@ -754,17 +754,17 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Level
 
-                case nameof(ModifierActions.loadLevel): {
+                case nameof(ModifierFunctions.loadLevel): {
                         StringGenerator(modifier, reference, "Path", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.loadLevelID): {
+                case nameof(ModifierFunctions.loadLevelID): {
                         StringGenerator(modifier, reference, "ID", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.loadLevelInternal): {
+                case nameof(ModifierFunctions.loadLevelInternal): {
                         StringGenerator(modifier, reference, "Inner Path", 0);
 
                         break;
@@ -775,18 +775,18 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "loadLevelHub): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.loadLevelInCollection): {
+                case nameof(ModifierFunctions.loadLevelInCollection): {
                         StringGenerator(modifier, reference, "ID", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.loadLevelCollection): {
+                case nameof(ModifierFunctions.loadLevelCollection): {
                         StringGenerator(modifier, reference, "Collection ID", 0);
                         StringGenerator(modifier, reference, "Level ID", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.downloadLevel): {
+                case nameof(ModifierFunctions.downloadLevel): {
                         StringGenerator(modifier, reference, "Arcade ID", 0);
                         StringGenerator(modifier, reference, "Server ID", 1);
                         StringGenerator(modifier, reference, "Workshop ID", 2);
@@ -796,7 +796,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.endLevel): {
+                case nameof(ModifierFunctions.endLevel): {
                         var options = CoreHelper.ToOptionData<EndLevelFunction>();
                         options.Insert(0, new Dropdown.OptionData("Default"));
                         DropdownGenerator(modifier, reference, "End Level Function", 0, options);
@@ -805,17 +805,17 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setAudioTransition): {
+                case nameof(ModifierFunctions.setAudioTransition): {
                         SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.setIntroFade): {
+                case nameof(ModifierFunctions.setIntroFade): {
                         BoolGenerator(modifier, reference, "Should Fade", 0, true);
 
                         break;
                     }
-                case nameof(ModifierActions.setLevelEndFunc): {
+                case nameof(ModifierFunctions.setLevelEndFunc): {
                         var options = CoreHelper.ToOptionData<EndLevelFunction>();
                         options.Insert(0, new Dropdown.OptionData("Default"));
                         DropdownGenerator(modifier, reference, "End Level Function", 0, options);
@@ -824,12 +824,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getCurrentLevelID): {
+                case nameof(ModifierFunctions.getCurrentLevelID): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getCurrentLevelRank): {
+                case nameof(ModifierFunctions.getCurrentLevelRank): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
@@ -839,14 +839,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Component
 
-                case nameof(ModifierActions.blur): {
+                case nameof(ModifierFunctions.blur): {
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         BoolGenerator(modifier, reference, "Use Opacity", 1, false);
                         BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
 
                         break;
                     }
-                case nameof(ModifierActions.blurOther): {
+                case nameof(ModifierFunctions.blurOther): {
                         PrefabGroupOnly(modifier, reference);
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
@@ -855,13 +855,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.blurVariable): {
+                case nameof(ModifierFunctions.blurVariable): {
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         BoolGenerator(modifier, reference, "Set Back to Normal", 1, false);
 
                         break;
                     }
-                case nameof(ModifierActions.blurVariableOther): {
+                case nameof(ModifierFunctions.blurVariableOther): {
                         PrefabGroupOnly(modifier, reference);
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
@@ -870,14 +870,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.blurColored): {
+                case nameof(ModifierFunctions.blurColored): {
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         BoolGenerator(modifier, reference, "Use Opacity", 1, false);
                         BoolGenerator(modifier, reference, "Set Back to Normal", 2, false);
 
                         break;
                     }
-                case nameof(ModifierActions.blurColoredOther): {
+                case nameof(ModifierFunctions.blurColoredOther): {
                         PrefabGroupOnly(modifier, reference);
                         SingleGenerator(modifier, reference, "Amount", 0, 0.5f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
@@ -889,7 +889,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "doubleSided): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.particleSystem): {
+                case nameof(ModifierFunctions.particleSystem): {
                         SingleGenerator(modifier, reference, "Life Time", 0, 5f);
 
                         DropdownGenerator(modifier, reference, "Shape", 1, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
@@ -935,7 +935,53 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.trailRenderer): {
+                case nameof(ModifierFunctions.particleSystemHex): {
+                        SingleGenerator(modifier, reference, "Life Time", 0, 5f);
+
+                        DropdownGenerator(modifier, reference, "Shape", 1, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
+                        {
+                            false, // square
+                            false, // circle
+                            false, // triangle
+                            false, // arrow
+                            true, // text
+                            false, // hexagon
+                            true, // image
+                            false, // pentagon
+                            false, // misc
+                            true, // polygon
+                        }, _val =>
+                        {
+                            var shapeType = (ShapeType)_val;
+                            if (shapeType == ShapeType.Text || shapeType == ShapeType.Image || shapeType == ShapeType.Polygon)
+                                modifier.SetValue(1, "0");
+
+                            modifier.SetValue(2, "0");
+                            RenderModifier(reference);
+                            Update(modifier, reference);
+                        });
+
+                        var shape = modifier.GetInt(1, 0);
+                        DropdownGenerator(modifier, reference, "Shape Option", 2, ShapeManager.inst.Shapes2D[shape].shapes.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), null);
+
+                        StringGenerator(modifier, reference, "Color", 3);
+                        SingleGenerator(modifier, reference, "Start Opacity", 4, 1f);
+                        SingleGenerator(modifier, reference, "End Opacity", 5, 0f);
+                        SingleGenerator(modifier, reference, "Start Scale", 6, 1f);
+                        SingleGenerator(modifier, reference, "End Scale", 7, 0f);
+                        SingleGenerator(modifier, reference, "Rotation", 8, 0f);
+                        SingleGenerator(modifier, reference, "Speed", 9, 5f);
+                        SingleGenerator(modifier, reference, "Amount", 10, 1f);
+                        SingleGenerator(modifier, reference, "Duration", 11, 1f);
+                        SingleGenerator(modifier, reference, "Force X", 12, 0f);
+                        SingleGenerator(modifier, reference, "Force Y", 13, 0f);
+                        BoolGenerator(modifier, reference, "Emit Trail", 14, false);
+                        SingleGenerator(modifier, reference, "Angle", 15, 0f);
+                        IntegerGenerator(modifier, reference, "Burst Count", 16, 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.trailRenderer): {
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
                         SingleGenerator(modifier, reference, "Start Width", 1, 1f);
                         SingleGenerator(modifier, reference, "End Width", 2, 0f);
@@ -946,7 +992,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.trailRendererHex): {
+                case nameof(ModifierFunctions.trailRendererHex): {
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
                         SingleGenerator(modifier, reference, "Start Width", 1, 1f);
                         SingleGenerator(modifier, reference, "End Width", 2, 0f);
@@ -955,7 +1001,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.rigidbody): {
+                case nameof(ModifierFunctions.rigidbody): {
                         SingleGenerator(modifier, reference, "Gravity", 1, 0f);
 
                         DropdownGenerator(modifier, reference, "Collision Mode", 2, CoreHelper.StringToOptionData("Discrete", "Continuous"));
@@ -968,7 +1014,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.rigidbodyOther): {
+                case nameof(ModifierFunctions.rigidbodyOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -985,11 +1031,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setRenderType): {
+                case nameof(ModifierFunctions.setRenderType): {
                         DropdownGenerator(modifier, reference, "Render Type", 0, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
                         break;
                     }
-                case nameof(ModifierActions.setRenderTypeOther): {
+                case nameof(ModifierFunctions.setRenderTypeOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -1002,106 +1048,106 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Player
 
-                case nameof(ModifierActions.playerHit): {
+                case nameof(ModifierFunctions.playerHit): {
                         IntegerGenerator(modifier, reference, "Hit Amount", 0, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.playerHitIndex): {
+                case nameof(ModifierFunctions.playerHitIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         IntegerGenerator(modifier, reference, "Hit Amount", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.playerHitAll): {
+                case nameof(ModifierFunctions.playerHitAll): {
                         IntegerGenerator(modifier, reference, "Hit Amount", 0, 0);
 
                         break;
                     }
 
-                case nameof(ModifierActions.playerHeal): {
+                case nameof(ModifierFunctions.playerHeal): {
                         IntegerGenerator(modifier, reference, "Heal Amount", 0, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.playerHealIndex): {
+                case nameof(ModifierFunctions.playerHealIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         IntegerGenerator(modifier, reference, "Heal Amount", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.playerHealAll): {
+                case nameof(ModifierFunctions.playerHealAll): {
                         IntegerGenerator(modifier, reference, "Heal Amount", 0, 0);
 
                         break;
                     }
 
-                //case nameof(ModifierActions.playerKill): {
+                //case nameof(ModifierFunctions.playerKill): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerKillIndex): {
+                case nameof(ModifierFunctions.playerKillIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
-                //case nameof(ModifierActions.playerKillAll): {
+                //case nameof(ModifierFunctions.playerKillAll): {
                 //        break;
                 //    }
 
-                //case nameof(ModifierActions.playerRespawn): {
+                //case nameof(ModifierFunctions.playerRespawn): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerRespawnIndex): {
+                case nameof(ModifierFunctions.playerRespawnIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
-                //case nameof(ModifierActions.playerRespawnAll): {
+                //case nameof(ModifierFunctions.playerRespawnAll): {
                 //        break;
                 //    }
 
-                case nameof(ModifierActions.playerLockX): {
+                case nameof(ModifierFunctions.playerLockX): {
                         BoolGenerator(modifier, reference, "Lock X", 0);
                         break;
                     }
-                case nameof(ModifierActions.playerLockXIndex): {
+                case nameof(ModifierFunctions.playerLockXIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0);
                         BoolGenerator(modifier, reference, "Lock X", 1);
                         break;
                     }
-                case nameof(ModifierActions.playerLockXAll): {
+                case nameof(ModifierFunctions.playerLockXAll): {
                         BoolGenerator(modifier, reference, "Lock X", 0);
                         break;
                     }
-                case nameof(ModifierActions.playerLockY): {
+                case nameof(ModifierFunctions.playerLockY): {
                         BoolGenerator(modifier, reference, "Lock Y", 0);
                         break;
                     }
-                case nameof(ModifierActions.playerLockYIndex): {
+                case nameof(ModifierFunctions.playerLockYIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0);
                         BoolGenerator(modifier, reference, "Lock Y", 1);
                         break;
                     }
-                case nameof(ModifierActions.playerLockYAll): {
+                case nameof(ModifierFunctions.playerLockYAll): {
                         BoolGenerator(modifier, reference, "Lock Y", 0);
                         break;
                     }
 
-                case nameof(ModifierActions.playerEnable): {
+                case nameof(ModifierFunctions.playerEnable): {
                         BoolGenerator(modifier, reference, "Enabled", 0);
                         break;
                     }
-                case nameof(ModifierActions.playerEnableIndex): {
+                case nameof(ModifierFunctions.playerEnableIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0);
                         BoolGenerator(modifier, reference, "Enabled", 1);
                         break;
                     }
-                case nameof(ModifierActions.playerEnableAll): {
+                case nameof(ModifierFunctions.playerEnableAll): {
                         BoolGenerator(modifier, reference, "Enabled", 0);
                         break;
                     }
 
-                case nameof(ModifierActions.playerMove): {
+                case nameof(ModifierFunctions.playerMove): {
                         var value = modifier.GetValue(0);
 
                         if (value.Contains(','))
@@ -1123,7 +1169,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveIndex): {
+                case nameof(ModifierFunctions.playerMoveIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         SingleGenerator(modifier, reference, "X", 1, 0f);
@@ -1137,7 +1183,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveAll): {
+                case nameof(ModifierFunctions.playerMoveAll): {
                         var value = modifier.GetValue(0);
 
                         if (value.Contains(','))
@@ -1159,7 +1205,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveX): {
+                case nameof(ModifierFunctions.playerMoveX): {
                         SingleGenerator(modifier, reference, "X", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
@@ -1170,7 +1216,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveXIndex): {
+                case nameof(ModifierFunctions.playerMoveXIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         SingleGenerator(modifier, reference, "X", 1, 0f);
@@ -1183,7 +1229,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveXAll): {
+                case nameof(ModifierFunctions.playerMoveXAll): {
                         SingleGenerator(modifier, reference, "X", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
@@ -1194,7 +1240,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveY): {
+                case nameof(ModifierFunctions.playerMoveY): {
                         SingleGenerator(modifier, reference, "Y", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
@@ -1205,7 +1251,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveYIndex): {
+                case nameof(ModifierFunctions.playerMoveYIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         SingleGenerator(modifier, reference, "Y", 1, 0f);
@@ -1218,7 +1264,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerMoveYAll): {
+                case nameof(ModifierFunctions.playerMoveYAll): {
                         SingleGenerator(modifier, reference, "Y", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
@@ -1229,7 +1275,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerRotate): {
+                case nameof(ModifierFunctions.playerRotate): {
                         SingleGenerator(modifier, reference, "Rotation", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
@@ -1240,7 +1286,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerRotateIndex): {
+                case nameof(ModifierFunctions.playerRotateIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         SingleGenerator(modifier, reference, "Rotation", 1, 0f);
@@ -1253,7 +1299,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playerRotateAll): {
+                case nameof(ModifierFunctions.playerRotateAll): {
                         SingleGenerator(modifier, reference, "Rotation", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
@@ -1265,32 +1311,32 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                //case nameof(ModifierActions.playerMoveToObject): {
+                //case nameof(ModifierFunctions.playerMoveToObject): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerMoveIndexToObject): {
+                case nameof(ModifierFunctions.playerMoveIndexToObject): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
-                //case nameof(ModifierActions.playerMoveAllToObject): {
+                //case nameof(ModifierFunctions.playerMoveAllToObject): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.playerMoveXToObject): {
+                //case nameof(ModifierFunctions.playerMoveXToObject): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerMoveXIndexToObject): {
+                case nameof(ModifierFunctions.playerMoveXIndexToObject): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
-                //case nameof(ModifierActions.playerMoveXAllToObject): {
+                //case nameof(ModifierFunctions.playerMoveXAllToObject): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.playerMoveYToObject): {
+                //case nameof(ModifierFunctions.playerMoveYToObject): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerMoveYIndexToObject): {
+                case nameof(ModifierFunctions.playerMoveYIndexToObject): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
@@ -1301,16 +1347,16 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "playerRotateToObject): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerRotateIndexToObject): {
+                case nameof(ModifierFunctions.playerRotateIndexToObject): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
-                //case nameof(ModifierActions.playerRotateAllToObject): {
+                //case nameof(ModifierFunctions.playerRotateAllToObject): {
                 //        break;
                 //    }
 
-                case nameof(ModifierActions.playerDrag): {
+                case nameof(ModifierFunctions.playerDrag): {
                         BoolGenerator(modifier, reference, "Use Position", 0);
                         BoolGenerator(modifier, reference, "Use Scale", 1);
                         BoolGenerator(modifier, reference, "Use Rotation", 2);
@@ -1318,166 +1364,166 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.playerBoost): {
+                case nameof(ModifierFunctions.playerBoost): {
                         SingleGenerator(modifier, reference, "X", 0);
                         SingleGenerator(modifier, reference, "Y", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.playerBoostIndex): {
+                case nameof(ModifierFunctions.playerBoostIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         SingleGenerator(modifier, reference, "X", 1);
                         SingleGenerator(modifier, reference, "Y", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.playerBoostAll): {
+                case nameof(ModifierFunctions.playerBoostAll): {
                         SingleGenerator(modifier, reference, "X", 0);
                         SingleGenerator(modifier, reference, "Y", 1);
 
                         break;
                     }
                     
-                //case nameof(ModifierActions.playerCancelBoost): {
+                //case nameof(ModifierFunctions.playerCancelBoost): {
 
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerCancelBoostIndex): {
+                case nameof(ModifierFunctions.playerCancelBoostIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
-                //case nameof(ModifierActions.playerCancelBoostAll): {
+                //case nameof(ModifierFunctions.playerCancelBoostAll): {
 
                 //        break;
                 //    }
 
-                //case nameof(ModifierActions.playerDisableBoost): {
+                //case nameof(ModifierFunctions.playerDisableBoost): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.playerDisableBoostIndex): {
+                case nameof(ModifierFunctions.playerDisableBoostIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
 
                         break;
                     }
-                //case nameof(ModifierActions.playerDisableBoostAll): {
+                //case nameof(ModifierFunctions.playerDisableBoostAll): {
                 //        break;
                 //    }
 
-                case nameof(ModifierActions.playerEnableBoost): {
+                case nameof(ModifierFunctions.playerEnableBoost): {
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         break;
                     }
-                case nameof(ModifierActions.playerEnableBoostIndex): {
+                case nameof(ModifierFunctions.playerEnableBoostIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         BoolGenerator(modifier, reference, "Enabled", 1, true);
 
                         break;
                     }
-                case nameof(ModifierActions.playerEnableBoostAll): {
+                case nameof(ModifierFunctions.playerEnableBoostAll): {
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         break;
                     }
-                case nameof(ModifierActions.playerEnableMove): {
+                case nameof(ModifierFunctions.playerEnableMove): {
                         BoolGenerator(modifier, reference, "Can Move", 0, true);
                         BoolGenerator(modifier, reference, "Can Rotate", 1, true);
 
                         break;
                     }
-                case nameof(ModifierActions.playerEnableMoveIndex): {
+                case nameof(ModifierFunctions.playerEnableMoveIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         BoolGenerator(modifier, reference, "Can Move", 1, true);
                         BoolGenerator(modifier, reference, "Can Rotate", 2, true);
 
                         break;
                     }
-                case nameof(ModifierActions.playerEnableMoveAll): {
+                case nameof(ModifierFunctions.playerEnableMoveAll): {
                         BoolGenerator(modifier, reference, "Can Move", 0, true);
                         BoolGenerator(modifier, reference, "Can Rotate", 1, true);
 
                         break;
                     }
 
-                case nameof(ModifierActions.playerSpeed): {
+                case nameof(ModifierFunctions.playerSpeed): {
                         SingleGenerator(modifier, reference, "Global Speed", 0, 1f);
 
                         break;
                     }
 
-                case nameof(ModifierActions.playerVelocity): {
+                case nameof(ModifierFunctions.playerVelocity): {
                         SingleGenerator(modifier, reference, "X", 0, 0f);
                         SingleGenerator(modifier, reference, "Y", 1, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.playerVelocityIndex): {
+                case nameof(ModifierFunctions.playerVelocityIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         SingleGenerator(modifier, reference, "X", 1, 0f);
                         SingleGenerator(modifier, reference, "Y", 2, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.playerVelocityAll): {
+                case nameof(ModifierFunctions.playerVelocityAll): {
                         SingleGenerator(modifier, reference, "X", 0, 0f);
                         SingleGenerator(modifier, reference, "Y", 1, 0f);
 
                         break;
                     }
                     
-                case nameof(ModifierActions.playerVelocityX): {
+                case nameof(ModifierFunctions.playerVelocityX): {
                         SingleGenerator(modifier, reference, "X", 0, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.playerVelocityXIndex): {
+                case nameof(ModifierFunctions.playerVelocityXIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         SingleGenerator(modifier, reference, "X", 1, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.playerVelocityXAll): {
+                case nameof(ModifierFunctions.playerVelocityXAll): {
                         SingleGenerator(modifier, reference, "X", 0, 0f);
 
                         break;
                     }
                     
-                case nameof(ModifierActions.playerVelocityY): {
+                case nameof(ModifierFunctions.playerVelocityY): {
                         SingleGenerator(modifier, reference, "Y", 0, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.playerVelocityYIndex): {
+                case nameof(ModifierFunctions.playerVelocityYIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         SingleGenerator(modifier, reference, "Y", 1, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.playerVelocityYAll): {
+                case nameof(ModifierFunctions.playerVelocityYAll): {
                         SingleGenerator(modifier, reference, "Y", 0, 0f);
 
                         break;
                     }
 
-                case nameof(ModifierActions.playerEnableDamage): {
+                case nameof(ModifierFunctions.playerEnableDamage): {
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         break;
                     }
-                case nameof(ModifierActions.playerEnableDamageIndex): {
+                case nameof(ModifierFunctions.playerEnableDamageIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         BoolGenerator(modifier, reference, "Enabled", 1, true);
 
                         break;
                     }
-                case nameof(ModifierActions.playerEnableDamageAll): {
+                case nameof(ModifierFunctions.playerEnableDamageAll): {
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
                         break;
                     }
 
-                case nameof(ModifierActions.setPlayerModel): {
+                case nameof(ModifierFunctions.setPlayerModel): {
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: 3);
                         var modelID = StringGenerator(modifier, reference, "Model ID", 0);
                         var contextClickable = modelID.transform.Find("Input").gameObject.GetOrAddComponent<ContextClickable>();
@@ -1499,47 +1545,47 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setGameMode): {
+                case nameof(ModifierFunctions.setGameMode): {
                         DropdownGenerator(modifier, reference, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
 
                         break;
                     }
                     
-                case nameof(ModifierActions.gameMode): {
+                case nameof(ModifierFunctions.gameMode): {
                         DropdownGenerator(modifier, reference, "Set Game Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
 
                         break;
                     }
 
-                case nameof(ModifierActions.blackHole): {
+                case nameof(ModifierFunctions.blackHole): {
                         SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.blackHoleIndex): {
+                case nameof(ModifierFunctions.blackHoleIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         SingleGenerator(modifier, reference, "Value", 1, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.blackHoleAll): {
+                case nameof(ModifierFunctions.blackHoleAll): {
                         SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.whiteHole): {
+                case nameof(ModifierFunctions.whiteHole): {
                         SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.whiteHoleIndex): {
+                case nameof(ModifierFunctions.whiteHoleIndex): {
                         IntegerGenerator(modifier, reference, "Player Index", 0, 0);
                         SingleGenerator(modifier, reference, "Value", 1, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.whiteHoleAll): {
+                case nameof(ModifierFunctions.whiteHoleAll): {
                         SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
@@ -1549,7 +1595,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Mouse Cursor
 
-                case nameof(ModifierActions.showMouse): {
+                case nameof(ModifierFunctions.showMouse): {
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "True");
 
@@ -1559,13 +1605,13 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "hideMouse): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.setMousePosition): {
+                case nameof(ModifierFunctions.setMousePosition): {
                         IntegerGenerator(modifier, reference, "Position X", 1, 0);
                         IntegerGenerator(modifier, reference, "Position Y", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.followMousePosition): {
+                case nameof(ModifierFunctions.followMousePosition): {
                         SingleGenerator(modifier, reference, "Position Focus", 0, 1f);
                         SingleGenerator(modifier, reference, "Rotation Delay", 1, 1f);
 
@@ -1576,50 +1622,50 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Variable
                     
-                case nameof(ModifierActions.getToggle): {
+                case nameof(ModifierFunctions.getToggle): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         BoolGenerator(modifier, reference, "Value", 1, false);
                         BoolGenerator(modifier, reference, "Invert Value", 2, false);
 
                         break;
                     }
-                case nameof(ModifierActions.getFloat): {
+                case nameof(ModifierFunctions.getFloat): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         SingleGenerator(modifier, reference, "Value", 1, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.getInt): {
+                case nameof(ModifierFunctions.getInt): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Value", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getString): {
+                case nameof(ModifierFunctions.getString): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getStringLower): {
+                case nameof(ModifierFunctions.getStringLower): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getStringUpper): {
+                case nameof(ModifierFunctions.getStringUpper): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getColor): {
+                case nameof(ModifierFunctions.getColor): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         ColorGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getEnum): {
+                case nameof(ModifierFunctions.getEnum): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         var options = new List<string>();
                         for (int i = 3; i < modifier.values.Count; i += 2)
@@ -1681,14 +1727,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getTag): {
+                case nameof(ModifierFunctions.getTag): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Index", 1, 0);
 
                         break;
                     }
 
-                case nameof(ModifierActions.getAxis): {
+                case nameof(ModifierFunctions.getAxis): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         PrefabGroupOnly(modifier, reference);
@@ -1709,63 +1755,63 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getPitch): {
+                case nameof(ModifierFunctions.getPitch): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getMusicTime): {
+                case nameof(ModifierFunctions.getMusicTime): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getMath): {
+                case nameof(ModifierFunctions.getMath): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getNearestPlayer): {
+                case nameof(ModifierFunctions.getNearestPlayer): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getCollidingPlayers): {
+                case nameof(ModifierFunctions.getCollidingPlayers): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getPlayerHealth): {
-                        StringGenerator(modifier, reference, "Variable Name", 0);
-                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
-
-                        break;
-                    }
-                case nameof(ModifierActions.getPlayerLives): {
+                case nameof(ModifierFunctions.getPlayerHealth): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
-                case nameof(ModifierActions.getPlayerPosX): {
+                case nameof(ModifierFunctions.getPlayerLives): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
-                case nameof(ModifierActions.getPlayerPosY): {
+                case nameof(ModifierFunctions.getPlayerPosX): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
-                case nameof(ModifierActions.getPlayerRot): {
+                case nameof(ModifierFunctions.getPlayerPosY): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
 
                         break;
                     }
-                case nameof(ModifierActions.getEventValue): {
+                case nameof(ModifierFunctions.getPlayerRot): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        IntegerGenerator(modifier, reference, "Player Index", 1, 0, max: int.MaxValue);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getEventValue): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
@@ -1781,7 +1827,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getSample): {
+                case nameof(ModifierFunctions.getSample): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
@@ -1789,13 +1835,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getText): {
+                case nameof(ModifierFunctions.getText): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         BoolGenerator(modifier, reference, "Use Visual", 1, false);
 
                         break;
                     }
-                case nameof(ModifierActions.getTextOther): {
+                case nameof(ModifierFunctions.getTextOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 2);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -1805,12 +1851,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getCurrentKey): {
+                case nameof(ModifierFunctions.getCurrentKey): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getColorSlotHexCode): {
+                case nameof(ModifierFunctions.getColorSlotHexCode): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         ColorGenerator(modifier, reference, "Color", 1);
                         SingleGenerator(modifier, reference, "Opacity", 2, 1f, max: 1f);
@@ -1820,19 +1866,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getFloatFromHexCode): {
+                case nameof(ModifierFunctions.getFloatFromHexCode): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Hex Code", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getHexCodeFromFloat): {
+                case nameof(ModifierFunctions.getHexCodeFromFloat): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         SingleGenerator(modifier, reference, "Value", 1, 0f, max: 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.getMixedColors): {
+                case nameof(ModifierFunctions.getMixedColors): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         int a = 0;
@@ -1856,7 +1902,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getModifiedColor): {
+                case nameof(ModifierFunctions.getModifiedColor): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Hex Color", 1);
 
@@ -1867,19 +1913,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getVisualColor): {
+                case nameof(ModifierFunctions.getVisualColor): {
                         StringGenerator(modifier, reference, "Color 1 Var Name", 0);
                         StringGenerator(modifier, reference, "Color 2 Var Name", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getVisualOpacity): {
+                case nameof(ModifierFunctions.getVisualOpacity): {
                         StringGenerator(modifier, reference, "Opacity 1 Var Name", 0);
                         StringGenerator(modifier, reference, "Opacity 2 Var Name", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getJSONString): {
+                case nameof(ModifierFunctions.getJSONString): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
@@ -1887,7 +1933,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getJSONFloat): {
+                case nameof(ModifierFunctions.getJSONFloat): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
@@ -1895,33 +1941,33 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getJSON): {
+                case nameof(ModifierFunctions.getJSON): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "JSON", 1);
                         StringGenerator(modifier, reference, "JSON Value", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.getSubString): {
+                case nameof(ModifierFunctions.getSubString): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         IntegerGenerator(modifier, reference, "Start Index", 1, 0);
                         IntegerGenerator(modifier, reference, "Length", 2, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getStringLength): {
+                case nameof(ModifierFunctions.getStringLength): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Text", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getParsedString): {
+                case nameof(ModifierFunctions.getParsedString): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getSplitString): {
+                case nameof(ModifierFunctions.getSplitString): {
                         StringGenerator(modifier, reference, "Text", 0);
                         StringGenerator(modifier, reference, "Character", 1);
 
@@ -1946,21 +1992,21 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getSplitStringAt): {
+                case nameof(ModifierFunctions.getSplitStringAt): {
                         StringGenerator(modifier, reference, "Text", 0);
                         StringGenerator(modifier, reference, "Character", 1);
                         StringGenerator(modifier, reference, "Variable Name", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.getSplitStringCount): {
+                case nameof(ModifierFunctions.getSplitStringCount): {
                         StringGenerator(modifier, reference, "Text", 0);
                         StringGenerator(modifier, reference, "Character", 1);
                         StringGenerator(modifier, reference, "Variable Name", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.getRegex): {
+                case nameof(ModifierFunctions.getRegex): {
                         StringGenerator(modifier, reference, "Regex", 0);
                         StringGenerator(modifier, reference, "Text", 1);
 
@@ -1985,7 +2031,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getFormatVariable): { // whaaaaaaat (found i could use nameof() here)
+                case nameof(ModifierFunctions.getFormatVariable): { // whaaaaaaat (found i could use nameof() here)
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Format Text", 1);
 
@@ -2010,43 +2056,43 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getComparison): {
+                case nameof(ModifierFunctions.getComparison): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Compare From", 1);
                         StringGenerator(modifier, reference, "Compare To", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.getComparisonMath): {
+                case nameof(ModifierFunctions.getComparisonMath): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Compare From", 1);
                         StringGenerator(modifier, reference, "Compare To", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.getEditorBin): {
+                case nameof(ModifierFunctions.getEditorBin): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         BoolGenerator(modifier, reference, "Use Prefab Object Bin", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getEditorLayer): {
+                case nameof(ModifierFunctions.getEditorLayer): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         BoolGenerator(modifier, reference, "Use Prefab Object Bin", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getObjectName): {
+                case nameof(ModifierFunctions.getObjectName): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getSignaledVariables): {
+                case nameof(ModifierFunctions.getSignaledVariables): {
                         BoolGenerator(modifier, reference, "Clear", 0, true);
 
                         break;
                     }
-                case nameof(ModifierActions.signalLocalVariables): {
+                case nameof(ModifierFunctions.signalLocalVariables): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2057,12 +2103,12 @@ namespace BetterLegacy.Editor.Data.Elements
                 //        break;
                 //    }
 
-                case nameof(ModifierActions.addVariable):
-                case nameof(ModifierActions.subVariable):
-                case nameof(ModifierActions.setVariable):
-                case nameof(ModifierActions.addVariableOther):
-                case nameof(ModifierActions.subVariableOther):
-                case nameof(ModifierActions.setVariableOther): {
+                case nameof(ModifierFunctions.addVariable):
+                case nameof(ModifierFunctions.subVariable):
+                case nameof(ModifierFunctions.setVariable):
+                case nameof(ModifierFunctions.addVariableOther):
+                case nameof(ModifierFunctions.subVariableOther):
+                case nameof(ModifierFunctions.setVariableOther): {
                         var isGroup = modifier.values.Count == 2;
                         if (isGroup)
                             PrefabGroupOnly(modifier, reference);
@@ -2076,7 +2122,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateVariableOther): {
+                case nameof(ModifierFunctions.animateVariableOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2095,13 +2141,13 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.clampVariable): {
+                case nameof(ModifierFunctions.clampVariable): {
                         IntegerGenerator(modifier, reference, "Minimum", 1, 0);
                         IntegerGenerator(modifier, reference, "Maximum", 2, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.clampVariableOther): {
+                case nameof(ModifierFunctions.clampVariableOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2116,7 +2162,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Enable
 
-                case nameof(ModifierActions.enableObject): {
+                case nameof(ModifierFunctions.enableObject): {
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "True");
 
@@ -2124,7 +2170,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         BoolGenerator(modifier, reference, "Reset", 1, true);
                         break;
                     }
-                case nameof(ModifierActions.enableObjectTree): {
+                case nameof(ModifierFunctions.enableObjectTree): {
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "False");
 
@@ -2134,7 +2180,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.enableObjectOther): {
+                case nameof(ModifierFunctions.enableObjectOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2143,7 +2189,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.enableObjectTreeOther): {
+                case nameof(ModifierFunctions.enableObjectTreeOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2153,7 +2199,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.enableObjectGroup): {
+                case nameof(ModifierFunctions.enableObjectGroup): {
                         PrefabGroupOnly(modifier, reference);
                         BoolGenerator(modifier, reference, "Enabled", 0, true);
 
@@ -2194,7 +2240,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.disableObject): {
+                case nameof(ModifierFunctions.disableObject): {
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "True");
 
@@ -2203,7 +2249,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
-                case nameof(ModifierActions.disableObjectTree): {
+                case nameof(ModifierFunctions.disableObjectTree): {
                         if (modifier.GetValue(0) == "0")
                             modifier.SetValue(0, "False");
 
@@ -2213,7 +2259,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
-                case nameof(ModifierActions.disableObjectOther): {
+                case nameof(ModifierFunctions.disableObjectOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2222,7 +2268,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         LabelGenerator(ModifiersHelper.DEPRECATED_MESSAGE);
                         break;
                     }
-                case nameof(ModifierActions.disableObjectTreeOther): {
+                case nameof(ModifierFunctions.disableObjectTreeOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2237,7 +2283,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region JSON
 
-                case nameof(ModifierActions.saveFloat): {
+                case nameof(ModifierFunctions.saveFloat): {
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
                         StringGenerator(modifier, reference, "JSON 2", 3);
@@ -2246,7 +2292,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.saveString): {
+                case nameof(ModifierFunctions.saveString): {
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
                         StringGenerator(modifier, reference, "JSON 2", 3);
@@ -2255,28 +2301,28 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.saveText): {
+                case nameof(ModifierFunctions.saveText): {
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
                         StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
-                case nameof(ModifierActions.saveVariable): {
+                case nameof(ModifierFunctions.saveVariable): {
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
                         StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
-                case nameof(ModifierActions.loadVariable): {
+                case nameof(ModifierFunctions.loadVariable): {
                         StringGenerator(modifier, reference, "Path", 1);
                         StringGenerator(modifier, reference, "JSON 1", 2);
                         StringGenerator(modifier, reference, "JSON 2", 3);
 
                         break;
                     }
-                case nameof(ModifierActions.loadVariableOther): {
+                case nameof(ModifierFunctions.loadVariableOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2292,7 +2338,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Reactive
 
-                case nameof(ModifierActions.reactivePos): {
+                case nameof(ModifierFunctions.reactivePos): {
                         SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
                         IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
@@ -2303,7 +2349,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.reactiveSca): {
+                case nameof(ModifierFunctions.reactiveSca): {
                         SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
                         IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
@@ -2314,27 +2360,27 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.reactiveRot): {
+                case nameof(ModifierFunctions.reactiveRot): {
                         SingleGenerator(modifier, reference, "Intensity", 0, 1f);
                         IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
 
                         break;
                     }
-                case nameof(ModifierActions.reactiveCol): {
+                case nameof(ModifierFunctions.reactiveCol): {
                         SingleGenerator(modifier, reference, "Intensity", 0, 1f);
                         IntegerGenerator(modifier, reference, "Sample", 1, 0);
                         ColorGenerator(modifier, reference, "Color", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.reactiveColLerp): {
+                case nameof(ModifierFunctions.reactiveColLerp): {
                         SingleGenerator(modifier, reference, "Intensity", 0, 1f);
                         IntegerGenerator(modifier, reference, "Sample", 1, 0);
                         ColorGenerator(modifier, reference, "Color", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.reactivePosChain): {
+                case nameof(ModifierFunctions.reactivePosChain): {
                         SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
                         IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
@@ -2345,7 +2391,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.reactiveScaChain): {
+                case nameof(ModifierFunctions.reactiveScaChain): {
                         SingleGenerator(modifier, reference, "Total Intensity", 0, 1f);
 
                         IntegerGenerator(modifier, reference, "Sample X", 1, 0, max: RTLevel.MAX_SAMPLES);
@@ -2356,7 +2402,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.reactiveRotChain): {
+                case nameof(ModifierFunctions.reactiveRotChain): {
                         SingleGenerator(modifier, reference, "Intensity", 0, 1f);
                         IntegerGenerator(modifier, reference, "Sample", 1, 0, max: RTLevel.MAX_SAMPLES);
 
@@ -2367,28 +2413,28 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Events
 
-                case nameof(ModifierActions.eventOffset): {
+                case nameof(ModifierFunctions.eventOffset): {
                         DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
                         break;
                     }
-                case nameof(ModifierActions.eventOffsetVariable): {
+                case nameof(ModifierFunctions.eventOffsetVariable): {
                         DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Multiply Variable", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.eventOffsetMath): {
+                case nameof(ModifierFunctions.eventOffsetMath): {
                         DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         StringGenerator(modifier, reference, "Evaluation", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.eventOffsetAnimate): {
+                case nameof(ModifierFunctions.eventOffsetAnimate): {
                         DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
@@ -2399,7 +2445,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.eventOffsetCopyAxis): {
+                case nameof(ModifierFunctions.eventOffsetCopyAxis): {
                         DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
                         DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
@@ -2429,7 +2475,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Color
                     
-                case nameof(ModifierActions.mask): {
+                case nameof(ModifierFunctions.mask): {
                         DropdownGenerator(modifier, reference, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
                         IntegerGenerator(modifier, reference, "Width", 1, 512);
                         IntegerGenerator(modifier, reference, "Height", 2, 512);
@@ -2438,19 +2484,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setTheme): {
+                case nameof(ModifierFunctions.setTheme): {
                         StringGenerator(modifier, reference, "ID", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.lerpTheme): {
+                case nameof(ModifierFunctions.lerpTheme): {
                         StringGenerator(modifier, reference, "Previous ID", 0);
                         StringGenerator(modifier, reference, "Next ID", 1);
                         SingleGenerator(modifier, reference, "Time", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.addColor): {
+                case nameof(ModifierFunctions.addColor): {
                         ColorGenerator(modifier, reference, "Color", 1);
 
                         SingleGenerator(modifier, reference, "Hue", 2, 0f);
@@ -2461,7 +2507,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.addColorOther): {
+                case nameof(ModifierFunctions.addColorOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2476,7 +2522,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.lerpColor): {
+                case nameof(ModifierFunctions.lerpColor): {
                         ColorGenerator(modifier, reference, "Color", 1);
 
                         SingleGenerator(modifier, reference, "Hue", 2, 0f);
@@ -2487,7 +2533,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.lerpColorOther): {
+                case nameof(ModifierFunctions.lerpColorOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2502,14 +2548,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.addColorPlayerDistance): {
+                case nameof(ModifierFunctions.addColorPlayerDistance): {
                         ColorGenerator(modifier, reference, "Color", 1);
                         SingleGenerator(modifier, reference, "Multiply", 0, 1f);
                         SingleGenerator(modifier, reference, "Offset", 2, 10f);
 
                         break;
                     }
-                case nameof(ModifierActions.lerpColorPlayerDistance): {
+                case nameof(ModifierFunctions.lerpColorPlayerDistance): {
                         ColorGenerator(modifier, reference, "Color", 1);
                         SingleGenerator(modifier, reference, "Multiply", 0, 1f);
                         SingleGenerator(modifier, reference, "Offset", 2, 10f);
@@ -2521,19 +2567,19 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setOpacity): {
+                case nameof(ModifierFunctions.setOpacity): {
                         SingleGenerator(modifier, reference, "Amount", 0, 1f);
 
                         break;
                     }
-                case nameof(ModifierActions.setOpacityOther): {
+                case nameof(ModifierFunctions.setOpacityOther): {
                         SingleGenerator(modifier, reference, "Amount", 0, 1f);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
-                case nameof(ModifierActions.copyColor): {
+                case nameof(ModifierFunctions.copyColor): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2542,7 +2588,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.copyColorOther): {
+                case nameof(ModifierFunctions.copyColorOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2551,7 +2597,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.applyColorGroup): {
+                case nameof(ModifierFunctions.applyColorGroup): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2560,7 +2606,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setColorHex): {
+                case nameof(ModifierFunctions.setColorHex): {
                         var primaryHexCode = StringGenerator(modifier, reference, "Primary Hex Code", 0);
                         var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
                         primaryHexCodeContextMenu.onClick = pointerEventData =>
@@ -2678,7 +2724,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         };
                         break;
                     }
-                case nameof(ModifierActions.setColorHexOther): {
+                case nameof(ModifierFunctions.setColorHexOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2801,7 +2847,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setColorRGBA): {
+                case nameof(ModifierFunctions.setColorRGBA): {
                         SingleGenerator(modifier, reference, "Red 1", 0, 1f);
                         SingleGenerator(modifier, reference, "Green 1", 1, 1f);
                         SingleGenerator(modifier, reference, "Blue 1", 2, 1f);
@@ -2814,7 +2860,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setColorRGBAOther): {
+                case nameof(ModifierFunctions.setColorRGBAOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 8);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -2831,7 +2877,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateColorKF): {
+                case nameof(ModifierFunctions.animateColorKF): {
                         SingleGenerator(modifier, reference, "Time", 0);
                         DropdownGenerator(modifier, reference, "Color Source", 1, CoreHelper.StringToOptionData("Objects", "BG Objects", "Effects"), onSelect: _val => RenderModifier(reference));
 
@@ -2916,7 +2962,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateColorKFHex): {
+                case nameof(ModifierFunctions.animateColorKFHex): {
                         SingleGenerator(modifier, reference, "Time", 0);
 
                         StringGenerator(modifier, reference, "Color 1", 1);
@@ -2977,7 +3023,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Shape
 
-                case nameof(ModifierActions.setShape): {
+                case nameof(ModifierFunctions.setShape): {
                         var isBG = modifyable.ReferenceType == ModifierReferenceType.BackgroundObject;
 
                         DropdownGenerator(modifier, reference, "Shape", 0, ShapeManager.inst.Shapes2D.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList(), new List<bool>
@@ -3008,7 +3054,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setPolygonShape): {
+                case nameof(ModifierFunctions.setPolygonShape): {
                         SingleGenerator(modifier, reference, "Radius", 0);
                         IntegerGenerator(modifier, reference, "Sides", 1, min: 3, max: 32);
                         SingleGenerator(modifier, reference, "Roundness", 2, max: 1f);
@@ -3022,7 +3068,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setPolygonShapeOther): {
+                case nameof(ModifierFunctions.setPolygonShapeOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3040,12 +3086,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setImage): {
+                case nameof(ModifierFunctions.setImage): {
                         StringGenerator(modifier, reference, "Path", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.setImageOther): {
+                case nameof(ModifierFunctions.setImageOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3053,12 +3099,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setText): {
+                case nameof(ModifierFunctions.setText): {
                         StringGenerator(modifier, reference, "Text", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.setTextOther): {
+                case nameof(ModifierFunctions.setTextOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3066,12 +3112,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.addText): {
+                case nameof(ModifierFunctions.addText): {
                         StringGenerator(modifier, reference, "Text", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.addTextOther): {
+                case nameof(ModifierFunctions.addTextOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3079,12 +3125,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.removeText): {
+                case nameof(ModifierFunctions.removeText): {
                         IntegerGenerator(modifier, reference, "Remove Amount", 0, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.removeTextOther): {
+                case nameof(ModifierFunctions.removeTextOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3092,12 +3138,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.removeTextAt): {
+                case nameof(ModifierFunctions.removeTextAt): {
                         IntegerGenerator(modifier, reference, "Remove At", 0, 0);
 
                         break;
                     }
-                case nameof(ModifierActions.removeTextOtherAt): {
+                case nameof(ModifierFunctions.removeTextOtherAt): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3108,7 +3154,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "formatText): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.textSequence): {
+                case nameof(ModifierFunctions.textSequence): {
                         SingleGenerator(modifier, reference, "Length", 0, 1f);
                         BoolGenerator(modifier, reference, "Display Glitch", 1, true);
                         BoolGenerator(modifier, reference, "Play Sound", 2, true);
@@ -3204,7 +3250,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "sphereShape): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.translateShape): {
+                case nameof(ModifierFunctions.translateShape): {
                         SingleGenerator(modifier, reference, "Pos X", 1, 0f);
                         SingleGenerator(modifier, reference, "Pos Y", 2, 0f);
                         SingleGenerator(modifier, reference, "Sca X", 3, 0f);
@@ -3218,7 +3264,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Animation
 
-                case nameof(ModifierActions.animateObject): {
+                case nameof(ModifierFunctions.animateObject): {
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
 
                         DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
@@ -3235,7 +3281,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateObjectOther): {
+                case nameof(ModifierFunctions.animateObjectOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3256,7 +3302,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateSignal): {
+                case nameof(ModifierFunctions.animateSignal): {
                         PrefabGroupOnly(modifier, reference);
 
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
@@ -3279,7 +3325,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateSignalOther): {
+                case nameof(ModifierFunctions.animateSignalOther): {
                         PrefabGroupOnly(modifier, reference);
 
                         SingleGenerator(modifier, reference, "Time", 0, 1f);
@@ -3306,7 +3352,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                     
-                case nameof(ModifierActions.animateObjectMath): {
+                case nameof(ModifierFunctions.animateObjectMath): {
                         StringGenerator(modifier, reference, "Time", 0);
 
                         DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
@@ -3323,7 +3369,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateObjectMathOther): {
+                case nameof(ModifierFunctions.animateObjectMathOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3344,7 +3390,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateSignalMath): {
+                case nameof(ModifierFunctions.animateSignalMath): {
                         PrefabGroupOnly(modifier, reference);
 
                         StringGenerator(modifier, reference, "Time", 0);
@@ -3367,7 +3413,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.animateSignalMathOther): {
+                case nameof(ModifierFunctions.animateSignalMathOther): {
                         PrefabGroupOnly(modifier, reference);
 
                         StringGenerator(modifier, reference, "Time", 0);
@@ -3394,7 +3440,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.gravity): {
+                case nameof(ModifierFunctions.gravity): {
                         SingleGenerator(modifier, reference, "X", 1, -1f);
                         SingleGenerator(modifier, reference, "Y", 2, 0f);
                         SingleGenerator(modifier, reference, "Time Multiply", 3, 1f);
@@ -3402,7 +3448,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.gravityOther): {
+                case nameof(ModifierFunctions.gravityOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3415,7 +3461,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.copyAxis): {
+                case nameof(ModifierFunctions.copyAxis): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3438,7 +3484,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.copyAxisMath): {
+                case nameof(ModifierFunctions.copyAxisMath): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3458,7 +3504,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.copyAxisGroup): {
+                case nameof(ModifierFunctions.copyAxisGroup): {
                         PrefabGroupOnly(modifier, reference);
                         StringGenerator(modifier, reference, "Expression", 0);
 
@@ -3507,7 +3553,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.copyPlayerAxis): {
+                case nameof(ModifierFunctions.copyPlayerAxis): {
                         DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
                         DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
@@ -3522,7 +3568,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.legacyTail): {
+                case nameof(ModifierFunctions.legacyTail): {
                         SingleGenerator(modifier, reference, "Total Time", 0, 200f);
 
                         var path = ModifiersEditor.inst.stringInput.Duplicate(layout, "usage");
@@ -3570,9 +3616,9 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.applyAnimationFrom):
-                case nameof(ModifierActions.applyAnimationTo):
-                case nameof(ModifierActions.applyAnimation): {
+                case nameof(ModifierFunctions.applyAnimationFrom):
+                case nameof(ModifierFunctions.applyAnimationTo):
+                case nameof(ModifierFunctions.applyAnimation): {
                         PrefabGroupOnly(modifier, reference);
                         if (name != "applyAnimation")
                         {
@@ -3599,9 +3645,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.applyAnimationFromMath):
-                case nameof(ModifierActions.applyAnimationToMath):
-                case nameof(ModifierActions.applyAnimationMath): {
+                case nameof(ModifierFunctions.applyAnimationFromMath):
+                case nameof(ModifierFunctions.applyAnimationToMath):
+                case nameof(ModifierFunctions.applyAnimationMath): {
                         PrefabGroupOnly(modifier, reference);
                         if (name != "applyAnimationMath")
                         {
@@ -3634,12 +3680,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Prefab
 
-                case nameof(ModifierActions.spawnPrefab):
-                case nameof(ModifierActions.spawnPrefabOffset):
-                case nameof(ModifierActions.spawnPrefabOffsetOther):
-                case nameof(ModifierActions.spawnMultiPrefab):
-                case nameof(ModifierActions.spawnMultiPrefabOffset):
-                case nameof(ModifierActions.spawnMultiPrefabOffsetOther): {
+                case nameof(ModifierFunctions.spawnPrefab):
+                case nameof(ModifierFunctions.spawnPrefabOffset):
+                case nameof(ModifierFunctions.spawnPrefabOffsetOther):
+                case nameof(ModifierFunctions.spawnMultiPrefab):
+                case nameof(ModifierFunctions.spawnMultiPrefabOffset):
+                case nameof(ModifierFunctions.spawnMultiPrefabOffsetOther): {
                         var isMulti = name.Contains("Multi");
                         var isOther = name.Contains("Other");
                         if (isOther)
@@ -3679,8 +3725,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.spawnMultiPrefabCopy): 
-                case nameof(ModifierActions.spawnPrefabCopy): {
+                case nameof(ModifierFunctions.spawnMultiPrefabCopy): 
+                case nameof(ModifierFunctions.spawnPrefabCopy): {
                         var isMulti = name.Contains("Multi");
 
                         PrefabGroupOnly(modifier, reference);
@@ -3702,14 +3748,14 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.clearSpawnedPrefabs): {
+                case nameof(ModifierFunctions.clearSpawnedPrefabs): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
-                case nameof(ModifierActions.setPrefabTime): {
+                case nameof(ModifierFunctions.setPrefabTime): {
                         SingleGenerator(modifier, reference, "Time", 0);
                         BoolGenerator(modifier, reference, "Use Custom Time", 1);
 
@@ -3720,7 +3766,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Ranking
                     
-                case nameof(ModifierActions.unlockAchievement): {
+                case nameof(ModifierFunctions.unlockAchievement): {
                         StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
                         {
                             if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -3733,7 +3779,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.lockAchievement): {
+                case nameof(ModifierFunctions.lockAchievement): {
                         StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
                         {
                             if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -3746,7 +3792,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.getAchievementUnlocked): {
+                case nameof(ModifierFunctions.getAchievementUnlocked): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "ID", 1).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
                         {
@@ -3761,7 +3807,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierTriggers.achievementUnlocked): {
+                case nameof(ModifierFunctions.achievementUnlocked): {
                         StringGenerator(modifier, reference, "ID", 0).transform.Find("Input").gameObject.AddComponent<Clickable>().onClick = pointerEventData =>
                         {
                             if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -3782,7 +3828,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "clearHits): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.addHit): {
+                case nameof(ModifierFunctions.addHit): {
                         BoolGenerator(modifier, reference, "Use Self Position", 0, true);
                         StringGenerator(modifier, reference, "Time", 1);
 
@@ -3794,7 +3840,7 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "clearDeaths): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.addDeath): {
+                case nameof(ModifierFunctions.addDeath): {
                         BoolGenerator(modifier, reference, "Use Self Position", 0, true);
                         StringGenerator(modifier, reference, "Time", 1);
 
@@ -3804,12 +3850,12 @@ namespace BetterLegacy.Editor.Data.Elements
                 //        break;
                 //    }
 
-                case nameof(ModifierActions.getHitCount): {
+                case nameof(ModifierFunctions.getHitCount): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getDeathCount): {
+                case nameof(ModifierFunctions.getDeathCount): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
@@ -3822,12 +3868,12 @@ namespace BetterLegacy.Editor.Data.Elements
                 //case "updateObjects): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.updateObject): {
+                case nameof(ModifierFunctions.updateObject): {
                         BoolGenerator(modifier, reference, "Respawn", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.updateObjectOther): {
+                case nameof(ModifierFunctions.updateObjectOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3835,14 +3881,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setParent): {
+                case nameof(ModifierFunctions.setParent): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
-                case nameof(ModifierActions.setParentOther): {
+                case nameof(ModifierFunctions.setParentOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3853,12 +3899,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.detachParent): {
+                case nameof(ModifierFunctions.detachParent): {
                         BoolGenerator(modifier, reference, "Detach", 0, false);
 
                         break;
                     }
-                case nameof(ModifierActions.detachParentOther): {
+                case nameof(ModifierFunctions.detachParentOther): {
                         BoolGenerator(modifier, reference, "Detach", 0, false);
 
                         PrefabGroupOnly(modifier, reference);
@@ -3867,7 +3913,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.setSeed): {
+                case nameof(ModifierFunctions.setSeed): {
                         StringGenerator(modifier, reference, "Seed", 0);
 
                         break;
@@ -3877,11 +3923,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Physics
 
-                case nameof(ModifierActions.setCollision): {
+                case nameof(ModifierFunctions.setCollision): {
                         BoolGenerator(modifier, reference, "On", 0, false);
                         break;
                     }
-                case nameof(ModifierActions.setCollisionOther): {
+                case nameof(ModifierFunctions.setCollisionOther): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3894,7 +3940,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Checkpoints
                     
-                case nameof(ModifierActions.createCheckpoint): {
+                case nameof(ModifierFunctions.createCheckpoint): {
                         SingleGenerator(modifier, reference, "Time", 0);
                         BoolGenerator(modifier, reference, "Time Relative", 1);
 
@@ -3933,7 +3979,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.resetCheckpoint): {
+                case nameof(ModifierFunctions.resetCheckpoint): {
                         BoolGenerator(modifier, reference, "Reset to Previous", 0);
                         break;
                     }
@@ -3942,23 +3988,23 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Interfaces
 
-                case nameof(ModifierActions.loadInterface): {
+                case nameof(ModifierFunctions.loadInterface): {
                         StringGenerator(modifier, reference, "Path", 0);
                         BoolGenerator(modifier, reference, "Pause Level", 1);
                         BoolGenerator(modifier, reference, "Pass Variables", 2);
 
                         break;
                     }
-                //case nameof(ModifierActions.exitInterface): {
+                //case nameof(ModifierFunctions.exitInterface): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.pauseLevel): {
+                //case nameof(ModifierFunctions.pauseLevel): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.quitToMenu): {
+                //case nameof(ModifierFunctions.quitToMenu): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.quitToArcade): {
+                //case nameof(ModifierFunctions.quitToArcade): {
                 //        break;
                 //    }
 
@@ -3966,20 +4012,20 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Player Only
 
-                case nameof(ModifierActions.setCustomObjectActive): {
+                case nameof(ModifierFunctions.setCustomObjectActive): {
                         StringGenerator(modifier, reference, "ID", 1);
                         BoolGenerator(modifier, reference, "Enabled", 0);
                         BoolGenerator(modifier, reference, "Reset", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.setCustomObjectIdle): {
+                case nameof(ModifierFunctions.setCustomObjectIdle): {
                         StringGenerator(modifier, reference, "ID", 0);
                         BoolGenerator(modifier, reference, "Idle", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.setIdleAnimation): {
+                case nameof(ModifierFunctions.setIdleAnimation): {
                         StringGenerator(modifier, reference, "ID", 0);
                         var referenceID = StringGenerator(modifier, reference, "Reference ID", 1);
                         var customPlayerObject = PlayerEditor.inst.CurrentCustomObject;
@@ -4013,7 +4059,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.playAnimation): {
+                case nameof(ModifierFunctions.playAnimation): {
                         StringGenerator(modifier, reference, "ID", 0);
                         var referenceID = StringGenerator(modifier, reference, "Reference ID", 1);
                         var customPlayerObject = PlayerEditor.inst.CurrentCustomObject;
@@ -4047,67 +4093,67 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                //case nameof(ModifierActions.PlayerActions.kill): {
+                //case nameof(ModifierFunctions.PlayerActions.kill): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.hit): {
+                case nameof(ModifierFunctions.hit): {
                         IntegerGenerator(modifier, reference, "Hit Amount", 0);
                         break;
                     }
-                case nameof(ModifierActions.boost): {
+                case nameof(ModifierFunctions.boost): {
                         SingleGenerator(modifier, reference, "X", 0);
                         SingleGenerator(modifier, reference, "Y", 1);
 
                         break;
                     }
-                //case nameof(ModifierActions.shoot): {
+                //case nameof(ModifierFunctions.shoot): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.pulse): {
+                //case nameof(ModifierFunctions.pulse): {
                 //        break;
                 //    }
-                //case nameof(ModifierActions.jump): {
+                //case nameof(ModifierFunctions.jump): {
                 //        break;
                 //    }
-                case nameof(ModifierActions.getHealth): {
+                case nameof(ModifierFunctions.getHealth): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getLives): {
+                case nameof(ModifierFunctions.getLives): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getMaxHealth): {
+                case nameof(ModifierFunctions.getMaxHealth): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getMaxLives): {
+                case nameof(ModifierFunctions.getMaxLives): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getIndex): {
+                case nameof(ModifierFunctions.getIndex): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.getMove): {
+                case nameof(ModifierFunctions.getMove): {
                         StringGenerator(modifier, reference, "X Variable Name", 0);
                         StringGenerator(modifier, reference, "Y Variable Name", 1);
                         BoolGenerator(modifier, reference, "Normalize", 2);
 
                         break;
                     }
-                case nameof(ModifierActions.getMoveX): {
+                case nameof(ModifierFunctions.getMoveX): {
                         StringGenerator(modifier, reference, "X Variable Name", 0);
                         BoolGenerator(modifier, reference, "Normalize", 1);
 
                         break;
                     }
-                case nameof(ModifierActions.getMoveY): {
+                case nameof(ModifierFunctions.getMoveY): {
                         StringGenerator(modifier, reference, "Y Variable Name", 0);
                         BoolGenerator(modifier, reference, "Normalize", 1);
 
@@ -4118,7 +4164,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Misc
 
-                case nameof(ModifierActions.setBGActive): {
+                case nameof(ModifierFunctions.setBGActive): {
                         BoolGenerator(modifier, reference, "Active", 0, false);
                         var str = StringGenerator(modifier, reference, "BG Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -4126,7 +4172,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.signalModifier): {
+                case nameof(ModifierFunctions.signalModifier): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -4134,7 +4180,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.activateModifier): {
+                case nameof(ModifierFunctions.activateModifier): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -4159,19 +4205,19 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.editorNotify): {
+                case nameof(ModifierFunctions.editorNotify): {
                         StringGenerator(modifier, reference, "Text", 0);
                         SingleGenerator(modifier, reference, "Time", 1, 0.5f);
                         DropdownGenerator(modifier, reference, "Notify Type", 2, CoreHelper.StringToOptionData("Info", "Success", "Error", "Warning"));
 
                         break;
                     }
-                case nameof(ModifierActions.setWindowTitle): {
+                case nameof(ModifierFunctions.setWindowTitle): {
                         StringGenerator(modifier, reference, "Title", 0);
 
                         break;
                     }
-                case nameof(ModifierActions.setDiscordStatus): {
+                case nameof(ModifierFunctions.setDiscordStatus): {
                         StringGenerator(modifier, reference, "State", 0);
                         StringGenerator(modifier, reference, "Details", 1);
                         DropdownGenerator(modifier, reference, "Sub Icon", 2, CoreHelper.StringToOptionData("Arcade", "Editor", "Play", "Menu"));
@@ -4180,12 +4226,12 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.callModifierBlock): {
+                case nameof(ModifierFunctions.callModifierBlock): {
                         StringGenerator(modifier, reference, "Function Name", 0);
 
                         break;
                     }
-                case nameof(ModifierTriggers.callModifierBlockTrigger): {
+                case nameof(ModifierFunctions.callModifierBlockTrigger): {
                         StringGenerator(modifier, reference, "Function Name", 0);
 
                         break;
@@ -4212,55 +4258,55 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Triggers
 
-                case nameof(ModifierTriggers.localVariableContains): {
+                case nameof(ModifierFunctions.localVariableContains): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Contains", 1);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableStartsWith): {
+                case nameof(ModifierFunctions.localVariableStartsWith): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Starts With", 1);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableEndsWith): {
+                case nameof(ModifierFunctions.localVariableEndsWith): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Ends With", 1);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableEquals): {
+                case nameof(ModifierFunctions.localVariableEquals): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Compare To", 1);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableLesserEquals): {
+                case nameof(ModifierFunctions.localVariableLesserEquals): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableGreaterEquals): {
+                case nameof(ModifierFunctions.localVariableGreaterEquals): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableLesser): {
+                case nameof(ModifierFunctions.localVariableLesser): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableGreater): {
+                case nameof(ModifierFunctions.localVariableGreater): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         SingleGenerator(modifier, reference, "Compare To", 1, 0);
 
                         break;
                     }
-                case nameof(ModifierTriggers.localVariableExists): {
+                case nameof(ModifierFunctions.localVariableExists): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
                         break;
@@ -4268,20 +4314,20 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Float
 
-                case nameof(ModifierTriggers.pitchEquals):
-                case nameof(ModifierTriggers.pitchLesserEquals):
-                case nameof(ModifierTriggers.pitchGreaterEquals):
-                case nameof(ModifierTriggers.pitchLesser):
-                case nameof(ModifierTriggers.pitchGreater):
-                case nameof(ModifierTriggers.playerDistanceLesser):
-                case nameof(ModifierTriggers.playerDistanceGreater): {
+                case nameof(ModifierFunctions.pitchEquals):
+                case nameof(ModifierFunctions.pitchLesserEquals):
+                case nameof(ModifierFunctions.pitchGreaterEquals):
+                case nameof(ModifierFunctions.pitchLesser):
+                case nameof(ModifierFunctions.pitchGreater):
+                case nameof(ModifierFunctions.playerDistanceLesser):
+                case nameof(ModifierFunctions.playerDistanceGreater): {
                         SingleGenerator(modifier, reference, "Value", 0, 1f);
 
                         break;
                     }
 
-                case nameof(ModifierTriggers.musicTimeGreater):
-                case nameof(ModifierTriggers.musicTimeLesser): {
+                case nameof(ModifierFunctions.musicTimeGreater):
+                case nameof(ModifierFunctions.musicTimeLesser): {
                         SingleGenerator(modifier, reference, "Time", 0, 0f);
                         BoolGenerator(modifier, reference, "Offset From Start Time", 1, false);
 
@@ -4292,26 +4338,26 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region String
 
-                case nameof(ModifierTriggers.usernameEquals): {
+                case nameof(ModifierFunctions.usernameEquals): {
                         StringGenerator(modifier, reference, "Username", 0);
                         break;
                     }
-                case nameof(ModifierTriggers.objectCollide): {
+                case nameof(ModifierFunctions.objectCollide): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                         break;
                     }
-                case nameof(ModifierTriggers.levelPathExists):
-                case nameof(ModifierTriggers.realTimeDayWeekEquals): {
+                case nameof(ModifierFunctions.levelPathExists):
+                case nameof(ModifierFunctions.realTimeDayWeekEquals): {
                         StringGenerator(modifier, reference, name == "realTimeDayWeekEquals" ? "Day" : "Path", 0);
 
                         break;
                     }
-                case nameof(ModifierTriggers.levelUnlocked):
-                case nameof(ModifierTriggers.levelCompletedOther):
-                case nameof(ModifierTriggers.levelExists): {
+                case nameof(ModifierFunctions.levelUnlocked):
+                case nameof(ModifierFunctions.levelCompletedOther):
+                case nameof(ModifierFunctions.levelExists): {
                         StringGenerator(modifier, reference, "ID", 0);
 
                         break;
@@ -4321,74 +4367,74 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Integer
 
-                case nameof(ModifierTriggers.mouseButtonDown):
-                case nameof(ModifierTriggers.mouseButton):
-                case nameof(ModifierTriggers.mouseButtonUp):
-                case nameof(ModifierTriggers.playerCountEquals):
-                case nameof(ModifierTriggers.playerCountLesserEquals):
-                case nameof(ModifierTriggers.playerCountGreaterEquals):
-                case nameof(ModifierTriggers.playerCountLesser):
-                case nameof(ModifierTriggers.playerCountGreater):
-                case nameof(ModifierTriggers.playerHealthEquals):
-                case nameof(ModifierTriggers.playerHealthLesserEquals):
-                case nameof(ModifierTriggers.playerHealthGreaterEquals):
-                case nameof(ModifierTriggers.playerHealthLesser):
-                case nameof(ModifierTriggers.playerHealthGreater):
-                case nameof(ModifierTriggers.playerDeathsEquals):
-                case nameof(ModifierTriggers.playerDeathsLesserEquals):
-                case nameof(ModifierTriggers.playerDeathsGreaterEquals):
-                case nameof(ModifierTriggers.playerDeathsLesser):
-                case nameof(ModifierTriggers.playerDeathsGreater):
-                case nameof(ModifierTriggers.variableEquals):
-                case nameof(ModifierTriggers.variableLesserEquals):
-                case nameof(ModifierTriggers.variableGreaterEquals):
-                case nameof(ModifierTriggers.variableLesser):
-                case nameof(ModifierTriggers.variableGreater):
-                case nameof(ModifierTriggers.variableOtherEquals):
-                case nameof(ModifierTriggers.variableOtherLesserEquals):
-                case nameof(ModifierTriggers.variableOtherGreaterEquals):
-                case nameof(ModifierTriggers.variableOtherLesser):
-                case nameof(ModifierTriggers.variableOtherGreater):
-                case nameof(ModifierTriggers.playerBoostEquals):
-                case nameof(ModifierTriggers.playerBoostLesserEquals):
-                case nameof(ModifierTriggers.playerBoostGreaterEquals):
-                case nameof(ModifierTriggers.playerBoostLesser):
-                case nameof(ModifierTriggers.playerBoostGreater):
-                case nameof(ModifierTriggers.realTimeSecondEquals):
-                case nameof(ModifierTriggers.realTimeSecondLesserEquals):
-                case nameof(ModifierTriggers.realTimeSecondGreaterEquals):
-                case nameof(ModifierTriggers.realTimeSecondLesser):
-                case nameof(ModifierTriggers.realTimeSecondGreater):
-                case nameof(ModifierTriggers.realTimeMinuteEquals):
-                case nameof(ModifierTriggers.realTimeMinuteLesserEquals):
-                case nameof(ModifierTriggers.realTimeMinuteGreaterEquals):
-                case nameof(ModifierTriggers.realTimeMinuteLesser):
-                case nameof(ModifierTriggers.realTimeMinuteGreater):
-                case nameof(ModifierTriggers.realTime12HourEquals):
-                case nameof(ModifierTriggers.realTime12HourLesserEquals):
-                case nameof(ModifierTriggers.realTime12HourGreaterEquals):
-                case nameof(ModifierTriggers.realTime12HourLesser):
-                case nameof(ModifierTriggers.realTime12HourGreater):
-                case nameof(ModifierTriggers.realTime24HourEquals):
-                case nameof(ModifierTriggers.realTime24HourLesserEquals):
-                case nameof(ModifierTriggers.realTime24HourGreaterEquals):
-                case nameof(ModifierTriggers.realTime24HourLesser):
-                case nameof(ModifierTriggers.realTime24HourGreater):
-                case nameof(ModifierTriggers.realTimeDayEquals):
-                case nameof(ModifierTriggers.realTimeDayLesserEquals):
-                case nameof(ModifierTriggers.realTimeDayGreaterEquals):
-                case nameof(ModifierTriggers.realTimeDayLesser):
-                case nameof(ModifierTriggers.realTimeDayGreater):
-                case nameof(ModifierTriggers.realTimeMonthEquals):
-                case nameof(ModifierTriggers.realTimeMonthLesserEquals):
-                case nameof(ModifierTriggers.realTimeMonthGreaterEquals):
-                case nameof(ModifierTriggers.realTimeMonthLesser):
-                case nameof(ModifierTriggers.realTimeMonthGreater):
-                case nameof(ModifierTriggers.realTimeYearEquals):
-                case nameof(ModifierTriggers.realTimeYearLesserEquals):
-                case nameof(ModifierTriggers.realTimeYearGreaterEquals):
-                case nameof(ModifierTriggers.realTimeYearLesser):
-                case nameof(ModifierTriggers.realTimeYearGreater): {
+                case nameof(ModifierFunctions.mouseButtonDown):
+                case nameof(ModifierFunctions.mouseButton):
+                case nameof(ModifierFunctions.mouseButtonUp):
+                case nameof(ModifierFunctions.playerCountEquals):
+                case nameof(ModifierFunctions.playerCountLesserEquals):
+                case nameof(ModifierFunctions.playerCountGreaterEquals):
+                case nameof(ModifierFunctions.playerCountLesser):
+                case nameof(ModifierFunctions.playerCountGreater):
+                case nameof(ModifierFunctions.playerHealthEquals):
+                case nameof(ModifierFunctions.playerHealthLesserEquals):
+                case nameof(ModifierFunctions.playerHealthGreaterEquals):
+                case nameof(ModifierFunctions.playerHealthLesser):
+                case nameof(ModifierFunctions.playerHealthGreater):
+                case nameof(ModifierFunctions.playerDeathsEquals):
+                case nameof(ModifierFunctions.playerDeathsLesserEquals):
+                case nameof(ModifierFunctions.playerDeathsGreaterEquals):
+                case nameof(ModifierFunctions.playerDeathsLesser):
+                case nameof(ModifierFunctions.playerDeathsGreater):
+                case nameof(ModifierFunctions.variableEquals):
+                case nameof(ModifierFunctions.variableLesserEquals):
+                case nameof(ModifierFunctions.variableGreaterEquals):
+                case nameof(ModifierFunctions.variableLesser):
+                case nameof(ModifierFunctions.variableGreater):
+                case nameof(ModifierFunctions.variableOtherEquals):
+                case nameof(ModifierFunctions.variableOtherLesserEquals):
+                case nameof(ModifierFunctions.variableOtherGreaterEquals):
+                case nameof(ModifierFunctions.variableOtherLesser):
+                case nameof(ModifierFunctions.variableOtherGreater):
+                case nameof(ModifierFunctions.playerBoostEquals):
+                case nameof(ModifierFunctions.playerBoostLesserEquals):
+                case nameof(ModifierFunctions.playerBoostGreaterEquals):
+                case nameof(ModifierFunctions.playerBoostLesser):
+                case nameof(ModifierFunctions.playerBoostGreater):
+                case nameof(ModifierFunctions.realTimeSecondEquals):
+                case nameof(ModifierFunctions.realTimeSecondLesserEquals):
+                case nameof(ModifierFunctions.realTimeSecondGreaterEquals):
+                case nameof(ModifierFunctions.realTimeSecondLesser):
+                case nameof(ModifierFunctions.realTimeSecondGreater):
+                case nameof(ModifierFunctions.realTimeMinuteEquals):
+                case nameof(ModifierFunctions.realTimeMinuteLesserEquals):
+                case nameof(ModifierFunctions.realTimeMinuteGreaterEquals):
+                case nameof(ModifierFunctions.realTimeMinuteLesser):
+                case nameof(ModifierFunctions.realTimeMinuteGreater):
+                case nameof(ModifierFunctions.realTime12HourEquals):
+                case nameof(ModifierFunctions.realTime12HourLesserEquals):
+                case nameof(ModifierFunctions.realTime12HourGreaterEquals):
+                case nameof(ModifierFunctions.realTime12HourLesser):
+                case nameof(ModifierFunctions.realTime12HourGreater):
+                case nameof(ModifierFunctions.realTime24HourEquals):
+                case nameof(ModifierFunctions.realTime24HourLesserEquals):
+                case nameof(ModifierFunctions.realTime24HourGreaterEquals):
+                case nameof(ModifierFunctions.realTime24HourLesser):
+                case nameof(ModifierFunctions.realTime24HourGreater):
+                case nameof(ModifierFunctions.realTimeDayEquals):
+                case nameof(ModifierFunctions.realTimeDayLesserEquals):
+                case nameof(ModifierFunctions.realTimeDayGreaterEquals):
+                case nameof(ModifierFunctions.realTimeDayLesser):
+                case nameof(ModifierFunctions.realTimeDayGreater):
+                case nameof(ModifierFunctions.realTimeMonthEquals):
+                case nameof(ModifierFunctions.realTimeMonthLesserEquals):
+                case nameof(ModifierFunctions.realTimeMonthGreaterEquals):
+                case nameof(ModifierFunctions.realTimeMonthLesser):
+                case nameof(ModifierFunctions.realTimeMonthGreater):
+                case nameof(ModifierFunctions.realTimeYearEquals):
+                case nameof(ModifierFunctions.realTimeYearLesserEquals):
+                case nameof(ModifierFunctions.realTimeYearGreaterEquals):
+                case nameof(ModifierFunctions.realTimeYearLesser):
+                case nameof(ModifierFunctions.realTimeYearGreater): {
                         var isGroup = name.Contains("variableOther");
                         if (isGroup)
                             PrefabGroupOnly(modifier, reference);
@@ -4408,18 +4454,18 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Key
 
-                case nameof(ModifierTriggers.keyPressDown):
-                case nameof(ModifierTriggers.keyPress):
-                case nameof(ModifierTriggers.keyPressUp): {
+                case nameof(ModifierFunctions.keyPressDown):
+                case nameof(ModifierFunctions.keyPress):
+                case nameof(ModifierFunctions.keyPressUp): {
                         var dropdownData = CoreHelper.ToDropdownData<KeyCode>();
                         DropdownGenerator(modifier, reference, "Key", 0, dropdownData.Key, dropdownData.Value);
 
                         break;
                     }
 
-                case nameof(ModifierTriggers.controlPressDown):
-                case nameof(ModifierTriggers.controlPress):
-                case nameof(ModifierTriggers.controlPressUp): {
+                case nameof(ModifierFunctions.controlPressDown):
+                case nameof(ModifierFunctions.controlPress):
+                case nameof(ModifierFunctions.controlPressUp): {
                         var dropdownData = CoreHelper.ToDropdownData<PlayerInputControlType>();
                         DropdownGenerator(modifier, reference, "Button", 0, dropdownData.Key, dropdownData.Value);
 
@@ -4430,12 +4476,12 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Save / Load JSON
 
-                case nameof(ModifierTriggers.loadEquals):
-                case nameof(ModifierTriggers.loadLesserEquals):
-                case nameof(ModifierTriggers.loadGreaterEquals):
-                case nameof(ModifierTriggers.loadLesser):
-                case nameof(ModifierTriggers.loadGreater):
-                case nameof(ModifierTriggers.loadExists): {
+                case nameof(ModifierFunctions.loadEquals):
+                case nameof(ModifierFunctions.loadLesserEquals):
+                case nameof(ModifierFunctions.loadGreaterEquals):
+                case nameof(ModifierFunctions.loadLesser):
+                case nameof(ModifierFunctions.loadGreater):
+                case nameof(ModifierFunctions.loadExists): {
                         if (name == "loadEquals" && modifier.values.Count < 5)
                             modifier.values.Add("0");
 
@@ -4462,7 +4508,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Signal
 
-                case nameof(ModifierTriggers.mouseOverSignalModifier): {
+                case nameof(ModifierFunctions.mouseOverSignalModifier): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -4476,9 +4522,9 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Random
 
-                case nameof(ModifierTriggers.randomGreater):
-                case nameof(ModifierTriggers.randomLesser):
-                case nameof(ModifierTriggers.randomEquals): {
+                case nameof(ModifierFunctions.randomGreater):
+                case nameof(ModifierFunctions.randomLesser):
+                case nameof(ModifierFunctions.randomEquals): {
                         IntegerGenerator(modifier, reference, "Minimum", 1, 0);
                         IntegerGenerator(modifier, reference, "Maximum", 2, 0);
                         IntegerGenerator(modifier, reference, "Compare To", 0, 0);
@@ -4490,11 +4536,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Animate
 
-                case nameof(ModifierTriggers.axisEquals):
-                case nameof(ModifierTriggers.axisLesserEquals):
-                case nameof(ModifierTriggers.axisGreaterEquals):
-                case nameof(ModifierTriggers.axisLesser):
-                case nameof(ModifierTriggers.axisGreater): {
+                case nameof(ModifierFunctions.axisEquals):
+                case nameof(ModifierFunctions.axisLesserEquals):
+                case nameof(ModifierFunctions.axisGreaterEquals):
+                case nameof(ModifierFunctions.axisLesser):
+                case nameof(ModifierFunctions.axisGreater): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -4516,11 +4562,11 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierTriggers.eventEquals):
-                case nameof(ModifierTriggers.eventLesserEquals):
-                case nameof(ModifierTriggers.eventGreaterEquals):
-                case nameof(ModifierTriggers.eventLesser):
-                case nameof(ModifierTriggers.eventGreater): {
+                case nameof(ModifierFunctions.eventEquals):
+                case nameof(ModifierFunctions.eventLesserEquals):
+                case nameof(ModifierFunctions.eventGreaterEquals):
+                case nameof(ModifierFunctions.eventLesser):
+                case nameof(ModifierFunctions.eventGreater): {
                         DropdownGenerator(modifier, reference, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
                         IntegerGenerator(modifier, reference, "Value Index", 2, 0);
                         SingleGenerator(modifier, reference, "Time", 0, 0f);
@@ -4533,21 +4579,21 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Level Rank
 
-                case nameof(ModifierTriggers.levelRankEquals):
-                case nameof(ModifierTriggers.levelRankLesserEquals):
-                case nameof(ModifierTriggers.levelRankGreaterEquals):
-                case nameof(ModifierTriggers.levelRankLesser):
-                case nameof(ModifierTriggers.levelRankGreater):
-                case nameof(ModifierTriggers.levelRankOtherEquals):
-                case nameof(ModifierTriggers.levelRankOtherLesserEquals):
-                case nameof(ModifierTriggers.levelRankOtherGreaterEquals):
-                case nameof(ModifierTriggers.levelRankOtherLesser):
-                case nameof(ModifierTriggers.levelRankOtherGreater):
-                case nameof(ModifierTriggers.levelRankCurrentEquals):
-                case nameof(ModifierTriggers.levelRankCurrentLesserEquals):
-                case nameof(ModifierTriggers.levelRankCurrentGreaterEquals):
-                case nameof(ModifierTriggers.levelRankCurrentLesser):
-                case nameof(ModifierTriggers.levelRankCurrentGreater): {
+                case nameof(ModifierFunctions.levelRankEquals):
+                case nameof(ModifierFunctions.levelRankLesserEquals):
+                case nameof(ModifierFunctions.levelRankGreaterEquals):
+                case nameof(ModifierFunctions.levelRankLesser):
+                case nameof(ModifierFunctions.levelRankGreater):
+                case nameof(ModifierFunctions.levelRankOtherEquals):
+                case nameof(ModifierFunctions.levelRankOtherLesserEquals):
+                case nameof(ModifierFunctions.levelRankOtherGreaterEquals):
+                case nameof(ModifierFunctions.levelRankOtherLesser):
+                case nameof(ModifierFunctions.levelRankOtherGreater):
+                case nameof(ModifierFunctions.levelRankCurrentEquals):
+                case nameof(ModifierFunctions.levelRankCurrentLesserEquals):
+                case nameof(ModifierFunctions.levelRankCurrentGreaterEquals):
+                case nameof(ModifierFunctions.levelRankCurrentLesser):
+                case nameof(ModifierFunctions.levelRankCurrentGreater): {
                         if (name.Contains("Other"))
                             StringGenerator(modifier, reference, "ID", 1);
 
@@ -4560,11 +4606,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Math
 
-                case nameof(ModifierTriggers.mathEquals):
-                case nameof(ModifierTriggers.mathLesserEquals):
-                case nameof(ModifierTriggers.mathGreaterEquals):
-                case nameof(ModifierTriggers.mathLesser):
-                case nameof(ModifierTriggers.mathGreater): {
+                case nameof(ModifierFunctions.mathEquals):
+                case nameof(ModifierFunctions.mathLesserEquals):
+                case nameof(ModifierFunctions.mathGreaterEquals):
+                case nameof(ModifierFunctions.mathLesser):
+                case nameof(ModifierFunctions.mathGreater): {
                         StringGenerator(modifier, reference, "First", 0);
                         StringGenerator(modifier, reference, "Second", 1);
 
@@ -4575,20 +4621,20 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Misc
 
-                case nameof(ModifierTriggers.playerCollideIndex): {
+                case nameof(ModifierFunctions.playerCollideIndex): {
                         IntegerGenerator(modifier, reference, "Index", 0);
 
                         break;
                     }
 
-                case nameof(ModifierTriggers.await): {
+                case nameof(ModifierFunctions.await): {
                         IntegerGenerator(modifier, reference, "Start Time", 0);
                         SingleGenerator(modifier, reference, "Trigger Time", 1);
                         BoolGenerator(modifier, reference, "Use Real Time", 2);
 
                         break;
                     }
-                case nameof(ModifierTriggers.awaitCounter): {
+                case nameof(ModifierFunctions.awaitCounter): {
                         IntegerGenerator(modifier, reference, "Start", 0);
                         IntegerGenerator(modifier, reference, "End", 1);
                         IntegerGenerator(modifier, reference, "Amount", 2);
@@ -4596,13 +4642,13 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierTriggers.containsTag): {
+                case nameof(ModifierFunctions.containsTag): {
                         StringGenerator(modifier, reference, "Tag", 0);
 
                         break;
                     }
-                case nameof(ModifierTriggers.objectAlive):
-                case nameof(ModifierTriggers.objectSpawned): {
+                case nameof(ModifierFunctions.objectAlive):
+                case nameof(ModifierFunctions.objectSpawned): {
                         PrefabGroupOnly(modifier, reference);
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -4610,28 +4656,36 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierTriggers.languageEquals): {
-                        var options = new List<Dropdown.OptionData>();
-
-                        var languages = Enum.GetValues(typeof(Language));
-
-                        for (int i = 0; i < languages.Length; i++)
-                            options.Add(new Dropdown.OptionData(Enum.GetName(typeof(Language), i) ?? "Invalid Value"));
-
-                        DropdownGenerator(modifier, reference, "Language", 0, options);
+                case nameof(ModifierFunctions.languageEquals): {
+                        DropdownGenerator(modifier, reference, "Language", 0, CoreHelper.ToOptionData<Language>());
 
                         break;
                     }
 
-                case nameof(ModifierTriggers.onMarker): {
+                case nameof(ModifierFunctions.onMarker): {
                         StringGenerator(modifier, reference, "Name", 0);
                         ColorGenerator(modifier, reference, "Color", 1, MarkerEditor.inst.markerColors);
                         IntegerGenerator(modifier, reference, "Layer", 2);
 
                         break;
                     }
-                case nameof(ModifierTriggers.onCheckpoint): {
+                case nameof(ModifierFunctions.onCheckpoint): {
                         StringGenerator(modifier, reference, "Name", 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.realTimeEquals): {
+                        StringGenerator(modifier, reference, "Format", 0);
+                        StringGenerator(modifier, reference, "Equals", 1);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.realTimeLesserEquals): 
+                case nameof(ModifierFunctions.realTimeGreaterEquals): 
+                case nameof(ModifierFunctions.realTimeLesser): 
+                case nameof(ModifierFunctions.realTimeGreater): {
+                        DropdownGenerator(modifier, reference, "Type", 0, CoreHelper.StringToOptionData("Millisecond", "Second", "Minute", "12 Hour", "24 Hour", "Day", "Month", "Year", "Day of Week", "Day of Year", "Ticks"));
+                        IntegerGenerator(modifier, reference, "Compare To", 1);
 
                         break;
                     }
@@ -4642,14 +4696,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Dev Only
 
-                case nameof(ModifierActions.loadSceneDEVONLY): {
+                case nameof(ModifierFunctions.loadSceneDEVONLY): {
                         StringGenerator(modifier, reference, "Scene", 0);
                         if (modifier.values.Count > 1)
                             BoolGenerator(modifier, reference, "Show Loading", 1, true);
 
                         break;
                     }
-                case nameof(ModifierActions.loadStoryLevelDEVONLY): {
+                case nameof(ModifierFunctions.loadStoryLevelDEVONLY): {
                         IntegerGenerator(modifier, reference, "Chapter", 1, 0);
                         IntegerGenerator(modifier, reference, "Level", 2, 0);
                         BoolGenerator(modifier, reference, "Bonus", 0, false);
@@ -4657,49 +4711,49 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
-                case nameof(ModifierActions.storySaveBoolDEVONLY): {
+                case nameof(ModifierFunctions.storySaveBoolDEVONLY): {
                         StringGenerator(modifier, reference, "Save", 0);
                         BoolGenerator(modifier, reference, "Value", 1, false);
                         break;
                     }
-                case nameof(ModifierActions.storySaveIntDEVONLY): {
+                case nameof(ModifierFunctions.storySaveIntDEVONLY): {
                         StringGenerator(modifier, reference, "Save", 0);
                         IntegerGenerator(modifier, reference, "Value", 1, 0);
                         break;
                     }
-                case nameof(ModifierActions.storySaveFloatDEVONLY): {
+                case nameof(ModifierFunctions.storySaveFloatDEVONLY): {
                         StringGenerator(modifier, reference, "Save", 0);
                         SingleGenerator(modifier, reference, "Value", 1, 0f);
                         break;
                     }
-                case nameof(ModifierActions.storySaveStringDEVONLY): {
+                case nameof(ModifierFunctions.storySaveStringDEVONLY): {
                         StringGenerator(modifier, reference, "Save", 0);
                         StringGenerator(modifier, reference, "Value", 1);
                         break;
                     }
-                case nameof(ModifierActions.storySaveIntVariableDEVONLY): {
+                case nameof(ModifierFunctions.storySaveIntVariableDEVONLY): {
                         StringGenerator(modifier, reference, "Save", 0);
                         break;
                     }
-                case nameof(ModifierActions.getStorySaveBoolDEVONLY): {
+                case nameof(ModifierFunctions.getStorySaveBoolDEVONLY): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value Name", 1);
                         BoolGenerator(modifier, reference, "Default Value", 2, false);
                         break;
                     }
-                case nameof(ModifierActions.getStorySaveIntDEVONLY): {
+                case nameof(ModifierFunctions.getStorySaveIntDEVONLY): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value Name", 1);
                         IntegerGenerator(modifier, reference, "Default Value", 2, 0);
                         break;
                     }
-                case nameof(ModifierActions.getStorySaveFloatDEVONLY): {
+                case nameof(ModifierFunctions.getStorySaveFloatDEVONLY): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value Name", 1);
                         SingleGenerator(modifier, reference, "Default Value", 2, 0f);
                         break;
                     }
-                case nameof(ModifierActions.getStorySaveStringDEVONLY): {
+                case nameof(ModifierFunctions.getStorySaveStringDEVONLY): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
                         StringGenerator(modifier, reference, "Value Name", 1);
                         StringGenerator(modifier, reference, "Default Value", 2);
@@ -4724,11 +4778,11 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
 
-                case nameof(ModifierActions.exampleEnableDEVONLY): {
+                case nameof(ModifierFunctions.exampleEnableDEVONLY): {
                         BoolGenerator(modifier, reference, "Active", 0, false);
                         break;
                     }
-                case nameof(ModifierActions.exampleSayDEVONLY): {
+                case nameof(ModifierFunctions.exampleSayDEVONLY): {
                         StringGenerator(modifier, reference, "Dialogue", 0);
                         break;
                     }
