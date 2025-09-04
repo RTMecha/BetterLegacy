@@ -57,6 +57,7 @@ namespace BetterLegacy.Arcade.Managers
             uiCamera.transform.localScale = Vector3.one;
 
             uiCam = uiCamera.AddComponent<Camera>();
+            uiCam.allowHDR = false; // prevent graininess in negative zoom
             uiCam.allowMSAA = false;
             uiCam.clearFlags = CameraClearFlags.Depth;
             uiCam.cullingMask = 2080; // 2080 = layer 11
