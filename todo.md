@@ -93,10 +93,6 @@ Next: Misc
 - Ignore opacity toggle for color modifiers.  
   Update: 1.8.0  
 - setStartTime modifiers.
-- loadLevelCollection modifier.  
-  Update: 1.8.0  
-  Notes:  
-  - Loads a specified level collection from the start level, hub level or default.
 - downloadLevelCollection modifier.  
   Update: 1.8.0
   Notes:  
@@ -140,10 +136,7 @@ Next: Misc
 
 
 ### Fixes
-- Fix player tail shape editor
-- Fix whiteHole (offset)
-- Fix prefab instance data not being removed when loading a level
-- Fix camera parent not updating in parent search
+- null
 
 
 ## Ideas
