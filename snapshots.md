@@ -15,6 +15,7 @@
 - The animation timeline should now use the Use Mouse As Zoom Point setting.
 - Object and Parent Object Search Popups now have a page system.
 - Tweaked some editor UI.
+- Added some functions to the Multi Object editor.
 
 ## Fixes
 - Fixed objects other than Beatmap Objects not having their song time autokill offset properly set when spawned from a prefab.
@@ -22,6 +23,7 @@
 - Fixed Asset Editor not showing files in sub-folders.
 - Fixed seed-based random not changing per-keyframe.
 - Fixed negative zoom being grainy due to UI layer camera.
+- Fixed setOpacityOther modifier not having prefab group only toggle.
 
 -------------------------------------------------------------------
 
