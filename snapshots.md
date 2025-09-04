@@ -21,6 +21,7 @@
 - Fixed animation timeline being weird.
 - Fixed Asset Editor not showing files in sub-folders.
 - Fixed seed-based random not changing per-keyframe.
+- Fixed negative zoom being grainy due to UI layer camera.
 
 -------------------------------------------------------------------
 
