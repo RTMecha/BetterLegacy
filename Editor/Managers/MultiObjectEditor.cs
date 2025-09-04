@@ -1842,6 +1842,231 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
             }
 
+            // Ignore Lifespan
+            {
+                var labels = GenerateLabels(parent, 32f, "Modify Modifier Ignore Lifespan");
+
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.ignoreLifespan = true;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        prefabObject.ignoreLifespan = true;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.ignoreLifespan = true;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                        break;
+                                    }
+                            }
+                        }
+                        RTLevel.Current?.RecalculateObjectStates();
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
+                    new ButtonFunction("Off", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.ignoreLifespan = false;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        prefabObject.ignoreLifespan = false;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.ignoreLifespan = false;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                        break;
+                                    }
+                            }
+                        }
+                        RTLevel.Current?.RecalculateObjectStates();
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
+                var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    beatmapObject.ignoreLifespan = !beatmapObject.ignoreLifespan;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                    prefabObject.ignoreLifespan = !prefabObject.ignoreLifespan;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    backgroundObject.ignoreLifespan = !backgroundObject.ignoreLifespan;
+                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                    break;
+                                }
+                        }
+                    }
+                    RTLevel.Current?.RecalculateObjectStates();
+                }));
+
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
+            }
+            
+            // Order Matters
+            {
+                var labels = GenerateLabels(parent, 32f, "Modify Modifier Order Matters");
+
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.orderModifiers = true;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        prefabObject.orderModifiers = true;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.orderModifiers = true;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                        break;
+                                    }
+                            }
+                        }
+                        RTLevel.Current?.RecalculateObjectStates();
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
+                    new ButtonFunction("Off", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                        {
+                            switch (timelineObject.TimelineReference)
+                            {
+                                case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        beatmapObject.orderModifiers = false;
+                                        RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        prefabObject.orderModifiers = false;
+                                        RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                                        break;
+                                    }
+                                case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                        var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                        backgroundObject.orderModifiers = false;
+                                        RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                        break;
+                                    }
+                            }
+                        }
+                        RTLevel.Current?.RecalculateObjectStates();
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
+                var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                {
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    beatmapObject.orderModifiers = !beatmapObject.ignoreLifespan;
+                                    RTLevel.Current?.UpdateObject(beatmapObject, recalculate: false);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                    prefabObject.orderModifiers = !prefabObject.ignoreLifespan;
+                                    RTLevel.Current?.UpdatePrefab(prefabObject, recalculate: false);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    backgroundObject.orderModifiers = !backgroundObject.ignoreLifespan;
+                                    RTLevel.Current?.UpdateBackgroundObject(backgroundObject, recalculate: false);
+                                    break;
+                                }
+                        }
+                    }
+                    RTLevel.Current?.RecalculateObjectStates();
+                }));
+
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
+            }
+            
+            // Opacity Collision
+            {
+                var labels = GenerateLabels(parent, 32f, "Modify Opacity Collision");
+
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", () =>
+                    {
+                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.opacityCollision = true;
+                            RTLevel.Current?.UpdateObject(beatmapObject);
+                        }
+                    }, buttonThemeGroup: ThemeGroup.Add, labelThemeGroup: ThemeGroup.Add_Text),
+                    new ButtonFunction("Off", () =>
+                    {
+                        foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.opacityCollision = false;
+                            RTLevel.Current?.UpdateObject(beatmapObject);
+                        }
+                    }, buttonThemeGroup: ThemeGroup.Delete, labelThemeGroup: ThemeGroup.Delete_Text));
+                var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                {
+                    foreach (var beatmapObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                    {
+                        beatmapObject.opacityCollision = !beatmapObject.opacityCollision;
+                        RTLevel.Current?.UpdateObject(beatmapObject);
+                    }
+                }));
+
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
+            }
+
             GeneratePad(parent);
             GenerateLabels(parent, 32f, new Label("- Pasting -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
@@ -2087,6 +2312,20 @@ namespace BetterLegacy.Editor.Managers
                         var bm = timelineObject.GetData<BeatmapObject>();
 
                         bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => x.Copy()));
+                    }, false, true);
+                })); // Modifiers
+                GenerateButton(syncLayout.transform, new ButtonFunction("IGN", eventData =>
+                {
+                    SyncObjectData("Ignore Lifespan", eventData, (timelineObject, beatmapObject) =>
+                    {
+                        timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
+                    }, false, false);
+                })); // Ignore lifespan
+                GenerateButton(syncLayout.transform, new ButtonFunction("ORD", eventData =>
+                {
+                    SyncObjectData("Order Matters", eventData, (timelineObject, beatmapObject) =>
+                    {
+                        timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
                     }, false, true);
                 })); // Modifiers
                 GenerateButton(syncLayout.transform, new ButtonFunction("IGN", eventData =>
