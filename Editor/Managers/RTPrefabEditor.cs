@@ -1431,7 +1431,7 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.Current.prefabObjects.FindAll(x => x.prefabID == originalPrefab.id && string.IsNullOrEmpty(x.PrefabInstanceID)).ForEach(x =>
             {
-                RTLevelBase runtimeLevel = prefabObject.runtimeObject?.ParentRuntime ?? RTLevel.Current;
+                RTLevelBase runtimeLevel = x.runtimeObject?.ParentRuntime ?? RTLevel.Current;
 
                 runtimeLevel?.UpdatePrefab(x, recalculate: runtimeLevel is not RTLevel);
             });
@@ -1479,7 +1479,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 id = LSText.randomString(16),
                 prefabID = prefab.id,
-                StartTime = EditorConfig.Instance.BPMSnapsPrefabImport.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos,
+                StartTime = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsPrefabImport.Value ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos,
             };
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
@@ -2817,6 +2817,28 @@ namespace BetterLegacy.Editor.Managers
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(tmpPrefab));
 
             return tmpPrefab;
+        }
+
+        public bool UpdateLevelPrefab(Prefab prefab)
+        {
+            Debug.Log($"{PrefabEditor.inst.className}Updating Prefab: [{prefab.name}]");
+            if (!GameData.Current.prefabs.TryFind(x => x.name == prefab.name, out Prefab internalPrefab))
+                return false;
+
+            internalPrefab.CopyData(prefab, false);
+            StartCoroutine(RefreshInternalPrefabs());
+
+            GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefab.id && string.IsNullOrEmpty(x.PrefabInstanceID)).ForEach(x =>
+            {
+                RTLevelBase runtimeLevel = x.runtimeObject?.ParentRuntime ?? RTLevel.Current;
+
+                runtimeLevel?.UpdatePrefab(x, recalculate: runtimeLevel is not RTLevel);
+            });
+            RTLevel.Current?.RecalculateObjectStates();
+
+            Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(internalPrefab));
+
+            return true;
         }
 
         #endregion

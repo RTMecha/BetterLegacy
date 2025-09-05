@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -449,7 +448,8 @@ namespace BetterLegacy.Editor.Data.Elements
 
                             if (eventData.button == PointerEventData.InputButton.Right)
                             {
-                                EditorContextMenu.inst.ShowContextMenu(
+                                var buttonFunctions = new List<ButtonFunction>
+                                {
                                     new ButtonFunction("Add to Level", () =>
                                     {
                                         RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
@@ -475,8 +475,15 @@ namespace BetterLegacy.Editor.Data.Elements
                                     {
                                         RTPrefabEditor.inst.DeleteInternalPrefab(Item);
                                         RTEditor.inst.HideWarningPopup();
-                                    }, RTEditor.inst.HideWarningPopup))
-                                    );
+                                    }, RTEditor.inst.HideWarningPopup)),
+                                    new ButtonFunction(true),
+                                };
+                                buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, () =>
+                                {
+                                    CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
+                                }));
+
+                                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                                 return;
                             }
 
@@ -524,6 +531,13 @@ namespace BetterLegacy.Editor.Data.Elements
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Import", () => RTPrefabEditor.inst.ImportPrefabIntoLevel(Item)),
+                                    new ButtonFunction("Update", () =>
+                                    {
+                                        if (RTPrefabEditor.inst.UpdateLevelPrefab(Item))
+                                            EditorManager.inst.DisplayNotification($"Updated internal Prefab [ {Item.name} ]!", 2f, EditorManager.NotificationType.Success);
+                                        else
+                                            EditorManager.inst.DisplayNotification($"No internal Prefab was found to update!", 2f, EditorManager.NotificationType.Warning);
+                                    }),
                                     new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
                                     new ButtonFunction("Open", () =>
                                     {
