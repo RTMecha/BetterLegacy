@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,6 +14,8 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
+
+using Version = BetterLegacy.Core.Data.Version;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -115,6 +118,40 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="buttonFunctions">The context menus' functions.</param>
+        public void AddContextMenu(GameObject gameObject, List<ButtonFunction> buttonFunctions) => AddContextMenu(gameObject, null, buttonFunctions);
+
+        /// <summary>
+        /// Adds the editor context menu to an object.
+        /// </summary>
+        /// <param name="gameObject">Unity game object to add a context menu to.</param>
+        /// <param name="leftClick">Function to run when the user left clicks.</param>
+        /// <param name="buttonFunctions">The context menus' functions.</param>
+        public void AddContextMenu(GameObject gameObject, Action leftClick, List<ButtonFunction> buttonFunctions)
+        {
+            if (!gameObject)
+                return;
+
+            gameObject.GetOrAddComponent<ContextClickable>().onClick = pointerEventData =>
+            {
+                switch (pointerEventData.button)
+                {
+                    case PointerEventData.InputButton.Left: {
+                            leftClick?.Invoke();
+                            break;
+                        }
+                    case PointerEventData.InputButton.Right: {
+                            ShowContextMenu(buttonFunctions);
+                            break;
+                        }
+                }
+            };
+        }
+
+        /// <summary>
         /// Shows the editor context menu.
         /// </summary>
         /// <param name="buttonFunctions">The context menus' functions.</param>
@@ -185,7 +222,7 @@ namespace BetterLegacy.Editor.Managers
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
         }
 
-        public static List<ButtonFunction> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<ButtonFunction>()
+        public static List<ButtonFunction> GetMoveIndexFunctions<T>(List<T> list, int index, Action onMove = null) => new List<ButtonFunction>
         {
             new ButtonFunction("Move Up", () =>
             {
@@ -232,6 +269,97 @@ namespace BetterLegacy.Editor.Managers
                 onMove?.Invoke();
             }),
         };
+
+        public static List<ButtonFunction> GetObjectVersionFunctions(IUploadable uploadable, Action update)
+        {
+            var buttonFunctions = new List<ButtonFunction>
+            {
+                new ButtonFunction("Format 1.0.0", () =>
+                {
+                    uploadable.ObjectVersion = "1.0.0";
+                    update?.Invoke();
+                }),
+                new ButtonFunction("Format 1.0", () =>
+                {
+                    uploadable.ObjectVersion = "1.0";
+                    update?.Invoke();
+                }),
+                new ButtonFunction("Format 1", () =>
+                {
+                    uploadable.ObjectVersion = "1";
+                    update?.Invoke();
+                }),
+            };
+
+            var origVersion = uploadable.ObjectVersion;
+            if (string.IsNullOrEmpty(origVersion))
+                return buttonFunctions;
+
+            buttonFunctions.Add(new ButtonFunction(true));
+
+            if (Version.TryParse(origVersion, out Version version))
+            {
+                buttonFunctions.AddRange(new List<ButtonFunction>
+                {
+                    new ButtonFunction("Increase Patch Number", () =>
+                    {
+                        version.Patch++;
+                        uploadable.ObjectVersion = version.ToString();
+                        update?.Invoke();
+                    }),
+                    new ButtonFunction("Increase Minor Number", () =>
+                    {
+                        version.Patch = 0;
+                        version.Minor++;
+                        uploadable.ObjectVersion = version.ToString();
+                        update?.Invoke();
+                    }),
+                    new ButtonFunction("Increase Major Number", () =>
+                    {
+                        version.Patch = 0;
+                        version.Minor = 0;
+                        version.Major++;
+                        uploadable.ObjectVersion = version.ToString();
+                        update?.Invoke();
+                    }),
+                });
+            }
+            else if (RTString.RegexMatch(origVersion, new Regex(@"([0-9]+).([0-9]+)"), out Match match))
+            {
+                var major = int.Parse(match.Groups[1].ToString());
+                var minor = int.Parse(match.Groups[2].ToString());
+
+                buttonFunctions.AddRange(new List<ButtonFunction>
+                {
+                    new ButtonFunction("Increase Minor Number", () =>
+                    {
+                        minor++;
+                        uploadable.ObjectVersion = $"{major}.{minor}";
+                        update?.Invoke();
+                    }),
+                    new ButtonFunction("Increase Minor Number", () =>
+                    {
+                        major++;
+                        uploadable.ObjectVersion = $"{major}.{minor}";
+                        update?.Invoke();
+                    })
+                });
+            }
+            else if (int.TryParse(origVersion, out int num))
+            {
+                buttonFunctions.AddRange(new List<ButtonFunction>
+                {
+                    new ButtonFunction("Increase Number", () =>
+                    {
+                        num++;
+                        uploadable.ObjectVersion = num.ToString();
+                        update?.Invoke();
+                    }),
+                });
+            }
+
+            return buttonFunctions;
+        }
 
         #endregion
     }
