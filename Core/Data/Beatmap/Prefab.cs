@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+using UnityEngine;
+
 using LSFunctions;
 
 using SimpleJSON;
 
 using BetterLegacy.Core.Data.Modifiers;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime.Objects;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Managers;
@@ -75,6 +78,12 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// ID of the Prefab Type.
         /// </summary>
         public string typeID;
+
+        string iconData;
+        /// <summary>
+        /// Icon of the Prefab.
+        /// </summary>
+        public Sprite icon;
 
         #region Prefab
 
@@ -202,6 +211,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabObjects = orig.prefabObjects.Clone();
             type = orig.type;
             typeID = orig.typeID;
+            iconData = orig.iconData;
+            if (string.IsNullOrEmpty(iconData) && orig.icon)
+                iconData = SpriteHelper.SpriteToString(orig.icon);
 
             beatmapThemes = new List<BeatmapTheme>();
             if (!orig.beatmapThemes.IsEmpty())
@@ -256,6 +268,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             prefabObjects = new List<PrefabObject>();
             description = jn["description"];
             typeID = PrefabType.VGIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
+            iconData = jn["preview"];
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -269,6 +282,8 @@ namespace BetterLegacy.Core.Data.Beatmap
             description = jn["desc"] ?? string.Empty;
             if (string.IsNullOrEmpty(typeID))
                 typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
+
+            iconData = jn["icon"];
 
             this.ReadUploadableJSON(jn);
             this.ReadPrefabJSON(jn);
@@ -335,6 +350,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (beatmapObjects[i] != null)
                     jn["objs"][i] = beatmapObjects[i].ToJSONVG();
 
+            if (icon)
+                jn["preview"] = SpriteHelper.SpriteToString(icon);
+            else if (!string.IsNullOrEmpty(iconData))
+                jn["preview"] = iconData;
+
             return jn;
         }
 
@@ -397,6 +417,11 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             #endregion
 
+            if (icon)
+                jn["icon"] = SpriteHelper.SpriteToString(icon);
+            else if (!string.IsNullOrEmpty(iconData))
+                jn["icon"] = iconData;
+
             return jn;
         }
 
@@ -457,6 +482,21 @@ namespace BetterLegacy.Core.Data.Beatmap
         public IRTObject GetRuntimeObject() => null;
 
         public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => 0f;
+
+        /// <summary>
+        /// Loads and gets the Prefabs' icon.
+        /// </summary>
+        public Sprite GetIcon()
+        {
+            if (icon)
+                return icon;
+
+            if (string.IsNullOrEmpty(iconData))
+                return null;
+
+            icon = SpriteHelper.StringToSprite(iconData);
+            return icon;
+        }
 
         public override string ToString() => $"{id} - {name}";
 
