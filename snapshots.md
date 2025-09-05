@@ -4,6 +4,10 @@
 - Added "Snap Created" in Config Manager > Editor > BPM. This forces new objects to snap to the BPM.
 - Added a file version field to Prefabs, levels, level collections and player models. You can right click the field to edit the version number.
 - Player models now have a creator field.
+- .vgp Prefabs now load in the External Prefabs list.
+
+## Fixes
+- Finally fixed polygon shape conversion not working in some cases (why so many edge cases omg).
 
 -------------------------------------------------------------------
 
