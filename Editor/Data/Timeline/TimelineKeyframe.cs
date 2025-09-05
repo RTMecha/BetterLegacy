@@ -32,7 +32,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             isObjectKeyframe = true;
         }
 
-        #region Properties
+        #region Values
 
         #region UI
 
@@ -93,6 +93,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// </summary>
         public bool IsCurrentLayer => (Type / RTEventEditor.EVENT_LIMIT) == EditorTimeline.inst.Layer && EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events && (RTEditor.ShowModdedUI || Type < 10);
 
+        bool selected;
         /// <summary>
         /// If the object is currently selected.
         /// </summary>
@@ -107,10 +108,6 @@ namespace BetterLegacy.Editor.Data.Timeline
         }
 
         #endregion
-
-        #endregion
-
-        #region Fields
 
         #region Validation
 
@@ -140,11 +137,24 @@ namespace BetterLegacy.Editor.Data.Timeline
 
         #endregion
 
+        #region References
+
+        /// <summary>
+        /// Keyframe Timeline reference.
+        /// </summary>
         public KeyframeTimeline timeline;
+
+        /// <summary>
+        /// Animatable object reference.
+        /// </summary>
         public IAnimatable animatable;
+
+        /// <summary>
+        /// Keyframe reference.
+        /// </summary>
         public EventKeyframe eventKeyframe;
 
-        bool selected;
+        #endregion
 
         #endregion
 

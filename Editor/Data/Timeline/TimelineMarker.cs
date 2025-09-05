@@ -86,6 +86,33 @@ namespace BetterLegacy.Editor.Data.Timeline
         public Marker Marker { get; set; }
 
         /// <summary>
+        /// Name of the marker.
+        /// </summary>
+        public string Name
+        {
+            get => Marker.name;
+            set
+            {
+                Marker.name = value;
+                RenderName();
+                panel?.RenderName();
+            }
+        }
+
+        /// <summary>
+        /// Color slot of the marker.
+        /// </summary>
+        public int ColorSlot
+        {
+            get => Marker.color;
+            set
+            {
+                Marker.color = value;
+                RenderColor();
+            }
+        }
+
+        /// <summary>
         /// The markers' color.
         /// </summary>
         public Color Color => MarkerEditor.inst.markerColors[Mathf.Clamp(Marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];

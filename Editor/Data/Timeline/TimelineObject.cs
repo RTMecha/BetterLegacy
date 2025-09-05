@@ -32,7 +32,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             isBackgroundObject = TimelineReference == TimelineReferenceType.BackgroundObject;
         }
 
-        #region Properties
+        #region Values
 
         #region UI
 
@@ -227,10 +227,6 @@ namespace BetterLegacy.Editor.Data.Timeline
         public bool IsPrefabable => data is IPrefabable;
 
         #endregion
-
-        #endregion
-
-        #region Fields
 
         #region Validation
 

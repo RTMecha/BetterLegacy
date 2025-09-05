@@ -23,7 +23,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             Checkpoint.timelineCheckpoint = this;
         }
 
-        #region Properties
+        #region Values
 
         #region UI
 
@@ -57,6 +57,29 @@ namespace BetterLegacy.Editor.Data.Timeline
         public Checkpoint Checkpoint { get; set; }
 
         /// <summary>
+        /// Name of the checkpoint.
+        /// </summary>
+        public string Name
+        {
+            get => Checkpoint.name;
+            set => Checkpoint.name = value;
+        }
+
+        /// <summary>
+        /// Time of the checkpoint.
+        /// </summary>
+        public float Time
+        {
+            get => Checkpoint.time;
+            set
+            {
+                Checkpoint.time = value;
+                RenderPosition();
+            }
+        }
+
+        bool selected;
+        /// <summary>
         /// If the timeline checkpoint is selected.
         /// </summary>
         public bool Selected
@@ -68,14 +91,6 @@ namespace BetterLegacy.Editor.Data.Timeline
                 RenderSelected();
             }
         }
-
-        #endregion
-
-        #endregion
-
-        #region Fields
-
-        bool selected;
 
         /// <summary>
         /// If the timeline checkpoint is being dragged.
@@ -91,6 +106,8 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// Drag time offset.
         /// </summary>
         public float timeOffset;
+
+        #endregion
 
         #endregion
 
