@@ -590,6 +590,16 @@ namespace BetterLegacy.Core
             return targetVector == Vector3.zero ? 0f : ((vector.normalized.x - vector.normalized.y) + 1f) * 45f + (upRight ? 0f : downRight ? 90f : downLeft ? 180f : upLeft ? 270f : 0f);
         }
 
+        public static float Angle(Vector2 pos, Vector2 target) => Mathf.Rad2Deg * Mathf.Atan2(target.y - pos.y, target.x - pos.x);
+
+        public static float Angle(Vector2 pos, params Vector2[] targets)
+        {
+            var target = Vector2.zero;
+            for (int i = 0; i < targets.Length; i++)
+                target -= targets[i];
+            return Angle(pos, target);
+        }
+
         #endregion
 
         #region Operations
