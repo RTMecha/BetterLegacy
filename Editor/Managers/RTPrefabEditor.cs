@@ -2036,12 +2036,14 @@ namespace BetterLegacy.Editor.Managers
             prefabExternalUpAFolderButton.SetActive(RTFile.GetDirectory(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath)) != RTEditor.inst.BeatmapsPath);
 
             var directories = Directory.GetDirectories(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), "*", SearchOption.TopDirectoryOnly);
+            int index = 0;
             for (int i = 0; i < directories.Length; i++)
             {
                 var directory = directories[i];
-                var prefabPanel = new PrefabPanel(i);
+                var prefabPanel = new PrefabPanel(index);
                 prefabPanel.Init(directory);
                 PrefabPanels.Add(prefabPanel);
+                index++;
             }
 
             var files = Directory.GetFiles(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), FileFormat.LSP.ToPattern(), SearchOption.TopDirectoryOnly);
@@ -2054,9 +2056,26 @@ namespace BetterLegacy.Editor.Managers
                 prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
                 prefab.filePath = RTFile.ReplaceSlash(file);
 
-                var prefabPanel = new PrefabPanel(ObjectSource.External, i);
+                var prefabPanel = new PrefabPanel(ObjectSource.External, index);
                 prefabPanel.Init(prefab);
                 PrefabPanels.Add(prefabPanel);
+                index++;
+            }
+            
+            files = Directory.GetFiles(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), FileFormat.VGP.ToPattern(), SearchOption.TopDirectoryOnly);
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                var jn = JSON.Parse(RTFile.ReadFromFile(file));
+
+                var prefab = Prefab.ParseVG(jn);
+                prefab.beatmapObjects.ForEach(x => x?.RemovePrefabReference());
+                prefab.filePath = RTFile.ReplaceSlash(file);
+
+                var prefabPanel = new PrefabPanel(ObjectSource.External, index);
+                prefabPanel.Init(prefab);
+                PrefabPanels.Add(prefabPanel);
+                index++;
             }
 
             prefabsLoading = false;
@@ -2159,9 +2178,9 @@ namespace BetterLegacy.Editor.Managers
 
                 RTFile.DeleteFile(prefab.filePath);
 
-                var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}");
+                var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, prefab.GetFileName());
                 prefab.filePath = file;
-                RTFile.WriteToFile(file, prefab.ToJSON().ToString());
+                prefab.WriteToFile(file);
 
                 prefabPanel.RenderLabel();
                 prefabPanel.RenderTooltip();
@@ -2204,7 +2223,7 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.DisablePrefabWatcher();
 
             if (!string.IsNullOrEmpty(prefab.filePath))
-                RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
+                prefab.WriteToFile(prefab.filePath);
 
             RTEditor.inst.EnablePrefabWatcher();
         }
@@ -2298,14 +2317,14 @@ namespace BetterLegacy.Editor.Managers
 
             prefab.beatmapObjects.ForEach(x => x.RemovePrefabReference());
             int count = PrefabPanels.Count;
-            var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}");
+            var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, prefab.GetFileName());
             prefab.filePath = file;
+            prefab.WriteToFile(file);
 
             var prefabPanel = new PrefabPanel(ObjectSource.External, count);
             prefabPanel.Init(prefab);
             PrefabPanels.Add(prefabPanel);
 
-            RTFile.WriteToFile(file, prefab.ToJSON().ToString());
             EditorManager.inst.DisplayNotification($"Saved External Prefab [{prefab.name}]!", 2f, EditorManager.NotificationType.Success);
 
             RTEditor.inst.EnablePrefabWatcher();
