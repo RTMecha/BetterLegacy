@@ -41,5 +41,10 @@ namespace BetterLegacy.Core.Data
         /// Tag list that best represents what the item is.
         /// </summary>
         public List<string> ArcadeTags { get; set; }
+
+        /// <summary>
+        /// Specified update version of the item.
+        /// </summary>
+        public string ObjectVersion { get; set; }
     }
 }

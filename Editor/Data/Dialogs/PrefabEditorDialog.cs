@@ -22,6 +22,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public InputField CreatorField { get; set; }
         public InputField NameField { get; set; }
         public InputField DescriptionField { get; set; }
+        public InputField VersionField { get; set; }
 
         public FunctionButtonStorage ImportPrefabButton { get; set; }
 
@@ -79,7 +80,6 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(creator.transform.AsRT());
 
             CreatorField = creator.GetComponent<InputField>();
-            CreatorField.lineType = InputField.LineType.MultiLineNewline;
             CreatorField.GetPlaceholderText().text = "Set creator...";
             CreatorField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
             
@@ -104,7 +104,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
             DescriptionField.GetPlaceholderText().text = "Set description...";
             DescriptionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
 
-            RTEditor.GenerateSpacer("spacer", Content, new Vector2(765f, 80f));
+            new Labels(Labels.InitSettings.Default.Parent(Content), "Prefab Version");
+
+            var version = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content);
+            RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(version.transform.AsRT());
+
+            VersionField = version.GetComponent<InputField>();
+            VersionField.GetPlaceholderText().text = "Set version...";
+            VersionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+
+            RTEditor.GenerateSpacer("spacer", Content, new Vector2(765f, 8f));
 
             var buttons = Creator.NewUIObject("buttons", Content);
             buttons.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
@@ -136,6 +145,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddInputField(CreatorField);
             EditorThemeManager.AddInputField(NameField);
             EditorThemeManager.AddInputField(DescriptionField);
+            EditorThemeManager.AddInputField(VersionField);
 
             EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddSelectable(ImportPrefabButton.button, ThemeGroup.Function_2);

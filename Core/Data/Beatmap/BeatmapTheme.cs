@@ -63,6 +63,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public List<string> ArcadeTags { get; set; } = new List<string>();
 
+        public string ObjectVersion { get; set; }
+
         #endregion
 
         #endregion

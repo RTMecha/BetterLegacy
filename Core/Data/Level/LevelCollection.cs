@@ -181,6 +181,8 @@ namespace BetterLegacy.Core.Data.Level
         public List<string> tags = new List<string>();
         public List<string> ArcadeTags { get => tags; set => tags = value; }
 
+        public string ObjectVersion { get; set; }
+
         public string dateCreated = string.Empty;
         public string dateEdited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
         public string datePublished = string.Empty;

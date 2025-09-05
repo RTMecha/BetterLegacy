@@ -351,6 +351,10 @@ namespace BetterLegacy.Editor.Managers
                     MetadataEditor.inst.OpenDialog();
                 }));
             });
+
+            Dialog.VersionField.SetTextWithoutNotify(metadata.ObjectVersion);
+            Dialog.VersionField.onValueChanged.NewListener(_val => metadata.ObjectVersion = _val);
+            EditorContextMenu.inst.AddContextMenu(Dialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(metadata, () => RenderLevel(metadata)));
         }
 
         public void RenderSettings(MetaData metadata)

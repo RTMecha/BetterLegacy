@@ -2348,6 +2348,7 @@ namespace BetterLegacy.Core
             uploadable.Visibility = orig.Visibility;
             uploadable.Changelog = orig.Changelog ?? string.Empty;
             uploadable.ArcadeTags = new List<string>(orig.ArcadeTags);
+            uploadable.ObjectVersion = orig.ObjectVersion;
         }
 
         /// <summary>
@@ -2647,6 +2648,8 @@ namespace BetterLegacy.Core
             if (jn["tags"] != null)
                 for (int i = 0; i < jn["tags"].Count; i++)
                     uploadable.ArcadeTags.Add(jn["tags"][i].Value.Replace(" ", "_"));
+
+            uploadable.ObjectVersion = jn["file_version"];
         }
 
         /// <summary>
@@ -2677,6 +2680,9 @@ namespace BetterLegacy.Core
             if (uploadable.ArcadeTags != null)
                 for (int i = 0; i < uploadable.ArcadeTags.Count; i++)
                     jn["tags"][i] = uploadable.ArcadeTags[i] ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(uploadable.ObjectVersion))
+                jn["file_version"] = uploadable.ObjectVersion;
         }
 
         #endregion

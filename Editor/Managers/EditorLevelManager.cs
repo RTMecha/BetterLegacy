@@ -1668,6 +1668,10 @@ namespace BetterLegacy.Editor.Managers
                 CollapseBanner = _val;
             });
 
+            LevelCollectionDialog.VersionField.SetTextWithoutNotify(levelCollection.ObjectVersion);
+            LevelCollectionDialog.VersionField.onValueChanged.NewListener(_val => levelCollection.ObjectVersion = _val);
+            EditorContextMenu.inst.AddContextMenu(LevelCollectionDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(levelCollection, () => RenderLevelCollectionEditor(levelCollection)));
+
             LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() => LoadLevelCollection(levelCollection));
 
             RenderLevelCollectionDifficulty(levelCollection);

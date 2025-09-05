@@ -78,6 +78,8 @@ namespace BetterLegacy.Core.Data
         public List<string> tags = new List<string>();
         public List<string> ArcadeTags { get => tags; set => tags = value; }
 
+        public string ObjectVersion { get; set; }
+
         #endregion
 
         #region Arcade

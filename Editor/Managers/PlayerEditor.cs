@@ -814,6 +814,21 @@ namespace BetterLegacy.Editor.Managers
                 currentModel.basePart.name = _val;
                 PlayerManager.UpdatePlayerModels();
             });
+            
+            Dialog.BaseTab.Creator.Field.SetTextWithoutNotify(currentModel.creator);
+            Dialog.BaseTab.Creator.Field.onValueChanged.NewListener(_val =>
+            {
+                currentModel.creator = _val;
+                PlayerManager.UpdatePlayerModels();
+            });
+            
+            Dialog.BaseTab.Version.Field.SetTextWithoutNotify(currentModel.ObjectVersion);
+            Dialog.BaseTab.Version.Field.onValueChanged.NewListener(_val =>
+            {
+                currentModel.ObjectVersion = _val;
+                PlayerManager.UpdatePlayerModels();
+            });
+            EditorContextMenu.inst.AddContextMenu(Dialog.BaseTab.Version.Field.gameObject, EditorContextMenu.GetObjectVersionFunctions(currentModel, () => RenderBaseTab(currentModel)));
 
             Dialog.BaseTab.EditControls.Toggle.SetIsOnWithoutNotify(editControls);
             Dialog.BaseTab.EditControls.Toggle.onValueChanged.NewListener(_val =>

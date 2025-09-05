@@ -2112,7 +2112,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var prefab = prefabPanel.Item;
             var prefabType = prefab.GetPrefabType();
-            var isExternal = prefabPanel.Source == ObjectSource.External;
+            var isExternal = prefabPanel.IsExternal;
 
             PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
             PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
@@ -2127,33 +2127,14 @@ namespace BetterLegacy.Editor.Managers
                     PrefabEditorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
                     PrefabEditorDialog.TypeButton.button.image.color = prefabType.color;
 
-                    if (isExternal && !string.IsNullOrEmpty(prefab.filePath))
-                        RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
-
+                    UpdatePrefabFile(prefabPanel);
                     prefabPanel.RenderPrefabType(prefabType);
-                    prefabPanel.RenderTooltip(prefab, prefabType);
                 });
             });
 
             PrefabEditorDialog.CreatorField.SetTextWithoutNotify(prefab.creator);
             PrefabEditorDialog.CreatorField.onValueChanged.NewListener(_val => prefab.creator = _val);
-            PrefabEditorDialog.CreatorField.onEndEdit.NewListener(_val =>
-            {
-                if (!isExternal)
-                {
-                    prefabPanel.RenderTooltip();
-                    return;
-                }
-
-                RTEditor.inst.DisablePrefabWatcher();
-
-                if (!string.IsNullOrEmpty(prefab.filePath))
-                    RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
-
-                prefabPanel.RenderTooltip();
-
-                RTEditor.inst.EnablePrefabWatcher();
-            });
+            PrefabEditorDialog.CreatorField.onEndEdit.NewListener(_val => UpdatePrefabFile(prefabPanel));
 
             PrefabEditorDialog.NameField.SetTextWithoutNotify(prefab.name);
             PrefabEditorDialog.NameField.onValueChanged.NewListener(_val => prefab.name = _val);
@@ -2190,23 +2171,16 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabEditorDialog.DescriptionField.SetTextWithoutNotify(prefab.description);
             PrefabEditorDialog.DescriptionField.onValueChanged.NewListener(_val => prefab.description = _val);
-            PrefabEditorDialog.DescriptionField.onEndEdit.NewListener(_val =>
+            PrefabEditorDialog.DescriptionField.onEndEdit.NewListener(_val => UpdatePrefabFile(prefabPanel));
+
+            PrefabEditorDialog.VersionField.SetTextWithoutNotify(prefab.ObjectVersion);
+            PrefabEditorDialog.VersionField.onValueChanged.NewListener(_val => prefab.ObjectVersion = _val);
+            PrefabEditorDialog.VersionField.onEndEdit.NewListener(_val => UpdatePrefabFile(prefabPanel));
+            EditorContextMenu.inst.AddContextMenu(PrefabEditorDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(prefab, () =>
             {
-                if (!isExternal)
-                {
-                    prefabPanel.RenderTooltip();
-                    return;
-                }
-
-                RTEditor.inst.DisablePrefabWatcher();
-
-                if (!string.IsNullOrEmpty(prefab.filePath))
-                    RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
-
-                prefabPanel.RenderTooltip();
-
-                RTEditor.inst.EnablePrefabWatcher();
-            });
+                UpdatePrefabFile(prefabPanel);
+                RenderPrefabEditorDialog(prefabPanel);
+            }));
 
             PrefabEditorDialog.ImportPrefabButton.gameObject.SetActive(isExternal);
             PrefabEditorDialog.ImportPrefabButton.button.onClick.ClearAll();
@@ -2217,6 +2191,22 @@ namespace BetterLegacy.Editor.Managers
             PrefabEditorDialog.ConvertPrefabButton.button.onClick.ClearAll();
             if (isExternal)
                 PrefabEditorDialog.ConvertPrefabButton.button.onClick.AddListener(() => ConvertPrefab(prefab));
+        }
+
+        public void UpdatePrefabFile(PrefabPanel prefabPanel)
+        {
+            prefabPanel.RenderTooltip();
+            if (!prefabPanel.IsExternal)
+                return;
+
+            var prefab = prefabPanel.Item;
+
+            RTEditor.inst.DisablePrefabWatcher();
+
+            if (!string.IsNullOrEmpty(prefab.filePath))
+                RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
+
+            RTEditor.inst.EnablePrefabWatcher();
         }
 
         /// <summary>

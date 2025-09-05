@@ -322,6 +322,8 @@ namespace BetterLegacy.Core.Data.Player
 
         public List<string> ArcadeTags { get; set; } = new List<string>();
 
+        public string ObjectVersion { get; set; }
+
         #endregion
 
         #endregion

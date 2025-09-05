@@ -81,6 +81,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform TagsContent { get; set; }
 
+        public InputField VersionField { get; set; }
+
         public RectTransform ServerParent { get; set; }
 
         GameObject linkPrefab;
@@ -310,10 +312,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 #region Level
 
                 var levelBase = Creator.NewUIObject("level", Content);
-                RectValues.Default.SizeDelta(764f, 460f).AssignToRectTransform(levelBase.transform.AsRT());
+                RectValues.Default.SizeDelta(764f, 520f).AssignToRectTransform(levelBase.transform.AsRT());
                 new Labels(Labels.InitSettings.Default.Parent(levelBase.transform).Rect(labelRect), new Label("Level") { fontStyle = FontStyle.Bold, });
                 var level = Creator.NewUIObject("info", levelBase.transform);
-                RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 400f).AssignToRectTransform(level.transform.AsRT());
+                RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 460f).AssignToRectTransform(level.transform.AsRT());
                 var levelLayout = level.AddComponent<VerticalLayoutGroup>();
                 levelLayout.childControlHeight = false;
                 levelLayout.childForceExpandHeight = false;
@@ -398,6 +400,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 VideoLinkField.textComponent.alignment = TextAnchor.MiddleLeft;
                 EditorThemeManager.AddInputField(VideoLinkField);
 
+                new Labels(Labels.InitSettings.Default.Parent(level.transform), "Level Version");
+
+                var version = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(level.transform);
+                RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(version.transform.AsRT());
+
+                VersionField = version.GetComponent<InputField>();
+                VersionField.GetPlaceholderText().text = "Set version...";
+                VersionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+                EditorThemeManager.AddInputField(VersionField);
+
                 #endregion
 
                 #region Icon
@@ -453,8 +465,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 HideIntroToggle = GenerateToggle(settings.transform, "Hide Intro");
                 ReplayEndLevelOffToggle = GenerateToggle(settings.transform, $"Prevent \"{CoreConfig.Instance.ReplayLevel.Key}\" setting");
 
-                RequireVersion = GenerateToggle(settings.transform, "Require Version");
-                VersionComparison = GenerateDropdown(settings.transform, "Version Comparison", true, CoreHelper.ToOptionData<DataManager.VersionComparison>());
+                RequireVersion = GenerateToggle(settings.transform, "Require Mod Version");
+                VersionComparison = GenerateDropdown(settings.transform, "Mod Version Comparison", true, CoreHelper.ToOptionData<DataManager.VersionComparison>());
 
                 #endregion
 

@@ -32,6 +32,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public RectTransform TagsContent { get; set; }
 
+        public InputField VersionField { get; set; }
+
         public Button ViewLevelsButton { get; set; }
 
         #region Icon
@@ -204,6 +206,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
             scroll.content = tagContent.transform.AsRT();
 
             #endregion
+
+            new Labels(Labels.InitSettings.Default.Parent(Content), "Level Collection Version");
+
+            var version = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content);
+            RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(version.transform.AsRT());
+
+            VersionField = version.GetComponent<InputField>();
+            VersionField.GetPlaceholderText().text = "Set version...";
+            VersionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
 
             #region Icon
 
