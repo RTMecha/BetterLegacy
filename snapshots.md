@@ -1,4 +1,9 @@
-﻿# snapshot-2025.9.1 - (pre-1.8.0) [Sep 5, 2025]
+﻿# ???
+## Features
+### Editor
+- Added "Snap Created" in Config Manager > Editor > BPM. This forces new objects to snap to the BPM.
+
+# snapshot-2025.9.1 - (pre-1.8.0) [Sep 5, 2025]
 ## Features
 ### Core
 - Getting close to implementing level collections and level collaborating server-side, sit tight!
