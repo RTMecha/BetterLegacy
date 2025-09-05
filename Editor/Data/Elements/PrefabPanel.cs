@@ -342,7 +342,7 @@ namespace BetterLegacy.Editor.Data.Elements
         /// Renders the prefab panel prefab type.
         /// </summary>
         /// <param name="prefabType">Type of the prefab.</param>
-        public void RenderPrefabType(PrefabType prefabType) => RenderPrefabType(prefabType.name, prefabType.color, prefabType.icon);
+        public void RenderPrefabType(PrefabType prefabType) => RenderPrefabType(prefabType.name, prefabType.color, Item.GetIcon() ?? prefabType.icon);
 
         /// <summary>
         /// Renders the prefab panel prefab type.
@@ -503,12 +503,18 @@ namespace BetterLegacy.Editor.Data.Elements
                                 RTPrefabEditor.inst.savingToPrefab = false;
 
                                 var prefabToSaveTo = Item;
+                                var prefabToSaveFrom = RTPrefabEditor.inst.prefabToSaveFrom;
 
-                                prefabToSaveTo.beatmapObjects = RTPrefabEditor.inst.prefabToSaveFrom.beatmapObjects.Clone();
-                                prefabToSaveTo.prefabObjects = RTPrefabEditor.inst.prefabToSaveFrom.prefabObjects.Clone();
-                                prefabToSaveTo.offset = RTPrefabEditor.inst.prefabToSaveFrom.offset;
-                                prefabToSaveTo.type = RTPrefabEditor.inst.prefabToSaveFrom.type;
-                                prefabToSaveTo.typeID = RTPrefabEditor.inst.prefabToSaveFrom.typeID;
+                                prefabToSaveTo.beatmapObjects = prefabToSaveFrom.beatmapObjects.Clone();
+                                prefabToSaveTo.prefabObjects = prefabToSaveFrom.prefabObjects.Clone();
+                                prefabToSaveTo.backgroundObjects = prefabToSaveFrom.backgroundObjects.Clone();
+                                prefabToSaveTo.backgroundLayers = prefabToSaveFrom.backgroundLayers.Clone();
+                                prefabToSaveTo.prefabs = prefabToSaveFrom.prefabs.Clone();
+                                prefabToSaveTo.beatmapThemes = prefabToSaveFrom.beatmapThemes.Clone();
+                                prefabToSaveTo.modifierBlocks = prefabToSaveFrom.modifierBlocks.Clone();
+                                prefabToSaveTo.offset = prefabToSaveFrom.offset;
+                                prefabToSaveTo.type = prefabToSaveFrom.type;
+                                prefabToSaveTo.typeID = prefabToSaveFrom.typeID;
 
                                 var prefabType = prefabToSaveTo.GetPrefabType();
 
@@ -516,7 +522,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                 RenderPrefabType(prefabType);
                                 RenderTooltip(prefab, prefabType);
 
-                                RTFile.WriteToFile(prefabToSaveTo.filePath, prefabToSaveTo.ToJSON().ToString());
+                                prefabToSaveTo.WriteToFile(prefabToSaveTo.filePath);
 
                                 RTEditor.inst.PrefabPopups.Close();
 

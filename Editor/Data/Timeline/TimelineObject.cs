@@ -442,7 +442,7 @@ namespace BetterLegacy.Editor.Data.Timeline
             }
 
             RenderText(name);
-            RenderIcons(prefab?.GetPrefabType());
+            RenderIcons(prefab);
             RenderPosLength(EditorManager.inst.Zoom, length, startTime);
             RenderVisibleState();
         }
@@ -586,7 +586,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         /// Updates the timeline objects' icons.
         /// </summary>
         /// <param name="prefabType">Prefab Type to retrieve a Prefab Type icon from.</param>
-        public void RenderIcons(PrefabType prefabType = null)
+        public void RenderIcons(Prefab prefab = null)
         {
             var gameObject = GameObject;
             if (!gameObject)
@@ -596,10 +596,11 @@ namespace BetterLegacy.Editor.Data.Timeline
             gameObject.transform.Find("icons/dots").gameObject.SetActive(Collapse);
             var typeIcon = gameObject.transform.Find("icons/type").gameObject;
 
-            var renderTypeIcon = prefabType != null && ObjectEditor.RenderPrefabTypeIcon;
+            var icon = prefab?.GetIcon() ?? prefab?.GetPrefabType()?.icon;
+            var renderTypeIcon = icon && ObjectEditor.RenderPrefabTypeIcon;
             typeIcon.SetActive(renderTypeIcon);
             if (renderTypeIcon)
-                typeIcon.transform.Find("type").GetComponent<Image>().sprite = prefabType.icon;
+                typeIcon.transform.Find("type").GetComponent<Image>().sprite = icon;
         }
 
         public void ShowContextMenu()

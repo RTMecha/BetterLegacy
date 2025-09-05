@@ -85,6 +85,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public Sprite icon;
 
+        public FileFormat FileFormat => RTFile.GetFileFormat(filePath);
+
         #region Prefab
 
         public float StartTime { get; set; }
@@ -482,6 +484,45 @@ namespace BetterLegacy.Core.Data.Beatmap
         public IRTObject GetRuntimeObject() => null;
 
         public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => 0f;
+
+        public string GetFileName() => $"{RTFile.FormatLegacyFileName(name)}{FileFormat.Dot()}";
+
+        public void ReadFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var fileName = GetFileName();
+            if (!path.EndsWith(fileName))
+                path = RTFile.CombinePaths(path, fileName);
+
+            var file = RTFile.ReadFromFile(path);
+            if (string.IsNullOrEmpty(file))
+                return;
+
+            switch (FileFormat)
+            {
+                case FileFormat.LSP: ReadJSON(JSON.Parse(file));
+                    break;
+                case FileFormat.VGP: ReadJSONVG(JSON.Parse(file));
+                    break;
+            }
+        }
+
+        public void WriteToFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var jn = FileFormat switch
+            {
+                FileFormat.LSP => ToJSON(),
+                FileFormat.VGP => ToJSONVG(),
+                _ => null,
+            };
+            if (jn != null)
+                RTFile.WriteToFile(path, jn.ToString());
+        }
 
         /// <summary>
         /// Loads and gets the Prefabs' icon.
