@@ -2,6 +2,10 @@
 ## Features
 ### Editor
 - Added "Snap Created" in Config Manager > Editor > BPM. This forces new objects to snap to the BPM.
+- Added a file version field to Prefabs, levels, level collections and player models. You can right click the field to edit the version number.
+- Player models now have a creator field.
+
+-------------------------------------------------------------------
 
 # snapshot-2025.9.1 - (pre-1.8.0) [Sep 5, 2025]
 ## Features
