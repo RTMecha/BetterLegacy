@@ -75,7 +75,24 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             if (AudioManager.inst.CurrentAudioSource.time > markerLoopEnd.Marker.time)
-                AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+            {
+                switch (EditorConfig.Instance.MarkerLoopBehavior.Value)
+                {
+                    case MarkerLoopBehavior.Loop: {
+                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+                            break;
+                        }
+                    case MarkerLoopBehavior.StopAtStart: {
+                            AudioManager.inst.SetMusicTime(markerLoopBegin.Marker.time);
+                            RTEditor.inst.SetPlaying(false);
+                            break;
+                        }
+                    case MarkerLoopBehavior.StopAtEnd: {
+                            RTEditor.inst.SetPlaying(false);
+                            break;
+                        }
+                }
+            }
         }
 
         #endregion

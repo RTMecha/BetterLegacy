@@ -398,19 +398,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool TogglePlayingSongPrefix()
         {
-            if (Seasons.IsAprilFools || Instance.hasLoadedLevel)
-            {
-                if (AudioManager.inst.CurrentAudioSource.isPlaying)
-                    AudioManager.inst.CurrentAudioSource.Pause();
-                else
-                    AudioManager.inst.CurrentAudioSource.Play();
-                Instance.UpdatePlayButton();
-            }
-            else
-            {
-                AudioManager.inst.CurrentAudioSource.Pause();
-                Instance.UpdatePlayButton();
-            }
+            RTEditor.inst.SetPlaying(!SoundManager.inst.Playing);
             return false;
         }
 

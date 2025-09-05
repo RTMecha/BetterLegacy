@@ -5453,6 +5453,23 @@ namespace BetterLegacy.Editor.Managers
                 player.Health = considerChallengeMode && RTBeatmap.Current && RTBeatmap.Current.challengeMode.DefaultHealth > 0 ? RTBeatmap.Current.challengeMode.DefaultHealth : player.GetControl()?.Health ?? 3;
         }
 
+        /// <summary>
+        /// Sets the playing state of the current audio source.
+        /// </summary>
+        /// <param name="playing">If the audio should play.</param>
+        public void SetPlaying(bool playing)
+        {
+            if (SoundManager.inst.Playing == playing)
+                return;
+
+            if (Seasons.IsAprilFools || EditorManager.inst.hasLoadedLevel)
+                SoundManager.inst.SetPlaying(playing);
+            else
+                AudioManager.inst.CurrentAudioSource.Pause();
+
+            EditorManager.inst.UpdatePlayButton();
+        }
+
         public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, EditorPath));
 
         public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(BeatmapsPath, ThemePath));

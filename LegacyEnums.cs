@@ -2149,6 +2149,13 @@ namespace BetterLegacy
         None,
     }
 
+    public enum MarkerLoopBehavior
+    {
+        Loop,
+        StopAtStart,
+        StopAtEnd,
+    }
+
     #endregion
 
     #region Menus

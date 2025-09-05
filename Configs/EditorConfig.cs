@@ -266,6 +266,7 @@ namespace BetterLegacy.Configs
         public Setting<int> MarkerDefaultColor { get; set; }
         public Setting<PointerEventData.InputButton> MarkerDragButton { get; set; }
         public Setting<bool> MarkerShowContextMenu { get; set; }
+        public Setting<MarkerLoopBehavior> MarkerLoopBehavior { get; set; }
         public Setting<Color> MarkerLineColor { get; set; }
         public Setting<float> MarkerLineWidth { get; set; }
         public Setting<float> MarkerTextWidth { get; set; }
@@ -654,6 +655,7 @@ namespace BetterLegacy.Configs
             MarkerDefaultColor = Bind(this, MARKERS, "Marker Default Color", 0, "The default color assigned to a new marker.");
             MarkerDragButton = BindEnum(this, MARKERS, "Marker Drag Button", PointerEventData.InputButton.Middle, "The mouse button to click and hold to drag a marker.");
             MarkerShowContextMenu = Bind(this, MARKERS, "Marker Show Context Menu", false, "If a context menu should show instead of deleting a marker when you right click a marker.");
+            MarkerLoopBehavior = Bind(this, MARKERS, "Marker Loop Behavior", BetterLegacy.MarkerLoopBehavior.Loop, "How marker looping should behave.");
             MarkerLineColor = Bind(this, MARKERS, "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
             MarkerLineWidth = Bind(this, MARKERS, "Marker Line Width", 2f, "The width of the marker lines.");
             MarkerTextWidth = Bind(this, MARKERS, "Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
