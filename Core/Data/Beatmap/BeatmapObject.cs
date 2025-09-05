@@ -838,49 +838,52 @@ namespace BetterLegacy.Core.Data.Beatmap
                 shapeOption = jn["so"].AsInt;
 
             if (jn["csp"] != null)
-            {
-                // why is custom polygon a part of EVERY shape type...
                 polygonShape = PolygonShape.ParseVG(jn["csp"]);
 
-                switch (ShapeType)
-                {
-                    case ShapeType.Triangle: {
-                            // don't know why offset triangles are a shape option now wtfff
-                            if (shapeOption == 4)
-                            {
-                                shapeOption = 0;
-                                origin.y = TRIANGLE_BOTTOM_OFFSET;
-                            }
-                            else if (shapeOption == 5)
-                            {
-                                shapeOption = 0;
-                                origin.y = TRIANGLE_BOTTOM_OFFSET;
-                            }
-                            else if (shapeOption == 6)
-                            {
-                                shapeOption = 0;
-                                origin.y = TRIANGLE_BOTTOM_OFFSET;
-                            }
-                            else
-                                ShapeType = ShapeType.Polygon;
-
-                            break;
+            switch (ShapeType)
+            {
+                case ShapeType.Triangle: {
+                        // don't know why offset triangles are a shape option now wtfff
+                        if (shapeOption == 4)
+                        {
+                            shapeOption = 0;
+                            origin.y = TRIANGLE_BOTTOM_OFFSET;
                         }
-                    case ShapeType.Arrow: {
-                            if (shapeOption > 1)
-                                ShapeType = ShapeType.Polygon;
-
-                            break;
+                        else if (shapeOption == 5)
+                        {
+                            shapeOption = 0;
+                            origin.y = TRIANGLE_BOTTOM_OFFSET;
                         }
-                    case ShapeType.Text: {
-                            break;
+                        else if (shapeOption == 6)
+                        {
+                            shapeOption = 0;
+                            origin.y = TRIANGLE_BOTTOM_OFFSET;
                         }
-                    default: {
+                        else
                             ShapeType = ShapeType.Polygon;
-                            break;
-                        }
-                }
 
+                        break;
+                    }
+                case ShapeType.Arrow: {
+                        if (shapeOption > 1)
+                            ShapeType = ShapeType.Polygon;
+
+                        break;
+                    }
+                case ShapeType.Text: {
+                        break;
+                    }
+                default: {
+                        if (jn["csp"] == null)
+                            break;
+                        // why is custom polygon a part of EVERY shape type...
+                        if (shape < Beatmap.Shape.unmoddedMaxShapes.Length && shapeOption < Beatmap.Shape.unmoddedMaxShapes[shape])
+                            break;
+
+                        ShapeType = ShapeType.Polygon;
+                        shapeOption = 0;
+                        break;
+                    }
             }
 
             autoTextAlign = ShapeType == ShapeType.Text;
