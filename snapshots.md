@@ -17,6 +17,8 @@
 - Object and Parent Object Search Popups now have a page system.
 - Tweaked some editor UI.
 - Added some functions to the Multi Object editor.
+- Added "Marker Loop Behavior" in Config Manager > Editor > Markers. This allows you to control how the marker looping works.
+- Added some context menu functions.
 
 ## Fixes
 - Fixed objects other than Beatmap Objects not having their song time autokill offset properly set when spawned from a prefab.
