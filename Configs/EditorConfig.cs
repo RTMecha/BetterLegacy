@@ -286,6 +286,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> BPMSnapsKeyframes { get; set; }
         public Setting<bool> BPMSnapsCheckpoints { get; set; }
         public Setting<bool> BPMSnapsMarkers { get; set; }
+        public Setting<bool> BPMSnapsCreated { get; set; }
         public Setting<bool> BPMSnapsPasted { get; set; }
         public Setting<bool> BPMSnapsPrefabImport { get; set; }
 
@@ -675,8 +676,9 @@ namespace BetterLegacy.Configs
             BPMSnapsKeyframes = Bind(this, BPM, "Snap Keyframes", true, "Makes the time of event keyframes snap to the BPM.");
             BPMSnapsCheckpoints = Bind(this, BPM, "Snap Checkpoints", true, "Makes the time of checkpoints snap to the BPM.");
             BPMSnapsMarkers = Bind(this, BPM, "Snap Markers", true, "Makes the time of markers snap to the BPM.");
-            BPMSnapsPasted = Bind(this, BPM, "Snaps Pasted", true, "Makes pasted objects snap to the BPM at an offset from the first object, so any objects that spawn after don't get snapped.");
-            BPMSnapsPrefabImport = Bind(this, BPM, "Snaps Prefab Import", true, "Makes prefabs imported to the level snap to the BPM.");
+            BPMSnapsCreated = Bind(this, BPM, "Snap Created", true, "If created objects should snap to the BPM.");
+            BPMSnapsPasted = Bind(this, BPM, "Snap Pasted", true, "Makes pasted objects snap to the BPM at an offset from the first object, so any objects that spawn after don't get snapped.");
+            BPMSnapsPrefabImport = Bind(this, BPM, "Snap Prefab Import", true, "Makes prefabs imported to the level snap to the BPM.");
 
             #endregion
 

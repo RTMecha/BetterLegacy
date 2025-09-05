@@ -54,15 +54,20 @@ namespace BetterLegacy.Editor.Managers
 
         void Update() => Dialog?.ModifiersDialog?.Tick();
 
-        public void CreateNewBackground()
+        public void CreateNewBackground() => CreateNewBackground(AudioManager.inst.CurrentAudioSource.time);
+
+        public void CreateNewBackground(float time)
         {
+            if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCreated.Value && EditorConfig.Instance.BPMSnapsObjects.Value)
+                time = RTEditor.SnapToBPM(time);
+
             var backgroundObject = new BackgroundObject
             {
                 name = "Background",
                 pos = Vector2.zero,
                 scale = new Vector2(2f, 2f),
                 color = 1,
-                StartTime = AudioManager.inst.CurrentAudioSource.time,
+                StartTime = time,
             };
             backgroundObject.editorData.Layer = EditorTimeline.inst.Layer;
             backgroundObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;

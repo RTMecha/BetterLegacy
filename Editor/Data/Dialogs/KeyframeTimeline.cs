@@ -105,38 +105,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 var type = i;
                 var entry = TriggerHelper.CreateEntry(EventTriggerType.PointerUp, eventData =>
                 {
-                    if (((PointerEventData)eventData).button != PointerEventData.InputButton.Right)
-                        return;
-
-                    var timeTmp = MouseTimelineCalc();
-
-                    var animatable = CurrentObject;
-                    if (animatable == null)
-                        return;
-
-                    var beatmapObject = animatable as BeatmapObject;
-                    var keyframes = animatable.GetEventKeyframes(type);
-
-                    var eventKeyfame = CreateEventKeyframe(animatable, timeTmp, type, keyframes.FindLast(x => x.time <= timeTmp), false);
-                    UpdateKeyframeOrder(animatable);
-                    RenderKeyframes(animatable);
-
-                    var keyframe = keyframes.FindLastIndex(x => x.id == eventKeyfame.id);
-                    if (keyframe < 0)
-                        keyframe = 0;
-
-                    SetCurrentKeyframe(animatable, type, keyframe, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
-                    ResizeKeyframeTimeline(animatable);
-
-                    RenderDialog(animatable);
-                    RenderMarkers(animatable);
-
-                    if (!beatmapObject)
-                        return;
-
-                    // Keyframes affect both physical object and timeline object.
-                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                    if (((PointerEventData)eventData).button == PointerEventData.InputButton.Right)
+                        CreateKeyframe(type);
                 });
 
                 var eventTrigger = KeyframeParents[type].GetComponent<EventTrigger>();
@@ -232,6 +202,39 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddGraphic(ZoomSlider.image, ThemeGroup.Slider_2_Handle, true);
 
             #endregion
+        }
+
+        void CreateKeyframe(int type)
+        {
+            var timeTmp = MouseTimelineCalc();
+
+            var animatable = CurrentObject;
+            if (animatable == null)
+                return;
+
+            var beatmapObject = animatable as BeatmapObject;
+            var keyframes = animatable.GetEventKeyframes(type);
+
+            var eventKeyfame = CreateEventKeyframe(animatable, timeTmp, type, keyframes.FindLast(x => x.time <= timeTmp), false);
+            UpdateKeyframeOrder(animatable);
+            RenderKeyframes(animatable);
+
+            var keyframe = keyframes.FindLastIndex(x => x.id == eventKeyfame.id);
+            if (keyframe < 0)
+                keyframe = 0;
+
+            SetCurrentKeyframe(animatable, type, keyframe, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
+            ResizeKeyframeTimeline(animatable);
+
+            RenderDialog(animatable);
+            RenderMarkers(animatable);
+
+            if (!beatmapObject)
+                return;
+
+            // Keyframes affect both physical object and timeline object.
+            EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
+            RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
         }
 
         /// <summary>
@@ -685,7 +688,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public EventKeyframe CreateEventKeyframe(IAnimatable animatable, float time, int type, EventKeyframe previousKeyframe, bool openDialog)
         {
             var eventKeyframe = previousKeyframe.Copy();
-            var t = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(animatable.StartTime - RTEditor.SnapToBPM(animatable.StartTime + time)) : time;
+            var t = RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCreated.Value && EditorConfig.Instance.BPMSnapsKeyframes.Value ? -(animatable.StartTime - RTEditor.SnapToBPM(animatable.StartTime + time)) : time;
             eventKeyframe.time = t;
 
             if (eventKeyframe.relative)

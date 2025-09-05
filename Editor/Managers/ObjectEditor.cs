@@ -571,6 +571,9 @@ namespace BetterLegacy.Editor.Managers
         /// <returns>Returns a new Beatmap Object.</returns>
         public BeatmapObject CreateNewBeatmapObject(float time)
         {
+            if (RTEditor.inst.editorInfo.bpmSnapActive && EditorConfig.Instance.BPMSnapsCreated.Value && EditorConfig.Instance.BPMSnapsObjects.Value)
+                time = RTEditor.SnapToBPM(time);
+
             var beatmapObject = new BeatmapObject(time);
 
             if (!Seasons.IsAprilFools)
