@@ -765,6 +765,8 @@ namespace BetterLegacy.Editor.Managers
             RTBackgroundEditor.Init();
 
             EditorDocumentation.Init();
+
+            CaptureArea.Init();
         }
 
         // 7 - finalization

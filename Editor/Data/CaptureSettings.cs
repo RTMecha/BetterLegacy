@@ -7,6 +7,9 @@ using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Editor.Data
 {
+    /// <summary>
+    /// Represents settings for the Capture Area.
+    /// </summary>
     public class CaptureSettings : PAObject<CaptureSettings>
     {
         public CaptureSettings() : base() { }
@@ -20,10 +23,39 @@ namespace BetterLegacy.Editor.Data
 
         #region Values
 
-        public Vector2Int resolution = new Vector2Int(512, 512);
+        Vector2Int resolution = new Vector2Int(512, 512);
+        /// <summary>
+        /// Resolution of the capture.
+        /// </summary>
+        public Vector2Int Resolution
+        {
+            get => resolution;
+            set
+            {
+                SetResolutionWidth(value.x);
+                SetResolutionHeight(value.y);
+            }
+        }
+
+        /// <summary>
+        /// If the camera should be moved when the capture is created.
+        /// </summary>
         public bool move = true;
+
+        /// <summary>
+        /// Position of the capture.
+        /// </summary>
         public Vector2 pos;
+
+        /// <summary>
+        /// Rotation of the capture.
+        /// </summary>
         public float rot;
+
+        /// <summary>
+        /// If resolution height and weight should match.
+        /// </summary>
+        public bool matchSize = true;
 
         #endregion
 
@@ -63,6 +95,29 @@ namespace BetterLegacy.Editor.Data
 
             return jn;
         }
+
+        /// <summary>
+        /// Resets the capture settings.
+        /// </summary>
+        public void Reset()
+        {
+            resolution = new Vector2Int(512, 512);
+            move = true;
+            pos = Vector2.zero;
+            rot = 0f;
+        }
+
+        /// <summary>
+        /// Sets the resolution's width.
+        /// </summary>
+        /// <param name="x">Width value.</param>
+        public void SetResolutionWidth(int width) => resolution.x = RTMath.Clamp(width, 12, int.MaxValue);
+
+        /// <summary>
+        /// Sets the resolution's height.
+        /// </summary>
+        /// <param name="y">Height value.</param>
+        public void SetResolutionHeight(int height) => resolution.y = RTMath.Clamp(height, 12, int.MaxValue);
 
         #endregion
     }

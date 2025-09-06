@@ -68,6 +68,7 @@ namespace BetterLegacy.Editor.Managers
         public string NewPrefabTypeID { get; set; }
         public string NewPrefabDescription { get; set; }
 
+        public PrefabPanel CurrentPrefabPanel { get; set; }
         public List<PrefabPanel> PrefabPanels { get; set; } = new List<PrefabPanel>();
 
         public static bool ImportPrefabsDirectly { get; set; }
@@ -100,7 +101,7 @@ namespace BetterLegacy.Editor.Managers
 
         public PrefabObject copiedInstanceData;
 
-        public bool CollapseIcon { get; set; } = true;
+        public bool CollapseIcon { get; set; } = false;
 
         public Dictionary<string, bool> selectedForPrefabCreator = new Dictionary<string, bool>();
 
@@ -1372,6 +1373,7 @@ namespace BetterLegacy.Editor.Managers
                 newPrefab.description = originalPrefab.description;
                 newPrefab.creator = originalPrefab.creator;
                 newPrefab.assets = originalPrefab.assets.Copy();
+                newPrefab.ObjectVersion = originalPrefab.ObjectVersion;
 
                 foreach (var other in prefabObjects)
                 {
@@ -1951,6 +1953,9 @@ namespace BetterLegacy.Editor.Managers
             while (!PrefabEditor.inst || !PrefabEditor.inst.externalContent)
                 yield return null;
 
+            if (PrefabEditorDialog && PrefabEditorDialog.IsCurrent)
+                PrefabEditorDialog.Close();
+
             PrefabPanels.ForLoopReverse((prefabPanel, index) =>
             {
                 if (prefabPanel.Source != ObjectSource.External)
@@ -2141,6 +2146,8 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefabPanel"></param>
         public void RenderPrefabEditorDialog(PrefabPanel prefabPanel)
         {
+            CurrentPrefabPanel = prefabPanel;
+
             var prefab = prefabPanel.Item;
             var prefabType = prefab.GetPrefabType();
             var isExternal = prefabPanel.IsExternal;
@@ -2221,7 +2228,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 PrefabEditorDialog.IconImage.sprite = prefab.icon;
                 EditorContextMenu.inst.AddContextMenu(PrefabEditorDialog.IconImage.gameObject,
-                    new ButtonFunction("Select icon", () => OpenIconSelector(prefabPanel)),
+                    new ButtonFunction("Select File", () => OpenIconSelector(prefabPanel)),
                     new ButtonFunction("Extract Icon", () =>
                     {
                         if (!prefab.icon)
@@ -2235,20 +2242,12 @@ namespace BetterLegacy.Editor.Managers
                         if (string.IsNullOrEmpty(jpgFile))
                             return;
 
-                        RTFile.WriteToFile(jpgFile, SpriteHelper.SpriteToString(prefab.icon));
+                        RTFile.WriteToFile(jpgFile, prefab.icon.texture.EncodeToJPG());
                     }),
                     new ButtonFunction("Capture Icon", () =>
                     {
-                        var captureSettings = RTEditor.inst.editorInfo.captureSettings;
-                        var icon = SpriteHelper.CaptureFrame(
-                            camera: RTLevel.Cameras.FG,
-                            move: captureSettings.move,
-                            width: captureSettings.resolution.x,
-                            height: captureSettings.resolution.y,
-                            offsetX: captureSettings.pos.x,
-                            offsetY: captureSettings.pos.y,
-                            rotationOffset: captureSettings.rot);
-                        prefab.icon = icon;
+                        prefab.icon = CaptureArea.inst?.Capture();
+                        prefabPanel.RenderPrefabType();
                         UpdatePrefabFile(prefabPanel);
                         RenderPrefabEditorDialog(prefabPanel);
                     }));
