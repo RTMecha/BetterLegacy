@@ -731,8 +731,6 @@ namespace BetterLegacy.Editor.Managers
         {
             Debug.Log($"{EventEditor.inst.className}Saving {theme.id} ({theme.name}) to File System!");
 
-            RTEditor.inst.DisableThemeWatcher();
-
             if (string.IsNullOrEmpty(theme.id))
                 theme.id = LSText.randomNumString(BeatmapTheme.ID_LENGTH);
 
@@ -742,12 +740,14 @@ namespace BetterLegacy.Editor.Managers
 
             var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath, $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}");
 
-            theme.filePath = path;
-
             if (RTFile.FileExists(theme.filePath))
             {
                 RTEditor.inst.ShowWarningPopup("File already exists. Do you wish to overwrite it?", () =>
                 {
+                    RTEditor.inst.DisableThemeWatcher();
+
+                    theme.filePath = path;
+
                     RTFile.WriteToFile(path, str);
 
                     EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
@@ -763,6 +763,10 @@ namespace BetterLegacy.Editor.Managers
                 });
                 return;
             }
+
+            RTEditor.inst.DisableThemeWatcher();
+
+            theme.filePath = path;
 
             RTFile.WriteToFile(path, str);
 
