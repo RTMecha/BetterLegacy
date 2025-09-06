@@ -47,6 +47,16 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public Vector2 pos;
 
+        float zoom = 1f;
+        /// <summary>
+        /// Zoom of the capture.
+        /// </summary>
+        public float Zoom
+        {
+            get => zoom;
+            set => zoom = Mathf.Clamp(value, 0.1f, float.MaxValue);
+        }
+
         /// <summary>
         /// Rotation of the capture.
         /// </summary>
@@ -55,7 +65,7 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// If resolution height and weight should match.
         /// </summary>
-        public bool matchSize = true;
+        public bool matchSize;
 
         #endregion
 
@@ -66,7 +76,9 @@ namespace BetterLegacy.Editor.Data
             resolution = orig.resolution;
             move = orig.move;
             pos = orig.pos;
+            zoom = orig.zoom;
             rot = orig.rot;
+            matchSize = orig.matchSize;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -104,6 +116,7 @@ namespace BetterLegacy.Editor.Data
             resolution = new Vector2Int(512, 512);
             move = true;
             pos = Vector2.zero;
+            zoom = 1f;
             rot = 0f;
         }
 
@@ -111,13 +124,13 @@ namespace BetterLegacy.Editor.Data
         /// Sets the resolution's width.
         /// </summary>
         /// <param name="x">Width value.</param>
-        public void SetResolutionWidth(int width) => resolution.x = RTMath.Clamp(width, 12, int.MaxValue);
+        public void SetResolutionWidth(int width) => resolution.x = RTMath.Clamp(width, 32, int.MaxValue);
 
         /// <summary>
         /// Sets the resolution's height.
         /// </summary>
         /// <param name="y">Height value.</param>
-        public void SetResolutionHeight(int height) => resolution.y = RTMath.Clamp(height, 12, int.MaxValue);
+        public void SetResolutionHeight(int height) => resolution.y = RTMath.Clamp(height, 32, int.MaxValue);
 
         #endregion
     }
