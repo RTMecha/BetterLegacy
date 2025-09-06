@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 using TMPro;
 
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Runtime;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -266,5 +268,18 @@ namespace BetterLegacy.Core.Managers
         public Canvas Canvas { get; set; }
         public CanvasGroup CanvasGroup { get; set; }
         public CanvasScaler CanvasScaler { get; set; }
+
+        public void SetForegroundLayer() => CoroutineHelper.StartCoroutine(ISetForegroundLayer());
+
+        IEnumerator ISetForegroundLayer()
+        {
+            Canvas.scaleFactor = 1f;
+            CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
+            GameObject.layer = RTLevel.FOREGROUND_LAYER;
+            Canvas.worldCamera = RTLevel.Cameras.FG;
+            Canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            yield return null;
+            Canvas.renderMode = RenderMode.WorldSpace;
+        }
     }
 }
