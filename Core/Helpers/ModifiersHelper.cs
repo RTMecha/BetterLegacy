@@ -1166,9 +1166,9 @@ namespace BetterLegacy.Core.Helpers
 
             // color
             new ModifierAction(nameof(ModifierFunctions.addColor),  ModifierFunctions.addColor, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.addColorOther),  ModifierFunctions.addColorOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.addColorOther),  ModifierFunctions.addColorOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierFunctions.lerpColor),  ModifierFunctions.lerpColor, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.lerpColorOther),  ModifierFunctions.lerpColorOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.lerpColorOther),  ModifierFunctions.lerpColorOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierAction(nameof(ModifierFunctions.addColorPlayerDistance),  ModifierFunctions.addColorPlayerDistance, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.lerpColorPlayerDistance),  ModifierFunctions.lerpColorPlayerDistance, ModifierCompatibility.BeatmapObjectCompatible),
 
@@ -1176,20 +1176,20 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction("setAlpha",  ModifierFunctions.setOpacity, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setOpacity),  ModifierFunctions.setOpacity, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction("setAlphaOther",  ModifierFunctions.setOpacityOther, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setOpacityOther),  ModifierFunctions.setOpacityOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setOpacityOther),  ModifierFunctions.setOpacityOther, ModifierCompatibility.FullBeatmapCompatible),
 
             // copy
             new ModifierAction(nameof(ModifierFunctions.copyColor),  ModifierFunctions.copyColor, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.copyColorOther),  ModifierFunctions.copyColorOther, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.applyColorGroup),  ModifierFunctions.applyColorGroup, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.copyColorOther),  ModifierFunctions.copyColorOther, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierAction(nameof(ModifierFunctions.applyColorGroup),  ModifierFunctions.applyColorGroup, ModifierCompatibility.FullBeatmapCompatible),
 
             // hex code
             new ModifierAction(nameof(ModifierFunctions.setColorHex),  ModifierFunctions.setColorHex, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setColorHexOther),  ModifierFunctions.setColorHexOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setColorHexOther),  ModifierFunctions.setColorHexOther, ModifierCompatibility.FullBeatmapCompatible),
 
             // rgba
             new ModifierAction(nameof(ModifierFunctions.setColorRGBA),  ModifierFunctions.setColorRGBA, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setColorRGBAOther),  ModifierFunctions.setColorRGBAOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setColorRGBAOther),  ModifierFunctions.setColorRGBAOther, ModifierCompatibility.FullBeatmapCompatible),
 
             new ModifierAction(nameof(ModifierFunctions.animateColorKF),  ModifierFunctions.animateColorKF, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()),
             new ModifierAction(nameof(ModifierFunctions.animateColorKFHex),  ModifierFunctions.animateColorKFHex, ModifierCompatibility.BeatmapObjectCompatible.WithBackgroundObject()),
@@ -1313,7 +1313,7 @@ namespace BetterLegacy.Core.Helpers
 
             // collision
             new ModifierAction(nameof(ModifierFunctions.setCollision),  ModifierFunctions.setCollision, ModifierCompatibility.BeatmapObjectCompatible),
-            new ModifierAction(nameof(ModifierFunctions.setCollisionOther),  ModifierFunctions.setCollisionOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setCollisionOther),  ModifierFunctions.setCollisionOther, ModifierCompatibility.FullBeatmapCompatible),
 
             #endregion
 
