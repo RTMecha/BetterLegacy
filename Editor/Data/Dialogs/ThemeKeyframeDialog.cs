@@ -268,6 +268,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorCreatorField = creator.GetComponent<InputField>();
             EditorCreatorField.GetPlaceholderText().text = "Set creator...";
             EditorCreatorField.textComponent.alignment = TextAnchor.MiddleCenter;
+            EditorCreatorField.textComponent.fontSize = 20;
+            EditorCreatorField.textComponent.resizeTextMinSize = 2;
 
             EditorThemeManager.AddInputField(EditorCreatorField);
 

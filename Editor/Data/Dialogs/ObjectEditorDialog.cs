@@ -1158,25 +1158,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             multiKF.transform.AsRT().anchorMin = new Vector2(0f, 1f);
 
             // Shift Dialogs
-            {
-                try
-                {
-                    ObjEditor.inst.KeyframeDialogs[0].transform.GetChild(2).gameObject.SetActive(false);
-                    ObjEditor.inst.KeyframeDialogs[0].transform.GetChild(7).gameObject.SetActive(false);
-                    ObjEditor.inst.KeyframeDialogs[1].transform.GetChild(2).gameObject.SetActive(false);
-                    ObjEditor.inst.KeyframeDialogs[1].transform.GetChild(7).gameObject.SetActive(false);
-                    ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(2).gameObject.SetActive(false);
-                    ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(7).gameObject.SetActive(false);
-                    ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(2).gameObject.SetActive(false);
-                    ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(7).gameObject.SetActive(false);
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-
                 CoreHelper.Destroy(right.GetComponent<VerticalLayoutGroup>(), true);
-            }
 
             // Multi Keyframe Editor
             {

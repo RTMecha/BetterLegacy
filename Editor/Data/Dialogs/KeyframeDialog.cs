@@ -121,6 +121,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EventTimeField = GameObject.transform.Find("time").gameObject.AddComponent<InputFieldStorage>();
                 EventTimeField.Assign(EventTimeField.gameObject);
 
+                GameObject.transform.GetChild(2).gameObject.SetActive(false);
+                if (type != 4)
+                    GameObject.transform.GetChild(7).gameObject.SetActive(false);
+
                 if (isObjectKeyframe)
                 {
                     if (GameObject.transform.TryFind(Name.ToLower(), out Transform valuesTransform))
