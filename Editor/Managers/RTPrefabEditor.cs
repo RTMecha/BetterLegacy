@@ -1366,7 +1366,12 @@ namespace BetterLegacy.Editor.Managers
 
                 newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, prefabObjects, backgroundObjects: bgObjects, prefabs: originalPrefab.prefabs);
                 newPrefab.beatmapThemes = new List<BeatmapTheme>(originalPrefab.beatmapThemes.Select(x => x.Copy(false)));
+                newPrefab.modifierBlocks = new List<ModifierBlock>(originalPrefab.modifierBlocks.Select(x => x.Copy(false)));
                 newPrefab.defaultInstanceData = originalPrefab.defaultInstanceData?.Copy(false);
+                newPrefab.iconData = originalPrefab.iconData;
+                newPrefab.description = originalPrefab.description;
+                newPrefab.creator = originalPrefab.creator;
+                newPrefab.assets = originalPrefab.assets.Copy();
 
                 foreach (var other in prefabObjects)
                 {
@@ -2390,6 +2395,8 @@ namespace BetterLegacy.Editor.Managers
 
             prefab.beatmapObjects.ForEach(x => x.RemovePrefabReference());
             int count = PrefabPanels.Count;
+            if (string.IsNullOrEmpty(prefab.filePath))
+                prefab.filePath = $"{RTFile.FormatLegacyFileName(prefab.name)}{FileFormat.LSP.Dot()}";
             var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, prefab.GetFileName());
             if (RTFile.FileExists(file))
             {
@@ -2400,9 +2407,19 @@ namespace BetterLegacy.Editor.Managers
                     prefab.filePath = file;
                     prefab.WriteToFile(file);
 
-                    var prefabPanel = new PrefabPanel(ObjectSource.External, count);
-                    prefabPanel.Init(prefab);
-                    PrefabPanels.Add(prefabPanel);
+                    if (PrefabPanels.TryFind(x => x.Path == file, out PrefabPanel originalPrefabPanel))
+                    {
+                        originalPrefabPanel.Item = prefab;
+                        prefab.prefabPanel = originalPrefabPanel;
+                        originalPrefabPanel.Render();
+                        originalPrefabPanel.SetActive(ContainsName(prefab, originalPrefabPanel.Source));
+                    }
+                    else
+                    {
+                        var prefabPanel = new PrefabPanel(ObjectSource.External, count);
+                        prefabPanel.Init(prefab);
+                        PrefabPanels.Add(prefabPanel);
+                    }
 
                     EditorManager.inst.DisplayNotification($"Saved External Prefab [{prefab.name}]!", 2f, EditorManager.NotificationType.Success);
 
@@ -2416,9 +2433,19 @@ namespace BetterLegacy.Editor.Managers
             prefab.filePath = file;
             prefab.WriteToFile(file);
 
-            var prefabPanel = new PrefabPanel(ObjectSource.External, count);
-            prefabPanel.Init(prefab);
-            PrefabPanels.Add(prefabPanel);
+            if (PrefabPanels.TryFind(x => x.Path == file, out PrefabPanel originalPrefabPanel))
+            {
+                originalPrefabPanel.Item = prefab;
+                prefab.prefabPanel = originalPrefabPanel;
+                originalPrefabPanel.Render();
+                originalPrefabPanel.SetActive(ContainsName(prefab, originalPrefabPanel.Source));
+            }
+            else
+            {
+                var prefabPanel = new PrefabPanel(ObjectSource.External, count);
+                prefabPanel.Init(prefab);
+                PrefabPanels.Add(prefabPanel);
+            }
 
             EditorManager.inst.DisplayNotification($"Saved External Prefab [{prefab.name}]!", 2f, EditorManager.NotificationType.Success);
 

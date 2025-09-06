@@ -736,21 +736,34 @@ namespace BetterLegacy.Editor.Managers
 
             GameData.SaveOpacityToThemes = EditorConfig.Instance.SavingSavesThemeOpacity.Value;
 
-            var str = EditorConfig.Instance.ThemeSavesIndents.Value ? theme.ToJSON().ToString(3) : theme.ToJSON().ToString();
-
-            var path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath, $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}");
-
+            int count = ExternalThemePanels.Count;
+            if (string.IsNullOrEmpty(theme.filePath))
+                theme.filePath = $"{RTFile.FormatLegacyFileName(theme.name)}{FileFormat.LST.Dot()}";
+            var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.ThemePath, theme.GetFileName());
             if (RTFile.FileExists(theme.filePath))
             {
                 RTEditor.inst.ShowWarningPopup("File already exists. Do you wish to overwrite it?", () =>
                 {
                     RTEditor.inst.DisableThemeWatcher();
 
-                    theme.filePath = path;
-
-                    RTFile.WriteToFile(path, str);
+                    theme.filePath = file;
+                    theme.WriteToFile(file);
 
                     EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
+
+                    if (ExternalThemePanels.TryFind(x => x.Path == file, out ThemePanel originalThemePanel))
+                    {
+                        originalThemePanel.Item = theme;
+                        theme.themePanel = originalThemePanel;
+                        originalThemePanel.Render();
+                        RenderThemeList();
+                    }
+                    else
+                    {
+                        var themePanel = new ThemePanel(ObjectSource.External, count);
+                        themePanel.Init(theme);
+                        ExternalThemePanels.Add(themePanel);
+                    }
 
                     CoroutineHelper.StartCoroutine(LoadThemes());
 
@@ -766,13 +779,24 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.DisableThemeWatcher();
 
-            theme.filePath = path;
-
-            RTFile.WriteToFile(path, str);
+            theme.filePath = file;
+            theme.WriteToFile(file);
 
             EditorManager.inst.DisplayNotification($"Saved theme [{theme.name}]!", 2f, EditorManager.NotificationType.Success);
 
-            CoroutineHelper.StartCoroutine(LoadThemes());
+            if (ExternalThemePanels.TryFind(x => x.Path == file, out ThemePanel originalThemePanel))
+            {
+                originalThemePanel.Item = theme;
+                theme.themePanel = originalThemePanel;
+                originalThemePanel.Render();
+                RenderThemeList();
+            }
+            else
+            {
+                var themePanel = new ThemePanel(ObjectSource.External, count);
+                themePanel.Init(theme);
+                ExternalThemePanels.Add(themePanel);
+            }
 
             RTEditor.inst.EnableThemeWatcher();
         }

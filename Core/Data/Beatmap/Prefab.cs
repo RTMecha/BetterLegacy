@@ -18,7 +18,7 @@ namespace BetterLegacy.Core.Data.Beatmap
     /// <summary>
     /// Contains a package of <see cref="IPrefabable"/> objects.
     /// </summary>
-    public class Prefab : PAObject<Prefab>, IBeatmap, IPrefabable, IUploadable
+    public class Prefab : PAObject<Prefab>, IBeatmap, IPrefabable, IUploadable, IFile
     {
         public Prefab() : base() { }
 
@@ -79,7 +79,10 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public string typeID;
 
-        string iconData;
+        /// <summary>
+        /// Data of the icon.
+        /// </summary>
+        public string iconData;
         /// <summary>
         /// Icon of the Prefab.
         /// </summary>

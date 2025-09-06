@@ -7,12 +7,13 @@ using LSFunctions;
 
 using SimpleJSON;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Data.Elements;
 
 namespace BetterLegacy.Core.Data.Beatmap
 {
-    public class BeatmapTheme : PAObject<BeatmapTheme>, IUploadable
+    public class BeatmapTheme : PAObject<BeatmapTheme>, IUploadable, IFile
     {
         public BeatmapTheme() => id = string.Empty;
 
@@ -46,6 +47,8 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Creator of the theme.
         /// </summary>
         public string creator;
+
+        public FileFormat FileFormat => RTFile.GetFileFormat(filePath);
 
         #region Server
 
@@ -498,6 +501,47 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// <param name="index">Index of the color.</param>
         /// <returns>Returns a color from the effect color list.</returns>
         public Color GetFXColor(int index) => effectColors[Mathf.Clamp(index, 0, effectColors.Count - 1)];
+
+        public string GetFileName() => $"{RTFile.FormatLegacyFileName(name)}{FileFormat.Dot()}";
+
+        public void ReadFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var fileName = GetFileName();
+            if (!path.EndsWith(fileName))
+                path = RTFile.CombinePaths(path, fileName);
+
+            var file = RTFile.ReadFromFile(path);
+            if (string.IsNullOrEmpty(file))
+                return;
+
+            switch (FileFormat)
+            {
+                case FileFormat.LST:
+                    ReadJSON(JSON.Parse(file));
+                    break;
+                case FileFormat.VGT:
+                    ReadJSONVG(JSON.Parse(file));
+                    break;
+            }
+        }
+
+        public void WriteToFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var jn = FileFormat switch
+            {
+                FileFormat.LST => ToJSON(),
+                FileFormat.VGT => ToJSONVG(),
+                _ => null,
+            };
+            if (jn != null)
+                RTFile.WriteToFile(path, EditorConfig.Instance.ThemeSavesIndents.Value ? jn.ToString(3) : jn.ToString());
+        }
 
         #endregion
 
