@@ -678,7 +678,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void TakeScreenshot()
         {
-            string directory = RTFile.ApplicationDirectory + CoreConfig.Instance.ScreenshotsPath.Value;
+            string directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, CoreConfig.Instance.ScreenshotsPath.Value);
             RTFile.CreateDirectory(directory);
 
             var file = RTFile.CombinePaths(directory, DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + FileFormat.PNG.Dot());
