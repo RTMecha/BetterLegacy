@@ -596,8 +596,10 @@ namespace BetterLegacy.Editor.Data.Timeline
             gameObject.transform.Find("icons/dots").gameObject.SetActive(Collapse);
             var typeIcon = gameObject.transform.Find("icons/type").gameObject;
 
-            var icon = prefab?.GetIcon() ?? prefab?.GetPrefabType()?.icon;
-            var renderTypeIcon = icon && ObjectEditor.RenderPrefabTypeIcon;
+            var icon = prefab?.GetIcon();
+            if (!EditorConfig.Instance.TimelineObjectPrefabIcon.Value || !icon)
+                icon = prefab?.GetPrefabType()?.icon;
+            var renderTypeIcon = icon && EditorConfig.Instance.TimelineObjectPrefabTypeIcon.Value;
             typeIcon.SetActive(renderTypeIcon);
             if (renderTypeIcon)
                 typeIcon.transform.Find("type").GetComponent<Image>().sprite = icon;

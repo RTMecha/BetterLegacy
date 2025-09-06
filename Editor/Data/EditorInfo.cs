@@ -11,7 +11,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
-    public class EditorInfo : Exists
+    public class EditorInfo : PAObject<EditorInfo>
     {
         #region Usage
 
@@ -121,19 +121,19 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public string themePath;
 
-        /// <summary>
-        /// Parses an <see cref="EditorInfo"/> from JSON.
-        /// </summary>
-        /// <param name="jn">JSON to parse.</param>
-        /// <returns>Returns a parsed <see cref="EditorInfo"/>.</returns>
-        public static EditorInfo Parse(JSONNode jn)
-        {
-            var editorInfo = new EditorInfo();
+        public CaptureSettings captureSettings = new CaptureSettings();
 
+        public override void CopyData(EditorInfo orig, bool newID = true)
+        {
+
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
             if (jn["paths"] != null)
             {
-                editorInfo.prefabPath = jn["paths"]["prefab"];
-                editorInfo.themePath = jn["paths"]["theme"];
+                prefabPath = jn["paths"]["prefab"];
+                themePath = jn["paths"]["theme"];
             }
 
             if (jn["timeline"] != null)
@@ -165,46 +165,46 @@ namespace BetterLegacy.Editor.Data
                 if (jn["timeline"]["layer"] != null)
                     layer = jn["timeline"]["layer"].AsInt;
 
-                editorInfo.mainZoom = zoom;
-                editorInfo.mainPosition = position;
+                mainZoom = zoom;
+                mainPosition = position;
 
-                editorInfo.layer = layer;
-                editorInfo.layerType = layerType;
+                layer = layer;
+                layerType = layerType;
 
-                editorInfo.binCount = jn["timeline"]["bin_count"] != null ? jn["timeline"]["bin_count"].AsInt : EditorTimeline.DEFAULT_BIN_COUNT;
-                editorInfo.binPosition = jn["timeline"]["bin_position"].AsFloat;
+                binCount = jn["timeline"]["bin_count"] != null ? jn["timeline"]["bin_count"].AsInt : EditorTimeline.DEFAULT_BIN_COUNT;
+                binPosition = jn["timeline"]["bin_position"].AsFloat;
 
                 if (jn["timeline"]["pinned_layers"] != null)
                     for (int i = 0; i < jn["timeline"]["pinned_layers"].Count; i++)
-                        editorInfo.pinnedEditorLayers.Add(PinnedEditorLayer.Parse(jn["timeline"]["pinned_layers"][i]));
+                        pinnedEditorLayers.Add(PinnedEditorLayer.Parse(jn["timeline"]["pinned_layers"][i]));
             }
 
             if (jn["editor"] != null)
             {
                 if (jn["editor"]["t"] != null)
-                    editorInfo.timer.offset = jn["editor"]["t"].AsFloat;
+                    timer.offset = jn["editor"]["t"].AsFloat;
                 if (jn["editor"]["editing_time"] != null)
-                    editorInfo.timer.offset = jn["editor"]["editing_time"].AsFloat;
+                    timer.offset = jn["editor"]["editing_time"].AsFloat;
 
                 if (jn["editor"]["a"] != null)
-                    editorInfo.openAmount = jn["editor"]["a"].AsInt + 1;
+                    openAmount = jn["editor"]["a"].AsInt + 1;
                 if (jn["editor"]["open_amount"] != null)
-                    editorInfo.openAmount = jn["editor"]["open_amount"].AsInt + 1;
+                    openAmount = jn["editor"]["open_amount"].AsInt + 1;
             }
 
             try
             {
                 if (jn["story"] != null)
                 {
-                    editorInfo.isStory = true;
+                    isStory = true;
                     if (jn["story"]["chapter"] != null)
-                        editorInfo.storyChapter = jn["story"]["chapter"].AsInt;
+                        storyChapter = jn["story"]["chapter"].AsInt;
                     if (jn["story"]["level"] != null)
-                        editorInfo.storyLevel = jn["story"]["level"].AsInt;
+                        storyLevel = jn["story"]["level"].AsInt;
                     if (jn["story"]["cutscene"] != null)
-                        editorInfo.cutscene = jn["story"]["cutscene"].AsInt;
+                        cutscene = jn["story"]["cutscene"].AsInt;
                     if (jn["story"]["cutscene_destination"] != null && System.Enum.TryParse(jn["story"]["cutscene_destination"], true, out Story.CutsceneDestination cutsceneDestination))
-                        editorInfo.cutsceneDestination = cutsceneDestination;
+                        cutsceneDestination = cutsceneDestination;
                 }
             }
             catch (System.Exception ex)
@@ -214,42 +214,42 @@ namespace BetterLegacy.Editor.Data
 
             if (jn["misc"] != null)
             {
+                captureSettings?.ReadJSON(jn["misc"]["capture_settings"]);
+
                 if (jn["misc"]["bpm_analyzed"] != null)
-                    editorInfo.analyzedBPM = jn["misc"]["bpm_analyzed"].AsBool;
+                    analyzedBPM = jn["misc"]["bpm_analyzed"].AsBool;
 
                 if (jn["misc"]["sn"] != null)
-                    editorInfo.bpmSnapActive = jn["misc"]["sn"].AsBool;
+                    bpmSnapActive = jn["misc"]["sn"].AsBool;
                 if (jn["misc"]["bpm_snap_active"] != null)
-                    editorInfo.bpmSnapActive = jn["misc"]["bpm_snap_active"].AsBool;
+                    bpmSnapActive = jn["misc"]["bpm_snap_active"].AsBool;
 
                 if (jn["misc"]["bpm"] != null)
-                    editorInfo.bpm = jn["misc"]["bpm"].AsFloat;
-                
+                    bpm = jn["misc"]["bpm"].AsFloat;
+
                 if (jn["misc"]["so"] != null)
-                    editorInfo.bpmOffset = jn["misc"]["so"].AsFloat;
+                    bpmOffset = jn["misc"]["so"].AsFloat;
                 if (jn["misc"]["bpm_offset"] != null)
-                    editorInfo.bpmOffset = jn["misc"]["bpm_offset"].AsFloat;
-                
+                    bpmOffset = jn["misc"]["bpm_offset"].AsFloat;
+
                 if (jn["misc"]["bpm_signature"] != null)
-                    editorInfo.timeSignature = jn["misc"]["bpm_signature"].AsFloat;
+                    timeSignature = jn["misc"]["bpm_signature"].AsFloat;
 
                 if (jn["misc"]["t"] != null)
-                    editorInfo.time = jn["misc"]["t"].AsFloat;
+                    time = jn["misc"]["t"].AsFloat;
                 if (jn["misc"]["time"] != null)
-                    editorInfo.time = jn["misc"]["time"].AsFloat;
+                    time = jn["misc"]["time"].AsFloat;
 
                 if (jn["misc"]["prefab_object_data"] != null && RTPrefabEditor.inst)
                     RTPrefabEditor.inst.copiedInstanceData = PrefabObject.Parse(jn["misc"]["prefab_object_data"]);
             }
-
-            return editorInfo;
         }
 
         /// <summary>
         /// Converts the editor info into a JSON object.
         /// </summary>
         /// <returns>Returns a JSON object representing the editor info.</returns>
-        public JSONNode ToJSON()
+        public override JSONNode ToJSON()
         {
             var jn = Parser.NewJSONObject();
 
@@ -283,6 +283,9 @@ namespace BetterLegacy.Editor.Data
                         jn["story"]["cutscene_destination"] = cutsceneDestination.ToString().ToLower();
                 }
             }
+
+            if (captureSettings)
+                jn["misc"]["capture_settings"] = captureSettings.ToJSON();
 
             if (analyzedBPM)
                 jn["misc"]["bpm_analyzed"] = analyzedBPM;

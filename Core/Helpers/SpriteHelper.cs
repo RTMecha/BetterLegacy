@@ -115,7 +115,7 @@ namespace BetterLegacy.Core.Helpers
         // Inspect(CoreHelper.AssignRenderTexture(EventManager.inst.cam, 512, 512, 10f))
         // Inspect(CoreHelper.AssignRenderTexture(512, 512, 10f))
         // Inspect(CoreHelper.AssignRenderTexture(512, 512, 10f, -10f))
-        public static Sprite CaptureFrame(Camera camera, int width = 512, int height = 512, float offsetX = 0f, float offsetY = 0f)
+        public static Sprite CaptureFrame(Camera camera, bool move = true, int width = 512, int height = 512, float offsetX = 0f, float offsetY = 0f, float rotationOffset = 0f)
         {
             //var alpha = camera.backgroundColor.a;
             //camera.backgroundColor = RTColors.FadeColor(camera.backgroundColor, 1f);
@@ -126,7 +126,14 @@ namespace BetterLegacy.Core.Helpers
             //    camera.orthographicSize = 1f;
 
             // Prep camera position so it renders the offset area
-            camera.transform.localPosition = new Vector3(offsetX, offsetY);
+            var origPosition = camera.transform.localPosition;
+            var origRotation = camera.transform.localEulerAngles;
+
+            if (move)
+            {
+                camera.transform.localPosition = new Vector3(offsetX, offsetY);
+                camera.transform.localEulerAngles = new Vector3(0f, 0f, rotationOffset);
+            }
 
             // Get render texture
             var renderTexture = new RenderTexture(width, height, 0);
@@ -156,8 +163,12 @@ namespace BetterLegacy.Core.Helpers
             CoreHelper.Destroy(renderTexture);
             renderTexture = null;
 
-            // Reset camera position to normal
-            camera.transform.localPosition = Vector3.zero;
+            // Reset camera position and rotation to normal
+            if (move)
+            {
+                camera.transform.localPosition = origPosition;
+                camera.transform.localEulerAngles = origRotation;
+            }
 
             //Graphics.CopyTexture(renderTexture, texture);
 
@@ -189,6 +200,29 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Combiner
+
+        /*
+var bg = SpriteHelper.CaptureFrame(RTLevel.Cameras.BG);
+var fg = SpriteHelper.CaptureFrame(RTLevel.Cameras.FG);
+
+Inspect(SpriteHelper.CombineTextures(512, 512, bg.texture, fg.texture));
+         */
+
+        public static Texture2D CombineTextures(int width, int height, params Texture2D[] textures)
+        {
+            var combinedTexture = new Texture2D(width, height);
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    foreach (var texture in textures)
+                    {
+                        combinedTexture.SetPixel(x, y, texture.GetPixel(x, y));
+                    }
+                }
+            }
+            return combinedTexture;
+        }
 
         // Code below from https://github.com/awteeter/Unity-Sprite-Combiner
 
