@@ -470,13 +470,17 @@ namespace BetterLegacy.Editor.Data.Elements
                             new ButtonFunction("Add to Prefab", () =>
                             {
                                 RTPrefabEditor.inst.OpenPopup();
-                                RTPrefabEditor.inst.onSelectPrefab = prefab =>
+                                RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
                                 {
-                                    if (!Item)
+                                    if (!Item || !prefabPanel.Item)
                                         return;
 
-                                    if (prefab.AddTheme(Item))
+                                    if (prefabPanel.Item.AddTheme(Item))
+                                    {
+                                        if (prefabPanel.IsExternal)
+                                            RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
                                         EditorManager.inst.DisplayNotification($"Added theme {Item} to the prefab.", 2f, EditorManager.NotificationType.Success);
+                                    }
                                     else
                                         EditorManager.inst.DisplayNotification($"Prefab already has a theme with the same ID!", 2f, EditorManager.NotificationType.Warning);
                                 };

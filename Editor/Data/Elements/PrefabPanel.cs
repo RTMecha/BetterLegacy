@@ -402,7 +402,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         {
                             if (RTPrefabEditor.inst.onSelectPrefab != null)
                             {
-                                RTPrefabEditor.inst.onSelectPrefab.Invoke(Item);
+                                RTPrefabEditor.inst.onSelectPrefab.Invoke(this);
                                 RTPrefabEditor.inst.onSelectPrefab = null;
                                 return;
                             }
@@ -476,6 +476,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                         RTPrefabEditor.inst.DeleteInternalPrefab(Item);
                                         RTEditor.inst.HideWarningPopup();
                                     }, RTEditor.inst.HideWarningPopup)),
+                                    new ButtonFunction("Export", () => RTPrefabEditor.inst.SavePrefab(Item.Copy(false)), "Internal Prefab Export"),
                                     new ButtonFunction(true),
                                 };
                                 buttonFunctions.AddRange(EditorContextMenu.GetMoveIndexFunctions(GameData.Current.prefabs, index, () =>
