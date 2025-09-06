@@ -180,6 +180,23 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var jn = Parser.ModifierBlocksToJSON(GameData.Current.modifierBlocks);
                                 LSText.CopyToClipboard(jn.ToString(3));
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("Add to Prefab", () =>
+                            {
+                                RTPrefabEditor.inst.OpenPopup();
+                                RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
+                                {
+                                    if (!prefabPanel.Item.modifierBlocks.Has(x => x.Name == modifierBlock.Name))
+                                    {
+                                        prefabPanel.Item.modifierBlocks.Add(modifierBlock.Copy(false));
+                                        if (prefabPanel.IsExternal)
+                                            RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
+                                        EditorManager.inst.DisplayNotification($"Added modifier block {modifierBlock.Name} to the prefab.", 2f, EditorManager.NotificationType.Success);
+                                    }
+                                    else
+                                        EditorManager.inst.DisplayNotification($"Prefab already has a theme with the same ID!", 2f, EditorManager.NotificationType.Warning);
+                                };
                             }));
                         return;
                     }
