@@ -828,6 +828,7 @@ namespace BetterLegacy.Editor.Managers
                 currentModel.ObjectVersion = _val;
                 PlayerManager.UpdatePlayerModels();
             });
+            Dialog.BaseTab.Version.Field.onEndEdit.NewListener(_val => RenderBaseTab(currentModel));
             EditorContextMenu.inst.AddContextMenu(Dialog.BaseTab.Version.Field.gameObject, EditorContextMenu.GetObjectVersionFunctions(currentModel, () => RenderBaseTab(currentModel)));
 
             Dialog.BaseTab.EditControls.Toggle.SetIsOnWithoutNotify(editControls);
