@@ -2250,6 +2250,14 @@ namespace BetterLegacy.Editor.Managers
                         prefabPanel.RenderPrefabType();
                         UpdatePrefabFile(prefabPanel);
                         RenderPrefabEditorDialog(prefabPanel);
+                    }),
+                    new ButtonFunction("Clear Icon", () =>
+                    {
+                        prefab.icon = null;
+                        prefab.iconData = null;
+                        prefabPanel.RenderPrefabType();
+                        UpdatePrefabFile(prefabPanel);
+                        RenderPrefabEditorDialog(prefabPanel);
                     }));
             }
 

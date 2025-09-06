@@ -465,6 +465,7 @@ namespace BetterLegacy.Editor.Managers
                             break;
 
                         RTPrefabEditor.inst.CurrentPrefabPanel.Item.icon = null;
+                        RTPrefabEditor.inst.CurrentPrefabPanel.Item.iconData = null;
                         RTPrefabEditor.inst.CurrentPrefabPanel.RenderPrefabType();
                         RTPrefabEditor.inst.UpdatePrefabFile(RTPrefabEditor.inst.CurrentPrefabPanel);
                         RTPrefabEditor.inst.RenderPrefabEditorDialog(RTPrefabEditor.inst.CurrentPrefabPanel);
