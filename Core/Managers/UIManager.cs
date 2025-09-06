@@ -269,14 +269,14 @@ namespace BetterLegacy.Core.Managers
         public CanvasGroup CanvasGroup { get; set; }
         public CanvasScaler CanvasScaler { get; set; }
 
-        public void SetForegroundLayer() => CoroutineHelper.StartCoroutine(ISetForegroundLayer());
+        public void SetWorldSpace(int layer, Camera worldCamera) => CoroutineHelper.StartCoroutine(ISetWorldSpace(layer, worldCamera));
 
-        IEnumerator ISetForegroundLayer()
+        IEnumerator ISetWorldSpace(int layer, Camera worldCamera)
         {
             Canvas.scaleFactor = 1f;
             CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-            GameObject.layer = RTLevel.FOREGROUND_LAYER;
-            Canvas.worldCamera = RTLevel.Cameras.FG;
+            GameObject.layer = layer;
+            Canvas.worldCamera = worldCamera;
             Canvas.renderMode = RenderMode.ScreenSpaceCamera;
             yield return null;
             Canvas.renderMode = RenderMode.WorldSpace;
