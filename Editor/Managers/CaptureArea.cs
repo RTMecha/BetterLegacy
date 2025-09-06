@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,6 +8,7 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
@@ -15,7 +18,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
-using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -37,7 +39,7 @@ namespace BetterLegacy.Editor.Managers
         public static void Init()
         {
             var canvas = UIManager.GenerateUICanvas("Capture Canvas", null);
-            canvas.SetForegroundLayer();
+            canvas.SetWorldSpace(RTLevel.FOREGROUND_LAYER, RTLevel.Cameras.FG);
             var captureArea = canvas.GameObject.AddComponent<CaptureArea>();
             captureArea.canvas = canvas;
             captureArea.InternalInit();
@@ -227,6 +229,9 @@ namespace BetterLegacy.Editor.Managers
 
             var captureSettings = Settings;
 
+            if (prevMatchSize != MatchSize && MatchSize)
+                captureSettings.SetResolutionHeight(captureSettings.Resolution.x);
+
             if (dragging)
             {
                 var mousePosition = startDragPos - (Vector2)RTLevel.Cameras.FG.ScreenToWorldPoint(Input.mousePosition);
@@ -276,6 +281,9 @@ namespace BetterLegacy.Editor.Managers
             baseImage.rectTransform.anchoredPosition = captureSettings.pos * POSITION_MULTIPLY;
             baseImage.rectTransform.sizeDelta = (Vector2)captureSettings.Resolution * SIZE_MULTIPLY;
             baseImage.rectTransform.localEulerAngles = new Vector3(0f, 0f, captureSettings.rot);
+
+            prevView = View;
+            prevMatchSize = MatchSize;
         }
 
         void OnDestroy()
@@ -305,11 +313,13 @@ namespace BetterLegacy.Editor.Managers
         public bool Active => forceActive || View != ViewType.Null;
         bool forceActive;
 
+        bool prevMatchSize;
         /// <summary>
         /// If the capture area's resolution should have a 1:1 aspect ratio.
         /// </summary>
         public bool MatchSize => View == ViewType.Prefab || (Settings?.matchSize ?? false);
 
+        ViewType prevView;
         /// <summary>
         /// The current view.
         /// </summary>
@@ -319,6 +329,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (RTPrefabEditor.inst && (RTPrefabEditor.inst.PrefabEditorDialog && RTPrefabEditor.inst.PrefabEditorDialog.IsCurrent))
                     return ViewType.Prefab;
+                if (RTEditor.inst && RTEditor.inst.ScreenshotsDialog && RTEditor.inst.ScreenshotsDialog.IsCurrent)
+                    return ViewType.Screenshot;
                 return ViewType.Null;
             }
         }
@@ -333,6 +345,7 @@ namespace BetterLegacy.Editor.Managers
             /// </summary>
             Null,
             Prefab,
+            Screenshot,
         }
 
         const float POSITION_MULTIPLY = 16f;
@@ -450,6 +463,17 @@ namespace BetterLegacy.Editor.Managers
                         RTPrefabEditor.inst.RenderPrefabEditorDialog(RTPrefabEditor.inst.CurrentPrefabPanel);
                         break;
                     }
+                case ViewType.Screenshot: {
+                        var capture = Capture();
+
+                        string directory = RTFile.CombinePaths(RTFile.ApplicationDirectory, CoreConfig.Instance.ScreenshotsPath.Value);
+                        RTFile.CreateDirectory(directory);
+
+                        var file = RTFile.CombinePaths(directory, DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + FileFormat.PNG.Dot());
+                        File.WriteAllBytes(file, capture.texture.EncodeToPNG());
+
+                        break;
+                    }
             }
         }
 
@@ -499,10 +523,13 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
             baseObject.SetActive(true);
+            RTLevel.Cameras.UI.enabled = false;
+            RTLevel.Cameras.UI.enabled = true;
+
             SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+
             if (flashAnim)
                 AnimationManager.inst.Remove(flashAnim.id);
-
             flashAnim = new RTAnimation("Flash");
             flashAnim.animationHandlers = new List<AnimationHandlerBase>
             {
