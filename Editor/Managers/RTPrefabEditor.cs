@@ -2242,7 +2242,7 @@ namespace BetterLegacy.Editor.Managers
                         if (string.IsNullOrEmpty(jpgFile))
                             return;
 
-                        RTFile.WriteToFile(jpgFile, prefab.icon.texture.EncodeToJPG());
+                        File.WriteAllBytes(jpgFile, prefab.icon.texture.EncodeToJPG());
                     }),
                     new ButtonFunction("Capture Icon", () =>
                     {
