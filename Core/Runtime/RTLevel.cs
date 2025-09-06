@@ -7,6 +7,7 @@ using UnityEngine;
 
 using DG.Tweening;
 
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -450,6 +451,36 @@ namespace BetterLegacy.Core.Runtime
                 if (CoreHelper.InEditor)
                     GameData.Current.events[i].ForLoop((eventKeyframe, index) => eventKeyframe.timelineKeyframe.Index = index);
             }
+        }
+
+        /// <summary>
+        /// List of runtime cameras.
+        /// </summary>
+        public static class Cameras
+        {
+            /// <summary>
+            /// Gets the list of cameras.
+            /// </summary>
+            /// <returns>Returns a list of game cameras.</returns>
+            public static List<Camera> GetCameras() => new List<Camera>
+            {
+                BG,
+                FG,
+                UI,
+            };
+
+            /// <summary>
+            /// Background layer camera.
+            /// </summary>
+            public static Camera BG => EventManager.inst ? EventManager.inst.camPer : null;
+            /// <summary>
+            /// Foreground layer camera.
+            /// </summary>
+            public static Camera FG => EventManager.inst ? EventManager.inst.cam : null;
+            /// <summary>
+            /// User Interface layer camera.
+            /// </summary>
+            public static Camera UI => RTEventManager.inst ? RTEventManager.inst.uiCam : null;
         }
 
         #endregion
