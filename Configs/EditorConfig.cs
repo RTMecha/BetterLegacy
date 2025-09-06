@@ -34,7 +34,6 @@ namespace BetterLegacy.Configs
             BindSettings();
 
             SelectGUI.DragGUI = DragUI.Value;
-            ObjectEditor.RenderPrefabTypeIcon = TimelineObjectPrefabTypeIcon.Value;
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
             ObjectEditor.HideVisualElementsWhenObjectIsEmpty = HideVisualElementsWhenObjectIsEmpty.Value;
             RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
@@ -104,6 +103,7 @@ namespace BetterLegacy.Configs
         public Setting<float> KeyframeEndLengthOffset { get; set; }
         public Setting<float> TimelineCollapseLength { get; set; }
         public Setting<bool> TimelineObjectPrefabTypeIcon { get; set; }
+        public Setting<bool> TimelineObjectPrefabIcon { get; set; }
         public Setting<bool> EventLabelsRenderLeft { get; set; }
         public Setting<bool> EventKeyframesRenderBinColor { get; set; }
         public Setting<bool> ObjectKeyframesRenderBinColor { get; set; }
@@ -133,6 +133,8 @@ namespace BetterLegacy.Configs
         public Setting<bool> SettingPathReloads { get; set; }
         public Setting<Rank> EditorRank { get; set; }
         public Setting<bool> CopyPasteGlobal { get; set; }
+        public Setting<bool> PasteBackgroundObjectsOverwrites { get; set; }
+        public Setting<bool> RetainCopiedPrefabInstanceData { get; set; }
         public Setting<ArrhythmiaType> CombinerOutputFormat { get; set; }
         public Setting<bool> SavingSavesThemeOpacity { get; set; }
         public Setting<bool> AutoPolygonRadius { get; set; }
@@ -146,7 +148,6 @@ namespace BetterLegacy.Configs
         public Setting<float> FileBrowserAudioPreviewLength { get; set; }
         public Setting<bool> ThemeSavesIndents { get; set; }
         public Setting<bool> FileBrowserRemembersLocation { get; set; }
-        public Setting<bool> PasteBackgroundObjectsOverwrites { get; set; }
         public Setting<bool> ShowDefaultThemes { get; set; }
         public Setting<int> ImageSequenceFPS { get; set; }
         public Setting<bool> OverwriteImportedImages { get; set; }
@@ -494,7 +495,8 @@ namespace BetterLegacy.Configs
             MoveToChangedBin = Bind(this, TIMELINE, "Move To Changed Bin", true, "If the timeline should move to the bottom of the bin count when a bin is added / removed.");
             KeyframeEndLengthOffset = Bind(this, TIMELINE, "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
             TimelineCollapseLength = Bind(this, TIMELINE, "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
-            TimelineObjectPrefabTypeIcon = Bind(this, TIMELINE, "Timeline Object Prefab Type Icon", true, "Shows the object's prefab type's icon.");
+            TimelineObjectPrefabTypeIcon = Bind(this, TIMELINE, "Timeline Object Prefab Type Icon", true, "Shows the object's Prefab Type's icon.");
+            TimelineObjectPrefabIcon = Bind(this, TIMELINE, "Timeline Object Prefab Icon", false, "If the Prefab icon should be prioritized.");
             EventLabelsRenderLeft = Bind(this, TIMELINE, "Event Labels Render Left", false, "If the Event Layer labels should render on the left side or not.");
             EventKeyframesRenderBinColor = Bind(this, TIMELINE, "Event Keyframes Use Bin Color", true, "If the Event Keyframes should use the bin color when not selected or not.");
             ObjectKeyframesRenderBinColor = Bind(this, TIMELINE, "Object Keyframes Use Bin Color", true, "If the Object Keyframes should use the bin color when not selected or not.");
@@ -524,6 +526,8 @@ namespace BetterLegacy.Configs
             SettingPathReloads = Bind(this, DATA, "Setting Path Reloads", true, "With this setting on, update the list for levels, prefabs and themes when changing the directory.");
             EditorRank = Bind(this, DATA, "Editor Rank", Rank.Null, "What rank should be used when displaying / calculating level rank while in the editor.");
             CopyPasteGlobal = Bind(this, DATA, "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
+            PasteBackgroundObjectsOverwrites = Bind(this, DATA, "Paste Background Objects Overwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
+            RetainCopiedPrefabInstanceData = Bind(this, DATA, "Retain Copied Prefab Instance Data", false, "If the copied Prefab instance data should be kept when loading a different level.");
             CombinerOutputFormat = BindEnum(this, DATA, "Combiner Output Format", ArrhythmiaType.LS, "Which PA file type the level combiner outputs.");
             SavingSavesThemeOpacity = Bind(this, DATA, "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
             AutoPolygonRadius = Bind(this, DATA, "Auto Polygon Radius", true, "If polygon shapes' should have their radius automatically modified to fit the way VG handles them.");
@@ -537,7 +541,6 @@ namespace BetterLegacy.Configs
             FileBrowserAudioPreviewLength = Bind(this, DATA, "File Browser Audio Preview Length", 3f, "How long the file browser audio preview should be.");
             ThemeSavesIndents = Bind(this, DATA, "Theme Saves Indents", false, "If .lst files should save with multiple lines and indents.");
             FileBrowserRemembersLocation = Bind(this, DATA, "File Browser Remembers Location", true, "If the in-editor File Browser should retain the previous path that was set.");
-            PasteBackgroundObjectsOverwrites = Bind(this, DATA, "Paste Background Objects Overwrites", true, "If pasting the entire copied set of BG objects overwrites the current list of BG objects.");
             ShowDefaultThemes = Bind(this, DATA, "Show Default Themes", true, "If the default beatmap themes should appear in the theme list.");
             ImageSequenceFPS = Bind(this, DATA, "Image Sequence FPS", 24, "FPS of a generated image sequence. Image sequences can be created by dragging in a collection of images or a folder that only contains images.");
             OverwriteImportedImages = Bind(this, DATA, "Overwrite Imported Images", false, "If imported images to image objects should overwrite the file.");
@@ -1449,7 +1452,6 @@ namespace BetterLegacy.Configs
         {
             SetPreviewConfig();
 
-            ObjectEditor.RenderPrefabTypeIcon = TimelineObjectPrefabTypeIcon.Value;
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
             RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
 
