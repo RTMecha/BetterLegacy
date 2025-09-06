@@ -1295,8 +1295,8 @@ namespace BetterLegacy.Core
         public static JSONNode ToJSON(this Vector2Int vector2)
         {
             var jn = Parser.NewJSONObject();
-            jn["x"] = vector2.x.ToString();
-            jn["y"] = vector2.y.ToString();
+            jn["x"] = vector2.x;
+            jn["y"] = vector2.y;
             return jn;
         }
         
@@ -1311,28 +1311,28 @@ namespace BetterLegacy.Core
         public static JSONNode ToJSON(this Vector3Int vector3)
         {
             var jn = Parser.NewJSONObject();
-            jn["x"] = vector3.x.ToString();
-            jn["y"] = vector3.y.ToString();
-            jn["z"] = vector3.z.ToString();
+            jn["x"] = vector3.x;
+            jn["y"] = vector3.y;
+            jn["z"] = vector3.z;
             return jn;
         }
         
         public static JSONNode ToJSON(this Vector3 vector3)
         {
             var jn = Parser.NewJSONObject();
-            jn["x"] = vector3.x.ToString();
-            jn["y"] = vector3.y.ToString();
-            jn["z"] = vector3.z.ToString();
+            jn["x"] = vector3.x;
+            jn["y"] = vector3.y;
+            jn["z"] = vector3.z;
             return jn;
         }
 
         public static JSONNode ToJSON(this Vector4 vector4)
         {
             var jn = Parser.NewJSONObject();
-            jn["x"] = vector4.x.ToString();
-            jn["y"] = vector4.y.ToString();
-            jn["z"] = vector4.z.ToString();
-            jn["w"] = vector4.w.ToString();
+            jn["x"] = vector4.x;
+            jn["y"] = vector4.y;
+            jn["z"] = vector4.z;
+            jn["w"] = vector4.w;
             return jn;
         }
 
