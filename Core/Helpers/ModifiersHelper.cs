@@ -10520,7 +10520,12 @@ namespace BetterLegacy.Core.Helpers
         public static void callModifierBlock(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var name = modifier.GetValue(0, variables);
-            if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
+
+            var prefabable = reference.AsPrefabable();
+            var prefab = prefabable?.GetPrefab();
+            if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
+                prefabModifierBlock.Run(reference, variables);
+            else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
                 modifierBlock.Run(reference, variables);
         }
 
@@ -12363,7 +12368,11 @@ namespace BetterLegacy.Core.Helpers
         public static bool callModifierBlockTrigger(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             var name = modifier.GetValue(0, variables);
-            if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
+            var prefabable = reference.AsPrefabable();
+            var prefab = prefabable?.GetPrefab();
+            if (prefabable != null && prefab && prefab.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock prefabModifierBlock))
+                return prefabModifierBlock.Run(reference, variables).result;
+            else if (GameData.Current.modifierBlocks.TryFind(x => x.Name == name, out ModifierBlock modifierBlock))
                 return modifierBlock.Run(reference, variables).result;
             return false;
         }
