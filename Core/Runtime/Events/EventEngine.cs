@@ -708,13 +708,6 @@ namespace BetterLegacy.Core.Runtime.Events
                 EventManager.inst.camZoom = 20f;
 
             var editorCam = EventsConfig.Instance.EditorCameraEnabled;
-            if (!editorCam)
-                EventManager.inst.cam.orthographicSize = EventManager.inst.camZoom;
-            else if (EventsConfig.Instance.EditorCamSpeed.Value != 0f)
-                EventManager.inst.cam.orthographicSize = editorCamZoom;
-
-            if (RTEventManager.inst.uiCam)
-                RTEventManager.inst.uiCam.orthographicSize = EventManager.inst.cam.orthographicSize;
 
             if (!float.IsNaN(EventManager.inst.camRot) && !editorCam)
                 EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(camRotOffset.x, camRotOffset.y, EventManager.inst.camRot));
@@ -724,19 +717,11 @@ namespace BetterLegacy.Core.Runtime.Events
             var camPos = editorCam ? editorCamPosition : EventManager.inst.camPos;
             EventManager.inst.camParentTop.transform.localPosition = new Vector3(camPos.x, camPos.y, zPosition);
 
-            EventManager.inst.camPer.fieldOfView = fieldOfView;
-
-            var bgZoom = editorCam ? -editorCamZoom + perspectiveZoom : -EventManager.inst.camZoom + perspectiveZoom;
-            if (!bgGlobalPosition)
-                EventManager.inst.camPer.transform.SetLocalPositionZ(bgZoom);
-            else
-                EventManager.inst.camPer.transform.SetPositionZ(bgZoom);
-
             // fixes bg camera position being offset if rotated for some reason...
-            EventManager.inst.camPer.transform.SetLocalPositionX(0f);
-            EventManager.inst.camPer.transform.SetLocalPositionY(0f);
+            RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
+            RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
 
-            EventManager.inst.camPer.nearClipPlane = bgAlignNearPlane ? -EventManager.inst.camPer.transform.position.z + camPerspectiveOffset : 0.3f;
+            SetZoom(editorCam ? editorCamZoom : EventManager.inst.camZoom);
 
             #endregion
 
@@ -926,6 +911,27 @@ namespace BetterLegacy.Core.Runtime.Events
 
             GameManager.inst.timeline.SetActive(!EventsConfig.Instance.HideTimeline.Value && timelineActive && EventsConfig.Instance.ShowGUI.Value);
             EventManager.inst.prevCamZoom = EventManager.inst.camZoom;
+        }
+
+        public void SetZoom(float zoom)
+        {
+            if (float.IsNaN(zoom) || zoom == 0f)
+                zoom = 20f;
+
+            RTLevel.Cameras.FG.orthographicSize = zoom;
+
+            if (RTLevel.Cameras.UI)
+                RTLevel.Cameras.UI.orthographicSize = zoom;
+
+            RTLevel.Cameras.BG.fieldOfView = fieldOfView;
+
+            var bgZoom = -zoom + perspectiveZoom;
+            if (!bgGlobalPosition)
+                RTLevel.Cameras.BG.transform.SetLocalPositionZ(bgZoom);
+            else
+                RTLevel.Cameras.BG.transform.SetPositionZ(bgZoom);
+
+            RTLevel.Cameras.BG.nearClipPlane = bgAlignNearPlane ? -RTLevel.Cameras.BG.transform.position.z + camPerspectiveOffset : 0.3f;
         }
 
         #endregion
