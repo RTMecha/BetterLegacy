@@ -894,6 +894,9 @@ namespace BetterLegacy.Editor.Managers
             // Load Settings like timeline position, editor layer, bpm active, etc
             RTEditor.inst.LoadSettings();
 
+            if (!EditorConfig.Instance.RetainCopiedPrefabInstanceData.Value)
+                RTPrefabEditor.inst.copiedInstanceData = null;
+
             if (EditorConfig.Instance.AnalyzeBPMOnLevelLoad.Value && !RTEditor.inst.editorInfo.analyzedBPM)
             {
                 yield return CoroutineHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
@@ -1670,6 +1673,7 @@ namespace BetterLegacy.Editor.Managers
 
             LevelCollectionDialog.VersionField.SetTextWithoutNotify(levelCollection.ObjectVersion);
             LevelCollectionDialog.VersionField.onValueChanged.NewListener(_val => levelCollection.ObjectVersion = _val);
+            LevelCollectionDialog.VersionField.onEndEdit.NewListener(_val => RenderLevelCollectionEditor(levelCollection));
             EditorContextMenu.inst.AddContextMenu(LevelCollectionDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(levelCollection, () => RenderLevelCollectionEditor(levelCollection)));
 
             LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() => LoadLevelCollection(levelCollection));
