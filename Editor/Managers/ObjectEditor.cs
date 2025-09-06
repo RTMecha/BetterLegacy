@@ -108,8 +108,6 @@ namespace BetterLegacy.Editor.Managers
 
         public bool colorShifted;
 
-        public static bool RenderPrefabTypeIcon { get; set; }
-
         public static float TimelineObjectHoverSize { get; set; }
 
         public static float TimelineCollapseLength { get; set; }
