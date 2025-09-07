@@ -714,9 +714,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             length = prefabables.Max(x => x.StartTime + x.GetObjectLifeLength(offset, noAutokill, collapse) - time);
 
             var duration = length;
-            var t = RepeatOffsetTime != 0f ? RepeatOffsetTime : 1f;
             if (RepeatCount == 0)
-                return duration / Speed;
+                return ((duration + prefab.offset) / Speed) - prefab.offset;
+            var t = RepeatOffsetTime != 0f ? RepeatOffsetTime : 1f;
             var timeToAdd = 0f;
             for (int i = 0; i < RepeatCount + 1; i++)
             {
@@ -724,7 +724,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 timeToAdd += t;
             }
 
-            return duration / Speed;
+            return ((duration + prefab.offset) / Speed) - prefab.offset;
         }
         
         public void ResetOffsets()
