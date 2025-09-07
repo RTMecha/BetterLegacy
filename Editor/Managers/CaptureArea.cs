@@ -16,6 +16,7 @@ using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Editor.Data;
 
@@ -72,10 +73,23 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Create Capture", CreateCapture),
                         new ButtonFunction("Clear", ClearCapture),
                         new ButtonFunction(true),
-                        new ButtonFunction("Reset All", RTEditor.inst.editorInfo.captureSettings.Reset),
-                        new ButtonFunction("Reset Resolution", () => RTEditor.inst.editorInfo.captureSettings.Resolution = new Vector2Int(512, 512)),
-                        new ButtonFunction("Reset Position", () => RTEditor.inst.editorInfo.captureSettings.pos = Vector2.zero),
-                        new ButtonFunction("Reset Rotation", () => RTEditor.inst.editorInfo.captureSettings.rot = 0f));
+                        new ButtonFunction("Reset All", Settings.Reset),
+                        new ButtonFunction("Reset Resolution", () => Settings.Resolution = new Vector2Int(512, 512)),
+                        new ButtonFunction("Reset Position", () => Settings.pos = Vector2.zero),
+                        new ButtonFunction("Reset Zoom", () => Settings.Zoom = 1f),
+                        new ButtonFunction("Reset Rotation", () => Settings.rot = 0f),
+                        new ButtonFunction(true),
+                        new ButtonFunction("Copy", () => copiedSettings = Settings.Copy()),
+                        new ButtonFunction("Paste", () =>
+                        {
+                            if (!copiedSettings)
+                            {
+                                EditorManager.inst.DisplayNotification($"No copied capture settings yet!", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
+
+                            Settings.CopyData(copiedSettings);
+                        }));
                     return;
                 }
 
@@ -94,6 +108,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     dragging = false;
             };
+            outlineClickable.onScroll = Scroll;
 
             var left = Creator.NewUIObject("Left", gameObject.transform);
             new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(16f, 0f)).AssignToRectTransform(left.transform.AsRT());
@@ -218,6 +233,64 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     dragging = false;
             };
+
+            var zoom = EditorPrefabHolder.Instance.Slider.Duplicate(gameObject.transform);
+            new RectValues(new Vector2(32f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 512f)).AssignToRectTransform(zoom.transform.AsRT());
+            zoom.transform.Find("Handle Slide Area").AsRT().sizeDelta = Vector2.zero;
+            zoomSlider = zoom.GetComponent<Slider>();
+            zoomSlider.wholeNumbers = false;
+            zoomSlider.minValue = 0.1f;
+            zoomSlider.maxValue = 10f;
+            zoomSlider.direction = Slider.Direction.BottomToTop;
+            zoomSlider.SetColorBlock(Color.white, Color.white, Color.white, Color.white, RTColors.errorColor);
+            zoomSlider.onValueChanged.NewListener(_val =>
+            {
+                CoreHelper.Log($"Set capture zoom: {_val}");
+                Settings.Zoom = _val;
+            });
+            TriggerHelper.AddEventTriggers(zoom, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData => Scroll((PointerEventData)eventData)));
+
+            zoomSlider.image.color = Color.white;
+            new RectValues(Vector2.zero, new Vector2(1f, 0f), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 16f)).AssignToRectTransform(zoomSlider.image.rectTransform);
+            zoom.transform.Find("Image").GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.1f);
+
+            var zoomBarLeft = Creator.NewUIObject("Bar Left", zoom.transform);
+            RectValues.LeftAnchored.AnchorMin(0f, 0f).SizeDelta(4f, 0f).AssignToRectTransform(zoomBarLeft.transform.AsRT());
+            zoomBarLeft.AddComponent<Image>();
+            var zoomBarRight = Creator.NewUIObject("Bar Right", zoom.transform);
+            RectValues.RightAnchored.AnchorMin(1f, 0f).SizeDelta(4f, 0f).AssignToRectTransform(zoomBarRight.transform.AsRT());
+            zoomBarRight.AddComponent<Image>();
+            var zoomBarTop = Creator.NewUIObject("Bar Top", zoom.transform);
+            new RectValues(Vector2.zero, Vector2.one, new Vector2(0f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 4f)).AssignToRectTransform(zoomBarTop.transform.AsRT());
+            zoomBarTop.AddComponent<Image>();
+            var zoomBarBottom = Creator.NewUIObject("Bar Bottom", zoom.transform);
+            new RectValues(Vector2.zero, new Vector2(1f, 0f), Vector2.zero, new Vector2(0.5f, 0f), new Vector2(0f, 4f)).AssignToRectTransform(zoomBarBottom.transform.AsRT());
+            zoomBarBottom.AddComponent<Image>();
+        }
+
+        void Scroll(PointerEventData pointerEventData)
+        {
+            if (!Settings)
+                return;
+
+            var result = Settings.Zoom;
+            var largeKey = EditorConfig.Instance.ScrollwheelLargeAmountKey.Value;
+            var smallKey = EditorConfig.Instance.ScrollwheelSmallAmountKey.Value;
+            var regularKey = EditorConfig.Instance.ScrollwheelRegularAmountKey.Value;
+
+            bool large = largeKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(regularKey) || Input.GetKey(largeKey);
+            bool small = smallKey == KeyCode.None && !Input.GetKey(largeKey) && !Input.GetKey(regularKey) || Input.GetKey(smallKey);
+            bool regular = regularKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(largeKey) || Input.GetKey(regularKey);
+
+            var amount = 0.1f;
+            var multiply = 10f;
+
+            if (pointerEventData.scrollDelta.y < 0f)
+                result -= small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
+            if (pointerEventData.scrollDelta.y > 0f)
+                result += small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
+
+            Settings.Zoom = result;
         }
 
         void Update()
@@ -279,8 +352,11 @@ namespace BetterLegacy.Editor.Managers
             }
 
             baseImage.rectTransform.anchoredPosition = captureSettings.pos * POSITION_MULTIPLY;
-            baseImage.rectTransform.sizeDelta = (Vector2)captureSettings.Resolution * SIZE_MULTIPLY;
+            baseImage.rectTransform.sizeDelta = (Vector2)captureSettings.Resolution * SIZE_MULTIPLY * captureSettings.Zoom;
             baseImage.rectTransform.localEulerAngles = new Vector3(0f, 0f, captureSettings.rot);
+
+            if (zoomSlider && zoomSlider.value != captureSettings.Zoom)
+                zoomSlider.SetValueWithoutNotify(captureSettings.Zoom);
 
             prevView = View;
             prevMatchSize = MatchSize;
@@ -348,6 +424,8 @@ namespace BetterLegacy.Editor.Managers
             Screenshot,
         }
 
+        public CaptureSettings copiedSettings;
+
         const float POSITION_MULTIPLY = 16f;
         const float SIZE_MULTIPLY = 0.8f; // 32 / 40
         const float RESOLUTION_MULTIPLY = 40f;
@@ -361,6 +439,8 @@ namespace BetterLegacy.Editor.Managers
         public GameObject baseObject;
         public Image baseImage;
         public Image outlineImage;
+
+        public Slider zoomSlider;
 
         #endregion
 
@@ -510,7 +590,7 @@ namespace BetterLegacy.Editor.Managers
 
             baseObject.SetActive(false);
             var total = captureSettings.Resolution.x + captureSettings.Resolution.y;
-            RTLevel.Current.eventEngine.SetZoom(((total / 2) / 512f) * 12.66f);
+            RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * captureSettings.Zoom);
 
             var icon = SpriteHelper.CaptureFrame(
                 camera: RTLevel.Cameras.FG,
@@ -523,6 +603,8 @@ namespace BetterLegacy.Editor.Managers
 
             RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
             baseObject.SetActive(true);
+
+            // disable and re-enable the UI camera to ensure the UI camera is ordered last.
             RTLevel.Cameras.UI.enabled = false;
             RTLevel.Cameras.UI.enabled = true;
 
