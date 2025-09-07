@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -37,8 +36,6 @@ namespace BetterLegacy.Editor.Managers
         public static RTMetaDataEditor inst;
 
         #region Values
-
-        public bool uploading;
 
         public GameObject difficultyToggle;
         
@@ -822,79 +819,14 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void VerifyLevelIsOnServer()
-        {
-            if (!EditorManager.inst.hasLoadedLevel || !MetaData.Current)
-                return;
-
-            if (uploading)
-            {
-                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            var serverID = MetaData.Current.serverID;
-
-            if (string.IsNullOrEmpty(serverID))
-            {
-                EditorManager.inst.DisplayNotification("Server ID was not assigned, so the level probably wasn't on the server.", 3f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{serverID}", json =>
-            {
-                EditorManager.inst.DisplayNotification($"Level is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
-            }, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
+        public void VerifyLevelIsOnServer() => EditorServerManager.inst.Verify(
+                url: AlephNetwork.LevelURL,
+                uploadable: MetaData.Current,
+                saveFile: () =>
                 {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            RTEditor.inst.ShowWarningPopup("Level was not found on the server. Do you want to remove the server ID?", () =>
-                            {
-                                MetaData.Current.serverID = null;
-                                MetaData.Current.beatmap.datePublished = string.Empty;
-                                var jn = MetaData.Current.ToJSON();
-                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
-
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(VerifyLevelIsOnServer));
-                                return;
-                            }
-                            ShowLoginPopup(VerifyLevelIsOnServer);
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Verify failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            RTEditor.inst.ShowWarningPopup("Verification failed. In case the level is not on the server, do you want to remove the server ID?", () =>
-                            {
-                                MetaData.Current.serverID = null;
-                                MetaData.Current.beatmap.datePublished = string.Empty;
-                                var jn = MetaData.Current.ToJSON();
-                                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
-
-                            break;
-                        }
-                }
-
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
-        }
+                    var jn = MetaData.Current.ToJSON();
+                    RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
+                });
 
         public void ConvertLevel()
         {
@@ -955,50 +887,12 @@ namespace BetterLegacy.Editor.Managers
             AchievementManager.inst.UnlockAchievement("time_machine");
         }
 
-        public void UploadLevel()
-        {
-            if (uploading)
+        public void UploadLevel() => EditorServerManager.inst.Upload(
+            url: $"{AlephNetwork.ArcadeServerURL}api/level",
+            fileName: EditorManager.inst.currentLoadedLevel,
+            uploadable: MetaData.Current,
+            transfer: tempDirectory =>
             {
-                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            uploading = true;
-
-            EditorManager.inst.DisplayNotification("Attempting to upload to the server... please wait.", 3f, EditorManager.NotificationType.Warning);
-
-            var exportPath = EditorConfig.Instance.ZIPLevelExportPath.Value;
-
-            if (string.IsNullOrEmpty(exportPath))
-            {
-                exportPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.DEFAULT_EXPORTS_PATH);
-                RTFile.CreateDirectory(exportPath);
-            }
-
-            exportPath = RTFile.AppendEndSlash(exportPath);
-
-            if (!RTFile.DirectoryExists(RTFile.RemoveEndSlash(exportPath)))
-            {
-                EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            var path = RTFile.CombinePaths(exportPath, EditorManager.inst.currentLoadedLevel + "-server-upload.zip");
-
-            try
-            {
-                MetaData.Current.beatmap.datePublished = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-                MetaData.Current.beatmap.versionNumber++;
-                MetaData.Current.uploaderID = LegacyPlugin.UserID;
-
-                var jn = MetaData.Current.ToJSON();
-                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-
-                RTFile.DeleteFile(path);
-
-                // here we setup a temporary upload folder that has no editor files, which we then zip and delete the directory.
-                var tempDirectory = RTFile.CombinePaths(exportPath, EditorManager.inst.currentLoadedLevel + "-temp/");
-                RTFile.CreateDirectory(tempDirectory);
                 var directory = RTFile.BasePath;
                 var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
                 for (int i = 0; i < files.Length; i++)
@@ -1014,140 +908,23 @@ namespace BetterLegacy.Editor.Managers
                     RTFile.CreateDirectory(dir);
                     RTFile.CopyFile(file, copyTo);
                 }
+            },
+            saveFile: () =>
+            {
+                var jn = MetaData.Current.ToJSON();
+                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
+            },
+            onUpload: RenderDialog);
 
-                ZipFile.CreateFromDirectory(tempDirectory, path);
-                RTFile.DeleteDirectory(tempDirectory);
-
-                var headers = new Dictionary<string, string>();
-                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                    headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-                CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ArcadeServerURL}api/level", File.ReadAllBytes(path), id =>
+        public void DeleteLevel() => EditorServerManager.inst.Delete(
+                url: AlephNetwork.LevelURL,
+                uploadable: MetaData.Current,
+                saveFile: () =>
                 {
-                    uploading = false;
-                    MetaData.Current.serverID = id;
-
                     var jn = MetaData.Current.ToJSON();
                     RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-                    RTFile.DeleteFile(path);
-
-                    EditorManager.inst.DisplayNotification($"Level uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
-                    RenderDialog();
-
-                    AchievementManager.inst.UnlockAchievement("upload_level");
-                }, (string onError, long responseCode, string errorMsg) =>
-                {
-                    uploading = false;
-                    // Only downgrade if server ID wasn't already assigned.
-                    if (string.IsNullOrEmpty(MetaData.Current.serverID))
-                    {
-                        MetaData.Current.uploaderID = null;
-                        MetaData.Current.beatmap.datePublished = string.Empty;
-                        MetaData.Current.beatmap.versionNumber--;
-                        var jn = MetaData.Current.ToJSON();
-                        RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-                    }
-
-                    RTFile.DeleteFile(path);
-
-                    switch (responseCode)
-                    {
-                        case 404: {
-                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-                        case 401: {
-                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                                {
-                                    CoroutineHelper.StartCoroutine(RefreshTokens(UploadLevel));
-                                    return;
-                                }
-                                ShowLoginPopup(UploadLevel);
-                                break;
-                            }
-                        default: {
-                                EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                                break;
-                            }
-                    }
-
-                    if (errorMsg != null)
-                        CoreHelper.LogError($"Error Message: {errorMsg}");
-
-                }, headers));
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{MetadataEditor.inst.className}There was an error while creating the ZIP file.\n{ex}");
-            }
-        }
-
-        public void DeleteLevel()
-        {
-            if (uploading)
-            {
-                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            uploading = true;
-
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this level from the Arcade server? This cannot be undone!", () =>
-            {
-                try
-                {
-                    EditorManager.inst.DisplayNotification("Attempting to delete level from the server... please wait.", 3f, EditorManager.NotificationType.Warning);
-
-                    var id = MetaData.Current.serverID;
-
-                    var headers = new Dictionary<string, string>();
-                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                        headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ArcadeServerURL}api/level/{id}", () =>
-                    {
-                        uploading = false;
-                        MetaData.Current.beatmap.datePublished = string.Empty;
-                        MetaData.Current.serverID = null;
-                        var jn = MetaData.Current.ToJSON();
-                        RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
-
-                        EditorManager.inst.DisplayNotification($"Successfully deleted level off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
-                        RenderDialog();
-                        RTEditor.inst.HideWarningPopup();
-                    }, (string onError, long responseCode) =>
-                    {
-                        uploading = false;
-                        switch (responseCode)
-                        {
-                            case 404: {
-                                    EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                                    RTEditor.inst.HideWarningPopup();
-                                    return;
-                                }
-                            case 401: {
-                                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                                    {
-                                        CoroutineHelper.StartCoroutine(RefreshTokens(DeleteLevel));
-                                        return;
-                                    }
-                                    ShowLoginPopup(DeleteLevel);
-                                    break;
-                                }
-                            default: {
-                                    EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                                    RTEditor.inst.HideWarningPopup();
-                                    break;
-                                }
-                        }
-                    }, headers));
-                }
-                catch (Exception ex)
-                {
-                    CoreHelper.LogError($"Had an exception in deleting the level.\nException: {ex}");
-                }
-            }, RTEditor.inst.HideWarningPopup);
-        }
+                },
+                onDelete: RenderDialog);
 
         public void PullLevel()
         {
@@ -1157,51 +934,14 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var serverID = MetaData.Current.serverID;
-
-            if (string.IsNullOrEmpty(serverID))
-            {
-                EditorManager.inst.DisplayNotification("Server ID was not assigned, so the level probably wasn't on the server.", 3f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/level/{serverID}", json =>
-            {
-                var jn = JSON.Parse(json);
-
-                GameData.Current?.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "reload-level-backup.lsb"));
-
-                UploadedLevelsManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
-            }, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
+            EditorServerManager.inst.Pull(
+                url: AlephNetwork.LevelURL,
+                uploadable: MetaData.Current,
+                pull: jn =>
                 {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(PullLevel));
-                                return;
-                            }
-                            ShowLoginPopup(PullLevel);
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Pull failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                        }
-                }
-
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                    GameData.Current?.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "reload-level-backup.lsb"));
+                    UploadedLevelsManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
+                });
         }
 
         #endregion

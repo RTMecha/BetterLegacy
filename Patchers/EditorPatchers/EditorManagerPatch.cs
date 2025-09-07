@@ -240,6 +240,7 @@ namespace BetterLegacy.Patchers
 
             EditorLevelManager.Init();
             EditorTimeline.Init();
+            EditorServerManager.Init();
             RTEditor.Init();
 
             __instance.hasLoadedLevel = false;

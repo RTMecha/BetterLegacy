@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 
 using UnityEngine;
@@ -2385,189 +2384,54 @@ namespace BetterLegacy.Editor.Managers
             if (!levelCollection)
                 return;
 
-            if (RTMetaDataEditor.inst.uploading)
-            {
-                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            RTMetaDataEditor.inst.uploading = true;
-
-            EditorManager.inst.DisplayNotification("Attempting to upload to the server... please wait.", 3f, EditorManager.NotificationType.Warning);
-
-            var exportPath = EditorConfig.Instance.ZIPLevelExportPath.Value;
-
-            if (string.IsNullOrEmpty(exportPath))
-            {
-                exportPath = RTFile.CombinePaths(RTFile.ApplicationDirectory, RTEditor.DEFAULT_EXPORTS_PATH);
-                RTFile.CreateDirectory(exportPath);
-            }
-
-            exportPath = RTFile.AppendEndSlash(exportPath);
-
-            if (!RTFile.DirectoryExists(RTFile.RemoveEndSlash(exportPath)))
-            {
-                EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
-                return;
-            }
-
-            var path = RTFile.CombinePaths(exportPath, Path.GetFileName(levelCollection.path) + "-server-upload.zip");
-
-            try
-            {
-                levelCollection.datePublished = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-                levelCollection.versionNumber++;
-                levelCollection.UploaderID = LegacyPlugin.UserID;
-                levelCollection.Save();
-                RTFile.DeleteFile(path);
-
-                // here we setup a temporary upload folder that has no editor files, which we then zip and delete the directory.
-                var tempDirectory = RTFile.CombinePaths(exportPath, Path.GetFileName(levelCollection.path) + "-temp/");
-                RTFile.CreateDirectory(tempDirectory);
-                var directory = levelCollection.path;
-                var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
-                for (int i = 0; i < files.Length; i++)
+            EditorServerManager.inst.Upload(
+                url: AlephNetwork.LevelCollectionURL,
+                fileName: Path.GetFileName(levelCollection.path),
+                uploadable: levelCollection,
+                transfer: tempDirectory =>
                 {
-                    var file = files[i];
-                    if (!RTMetaDataEditor.inst.VerifyFile(Path.GetFileName(file)))
-                        continue;
+                    var directory = levelCollection.path;
+                    var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories);
+                    for (int i = 0; i < files.Length; i++)
+                    {
+                        var file = files[i];
+                        if (!RTMetaDataEditor.inst.VerifyFile(Path.GetFileName(file)))
+                            continue;
 
-                    var copyTo = file.Replace(directory, tempDirectory);
+                        var copyTo = file.Replace(directory, tempDirectory);
 
-                    var dir = RTFile.GetDirectory(copyTo);
+                        var dir = RTFile.GetDirectory(copyTo);
 
-                    RTFile.CreateDirectory(dir);
-                    RTFile.CopyFile(file, copyTo);
-                }
-
-                ZipFile.CreateFromDirectory(tempDirectory, path);
-                RTFile.DeleteDirectory(tempDirectory);
-
-                var headers = new Dictionary<string, string>();
-                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                    headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-                CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes($"{AlephNetwork.ArcadeServerURL}api/levelcollection", File.ReadAllBytes(path), id =>
+                        RTFile.CreateDirectory(dir);
+                        RTFile.CopyFile(file, copyTo);
+                    }
+                },
+                saveFile: () =>
                 {
-                    RTMetaDataEditor.inst.uploading = false;
-                    levelCollection.serverID = id;
                     levelCollection.Save();
-                    RTFile.DeleteFile(path);
-
-                    EditorManager.inst.DisplayNotification($"Level collection uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
-                    RenderLevelCollectionEditor(levelCollection);
-
-                    AchievementManager.inst.UnlockAchievement("upload_level");
-                }, (string onError, long responseCode, string errorMsg) =>
+                },
+                onUpload: () =>
                 {
-                    RTMetaDataEditor.inst.uploading = false;
-                    // Only downgrade if server ID wasn't already assigned.
-                    if (string.IsNullOrEmpty(levelCollection.serverID))
-                    {
-                        levelCollection.UploaderID = null;
-                        levelCollection.datePublished = string.Empty;
-                        levelCollection.versionNumber--;
-                        levelCollection.Save();
-                    }
-
-                    RTFile.DeleteFile(path);
-
-                    switch (responseCode)
-                    {
-                        case 404: {
-                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-                        case 401: {
-                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                                {
-                                    CoroutineHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(() => UploadLevelCollection(levelCollection)));
-                                    return;
-                                }
-                                RTMetaDataEditor.inst.ShowLoginPopup(() => UploadLevelCollection(levelCollection));
-                                break;
-                            }
-                        default: {
-                                EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                                break;
-                            }
-                    }
-
-                    if (errorMsg != null)
-                        CoreHelper.LogError($"Error Message: {errorMsg}");
-
-                }, headers));
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{MetadataEditor.inst.className}There was an error while creating the ZIP file.\n{ex}");
-            }
+                    RenderLevelCollectionEditor(levelCollection);
+                });
         }
 
         public void DeleteLevelCollectionFromServer(LevelCollection levelCollection)
         {
-            if (RTMetaDataEditor.inst.uploading)
-            {
-                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
+            if (!levelCollection)
                 return;
-            }
 
-            RTMetaDataEditor.inst.uploading = true;
-
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this level collection from the Arcade server? This cannot be undone!", () =>
-            {
-                try
+            EditorServerManager.inst.Delete(
+                url: AlephNetwork.LevelCollectionURL,
+                uploadable: levelCollection,
+                saveFile: () =>
                 {
-                    EditorManager.inst.DisplayNotification("Attempting to delete level collection from the server... please wait.", 3f, EditorManager.NotificationType.Warning);
-
-                    var id = levelCollection.serverID;
-
-                    var headers = new Dictionary<string, string>();
-                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                        headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete($"{AlephNetwork.ArcadeServerURL}api/levelcollection/{id}", () =>
-                    {
-                        RTMetaDataEditor.inst.uploading = false;
-                        levelCollection.datePublished = string.Empty;
-                        levelCollection.serverID = null;
-                        levelCollection.Save();
-
-                        EditorManager.inst.DisplayNotification($"Successfully deleted level collection off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
-                        RenderLevelCollectionEditor(levelCollection);
-                        RTEditor.inst.HideWarningPopup();
-                    }, (string onError, long responseCode) =>
-                    {
-                        RTMetaDataEditor.inst.uploading = false;
-                        switch (responseCode)
-                        {
-                            case 404: {
-                                    EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                                    RTEditor.inst.HideWarningPopup();
-                                    return;
-                                }
-                            case 401: {
-                                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                                    {
-                                        CoroutineHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(() => DeleteLevelCollectionFromServer(levelCollection)));
-                                        return;
-                                    }
-                                    RTMetaDataEditor.inst.ShowLoginPopup(() => DeleteLevelCollectionFromServer(levelCollection));
-                                    break;
-                                }
-                            default: {
-                                    EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                                    RTEditor.inst.HideWarningPopup();
-                                    break;
-                                }
-                        }
-                    }, headers));
-                }
-                catch (Exception ex)
+                    levelCollection.Save();
+                },
+                onDelete: () =>
                 {
-                    CoreHelper.LogError($"Had an exception in deleting the level.\nException: {ex}");
-                }
-            }, RTEditor.inst.HideWarningPopup);
+                    RenderLevelCollectionEditor(levelCollection);
+                });
         }
 
         // todo: implement
@@ -2579,47 +2443,13 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var serverID = levelCollection.serverID;
-
-            if (string.IsNullOrEmpty(serverID))
-            {
-                EditorManager.inst.DisplayNotification("Server ID was not assigned, so the level collection probably wasn't on the server.", 3f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
-            var headers = new Dictionary<string, string>();
-            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
-                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile($"{AlephNetwork.ArcadeServerURL}api/levelcollection/{serverID}", json =>
-            {
-
-            }, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
+            EditorServerManager.inst.Pull(
+                url: AlephNetwork.LevelCollectionURL,
+                uploadable: levelCollection,
+                pull: jn =>
                 {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(() => PullLevelCollection(levelCollection)));
-                                return;
-                            }
-                            RTMetaDataEditor.inst.ShowLoginPopup(() => PullLevelCollection(levelCollection));
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Pull failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                        }
-                }
 
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                });
         }
 
         #endregion
