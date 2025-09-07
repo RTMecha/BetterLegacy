@@ -36,7 +36,7 @@ namespace BetterLegacy.Core.Helpers
             return entry;
         }
 
-        public static EventTrigger.Entry ScrollDelta(InputField inputField, float amount = 0.1f, float mutliply = 10f, float min = 0f, float max = 0f, bool multi = false) => CreateEntry(EventTriggerType.Scroll, eventData =>
+        public static EventTrigger.Entry ScrollDelta(InputField inputField, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, bool multi = false) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
             if (!float.TryParse(inputField.text, out float result))
                 return;
@@ -55,9 +55,9 @@ namespace BetterLegacy.Core.Helpers
             bool regular = regularKey == KeyCode.None && !Input.GetKey(smallKey) && !Input.GetKey(largeKey) || Input.GetKey(regularKey);
 
             if (pointerEventData.scrollDelta.y < 0f)
-                result -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+                result -= small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
             if (pointerEventData.scrollDelta.y > 0f)
-                result += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+                result += small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
 
             result = RTMath.ClampZero(result, min, max);
             inputField.text = result.ToString("f2");
@@ -83,7 +83,7 @@ namespace BetterLegacy.Core.Helpers
                 inputField.text = result.ToString();
         });
 
-        public static EventTrigger.Entry ScrollDeltaVector2(InputField ifx, InputField ify, float amount = 0.1f, float mutliply = 10f, List<float> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
+        public static EventTrigger.Entry ScrollDeltaVector2(InputField ifx, InputField ify, float amount = 0.1f, float multiply = 10f, List<float> clamp = null) => CreateEntry(EventTriggerType.Scroll, eventData =>
         {
             if (!Input.GetKey(KeyCode.LeftShift) || !float.TryParse(ifx.text, out float x) || !float.TryParse(ify.text, out float y))
                 return;
@@ -105,14 +105,14 @@ namespace BetterLegacy.Core.Helpers
 
             if (pointerEventData.scrollDelta.y < 0f)
             {
-                x -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
-                y -= small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+                x -= small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
+                y -= small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
             }
 
             if (pointerEventData.scrollDelta.y > 0f)
             {
-                x += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
-                y += small ? amount / mutliply : large ? amount * mutliply : regular ? amount : 0f;
+                x += small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
+                y += small ? amount / multiply : large ? amount * multiply : regular ? amount : 0f;
             }
 
             if (clamp != null && clamp.Count > 1)
