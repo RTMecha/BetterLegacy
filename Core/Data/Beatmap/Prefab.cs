@@ -417,10 +417,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.WriteUploadableJSON(jn);
 
+            #region Write Contents
+
             if (!modifierBlocks.IsEmpty())
                 jn["modifier_blocks"] = Parser.ModifierBlocksToJSON(modifierBlocks);
-
-            #region Write Contents
 
             for (int i = 0; i < beatmapThemes.Count; i++)
                 jn["themes"][i] = beatmapThemes[i].ToJSON();
@@ -529,15 +529,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (string.IsNullOrEmpty(path))
                 return;
 
-            var fileName = GetFileName();
-            if (!path.EndsWith(fileName))
-                path = RTFile.CombinePaths(path, fileName);
+            if (!path.EndsWith(FileFormat.Dot()))
+                path = path += FileFormat.Dot();
 
             var file = RTFile.ReadFromFile(path);
             if (string.IsNullOrEmpty(file))
                 return;
 
-            switch (FileFormat)
+            switch (RTFile.GetFileFormat(path))
             {
                 case FileFormat.LSP: ReadJSON(JSON.Parse(file));
                     break;
@@ -551,7 +550,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (string.IsNullOrEmpty(path))
                 return;
 
-            var jn = FileFormat switch
+            var jn = RTFile.GetFileFormat(path) switch
             {
                 FileFormat.LSP => ToJSON(),
                 FileFormat.VGP => ToJSONVG(),

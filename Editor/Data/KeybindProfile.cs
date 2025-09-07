@@ -71,9 +71,8 @@ namespace BetterLegacy.Editor.Data
             if (string.IsNullOrEmpty(path))
                 return;
 
-            var fileName = GetFileName();
-            if (!path.EndsWith(fileName))
-                path = RTFile.CombinePaths(path, fileName);
+            if (!path.EndsWith(FileFormat.Dot()))
+                path = path += FileFormat.Dot();
 
             var file = RTFile.ReadFromFile(path);
             if (string.IsNullOrEmpty(file))
