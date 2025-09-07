@@ -12,7 +12,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class LevelCollectionEditorDialog : EditorDialog
+    public class LevelCollectionEditorDialog : EditorDialog, IServerDialog
     {
         public LevelCollectionEditorDialog() : base() { }
 
@@ -82,13 +82,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Text UserIDText { get; set; }
         public ContextClickable UserIDContextMenu { get; set; }
 
-        //public Button ConvertButton { get; set; }
-        //public ContextClickable ConvertContextMenu { get; set; }
         public Button UploadButton { get; set; }
         public ContextClickable UploadContextMenu { get; set; }
         public Text UploadButtonText { get; set; }
-        //public Button PullButton { get; set; }
-        //public ContextClickable PullContextMenu { get; set; }
+        public Button PullButton { get; set; }
+        public ContextClickable PullContextMenu { get; set; }
         public Button DeleteButton { get; set; }
         public ContextClickable DeleteContextMenu { get; set; }
 
@@ -207,7 +205,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #endregion
 
-            new Labels(Labels.InitSettings.Default.Parent(Content), "Level Collection Version");
+            new Labels(Labels.InitSettings.Default.Parent(Content), new Label("Level Collection Version") { horizontalWrap = HorizontalWrapMode.Overflow });
 
             var version = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(Content);
             RectValues.Default.SizeDelta(740f, 32f).AssignToRectTransform(version.transform.AsRT());
@@ -215,6 +213,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             VersionField = version.GetComponent<InputField>();
             VersionField.GetPlaceholderText().text = "Set version...";
             VersionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            EditorThemeManager.AddInputField(VersionField);
 
             #region Icon
 
@@ -288,84 +287,84 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Server
 
-            //var serverBase = Creator.NewUIObject("server", Content);
-            //ServerBase = serverBase.transform.AsRT();
-            //RectValues.Default.SizeDelta(764f, 800f).AssignToRectTransform(ServerBase);
-            //new Labels(Labels.InitSettings.Default.Parent(serverBase.transform).Rect(labelRect), new Label("Server / Arcade") { fontStyle = FontStyle.Bold, });
-            //var server = Creator.NewUIObject("info", serverBase.transform);
-            //ServerContent = server.transform.AsRT();
-            //RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 740f).AssignToRectTransform(ServerContent);
-            //var serverLayout = server.AddComponent<VerticalLayoutGroup>();
-            //serverLayout.childControlHeight = false;
-            //serverLayout.childForceExpandHeight = false;
-            //serverLayout.spacing = 4f;
+            var serverBase = Creator.NewUIObject("server", Content);
+            ServerBase = serverBase.transform.AsRT();
+            RectValues.Default.SizeDelta(764f, 800f).AssignToRectTransform(ServerBase);
+            new Labels(Labels.InitSettings.Default.Parent(serverBase.transform).Rect(labelRect), new Label("Server / Arcade") { fontStyle = FontStyle.Bold, });
+            var server = Creator.NewUIObject("info", serverBase.transform);
+            ServerContent = server.transform.AsRT();
+            RectValues.FullAnchored.AnchorMax(1f, 0f).Pivot(0.5f, 0f).SizeDelta(-32f, 740f).AssignToRectTransform(ServerContent);
+            var serverLayout = server.AddComponent<VerticalLayoutGroup>();
+            serverLayout.childControlHeight = false;
+            serverLayout.childForceExpandHeight = false;
+            serverLayout.spacing = 4f;
 
-            //ChangelogLabel = new Labels(Labels.InitSettings.Default.Parent(server.transform), "Changelog").GameObject;
-            //var changelog = EditorPrefabHolder.Instance.StringInputField.Duplicate(server.transform, "changelog");
-            //changelog.transform.AsRT().sizeDelta = new Vector2(0f, 140f);
-            //ChangelogField = changelog.GetComponent<InputField>();
-            //ChangelogField.textComponent.alignment = TextAnchor.UpperLeft;
-            //ChangelogField.lineType = InputField.LineType.MultiLineNewline;
-            //EditorThemeManager.AddInputField(DescriptionField);
-            //var changelogLayoutElement = changelog.GetComponent<LayoutElement>();
-            //changelogLayoutElement.minHeight = 140f;
-            //changelogLayoutElement.preferredHeight = 140f;
-            //EditorThemeManager.AddInputField(ChangelogField);
+            ChangelogLabel = new Labels(Labels.InitSettings.Default.Parent(server.transform), "Changelog").GameObject;
+            var changelog = EditorPrefabHolder.Instance.StringInputField.Duplicate(server.transform, "changelog");
+            changelog.transform.AsRT().sizeDelta = new Vector2(0f, 140f);
+            ChangelogField = changelog.GetComponent<InputField>();
+            ChangelogField.textComponent.alignment = TextAnchor.UpperLeft;
+            ChangelogField.lineType = InputField.LineType.MultiLineNewline;
+            EditorThemeManager.AddInputField(DescriptionField);
+            var changelogLayoutElement = changelog.GetComponent<LayoutElement>();
+            changelogLayoutElement.minHeight = 140f;
+            changelogLayoutElement.preferredHeight = 140f;
+            EditorThemeManager.AddInputField(ChangelogField);
 
-            //ServerVisibilityDropdown = GenerateDropdown(server.transform, "Server Visibility", true, CoreHelper.ToOptionData<ServerVisibility>());
+            ServerVisibilityDropdown = GenerateDropdown(server.transform, "Server Visibility", true, CoreHelper.ToOptionData<ServerVisibility>());
 
-            //new Labels(Labels.InitSettings.Default.Parent(server.transform), "Collaborators");
-            //CollaboratorsScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(server.transform, "Collaborators Scroll View").transform.AsRT();
-            //CollaboratorsContent = CollaboratorsScrollView.transform.Find("Viewport/Content").AsRT();
+            new Labels(Labels.InitSettings.Default.Parent(server.transform), "Collaborators");
+            CollaboratorsScrollView = EditorPrefabHolder.Instance.ScrollView.Duplicate(server.transform, "Collaborators Scroll View").transform.AsRT();
+            CollaboratorsContent = CollaboratorsScrollView.transform.Find("Viewport/Content").AsRT();
 
-            //CollaboratorsScrollView.transform.AsRT().sizeDelta = new Vector2(735f, 200f);
+            CollaboratorsScrollView.transform.AsRT().sizeDelta = new Vector2(735f, 200f);
 
-            //CollaboratorsContent.GetComponent<VerticalLayoutGroup>().spacing = 8f;
+            CollaboratorsContent.GetComponent<VerticalLayoutGroup>().spacing = 8f;
 
-            //var arcadeID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("Arcade ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
-            //arcadeID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
-            //ArcadeIDContextMenu = arcadeID.GameObject.GetOrAddComponent<ContextClickable>();
-            //ArcadeIDText = arcadeID.GameObject.transform.GetChild(0).GetComponent<Text>();
+            var arcadeID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("Arcade ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
+            arcadeID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            ArcadeIDContextMenu = arcadeID.GameObject.GetOrAddComponent<ContextClickable>();
+            ArcadeIDText = arcadeID.GameObject.transform.GetChild(0).GetComponent<Text>();
 
-            //var serverID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("Server ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
-            //serverID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
-            //ServerIDContextMenu = serverID.GameObject.GetOrAddComponent<ContextClickable>();
-            //ServerIDText = serverID.GameObject.transform.GetChild(0).GetComponent<Text>();
+            var serverID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("Server ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
+            serverID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            ServerIDContextMenu = serverID.GameObject.GetOrAddComponent<ContextClickable>();
+            ServerIDText = serverID.GameObject.transform.GetChild(0).GetComponent<Text>();
 
-            //var userID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("User ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
-            //userID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
-            //UserIDContextMenu = userID.GameObject.GetOrAddComponent<ContextClickable>();
-            //UserIDText = userID.GameObject.transform.GetChild(0).GetComponent<Text>();
+            var userID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("User ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
+            userID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            UserIDContextMenu = userID.GameObject.GetOrAddComponent<ContextClickable>();
+            UserIDText = userID.GameObject.transform.GetChild(0).GetComponent<Text>();
 
-            //var buttons = Creator.NewUIObject("submit", server.transform);
-            //buttons.transform.AsRT().sizeDelta = new Vector2(0f, 64f);
-            //var buttonsLayout = buttons.AddComponent<HorizontalLayoutGroup>();
-            //buttonsLayout.spacing = 8f;
+            var buttons = Creator.NewUIObject("submit", server.transform);
+            buttons.transform.AsRT().sizeDelta = new Vector2(0f, 64f);
+            var buttonsLayout = buttons.AddComponent<HorizontalLayoutGroup>();
+            buttonsLayout.spacing = 8f;
 
-            //var upload = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "upload");
-            //var uploadStorage = upload.GetComponent<FunctionButtonStorage>();
-            //uploadStorage.label.text = "Upload";
-            //UploadButton = uploadStorage.button;
-            //UploadButtonText = uploadStorage.label;
-            //UploadContextMenu = upload.GetOrAddComponent<ContextClickable>();
-            //EditorThemeManager.AddGraphic(uploadStorage.button.image, ThemeGroup.Function_1, true);
-            //EditorThemeManager.AddGraphic(uploadStorage.label, ThemeGroup.Function_1_Text);
+            var upload = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "upload");
+            var uploadStorage = upload.GetComponent<FunctionButtonStorage>();
+            uploadStorage.label.text = "Upload";
+            UploadButton = uploadStorage.button;
+            UploadButtonText = uploadStorage.label;
+            UploadContextMenu = upload.GetOrAddComponent<ContextClickable>();
+            EditorThemeManager.AddGraphic(uploadStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.AddGraphic(uploadStorage.label, ThemeGroup.Function_1_Text);
 
-            ////var pull = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "pull");
-            ////var pullStorage = pull.GetComponent<FunctionButtonStorage>();
-            ////pullStorage.label.text = "Pull";
-            ////PullButton = pullStorage.button;
-            ////PullContextMenu = pull.GetOrAddComponent<ContextClickable>();
-            ////EditorThemeManager.AddGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
-            ////EditorThemeManager.AddGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
+            //var pull = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "pull");
+            //var pullStorage = pull.GetComponent<FunctionButtonStorage>();
+            //pullStorage.label.text = "Pull";
+            //PullButton = pullStorage.button;
+            //PullContextMenu = pull.GetOrAddComponent<ContextClickable>();
+            //EditorThemeManager.AddGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
+            //EditorThemeManager.AddGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
 
-            //var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "delete");
-            //var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
-            //deleteStorage.label.text = "Delete";
-            //DeleteButton = deleteStorage.button;
-            //DeleteContextMenu = delete.GetOrAddComponent<ContextClickable>();
-            //EditorThemeManager.AddGraphic(deleteStorage.button.image, ThemeGroup.Delete, true);
-            //EditorThemeManager.AddGraphic(deleteStorage.label, ThemeGroup.Delete_Text);
+            var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "delete");
+            var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
+            deleteStorage.label.text = "Delete";
+            DeleteButton = deleteStorage.button;
+            DeleteContextMenu = delete.GetOrAddComponent<ContextClickable>();
+            EditorThemeManager.AddGraphic(deleteStorage.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.AddGraphic(deleteStorage.label, ThemeGroup.Delete_Text);
 
             #endregion
 

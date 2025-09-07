@@ -757,7 +757,6 @@ namespace BetterLegacy.Editor.Managers
             AchievementEditor.Init();
             LevelPropertiesEditor.Init();
             AssetEditor.Init();
-            UploadedLevelsManager.Init();
             PinnedLayerEditor.Init();
             AnimationEditor.Init();
             ProjectPlanner.Init();
@@ -3390,10 +3389,10 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                 {
-                    CoroutineHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(null));
+                    CoroutineHelper.StartCoroutine(EditorServerManager.inst.RefreshTokens(null));
                     return;
                 }
-                RTMetaDataEditor.inst.ShowLoginPopup(null);
+                EditorServerManager.inst.ShowLoginPopup(null);
             });
 
             titleBar.Find("Help/Help Dropdown/Join Discord/Text").GetComponent<Text>().text = "Modder's Discord";

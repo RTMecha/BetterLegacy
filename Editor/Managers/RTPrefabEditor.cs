@@ -2275,6 +2275,14 @@ namespace BetterLegacy.Editor.Managers
 
             PrefabEditorDialog.ConvertPrefabButton.gameObject.SetActive(isExternal);
             PrefabEditorDialog.ConvertPrefabButton.button.onClick.NewListener(() => { if (isExternal) ConvertPrefab(prefab); });
+
+            EditorServerManager.inst.RenderServerDialog(
+                uploadable: prefab,
+                dialog: PrefabEditorDialog,
+                upload: () => UploadPrefab(prefabPanel),
+                pull: null,
+                delete: () => DeleteServerPrefab(prefabPanel),
+                verify: null);
         }
 
         public void OpenIconSelector(PrefabPanel prefabPanel)
@@ -3047,6 +3055,53 @@ namespace BetterLegacy.Editor.Managers
             Example.Current?.brain?.Notice(ExampleBrain.Notices.IMPORT_PREFAB, new PrefabNoticeParameters(internalPrefab));
 
             return true;
+        }
+
+        // RTPrefabEditor.inst.UploadPrefab(RTPrefabEditor.inst.CurrentPrefabPanel);
+        public void UploadPrefab(PrefabPanel prefabPanel)
+        {
+            var prefab = prefabPanel.Item;
+            if (!prefab)
+                return;
+
+            EditorServerManager.inst.Upload(
+                url: $"{AlephNetwork.ArcadeServerURL}api/prefab",
+                fileName: RTFile.FormatLegacyFileName(prefab.name),
+                uploadable: prefab,
+                transfer: tempDirectory =>
+                {
+                    prefab.WriteToFile(RTFile.CombinePaths(tempDirectory, $"prefab{FileFormat.LSP.Dot()}"));
+                    var icon = prefab.icon;
+                    if (icon)
+                        File.WriteAllBytes(RTFile.CombinePaths(tempDirectory, $"icon{FileFormat.JPG.Dot()}"), icon.texture.EncodeToJPG());
+                },
+                saveFile: () =>
+                {
+                    UpdatePrefabFile(prefabPanel);
+                },
+                onUpload: () =>
+                {
+                    RenderPrefabEditorDialog(prefabPanel);
+                });
+        }
+
+        public void DeleteServerPrefab(PrefabPanel prefabPanel)
+        {
+            var prefab = prefabPanel.Item;
+            if (!prefab)
+                return;
+
+            EditorServerManager.inst.Delete(
+                url: $"{AlephNetwork.ArcadeServerURL}api/prefab",
+                uploadable: prefab,
+                saveFile: () =>
+                {
+                    UpdatePrefabFile(prefabPanel);
+                },
+                onDelete: () =>
+                {
+                    RenderPrefabEditorDialog(prefabPanel);
+                });
         }
 
         #endregion

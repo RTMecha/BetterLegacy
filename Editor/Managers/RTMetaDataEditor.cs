@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 using LSFunctions;
 
-using SimpleJSON;
 using Crosstales.FB;
 
 using BetterLegacy.Configs;
@@ -39,8 +34,6 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject difficultyToggle;
         
-        HttpListener _listener;
-
         public MetaDataEditorDialog Dialog { get; set; }
 
         public ContentPopup TagPopup { get; set; }
@@ -145,7 +138,30 @@ namespace BetterLegacy.Editor.Managers
             RenderDifficulty(metadata);
             RenderTags(metadata);
             RenderSettings(metadata);
-            RenderServer(metadata);
+
+            EditorServerManager.inst.RenderServerDialog(
+                uploadable: metadata,
+                dialog: Dialog, 
+                upload: UploadLevel,
+                pull: PullLevel,
+                delete: DeleteLevel,
+                verify: VerifyLevelIsOnServer);
+
+            // Changed revisions to modded display.
+            Dialog.ArcadeIDText.text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click to copy)" : "Arcade ID: No ID";
+            Dialog.ArcadeIDContextMenu.onClick = eventData =>
+            {
+                if (string.IsNullOrEmpty(metadata.arcadeID))
+                {
+                    EditorManager.inst.DisplayNotification($"No ID assigned. This shouldn't happen. Did something break?", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                LSText.CopyToClipboard(metadata.arcadeID);
+                EditorManager.inst.DisplayNotification($"Copied ID: {metadata.arcadeID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+            };
+            Dialog.ModdedDisplayText.text = $"Modded: {(GameData.Current.Modded ? "Yes" : "No")}";
+            Dialog.ConvertButton.onClick.NewListener(ConvertLevel);
         }
 
         public void RenderArtist(MetaData metadata)
@@ -396,187 +412,6 @@ namespace BetterLegacy.Editor.Managers
             Dialog.VersionComparison.options = CoreHelper.ToOptionData<DataManager.VersionComparison>();
             Dialog.VersionComparison.SetValueWithoutNotify((int)metadata.versionRange);
             Dialog.VersionComparison.onValueChanged.NewListener(_val => metadata.versionRange = (DataManager.VersionComparison)_val);
-        }
-
-        public void RenderServer(MetaData metadata)
-        {
-            Dialog.ServerVisibilityDropdown.options = CoreHelper.ToOptionData<ServerVisibility>();
-            Dialog.ServerVisibilityDropdown.SetValueWithoutNotify((int)metadata.visibility);
-            Dialog.ServerVisibilityDropdown.onValueChanged.NewListener(_val => metadata.visibility = (ServerVisibility)_val);
-
-            CoreHelper.DestroyChildren(Dialog.CollaboratorsContent);
-            for (int i = 0; i < metadata.uploaders.Count; i++)
-            {
-                int index = i;
-                var tag = metadata.uploaders[i];
-                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.CollaboratorsContent, index.ToString());
-                gameObject.transform.AsRT().sizeDelta = new Vector2(717f, 32f);
-                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.transform.AsRT().sizeDelta = new Vector2(682, 32f);
-                input.SetTextWithoutNotify(tag);
-                input.onValueChanged.NewListener(_val =>
-                {
-                    _val = RTString.ReplaceSpace(_val);
-                    var oldVal = metadata.uploaders[index];
-                    metadata.uploaders[index] = _val;
-
-                    EditorManager.inst.history.Add(new History.Command("Change MetaData Uploader", () =>
-                    {
-                        metadata.uploaders[index] = _val;
-                        MetadataEditor.inst.OpenDialog();
-                    }, () =>
-                    {
-                        metadata.uploaders[index] = oldVal;
-                        MetadataEditor.inst.OpenDialog();
-                    }));
-                });
-
-                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
-                {
-                    var oldTag = metadata.uploaders[index];
-                    metadata.uploaders.RemoveAt(index);
-                    RenderServer(metadata);
-
-                    EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
-                    {
-                        if (metadata.uploaders == null)
-                            return;
-                        metadata.uploaders.RemoveAt(index);
-                        MetadataEditor.inst.OpenDialog();
-                    }, () =>
-                    {
-                        if (metadata.uploaders == null)
-                            metadata.uploaders = new List<string>();
-                        metadata.uploaders.Insert(index, oldTag);
-                        MetadataEditor.inst.OpenDialog();
-                    }));
-                });
-
-                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
-                EditorThemeManager.ApplyInputField(input);
-
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
-            }
-
-            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.CollaboratorsContent);
-            add.Text = "Add Collaborator";
-            add.OnClick.ClearAll();
-
-            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                if (metadata.uploaders == null)
-                    metadata.uploaders = new List<string>();
-                metadata.uploaders.Add(string.Empty);
-                RenderServer(metadata);
-
-                EditorManager.inst.history.Add(new History.Command("Add MetaData Collaborator",
-                    () =>
-                    {
-                        if (metadata.uploaders == null)
-                            metadata.uploaders = new List<string>();
-                        metadata.uploaders.Add(string.Empty);
-                        MetadataEditor.inst.OpenDialog();
-                    },
-                    () =>
-                    {
-                        if (metadata.uploaders == null)
-                            return;
-                        metadata.uploaders.RemoveAt(metadata.uploaders.Count - 1);
-                        MetadataEditor.inst.OpenDialog();
-                    }));
-            };
-
-            bool hasID = !string.IsNullOrEmpty(metadata.serverID); // Only check for server id.
-
-            Dialog.ShowChangelog(hasID);
-            if (hasID)
-            {
-                Dialog.ChangelogField.SetTextWithoutNotify(metadata.changelog);
-                Dialog.ChangelogField.onValueChanged.NewListener(_val => metadata.changelog = _val);
-            }
-
-            Dialog.ArcadeIDText.text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click to copy)" : "Arcade ID: No ID";
-            Dialog.ArcadeIDContextMenu.onClick = eventData =>
-            {
-                if (string.IsNullOrEmpty(metadata.arcadeID))
-                {
-                    EditorManager.inst.DisplayNotification($"No ID assigned. This shouldn't happen. Did something break?", 2f, EditorManager.NotificationType.Warning);
-                    return;
-                }
-
-                LSText.CopyToClipboard(metadata.arcadeID);
-                EditorManager.inst.DisplayNotification($"Copied ID: {metadata.arcadeID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-            };
-
-            Dialog.ServerIDText.text = !string.IsNullOrEmpty(metadata.serverID) ? $"Server ID: {metadata.serverID} (Click to copy)" : "Server ID: No ID";
-            Dialog.ServerIDContextMenu.onClick = eventData =>
-            {
-                if (string.IsNullOrEmpty(metadata.serverID))
-                {
-                    EditorManager.inst.DisplayNotification($"Upload the level first before trying to copy the server ID.", 2f, EditorManager.NotificationType.Warning);
-                    return;
-                }
-
-                LSText.CopyToClipboard(metadata.serverID);
-                EditorManager.inst.DisplayNotification($"Copied ID: {metadata.serverID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-            };
-
-            Dialog.UserIDText.text = !string.IsNullOrEmpty(LegacyPlugin.UserID) ? $"User ID: {LegacyPlugin.UserID} (Click to copy)" : "User ID: No ID";
-            Dialog.UserIDContextMenu.onClick = eventData =>
-            {
-                if (string.IsNullOrEmpty(LegacyPlugin.UserID))
-                {
-                    EditorManager.inst.DisplayNotification($"Login first before trying to copy the user ID.", 2f, EditorManager.NotificationType.Warning);
-                    return;
-                }
-
-                LSText.CopyToClipboard(LegacyPlugin.UserID);
-                EditorManager.inst.DisplayNotification($"Copied ID: {LegacyPlugin.UserID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-            };
-
-            // Changed revisions to modded display.
-            Dialog.ModdedDisplayText.text = $"Modded: {(GameData.Current.Modded ? "Yes" : "No")}";
-
-            Dialog.UploadButtonText.text = hasID ? "Update" : "Upload";
-            Dialog.UploadContextMenu.onClick = eventData =>
-            {
-                if (eventData.button != PointerEventData.InputButton.Right)
-                    return;
-
-                EditorContextMenu.inst.ShowContextMenu(
-                    new ButtonFunction(hasID ? "Update" : "Upload", UploadLevel),
-                    new ButtonFunction("Verify Level is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the level is on the Arcade server?", () =>
-                    {
-                        RTEditor.inst.HideWarningPopup();
-                        EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
-                        VerifyLevelIsOnServer();
-                    }, RTEditor.inst.HideWarningPopup)),
-                    new ButtonFunction("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the level from the Arcade server?", () =>
-                    {
-                        RTEditor.inst.HideWarningPopup();
-                        EditorManager.inst.DisplayNotification("Pulling level...", 1.5f, EditorManager.NotificationType.Info);
-                        PullLevel();
-                    }, RTEditor.inst.HideWarningPopup)),
-                    new ButtonFunction(true),
-                    new ButtonFunction("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
-                    );
-            };
-
-            Dialog.PullButton.gameObject.SetActive(hasID);
-            Dialog.DeleteButton.gameObject.SetActive(hasID);
-
-            Dialog.ConvertButton.onClick.NewListener(ConvertLevel);
-            Dialog.UploadButton.onClick.NewListener(UploadLevel);
-
-            if (!hasID)
-                return;
-
-            Dialog.PullButton.onClick.NewListener(PullLevel);
-            Dialog.DeleteButton.onClick.NewListener(DeleteLevel);
         }
 
         static Vector2 difficultySize = new Vector2(100f, 32f);
@@ -940,137 +775,8 @@ namespace BetterLegacy.Editor.Managers
                 pull: jn =>
                 {
                     GameData.Current?.SaveData(RTFile.CombinePaths(EditorLevelManager.inst.CurrentLevel.path, "reload-level-backup.lsb"));
-                    UploadedLevelsManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
+                    EditorServerManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
                 });
-        }
-
-        #endregion
-
-        #region Login
-
-        public void ShowLoginPopup(Action onLogin)
-        {
-            RTEditor.inst.ShowWarningPopup("You are not logged in.", () =>
-            {
-                Application.OpenURL($"{AlephNetwork.ArcadeServerURL}api/auth/login");
-                CreateLoginListener(onLogin);
-                RTEditor.inst.HideWarningPopup();
-            }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
-        }
-
-        public IEnumerator RefreshTokens(Action onRefreshed)
-        {
-            EditorManager.inst.DisplayNotification("Access token expired. Refreshing...", 5f, EditorManager.NotificationType.Warning);
-
-            var form = new WWWForm();
-            form.AddField("AccessToken", LegacyPlugin.authData["access_token"].Value);
-            form.AddField("RefreshToken", LegacyPlugin.authData["refresh_token"].Value);
-
-            using var www = UnityWebRequest.Post($"{AlephNetwork.ArcadeServerURL}api/auth/refresh", form);
-            www.certificateHandler = new AlephNetwork.ForceAcceptAll();
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError)
-            {
-                EditorManager.inst.DisplayNotification($"Login failed due to a network error. Message: {www.error}", 5f, EditorManager.NotificationType.Error);
-                if (www.downloadHandler != null)
-                    CoreHelper.Log(www.downloadHandler.text);
-                yield break;
-            }
-
-            if (www.isHttpError)
-            {
-                EditorManager.inst.DisplayNotification($"Login failed due to a HTTP error. Message: {www.error}", 5f, EditorManager.NotificationType.Error);
-                if (www.downloadHandler != null)
-                    CoreHelper.Log(www.downloadHandler.text);
-                ShowLoginPopup(onRefreshed);
-                yield break;
-            }
-
-            var jn = JSON.Parse(www.downloadHandler.text);
-            LegacyPlugin.authData["access_token"] = jn["accessToken"].Value;
-            LegacyPlugin.authData["refresh_token"] = jn["refreshToken"].Value;
-            LegacyPlugin.authData["access_token_expiry_time"] = jn["accessTokenExpiryTime"].Value;
-
-            RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), LegacyPlugin.authData.ToString());
-            EditorManager.inst.DisplayNotification("Refreshed tokens!", 5f, EditorManager.NotificationType.Success);
-            if (EditorConfig.Instance.UploadDeleteOnLogin.Value)
-                onRefreshed?.Invoke();
-        }
-
-        void CreateLoginListener(Action onLogin)
-        {
-            if (_listener == null)
-            {
-                _listener = new HttpListener();
-                _listener.Prefixes.Add("http://localhost:1234/");
-                _listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-                _listener.Start();
-            }
-
-            CoroutineHelper.StartCoroutine(StartListenerCoroutine(onLogin));
-        }
-
-        IEnumerator StartListenerCoroutine(Action onLogin)
-        {
-            while (_listener.IsListening)
-            {
-                var task = _listener.GetContextAsync();
-                yield return CoroutineHelper.Until(() => task.IsCompleted);
-                ProcessRequest(task.Result, onLogin);
-            }
-        }
-
-        void ProcessRequest(HttpListenerContext context, Action onLogin)
-        {
-            var query = context.Request.QueryString;
-            if (query["success"] != "true")
-            {
-                SendResponse(context.Response, HttpStatusCode.Unauthorized, "Unauthorized");
-                return;
-            }
-
-            var id = query["id"];
-            var username = query["username"];
-            var steamId = query["steam_id"];
-            var accessToken = query["access_token"];
-            var refreshToken = query["refresh_token"];
-            var accessTokenExpiryTime = query["access_token_expiry_time"];
-
-            if (id == null || username == null || steamId == null || accessToken == null || refreshToken == null || accessTokenExpiryTime == null)
-            {
-                SendResponse(context.Response, HttpStatusCode.BadRequest, "Bad Request");
-                return;
-            }
-
-            LegacyPlugin.authData = new JSONObject
-            {
-                ["id"] = id,
-                ["username"] = username,
-                ["steam_id"] = steamId,
-                ["access_token"] = accessToken,
-                ["refresh_token"] = refreshToken,
-                ["access_token_expiry_time"] = accessTokenExpiryTime
-            };
-
-            RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), LegacyPlugin.authData.ToString());
-            EditorManager.inst.DisplayNotification($"Successfully logged in as {username}!", 8f, EditorManager.NotificationType.Success);
-            SendResponse(context.Response, HttpStatusCode.OK, "Success! You can close this page and go back to the game now.");
-
-            if (EditorConfig.Instance.UploadDeleteOnLogin.Value)
-                onLogin?.Invoke();
-        }
-
-        void SendResponse(HttpListenerResponse response, HttpStatusCode code, string message = null)
-        {
-            response.StatusCode = (int)code;
-            if (message != null)
-            {
-                response.ContentType = "text/plain";
-                var body = Encoding.UTF8.GetBytes(message);
-                response.OutputStream.Write(body, 0, body.Length);
-            }
-            response.Close();
         }
 
         #endregion

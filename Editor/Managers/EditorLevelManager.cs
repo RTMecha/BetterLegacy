@@ -1677,9 +1677,28 @@ namespace BetterLegacy.Editor.Managers
 
             LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() => LoadLevelCollection(levelCollection));
 
+            LevelCollectionDialog.ArcadeIDText.text = !string.IsNullOrEmpty(levelCollection.id) ? $"Arcade ID: {levelCollection.id} (Click to copy)" : "Arcade ID: No ID";
+            LevelCollectionDialog.ArcadeIDContextMenu.onClick = eventData =>
+            {
+                if (string.IsNullOrEmpty(levelCollection.id))
+                {
+                    EditorManager.inst.DisplayNotification($"No ID assigned. This shouldn't happen. Did something break?", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                LSText.CopyToClipboard(levelCollection.id);
+                EditorManager.inst.DisplayNotification($"Copied ID: {levelCollection.id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+            };
+
             RenderLevelCollectionDifficulty(levelCollection);
             RenderLevelCollectionTags(levelCollection);
-            RenderLevelCollectionServer(levelCollection);
+            EditorServerManager.inst.RenderServerDialog(
+                uploadable: levelCollection,
+                dialog: LevelCollectionDialog,
+                upload: () => UploadLevelCollection(levelCollection),
+                pull: null,
+                delete: () => DeleteLevelCollectionFromServer(levelCollection),
+                verify: null);
         }
 
         static Vector2 difficultySize = new Vector2(100f, 32f);
@@ -1788,183 +1807,6 @@ namespace BetterLegacy.Editor.Managers
                 levelCollection.Save();
                 RenderLevelCollectionTags(levelCollection);
             };
-        }
-
-        public void RenderLevelCollectionServer(LevelCollection levelCollection)
-        {
-            //LevelCollectionDialog.ServerVisibilityDropdown.options = CoreHelper.ToOptionData<ServerVisibility>();
-            //LevelCollectionDialog.ServerVisibilityDropdown.SetValueWithoutNotify((int)levelCollection.Visibility);
-            //LevelCollectionDialog.ServerVisibilityDropdown.onValueChanged.NewListener(_val => levelCollection.Visibility = (ServerVisibility)_val);
-
-            //CoreHelper.DestroyChildren(LevelCollectionDialog.CollaboratorsContent);
-            //for (int i = 0; i < levelCollection.Uploaders.Count; i++)
-            //{
-            //    int index = i;
-            //    var tag = levelCollection.Uploaders[i];
-            //    var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(LevelCollectionDialog.CollaboratorsContent, index.ToString());
-            //    gameObject.transform.AsRT().sizeDelta = new Vector2(717f, 32f);
-            //    var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-            //    input.transform.AsRT().sizeDelta = new Vector2(682, 32f);
-            //    input.SetTextWithoutNotify(tag);
-            //    input.onValueChanged.NewListener(_val =>
-            //    {
-            //        _val = RTString.ReplaceSpace(_val);
-            //        var oldVal = levelCollection.Uploaders[index];
-            //        levelCollection.Uploaders[index] = _val;
-
-            //        EditorManager.inst.history.Add(new History.Command("Change MetaData Uploader", () =>
-            //        {
-            //            levelCollection.Uploaders[index] = _val;
-            //            OpenLevelCollectionEditor(levelCollection);
-            //        }, () =>
-            //        {
-            //            levelCollection.Uploaders[index] = oldVal;
-            //            OpenLevelCollectionEditor(levelCollection);
-            //        }));
-            //    });
-
-            //    var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-            //    deleteStorage.button.onClick.NewListener(() =>
-            //    {
-            //        var oldTag = levelCollection.Uploaders[index];
-            //        levelCollection.Uploaders.RemoveAt(index);
-            //        RenderLevelCollectionServer(levelCollection);
-
-            //        EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
-            //        {
-            //            if (levelCollection.Uploaders == null)
-            //                return;
-            //            levelCollection.Uploaders.RemoveAt(index);
-            //            OpenLevelCollectionEditor(levelCollection);
-            //        }, () =>
-            //        {
-            //            if (levelCollection.Uploaders == null)
-            //                levelCollection.Uploaders = new List<string>();
-            //            levelCollection.Uploaders.Insert(index, oldTag);
-            //            OpenLevelCollectionEditor(levelCollection);
-            //        }));
-            //    });
-
-            //    EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
-            //    EditorThemeManager.ApplyInputField(input);
-
-            //    EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-            //    EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
-            //}
-
-            //var add = EditorPrefabHolder.Instance.CreateAddButton(LevelCollectionDialog.CollaboratorsContent);
-            //add.Text = "Add Collaborator";
-            //add.OnClick.ClearAll();
-
-            //var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
-            //contextClickable.onClick = pointerEventData =>
-            //{
-            //    if (levelCollection.Uploaders == null)
-            //        levelCollection.Uploaders = new List<string>();
-            //    levelCollection.Uploaders.Add(string.Empty);
-            //    RenderLevelCollectionServer(levelCollection);
-
-            //    EditorManager.inst.history.Add(new History.Command("Add MetaData Collaborator",
-            //        () =>
-            //        {
-            //            if (levelCollection.Uploaders == null)
-            //                levelCollection.Uploaders = new List<string>();
-            //            levelCollection.Uploaders.Add(string.Empty);
-            //            OpenLevelCollectionEditor(levelCollection);
-            //        },
-            //        () =>
-            //        {
-            //            if (levelCollection.Uploaders == null)
-            //                return;
-            //            levelCollection.Uploaders.RemoveAt(levelCollection.Uploaders.Count - 1);
-            //            OpenLevelCollectionEditor(levelCollection);
-            //        }));
-            //};
-
-            //bool hasID = !string.IsNullOrEmpty(levelCollection.serverID); // Only check for server id.
-
-            //LevelCollectionDialog.ShowChangelog(hasID);
-            //if (hasID)
-            //{
-            //    LevelCollectionDialog.ChangelogField.SetTextWithoutNotify(levelCollection.Changelog);
-            //    LevelCollectionDialog.ChangelogField.onValueChanged.NewListener(_val => levelCollection.Changelog = _val);
-            //}
-
-            //LevelCollectionDialog.ArcadeIDText.text = !string.IsNullOrEmpty(levelCollection.id) ? $"Arcade ID: {levelCollection.id} (Click to copy)" : "Arcade ID: No ID";
-            //LevelCollectionDialog.ArcadeIDContextMenu.onClick = eventData =>
-            //{
-            //    if (string.IsNullOrEmpty(levelCollection.id))
-            //    {
-            //        EditorManager.inst.DisplayNotification($"No ID assigned. This shouldn't happen. Did something break?", 2f, EditorManager.NotificationType.Warning);
-            //        return;
-            //    }
-
-            //    LSText.CopyToClipboard(levelCollection.id);
-            //    EditorManager.inst.DisplayNotification($"Copied ID: {levelCollection.id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-            //};
-
-            //LevelCollectionDialog.ServerIDText.text = !string.IsNullOrEmpty(levelCollection.serverID) ? $"Server ID: {levelCollection.serverID} (Click to copy)" : "Server ID: No ID";
-            //LevelCollectionDialog.ServerIDContextMenu.onClick = eventData =>
-            //{
-            //    if (string.IsNullOrEmpty(levelCollection.serverID))
-            //    {
-            //        EditorManager.inst.DisplayNotification($"Upload the level first before trying to copy the server ID.", 2f, EditorManager.NotificationType.Warning);
-            //        return;
-            //    }
-
-            //    LSText.CopyToClipboard(levelCollection.serverID);
-            //    EditorManager.inst.DisplayNotification($"Copied ID: {levelCollection.serverID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-            //};
-
-            //LevelCollectionDialog.UserIDText.text = !string.IsNullOrEmpty(LegacyPlugin.UserID) ? $"User ID: {LegacyPlugin.UserID} (Click to copy)" : "User ID: No ID";
-            //LevelCollectionDialog.UserIDContextMenu.onClick = eventData =>
-            //{
-            //    if (string.IsNullOrEmpty(LegacyPlugin.UserID))
-            //    {
-            //        EditorManager.inst.DisplayNotification($"Login first before trying to copy the user ID.", 2f, EditorManager.NotificationType.Warning);
-            //        return;
-            //    }
-
-            //    LSText.CopyToClipboard(LegacyPlugin.UserID);
-            //    EditorManager.inst.DisplayNotification($"Copied ID: {LegacyPlugin.UserID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
-            //};
-
-            //LevelCollectionDialog.UploadButtonText.text = hasID ? "Update" : "Upload";
-            //LevelCollectionDialog.UploadContextMenu.onClick = eventData =>
-            //{
-            //    if (eventData.button != PointerEventData.InputButton.Right)
-            //        return;
-
-            //    EditorContextMenu.inst.ShowContextMenu(
-            //        new ButtonFunction(hasID ? "Update" : "Upload", () => UploadLevelCollection(levelCollection)),
-            //        //new ButtonFunction("Verify Level Collection is on Server", () => RTEditor.inst.ShowWarningPopup("Do you want to verify that the level is on the Arcade server?", () =>
-            //        //{
-            //        //    RTEditor.inst.HideWarningPopup();
-            //        //    EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
-            //        //    VerifyLevelIsOnServer();
-            //        //}, RTEditor.inst.HideWarningPopup)),
-            //        //new ButtonFunction("Pull Changes from Server", () => RTEditor.inst.ShowWarningPopup("Do you want to pull the level from the Arcade server?", () =>
-            //        //{
-            //        //    RTEditor.inst.HideWarningPopup();
-            //        //    EditorManager.inst.DisplayNotification("Pulling level...", 1.5f, EditorManager.NotificationType.Info);
-            //        //    PullLevel();
-            //        //}, RTEditor.inst.HideWarningPopup)),
-            //        new ButtonFunction(true),
-            //        new ButtonFunction("Guidelines", () => EditorDocumentation.inst.OpenDocument("Uploading a Level"))
-            //        );
-            //};
-
-            ////LevelCollectionDialog.PullButton.gameObject.SetActive(hasID);
-            //LevelCollectionDialog.DeleteButton.gameObject.SetActive(hasID);
-
-            //LevelCollectionDialog.UploadButton.onClick.NewListener(() => UploadLevelCollection(levelCollection));
-
-            //if (!hasID)
-            //    return;
-
-            ////LevelCollectionDialog.PullButton.onClick.NewListener(PullLevel);
-            //LevelCollectionDialog.DeleteButton.onClick.NewListener(() => DeleteLevelCollectionFromServer(levelCollection));
         }
 
         public void OpenIconSelector(LevelCollection levelCollection)

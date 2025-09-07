@@ -18,11 +18,14 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class UploadedLevelsDialog : EditorDialog, IContentUI
+    public class UploadedLevelsDialog : EditorDialog, IContentUI, IPageUI
     {
         public UploadedLevelsDialog() : base() { }
 
-        public InputField PageField { get; set; }
+        public RectTransform TabsContent { get; set; }
+        public List<Button> TabButtons { get; set; } = new List<Button>();
+
+        public Toggle UploadedToggle { get; set; }
 
         public InputField SearchField { get; set; }
 
@@ -33,6 +36,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public Scrollbar ContentScrollbar { get; set; }
 
         public string SearchTerm { get => SearchField.text; set => SearchField.text = value; }
+
+        public InputFieldStorage PageField { get; set; }
+
+        public int Page { get; set; }
+
+        public int MaxPageCount { get; }
 
         public void ClearContent() => LSHelpers.DeleteChildren(Content);
 
@@ -49,64 +58,92 @@ namespace BetterLegacy.Editor.Data.Dialogs
             var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
 
             dialogStorage.topPanel.color = LSColors.HexToColor("F05355");
-            dialogStorage.title.text = "- Uploaded Levels -";
-
-            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
-            editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
+            dialogStorage.title.text = "- Online Files -";
 
             CoreHelper.Delete(editorDialogObject.transform.GetChild(2));
 
             EditorHelper.AddEditorDialog(UPLOADED_LEVELS, editorDialogObject);
 
-            var search = EditorPrefabHolder.Instance.StringInputField.Duplicate(editorDialogObject.transform.Find("spacer"), "search");
-            RectValues.Default.AnchoredPosition(-200f, 0f).SizeDelta(300f, 32f).AssignToRectTransform(search.transform.AsRT());
+            var tabs = Creator.NewUIObject("tabs", editorDialogObject.transform);
+            TabsContent = tabs.transform.AsRT();
+            TabsContent.sizeDelta = new Vector2(750f, 32f);
+            var tabsLayout = tabs.AddComponent<HorizontalLayoutGroup>();
+            tabsLayout.childControlHeight = true;
+            tabsLayout.childForceExpandHeight = true;
+            tabsLayout.childForceExpandWidth = true;
+            tabsLayout.childForceExpandHeight = true;
+            tabsLayout.spacing = 8f;
+
+            SetupTab("Levels", EditorServerManager.Tab.Levels);
+            SetupTab("Level Collections", EditorServerManager.Tab.LevelCollections);
+            SetupTab("Prefabs", EditorServerManager.Tab.Prefabs);
+
+            var bar = editorDialogObject.transform.Find("spacer");
+            bar.AsRT().sizeDelta = new Vector2(765f, 32f);
+            bar.name = "bar";
+
+            var barLayout = bar.gameObject.AddComponent<HorizontalLayoutGroup>();
+            barLayout.childControlWidth = false;
+
+            var search = EditorPrefabHolder.Instance.StringInputField.Duplicate(bar, "search");
+            RectValues.Default.AnchoredPosition(-200f, 0f).SizeDelta(240f, 32f).AssignToRectTransform(search.transform.AsRT());
             SearchField = search.GetComponent<InputField>();
             SearchField.SetTextWithoutNotify(string.Empty);
             SearchField.GetPlaceholderText().text = "Search levels...";
             SearchField.onValueChanged.ClearAll();
 
-            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"), "page");
-            RectValues.Default.AnchoredPosition(-40f, 0f).SizeDelta(0f, 32f).AssignToRectTransform(page.transform.AsRT());
-            var pageStorage = page.GetComponent<InputFieldStorage>();
-            PageField = pageStorage.inputField;
-
-            var pageLayoutElement = PageField.GetComponent<LayoutElement>();
+            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(bar, "page");
+            RectValues.Default.AnchoredPosition(-40f, 0f).SizeDelta(200f, 32f).AssignToRectTransform(page.transform.AsRT());
+            var pageLayoutElement = page.GetOrAddComponent<LayoutElement>();
             pageLayoutElement.minWidth = 100f;
             pageLayoutElement.preferredWidth = 100f;
+
+            var pageStorage = page.GetComponent<InputFieldStorage>();
+            PageField = pageStorage;
+
             PageField.SetTextWithoutNotify("0");
-            PageField.onValueChanged.NewListener(_val =>
+            PageField.OnValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
-                    UploadedLevelsManager.inst.page = Mathf.Clamp(p, 0, int.MaxValue);
+                    EditorServerManager.inst.page = Mathf.Clamp(p, 0, int.MaxValue);
             });
 
             pageStorage.leftGreaterButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.text, out int p))
-                    PageField.text = Mathf.Clamp(p - 10, 0, int.MaxValue).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    PageField.Text = Mathf.Clamp(p - 10, 0, int.MaxValue).ToString();
             });
             pageStorage.leftButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.text, out int p))
-                    PageField.text = Mathf.Clamp(p - 1, 0, int.MaxValue).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    PageField.Text = Mathf.Clamp(p - 1, 0, int.MaxValue).ToString();
             });
             pageStorage.rightButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.text, out int p))
-                    PageField.text = Mathf.Clamp(p + 1, 0, int.MaxValue).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    PageField.Text = Mathf.Clamp(p + 1, 0, int.MaxValue).ToString();
             });
             pageStorage.rightGreaterButton.onClick.NewListener(() =>
             {
-                if (int.TryParse(PageField.text, out int p))
-                    PageField.text = Mathf.Clamp(p + 10, 0, int.MaxValue).ToString();
+                if (int.TryParse(PageField.Text, out int p))
+                    PageField.Text = Mathf.Clamp(p + 10, 0, int.MaxValue).ToString();
             });
-            CoreHelper.Delete(pageStorage.middleButton.gameObject);
+            CoreHelper.Delete(pageStorage.middleButton);
 
-            var searchButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(editorDialogObject.transform.Find("spacer"), "search button");
+            var uploaded = EditorPrefabHolder.Instance.ToggleButton.Duplicate(bar, "uploaded");
+            RectValues.Default.SizeDelta(160f, 32f).AssignToRectTransform(uploaded.transform.AsRT());
+            var uploadedToggleStorage = uploaded.GetComponent<ToggleButtonStorage>();
+            UploadedToggle = uploadedToggleStorage.toggle;
+            uploadedToggleStorage.Text = "Uploaded";
+            uploadedToggleStorage.SetIsOnWithoutNotify(true);
+            uploadedToggleStorage.OnValueChanged.NewListener(_val => EditorServerManager.inst.uploaded = _val);
+            EditorThemeManager.AddToggle(uploadedToggleStorage.toggle, graphic: uploadedToggleStorage.label);
+
+            var searchButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(bar, "search button");
             RectValues.Default.AnchoredPosition(310f, 0f).SizeDelta(100f, 32f).AssignToRectTransform(searchButton.transform.AsRT());
             var searchButtonStorage = searchButton.GetComponent<FunctionButtonStorage>();
-            searchButtonStorage.label.text = "Search";
-            searchButtonStorage.button.onClick.NewListener(UploadedLevelsManager.inst.Search);
+            searchButtonStorage.Text = "Search";
+            searchButtonStorage.OnClick.NewListener(EditorServerManager.inst.Search);
 
             EditorThemeManager.AddInputField(SearchField);
             EditorThemeManager.AddInputField(pageStorage);
@@ -123,19 +160,36 @@ namespace BetterLegacy.Editor.Data.Dialogs
             scrollViewLE.ignoreLayout = true;
 
             scrollView.transform.AsRT().anchoredPosition = new Vector2(392.5f, 320f);
-            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 638f);
+            scrollView.transform.AsRT().sizeDelta = new Vector2(735f, 560f);
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             EditorHelper.AddEditorDropdown("View Uploaded", string.Empty, "Steam", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_levels{FileFormat.PNG.Dot()}"), () =>
             {
-                UploadedLevelsManager.inst.Dialog.Open();
-                UploadedLevelsManager.inst.Search();
+                EditorServerManager.inst.Dialog.Open();
+                EditorServerManager.inst.Search();
             });
 
             EditorHelper.AddEditorDialog(UPLOADED_LEVELS, editorDialogObject);
 
             InitDialog(UPLOADED_LEVELS);
+        }
+
+        void SetupTab(string name, EditorServerManager.Tab tab)
+        {
+            var tabObj = EditorPrefabHolder.Instance.Function1Button.Duplicate(TabsContent);
+            var tabStorage = tabObj.GetComponent<FunctionButtonStorage>();
+
+            tabStorage.Text = name;
+            tabStorage.OnClick.NewListener(() =>
+            {
+                EditorServerManager.inst.tab = tab;
+                EditorServerManager.inst.Search();
+            });
+            TabButtons.Add(tabStorage.button);
+
+            EditorThemeManager.AddGraphic(tabStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.AddGraphic(tabStorage.label, ThemeGroup.Function_1_Text);
         }
     }
 }

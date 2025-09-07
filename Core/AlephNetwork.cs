@@ -48,6 +48,7 @@ namespace BetterLegacy.Core
 
         public static string PrefabURL => $"{ArcadeServerURL}api/prefab/";
         public static string PrefabSearchURL => $"{PrefabURL}search";
+        public static string PrefabCoverURL => $"{PrefabURL}cover/";
         public static string PrefabDownloadURL => $"{PrefabURL}download/";
 
         #region Constants
