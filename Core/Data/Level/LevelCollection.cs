@@ -188,6 +188,10 @@ namespace BetterLegacy.Core.Data.Level
         public string datePublished = string.Empty;
         public int versionNumber;
 
+        public string DatePublished { get => datePublished; set => datePublished = value; }
+
+        public int VersionNumber { get => versionNumber; set => versionNumber = value; }
+
         #endregion
 
         #endregion
@@ -268,10 +272,10 @@ namespace BetterLegacy.Core.Data.Level
             if (jn["entry_level_index"] != null)
                 collection.entryLevelIndex = jn["entry_level_index"].AsInt;
 
-            if (!string.IsNullOrEmpty(jn["beatmap"]["date_edited"]))
-                collection.dateEdited = jn["beatmap"]["date_edited"];
-            if (!string.IsNullOrEmpty(jn["beatmap"]["date_created"]))
-                collection.dateCreated = jn["beatmap"]["date_created"];
+            if (!string.IsNullOrEmpty(jn["date_edited"]))
+                collection.dateEdited = jn["date_edited"];
+            if (!string.IsNullOrEmpty(jn["date_created"]))
+                collection.dateCreated = jn["date_created"];
             else
                 collection.dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             if (!string.IsNullOrEmpty(jn["date_published"]))

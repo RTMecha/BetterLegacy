@@ -46,5 +46,15 @@ namespace BetterLegacy.Core.Data
         /// Specified update version of the item.
         /// </summary>
         public string ObjectVersion { get; set; }
+
+        /// <summary>
+        /// The date time the item was uploaded.
+        /// </summary>
+        public string DatePublished { get; set; }
+
+        /// <summary>
+        /// Incremental version number of the file on the server.
+        /// </summary>
+        public int VersionNumber { get; set; }
     }
 }

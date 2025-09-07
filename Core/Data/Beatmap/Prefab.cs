@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
@@ -194,6 +195,15 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public string ObjectVersion { get; set; }
 
+        public string dateCreated = string.Empty;
+        public string dateEdited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+        public string datePublished = string.Empty;
+        public int versionNumber;
+
+        public string DatePublished { get => datePublished; set => datePublished = value; }
+
+        public int VersionNumber { get => versionNumber; set => versionNumber = value; }
+
         #endregion
 
         #region Editor
@@ -208,10 +218,16 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void CopyData(Prefab orig, bool newID = true)
         {
-            description = orig.description;
             id = newID ? LSText.randomString(16) : orig.id;
             name = orig.name;
+            description = orig.description;
             creator = orig.creator;
+
+            dateCreated = orig.dateCreated;
+            dateEdited = orig.dateEdited;
+            datePublished = orig.datePublished;
+            versionNumber = orig.versionNumber;
+
             offset = orig.offset;
             prefabObjects = orig.prefabObjects.Clone();
             type = orig.type;
@@ -274,6 +290,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             description = jn["description"];
             typeID = PrefabType.VGIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
             iconData = jn["preview"];
+            dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -289,6 +306,17 @@ namespace BetterLegacy.Core.Data.Beatmap
                 typeID = PrefabType.LSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
 
             iconData = jn["icon"];
+
+            if (!string.IsNullOrEmpty(jn["date_edited"]))
+                dateEdited = jn["date_edited"];
+            if (!string.IsNullOrEmpty(jn["date_created"]))
+                dateCreated = jn["date_created"];
+            else
+                dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            if (!string.IsNullOrEmpty(jn["date_published"]))
+                datePublished = jn["date_published"];
+            if (jn["version_number"] != null)
+                versionNumber = jn["version_number"].AsInt;
 
             this.ReadUploadableJSON(jn);
             this.ReadPrefabJSON(jn);
@@ -380,6 +408,12 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["creator"] = creator;
             if (!string.IsNullOrEmpty(description))
                 jn["desc"] = description;
+
+            jn["date_created"] = dateCreated;
+            jn["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            if (!string.IsNullOrEmpty(datePublished))
+                jn["date_published"] = datePublished;
+            jn["version_number"] = versionNumber.ToString();
 
             this.WriteUploadableJSON(jn);
 

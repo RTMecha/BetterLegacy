@@ -80,6 +80,10 @@ namespace BetterLegacy.Core.Data
 
         public string ObjectVersion { get; set; }
 
+        public string DatePublished { get => beatmap.datePublished; set => beatmap.datePublished = value; }
+
+        public int VersionNumber { get => beatmap.versionNumber; set => beatmap.versionNumber = value; }
+
         #endregion
 
         #region Arcade
