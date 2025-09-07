@@ -10,8 +10,10 @@
 - Added a file version field to Prefabs, levels, level collections and player models. You can right click the field to edit the version number.
 - Player models now have a creator field.
 - .vgp Prefabs now load in the External Prefabs list.
-- Ported Prefab preview from VG, except you can customize the Prefab's icon with any JPG image file. You can also use the new Capture Area box. This acts as an in-game camera that is draggable.
+- Ported Prefab preview from VG, except you can customize the Prefab's icon with any JPG image file. You can also use the new Capture Area box.
+- Added a Capture Area box. This acts as an in-game camera that is draggable. The outline can be dragged to resize the resolution, the slider can be changed to set the zoom, the corners can be dragged to rotate and the inner box can be clicked to take a screenshot of that area.
 - Added "Timeline Object Prefab Icon" in Config Manager > Editor > Timeline. With it on, the Prefabs' icon will be prioritzed over the Prefab Type icon.
+- Reworked the "View Uploaded" editor dialog to allow viewing of Levels, Level Collections and Prefabs.
 
 ## Fixes
 - Finally fixed polygon shape conversion not working in some cases (why so many edge cases omg).
