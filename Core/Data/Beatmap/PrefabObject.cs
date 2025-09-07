@@ -58,6 +58,9 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         public List<EventKeyframe> events = new List<EventKeyframe>();
 
+        /// <summary>
+        /// Depth offset of the Prefab Object.
+        /// </summary>
         public float depth;
 
         #region Prefab
@@ -402,6 +405,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             repeatCount = orig.repeatCount;
             repeatOffsetTime = orig.repeatOffsetTime;
             speed = orig.Speed;
+            depth = orig.depth;
 
             CopyTransformData(orig);
 
@@ -720,7 +724,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 timeToAdd += t;
             }
 
-            return duration;
+            return duration * Speed;
         }
         
         public void ResetOffsets()
