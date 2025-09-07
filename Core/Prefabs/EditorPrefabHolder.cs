@@ -100,6 +100,20 @@ namespace BetterLegacy.Core.Prefabs
         [SerializeField]
         public Text label;
 
+        public Toggle.ToggleEvent OnValueChanged
+        {
+            get => toggle.onValueChanged;
+            set => toggle.onValueChanged = value;
+        }
+
+        public string Text
+        {
+            get => label.text;
+            set => label.text = value;
+        }
+
+        public void SetIsOnWithoutNotify(bool value) => toggle.SetIsOnWithoutNotify(value);
+
         public void Assign() => Assign(gameObject);
 
         public void Assign(GameObject gameObject)
