@@ -176,6 +176,7 @@ namespace BetterLegacy.Core.Managers
                 case "undertale-wingdings.ttf": return "Determination Wingdings";
                 #endregion
                 #region English Fonts
+
                 case "about_friend_extended_v2_by_matthewtheprep_ddribq5.otf": return "About Friend";
                 case "adamwarrenpro-bold.ttf": return "Adam Warren Pro Bold";
                 case "adamwarrenpro-bolditalic.ttf": return "Adam Warren Pro BoldItalic";
@@ -258,6 +259,12 @@ namespace BetterLegacy.Core.Managers
                 case "nexabook.otf": return "Nexa Book";
                 case "sans mita aprilia.ttf": return "Sans Sans";
                 case "spookyhollow.ttf": return "SpookyHollow"; // unused
+
+                    // vg ported
+                case "majormonodisplay-regular.ttf": return "MajorMonoDisplay";
+                case "poorstory-regular.ttf": return "Poorstory";
+                case "hellovetica regular.ttf": return "Hellovetica";
+
                 #endregion
                 #region Thai Fonts
                 case "angsa.ttf": return "Angsana";
