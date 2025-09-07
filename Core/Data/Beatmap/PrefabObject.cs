@@ -716,7 +716,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             var duration = length;
             var t = RepeatOffsetTime != 0f ? RepeatOffsetTime : 1f;
             if (RepeatCount == 0)
-                return duration;
+                return duration / Speed;
             var timeToAdd = 0f;
             for (int i = 0; i < RepeatCount + 1; i++)
             {
@@ -724,7 +724,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 timeToAdd += t;
             }
 
-            return duration * Speed;
+            return duration / Speed;
         }
         
         public void ResetOffsets()
