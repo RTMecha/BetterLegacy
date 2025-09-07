@@ -8,7 +8,7 @@ namespace BetterLegacy.Core.Components
     /// <summary>
     /// Interaction component.
     /// </summary>
-    public class Clickable : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class Clickable : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
     {
         /// <summary>
         /// Action invoked when object becomes enabled or disabled. Passed boolean value is if the object is true when the object is enabled, otherwise false.
@@ -24,6 +24,8 @@ namespace BetterLegacy.Core.Components
         public Action<PointerEventData> onBeginDrag;
         public Action<PointerEventData> onDrag;
         public Action<PointerEventData> onEndDrag;
+
+        public Action<PointerEventData> onScroll;
 
         void OnEnable() => onEnable?.Invoke(true);
         void OnDisable() => onEnable?.Invoke(false);
@@ -41,5 +43,7 @@ namespace BetterLegacy.Core.Components
         public void OnPointerExit(PointerEventData pointerEventData) => onExit?.Invoke(pointerEventData);
 
         public void OnPointerUp(PointerEventData pointerEventData) => onUp?.Invoke(pointerEventData);
+
+        public void OnScroll(PointerEventData pointerEventData) => onScroll?.Invoke(pointerEventData);
     }
 }
