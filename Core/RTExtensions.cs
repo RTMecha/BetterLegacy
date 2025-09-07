@@ -2349,6 +2349,7 @@ namespace BetterLegacy.Core
             uploadable.Changelog = orig.Changelog ?? string.Empty;
             uploadable.ArcadeTags = new List<string>(orig.ArcadeTags);
             uploadable.ObjectVersion = orig.ObjectVersion;
+            uploadable.VersionNumber = orig.VersionNumber;
         }
 
         /// <summary>
