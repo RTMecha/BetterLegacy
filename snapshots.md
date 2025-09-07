@@ -16,6 +16,8 @@
 ## Fixes
 - Finally fixed polygon shape conversion not working in some cases (why so many edge cases omg).
 - Fixed the depth value of Prefab Objects not being copied.
+- Fixed Prefab Object speed not affecting the lifetime.
+- The Object Drag Helper should now line up more consistently with objects.
 
 -------------------------------------------------------------------
 
