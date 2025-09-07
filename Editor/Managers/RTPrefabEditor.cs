@@ -2184,7 +2184,7 @@ namespace BetterLegacy.Editor.Managers
                     prefabPanel.RenderTooltip();
                     EditorTimeline.inst.timelineObjects.ForLoop(timelineObject =>
                     {
-                        if (timelineObject.isBeatmapObject || timelineObject.GetData<PrefabObject>().prefabID != prefab.id)
+                        if (!timelineObject.isPrefabObject || timelineObject.GetData<PrefabObject>().prefabID != prefab.id)
                             return;
 
                         timelineObject.RenderText(prefab.name);
