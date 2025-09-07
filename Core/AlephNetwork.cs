@@ -46,6 +46,10 @@ namespace BetterLegacy.Core
         public static string LevelCollectionBannerURL => $"{LevelCollectionURL}banner/";
         public static string LevelCollectionDownloadURL => $"{LevelCollectionURL}zip/";
 
+        public static string PrefabURL => $"{ArcadeServerURL}api/prefab/";
+        public static string PrefabSearchURL => $"{PrefabURL}search";
+        public static string PrefabDownloadURL => $"{PrefabURL}download/";
+
         #region Constants
 
         /// <summary>
