@@ -1734,7 +1734,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="includeDepth">If depth should be considered.</param>
         /// <returns>Returns an accurate object position.</returns>
-        public Vector3 InterpolateChainPosition(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChainPosition(this.GetParentRuntime().CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+        public Vector3 InterpolateChainPosition(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChainPosition(this.GetParentRuntime().CurrentTime, includeDepth, includeOffsets, includeSelf);
 
         /// <summary>
         /// Gets the accurate object position regardless of whether it's empty or not. (does not include homing nor random)
@@ -1747,6 +1747,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             Vector3 result = Vector3.zero;
 
             var parents = GetParentChain();
+            parents.Reverse();
 
             bool animatePosition = true;
             bool animateScale = true;
@@ -1758,15 +1759,16 @@ namespace BetterLegacy.Core.Data.Beatmap
                     continue;
 
                 var parent = parents[i];
+                var timeOffset = parent.StartTime;
 
                 if (animateScale)
-                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time), parent.Interpolate(1, 1, time)));
+                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset)));
 
                 if (animateRotation)
-                    result = RTMath.Rotate(result, parent.Interpolate(2, 0, time));
+                    result = RTMath.Rotate(result, parent.Interpolate(2, 0, time - timeOffset));
 
                 if (animatePosition)
-                    result = RTMath.Move(result, new Vector3(parent.Interpolate(0, 0, time), parent.Interpolate(0, 1, time), parent.Interpolate(0, 2, time)));
+                    result = RTMath.Move(result, new Vector3(parent.Interpolate(0, 0, time - timeOffset), parent.Interpolate(0, 1, time - timeOffset), parent.Interpolate(0, 2, time - timeOffset)));
 
                 animatePosition = parent.GetParentType(0);
                 animateScale = parent.GetParentType(1);
@@ -1776,17 +1778,19 @@ namespace BetterLegacy.Core.Data.Beatmap
                     result += parent.positionOffset;
             }
 
-            result.z += includeDepth ? Depth : 0f;
+            if (includeDepth)
+                result.z += Depth;
             return result;
         }
 
-        public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(this.GetParentRuntime().CurrentTime - StartTime, includeOffsets, includeSelf);
+        public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(this.GetParentRuntime().CurrentTime, includeOffsets, includeSelf);
 
         public Vector2 InterpolateChainScale(float time, bool includeOffsets = true, bool includeSelf = true)
         {
             Vector2 result = Vector2.one;
 
             var parents = GetParentChain();
+            parents.Reverse();
 
             bool animateScale = true;
 
@@ -1796,9 +1800,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     continue;
 
                 var parent = parents[i];
+                var timeOffset = parent.StartTime;
 
                 if (animateScale)
-                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time), parent.Interpolate(1, 1, time)));
+                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset)));
 
                 animateScale = parent.GetParentType(1);
 
@@ -1809,13 +1814,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(this.GetParentRuntime().CurrentTime - StartTime, includeOffsets, includeSelf);
+        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(this.GetParentRuntime().CurrentTime, includeOffsets, includeSelf);
 
         public float InterpolateChainRotation(float time, bool includeOffsets = true, bool includeSelf = true)
         {
             float result = 0f;
 
             var parents = GetParentChain();
+            parents.Reverse();
 
             bool animateRotation = true;
 
@@ -1825,9 +1831,10 @@ namespace BetterLegacy.Core.Data.Beatmap
                     continue;
 
                 var parent = parents[i];
+                var timeOffset = parent.StartTime;
 
                 if (animateRotation)
-                    result += parent.Interpolate(2, 0, time);
+                    result += parent.Interpolate(2, 0, time - timeOffset);
 
                 animateRotation = parent.GetParentType(2);
 
@@ -1838,13 +1845,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             return result;
         }
 
-        public ObjectTransform InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+        public ObjectTransform InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(this.GetParentRuntime().CurrentTime, includeDepth, includeOffsets, includeSelf);
 
         public ObjectTransform InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
         {
             var result = ObjectTransform.Default;
 
             var parents = GetParentChain();
+            parents.Reverse();
 
             bool animatePosition = true;
             bool animateScale = true;
@@ -1856,23 +1864,24 @@ namespace BetterLegacy.Core.Data.Beatmap
                     continue;
 
                 var parent = parents[i];
+                var timeOffset = parent.StartTime;
 
                 if (animateScale)
                 {
-                    var scale = new Vector2(parent.Interpolate(1, 0, time), parent.Interpolate(1, 1, time));
+                    var scale = new Vector2(parent.Interpolate(1, 0, time - timeOffset), parent.Interpolate(1, 1, time - timeOffset));
                     result.position = RTMath.Scale(result.position, scale);
                     result.scale = RTMath.Scale(result.scale, scale);
                 }
 
                 if (animateRotation)
                 {
-                    var rotation = parent.Interpolate(2, 0, time);
+                    var rotation = parent.Interpolate(2, 0, time - timeOffset);
                     result.position = RTMath.Rotate(result.position, rotation);
                     result.rotation += parent.Interpolate(2, 0, time);
                 }
 
                 if (animatePosition)
-                    result.position = RTMath.Move(result.position, new Vector3(parent.Interpolate(0, 0, time), parent.Interpolate(0, 1, time), parent.Interpolate(0, 2, time)));
+                    result.position = RTMath.Move(result.position, new Vector3(parent.Interpolate(0, 0, time - timeOffset), parent.Interpolate(0, 1, time - timeOffset), parent.Interpolate(0, 2, time - timeOffset)));
 
                 animatePosition = parent.GetParentType(0);
                 animateScale = parent.GetParentType(1);
