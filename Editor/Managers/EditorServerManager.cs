@@ -95,7 +95,7 @@ namespace BetterLegacy.Editor.Managers
             Tab.LevelCollections => AlephNetwork.LevelCollectionURL,
             Tab.Prefabs => AlephNetwork.PrefabURL,
             _ => null,
-        }, uploaded ? "uploaded" : "search");
+        }, tab != Tab.Prefabs || uploaded ? "uploaded" : "search");
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
