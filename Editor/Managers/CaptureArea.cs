@@ -69,7 +69,8 @@ namespace BetterLegacy.Editor.Managers
 
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
-                    EditorContextMenu.inst.ShowContextMenu(
+                    var buttonFunctions = new List<ButtonFunction>
+                    {
                         new ButtonFunction("Create Capture", CreateCapture),
                         new ButtonFunction("Clear", ClearCapture),
                         new ButtonFunction(true),
@@ -89,7 +90,32 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             Settings.CopyData(copiedSettings);
-                        }));
+                            EditorManager.inst.DisplayNotification($"Pasted copied capture settings!", 2f, EditorManager.NotificationType.Success);
+                        })
+                    };
+
+                    switch (View)
+                    {
+                        case ViewType.Prefab: {
+                                buttonFunctions.AddRange(new List<ButtonFunction>
+                                {
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Set 256 x 256", () => Settings.Resolution = new Vector2Int(256, 256)),
+                                    new ButtonFunction("Set 128 x 128", () => Settings.Resolution = new Vector2Int(128, 128)),
+                                    new ButtonFunction("Set 64 x 64", () => Settings.Resolution = new Vector2Int(64, 64)),
+                                });
+                                break;
+                            }
+                        case ViewType.Screenshot: {
+                                buttonFunctions.Add(new ButtonFunction(true));
+                                var resolutions = CustomEnumHelper.GetValues<ResolutionType>();
+                                foreach (var resolution in resolutions)
+                                    buttonFunctions.Add(new ButtonFunction($"Set {resolution.Width} x {resolution.Height}", () => Settings.Resolution = new Vector2Int(resolution.Width, resolution.Height)));
+                                break;
+                            }
+                    }
+
+                    EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                     return;
                 }
 
