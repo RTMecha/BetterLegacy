@@ -1411,6 +1411,19 @@ namespace BetterLegacy.Editor.Managers
                     modifier.Result = default;
                 });
             }
+            foreach (var modifierBlock in GameData.Current.modifierBlocks)
+            {
+                modifierBlock.Modifiers.ForLoop(modifier =>
+                {
+                    modifier.Inactive?.Invoke(modifier, null, null);
+                    modifier.Result = default;
+                });
+            }
+            GameData.Current.modifiers.ForLoop(modifier =>
+            {
+                modifier.Inactive?.Invoke(modifier, GameData.Current, null);
+                modifier.Result = default;
+            });
 
             PlayerManager.RespawnPlayers();
         }
