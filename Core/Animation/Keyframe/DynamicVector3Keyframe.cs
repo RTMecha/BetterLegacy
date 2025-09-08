@@ -6,7 +6,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
 {
     public struct DynamicVector3Keyframe : IKeyframe<Vector3>, IHomingKeyframe, IDynamicHomingKeyframe<Vector3>, IHomingVector3Keyframe
     {
-        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, AxisMode axisMode, bool relative)
+        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, AxisMode axisMode, bool relative, HomingPriority priority, int playerIndex)
         {
             Time = time;
             Value = value;
@@ -21,6 +21,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Axis = axisMode;
             TotalValue = Vector3.zero;
             Relative = relative;
+            Priority = priority;
+            PlayerIndex = playerIndex;
         }
 
         #region Values
@@ -38,6 +40,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public float MaxRange { get; set; }
         public bool Flee { get; set; }
         public Vector3 Target { get; set; }
+        public HomingPriority Priority { get; set; }
+        public int PlayerIndex { get; set; }
 
         #endregion
 

@@ -66,6 +66,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public bool flee;
 
+        public HomingPriority homingPriority;
+
+        public int playerIndex;
+
         public bool locked;
 
         #region Timing
@@ -157,7 +161,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public JSONNode ToJSON(bool defaultRelative = false, int maxValuesToSave = -1)
         {
-            JSONNode jn = JSON.Parse("{}");
+            JSONNode jn = Parser.NewJSONObject();
             jn["t"] = time;
 
             for (int i = 0; i < values.Length; i++)
@@ -189,6 +193,10 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (flee)
                 jn["flee"] = flee;
+            if (homingPriority != HomingPriority.Closest)
+                jn["hop"] = (int)homingPriority;
+            if (playerIndex != 0)
+                jn["pindex"] = playerIndex;
 
             if (locked)
                 jn["l"] = locked;

@@ -7,7 +7,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
     /// </summary>
     public struct StaticFloatKeyframe : IKeyframe<float>, IHomingKeyframe, IHomingFloatKeyframe
     {
-        public StaticFloatKeyframe(float time, float value, EaseFunction ease, Sequence<Vector3> positionSequence, bool relative)
+        public StaticFloatKeyframe(float time, float value, EaseFunction ease, Sequence<Vector3> positionSequence, bool relative, HomingPriority priority, int playerIndex)
         {
             Time = time;
             Value = value;
@@ -18,6 +18,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Angle = 0f;
             TotalValue = 0f;
             Relative = relative;
+            Priority = priority;
+            PlayerIndex = playerIndex;
         }
 
         #region Values
@@ -30,6 +32,8 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public bool Relative { get; set; }
         public Sequence<Vector3> PositionSequence { get; set; }
         public Vector3 Target { get; set; }
+        public HomingPriority Priority { get; set; }
+        public int PlayerIndex { get; set; }
         public float Angle { get; set; }
 
         #endregion

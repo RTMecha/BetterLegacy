@@ -45,9 +45,7 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
-        #region Main
-
-        #region Properties
+        #region Values
 
         /// <summary>
         /// Player model custom IDs.
@@ -81,15 +79,16 @@ namespace BetterLegacy.Core.Managers
 
         public static Vector2 ControllerRumble { get; set; }
 
-        #endregion
-
-        #region Fields
-
         public static GameObject healthImages;
         public static Transform healthParent;
         public static Sprite healthSprite;
 
         public static bool allowController;
+
+        /// <summary>
+        /// Path to the global player models folder.
+        /// </summary>
+        public const string PLAYERS_PATH = "beatmaps/players";
 
         #endregion
 
@@ -121,23 +120,46 @@ namespace BetterLegacy.Core.Managers
             healthParent = health;
         }
 
+        #region Player Search
+
         /// <summary>
-        /// Gets the player closest to a vector.
+        /// Gets the player with a specified priority.
         /// </summary>
-        /// <param name="vector2">Position to check closeness to.</param>
-        /// <returns>Returns a CustomPlayer closest to the Vector2 parameter.</returns>
-        public static PAPlayer GetClosestPlayer(Vector2 pos)
+        /// <param name="priority">Priority to search.</param>
+        /// <param name="pos">Position vector for position-based priorities.</param>
+        /// <param name="index">Index of the player for index-based priorities.</param>
+        /// <returns>Returns the found <see cref="PAPlayer"/>.</returns>
+        public static PAPlayer GetPlayer(HomingPriority priority, Vector2 pos, int index) => Players.GetAtOrDefault(GetPlayerIndex(priority, pos, index), null);
+
+        /// <summary>
+        /// Gets the player with a specified priority.
+        /// </summary>
+        /// <param name="priority">Priority to search.</param>
+        /// <param name="pos">Position vector for position-based priorities.</param>
+        /// <param name="index">Index of the player for index-based priorities.</param>
+        /// <returns>Returns the index of the found <see cref="PAPlayer"/>.</returns>
+        public static int GetPlayerIndex(HomingPriority priority, Vector2 pos, int index) => priority switch
         {
-            var players = Players;
-            var index = GetClosestPlayerIndex(pos);
-            return players.InRange(index) ? players[index] : null;
-        }
+            HomingPriority.Closest => GetClosestPlayerIndex(pos),
+            HomingPriority.Furthest => GetFurthestPlayerIndex(pos),
+            HomingPriority.Index => index,
+            HomingPriority.HighestHealth => GetHighestHealthPlayerIndex(),
+            HomingPriority.LowestHealth => GetLowestHealthPlayerIndex(),
+            _ => -1,
+        };
 
         /// <summary>
         /// Gets the player closest to a vector.
         /// </summary>
-        /// <param name="vector2">Position to check closeness to.</param>
-        /// <returns>Returns an index of the CustomPlayer closest to the Vector2 parameter.</returns>
+        /// <param name="pos">Position to check closeness to.</param>
+        /// <returns>Returns a <see cref="PAPlayer"/> closest to the Vector2 parameter.</returns>
+        public static PAPlayer GetClosestPlayer(Vector2 pos) => Players.GetAtOrDefault(GetClosestPlayerIndex(pos), null);
+
+        /// <summary>
+        /// Gets the player closest to a vector.
+        /// </summary>
+        /// <param name="pos">Position to check closeness to.</param>
+        /// <returns>Returns an index of the <see cref="PAPlayer"/> closest to the Vector2 parameter.</returns>
         public static int GetClosestPlayerIndex(Vector2 pos)
         {
             var players = Players;
@@ -153,12 +175,106 @@ namespace BetterLegacy.Core.Managers
             var orderedList = players
                 .Where(x => x.RuntimePlayer && x.RuntimePlayer.rb)
                 .OrderBy(x => Vector2.Distance(x.RuntimePlayer.rb.position, pos));
-
-            if (orderedList.Count() < 1)
+            if (orderedList.IsEmpty())
                 return -1;
 
             var player = orderedList.ElementAt(0);
+            return player ? player.index : -1;
+        }
 
+        /// <summary>
+        /// Gets the player furthest from a vector.
+        /// </summary>
+        /// <param name="pos">Position to check furthness from.</param>
+        /// <returns>Returns a <see cref="PAPlayer"/> furthest from the Vector2 parameter.</returns>
+        public static PAPlayer GetFurthestPlayer(Vector2 pos) => Players.GetAtOrDefault(GetFurthestPlayerIndex(pos), null);
+
+        /// <summary>
+        /// Gets the player furthest from a vector.
+        /// </summary>
+        /// <param name="pos">Position to check furthness from.</param>
+        /// <returns>Returns an index of the <see cref="PAPlayer"/> furthest to the Vector2 parameter.</returns>
+        public static int GetFurthestPlayerIndex(Vector2 pos)
+        {
+            var players = Players;
+            if (IsSingleplayer)
+            {
+                var singlePlayer = players[0];
+                return singlePlayer && singlePlayer.RuntimePlayer ? 0 : -1;
+            }
+
+            if (players.IsEmpty())
+                return -1;
+
+            var orderedList = players
+                .Where(x => x.RuntimePlayer && x.RuntimePlayer.rb)
+                .OrderByDescending(x => Vector2.Distance(x.RuntimePlayer.rb.position, pos));
+            if (orderedList.IsEmpty())
+                return -1;
+
+            var player = orderedList.ElementAt(0);
+            return player ? player.index : -1;
+        }
+
+        /// <summary>
+        /// Gets the player with the highest amount of health.
+        /// </summary>
+        /// <returns>Returns a <see cref="PAPlayer"/> with the highest amount of health.</returns>
+        public static PAPlayer GetHighestHealthPlayer() => Players.GetAtOrDefault(GetHighestHealthPlayerIndex(), null);
+
+        /// <summary>
+        /// Gets the player with the highest amount of health.
+        /// </summary>
+        /// <returns>Returns an index of the <see cref="PAPlayer"/> with the highest amount of health.</returns>
+        public static int GetHighestHealthPlayerIndex()
+        {
+            var players = Players;
+            if (IsSingleplayer)
+            {
+                var singlePlayer = players[0];
+                return singlePlayer && singlePlayer.RuntimePlayer ? 0 : -1;
+            }
+
+            if (players.IsEmpty())
+                return -1;
+
+            var orderedList = players
+                .OrderByDescending(x => x.Health);
+            if (orderedList.IsEmpty())
+                return -1;
+
+            var player = orderedList.ElementAt(0);
+            return player ? player.index : -1;
+        }
+
+        /// <summary>
+        /// Gets the player with the highest amount of health.
+        /// </summary>
+        /// <returns>Returns a <see cref="PAPlayer"/> with the highest amount of health.</returns>
+        public static PAPlayer GetLowestHealthPlayer() => Players.GetAtOrDefault(GetLowestHealthPlayerIndex(), null);
+
+        /// <summary>
+        /// Gets the player with the lowest amount of health.
+        /// </summary>
+        /// <returns>Returns an index of the <see cref="PAPlayer"/> with the lowest amount of health.</returns>
+        public static int GetLowestHealthPlayerIndex()
+        {
+            var players = Players;
+            if (IsSingleplayer)
+            {
+                var singlePlayer = players[0];
+                return singlePlayer && singlePlayer.RuntimePlayer ? 0 : -1;
+            }
+
+            if (players.IsEmpty())
+                return -1;
+
+            var orderedList = players
+                .OrderBy(x => x.Health);
+            if (orderedList.IsEmpty())
+                return -1;
+
+            var player = orderedList.ElementAt(0);
             return player ? player.index : -1;
         }
 
@@ -192,6 +308,10 @@ namespace BetterLegacy.Core.Managers
 
             return result / count;
         }
+
+        #endregion
+
+        #region Validation / Connection
 
         /// <summary>
         /// Checks if there are any players loaded and if there are none, adds a default player.
@@ -234,9 +354,7 @@ namespace BetterLegacy.Core.Managers
         }
 
         #endregion
-
-        #endregion
-
+        
         #region Spawning
 
         /// <summary>
@@ -597,11 +715,6 @@ namespace BetterLegacy.Core.Managers
         #region Models
 
         /// <summary>
-        /// Path to the global player models folder.
-        /// </summary>
-        public const string PLAYERS_PATH = "beatmaps/players";
-
-        /// <summary>
         /// Updates all players.
         /// </summary>
         public static void UpdatePlayerModels()
@@ -620,6 +733,8 @@ namespace BetterLegacy.Core.Managers
                 for (int i = 0; i < players.Count; i++)
                     players[i].CurrentModel = PlayersData.Current.GetPlayerModel(i).basePart.id;
         }
+
+        #endregion
 
         #endregion
     }

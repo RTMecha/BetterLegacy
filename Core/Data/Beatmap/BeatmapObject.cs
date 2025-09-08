@@ -958,18 +958,27 @@ namespace BetterLegacy.Core.Data.Beatmap
                     // rx2 = random axis
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat, kfjn["rx2"].AsFloat);
 
-                    eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
+                    eventKeyframe.relative = kfjn["rel"].AsBool;
                     eventKeyframe.flee = kfjn["flee"].AsBool;
-                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
+                    eventKeyframe.homingPriority = (HomingPriority)kfjn["hop"].AsInt;
+                    eventKeyframe.playerIndex = kfjn["pindex"].AsInt;
+                    eventKeyframe.locked = kfjn["l"].AsBool;
+
+                    if (jn["str"] != null)
+                    {
+                        eventKeyframe.stringValues = new string[jn["str"].Count];
+                        for (int j = 0; j < jn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = jn["str"][j];
+                    }
 
                     events[0].Add(eventKeyframe);
                 }
 
                 // Scale
-                for (int j = 0; j < jn["events"]["sca"].Count; j++)
+                for (int i = 0; i < jn["events"]["sca"].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
-                    var kfjn = jn["events"]["sca"][j];
+                    var kfjn = jn["events"]["sca"][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
@@ -983,18 +992,24 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
-                    eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
-                    eventKeyframe.flee = kfjn["flee"].AsBool;
-                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
+                    eventKeyframe.relative = kfjn["rel"].AsBool;
+                    eventKeyframe.locked = kfjn["l"].AsBool;
+
+                    if (jn["str"] != null)
+                    {
+                        eventKeyframe.stringValues = new string[jn["str"].Count];
+                        for (int j = 0; j < jn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = jn["str"][j];
+                    }
 
                     events[1].Add(eventKeyframe);
                 }
 
                 // Rotation
-                for (int k = 0; k < jn["events"]["rot"].Count; k++)
+                for (int i = 0; i < jn["events"]["rot"].Count; i++)
                 {
                     var eventKeyframe = new EventKeyframe();
-                    var kfjn = jn["events"]["rot"][k];
+                    var kfjn = jn["events"]["rot"][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
@@ -1008,9 +1023,17 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
-                    eventKeyframe.relative = string.IsNullOrEmpty(kfjn["rel"]) || kfjn["rel"].AsBool;
-                    eventKeyframe.flee = kfjn["flee"].AsBool;
-                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
+                    eventKeyframe.relative = kfjn["rel"] == null || kfjn["rel"].AsBool;
+                    eventKeyframe.homingPriority = (HomingPriority)kfjn["hop"].AsInt;
+                    eventKeyframe.playerIndex = kfjn["pindex"].AsInt;
+                    eventKeyframe.locked = kfjn["l"].AsBool;
+
+                    if (jn["str"] != null)
+                    {
+                        eventKeyframe.stringValues = new string[jn["str"].Count];
+                        for (int j = 0; j < jn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = jn["str"][j];
+                    }
 
                     events[2].Add(eventKeyframe);
                 }
@@ -1068,7 +1091,14 @@ namespace BetterLegacy.Core.Data.Beatmap
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetRandomValues(kfjn["rx"].AsFloat);
 
-                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
+                    eventKeyframe.locked = kfjn["l"].AsBool;
+
+                    if (jn["str"] != null)
+                    {
+                        eventKeyframe.stringValues = new string[jn["str"].Count];
+                        for (int j = 0; j < jn["str"].Count; j++)
+                            eventKeyframe.stringValues[j] = jn["str"][j];
+                    }
 
                     events[3].Add(eventKeyframe);
                 }

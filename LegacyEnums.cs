@@ -690,6 +690,10 @@ namespace BetterLegacy
         /// </summary>
         public Vector2 Resolution { get; }
 
+        public int Width => (int)Resolution.x;
+
+        public int Height => (int)Resolution.y;
+
         #region Implementation
 
         public int Count => ENUMS.Length;
@@ -1175,6 +1179,16 @@ namespace BetterLegacy
         PlayerObject,
         GameData,
         ModifierBlock,
+    }
+
+    public enum HomingPriority
+    {
+        Closest,
+        Furthest,
+        Index,
+        HighestHealth,
+        LowestHealth,
+        // Random, // todo
     }
 
     #endregion

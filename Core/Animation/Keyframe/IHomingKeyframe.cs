@@ -13,6 +13,16 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public Vector3 Target { get; set; }
 
         /// <summary>
+        /// Player target priority.
+        /// </summary>
+        public HomingPriority Priority { get; set; }
+
+        /// <summary>
+        /// Index of the player if <see cref="Priority"/> is set to <see cref="HomingPriority.Index"/>.
+        /// </summary>
+        public int PlayerIndex { get; set; }
+
+        /// <summary>
         /// Gets the position of the current object and uses it to target the closest player.
         /// </summary>
         /// <returns>Returns the position of the current object.</returns>

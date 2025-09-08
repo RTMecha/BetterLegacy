@@ -700,10 +700,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 currentKeyfame = eventKeyframe.random switch
                 {
-                    5 => new StaticVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2), eventKeyframe.relative),
+                    5 => new StaticVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2), eventKeyframe.relative, eventKeyframe.homingPriority, eventKeyframe.playerIndex),
                     6 => new DynamicVector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
                         eventKeyframe.randomValues[2], eventKeyframe.randomValues[0], eventKeyframe.randomValues[1],
-                        eventKeyframe.flee, (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2), eventKeyframe.relative),
+                        eventKeyframe.flee, (AxisMode)Mathf.Clamp((int)eventKeyframe.randomValues[3], 0, 2), eventKeyframe.relative, eventKeyframe.homingPriority, eventKeyframe.playerIndex),
                     _ => new Vector3Keyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), eventKeyframe.relative),
                 };
 
@@ -771,10 +771,10 @@ namespace BetterLegacy.Core.Runtime.Objects
 
                 currentKeyfame = eventKeyframe.random switch
                 {
-                    5 => new StaticFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), vector3Sequence, eventKeyframe.relative),
+                    5 => new StaticFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), vector3Sequence, eventKeyframe.relative, eventKeyframe.homingPriority, eventKeyframe.playerIndex),
                     6 => new DynamicFloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve),
                         eventKeyframe.randomValues[2], eventKeyframe.randomValues[0], eventKeyframe.randomValues[1],
-                        eventKeyframe.flee, vector3Sequence, eventKeyframe.relative),
+                        eventKeyframe.flee, vector3Sequence, eventKeyframe.relative, eventKeyframe.homingPriority, eventKeyframe.playerIndex),
                     _ => new FloatKeyframe(eventKeyframe.time, currentValue, Ease.GetEaseFunction(eventKeyframe.curve), eventKeyframe.relative),
                 };
 
@@ -807,7 +807,13 @@ namespace BetterLegacy.Core.Runtime.Objects
                 int value = (int)eventKeyframe.values[index];
                 value = Mathf.Clamp(value, 0, ThemeManager.inst.Current.objectColors.Count - 1);
 
-                keyframes.Add(new ThemeKeyframe(eventKeyframe.time, value, eventKeyframe.values[index + 1], eventKeyframe.values[index + 2], eventKeyframe.values[index + 3], eventKeyframe.values[index + 4], Ease.GetEaseFunction(eventKeyframe.curve.ToString())));
+                IKeyframe<Color> currentKeyfame = eventKeyframe.random switch
+                {
+                    1 => new ColorKeyframe(eventKeyframe.time, RTColors.HexToColor(eventKeyframe.GetStringValue(getSecondary ? 1 : 0, RTColors.WHITE_HEX_CODE)), Ease.GetEaseFunction(eventKeyframe.curve)),
+                    _ => new ThemeKeyframe(eventKeyframe.time, value, eventKeyframe.values[index + 1], eventKeyframe.values[index + 2], eventKeyframe.values[index + 3], eventKeyframe.values[index + 4], Ease.GetEaseFunction(eventKeyframe.curve)),
+                };
+
+                keyframes.Add(currentKeyfame);
 
                 num++;
             }

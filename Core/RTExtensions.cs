@@ -413,9 +413,11 @@ namespace BetterLegacy.Core
         /// <returns>Returns a color channel.</returns>
         public static float At(this Color color, int index) => color[Mathf.Clamp(index, 0, 3)];
 
-        public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe)
+        public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe) => homingKeyframe.GetPlayer(HomingPriority.Closest);
+
+        public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, HomingPriority priority, int index = 0)
         {
-            var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition());
+            var player = PlayerManager.GetPlayer(priority, priority == HomingPriority.Closest || priority == HomingPriority.Furthest ? homingKeyframe.GetPosition() : Vector2.zero, index);
             if (player && player.RuntimePlayer)
                 return player.RuntimePlayer.transform.Find("Player");
             return null;
@@ -424,6 +426,14 @@ namespace BetterLegacy.Core
         public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, float time)
         {
             var player = PlayerManager.GetClosestPlayer(homingKeyframe.GetPosition(time));
+            if (player && player.RuntimePlayer)
+                return player.RuntimePlayer.transform.Find("Player");
+            return null;
+        }
+        
+        public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, float time, HomingPriority priority, int index = 0)
+        {
+            var player = PlayerManager.GetPlayer(priority, priority == HomingPriority.Closest || priority == HomingPriority.Furthest ? homingKeyframe.GetPosition(time) : Vector2.zero, index);
             if (player && player.RuntimePlayer)
                 return player.RuntimePlayer.transform.Find("Player");
             return null;
