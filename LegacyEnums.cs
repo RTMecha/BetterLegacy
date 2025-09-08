@@ -236,20 +236,39 @@ namespace BetterLegacy
         public static T GetValue<T>(int index) where T : ICustomEnum<T>, new() => (T)GetValue(new T(), index);
 
         /// <summary>
+        /// Gets a specific enum value at an index from the <see cref="ICustomEnum{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="index">Index to get at.</param>
+        /// <param name="defaultValue">Value to return if the index is outside the range of values.</param>
+        /// <returns>Returns the custom enum value at the index.</returns>
+        public static T GetValue<T>(int index, ICustomEnum defaultValue) where T : ICustomEnum<T>, new() => (T)GetValue(new T(), index, defaultValue);
+
+        /// <summary>
         /// Gets a specific enum value at an index from the <see cref="ICustomEnum"/>.
         /// </summary>
         /// <typeparam name="T">Type of the custom enum.</typeparam>
         /// <param name="customEnum">Custom Enum.</param>
         /// <param name="index">Index to get at.</param>
         /// <returns>Returns the custom enum value at the index.</returns>
-        public static ICustomEnum GetValue(ICustomEnum customEnum, int index)
+        public static ICustomEnum GetValue(ICustomEnum customEnum, int index) => GetValue(customEnum, index, default);
+
+        /// <summary>
+        /// Gets a specific enum value at an index from the <see cref="ICustomEnum"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the custom enum.</typeparam>
+        /// <param name="customEnum">Custom Enum.</param>
+        /// <param name="index">Index to get at.</param>
+        /// <param name="defaultValue">Value to return if the index is outside the range of values.</param>
+        /// <returns>Returns the custom enum value at the index.</returns>
+        public static ICustomEnum GetValue(ICustomEnum customEnum, int index, ICustomEnum defaultValue)
         {
             var values = customEnum.GetBoxedValues();
             for (int i = 0; i < values.Length; i++)
                 if (values[i].Ordinal == index)
                     return values[i];
 
-            return default;
+            return defaultValue;
         }
 
         /// <summary>
@@ -703,7 +722,7 @@ namespace BetterLegacy
 
         public static implicit operator string(ResolutionType value) => value.Name;
 
-        public static implicit operator ResolutionType(int value) => CustomEnumHelper.GetValue<ResolutionType>(value);
+        public static implicit operator ResolutionType(int value) => CustomEnumHelper.GetValue<ResolutionType>(value, p720);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(ResolutionType a, ResolutionType b) => a.Equals(b);
@@ -1238,7 +1257,7 @@ namespace BetterLegacy
 
         public static implicit operator string(DifficultyType value) => value.Name;
 
-        public static implicit operator DifficultyType(int value) => CustomEnumHelper.GetValue<DifficultyType>(value);
+        public static implicit operator DifficultyType(int value) => CustomEnumHelper.GetValue<DifficultyType>(value, Unknown);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(DifficultyType a, DifficultyType b) => a.Equals(b);
@@ -1378,7 +1397,7 @@ namespace BetterLegacy
 
         public static implicit operator string(Rank value) => value.Name;
 
-        public static implicit operator Rank(int value) => CustomEnumHelper.GetValue<Rank>(value);
+        public static implicit operator Rank(int value) => CustomEnumHelper.GetValue<Rank>(value, Null);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Rank a, Rank b) => a.Equals(b);
@@ -1498,7 +1517,7 @@ namespace BetterLegacy
 
         public static implicit operator string(GameSpeed value) => value.Name;
 
-        public static implicit operator GameSpeed(int value) => CustomEnumHelper.GetValue<GameSpeed>(value);
+        public static implicit operator GameSpeed(int value) => CustomEnumHelper.GetValue<GameSpeed>(value, X1_0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(GameSpeed a, GameSpeed b) => a.Equals(b);
@@ -1612,7 +1631,7 @@ namespace BetterLegacy
 
         public static implicit operator string(ChallengeMode value) => value.Name;
 
-        public static implicit operator ChallengeMode(int value) => CustomEnumHelper.GetValue<ChallengeMode>(value);
+        public static implicit operator ChallengeMode(int value) => CustomEnumHelper.GetValue<ChallengeMode>(value, Normal);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(ChallengeMode a, ChallengeMode b) => a.Equals(b);
