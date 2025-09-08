@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -179,6 +180,78 @@ namespace BetterLegacy.Core.Helpers
         {
             action?.Invoke();
             yield break;
+        }
+
+        /// <summary>
+        /// Performs an action on each item in a list, and yields return null each <paramref name="yieldIndex"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the list.</typeparam>
+        /// <param name="list">List to perform the loop on.</param>
+        /// <param name="action">Action to run for each item in the list.</param>
+        /// <param name="yieldIndex">Index to yield at.</param>
+        public static void ProcessLoop<T>(List<T> list, Action<T> action, int yieldIndex) => StartCoroutine(IProcessLoop(list, action, yieldIndex));
+
+        /// <summary>
+        /// Performs an action on each item in a list, and yields return null each <paramref name="yieldIndex"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the list.</typeparam>
+        /// <param name="list">List to perform the loop on.</param>
+        /// <param name="action">Action to run for each item in the list.</param>
+        /// <param name="yieldIndex">Index to yield at.</param>
+        public static IEnumerator IProcessLoop<T>(List<T> list, Action<T> action, int yieldIndex)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                action?.Invoke(list[i]);
+                if (i % yieldIndex == yieldIndex - 1)
+                    yield return null;
+            }
+        }
+
+        /// <summary>
+        /// Performs an action a specified amount of times, and yields return null each <paramref name="yieldIndex"/>.
+        /// </summary>
+        /// <param name="startIndex">Index to start at.</param>
+        /// <param name="count">Amount of times to perform the action.</param>
+        /// <param name="action">Action to run.</param>
+        /// <param name="yieldIndex">Index to yield at.</param>
+        public static void ProcessLoop(int startIndex, int count, Action<int> action, int yieldIndex) => StartCoroutine(IProcessLoop(startIndex, count, 1, action, yieldIndex));
+
+        /// <summary>
+        /// Performs an action a specified amount of times, and yields return null each <paramref name="yieldIndex"/>.
+        /// </summary>
+        /// <param name="startIndex">Index to start at.</param>
+        /// <param name="count">Amount of times to perform the action.</param>
+        /// <param name="action">Action to run.</param>
+        /// <param name="yieldIndex">Index to yield at.</param>
+        public static IEnumerator IProcessLoop(int startIndex, int count, Action<int> action, int yieldIndex) => IProcessLoop(startIndex, count, 1, action, yieldIndex);
+
+        /// <summary>
+        /// Performs an action a specified amount of times, and yields return null each <paramref name="yieldIndex"/>.
+        /// </summary>
+        /// <param name="startIndex">Index to start at.</param>
+        /// <param name="count">Amount of times to perform the action.</param>
+        /// <param name="add">Amount to add to the index each time.</param>
+        /// <param name="action">Action to run.</param>
+        /// <param name="yieldIndex">Index to yield at.</param>
+        public static void ProcessLoop(int startIndex, int count, int add, Action<int> action, int yieldIndex) => StartCoroutine(IProcessLoop(startIndex, count, add, action, yieldIndex));
+
+        /// <summary>
+        /// Performs an action a specified amount of times, and yields return null each <paramref name="yieldIndex"/>.
+        /// </summary>
+        /// <param name="startIndex">Index to start at.</param>
+        /// <param name="count">Amount of times to perform the action.</param>
+        /// <param name="add">Amount to add to the index each time.</param>
+        /// <param name="action">Action to run.</param>
+        /// <param name="yieldIndex">Index to yield at.</param>
+        public static IEnumerator IProcessLoop(int startIndex, int count, int add, Action<int> action, int yieldIndex)
+        {
+            for (int i = startIndex; i < count; i += add)
+            {
+                action?.Invoke(i);
+                if (i % yieldIndex == yieldIndex - 1)
+                    yield return null;
+            }
         }
 
         /// <summary>

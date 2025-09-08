@@ -566,13 +566,12 @@ namespace BetterLegacy.Editor.Managers
 
         void UpdateTimelineObjects()
         {
-            for (int i = 0; i < timelineObjects.Count; i++)
+            CoroutineHelper.ProcessLoop(timelineObjects, timelineObject =>
             {
-                var timelineObject = timelineObjects[i];
                 timelineObject.RenderVisibleState();
                 if (timelineObject.IsCurrentLayer)
                     timelineObject.RenderPosLength();
-            }
+            }, 2000);
 
             if (CurrentSelection && CurrentSelection.isBeatmapObject && CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Count > 0)
                 for (int i = 0; i < CurrentSelection.GetData<BeatmapObject>().TimelineKeyframes.Count; i++)
