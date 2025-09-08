@@ -3136,7 +3136,7 @@ namespace BetterLegacy.Editor.Managers
                     for (int i = 0; i < files.Length; i++)
                     {
                         var file = files[i];
-                        if (!RTMetaDataEditor.inst.VerifyFile(Path.GetFileName(file)))
+                        if (!EditorServerManager.inst.VerifyFile(Path.GetFileName(file)))
                             continue;
 
                         var fileDirectory = RTFile.GetDirectory(file);

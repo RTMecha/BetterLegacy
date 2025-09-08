@@ -614,22 +614,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Functions
 
-        public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != Level.EDITOR_LSE && !file.Contains("waveform-") &&
-            RTFile.FileIsFormat(file,
-                FileFormat.LSB,
-                FileFormat.LSA,
-                FileFormat.LSCO,
-                FileFormat.LSPO,
-                FileFormat.LSP,
-                FileFormat.LST,
-                FileFormat.LSPL,
-                FileFormat.JPG,
-                FileFormat.PNG,
-                FileFormat.OGG,
-                FileFormat.WAV,
-                FileFormat.MP3,
-                FileFormat.MP4);
-
         public void OpenIconSelector()
         {
             string jpgFile = FileBrowser.OpenSingleFile("jpg");
@@ -733,7 +717,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < files.Length; i++)
                 {
                     var file = files[i];
-                    if (!VerifyFile(Path.GetFileName(file)))
+                    if (!EditorServerManager.inst.VerifyFile(Path.GetFileName(file)))
                         continue;
 
                     var copyTo = file.Replace(directory, tempDirectory);

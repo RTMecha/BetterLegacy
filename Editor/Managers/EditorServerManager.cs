@@ -626,8 +626,30 @@ namespace BetterLegacy.Editor.Managers
             dialog.DeleteButton.onClick.NewListener(() => delete?.Invoke());
         }
 
+        /// <summary>
+        /// Verifies a file can be included in a server item.
+        /// </summary>
+        /// <param name="file">File to verify.</param>
+        /// <returns>Returns true if the file can be included, otherwise returns false.</returns>
+        public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && !file.Contains("waveform-") &&
+            RTFile.FileIsFormat(file,
+                FileFormat.LSB,
+                FileFormat.LSA,
+                FileFormat.LSE,
+                FileFormat.LSCO,
+                FileFormat.LSPO,
+                FileFormat.LSP,
+                FileFormat.LST,
+                FileFormat.LSPL,
+                FileFormat.JPG,
+                FileFormat.PNG,
+                FileFormat.OGG,
+                FileFormat.WAV,
+                FileFormat.MP3,
+                FileFormat.MP4);
+
         #region Search
-        
+
         /// <summary>
         /// Searches the server.
         /// </summary>
