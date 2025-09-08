@@ -147,6 +147,11 @@ namespace BetterLegacy.Core.Data.Level
         public List<Achievement> achievements = new List<Achievement>();
 
         /// <summary>
+        /// If the collection has no level collection data but contains levels.
+        /// </summary>
+        public bool isFolder;
+
+        /// <summary>
         /// If level collection is loaded from the editor.
         /// </summary>
         public bool isEditor;

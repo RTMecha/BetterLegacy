@@ -28,14 +28,17 @@ namespace BetterLegacy.Arcade.Interfaces
         public static LoadLevelsMenu Current { get; set; }
 
         public static void Init() => Init(ArcadeHelper.OnLoadingEnd().Start);
+        public static void Init(string levelsDirectory) => Init(levelsDirectory, ArcadeHelper.OnLoadingEnd().Start);
 
-        public static void Init(Action onLoadingEnd)
+        public static void Init(Action onLoadingEnd) => Init(RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath), onLoadingEnd);
+
+        public static void Init(string levelsDirectory, Action onLoadingEnd)
         {
             InterfaceManager.inst.CloseMenus();
             Current = new LoadLevelsMenu();
             InterfaceManager.inst.CurrentInterface = Current;
             Current.StartGeneration();
-            CoroutineHelper.StartCoroutine(Current.GetLevelList(onLoadingEnd));
+            CoroutineHelper.StartCoroutine(Current.GetLevelList(levelsDirectory, onLoadingEnd));
         }
 
         public LoadLevelsMenu()
@@ -122,7 +125,7 @@ namespace BetterLegacy.Arcade.Interfaces
         /// Loads the Arcade & Steam levels.
         /// </summary>
         /// <param name="onLoadingEnd">Function to run when loading ends.</param>
-        public IEnumerator GetLevelList(Action onLoadingEnd = null)
+        public IEnumerator GetLevelList(string levelsDirectory, Action onLoadingEnd = null)
         {
             float delay = 0f;
             if (currentlyLoading)
@@ -137,8 +140,6 @@ namespace BetterLegacy.Arcade.Interfaces
             ArcadeManager.inst.skippedLoad = false;
             ArcadeManager.inst.forcedSkip = false;
             LevelManager.IsArcade = true;
-
-            var levelsDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, LevelManager.ListPath);
 
             RTFile.CreateDirectory(levelsDirectory);
 
@@ -176,6 +177,12 @@ namespace BetterLegacy.Arcade.Interfaces
                     yield return CoroutineHelper.GetYieldInstruction(loadYieldMode, ref delay);
 
                 if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)))
+                {
+                    levelCollections.Enqueue(path);
+                    continue;
+                }
+
+                if (!RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_VGM)) && !RTFile.FileExists(RTFile.CombinePaths(path, Level.METADATA_LSB)))
                 {
                     levelCollections.Enqueue(path);
                     continue;
@@ -247,7 +254,10 @@ namespace BetterLegacy.Arcade.Interfaces
                 var path = levelCollections.Dequeue();
                 var name = Path.GetFileName(path);
 
-                var levelCollection = LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
+                var levelCollection = !RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO)) ?
+                    new LevelCollection() { path = path, isFolder = true, icon = LegacyPlugin.AtanPlaceholder, name = name, id = PAObjectBase.GetNumberID(), } :
+                    LevelCollection.Parse(path, JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(path, LevelCollection.COLLECTION_LSCO))));
+
                 LevelManager.LevelCollections.Add(levelCollection);
                 UpdateInfo(levelCollection.icon, $"Loading {name}", collectionIndex);
                 collectionIndex++;

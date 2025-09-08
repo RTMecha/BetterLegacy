@@ -1306,12 +1306,12 @@ namespace BetterLegacy.Arcade.Interfaces
         public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection &&
             RTString.SearchString(LocalSearch,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
-                new SearchListMatcher(level.metadata.tags),
-                level.metadata.artist.name,
-                level.metadata.creator.name,
-                level.metadata.song.title,
-                level.metadata.beatmap.name,
-                level.metadata.song.DifficultyType.DisplayName.GetText()
+                new SearchListMatcher(level.metadata?.tags),
+                level.metadata?.artist?.name,
+                level.metadata?.creator?.name,
+                level.metadata?.song?.title,
+                level.metadata?.beatmap?.name,
+                level.metadata?.song?.DifficultyType.DisplayName.GetText()
                 ));
 
         public static List<LevelCollection> LocalLevelCollections => LevelManager.LevelCollections.FindAll(collection => string.IsNullOrEmpty(LocalSearch)
@@ -1361,7 +1361,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
                 var collection = collections[i];
 
-                var rank = collection.GetRank();
+                var rank = collection.isFolder ? Rank.Null : collection.GetRank();
 
                 var isSSRank = rank == Rank.SS;
 
@@ -1375,6 +1375,13 @@ namespace BetterLegacy.Arcade.Interfaces
                     selectionPosition = new Vector2Int(column, row),
                     func = () =>
                     {
+                        if (collection.isFolder)
+                        {
+                            CoreHelper.Log($"Set path to: {collection.path}");
+                            LoadLevelsMenu.Init(collection.path);
+                            return;
+                        }
+
                         LevelManager.currentQueueIndex = 0;
                         LevelManager.CurrentLevelCollection = collection;
                         LevelCollectionMenu.Init(collection);
@@ -1430,19 +1437,20 @@ namespace BetterLegacy.Arcade.Interfaces
                     },
                 });
 
-                elements.Add(new MenuImage
-                {
-                    id = "0",
-                    name = "Difficulty",
-                    parent = collection.id,
-                    rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                    overrideColor = collection.Difficulty.Color,
-                    useOverrideColor = true,
-                    opacity = 1f,
-                    roundedSide = SpriteHelper.RoundedSide.Left,
-                    length = 0f,
-                    wait = false,
-                });
+                if (!collection.isFolder)
+                    elements.Add(new MenuImage
+                    {
+                        id = "0",
+                        name = "Difficulty",
+                        parent = collection.id,
+                        rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
+                        overrideColor = collection.Difficulty.Color,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        roundedSide = SpriteHelper.RoundedSide.Left,
+                        length = 0f,
+                        wait = false,
+                    });
 
                 if (rank != Rank.Null)
                     elements.Add(new MenuText
@@ -1471,7 +1479,6 @@ namespace BetterLegacy.Arcade.Interfaces
                         length = 0f,
                         wait = false,
                     };
-
                     var shine1 = new MenuImage
                     {
                         id = "0",
@@ -1484,7 +1491,6 @@ namespace BetterLegacy.Arcade.Interfaces
                         length = 0f,
                         wait = false,
                     };
-
                     var shine2 = new MenuImage
                     {
                         id = "0",
@@ -1691,7 +1697,6 @@ namespace BetterLegacy.Arcade.Interfaces
                         length = 0f,
                         wait = false,
                     };
-
                     var shine1 = new MenuImage
                     {
                         id = "0",
@@ -1704,7 +1709,6 @@ namespace BetterLegacy.Arcade.Interfaces
                         length = 0f,
                         wait = false,
                     };
-
                     var shine2 = new MenuImage
                     {
                         id = "0",
