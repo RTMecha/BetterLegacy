@@ -14,12 +14,14 @@
 - Added a Capture Area box. This acts as an in-game camera that is draggable. The outline can be dragged to resize the resolution, the slider can be changed to set the zoom, the corners can be dragged to rotate and the inner box can be clicked to take a screenshot of that area.
 - Added "Timeline Object Prefab Icon" in Config Manager > Editor > Timeline. With it on, the Prefabs' icon will be prioritzed over the Prefab Type icon.
 - Reworked the "View Uploaded" editor dialog to allow viewing of Levels, Level Collections and Prefabs.
+- Optimized layer setting a little by updating timeline objects in chunks.
 
 ## Fixes
 - Finally fixed polygon shape conversion not working in some cases (why so many edge cases omg).
 - Fixed the depth value of Prefab Objects not being copied.
 - Fixed Prefab Object speed not affecting the lifetime.
 - The Object Drag Helper should now line up more consistently with objects.
+- Fixed some modifier values not supporting the variable system.
 
 -------------------------------------------------------------------
 
