@@ -1691,7 +1691,7 @@ namespace BetterLegacy.Editor.Managers
             };
 
             RenderLevelCollectionDifficulty(levelCollection);
-            RenderLevelCollectionTags(levelCollection);
+            EditorServerManager.inst.RenderTagDialog(levelCollection, LevelCollectionDialog, EditorServerManager.DefaultTagRelation.Level, () => levelCollection.Save());
             EditorServerManager.inst.RenderServerDialog(
                 uploadable: levelCollection,
                 dialog: LevelCollectionDialog,
@@ -1737,76 +1737,6 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
             }
-        }
-
-        public void RenderLevelCollectionTags(LevelCollection levelCollection)
-        {
-            LSHelpers.DeleteChildren(LevelCollectionDialog.TagsContent);
-
-            for (int i = 0; i < levelCollection.tags.Count; i++)
-            {
-                int index = i;
-                var tag = levelCollection.tags[i];
-                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(LevelCollectionDialog.TagsContent, index.ToString());
-                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                input.SetTextWithoutNotify(tag);
-                input.onValueChanged.NewListener(_val =>
-                {
-                    _val = RTString.ReplaceSpace(_val);
-                    var oldVal = levelCollection.tags[index];
-                    levelCollection.tags[index] = _val;
-                });
-                input.onEndEdit.NewListener(_val => levelCollection.Save());
-
-                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                deleteStorage.button.onClick.NewListener(() =>
-                {
-                    var oldTag = levelCollection.tags[index];
-                    levelCollection.tags.RemoveAt(index);
-                    levelCollection.Save();
-                    RenderLevelCollectionTags(levelCollection);
-                });
-
-                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
-                EditorThemeManager.ApplyInputField(input);
-
-                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
-            }
-
-            var add = EditorPrefabHolder.Instance.CreateAddButton(LevelCollectionDialog.TagsContent);
-            add.Text = "Add Tag";
-            add.OnClick.ClearAll();
-            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
-                {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Add a Default Tag", () =>
-                        {
-                            RTMetaDataEditor.inst.TagPopup.Open();
-                            RTMetaDataEditor.inst.RenderTagPopup(tag =>
-                            {
-                                levelCollection.tags.Add(tag);
-                                levelCollection.Save();
-                                RenderLevelCollectionTags(levelCollection);
-                            }, RTMetaDataEditor.DefaultTagRelation.Level);
-                        }),
-                        new ButtonFunction("Clear Tags", () =>
-                        {
-                            levelCollection.tags.Clear();
-                            levelCollection.Save();
-                            RenderLevelCollectionTags(levelCollection);
-                        }));
-                    return;
-                }
-
-                levelCollection.tags.Add(RTMetaDataEditor.DEFAULT_NEW_TAG);
-                levelCollection.Save();
-                RenderLevelCollectionTags(levelCollection);
-            };
         }
 
         public void OpenIconSelector(LevelCollection levelCollection)

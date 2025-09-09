@@ -37,8 +37,6 @@ namespace BetterLegacy.Editor.Managers
         
         public MetaDataEditorDialog Dialog { get; set; }
 
-        public ContentPopup TagPopup { get; set; }
-
         public bool CollapseIcon { get; set; } = true;
 
         #endregion
@@ -60,24 +58,6 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogException(ex);
             } // init dialog
-
-            try
-            {
-                var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"default_tags{FileFormat.JSON.Dot()}")));
-                if (jn["level"] != null)
-                    for (int i = 0; i < jn["level"].Count; i++)
-                        defaultTags.Add(jn["level"][i]);
-                if (jn["prefab"] != null)
-                    for (int i = 0; i < jn["prefab"].Count; i++)
-                        defaultPrefabTags.Add(jn["prefab"][i]);
-
-                TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
-                    refreshSearch: _val => { });
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            } // init tags
         }
 
         #endregion
@@ -145,7 +125,7 @@ namespace BetterLegacy.Editor.Managers
             RenderSong(metadata);
             RenderLevel(metadata);
             RenderDifficulty(metadata);
-            RenderTags(metadata);
+            EditorServerManager.inst.RenderTagDialog(metadata, Dialog, EditorServerManager.DefaultTagRelation.Level);
             RenderSettings(metadata);
 
             EditorServerManager.inst.RenderServerDialog(
@@ -457,168 +437,6 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
-            }
-        }
-
-        public void RenderTags(MetaData metadata)
-        {
-            LSHelpers.DeleteChildren(Dialog.TagsContent);
-
-            if (metadata.tags != null)
-            {
-                for (int i = 0; i < metadata.tags.Count; i++)
-                {
-                    int index = i;
-                    var tag = metadata.tags[i];
-                    var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(Dialog.TagsContent, index.ToString());
-                    var input = gameObject.transform.Find("Input").GetComponent<InputField>();
-                    input.SetTextWithoutNotify(tag);
-                    input.onValueChanged.NewListener(_val =>
-                    {
-                        _val = RTString.ReplaceSpace(_val);
-                        var oldVal = metadata.tags[index];
-                        metadata.tags[index] = _val;
-
-                        EditorManager.inst.history.Add(new History.Command("Change MetaData Tag", () =>
-                        {
-                            metadata.tags[index] = _val;
-                            MetadataEditor.inst.OpenDialog();
-                        }, () =>
-                        {
-                            metadata.tags[index] = oldVal;
-                            MetadataEditor.inst.OpenDialog();
-                        }));
-                    });
-
-                    var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
-                    deleteStorage.button.onClick.NewListener(() =>
-                    {
-                        var oldTag = metadata.tags[index];
-                        metadata.tags.RemoveAt(index);
-                        RenderTags(metadata);
-
-                        EditorManager.inst.history.Add(new History.Command("Delete MetaData Tag", () =>
-                        {
-                            if (metadata.tags == null)
-                                return;
-                            metadata.tags.RemoveAt(index);
-                            MetadataEditor.inst.OpenDialog();
-                        }, () =>
-                        {
-                            if (metadata.tags == null)
-                                metadata.tags = new List<string>();
-                            metadata.tags.Insert(index, oldTag);
-                            MetadataEditor.inst.OpenDialog();
-                        }));
-                    });
-
-                    EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
-
-                    EditorThemeManager.ApplyInputField(input);
-
-                    EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                    EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
-                }
-            }
-
-            var add = EditorPrefabHolder.Instance.CreateAddButton(Dialog.TagsContent);
-            add.Text = "Add Tag";
-            add.OnClick.ClearAll();
-
-            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
-            contextClickable.onClick = pointerEventData =>
-            {
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
-                {
-                    EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Add a Default Tag", () =>
-                        {
-                            TagPopup.Open();
-                            RenderTagPopup(tag =>
-                            {
-                                var metadata = MetaData.Current;
-                                if (metadata.tags == null)
-                                    metadata.tags = new List<string>();
-                                metadata.tags.Add(tag);
-                                RenderTags(metadata);
-                            }, DefaultTagRelation.Level);
-                        }),
-                        new ButtonFunction("Clear Tags", () =>
-                        {
-                            metadata.tags?.Clear();
-                            RenderTags(metadata);
-                        }));
-                    return;
-                }
-
-                if (metadata.tags == null)
-                    metadata.tags = new List<string>();
-                metadata.tags.Add(DEFAULT_NEW_TAG);
-                RenderTags(metadata);
-
-                EditorManager.inst.history.Add(new History.Command("Add MetaData Tag",
-                    () =>
-                    {
-                        if (metadata.tags == null)
-                            metadata.tags = new List<string>();
-                        metadata.tags.Add(DEFAULT_NEW_TAG);
-                        MetadataEditor.inst.OpenDialog();
-                    },
-                    () =>
-                    {
-                        if (metadata.tags == null)
-                            return;
-                        metadata.tags.RemoveAt(metadata.tags.Count - 1);
-                        MetadataEditor.inst.OpenDialog();
-                    }));
-            };
-        }
-
-        #endregion
-
-        #region Tags
-
-        public const string DEFAULT_NEW_TAG = "new_tag";
-
-        public List<string> defaultTags = new List<string>();
-
-        public List<string> defaultPrefabTags = new List<string>();
-
-        public List<string> GetDefaultTags(DefaultTagRelation relation) => relation switch
-        {
-            DefaultTagRelation.Level => defaultTags,
-            DefaultTagRelation.Prefab => defaultPrefabTags,
-            _ => null,
-        };
-
-        public enum DefaultTagRelation
-        {
-            Level,
-            Prefab,
-        }
-
-        public void RenderTagPopup(Action<string> onTagSelected, DefaultTagRelation relation)
-        {
-            TagPopup.SearchField.onValueChanged.NewListener(_val => RenderTagPopup(onTagSelected, relation));
-
-            var defaultTags = GetDefaultTags(relation);
-            if (defaultTags == null)
-                return;
-
-            TagPopup.ClearContent();
-            foreach (var tag in defaultTags)
-            {
-                if (!RTString.SearchString(TagPopup.SearchTerm, tag))
-                    continue;
-
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(TagPopup.Content, "tag");
-                var storage = gameObject.GetComponent<FunctionButtonStorage>();
-
-                storage.label.text = tag;
-                storage.button.onClick.NewListener(() => onTagSelected?.Invoke(tag));
-
-                EditorThemeManager.ApplyLightText(storage.label);
-                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
             }
         }
 

@@ -27,6 +27,7 @@ using BetterLegacy.Editor.Components;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
+using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -64,6 +65,17 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogException(ex);
             }
+
+            try
+            {
+                LoadDefaultTags();
+                TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
+                    refreshSearch: _val => { });
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // init tags
         }
 
         #endregion
@@ -72,9 +84,57 @@ namespace BetterLegacy.Editor.Managers
 
         public UploadedLevelsDialog Dialog { get; set; }
 
+        public ContentPopup TagPopup { get; set; }
+
         public bool uploading;
 
-        int itemCount;
+        #region Tags
+
+        /// <summary>
+        /// Default tag to add.
+        /// </summary>
+        public const string DEFAULT_NEW_TAG = "new_tag";
+
+        /// <summary>
+        /// Level default tags.
+        /// </summary>
+        public List<string> defaultTags = new List<string>();
+
+        /// <summary>
+        /// Prefab default tags.
+        /// </summary>
+        public List<string> defaultPrefabTags = new List<string>();
+
+        /// <summary>
+        /// Level custom default tags.
+        /// </summary>
+        public List<string> customDefaultTags = new List<string>();
+
+        /// <summary>
+        /// Prefab custom default tags.
+        /// </summary>
+        public List<string> customDefaultPrefabTags = new List<string>();
+
+        /// <summary>
+        /// Indicates a default tag's relation to an object.
+        /// </summary>
+        public enum DefaultTagRelation
+        {
+            /// <summary>
+            /// Default tag is for anything to do with Levels.
+            /// </summary>
+            Level,
+            /// <summary>
+            /// Default tag is for anything to do with Prefabs.
+            /// </summary>
+            Prefab,
+        }
+
+        #endregion
+
+        #region Search
+
+        public int itemCount;
 
         bool loadingOnlineLevels;
 
@@ -98,6 +158,8 @@ namespace BetterLegacy.Editor.Managers
         }, tab != Tab.Prefabs || uploaded ? "uploaded" : "search");
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
+
+        #endregion
 
         HttpListener _listener;
 
@@ -647,6 +709,327 @@ namespace BetterLegacy.Editor.Managers
                 FileFormat.WAV,
                 FileFormat.MP3,
                 FileFormat.MP4);
+        
+        #region Tags
+
+        /// <summary>
+        /// Gets a default tag list.
+        /// </summary>
+        /// <param name="relation">The related default tag list.</param>
+        /// <returns>Returns the related default tag list.</returns>
+        public List<string> GetDefaultTags(DefaultTagRelation relation) => relation switch
+        {
+            DefaultTagRelation.Level => defaultTags,
+            DefaultTagRelation.Prefab => defaultPrefabTags,
+            _ => null,
+        };
+
+        /// <summary>
+        /// Gets a custom default tag list.
+        /// </summary>
+        /// <param name="relation">The related default tag list.</param>
+        /// <returns>Returns the related default tag list.</returns>
+        public List<string> GetCustomDefaultTags(DefaultTagRelation relation) => relation switch
+        {
+            DefaultTagRelation.Level => customDefaultTags,
+            DefaultTagRelation.Prefab => customDefaultPrefabTags,
+            _ => null,
+        };
+
+        /// <summary>
+        /// Loads the default tag lists.
+        /// </summary>
+        public void LoadDefaultTags()
+        {
+            defaultTags.Clear();
+            defaultPrefabTags.Clear();
+            customDefaultTags.Clear();
+            customDefaultPrefabTags.Clear();
+
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"default_tags{FileFormat.JSON.Dot()}")));
+            if (jn["level"] != null)
+                for (int i = 0; i < jn["level"].Count; i++)
+                    defaultTags.Add(jn["level"][i]);
+            if (jn["prefab"] != null)
+                for (int i = 0; i < jn["prefab"].Count; i++)
+                    defaultPrefabTags.Add(jn["prefab"][i]);
+
+            if (!RTFile.FileExists(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"default_tags{FileFormat.JSON.Dot()}")))
+                return;
+
+            jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"default_tags{FileFormat.JSON.Dot()}")));
+            if (jn["level"] != null)
+                for (int i = 0; i < jn["level"].Count; i++)
+                {
+                    defaultTags.Add(jn["level"][i]);
+                    customDefaultTags.Add(jn["level"][i]);
+                }
+            if (jn["prefab"] != null)
+                for (int i = 0; i < jn["prefab"].Count; i++)
+                {
+                    defaultPrefabTags.Add(jn["prefab"][i]);
+                    customDefaultPrefabTags.Add(jn["prefab"][i]);
+                }
+        }
+
+        /// <summary>
+        /// Saves the custom default tags to the default_tags.json file.
+        /// </summary>
+        public void SaveCustomDefaultTags()
+        {
+            var jn = Parser.NewJSONObject();
+            for (int i = 0; i < customDefaultTags.Count; i++)
+                jn["level"][i] = customDefaultTags[i] ?? string.Empty;
+            for (int i = 0; i < customDefaultPrefabTags.Count; i++)
+                jn["prefab"][i] = customDefaultPrefabTags[i] ?? string.Empty;
+            RTFile.WriteToFile(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"default_tags{FileFormat.JSON.Dot()}"), jn.ToString(3));
+        }
+
+        /// <summary>
+        /// Adds a tag to the custom default tag list.
+        /// </summary>
+        /// <param name="tag">Tag to add.</param>
+        /// <param name="relation">The related default tag list.</param>
+        public void AddCustomDefaultTag(string tag, DefaultTagRelation relation)
+        {
+            switch (relation)
+            {
+                case DefaultTagRelation.Level: {
+                        defaultTags.Add(tag);
+                        customDefaultTags.Add(tag);
+                        break;
+                    }
+                case DefaultTagRelation.Prefab: {
+                        defaultPrefabTags.Add(tag);
+                        customDefaultPrefabTags.Add(tag);
+                        break;
+                    }
+            }
+
+            SaveCustomDefaultTags();
+        }
+
+        /// <summary>
+        /// Opens the default tag popup.
+        /// </summary>
+        /// <param name="onTagSelected">Function to run when a default tag is selected.</param>
+        /// <param name="relation">The related default tag list.</param>
+        public void OpenTagPopup(Action<string> onTagSelected, DefaultTagRelation relation)
+        {
+            TagPopup.Open();
+            RenderTagPopup(onTagSelected, relation);
+        }
+
+        /// <summary>
+        /// Renders the default tag popup.
+        /// </summary>
+        /// <param name="onTagSelected">Function to run when a default tag is selected.</param>
+        /// <param name="relation">Related default tag list.</param>
+        public void RenderTagPopup(Action<string> onTagSelected, DefaultTagRelation relation)
+        {
+            TagPopup.SearchField.onValueChanged.NewListener(_val => RenderTagPopup(onTagSelected, relation));
+
+            var defaultTags = GetDefaultTags(relation);
+            if (defaultTags == null)
+                return;
+
+            TagPopup.ClearContent();
+            foreach (var tag in defaultTags)
+            {
+                if (!RTString.SearchString(TagPopup.SearchTerm, tag))
+                    continue;
+
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(TagPopup.Content, "tag");
+                var storage = gameObject.GetComponent<FunctionButtonStorage>();
+
+                storage.Text = tag;
+                storage.OnClick.NewListener(() => onTagSelected?.Invoke(tag));
+
+                EditorContextMenu.inst.AddContextMenu(gameObject, () => { },
+                    new ButtonFunction("Select Tag", () => onTagSelected?.Invoke(tag)),
+                    new ButtonFunction("Remove Tag", () =>
+                    {
+                        var customDefaultTags = GetCustomDefaultTags(relation);
+                        if (customDefaultTags == null)
+                            return;
+
+                        if (!customDefaultTags.Contains(tag))
+                        {
+                            EditorManager.inst.DisplayNotification("Tag is not a custom tag!", 2f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        defaultTags.Remove(tag);
+                        customDefaultTags.Remove(tag);
+                        SaveCustomDefaultTags();
+                        RenderTagPopup(onTagSelected, relation);
+                    }));
+
+                EditorThemeManager.ApplyLightText(storage.label);
+                EditorThemeManager.ApplySelectable(storage.button, ThemeGroup.List_Button_1);
+            }
+        }
+
+        /// <summary>
+        /// Opens a dialog with tag editing.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object that contains tag information.</param>
+        /// <param name="dialog">Editor Dialog with tag UI.</param>
+        /// <param name="relation">Related tag type.</param>
+        /// <param name="onUpdateTags">Function to run when updating the uploadable object.</param>
+        public void OpenTagDialog(IUploadable uploadable, ITagDialog dialog, DefaultTagRelation relation, Action onUpdateTags = null)
+        {
+            dialog.Open();
+            RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+        }
+
+        /// <summary>
+        /// Renders the tag section of a dialog.
+        /// </summary>
+        /// <param name="uploadable">Uploadable object that contains tag information.</param>
+        /// <param name="dialog">Editor Dialog with tag UI.</param>
+        /// <param name="relation">Related tag type.</param>
+        /// <param name="onUpdateTags">Function to run when updating the uploadable object.</param>
+        public void RenderTagDialog(IUploadable uploadable, ITagDialog dialog, DefaultTagRelation relation, Action onUpdateTags = null)
+        {
+            LSHelpers.DeleteChildren(dialog.TagsContent);
+            if (uploadable == null)
+                return;
+
+            for (int i = 0; i < uploadable.ArcadeTags.Count; i++)
+            {
+                int index = i;
+                var tag = uploadable.ArcadeTags[i];
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(dialog.TagsContent, index.ToString());
+                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                input.SetTextWithoutNotify(tag);
+                input.onValueChanged.NewListener(_val =>
+                {
+                    _val = RTString.ReplaceSpace(_val);
+                    var oldTag = uploadable.ArcadeTags[index];
+                    uploadable.ArcadeTags[index] = _val;
+
+                    EditorManager.inst.history.Add(new History.Command("Set tag",
+                        () =>
+                        {
+                            uploadable.ArcadeTags[index] = _val;
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        },
+                        () =>
+                        {
+                            uploadable.ArcadeTags[index] = oldTag;
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        }));
+                });
+                input.onEndEdit.NewListener(_val => onUpdateTags?.Invoke());
+                var inputContextClickable = input.gameObject.GetOrAddComponent<ContextClickable>();
+                inputContextClickable.onClick = pointerEventData =>
+                {
+                    if (pointerEventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Add to Default Tags", () => AddCustomDefaultTag(tag, relation)),
+                        new ButtonFunction("Copy to Clipboard", () => LSText.CopyToClipboard(tag)));
+                };
+
+                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.NewListener(() =>
+                {
+                    var oldTag = uploadable.ArcadeTags[index];
+                    uploadable.ArcadeTags.RemoveAt(index);
+                    onUpdateTags?.Invoke();
+                    RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+
+                    EditorManager.inst.history.Add(new History.Command("Delete tag",
+                        () =>
+                        {
+                            uploadable.ArcadeTags.RemoveAt(index);
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        },
+                        () =>
+                        {
+                            uploadable.ArcadeTags.Insert(index, oldTag);
+                            OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                        }));
+                });
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+                EditorThemeManager.ApplyInputField(input);
+                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+            }
+
+            var add = EditorPrefabHolder.Instance.CreateAddButton(dialog.TagsContent);
+            add.Text = "Add Tag";
+            add.OnClick.ClearAll();
+            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
+            contextClickable.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Add a Default Tag", () => OpenTagPopup(tag =>
+                        {
+                            var index = uploadable.ArcadeTags.Count;
+                            uploadable.ArcadeTags.Add(tag);
+                            onUpdateTags?.Invoke();
+                            RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+
+                            EditorManager.inst.history.Add(new History.Command("Add tag",
+                                () =>
+                                {
+                                    uploadable.ArcadeTags.Add(tag);
+                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                                },
+                                () =>
+                                {
+                                    uploadable.ArcadeTags.RemoveAt(index);
+                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                                }));
+                        }, relation)),
+                        new ButtonFunction("Clear Tags", () =>
+                        {
+                            var tags = new List<string>(uploadable.ArcadeTags);
+                            uploadable.ArcadeTags.Clear();
+                            onUpdateTags?.Invoke();
+                            RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+
+                            EditorManager.inst.history.Add(new History.Command("Clear tags",
+                                () =>
+                                {
+                                    uploadable.ArcadeTags.Clear();
+                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                                },
+                                () =>
+                                {
+                                    uploadable.ArcadeTags.AddRange(tags);
+                                    OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                                }));
+                        }));
+                    return;
+                }
+
+                var index = uploadable.ArcadeTags.Count;
+                uploadable.ArcadeTags.Add(DEFAULT_NEW_TAG);
+                onUpdateTags?.Invoke();
+                RenderTagDialog(uploadable, dialog, relation, onUpdateTags);
+
+                EditorManager.inst.history.Add(new History.Command("Add tag",
+                    () =>
+                    {
+                        uploadable.ArcadeTags.Add(DEFAULT_NEW_TAG);
+                        OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                    },
+                    () =>
+                    {
+                        uploadable.ArcadeTags.RemoveAt(index);
+                        OpenTagDialog(uploadable, dialog, relation, onUpdateTags);
+                    }));
+            };
+        }
+
+        #endregion
 
         #region Search
 
@@ -724,19 +1107,33 @@ namespace BetterLegacy.Editor.Managers
                         var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
                         folderButtonStorage.label.text =
-                            $"<b>Name</b>: {LSText.ClampString(name, 42)}\n" +
-                            $"<b>Song</b>: {LSText.ClampString(artist, 24)} - {LSText.ClampString(title, 42)}";
+                            $"<b>Name</b>: {name}\n" +
+                            $"<b>Song</b>: {artist} - {title}\n" +
+                            $"<b>Description</b>:\n{description}";
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
-                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 132f);
+                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
 
                         //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
                         //folderButtonStorage.text.fontSize = fontSize;
 
                         folderButtonStorage.button.onClick.ClearAll();
-                        folderButtonFunction.onClick = eventData =>
+                        folderButtonFunction.onClick = pointerEventData =>
                         {
+                            if (pointerEventData.button == PointerEventData.InputButton.Right)
+                            {
+                                EditorContextMenu.inst.ShowContextMenu(
+                                    new ButtonFunction("Download", () => DownloadLevel(item)),
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Copy Server ID", () =>
+                                    {
+                                        LSText.CopyToClipboard(id);
+                                        EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                    }));
+                                return;
+                            }
+
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level to your editor folder?", () =>
                             {
                                 RTEditor.inst.HideWarningPopup();
@@ -750,7 +1147,7 @@ namespace BetterLegacy.Editor.Managers
                         var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
                         var iconBaseImage = iconBase.AddComponent<Image>();
                         iconBase.AddComponent<Mask>().showMaskGraphic = false;
-                        iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 0f);
+                        iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
                         iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
                         EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
@@ -908,18 +1305,32 @@ namespace BetterLegacy.Editor.Managers
                         var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
                         folderButtonStorage.label.text =
-                            $"<b>Name</b>: {LSText.ClampString(name, 42)}";
+                            $"<b>Name</b>: {name}\n" +
+                            $"<b>Description</b>:\n{description}";
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
-                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 132f);
+                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
 
                         //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
                         //folderButtonStorage.text.fontSize = fontSize;
 
                         folderButtonStorage.button.onClick.ClearAll();
-                        folderButtonFunction.onClick = eventData =>
+                        folderButtonFunction.onClick = pointerEventData =>
                         {
+                            if (pointerEventData.button == PointerEventData.InputButton.Right)
+                            {
+                                EditorContextMenu.inst.ShowContextMenu(
+                                    new ButtonFunction("Download", () => DownloadLevelCollection(item)),
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Copy Server ID", () =>
+                                    {
+                                        LSText.CopyToClipboard(id);
+                                        EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                    }));
+                                return;
+                            }
+
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Level Collection to your editor folder?", () =>
                             {
                                 RTEditor.inst.HideWarningPopup();
@@ -933,7 +1344,7 @@ namespace BetterLegacy.Editor.Managers
                         var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
                         var iconBaseImage = iconBase.AddComponent<Image>();
                         iconBase.AddComponent<Mask>().showMaskGraphic = false;
-                        iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 0f);
+                        iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
                         iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
                         EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
@@ -1081,7 +1492,6 @@ namespace BetterLegacy.Editor.Managers
                         string name = item["name"];
                         string creator = item["creator"];
                         string description = item["description"];
-                        var difficulty = item["difficulty"].AsInt;
                         string typeName = item["typeName"];
                         int typeColor = item["typeColor"].AsInt;
 
@@ -1093,12 +1503,13 @@ namespace BetterLegacy.Editor.Managers
                         var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
                         folderButtonStorage.Text =
-                            $"<b>Name</b>: {LSText.ClampString(name, 42)}\n" +
+                            $"<b>Name</b>: {name}\n" +
                             $"<b>Type</b>: {typeName}\n" +
-                            $"<b>Description</b>: {description}";
+                            $"<b>Creator</b>: {creator}\n" +
+                            $"<b>Description</b>:\n{description}";
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
-                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 132f);
+                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
 
                         //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                         //folderButtonStorage.text.verticalOverflow = verticalOverflow;
@@ -1111,7 +1522,13 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 EditorContextMenu.inst.ShowContextMenu(
                                     new ButtonFunction("Download to External", () => DownloadPrefab(item, ObjectSource.External)),
-                                    new ButtonFunction("Download to Internal", () => DownloadPrefab(item, ObjectSource.Internal)));
+                                    new ButtonFunction("Download to Internal", () => DownloadPrefab(item, ObjectSource.Internal)),
+                                    new ButtonFunction(true),
+                                    new ButtonFunction("Copy Server ID", () =>
+                                    {
+                                        LSText.CopyToClipboard(id);
+                                        EditorManager.inst.DisplayNotification($"Copied ID: {id} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                                    }));
                                 return;
                             }
 
@@ -1127,7 +1544,7 @@ namespace BetterLegacy.Editor.Managers
 
                         var type = Creator.NewUIObject("type", gameObject.transform);
                         var typeImage = type.AddComponent<Image>();
-                        type.transform.AsRT().anchoredPosition = new Vector2(-300f, 0f);
+                        type.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
                         type.transform.AsRT().sizeDelta = new Vector2(100f, 100f);
                         EditorThemeManager.ApplyGraphic(typeImage, ThemeGroup.Null, true);
                         typeImage.color = RTColors.HexToColor(typeColor.ToString(RTColors.X2));
@@ -1278,6 +1695,7 @@ namespace BetterLegacy.Editor.Managers
                 var jn = JSON.Parse(tempFile);
                 RTPrefabEditor.inst.ImportPrefabIntoLevel(Prefab.Parse(jn));
                 RTFile.DeleteFile(tempFilePath);
+                EditorManager.inst.DisplayNotification($"Downloaded {name} and added it to the level!", 1.5f, EditorManager.NotificationType.Success);
                 return;
             }
 
