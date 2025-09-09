@@ -3870,7 +3870,8 @@ namespace BetterLegacy.Editor.Managers
             Destroy(browseBase.transform.GetChild(0).gameObject);
             Destroy(pather.GetChild(1).gameObject);
 
-            newFilePopup.Find("Song Filename").GetComponent<Text>().text = "Song Path";
+            var songPathLabel = newFilePopup.Find("Song Filename").GetComponent<Text>();
+            songPathLabel.text = "Song Path";
 
             var browseLocal = browseBase.transform.Find("browse");
             var browseLocalText = browseLocal.Find("Text").GetComponent<Text>();
@@ -3998,12 +3999,15 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddLightText(difficultyLabelText);
 
+            EditorThemeManager.AddLightText(formatLabelText);
+
             EditorThemeManager.AddLightText(songArtistLabelText);
             EditorThemeManager.AddInputField(songArtistInputField);
 
             EditorThemeManager.AddLightText(songTitleLabelText);
             EditorThemeManager.AddInputField(songTitleInputField);
 
+            EditorThemeManager.AddLightText(songPathLabel);
             EditorThemeManager.AddInputField(path);
 
             EditorThemeManager.AddGraphic(browseLocalButton.image, ThemeGroup.Function_2_Normal, true);
