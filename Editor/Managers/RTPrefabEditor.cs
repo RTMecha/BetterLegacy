@@ -2276,13 +2276,86 @@ namespace BetterLegacy.Editor.Managers
             PrefabEditorDialog.ConvertPrefabButton.gameObject.SetActive(isExternal);
             PrefabEditorDialog.ConvertPrefabButton.button.onClick.NewListener(() => { if (isExternal) ConvertPrefab(prefab); });
 
+            RenderPrefabEditorTags(prefabPanel);
+
             EditorServerManager.inst.RenderServerDialog(
                 uploadable: prefab,
                 dialog: PrefabEditorDialog,
                 upload: () => UploadPrefab(prefabPanel),
-                pull: null,
+                pull: () => PullServerPrefab(prefabPanel),
                 delete: () => DeleteServerPrefab(prefabPanel),
                 verify: null);
+        }
+
+        public void RenderPrefabEditorTags(PrefabPanel prefabPanel)
+        {
+            LSHelpers.DeleteChildren(PrefabEditorDialog.TagsContent);
+            var prefab = prefabPanel.Item;
+            if (!prefab)
+                return;
+
+            for (int i = 0; i < prefab.ArcadeTags.Count; i++)
+            {
+                int index = i;
+                var tag = prefab.ArcadeTags[i];
+                var gameObject = EditorPrefabHolder.Instance.Tag.Duplicate(PrefabEditorDialog.TagsContent, index.ToString());
+                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                input.SetTextWithoutNotify(tag);
+                input.onValueChanged.NewListener(_val =>
+                {
+                    _val = RTString.ReplaceSpace(_val);
+                    var oldVal = prefab.ArcadeTags[index];
+                    prefab.ArcadeTags[index] = _val;
+                });
+                input.onEndEdit.NewListener(_val => UpdatePrefabFile(prefabPanel));
+
+                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.NewListener(() =>
+                {
+                    var oldTag = prefab.ArcadeTags[index];
+                    prefab.ArcadeTags.RemoveAt(index);
+                    UpdatePrefabFile(prefabPanel);
+                    RenderPrefabEditorTags(prefabPanel);
+                });
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+                EditorThemeManager.ApplyInputField(input);
+                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+            }
+
+            var add = EditorPrefabHolder.Instance.CreateAddButton(PrefabEditorDialog.TagsContent);
+            add.Text = "Add Tag";
+            add.OnClick.ClearAll();
+            var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
+            contextClickable.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Add a Default Tag", () =>
+                        {
+                            RTMetaDataEditor.inst.TagPopup.Open();
+                            RTMetaDataEditor.inst.RenderTagPopup(tag =>
+                            {
+                                prefab.ArcadeTags.Add(tag);
+                                UpdatePrefabFile(prefabPanel);
+                                RenderPrefabEditorTags(prefabPanel);
+                            }, RTMetaDataEditor.DefaultTagRelation.Prefab);
+                        }),
+                        new ButtonFunction("Clear Tags", () =>
+                        {
+                            prefab.ArcadeTags.Clear();
+                            UpdatePrefabFile(prefabPanel);
+                            RenderPrefabEditorTags(prefabPanel);
+                        }));
+                    return;
+                }
+
+                prefab.ArcadeTags.Add(RTMetaDataEditor.DEFAULT_NEW_TAG);
+                UpdatePrefabFile(prefabPanel);
+                RenderPrefabEditorTags(prefabPanel);
+            };
         }
 
         public void OpenIconSelector(PrefabPanel prefabPanel)
@@ -3074,6 +3147,16 @@ namespace BetterLegacy.Editor.Managers
                     var icon = prefab.icon;
                     if (icon)
                         File.WriteAllBytes(RTFile.CombinePaths(tempDirectory, $"icon{FileFormat.JPG.Dot()}"), icon.texture.EncodeToJPG());
+
+                    var prefabType = prefab.GetPrefabType();
+                    if (!prefabType || prefabType == PrefabType.InvalidType)
+                        return;
+
+                    RTFile.WriteToFile(RTFile.CombinePaths(tempDirectory, $"type{FileFormat.LSPT.Dot()}"), prefabType.ToJSON().ToString());
+                    if (!prefabType.icon)
+                        return;
+
+                    File.WriteAllBytes(RTFile.CombinePaths(tempDirectory, $"type_icon{FileFormat.PNG.Dot()}"), prefabType.icon.texture.EncodeToPNG());
                 },
                 saveFile: () =>
                 {
@@ -3102,6 +3185,18 @@ namespace BetterLegacy.Editor.Managers
                 {
                     RenderPrefabEditorDialog(prefabPanel);
                 });
+        }
+
+        public void PullServerPrefab(PrefabPanel prefabPanel)
+        {
+            var prefab = prefabPanel.Item;
+            if (!prefab)
+                return;
+
+            EditorServerManager.inst.Pull(
+                url: AlephNetwork.PrefabDownloadURL,
+                uploadable: prefab,
+                pull: jn => EditorServerManager.inst.DownloadPrefab(jn["id"], jn["name"]));
         }
 
         #endregion

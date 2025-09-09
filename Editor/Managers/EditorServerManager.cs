@@ -1203,27 +1203,63 @@ namespace BetterLegacy.Editor.Managers
 
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp", bytes =>
             {
-                RTEditor.inst.DisablePrefabWatcher();
-                var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, RTFile.FormatLegacyFileName(name) + FileFormat.LSP.Dot());
-                if (RTPrefabEditor.inst.PrefabPanels.TryFind(x => x.Item && x.Item.ServerID == id, out PrefabPanel prefabPanel))
-                    file = prefabPanel.Path;
-                File.WriteAllBytes(file, bytes);
-                if (prefabPanel)
-                {
-                    prefabPanel.Item = RTFile.CreateFromFile<Prefab>(file);
-                    prefabPanel.Render();
-                }
-                else
-                    CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.LoadPrefabs());
-                RTEditor.inst.EnablePrefabWatcher();
-                EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
-
+                DownloadPrefabType(id, name, bytes);
                 onDownload?.Invoke();
             }, onError =>
             {
                 EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
                 CoreHelper.LogError($"OnError: {onError}");
             }));
+        }
+
+        /// <summary>
+        /// Checks the Server for a Prefab Type.
+        /// </summary>
+        /// <param name="id">ID of the Prefab on the Server.</param>
+        /// <param name="name">Name of the Prefab.</param>
+        /// <param name="bytes">Byte data of the Prefab file.</param>
+        public void DownloadPrefabType(string id, string name, byte[] bytes)
+        {
+            // if the user does not have the Prefab's Prefab Type locally, download it off the server.
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt", typeBytes =>
+            {
+                var tempFilePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"{id}.lspt");
+                File.WriteAllBytes(tempFilePath, typeBytes);
+                var tempFile = RTFile.ReadFromFile(tempFilePath);
+                if (string.IsNullOrEmpty(tempFile))
+                {
+                    SaveDownloadedPrefab(id, name, bytes);
+                    RTFile.DeleteFile(tempFilePath);
+                    return;
+                }
+
+                var jn = JSON.Parse(tempFile);
+                var typeID = jn["id"];
+                if (!string.IsNullOrEmpty(typeID) && !RTPrefabEditor.inst.prefabTypes.Has(x => x.id == typeID))
+                    RTFile.MoveFile(tempFilePath, RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabTypePath, $"{jn["name"].Value} - {typeID.Value}"));
+                else
+                    RTFile.DeleteFile(tempFilePath);
+                SaveDownloadedPrefab(id, name, bytes);
+            }, onError => SaveDownloadedPrefab(id, name, bytes)));
+        }
+
+        void SaveDownloadedPrefab(string id, string name, byte[] bytes)
+        {
+            RTEditor.inst.DisablePrefabWatcher();
+            var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, RTFile.FormatLegacyFileName(name) + FileFormat.LSP.Dot());
+            if (RTPrefabEditor.inst.PrefabPanels.TryFind(x => x.Item && x.Item.ServerID == id, out PrefabPanel prefabPanel))
+                file = prefabPanel.Path;
+            File.WriteAllBytes(file, bytes);
+            if (prefabPanel)
+            {
+                prefabPanel.Item = RTFile.CreateFromFile<Prefab>(file);
+                prefabPanel.Render();
+            }
+            else
+                CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.LoadPrefabs());
+            RTEditor.inst.EnablePrefabWatcher();
+            EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
+
         }
 
         #endregion
