@@ -496,6 +496,13 @@ namespace BetterLegacy.Editor.Data.Elements
                 case ObjectSource.External: {
                         Button.onClick = eventData =>
                         {
+                            if (RTPrefabEditor.inst.onSelectPrefab != null)
+                            {
+                                RTPrefabEditor.inst.onSelectPrefab.Invoke(this);
+                                RTPrefabEditor.inst.onSelectPrefab = null;
+                                return;
+                            }
+
                             if (RTEditor.inst.prefabPickerEnabled)
                                 RTEditor.inst.prefabPickerEnabled = false;
 

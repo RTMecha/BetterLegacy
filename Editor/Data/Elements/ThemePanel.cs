@@ -473,7 +473,12 @@ namespace BetterLegacy.Editor.Data.Elements
                                 RTPrefabEditor.inst.onSelectPrefab = prefabPanel =>
                                 {
                                     if (!Item || !prefabPanel.Item)
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Failed to add the theme to a prefab due to a null error.", 2f, EditorManager.NotificationType.Error);
+                                        CoreHelper.Log($"Theme is null: {!Item}\n" +
+                                            $"Prefab is null: {!prefabPanel.Item}");
                                         return;
+                                    }
 
                                     if (prefabPanel.Item.AddTheme(Item))
                                     {
