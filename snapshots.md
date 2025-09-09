@@ -2,7 +2,7 @@
 ## Features
 ### Core
 - callModifierBlock modifiers now check for modifier blocks in the objects' associated Prefab. Good for per-Prefab functions.
-- Fully implemented level collections, item collaborating and prefabs to the Arcade server.
+- Fully implemented Level Collections, item collaborating and Prefabs to the Arcade server.
 
 ### Editor
 - Added "Snap Created" in Config Manager > Editor > BPM. This forces new objects to snap to the BPM.
