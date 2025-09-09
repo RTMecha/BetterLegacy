@@ -1792,7 +1792,7 @@ namespace BetterLegacy.Editor.Managers
                                 levelCollection.tags.Add(tag);
                                 levelCollection.Save();
                                 RenderLevelCollectionTags(levelCollection);
-                            });
+                            }, RTMetaDataEditor.DefaultTagRelation.Level);
                         }),
                         new ButtonFunction("Clear Tags", () =>
                         {

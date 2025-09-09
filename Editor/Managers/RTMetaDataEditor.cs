@@ -10,6 +10,7 @@ using UnityEngine.UI;
 using LSFunctions;
 
 using Crosstales.FB;
+using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -62,13 +63,21 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
+                var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"default_tags{FileFormat.JSON.Dot()}")));
+                if (jn["level"] != null)
+                    for (int i = 0; i < jn["level"].Count; i++)
+                        defaultTags.Add(jn["level"][i]);
+                if (jn["prefab"] != null)
+                    for (int i = 0; i < jn["prefab"].Count; i++)
+                        defaultPrefabTags.Add(jn["prefab"][i]);
+
                 TagPopup = RTEditor.inst.GeneratePopup(EditorPopup.DEFAULT_TAGS_POPUP, "Add a default tag",
                     refreshSearch: _val => { });
             }
             catch (Exception ex)
             {
                 CoreHelper.LogException(ex);
-            } // init dialog
+            } // init tags
         }
 
         #endregion
@@ -532,7 +541,7 @@ namespace BetterLegacy.Editor.Managers
                                     metadata.tags = new List<string>();
                                 metadata.tags.Add(tag);
                                 RenderTags(metadata);
-                            });
+                            }, DefaultTagRelation.Level);
                         }),
                         new ButtonFunction("Clear Tags", () =>
                         {
@@ -571,27 +580,30 @@ namespace BetterLegacy.Editor.Managers
 
         public const string DEFAULT_NEW_TAG = "new_tag";
 
-        public List<string> defaultTags = new List<string>()
+        public List<string> defaultTags = new List<string>();
+
+        public List<string> defaultPrefabTags = new List<string>();
+
+        public List<string> GetDefaultTags(DefaultTagRelation relation) => relation switch
         {
-            "boss_level",
-            "joke_level",
-            "meme",
-            "flashing_lights",
-            "high_detail",
-            "reupload",
-            "remake",
-            "wip",
-            "old",
-            "experimental",
-            "feature_window",
-            "feature_video_bg",
-            "story",
-            "horror",
+            DefaultTagRelation.Level => defaultTags,
+            DefaultTagRelation.Prefab => defaultPrefabTags,
+            _ => null,
         };
 
-        public void RenderTagPopup(Action<string> onTagSelected)
+        public enum DefaultTagRelation
         {
-            TagPopup.SearchField.onValueChanged.NewListener(_val => RenderTagPopup(onTagSelected));
+            Level,
+            Prefab,
+        }
+
+        public void RenderTagPopup(Action<string> onTagSelected, DefaultTagRelation relation)
+        {
+            TagPopup.SearchField.onValueChanged.NewListener(_val => RenderTagPopup(onTagSelected, relation));
+
+            var defaultTags = GetDefaultTags(relation);
+            if (defaultTags == null)
+                return;
 
             TagPopup.ClearContent();
             foreach (var tag in defaultTags)
