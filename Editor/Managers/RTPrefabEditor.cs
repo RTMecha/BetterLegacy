@@ -177,15 +177,6 @@ namespace BetterLegacy.Editor.Managers
                 PrefabEditor.inst.externalContent = PrefabEditor.inst.externalPrefabDialog.Find("mask/content");
                 PrefabEditor.inst.internalContent = PrefabEditor.inst.internalPrefabDialog.Find("mask/content");
 
-                var externalSelectGUI = PrefabEditor.inst.externalPrefabDialog.gameObject.AddComponent<SelectGUI>();
-                var internalSelectGUI = PrefabEditor.inst.internalPrefabDialog.gameObject.AddComponent<SelectGUI>();
-                externalSelectGUI.ogPos = PrefabEditor.inst.externalPrefabDialog.position;
-                internalSelectGUI.ogPos = PrefabEditor.inst.internalPrefabDialog.position;
-                externalSelectGUI.target = PrefabEditor.inst.externalPrefabDialog;
-                internalSelectGUI.target = PrefabEditor.inst.internalPrefabDialog;
-
-                PrefabEditor.inst.internalPrefabDialog.Find("Panel/Text").GetComponent<Text>().text = "Internal Prefabs";
-
                 PrefabEditor.inst.gridSearch = PrefabEditor.inst.dialog.Find("data/selection/search-box/search").GetComponent<InputField>();
                 PrefabEditor.inst.gridContent = PrefabEditor.inst.dialog.Find("data/selection/mask/content");
 
@@ -2990,7 +2981,7 @@ namespace BetterLegacy.Editor.Managers
 
             selectingQuickPrefab = updateCurrentPrefab;
 
-            var searchFieldContextMenu = RTEditor.inst.PrefabPopups.InternalPrefabs.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
+            var searchFieldContextMenu = RTEditor.inst.PrefabPopups.Internal.SearchField.gameObject.GetOrAddComponent<ContextClickable>();
             searchFieldContextMenu.onClick = null;
             searchFieldContextMenu.onClick = pointerEventData =>
             {
@@ -3006,8 +2997,8 @@ namespace BetterLegacy.Editor.Managers
                     );
             };
 
-            RTEditor.inst.PrefabPopups.InternalPrefabs.ClearContent();
-            CreatePrefabButton(RTEditor.inst.PrefabPopups.InternalPrefabs.Content, "New Internal Prefab", eventData =>
+            RTEditor.inst.PrefabPopups.Internal.ClearContent();
+            CreatePrefabButton(RTEditor.inst.PrefabPopups.Internal.Content, "New Internal Prefab", eventData =>
             {
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {

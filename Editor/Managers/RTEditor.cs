@@ -480,13 +480,24 @@ namespace BetterLegacy.Editor.Managers
                 SaveAsPopup.title = SaveAsPopup.Title.text;
                 SaveAsPopup.size = SaveAsPopup.GameObject.transform.AsRT().sizeDelta;
 
-                PrefabPopups = new PrefabPopup(EditorPopup.PREFAB_POPUP);
+                PrefabPopups = new DoubleContentPopup(EditorPopup.PREFAB_POPUP);
                 var prefabDialog = PrefabPopups.GetLegacyDialog().Dialog;
                 PrefabPopups.GameObject = prefabDialog.gameObject;
-                PrefabPopups.InternalPrefabs = new ContentPopup("internal prefabs");
-                PrefabPopups.InternalPrefabs.Assign(prefabDialog.Find("internal prefabs").gameObject);
-                PrefabPopups.ExternalPrefabs = new ContentPopup("external prefabs");
-                PrefabPopups.ExternalPrefabs.Assign(prefabDialog.Find("external prefabs").gameObject);
+                PrefabPopups.Internal = new ContentPopup("internal prefabs");
+                PrefabPopups.Internal.Assign(prefabDialog.Find("internal prefabs").gameObject);
+                var internalSelectGUI = PrefabPopups.Internal.GameObject.GetOrAddComponent<SelectGUI>();
+                internalSelectGUI.ogPos = PrefabPopups.Internal.GameObject.transform.position;
+                internalSelectGUI.target = PrefabPopups.Internal.GameObject.transform;
+                PrefabPopups.External = new ContentPopup("external prefabs");
+                PrefabPopups.External.Assign(prefabDialog.Find("external prefabs").gameObject);
+                var externalSelectGUI = PrefabPopups.External.GameObject.GetOrAddComponent<SelectGUI>();
+                externalSelectGUI.ogPos = PrefabPopups.External.GameObject.transform.position;
+                externalSelectGUI.target = PrefabPopups.External.GameObject.transform;
+
+                PrefabPopups.Internal.title = "Internal Prefabs";
+                PrefabPopups.Internal.RenderTitle();
+                PrefabPopups.External.title = "External Prefabs";
+                PrefabPopups.External.RenderTitle();
 
                 ObjectOptionsPopup = new EditorPopup(EditorPopup.OBJECT_OPTIONS_POPUP);
                 ObjectOptionsPopup.GameObject = ObjectOptionsPopup.GetLegacyDialog().Dialog.gameObject;
@@ -710,7 +721,10 @@ namespace BetterLegacy.Editor.Managers
             dialogStorage.topPanel = prefabHolder.Dialog.transform.GetChild(0).GetComponent<Image>();
             dialogStorage.title = dialogStorage.topPanel.transform.GetChild(0).GetComponent<Text>();
 
-            prefabHolder.ContentPopup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Popup");
+            prefabHolder.ContentPopup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Content Popup");
+            prefabHolder.DoubleContentPopup = EditorManager.inst.GetDialog(EditorPopup.PREFAB_POPUP).Dialog.gameObject.Duplicate(prefabHolder.PrefabParent, "Double Content Popup");
+            prefabHolder.DoubleContentPopup.transform.Find("internal prefabs").name = "internal";
+            prefabHolder.DoubleContentPopup.transform.Find("external prefabs").name = "external";
         }
 
         // 5 - setup misc editor UI
@@ -1120,7 +1134,7 @@ namespace BetterLegacy.Editor.Managers
 
         public EditorPopup SaveAsPopup { get; set; }
 
-        public PrefabPopup PrefabPopups { get; set; }
+        public DoubleContentPopup PrefabPopups { get; set; }
 
         public EditorPopup ObjectOptionsPopup { get; set; }
         public EditorPopup BGObjectOptionsPopup { get; set; }
@@ -3565,7 +3579,7 @@ namespace BetterLegacy.Editor.Managers
 
             #region Prefab Path
 
-            var prefabPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(PrefabPopups.ExternalPrefabs.GameObject.transform, "prefabs path");
+            var prefabPathGameObject = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(PrefabPopups.External.GameObject.transform, "prefabs path");
 
             prefabPathGameObject.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabPathPos.Value;
             prefabPathGameObject.transform.AsRT().sizeDelta = new Vector2(config.PrefabExternalPrefabPathLength.Value, 32f);
@@ -3621,7 +3635,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.SetComplexity(prefabPathGameObject, Complexity.Advanced);
 
-            var prefabListReload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(PrefabPopups.ExternalPrefabs.GameObject.transform, "reload prefabs");
+            var prefabListReload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(PrefabPopups.External.GameObject.transform, "reload prefabs");
             prefabListReload.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabRefreshPos.Value;
             prefabListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 

@@ -47,6 +47,8 @@ namespace BetterLegacy.Core.Prefabs
 
         public GameObject ContentPopup { get; set; }
 
+        public GameObject DoubleContentPopup { get; set; }
+
         public FunctionButtonStorage CreateAddButton(Transform parent, string name = "add", bool applyThemes = true)
         {
             var add = PrefabEditor.inst.CreatePrefab.Duplicate(parent, name);
