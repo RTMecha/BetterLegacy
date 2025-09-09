@@ -725,7 +725,7 @@ namespace BetterLegacy.Editor.Managers
 
                         folderButtonStorage.label.text =
                             $"<b>Name</b>: {LSText.ClampString(name, 42)}\n" +
-                            $"<b>Song</b>: {LSText.ClampString(artist, 42)} - {LSText.ClampString(title, 42)}";
+                            $"<b>Song</b>: {LSText.ClampString(artist, 24)} - {LSText.ClampString(title, 42)}";
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
                         gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 132f);
@@ -1082,6 +1082,8 @@ namespace BetterLegacy.Editor.Managers
                         string creator = item["creator"];
                         string description = item["description"];
                         var difficulty = item["difficulty"].AsInt;
+                        string typeName = item["typeName"];
+                        int typeColor = item["typeColor"].AsInt;
 
                         if (id == null || id == "0")
                             continue;
@@ -1090,8 +1092,10 @@ namespace BetterLegacy.Editor.Managers
                         var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                         var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
-                        folderButtonStorage.label.text =
-                            $"<b>Name</b>: {LSText.ClampString(name, 42)}";
+                        folderButtonStorage.Text =
+                            $"<b>Name</b>: {LSText.ClampString(name, 42)}\n" +
+                            $"<b>Type</b>: {typeName}\n" +
+                            $"<b>Description</b>: {description}";
                         RectValues.FullAnchored.AnchorMin(0.15f, 0f).SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
 
                         gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 132f);
@@ -1101,8 +1105,16 @@ namespace BetterLegacy.Editor.Managers
                         //folderButtonStorage.text.fontSize = fontSize;
 
                         folderButtonStorage.button.onClick.ClearAll();
-                        folderButtonFunction.onClick = eventData =>
+                        folderButtonFunction.onClick = pointerEventData =>
                         {
+                            if (pointerEventData.button == PointerEventData.InputButton.Right)
+                            {
+                                EditorContextMenu.inst.ShowContextMenu(
+                                    new ButtonFunction("Download to External", () => DownloadPrefab(item, ObjectSource.External)),
+                                    new ButtonFunction("Download to Internal", () => DownloadPrefab(item, ObjectSource.Internal)));
+                                return;
+                            }
+
                             RTEditor.inst.ShowWarningPopup("Are you sure you want to download this Prefab to your editor folder?", () =>
                             {
                                 RTEditor.inst.HideWarningPopup();
@@ -1113,10 +1125,17 @@ namespace BetterLegacy.Editor.Managers
                         EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
                         EditorThemeManager.ApplyLightText(folderButtonStorage.label);
 
-                        var iconBase = Creator.NewUIObject("icon base", gameObject.transform);
+                        var type = Creator.NewUIObject("type", gameObject.transform);
+                        var typeImage = type.AddComponent<Image>();
+                        type.transform.AsRT().anchoredPosition = new Vector2(-300f, 0f);
+                        type.transform.AsRT().sizeDelta = new Vector2(100f, 100f);
+                        EditorThemeManager.ApplyGraphic(typeImage, ThemeGroup.Null, true);
+                        typeImage.color = RTColors.HexToColor(typeColor.ToString(RTColors.X2));
+
+                        var iconBase = Creator.NewUIObject("icon base", type.transform);
                         var iconBaseImage = iconBase.AddComponent<Image>();
                         iconBase.AddComponent<Mask>().showMaskGraphic = false;
-                        iconBase.transform.AsRT().anchoredPosition = new Vector2(-300f, 0f);
+                        iconBase.transform.AsRT().anchoredPosition = new Vector2(0f, 0f);
                         iconBase.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
                         EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
@@ -1184,16 +1203,16 @@ namespace BetterLegacy.Editor.Managers
 			loadingOnlineLevels = false;
         }
 
-        public void DownloadPrefab(JSONNode jn, Action onDownload = null)
+        public void DownloadPrefab(JSONNode jn, ObjectSource source = ObjectSource.External, Action onDownload = null)
         {
             var name = jn["name"].Value;
             EditorManager.inst.DisplayNotification($"Downloading {name}, please wait...", 3f, EditorManager.NotificationType.Success);
             name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
             name = RTFile.ValidateFileName(name);
-            DownloadPrefab(jn["id"], name, onDownload);
+            DownloadPrefab(jn["id"], name, source, onDownload);
         }
 
-        public void DownloadPrefab(string id, string name, Action onDownload = null)
+        public void DownloadPrefab(string id, string name, ObjectSource source = ObjectSource.External, Action onDownload = null)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -1203,7 +1222,7 @@ namespace BetterLegacy.Editor.Managers
 
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp", bytes =>
             {
-                DownloadPrefabType(id, name, bytes);
+                DownloadPrefabType(id, name, bytes, source);
                 onDownload?.Invoke();
             }, onError =>
             {
@@ -1218,7 +1237,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="id">ID of the Prefab on the Server.</param>
         /// <param name="name">Name of the Prefab.</param>
         /// <param name="bytes">Byte data of the Prefab file.</param>
-        public void DownloadPrefabType(string id, string name, byte[] bytes)
+        public void DownloadPrefabType(string id, string name, byte[] bytes, ObjectSource source = ObjectSource.External)
         {
             // if the user does not have the Prefab's Prefab Type locally, download it off the server.
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt", typeBytes =>
@@ -1228,7 +1247,7 @@ namespace BetterLegacy.Editor.Managers
                 var tempFile = RTFile.ReadFromFile(tempFilePath);
                 if (string.IsNullOrEmpty(tempFile))
                 {
-                    SaveDownloadedPrefab(id, name, bytes);
+                    SaveDownloadedPrefab(id, name, bytes, source);
                     RTFile.DeleteFile(tempFilePath);
                     return;
                 }
@@ -1239,12 +1258,29 @@ namespace BetterLegacy.Editor.Managers
                     RTFile.MoveFile(tempFilePath, RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabTypePath, $"{jn["name"].Value} - {typeID.Value}"));
                 else
                     RTFile.DeleteFile(tempFilePath);
-                SaveDownloadedPrefab(id, name, bytes);
-            }, onError => SaveDownloadedPrefab(id, name, bytes)));
+                SaveDownloadedPrefab(id, name, bytes, source);
+            }, onError => SaveDownloadedPrefab(id, name, bytes, source)));
         }
 
-        void SaveDownloadedPrefab(string id, string name, byte[] bytes)
+        void SaveDownloadedPrefab(string id, string name, byte[] bytes, ObjectSource source = ObjectSource.External)
         {
+            if (source == ObjectSource.Internal)
+            {
+                var tempFilePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"{id}.lsp");
+                File.WriteAllBytes(tempFilePath, bytes);
+                var tempFile = RTFile.ReadFromFile(tempFilePath);
+                if (string.IsNullOrEmpty(tempFile))
+                {
+                    RTFile.DeleteFile(tempFilePath);
+                    return;
+                }
+
+                var jn = JSON.Parse(tempFile);
+                RTPrefabEditor.inst.ImportPrefabIntoLevel(Prefab.Parse(jn));
+                RTFile.DeleteFile(tempFilePath);
+                return;
+            }
+
             RTEditor.inst.DisablePrefabWatcher();
             var file = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath, RTFile.FormatLegacyFileName(name) + FileFormat.LSP.Dot());
             if (RTPrefabEditor.inst.PrefabPanels.TryFind(x => x.Item && x.Item.ServerID == id, out PrefabPanel prefabPanel))
