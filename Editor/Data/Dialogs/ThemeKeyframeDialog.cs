@@ -87,6 +87,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Content
 
             var themePathBase = GameObject.transform.GetChild(2).gameObject.Duplicate(GameObject.transform, "themepathers", 8);
+            themePathBase.SetActive(true);
 
             var importTheme = EditorPrefabHolder.Instance.Function2Button.Duplicate(themePathBase.transform, "import");
             importTheme.transform.AsRT().anchoredPosition = new Vector2(50f, 20f);
