@@ -1696,7 +1696,7 @@ namespace BetterLegacy.Editor.Managers
                 uploadable: levelCollection,
                 dialog: LevelCollectionDialog,
                 upload: () => UploadLevelCollection(levelCollection),
-                pull: null,
+                pull: () => PullLevelCollection(levelCollection),
                 delete: () => DeleteLevelCollectionFromServer(levelCollection),
                 verify: null);
         }
@@ -2288,10 +2288,7 @@ namespace BetterLegacy.Editor.Managers
             EditorServerManager.inst.Pull(
                 url: AlephNetwork.LevelCollectionURL,
                 uploadable: levelCollection,
-                pull: jn =>
-                {
-
-                });
+                pull: jn => EditorServerManager.inst.DownloadLevelCollection(jn["id"], RTFile.RemoveEndSlash(levelCollection.path), jn["name"], LoadLevelCollections));
         }
 
         #endregion

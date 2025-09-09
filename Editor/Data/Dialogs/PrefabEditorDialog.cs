@@ -283,11 +283,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             var serverID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("Server ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
             serverID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            serverID.GameObject.AddComponent<Button>();
             ServerIDContextMenu = serverID.GameObject.GetOrAddComponent<ContextClickable>();
             ServerIDText = serverID.GameObject.transform.GetChild(0).GetComponent<Text>();
 
             var userID = new Labels(Labels.InitSettings.Default.Parent(server.transform).Rect(RectValues.Default.SizeDelta(0f, 40f)), new Label("User ID:") { horizontalWrap = HorizontalWrapMode.Overflow });
             userID.GameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            userID.GameObject.AddComponent<Button>();
             UserIDContextMenu = userID.GameObject.GetOrAddComponent<ContextClickable>();
             UserIDText = userID.GameObject.transform.GetChild(0).GetComponent<Text>();
 
@@ -305,13 +307,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddGraphic(uploadStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.AddGraphic(uploadStorage.label, ThemeGroup.Function_1_Text);
 
-            //var pull = EditorPrefabHolder.Instance.Function1Button.Duplicate(buttons.transform, "pull");
-            //var pullStorage = pull.GetComponent<FunctionButtonStorage>();
-            //pullStorage.label.text = "Pull";
-            //PullButton = pullStorage.button;
-            //PullContextMenu = pull.GetOrAddComponent<ContextClickable>();
-            //EditorThemeManager.AddGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
-            //EditorThemeManager.AddGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
+            var pull = EditorPrefabHolder.Instance.Function1Button.Duplicate(serverButtons.transform, "pull");
+            var pullStorage = pull.GetComponent<FunctionButtonStorage>();
+            pullStorage.label.text = "Pull";
+            PullButton = pullStorage.button;
+            PullContextMenu = pull.GetOrAddComponent<ContextClickable>();
+            EditorThemeManager.AddGraphic(pullStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.AddGraphic(pullStorage.label, ThemeGroup.Function_1_Text);
 
             var delete = EditorPrefabHolder.Instance.Function1Button.Duplicate(serverButtons.transform, "delete");
             var deleteStorage = delete.GetComponent<FunctionButtonStorage>();
