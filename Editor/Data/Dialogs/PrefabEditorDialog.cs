@@ -36,6 +36,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public FunctionButtonStorage ConvertPrefabButton { get; set; }
 
+        public RectTransform TagsScrollView { get; set; }
+
+        public RectTransform TagsContent { get; set; }
+
         #region Server
 
         public RectTransform ServerBase { get; set; }
@@ -104,6 +108,22 @@ namespace BetterLegacy.Editor.Data.Dialogs
             Content = scrollView.transform.Find("Viewport/Content").AsRT();
 
             CoreHelper.Delete(editorDialog.transform.GetChild(2));
+
+            var buttons = Creator.NewUIObject("buttons", Content);
+            buttons.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+
+            var buttonsHLG = buttons.AddComponent<HorizontalLayoutGroup>();
+            buttonsHLG.spacing = 60f;
+
+            var importPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "import");
+            importPrefab.SetActive(true);
+            ImportPrefabButton = importPrefab.GetComponent<FunctionButtonStorage>();
+            ImportPrefabButton.Text = "Import Prefab";
+
+            var exportToVG = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "export");
+            exportToVG.SetActive(true);
+            ConvertPrefabButton = exportToVG.GetComponent<FunctionButtonStorage>();
+            ConvertPrefabButton.Text = "Convert to VG Format";
 
             new Labels(Labels.InitSettings.Default.Parent(Content), "Type");
 
@@ -185,21 +205,43 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #endregion
 
-            var buttons = Creator.NewUIObject("buttons", Content);
-            buttons.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+            #region Tags
 
-            var buttonsHLG = buttons.AddComponent<HorizontalLayoutGroup>();
-            buttonsHLG.spacing = 60f;
+            new Labels(Labels.InitSettings.Default.Parent(Content), "Tags");
+            var tagScrollView = Creator.NewUIObject("Tags Scroll View", Content);
+            TagsScrollView = tagScrollView.transform.AsRT();
+            RectValues.Default.SizeDelta(522f, 40f).AssignToRectTransform(TagsScrollView);
 
-            var importPrefab = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "import");
-            importPrefab.SetActive(true);
-            ImportPrefabButton = importPrefab.GetComponent<FunctionButtonStorage>();
-            ImportPrefabButton.Text = "Import Prefab";
+            var scroll = tagScrollView.AddComponent<ScrollRect>();
+            scroll.horizontal = true;
+            scroll.vertical = false;
 
-            var exportToVG = EditorPrefabHolder.Instance.Function2Button.Duplicate(buttons.transform, "export");
-            exportToVG.SetActive(true);
-            ConvertPrefabButton = exportToVG.GetComponent<FunctionButtonStorage>();
-            ConvertPrefabButton.Text = "Convert to VG Format";
+            var image = tagScrollView.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.01f);
+
+            tagScrollView.AddComponent<Mask>();
+
+            var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+            RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
+
+            var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
+            TagsContent = tagContent.transform.AsRT();
+            TagsContent.anchoredPosition = Vector2.zero;
+            var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
+            tagContentGLG.cellSize = new Vector2(168f, 32f);
+            tagContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            tagContentGLG.constraintCount = 1;
+            tagContentGLG.childAlignment = TextAnchor.MiddleLeft;
+            tagContentGLG.spacing = new Vector2(8f, 0f);
+
+            var tagContentCSF = tagContent.AddComponent<ContentSizeFitter>();
+            tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+            scroll.viewport = tagViewport.transform.AsRT();
+            scroll.content = tagContent.transform.AsRT();
+
+            #endregion
 
             #region Server
 
