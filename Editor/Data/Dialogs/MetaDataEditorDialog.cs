@@ -19,7 +19,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class MetaDataEditorDialog : EditorDialog, IServerDialog
+    public class MetaDataEditorDialog : EditorDialog, IServerDialog, ITagDialog
     {
         public MetaDataEditorDialog() : base(METADATA_EDITOR) { }
 

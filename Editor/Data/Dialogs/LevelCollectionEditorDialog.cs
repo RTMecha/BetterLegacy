@@ -12,7 +12,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class LevelCollectionEditorDialog : EditorDialog, IServerDialog
+    public class LevelCollectionEditorDialog : EditorDialog, IServerDialog, ITagDialog
     {
         public LevelCollectionEditorDialog() : base() { }
 

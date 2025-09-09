@@ -9,13 +9,12 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class PrefabEditorDialog : EditorDialog, IServerDialog
+    public class PrefabEditorDialog : EditorDialog, IServerDialog, ITagDialog
     {
         public PrefabEditorDialog() : base() { }
 

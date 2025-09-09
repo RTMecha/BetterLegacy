@@ -1317,6 +1317,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public RectTransform TagsScrollView { get; set; }
 
         public RectTransform TagsContent { get; set; }
+
+        public void Open() => PlayerEditor.inst.Dialog.Open();
     }
 
     public class PlayerEditorModifiers : PlayerEditorElement
