@@ -17,6 +17,12 @@ namespace BetterLegacy.Core.Components
 
         void LateUpdate()
         {
+            if (cameraTrack)
+            {
+                UpdateCameraTrack();
+                return;
+            }
+
             if (!active || !GameManager.inst.players.activeSelf || !GameManager.inst.players.activeInHierarchy)
             {
                 transform.localPosition = Vector3.zero;
@@ -50,6 +56,21 @@ namespace BetterLegacy.Core.Components
             else
                 transform.localRotation = Quaternion.Euler(Vector3.zero);
         }
+
+        // port of the Camera Jiggle feature from VG. (idk why its called "camera jiggle" but ok)
+        void UpdateCameraTrack()
+        {
+            prevPos = pos;
+            pos = PlayerManager.CenterOfPlayers() / 10f * 0.35f;
+            var t = Time.deltaTime * 10f;
+
+            transform.localPosition = new Vector3(RTMath.Lerp(prevPos.x, pos.x, t), RTMath.Lerp(prevPos.y, pos.y, t));
+        }
+
+        public bool cameraTrack;
+
+        Vector2 pos;
+        Vector2 prevPos;
 
         public bool active;
         public bool rotate;
