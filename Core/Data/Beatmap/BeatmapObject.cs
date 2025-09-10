@@ -9,6 +9,7 @@ using ILMath;
 
 using SimpleJSON;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data.Modifiers;
@@ -1371,7 +1372,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             return jn;
         }
 
-        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => collapse && editorData.collapse ? 0.2f : autoKillType switch
+        public float GetObjectLifeLength(float offset = 0f, bool noAutokill = false, bool collapse = false) => collapse && editorData.collapse ? EditorConfig.Instance.TimelineObjectCollapseLength.Value : autoKillType switch
         {
             AutoKillType.NoAutokill => noAutokill ? AudioManager.inst.CurrentAudioSource.clip.length - startTime : Length + offset,
             AutoKillType.LastKeyframe => Length + offset,

@@ -43,7 +43,6 @@ namespace BetterLegacy.Configs
             RTEditor.DraggingPlaysSoundBPM = DraggingPlaysSoundOnlyWithBPM.Value;
             RTEditor.ShowModdedUI = EditorComplexity.Value == Complexity.Advanced;
             EditorThemeManager.currentTheme = (int)EditorTheme.Value;
-            ObjectEditor.TimelineCollapseLength = TimelineCollapseLength.Value;
 
             SetPreviewConfig();
             SetupSettingChanged();
@@ -101,7 +100,7 @@ namespace BetterLegacy.Configs
         public Setting<BinClamp> BinClampBehavior { get; set; }
         public Setting<bool> MoveToChangedBin { get; set; }
         public Setting<float> KeyframeEndLengthOffset { get; set; }
-        public Setting<float> TimelineCollapseLength { get; set; }
+        public Setting<float> TimelineObjectCollapseLength { get; set; }
         public Setting<bool> TimelineObjectPrefabTypeIcon { get; set; }
         public Setting<bool> TimelineObjectPrefabIcon { get; set; }
         public Setting<bool> EventLabelsRenderLeft { get; set; }
@@ -494,7 +493,7 @@ namespace BetterLegacy.Configs
             BinClampBehavior = BindEnum(this, TIMELINE, "Bin Clamp Behavior", BinClamp.Clamp, "How timeline objects bin should be handled when dragging past the limits.");
             MoveToChangedBin = Bind(this, TIMELINE, "Move To Changed Bin", true, "If the timeline should move to the bottom of the bin count when a bin is added / removed.");
             KeyframeEndLengthOffset = Bind(this, TIMELINE, "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
-            TimelineCollapseLength = Bind(this, TIMELINE, "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
+            TimelineObjectCollapseLength = Bind(this, TIMELINE, "Timeline Object Collapse Length", 0.2f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
             TimelineObjectPrefabTypeIcon = Bind(this, TIMELINE, "Timeline Object Prefab Type Icon", true, "Shows the object's Prefab Type's icon.");
             TimelineObjectPrefabIcon = Bind(this, TIMELINE, "Timeline Object Prefab Icon", false, "If the Prefab icon should be prioritized.");
             EventLabelsRenderLeft = Bind(this, TIMELINE, "Event Labels Render Left", false, "If the Event Layer labels should render on the left side or not.");
@@ -1163,7 +1162,7 @@ namespace BetterLegacy.Configs
 
             AutosaveLoopTime.SettingChanged += AutosaveChanged;
 
-            TimelineCollapseLength.SettingChanged += TimelineCollapseLengthChanged;
+            TimelineObjectCollapseLength.SettingChanged += TimelineCollapseLengthChanged;
 
             PreviewGridEnabled.SettingChanged += PreviewGridChanged;
             PreviewGridSize.SettingChanged += PreviewGridChanged;
@@ -1331,7 +1330,6 @@ namespace BetterLegacy.Configs
 
         void TimelineCollapseLengthChanged()
         {
-            ObjectEditor.TimelineCollapseLength = TimelineCollapseLength.Value;
             if (EditorTimeline.inst)
                 EditorTimeline.inst.RenderTimelineObjects();
         }

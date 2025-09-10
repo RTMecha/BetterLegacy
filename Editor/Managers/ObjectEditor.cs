@@ -110,8 +110,6 @@ namespace BetterLegacy.Editor.Managers
 
         public static float TimelineObjectHoverSize { get; set; }
 
-        public static float TimelineCollapseLength { get; set; }
-
         #endregion
 
         #region Dragging

@@ -9,6 +9,7 @@ using ILMath;
 
 using SimpleJSON;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data.Modifiers;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -699,7 +700,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public float GetObjectLifeLength(Prefab prefab, float offset = 0.0f, bool noAutokill = false, bool collapse = false)
         {
-            float length = 0.2f;
+            float length = EditorConfig.Instance.TimelineObjectCollapseLength.Value;
 
             if (collapse && editorData.collapse)
                 return length;

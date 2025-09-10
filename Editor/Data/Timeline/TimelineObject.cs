@@ -574,7 +574,7 @@ namespace BetterLegacy.Editor.Data.Timeline
         {
             var rectTransform = GameObject.transform.AsRT();
 
-            length = length <= ObjectEditor.TimelineCollapseLength ? ObjectEditor.TimelineCollapseLength * zoom : length * zoom;
+            length = length <= EditorConfig.Instance.TimelineObjectCollapseLength.Value ? EditorConfig.Instance.TimelineObjectCollapseLength.Value * zoom : length * zoom;
 
             rectTransform.sizeDelta = new Vector2(length, 20f);
             rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, EditorTimeline.inst.BinCount)));
