@@ -747,6 +747,9 @@ namespace BetterLegacy.Editor.Managers
             CreateAutosavePopup();
             CreateScreenshotsView();
             CreateFontSelector();
+
+            ProgressPopup = new ProgressPopup(EditorPopup.PROGRESS_POPUP);
+            ProgressPopup.Init();
         }
 
         // 6 - initialize editors
@@ -1156,6 +1159,8 @@ namespace BetterLegacy.Editor.Managers
         public ContentPopup PrefabTypesPopup { get; set; }
 
         public ContentPopup FontSelectorPopup { get; set; }
+
+        public ProgressPopup ProgressPopup { get; set; }
 
         #endregion
 

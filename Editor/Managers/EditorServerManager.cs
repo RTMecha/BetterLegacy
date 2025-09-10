@@ -234,57 +234,64 @@ namespace BetterLegacy.Editor.Managers
                 if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                     headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-                CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes(url, File.ReadAllBytes(path), id =>
-                {
-                    uploading = false;
-                    uploadable.ServerID = id;
-                    saveFile?.Invoke();
+                RTEditor.inst.ProgressPopup.Text = "Uploading item to the server, please wait...";
+                RTEditor.inst.ProgressPopup.Open();
 
-                    RTFile.DeleteFile(path);
-
-                    EditorManager.inst.DisplayNotification($"Item uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
-                    onUpload?.Invoke();
-
-                    AchievementManager.inst.UnlockAchievement("upload_level");
-                }, (string onError, long responseCode, string errorMsg) =>
-                {
-                    uploading = false;
-                    // Only downgrade if server ID wasn't already assigned.
-                    if (string.IsNullOrEmpty(uploadable.ServerID))
+                CoroutineHelper.StartCoroutine(AlephNetwork.UploadBytes(url, File.ReadAllBytes(path), RTEditor.inst.ProgressPopup.UpdateProgress,
+                    id =>
                     {
-                        uploadable.UploaderID = null;
-                        uploadable.DatePublished = string.Empty;
-                        uploadable.VersionNumber--;
+                        RTEditor.inst.ProgressPopup.Close();
+                        uploading = false;
+                        uploadable.ServerID = id;
                         saveFile?.Invoke();
-                    }
 
-                    RTFile.DeleteFile(path);
+                        RTFile.DeleteFile(path);
 
-                    switch (responseCode)
+                        EditorManager.inst.DisplayNotification($"Item uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
+                        onUpload?.Invoke();
+
+                        AchievementManager.inst.UnlockAchievement("upload_level");
+                    },
+                    (string onError, long responseCode, string errorMsg) =>
                     {
-                        case 404: {
-                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                                return;
-                            }
-                        case 401: {
-                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                                {
-                                    CoroutineHelper.StartCoroutine(RefreshTokens(() => Upload(url, fileName, uploadable, transfer, saveFile, onUpload)));
+                        RTEditor.inst.ProgressPopup.Close();
+                        uploading = false;
+                        // Only downgrade if server ID wasn't already assigned.
+                        if (string.IsNullOrEmpty(uploadable.ServerID))
+                        {
+                            uploadable.UploaderID = null;
+                            uploadable.DatePublished = string.Empty;
+                            uploadable.VersionNumber--;
+                            saveFile?.Invoke();
+                        }
+
+                        RTFile.DeleteFile(path);
+
+                        switch (responseCode)
+                        {
+                            case 404: {
+                                    EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
                                     return;
                                 }
-                                ShowLoginPopup(() => Upload(url, fileName, uploadable, transfer, saveFile, onUpload));
-                                break;
-                            }
-                        default: {
-                                EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                                break;
-                            }
-                    }
+                            case 401: {
+                                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                    {
+                                        CoroutineHelper.StartCoroutine(RefreshTokens(() => Upload(url, fileName, uploadable, transfer, saveFile, onUpload)));
+                                        return;
+                                    }
+                                    ShowLoginPopup(() => Upload(url, fileName, uploadable, transfer, saveFile, onUpload));
+                                    break;
+                                }
+                            default: {
+                                    EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                    break;
+                                }
+                        }
 
-                    if (errorMsg != null)
-                        CoreHelper.LogError($"Error Message: {errorMsg}");
+                        if (errorMsg != null)
+                            CoreHelper.LogError($"Error Message: {errorMsg}");
 
-                }, headers));
+                    }, headers));
             }
             catch (Exception ex)
             {
@@ -321,42 +328,49 @@ namespace BetterLegacy.Editor.Managers
                     if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                         headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete(RTFile.CombinePaths(url, id), () =>
-                    {
-                        uploading = false;
-                        uploadable.DatePublished = string.Empty;
-                        uploadable.ServerID = null;
-                        saveFile?.Invoke();
+                    RTEditor.inst.ProgressPopup.Text = $"Removing {id} from the server, please wait...";
+                    RTEditor.inst.ProgressPopup.Open();
 
-                        EditorManager.inst.DisplayNotification($"Successfully deleted item off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
-                        onDelete?.Invoke();
-                        RTEditor.inst.HideWarningPopup();
-                    }, (string onError, long responseCode) =>
-                    {
-                        uploading = false;
-                        switch (responseCode)
+                    CoroutineHelper.StartCoroutine(AlephNetwork.Delete(RTFile.CombinePaths(url, id), RTEditor.inst.ProgressPopup.UpdateProgress,
+                        () =>
                         {
-                            case 404: {
-                                    EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                                    RTEditor.inst.HideWarningPopup();
-                                    return;
-                                }
-                            case 401: {
-                                    if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                                    {
-                                        CoroutineHelper.StartCoroutine(RefreshTokens(() => Delete(url, uploadable, saveFile, onDelete)));
+                            RTEditor.inst.ProgressPopup.Close();
+                            uploading = false;
+                            uploadable.DatePublished = string.Empty;
+                            uploadable.ServerID = null;
+                            saveFile?.Invoke();
+
+                            EditorManager.inst.DisplayNotification($"Successfully deleted item off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
+                            onDelete?.Invoke();
+                            RTEditor.inst.HideWarningPopup();
+                        },
+                        (string onError, long responseCode, string errorMsg) =>
+                        {
+                            RTEditor.inst.ProgressPopup.Close();
+                            uploading = false;
+                            switch (responseCode)
+                            {
+                                case 404: {
+                                        EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                        RTEditor.inst.HideWarningPopup();
                                         return;
                                     }
-                                    ShowLoginPopup(() => Delete(url, uploadable, saveFile, onDelete));
-                                    break;
-                                }
-                            default: {
-                                    EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                                    RTEditor.inst.HideWarningPopup();
-                                    break;
-                                }
-                        }
-                    }, headers));
+                                case 401: {
+                                        if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                        {
+                                            CoroutineHelper.StartCoroutine(RefreshTokens(() => Delete(url, uploadable, saveFile, onDelete)));
+                                            return;
+                                        }
+                                        ShowLoginPopup(() => Delete(url, uploadable, saveFile, onDelete));
+                                        break;
+                                    }
+                                default: {
+                                        EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                        RTEditor.inst.HideWarningPopup();
+                                        break;
+                                    }
+                            }
+                        }, headers));
                 }
                 catch (Exception ex)
                 {
@@ -395,56 +409,63 @@ namespace BetterLegacy.Editor.Managers
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID), json =>
-            {
-                EditorManager.inst.DisplayNotification($"Item is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
-                onVerify?.Invoke(true);
-            }, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
+            RTEditor.inst.ProgressPopup.Text = $"Verifying {serverID} is on the server, please wait...";
+            RTEditor.inst.ProgressPopup.Open();
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID), RTEditor.inst.ProgressPopup.UpdateProgress,
+                json =>
                 {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            RTEditor.inst.ShowWarningPopup("Item was not found on the server. Do you want to remove the server ID?", () =>
-                            {
-                                uploadable.ServerID = null;
-                                uploadable.DatePublished = string.Empty;
-                                saveFile?.Invoke();
-                                onVerify?.Invoke(false);
+                    RTEditor.inst.ProgressPopup.Close();
+                    EditorManager.inst.DisplayNotification($"Item is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
+                    onVerify?.Invoke(true);
+                },
+                (string onError, long responseCode, string errorMsg) =>
+                {
+                    RTEditor.inst.ProgressPopup.Close();
+                    switch (responseCode)
+                    {
+                        case 404: {
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                RTEditor.inst.ShowWarningPopup("Item was not found on the server. Do you want to remove the server ID?", () =>
+                                {
+                                    uploadable.ServerID = null;
+                                    uploadable.DatePublished = string.Empty;
+                                    saveFile?.Invoke();
+                                    onVerify?.Invoke(false);
 
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
+                                    RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup);
 
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(() => Verify(url, uploadable, saveFile, onVerify)));
                                 return;
                             }
-                            ShowLoginPopup(() => Verify(url, uploadable, saveFile, onVerify));
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Verify failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            RTEditor.inst.ShowWarningPopup("Verification failed. In case the item is not on the server, do you want to remove the server ID?", () =>
-                            {
-                                uploadable.ServerID = null;
-                                uploadable.DatePublished = string.Empty;
-                                saveFile?.Invoke();
-                                onVerify?.Invoke(false);
+                        case 401: {
+                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                {
+                                    CoroutineHelper.StartCoroutine(RefreshTokens(() => Verify(url, uploadable, saveFile, onVerify)));
+                                    return;
+                                }
+                                ShowLoginPopup(() => Verify(url, uploadable, saveFile, onVerify));
+                                break;
+                            }
+                        default: {
+                                EditorManager.inst.DisplayNotification($"Verify failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                RTEditor.inst.ShowWarningPopup("Verification failed. In case the item is not on the server, do you want to remove the server ID?", () =>
+                                {
+                                    uploadable.ServerID = null;
+                                    uploadable.DatePublished = string.Empty;
+                                    saveFile?.Invoke();
+                                    onVerify?.Invoke(false);
 
-                                RTEditor.inst.HideWarningPopup();
-                            }, RTEditor.inst.HideWarningPopup);
+                                    RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup);
 
-                            break;
-                        }
-                }
+                                break;
+                            }
+                    }
 
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                    if (errorMsg != null)
+                        CoreHelper.LogError($"Error Message: {errorMsg}");
+                }, headers));
         }
 
         /// <summary>
@@ -467,35 +488,42 @@ namespace BetterLegacy.Editor.Managers
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID), json =>
-            {
-                pull.Invoke(JSON.Parse(json));
-            }, (string onError, long responseCode, string errorMsg) =>
-            {
-                switch (responseCode)
+            RTEditor.inst.ProgressPopup.Text = $"Pulling {serverID} from the server, please wait...";
+            RTEditor.inst.ProgressPopup.Open();
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID), RTEditor.inst.ProgressPopup.UpdateProgress,
+                json =>
                 {
-                    case 404: {
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        }
-                    case 401: {
-                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
-                            {
-                                CoroutineHelper.StartCoroutine(RefreshTokens(() => Pull(url, uploadable, pull)));
+                    RTEditor.inst.ProgressPopup.Close();
+                    pull.Invoke(JSON.Parse(json));
+                },
+                (string onError, long responseCode, string errorMsg) =>
+                {
+                    RTEditor.inst.ProgressPopup.Close();
+                    switch (responseCode)
+                    {
+                        case 404: {
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
                                 return;
                             }
-                            ShowLoginPopup(() => Pull(url, uploadable, pull));
-                            break;
-                        }
-                    default: {
-                            EditorManager.inst.DisplayNotification($"Pull failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                        }
-                }
+                        case 401: {
+                                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                                {
+                                    CoroutineHelper.StartCoroutine(RefreshTokens(() => Pull(url, uploadable, pull)));
+                                    return;
+                                }
+                                ShowLoginPopup(() => Pull(url, uploadable, pull));
+                                break;
+                            }
+                        default: {
+                                EditorManager.inst.DisplayNotification($"Pull failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                break;
+                            }
+                    }
 
-                if (errorMsg != null)
-                    CoreHelper.LogError($"Error Message: {errorMsg}");
-            }, headers));
+                    if (errorMsg != null)
+                        CoreHelper.LogError($"Error Message: {errorMsg}");
+                }, headers));
         }
 
         /// <summary>
