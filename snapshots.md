@@ -15,6 +15,7 @@
 - Added "Timeline Object Prefab Icon" in Config Manager > Editor > Timeline. With it on, the Prefabs' icon will be prioritzed over the Prefab Type icon.
 - Reworked the "View Uploaded" editor dialog to allow viewing of Levels, Level Collections and Prefabs.
 - Optimized layer setting a little by updating timeline objects in chunks.
+- Collapsed Prefab Objects now have their start position set to the Prefab offset.
 
 ## Fixes
 - Finally fixed polygon shape conversion not working in some cases (why so many edge cases omg).
