@@ -576,6 +576,13 @@ namespace BetterLegacy.Editor.Data.Timeline
 
             length = length <= EditorConfig.Instance.TimelineObjectCollapseLength.Value ? EditorConfig.Instance.TimelineObjectCollapseLength.Value * zoom : length * zoom;
 
+            if (isPrefabObject && Collapse)
+            {
+                var prefab = GetPrefab();
+                if (prefab)
+                    time -= prefab.offset;
+            }
+
             rectTransform.sizeDelta = new Vector2(length, 20f);
             rectTransform.anchoredPosition = new Vector2(time * zoom, (-20 * Mathf.Clamp(Bin, 0, EditorTimeline.inst.BinCount)));
             if (Hover)
