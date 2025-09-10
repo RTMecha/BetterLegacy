@@ -22,6 +22,7 @@
 - Fixed Prefab Object speed not affecting the lifetime.
 - The Object Drag Helper should now line up more consistently with objects.
 - Fixed some modifier values not supporting the variable system.
+- Fixed the Timeline Object Collapse Length setting not actually being used.
 
 -------------------------------------------------------------------
 
