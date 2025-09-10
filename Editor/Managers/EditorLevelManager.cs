@@ -2218,7 +2218,7 @@ namespace BetterLegacy.Editor.Managers
             EditorServerManager.inst.Pull(
                 url: AlephNetwork.LevelCollectionURL,
                 uploadable: levelCollection,
-                pull: jn => EditorServerManager.inst.DownloadLevelCollection(jn["id"], RTFile.RemoveEndSlash(levelCollection.path), jn["name"], LoadLevelCollections));
+                pull: jn => EditorServerManager.inst.DownloadLevelCollection(jn["id"], RTFile.RemoveEndSlash(levelCollection.path), jn["name"]));
         }
 
         #endregion
