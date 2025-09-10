@@ -1355,6 +1355,7 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject = GameData.Current.prefabObjects.TryFind(x => x.id == prefabInstanceID && x.expanded, out PrefabObject originalPrefabObject) ? originalPrefabObject : new PrefabObject(originalPrefab.id);
 
                 prefabObject.StartTime = startTime - originalPrefab.offset;
+                prefabObject.SetDefaultTransformOffsets();
 
                 newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, prefabObjects, backgroundObjects: bgObjects, prefabs: originalPrefab.prefabs);
                 newPrefab.beatmapThemes = new List<BeatmapTheme>(originalPrefab.beatmapThemes.Select(x => x.Copy(false)));

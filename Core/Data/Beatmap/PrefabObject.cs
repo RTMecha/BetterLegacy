@@ -30,12 +30,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             editorData.Bin = 0;
             editorData.Layer = 0;
 
-            events = new List<EventKeyframe>
-            {
-                new EventKeyframe(),
-                new EventKeyframe(),
-                new EventKeyframe()
-            };
+            SetDefaultTransformOffsets();
         }
 
         public PrefabObject(string prefabID) : this() => this.prefabID = prefabID;
@@ -462,7 +457,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 {
                     events.Add(new EventKeyframe
                     {
-                        values = new float[2],
+                        values = new float[2] { 1f, 1f },
                     });
                 }
 
@@ -482,11 +477,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
             }
             else
-            {
-                events.Add(new EventKeyframe(0f, new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
-                events.Add(new EventKeyframe(0f, new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }));
-                events.Add(new EventKeyframe(0f, new float[1] { 0f }, new float[3] { 0f, 0f, 0f }));
-            }
+                SetDefaultTransformOffsets();
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -561,14 +552,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     events.Add(new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }));
             }
             else
-            {
-                events = new List<EventKeyframe>()
-                {
-                    new EventKeyframe(new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }),
-                    new EventKeyframe(new float[2] { 1f, 1f }, new float[3] { 0f, 0f, 0f }),
-                    new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }),
-                };
-            }
+                SetDefaultTransformOffsets();
 
             this.ReadModifiersJSON(jn);
         }
@@ -822,7 +806,10 @@ namespace BetterLegacy.Core.Data.Beatmap
             try
             {
                 if (events[0].random != 0)
+                {
                     transform.position = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(id, events[0]);
+                    transform.position.z = depth;
+                }
                 if (events[1].random != 0)
                     transform.scale = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(id, events[1]);
                 if (events[2].random != 0)
@@ -860,6 +847,16 @@ namespace BetterLegacy.Core.Data.Beatmap
         public ITransformable AsTransformable() => this;
 
         public void InterpolateAnimation(PAAnimation animation, float t) => this.InterpolateAnimationOffset(animation, t);
+
+        public void SetDefaultTransformOffsets()
+        {
+            events = new List<EventKeyframe>()
+            {
+                new EventKeyframe(new float[2] { 0f, 0f }, new float[3] { 0f, 0f, 0f }),
+                new EventKeyframe(new float[2] { 1f, 1f }, new float[3] { 0f, 0f, 0f }),
+                new EventKeyframe(new float[1] { 0f }, new float[3] { 0f, 0f, 0f }),
+            };
+        }
 
         #region Evaluation
 
