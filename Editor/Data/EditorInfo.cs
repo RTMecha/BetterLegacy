@@ -168,8 +168,8 @@ namespace BetterLegacy.Editor.Data
                 mainZoom = zoom;
                 mainPosition = position;
 
-                layer = layer;
-                layerType = layerType;
+                this.layer = layer;
+                this.layerType = layerType;
 
                 binCount = jn["timeline"]["bin_count"] != null ? jn["timeline"]["bin_count"].AsInt : EditorTimeline.DEFAULT_BIN_COUNT;
                 binPosition = jn["timeline"]["bin_position"].AsFloat;
