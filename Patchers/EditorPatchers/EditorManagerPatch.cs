@@ -493,8 +493,8 @@ namespace BetterLegacy.Patchers
                     GameManager.inst.gameState = GameManager.State.Playing;
 
                     CoroutineHelper.StartCoroutine(RTLevel.IReinit());
-                }, onError => AssignGameData()));
-            }, onError => AssignGameData()));
+                }, (string onError, long responseCode, string errorMsg) => AssignGameData()));
+            }, (string onError, long responseCode, string errorMsg) => AssignGameData()));
 
             return false;
         }

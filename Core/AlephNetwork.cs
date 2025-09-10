@@ -254,7 +254,7 @@ namespace BetterLegacy.Core
                 Debug.Log($"{className}Form upload complete! {www.downloadHandler.text}");
         }
 
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete)
+        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Dictionary<string, string> headers = null)
         {
             var form = new WWWForm();
             form.AddBinaryData("file", bytes);
@@ -262,6 +262,11 @@ namespace BetterLegacy.Core
             using var www = UnityWebRequest.Post(url, form);
 
             www.certificateHandler = new ForceAcceptAll();
+
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
+
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
@@ -291,7 +296,7 @@ namespace BetterLegacy.Core
                 onComplete?.Invoke(www.downloadHandler.text);
         }
 
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<float> percentage, Action<string> onComplete, Action<string, long> onError)
+        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<float> percentage, Action<string> onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
         {
             var form = new WWWForm();
             form.AddBinaryData("file", bytes);
@@ -299,6 +304,10 @@ namespace BetterLegacy.Core
             using var www = UnityWebRequest.Post(url, form);
 
             www.certificateHandler = new ForceAcceptAll();
+
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
 
             var webRequest = www.SendWebRequest();
 
@@ -309,7 +318,7 @@ namespace BetterLegacy.Core
             }
 
             if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error, www.responseCode);
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
             else
                 onComplete?.Invoke(www.downloadHandler.text);
         }
@@ -352,14 +361,16 @@ namespace BetterLegacy.Core
 
         #region JSON
 
-        public static IEnumerator DownloadJSONFile(string path, Action<string> callback, Action<string> onError)
+        public static IEnumerator DownloadJSONFile(string path, Action<string> callback, Action<string, long, string> onError)
         {
             using var www = UnityWebRequest.Get(path);
             yield return www.SendWebRequest();
             if (www.isNetworkError || www.isHttpError)
             {
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-                onError?.Invoke(www.error);
+                if (www.downloadHandler != null)
+                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
+                else
+                    onError?.Invoke(www.error, www.responseCode, null);
             }
             else
                 callback?.Invoke(www.downloadHandler.text);
@@ -407,7 +418,7 @@ namespace BetterLegacy.Core
             yield break;
         }
         
-        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, string> onError, Dictionary<string, string> headers = null)
+        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, long, string> onError, Dictionary<string, string> headers = null)
         {
             using var www = UnityWebRequest.Get(path);
             www.certificateHandler = new ForceAcceptAll();
@@ -427,9 +438,9 @@ namespace BetterLegacy.Core
             if (www.isNetworkError || www.isHttpError)
             {
                 if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.downloadHandler.text);
+                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
                 else
-                    onError?.Invoke(www.error, null);
+                    onError?.Invoke(www.error, www.responseCode, null);
             }
             else
                 callback?.Invoke(www.downloadHandler.text);
@@ -437,7 +448,7 @@ namespace BetterLegacy.Core
             yield break;
         }
 
-        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, string> onError)
+        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, long, string> onError)
         {
             using var www = UnityWebRequest.Get(path);
             var webRequest = www.SendWebRequest();
@@ -451,9 +462,9 @@ namespace BetterLegacy.Core
             if (www.isNetworkError || www.isHttpError)
             {
                 if (www.downloadHandler != null)
-                    onError?.Invoke(www.error, www.downloadHandler.text);
+                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
                 else
-                    onError?.Invoke(www.error, null);
+                    onError?.Invoke(www.error, www.responseCode, null);
             }
             else
                 callback?.Invoke(www.downloadHandler.text);
@@ -522,15 +533,17 @@ namespace BetterLegacy.Core
 
         #region AudioClip
 
-        public static IEnumerator DownloadAudioClip(string path, AudioType audioType, Action<AudioClip> callback, Action<string> onError)
+        public static IEnumerator DownloadAudioClip(string path, AudioType audioType, Action<AudioClip> callback, Action<string, long, string> onError)
         {
             using var www = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
             {
-                Debug.LogError($"{className}Error: {www.error}");
-                onError?.Invoke(www.error);
+                if (www.downloadHandler != null)
+                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
+                else
+                    onError?.Invoke(www.error, www.responseCode, null);
             }
             else
                 callback?.Invoke(((DownloadHandlerAudioClip)www.downloadHandler).audioClip);
@@ -547,7 +560,7 @@ namespace BetterLegacy.Core
                 callback?.Invoke(((DownloadHandlerAudioClip)www.downloadHandler).audioClip);
         }
 
-        public static IEnumerator DownloadAudioClip(string path, Action<float> percentage, AudioType audioType, Action<AudioClip> callback, Action<string> onError)
+        public static IEnumerator DownloadAudioClip(string path, Action<float> percentage, AudioType audioType, Action<AudioClip> callback, Action<string, long, string> onError)
         {
             using var www = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
             var webRequest = www.SendWebRequest();
@@ -560,8 +573,10 @@ namespace BetterLegacy.Core
 
             if (www.isNetworkError || www.isHttpError)
             {
-                Debug.LogError($"{className}Error: {www.error}");
-                onError?.Invoke(www.error);
+                if (www.downloadHandler != null)
+                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
+                else
+                    onError?.Invoke(www.error, www.responseCode, null);
             }
             else
                 callback?.Invoke(((DownloadHandlerAudioClip)www.downloadHandler).audioClip);
@@ -620,7 +635,7 @@ namespace BetterLegacy.Core
 
         #region Misc
 
-        public static IEnumerator Delete(string path, Action onComplete, Action<string, long> onError, Dictionary<string, string> headers = null)
+        public static IEnumerator Delete(string path, Action<float> percentage, Action onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
         {
             using var www = UnityWebRequest.Delete(path);
             www.certificateHandler = new ForceAcceptAll();
@@ -631,7 +646,12 @@ namespace BetterLegacy.Core
 
             yield return www.SendWebRequest();
             if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error, www.responseCode);
+            {
+                if (www.downloadHandler != null)
+                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
+                else
+                    onError?.Invoke(www.error, www.responseCode, null);
+            }
             else
                 onComplete?.Invoke();
 

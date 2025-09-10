@@ -89,7 +89,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             {
                 audio = audioClip;
                 onComplete?.Invoke();
-            }, error =>
+            }, (string onError, long responseCode, string errorMsg) =>
             {
                 onComplete?.Invoke();
             }));

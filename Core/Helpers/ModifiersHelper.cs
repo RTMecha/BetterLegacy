@@ -2135,7 +2135,7 @@ namespace BetterLegacy.Core.Helpers
                 var audioType = RTFile.GetAudioType(path);
 
                 if (audioType != AudioType.UNKNOWN)
-                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop, panStereo), onError => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop, panStereo), (string onError, long responseCode, string errorMsg) => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
             }
             catch
             {

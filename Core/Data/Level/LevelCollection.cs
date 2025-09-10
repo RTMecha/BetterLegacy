@@ -479,7 +479,7 @@ namespace BetterLegacy.Core.Data.Level
                             }));
                         }
                     }, ArcadeHelper.QuitToArcade);
-                }, onError => ArcadeHelper.QuitToArcade()));
+                }, (string onError, long responseCode, string errorMsg) => ArcadeHelper.QuitToArcade()));
             }
         }
 
