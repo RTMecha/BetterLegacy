@@ -16,6 +16,7 @@
 - Reworked the "View Uploaded" editor dialog to allow viewing of Levels, Level Collections and Prefabs.
 - Optimized layer setting a little by updating timeline objects in chunks.
 - Collapsed Prefab Objects now have their start position set to the Prefab offset.
+- Server related processes now have a progress bar popup.
 
 ## Fixes
 - Finally fixed polygon shape conversion not working in some cases (why so many edge cases omg).
