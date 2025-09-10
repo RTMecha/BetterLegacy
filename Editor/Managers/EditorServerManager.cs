@@ -494,7 +494,6 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(RTFile.CombinePaths(url, serverID), RTEditor.inst.ProgressPopup.UpdateProgress,
                 json =>
                 {
-                    RTEditor.inst.ProgressPopup.Close();
                     pull.Invoke(JSON.Parse(json));
                 },
                 (string onError, long responseCode, string errorMsg) =>
@@ -1276,10 +1275,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
 
                 onDownload?.Invoke();
+                RTEditor.inst.ProgressPopup.Close();
             }, onError =>
             {
                 EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
                 CoreHelper.LogError($"OnError: {onError}");
+                RTEditor.inst.ProgressPopup.Close();
             }));
         }
 
@@ -1473,10 +1474,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
 
                 onDownload?.Invoke();
+                RTEditor.inst.ProgressPopup.Close();
             }, onError =>
             {
                 EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
                 CoreHelper.LogError($"OnError: {onError}");
+                RTEditor.inst.ProgressPopup.Close();
             }));
         }
 
@@ -1673,6 +1676,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 EditorManager.inst.DisplayNotification($"Failed to download {name}.", 1.5f, EditorManager.NotificationType.Error);
                 CoreHelper.LogError($"OnError: {onError}");
+                RTEditor.inst.ProgressPopup.Close();
             }));
         }
 
@@ -1709,6 +1713,8 @@ namespace BetterLegacy.Editor.Managers
 
         void SaveDownloadedPrefab(string id, string name, byte[] bytes, ObjectSource source = ObjectSource.External)
         {
+            RTEditor.inst.ProgressPopup.Close();
+
             if (source == ObjectSource.Internal)
             {
                 var tempFilePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"{id}.lsp");
