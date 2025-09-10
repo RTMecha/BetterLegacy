@@ -91,6 +91,54 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SearchField.SetTextWithoutNotify(string.Empty);
             SearchField.GetPlaceholderText().text = "Search levels...";
             SearchField.onValueChanged.ClearAll();
+            var contextClickable = search.AddComponent<ContextClickable>();
+            contextClickable.onClick = pointerEventData =>
+            {
+                if (pointerEventData.button != UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                    return;
+
+                var buttonFunctions = new List<ButtonFunction>();
+
+                switch (EditorServerManager.inst.tab)
+                {
+                    case EditorServerManager.Tab.Levels: {
+                            var sort = EditorServerManager.inst.sort;
+                            buttonFunctions.AddRange(new List<ButtonFunction>
+                            {
+                                GetSortButton("Default", 0),
+                                GetSortButton("Name", 1),
+                                GetSortButton("Song Title", 2),
+                                GetSortButton("Difficulty", 3),
+                                GetSortButton("Creator", 4),
+                                GetSortButton("Song Artist", 5),
+                            });
+                            break;
+                        }
+                    case EditorServerManager.Tab.LevelCollections: {
+                            buttonFunctions.AddRange(new List<ButtonFunction>
+                            {
+                                GetSortButton("Default", 0),
+                                GetSortButton("Name", 1),
+                                GetSortButton("Difficulty", 2),
+                                GetSortButton("Creator", 3),
+                            });
+                            break;
+                        }
+                    case EditorServerManager.Tab.Prefabs: {
+                            buttonFunctions.AddRange(new List<ButtonFunction>
+                            {
+                                GetSortButton("Default", 0),
+                                GetSortButton("Name", 1),
+                                GetSortButton("Creator", 2),
+                                GetSortButton("Type", 3),
+                            });
+                            break;
+                        }
+                }
+
+                buttonFunctions.Add(new ButtonFunction($"Ascend [{(EditorServerManager.inst.ascend ? "On" : "Off")}]", () => EditorServerManager.inst.ascend = !EditorServerManager.inst.ascend));
+                EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
+            };
 
             var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(bar, "page");
             RectValues.Default.AnchoredPosition(-40f, 0f).SizeDelta(200f, 32f).AssignToRectTransform(page.transform.AsRT());
@@ -175,6 +223,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             InitDialog(UPLOADED_LEVELS);
         }
 
+        ButtonFunction GetSortButton(string name, int sort) => new ButtonFunction((EditorServerManager.inst.sort == sort ? "> " : string.Empty) + $"Sort: {name}", () => EditorServerManager.inst.sort = sort);
+
         void SetupTab(string name, EditorServerManager.Tab tab)
         {
             var tabObj = EditorPrefabHolder.Instance.Function1Button.Duplicate(TabsContent);
@@ -184,6 +234,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             tabStorage.OnClick.NewListener(() =>
             {
                 EditorServerManager.inst.tab = tab;
+                EditorServerManager.inst.sort = 0;
+                EditorServerManager.inst.ascend = false;
                 EditorServerManager.inst.Search();
             });
             TabButtons.Add(tabStorage.button);
