@@ -111,6 +111,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 GetSortButton("Difficulty", 3),
                                 GetSortButton("Creator", 4),
                                 GetSortButton("Song Artist", 5),
+                                GetSortButton("Date Published", 6),
                             });
                             break;
                         }
@@ -121,6 +122,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 GetSortButton("Name", 1),
                                 GetSortButton("Difficulty", 2),
                                 GetSortButton("Creator", 3),
+                                GetSortButton("Date Published", 4),
                             });
                             break;
                         }
@@ -131,6 +133,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                                 GetSortButton("Name", 1),
                                 GetSortButton("Creator", 2),
                                 GetSortButton("Type", 3),
+                                GetSortButton("Date Published", 4),
                             });
                             break;
                         }
