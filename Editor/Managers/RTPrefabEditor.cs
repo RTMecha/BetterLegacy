@@ -1357,15 +1357,8 @@ namespace BetterLegacy.Editor.Managers
                 prefabObject.StartTime = startTime - originalPrefab.offset;
                 prefabObject.SetDefaultTransformOffsets();
 
-                newPrefab = new Prefab(originalPrefab.name, originalPrefab.type, originalPrefab.offset, objects, prefabObjects, backgroundObjects: bgObjects, prefabs: originalPrefab.prefabs);
-                newPrefab.beatmapThemes = new List<BeatmapTheme>(originalPrefab.beatmapThemes.Select(x => x.Copy(false)));
-                newPrefab.modifierBlocks = new List<ModifierBlock>(originalPrefab.modifierBlocks.Select(x => x.Copy(false)));
-                newPrefab.defaultInstanceData = originalPrefab.defaultInstanceData?.Copy(false);
-                newPrefab.iconData = originalPrefab.iconData;
-                newPrefab.description = originalPrefab.description;
-                newPrefab.creator = originalPrefab.creator;
-                newPrefab.assets = originalPrefab.assets.Copy();
-                newPrefab.ObjectVersion = originalPrefab.ObjectVersion;
+                newPrefab = originalPrefab.Copy();
+                newPrefab.id = LSText.randomString(16);
 
                 foreach (var other in prefabObjects)
                 {
