@@ -495,12 +495,30 @@ namespace BetterLegacy.Editor.Managers
 
                 inputFieldStorage.rightButton.onClick.NewListener(() =>
                 {
+                    var tag = inputFieldStorage.inputField.text;
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
-                        if (timelineObject.isBeatmapObject)
-                            timelineObject.GetData<BeatmapObject>().tags.Add(inputFieldStorage.inputField.text);
-                        if (timelineObject.isBackgroundObject)
-                            timelineObject.GetData<BackgroundObject>().tags.Add(inputFieldStorage.inputField.text);
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                    if (!beatmapObject.tags.Contains(tag))
+                                        beatmapObject.tags.Add(tag);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                                    if (!prefabObject.tags.Contains(tag))
+                                        prefabObject.tags.Add(tag);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    var backgroundObject = timelineObject.GetData<BackgroundObject>();
+                                    if (!backgroundObject.tags.Contains(tag))
+                                        backgroundObject.tags.Add(tag);
+                                    break;
+                                }
+                        }
                     }
                 });
 
