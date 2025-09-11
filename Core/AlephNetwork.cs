@@ -149,10 +149,12 @@ namespace BetterLegacy.Core
         public static List<DataManager.LinkType> CreatorLinks { get; } = new List<DataManager.LinkType>
         {
             new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
+            new DataManager.LinkType("YouTube ID", "https://youtube.com/channel/{0}"),
+            new DataManager.LinkType("YouTube Handle", "https://youtube.com/@{0}"),
             new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
-            new DataManager.LinkType("Discord", "https://discord.gg/{0}"),
             new DataManager.LinkType("Patreon", "https://patreon.com/{0}"),
             new DataManager.LinkType("Twitter", "https://twitter.com/{0}"),
+            new DataManager.LinkType("Bluesky", "https://bsky.app/profile/{0}"),
         };
 
         /// <summary>
