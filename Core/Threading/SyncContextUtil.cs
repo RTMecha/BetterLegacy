@@ -1,13 +1,10 @@
 ﻿using System.Threading;
 
-using UnityEngine;
-
 namespace BetterLegacy.Core.Threading
 {
 	public static class SyncContextUtil
 	{
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-		static void Install()
+		public static void Init()
 		{
 			UnitySynchronizationContext = SynchronizationContext.Current;
 			UnityThreadId = Thread.CurrentThread.ManagedThreadId;

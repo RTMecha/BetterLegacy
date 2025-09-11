@@ -56,6 +56,12 @@ namespace BetterLegacy
 
         public static bool CanEdit { get; set; } = true;
 
+        public static Core.Threading.TickRunner MainTick
+        {
+            get => Core.Threading.TickRunner.Main;
+            set => Core.Threading.TickRunner.Main = value;
+        }
+
         void Awake()
         {
             inst = this;
@@ -194,7 +200,8 @@ namespace BetterLegacy
                 CoreHelper.LogError($"Failed to update Current Scene. {ex}");
             }
 
-            Core.Threading.TickRunner.Main = new Core.Threading.TickRunner();
+            MainTick = new Core.Threading.TickRunner();
+            Core.Threading.SyncContextUtil.Init();
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
         }

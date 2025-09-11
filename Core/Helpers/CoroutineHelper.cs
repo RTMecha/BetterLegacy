@@ -6,6 +6,8 @@ using UnityEngine;
 
 using CielaSpike;
 
+using BetterLegacy.Core.Threading;
+
 namespace BetterLegacy.Core.Helpers
 {
     /// <summary>
@@ -261,6 +263,21 @@ namespace BetterLegacy.Core.Helpers
         public static IEnumerator IEmpty() { yield break; }
 
         public static string DefaultYieldInstructionDescription => "Some options will run faster but freeze the game, while others run slower but allow you to see them update in real time.";
+
+        // this works, cool
+        public static void RunTestCoroutineToTask() => System.Threading.Tasks.Task.Run(TestCoroutineToTask);
+
+        public static async void TestCoroutineToTask()
+        {
+            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Started"));
+            await ITestCoroutine();
+            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Done"));
+        }
+
+        static IEnumerator ITestCoroutine()
+        {
+            yield return Seconds(1f);
+        }
 
         #endregion
     }
