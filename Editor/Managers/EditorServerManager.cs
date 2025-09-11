@@ -956,8 +956,8 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     EditorContextMenu.inst.ShowContextMenu(
-                        new ButtonFunction("Add to Default Tags", () => AddCustomDefaultTag(tag, relation)),
-                        new ButtonFunction("Copy to Clipboard", () => LSText.CopyToClipboard(tag)));
+                        new ButtonFunction("Add to Default Tags", () => AddCustomDefaultTag(uploadable.ArcadeTags[index], relation)),
+                        new ButtonFunction("Copy to Clipboard", () => LSText.CopyToClipboard(uploadable.ArcadeTags[index])));
                 };
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
