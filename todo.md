@@ -160,7 +160,8 @@ Next: 1.8.0 pre-release test and release
 
 
 ### Fixes
-- null
+- Fix player health not working in 1 hit mode
+- Fix 1 life restart bug
 
 
 ## Ideas
