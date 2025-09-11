@@ -1333,13 +1333,13 @@ namespace BetterLegacy.Editor.Managers
 
             int index = GameData.Current.prefabs.FindIndex(x => x.id == prefabID);
             var originalPrefab = GameData.Current.prefabs[index];
-            Prefab newPrefab;
+            Prefab newPrefab = originalPrefab.Copy();
             PrefabObject prefabObject;
+
+            newPrefab.CopyObjects(objects, prefabObjects, backgroundObjects: bgObjects, prefabs: originalPrefab.prefabs);
 
             if (createNew)
             {
-                newPrefab = originalPrefab.Copy();
-                newPrefab.CopyObjects(objects, prefabObjects, backgroundObjects: bgObjects, prefabs: originalPrefab.prefabs);
                 prefabObject = new PrefabObject(newPrefab.id, startTime - newPrefab.offset);
 
                 newPrefab.typeID = originalPrefab.typeID;
@@ -1356,9 +1356,6 @@ namespace BetterLegacy.Editor.Managers
 
                 prefabObject.StartTime = startTime - originalPrefab.offset;
                 prefabObject.SetDefaultTransformOffsets();
-
-                newPrefab = originalPrefab.Copy();
-                newPrefab.id = LSText.randomString(16);
 
                 foreach (var other in prefabObjects)
                 {
