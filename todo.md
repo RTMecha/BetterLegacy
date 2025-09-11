@@ -76,6 +76,10 @@ Next: 1.8.0 pre-release test and release
   Update: 1.14.0  
 - Hide random / relative toggles (if either is off, the keyframe will be forced to have the random / relative set to default / off)  
 - Sync value context menus  
+- Animation groups and animation ID
+  Notes:  
+  - A group of selected objects that have a set animation ID can be turned into an animation group.
+  - The same group of selected objects can then have that animation applied to them.
 
 ### Interfaces
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
