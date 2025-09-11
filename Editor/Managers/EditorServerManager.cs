@@ -145,17 +145,43 @@ namespace BetterLegacy.Editor.Managers
             LevelCollections,
             Prefabs,
         }
-        public int page;
-        public int sort;
-        public bool ascend;
-        public bool uploaded = true;
+
+        public Dictionary<Tab, TabSettings> tabSettings = new Dictionary<Tab, TabSettings>
+        {
+            { Tab.Levels, new TabSettings() { sort = (int)OnlineLevelSort.DatePublished, ascend = true, } },
+            { Tab.LevelCollections, new TabSettings() { sort = (int)OnlineLevelCollectionSort.DatePublished, ascend = true, } },
+            { Tab.Prefabs, new TabSettings() { sort = (int)OnlinePrefabSort.DatePublished, ascend = true, } },
+        };
+
+        public TabSettings CurrentTabSettings
+        {
+            get
+            {
+                if (!this.tabSettings.TryGetValue(tab, out TabSettings tabSettings))
+                {
+                    tabSettings = new TabSettings();
+                    this.tabSettings[tab] = tabSettings;
+                }
+
+                return tabSettings;
+            }
+        }
+
+        public class TabSettings
+        {
+            public int page;
+            public int sort;
+            public bool ascend;
+            public bool uploaded = true;
+        }
+
         public string SearchURL => RTFile.CombinePaths(tab switch
         {
             Tab.Levels => AlephNetwork.LevelURL,
             Tab.LevelCollections => AlephNetwork.LevelCollectionURL,
             Tab.Prefabs => AlephNetwork.PrefabURL,
             _ => null,
-        }, tab != Tab.Prefabs || uploaded ? "uploaded" : "search");
+        }, tab != Tab.Prefabs || CurrentTabSettings.uploaded ? "uploaded" : "search");
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
@@ -1091,12 +1117,12 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ClearContent();
 
-            var page = this.page;
+            var page = tabSettings[Tab.Levels].page;
             int currentPage = page + 1;
 
             var search = Dialog.SearchTerm;
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page, sort, ascend);
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page, CurrentTabSettings.sort, CurrentTabSettings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1293,12 +1319,12 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ClearContent();
 
-            var page = this.page;
+            var page = tabSettings[Tab.LevelCollections].page;
             int currentPage = page + 1;
 
             var search = Dialog.SearchTerm;
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page, sort, ascend);
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page, CurrentTabSettings.sort, CurrentTabSettings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1492,12 +1518,12 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ClearContent();
 
-            var page = this.page;
+            var page = tabSettings[Tab.Prefabs].page;
             int currentPage = page + 1;
 
             var search = Dialog.SearchTerm;
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page, sort, ascend);
+            string query = AlephNetwork.BuildQuery(SearchURL, search, page, CurrentTabSettings.sort, CurrentTabSettings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 

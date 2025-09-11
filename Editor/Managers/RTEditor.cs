@@ -1860,6 +1860,24 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < EditorManager.inst.layerColors.Count; i++)
                 jn["layer_colors"][i] = LSColors.ColorToHex(EditorManager.inst.layerColors[i]);
 
+            if (EditorServerManager.inst)
+            {
+                jn["server"]["current_tab"] = (int)EditorServerManager.inst.tab;
+
+                foreach (var tabSettingKeyValuePair in EditorServerManager.inst.tabSettings)
+                {
+                    var tabSettingJN = Parser.NewJSONObject();
+                    var tabSetting = tabSettingKeyValuePair.Value;
+
+                    tabSettingJN["sort"]["asc"] = tabSetting.ascend;
+                    tabSettingJN["sort"]["sort"] = tabSetting.sort;
+                    tabSettingJN["uploaded"] = tabSetting.uploaded;
+                    tabSettingJN["page"] = tabSetting.page;
+
+                    jn["server"]["tabs"][tabSettingKeyValuePair.Key.ToString().ToLower()] = tabSettingJN;
+                }
+            }
+
             RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
         }
 
@@ -1930,6 +1948,29 @@ namespace BetterLegacy.Editor.Managers
 
                 RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
             }
+
+            if (jn["server"] != null && EditorServerManager.inst)
+            {
+                EditorServerManager.inst.tab = (EditorServerManager.Tab)jn["server"]["current_tab"].AsInt;
+
+                foreach (var tabSettingKeyValuePair in EditorServerManager.inst.tabSettings)
+                {
+                    var tabSettingJN = jn["server"]["tabs"][tabSettingKeyValuePair.Key.ToString().ToLower()];
+                    if (tabSettingJN == null)
+                        continue;
+
+                    var tabSetting = tabSettingKeyValuePair.Value;
+
+                    if (tabSettingJN["sort"]["asc"] != null)
+                        tabSetting.ascend = tabSettingJN["sort"]["asc"].AsBool;
+                    if (tabSettingJN["sort"]["sort"] != null)
+                        tabSetting.sort = tabSettingJN["sort"]["sort"].AsInt;
+                    if (tabSettingJN["uploaded"] != null)
+                        tabSetting.uploaded = tabSettingJN["uploaded"].AsBool;
+                    if (tabSettingJN["page"] != null)
+                        tabSetting.page = tabSettingJN["page"].AsInt;
+                }
+            }
         }
 
         /// <summary>
@@ -1937,7 +1978,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SaveGlobalSettings()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             jn["sort"]["asc"] = levelAscend.ToString();
             jn["sort"]["order"] = ((int)levelSort).ToString();
@@ -1961,6 +2002,24 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < EditorManager.inst.layerColors.Count; i++)
                 jn["layer_colors"][i] = LSColors.ColorToHex(EditorManager.inst.layerColors[i]);
+
+            if (EditorServerManager.inst)
+            {
+                jn["server"]["current_tab"] = (int)EditorServerManager.inst.tab;
+
+                foreach (var tabSettingKeyValuePair in EditorServerManager.inst.tabSettings)
+                {
+                    var tabSettingJN = Parser.NewJSONObject();
+                    var tabSetting = tabSettingKeyValuePair.Value;
+
+                    tabSettingJN["sort"]["asc"] = tabSetting.ascend;
+                    tabSettingJN["sort"]["sort"] = tabSetting.sort;
+                    tabSettingJN["uploaded"] = tabSetting.uploaded;
+                    tabSettingJN["page"] = tabSetting.page;
+
+                    jn["server"]["tabs"][tabSettingKeyValuePair.Key.ToString().ToLower()] = tabSettingJN;
+                }
+            }
 
             RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
         }

@@ -102,7 +102,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 switch (EditorServerManager.inst.tab)
                 {
                     case EditorServerManager.Tab.Levels: {
-                            var sort = EditorServerManager.inst.sort;
+                            var sort = EditorServerManager.inst.CurrentTabSettings.sort;
                             buttonFunctions.AddRange(new List<ButtonFunction>
                             {
                                 GetSortButton("Default", 0),
@@ -139,7 +139,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         }
                 }
 
-                buttonFunctions.Add(new ButtonFunction($"Ascend [{(EditorServerManager.inst.ascend ? "On" : "Off")}]", () => EditorServerManager.inst.ascend = !EditorServerManager.inst.ascend));
+                buttonFunctions.Add(new ButtonFunction($"Ascend [{(EditorServerManager.inst.CurrentTabSettings.ascend ? "On" : "Off")}]", () =>
+                {
+                    EditorServerManager.inst.CurrentTabSettings.ascend = !EditorServerManager.inst.CurrentTabSettings.ascend;
+                    RTEditor.inst.SaveGlobalSettings();
+                }));
                 EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
             };
 
@@ -155,8 +159,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             PageField.SetTextWithoutNotify("0");
             PageField.OnValueChanged.NewListener(_val =>
             {
-                if (int.TryParse(_val, out int p))
-                    EditorServerManager.inst.page = Mathf.Clamp(p, 0, int.MaxValue);
+                if (!int.TryParse(_val, out int p))
+                    return;
+
+                EditorServerManager.inst.CurrentTabSettings.page = Mathf.Clamp(p, 0, int.MaxValue);
+                RTEditor.inst.SaveGlobalSettings();
             });
 
             pageStorage.leftGreaterButton.onClick.NewListener(() =>
@@ -187,7 +194,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             UploadedToggle = uploadedToggleStorage.toggle;
             uploadedToggleStorage.Text = "Uploaded";
             uploadedToggleStorage.SetIsOnWithoutNotify(true);
-            uploadedToggleStorage.OnValueChanged.NewListener(_val => EditorServerManager.inst.uploaded = _val);
+            uploadedToggleStorage.OnValueChanged.NewListener(_val =>
+            {
+                EditorServerManager.inst.CurrentTabSettings.uploaded = _val;
+                RTEditor.inst.SaveGlobalSettings();
+            });
             EditorThemeManager.AddToggle(uploadedToggleStorage.toggle, graphic: uploadedToggleStorage.label);
 
             var searchButton = EditorPrefabHolder.Instance.Function2Button.Duplicate(bar, "search button");
@@ -226,7 +237,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             InitDialog(UPLOADED_LEVELS);
         }
 
-        ButtonFunction GetSortButton(string name, int sort) => new ButtonFunction((EditorServerManager.inst.sort == sort ? "> " : string.Empty) + $"Sort: {name}", () => EditorServerManager.inst.sort = sort);
+        ButtonFunction GetSortButton(string name, int sort) => new ButtonFunction((EditorServerManager.inst.CurrentTabSettings.sort == sort ? "> " : string.Empty) + $"Sort: {name}", () =>
+        {
+            EditorServerManager.inst.CurrentTabSettings.sort = sort;
+            RTEditor.inst.SaveGlobalSettings();
+        });
 
         void SetupTab(string name, EditorServerManager.Tab tab)
         {
@@ -237,9 +252,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
             tabStorage.OnClick.NewListener(() =>
             {
                 EditorServerManager.inst.tab = tab;
-                EditorServerManager.inst.sort = 0;
-                EditorServerManager.inst.ascend = false;
                 EditorServerManager.inst.Search();
+                RTEditor.inst.SaveGlobalSettings();
             });
             TabButtons.Add(tabStorage.button);
 
