@@ -556,7 +556,10 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.speedText.transform.parent.SetParent(transform);
 
             if (prefabHolder.DefaultInputField.TryGetComponent(out InputField frick))
-                frick.textComponent.fontSize = 18;
+            {
+                frick.textComponent.fontSize = 16;
+                frick.GetPlaceholderText().fontSize = 16;
+            }
 
             if (ObjEditor.inst)
             {
@@ -598,6 +601,9 @@ namespace BetterLegacy.Editor.Managers
                 floatInputFieldStorage.addButton.gameObject.SetActive(false);
 
                 prefabHolder.StringInputField = floatInputFieldStorage.inputField.gameObject.Duplicate(prefabHolder.PrefabParent, "string input");
+                var stringInputField = prefabHolder.StringInputField.GetComponent<InputField>();
+                stringInputField.textComponent.fontSize = 16;
+                stringInputField.GetPlaceholderText().fontSize = 16;
 
                 prefabHolder.Function2Button = ObjEditor.inst.ObjectView.transform.Find("applyprefab").gameObject.Duplicate(prefabHolder.PrefabParent, "function 2 button");
 
