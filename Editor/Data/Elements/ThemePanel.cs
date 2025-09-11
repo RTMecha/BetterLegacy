@@ -682,10 +682,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         break;
                     }
                 case ObjectSource.External: {
-                        if (!GameData.Current.AddTheme(Item))
-                            EditorManager.inst.DisplayNotification($"Level already has a theme with the same ID.", 3f, EditorManager.NotificationType.Warning);
-                        else if (RTThemeEditor.inst.Dialog.GameObject.activeInHierarchy)
-                            RTThemeEditor.inst.LoadInternalThemes();
+                        RTThemeEditor.inst.ImportTheme(Item);
                         break;
                     }
             }

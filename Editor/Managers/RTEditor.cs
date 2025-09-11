@@ -217,7 +217,7 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new ButtonFunction("Create audio object", () =>
                             {
-                                if (!ModifiersManager.inst.modifiers.TryFind(x => x.Name == "playSound", out Modifier modifier))
+                                if (!ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.playSound), out Modifier modifier))
                                     return;
 
                                 var editorPath = RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path);
@@ -261,6 +261,24 @@ namespace BetterLegacy.Editor.Managers
                         var prefab = Prefab.ParseVG(jn);
 
                         RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+                        break;
+                    }
+
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.LST))
+                    {
+                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                        var theme = BeatmapTheme.Parse(jn);
+                        RTThemeEditor.inst.ImportTheme(theme);
+
+                        break;
+                    }
+                    
+                    if (RTFile.FileIsFormat(dropInfo.filePath, FileFormat.VGT))
+                    {
+                        var jn = JSON.Parse(RTFile.ReadFromFile(dropInfo.filePath));
+                        var theme = BeatmapTheme.ParseVG(jn);
+                        RTThemeEditor.inst.ImportTheme(theme);
+
                         break;
                     }
 

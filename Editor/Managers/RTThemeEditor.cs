@@ -801,6 +801,14 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.EnableThemeWatcher();
         }
 
+        public void ImportTheme(BeatmapTheme theme)
+        {
+            if (!GameData.Current.AddTheme(theme))
+                EditorManager.inst.DisplayNotification($"Level already has a theme with the same ID.", 3f, EditorManager.NotificationType.Warning);
+            else
+                LoadInternalThemes();
+        }
+
         public void DeleteTheme(ThemePanel themePanel) => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this theme?", () =>
         {
             switch (themePanel.Source)
