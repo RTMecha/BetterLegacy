@@ -93,9 +93,7 @@ namespace BetterLegacy.Core.Managers
             var defaultFont = DefaultFont;
 
             for (int i = 0; i < fonts.Length; i++)
-            {
                 fonts[i].font = defaultFont;
-            }
         }
 
         public IEnumerator SetupCustomFonts()
@@ -157,167 +155,181 @@ namespace BetterLegacy.Core.Managers
             yield break;
         }
 
-        // UNUSED DUE TO FILESIZE
-        // - NotoSansSC-VariableFont.ttf
-        // - HiMelody-Regular.ttf
-        // - NotoSansTC-VariableFont.ttf
-        // - NotoSansHK-VariableFont.ttf
-        // - NotoSansKR-VariableFont_wght.ttf
-        // - HanyiSentyPagoda Regular.ttf
-        string ChangeName(string _name1)
+        string ChangeName(string name) => name switch
         {
-            switch (_name1)
-            {
-                #region Symbol
-                case "giedi ancient autobot.otf": return "Ancient Autobot";
-                case "transformersmovie-y9ad.ttf": return "Transformers Movie";
-                case "webdings.ttf": return "Webdings"; // unused
-                case "wingding.ttf": return "Wingdings"; // unused
-                case "undertale-wingdings.ttf": return "Determination Wingdings";
-                #endregion
-                #region English Fonts
+            #region Symbol
 
-                case "about_friend_extended_v2_by_matthewtheprep_ddribq5.otf": return "About Friend";
-                case "adamwarrenpro-bold.ttf": return "Adam Warren Pro Bold";
-                case "adamwarrenpro-bolditalic.ttf": return "Adam Warren Pro BoldItalic";
-                case "adamwarrenpro.ttf": return "Adam Warren Pro";
-                case "angsaz.ttf": return "Angsana Z";
-                case "arrhythmia-font.ttf": return "Arrhythmia";
-                case "arial.ttf": return "Arial"; // unused
-                case "arialbd.ttf": return "Arial Bold"; // unused
-                case "arialbi.ttf": return "Arial Bold Italic"; // unused
-                case "ariali.ttf": return "Arial Italic"; // unused
-                case "ariblk.ttf": return "Arial Black"; // unused
-                case "badabb__.ttf": return "BadaBoom BB";
-                case "calibri.ttf": return "Calibri"; // unused
-                case "calibrii.ttf": return "Calibri Italic"; // unused
-                case "calibril.ttf": return "Calibri Light"; // unused
-                case "calibrili.ttf": return "Calibri Light Italic"; // unused
-                case "calibriz.ttf": return "Calibri Bold Italic"; // unused
-                case "cambria.ttc": return "Cambria"; // unused
-                case "cambriab.ttf": return "Cambria Bold"; // unused
-                case "cambriaz.ttf": return "Cambria Bold Italic"; // unused
-                case "candara.ttf": return "Candara"; // unused
-                case "candarab.ttf": return "Candara Bold"; // unused
-                case "candarai.ttf": return "Candara Italic"; // unused
-                case "candaral.ttf": return "Candara Light"; // unused
-                case "candarali.ttf": return "Candara Light Italic"; // unused
-                case "candaraz.ttf": return "Candara Bold Italic"; // unused
-                case "construction.ttf": return "Construction"; // unused
-                case "comic.ttf": return "Comic Sans";
-                case "comicbd.ttf": return "Comic Sans Bold";
-                case "comici.ttf": return "Comic Sans Italic";
-                case "comicz.ttf": return "Comic Sans Bold Italic";
-                case "ldfcomicsans-jj7l.ttf": return "Comic Sans";
-                case "ldfcomicsansbold-zgma.ttf": return "Comic Sans Bold";
-                case "ldfcomicsanshairline-5pml.ttf": return "Comic Sans Hairline";
-                case "ldfcomicsanslight-6dzo.ttf": return "Comic Sans Light";
-                case "dtm-mono.otf": return "Determination Mono";
-                case "dtm-sans.otf": return "determination sans";
-                case "filedeletion-yw6m5.ttf": return "File Deletion";
-                case "flowcircular-regular.ttf": return "Flow Circular";
-                case "fredokaone-regular.ttf": return "Fredoka One";
-                case "hachicro.ttf": return "Hachicro";
-                case "inconsolata-variablefont_wdth,wght.ttf": return "Inconsolata Variable";
-                case "impact.ttf": return "Impact"; // unused
-                case "komikah_.ttf": return "Komika Hand";
-                case "komikahb.ttf": return "Komika Hand Bold";
-                case "komikask.ttf": return "Komika Slick";
-                case "komikasl.ttf": return "Komika Slim";
-                case "komikhbi.ttf": return "Komika Hand BoldItalic";
-                case "komikhi_.ttf": return "Komika Hand Italic";
-                case "komikj__.ttf": return "Komika Jam";
-                case "komikji_.ttf": return "Komika Jam Italic";
-                case "komikski.ttf": return "Komika Slick Italic";
-                case "komiksli.ttf": return "Komika Slim Italic";
-                case "bionicle language.ttf": return "Matoran Language 1";
-                case "mata nui.ttf": return "Matoran Language 2";
-                case "minecraftbold-nmk1.otf": return "Minecraft Text Bold";
-                case "minecraftbolditalic-1y1e.otf": return "Minecraft Text BoldItalic";
-                case "minecraftitalic-r8mo.otf": return "Minecraft Text Italic";
-                case "minecraftregular-bmg3.otf": return "Minecraft Text";
-                case "minercraftory.ttf": return "Minecraftory";
-                case "micross.ttf": return "Sans Serif"; // unused
-                case "monsterfriendback.otf": return "Monster Friend Back";
-                case "monsterfriendfore.otf": return "Monster Friend Fore";
-                case "necosmic-personalrse.otf": return "Necosmic"; // unused
-                case "oxygene1.ttf": return "Oxygene";
-                case "piraka theory gf.ttf": return "Piraka Theory";
-                case "persons unknown.otf": return "Persons Unknown"; // unused
-                case "plastiquekingdom.ttf": return "PlastiqueKingdom"; // unused
-                case "piraka.ttf": return "Piraka";
-                case "pusab___.otf": return "Pusab";
-                case "rahkshi font.ttf": return "Rahkshi";
-                case "revuebt-regular 1.otf": return "Revue 1";
-                case "revuebt-regular.otf": return "Revue";
-                case "times.ttf": return "Times New Roman"; // unused
-                case "timesbd.ttf": return "Times New Roman Bold"; // unused
-                case "timesbi.ttf": return "Times New Roman Bold Italic"; // unused
-                case "timesi.ttf": return "Times New Roman Italic"; // unused
-                case "transdings-waoo.ttf": return "Transdings";
-                case "nexa bold.otf": return "Nexa Bold";
-                case "nexabook.otf": return "Nexa Book";
-                case "sans mita aprilia.ttf": return "Sans Sans";
-                case "spookyhollow.ttf": return "SpookyHollow"; // unused
+            "giedi ancient autobot.otf" => "Ancient Autobot",
+            "transformersmovie-y9ad.ttf" => "Transformers Movie",
+            "webdings.ttf" => "Webdings", // unused
+            "wingding.ttf" => "Wingdings", // unused
+            "undertale-wingdings.ttf" => "Determination Wingdings",
 
-                    // vg ported
-                case "majormonodisplay-regular.ttf": return "MajorMonoDisplay";
-                case "poorstory-regular.ttf": return "Poorstory";
-                case "hellovetica regular.ttf": return "Hellovetica";
+            #endregion
 
-                #endregion
-                #region Thai Fonts
-                case "angsa.ttf": return "Angsana";
-                case "angsab.ttf": return "Angsana Bold";
-                case "angsai.ttf": return "Angsana Italic";
-                case "angsananewbolditalic.ttf": return "Angsana Bold Italic";
-                case "krr manga s.otf": return "Manga"; // unused
-                case "pixellet.ttf": return "Pixellet";
-                case "ploypilinfont.ttf": return "Ploypilin"; // unused
-                #endregion
-                #region Russian Fonts
-                case "18vag rounded m bold.ttf": return "VAG Rounded";
-                case "milk(rus by lyajka) regular.ttf": return "LemonMilkRus"; // unused
-                case "1 nevrouz m regular.ttf": return "Nevrouz"; // unused
-                case "robotomono-bold.ttf": return "Roboto Mono Bold";
-                case "robotomono-italic.ttf": return "Roboto Mono Italic";
-                case "robotomono-light.ttf": return "Roboto Mono Light";
-                case "robotomono-light_0.ttf": return "Roboto Mono Light 1";
-                case "robotomono-lightitalic.ttf": return "Roboto Mono Light Italic";
-                case "robotomono-lightitalic_0.ttf": return "Roboto Mono Light Italic 1";
-                case "robotomono-thin.ttf": return "Roboto Mono Thin";
-                case "robotomono-thin_0.ttf": return "Roboto Mono Thin 1";
-                case "robotomono-thinitalic.ttf": return "Roboto Mono Thin Italic";
-                case "robotomono-thinitalic_0.ttf": return "Roboto Mono Thin Italic 1";
-                #endregion
-                #region Japanese Fonts
-                case "dotgothic16-regular.ttf": return "DotGothic16"; // unused
-                case "jkg-l_3.ttf": return "Jkg"; // unused
-                case "monomaniacone-regular.ttf": return "Monomaniac One";
-                case "rocknrollone-regular.ttf": return "RocknRoll One";
-                case "ronde-b_square.otf": return "Ronde-B"; // unused
-                case "yokomoji.otf": return "Yokomoji"; // unused
-                #endregion
-                #region Korean Fonts
-                case "himelody-regular.ttf": return "HiMelody"; // unused
-                case "jua-regular.ttf": return "Jua"; // unused
-                case "kiranghaerang-regular.ttf": return "KirangHaerang"; // unused
-                case "notosanskr-variablefont_wght.ttf": return "NotoSansKR"; // unused
-                #endregion
-                #region Chinese Fonts
-                case "azppt regular.ttf": return "AZPPT"; // unused
-                case "hanyisentypagoda regular.ttf": return "HanyiSentyPagoda"; // unused
-                case "notosanstc-variablefont.ttf": return "NotoSansTC"; // unused
-                case "notosanshk-variablefont.ttf": return "NotoSansHK"; // unused
-                case "notosanssc-variablefont.ttf": return "NotoSansSC"; // unused
-                case "yrdzst medium.ttf": return "YRDZST"; // unused
-                #endregion
-                #region Tagalog Fonts
-                case "notosanstagalog-regular.ttf": return "NotoSansTagalog"; // unused
-                case "tagdoc93.ttf": return "TagDoc93"; // unused
-                    #endregion
-            }
-            return _name1;
-        }
+            #region English Fonts
+
+            "about_friend_extended_v2_by_matthewtheprep_ddribq5.otf" => "About Friend",
+            "adamwarrenpro-bold.ttf" => "Adam Warren Pro Bold",
+            "adamwarrenpro-bolditalic.ttf" => "Adam Warren Pro BoldItalic",
+            "adamwarrenpro.ttf" => "Adam Warren Pro",
+            "angsaz.ttf" => "Angsana Z",
+            "arrhythmia-font.ttf" => "Arrhythmia",
+            "arial.ttf" => "Arial", // unused
+            "arialbd.ttf" => "Arial Bold", // unused
+            "arialbi.ttf" => "Arial Bold Italic", // unused
+            "ariali.ttf" => "Arial Italic", // unused
+            "ariblk.ttf" => "Arial Black", // unused
+            "badabb__.ttf" => "BadaBoom BB",
+            "calibri.ttf" => "Calibri", // unused
+            "calibrii.ttf" => "Calibri Italic", // unused
+            "calibril.ttf" => "Calibri Light", // unused
+            "calibrili.ttf" => "Calibri Light Italic", // unused
+            "calibriz.ttf" => "Calibri Bold Italic", // unused
+            "cambria.ttc" => "Cambria", // unused
+            "cambriab.ttf" => "Cambria Bold", // unused
+            "cambriaz.ttf" => "Cambria Bold Italic", // unused
+            "candara.ttf" => "Candara", // unused
+            "candarab.ttf" => "Candara Bold", // unused
+            "candarai.ttf" => "Candara Italic", // unused
+            "candaral.ttf" => "Candara Light", // unused
+            "candarali.ttf" => "Candara Light Italic", // unused
+            "candaraz.ttf" => "Candara Bold Italic", // unused
+            "construction.ttf" => "Construction",
+            "comic.ttf" => "Comic Sans",
+            "comicbd.ttf" => "Comic Sans Bold",
+            "comici.ttf" => "Comic Sans Italic",
+            "comicz.ttf" => "Comic Sans Bold Italic",
+            "ldfcomicsans-jj7l.ttf" => "Comic Sans",
+            "ldfcomicsansbold-zgma.ttf" => "Comic Sans Bold",
+            "ldfcomicsanshairline-5pml.ttf" => "Comic Sans Hairline",
+            "ldfcomicsanslight-6dzo.ttf" => "Comic Sans Light",
+            "dtm-mono.otf" => "Determination Mono",
+            "dtm-sans.otf" => "determination sans",
+            "filedeletion-yw6m5.ttf" => "File Deletion",
+            "flowcircular-regular.ttf" => "Flow Circular",
+            "fredokaone-regular.ttf" => "Fredoka One",
+            "hachicro.ttf" => "Hachicro",
+            "inconsolata-variablefont_wdth,wght.ttf" => "Inconsolata Variable",
+            "impact.ttf" => "Impact", // unused
+            "komikah_.ttf" => "Komika Hand",
+            "komikahb.ttf" => "Komika Hand Bold",
+            "komikask.ttf" => "Komika Slick",
+            "komikasl.ttf" => "Komika Slim",
+            "komikhbi.ttf" => "Komika Hand BoldItalic",
+            "komikhi_.ttf" => "Komika Hand Italic",
+            "komikj__.ttf" => "Komika Jam",
+            "komikji_.ttf" => "Komika Jam Italic",
+            "komikski.ttf" => "Komika Slick Italic",
+            "komiksli.ttf" => "Komika Slim Italic",
+            "bionicle language.ttf" => "Matoran Language 1",
+            "mata nui.ttf" => "Matoran Language 2",
+            "minecraftbold-nmk1.otf" => "Minecraft Text Bold",
+            "minecraftbolditalic-1y1e.otf" => "Minecraft Text BoldItalic",
+            "minecraftitalic-r8mo.otf" => "Minecraft Text Italic",
+            "minecraftregular-bmg3.otf" => "Minecraft Text",
+            "minercraftory.ttf" => "Minecraftory",
+            "micross.ttf" => "Sans Serif", // unused
+            "monsterfriendback.otf" => "Monster Friend Back",
+            "monsterfriendfore.otf" => "Monster Friend Fore",
+            "oxygene1.ttf" => "Oxygene",
+            "piraka theory gf.ttf" => "Piraka Theory",
+            "persons unknown.otf" => "Persons Unknown",
+            "plastiquekingdom.ttf" => "PlastiqueKingdom",
+            "piraka.ttf" => "Piraka",
+            "pusab___.otf" => "Pusab",
+            "rahkshi font.ttf" => "Rahkshi",
+            "revuebt-regular 1.otf" => "Revue 1",
+            "revuebt-regular.otf" => "Revue",
+            "times.ttf" => "Times New Roman", // unused
+            "timesbd.ttf" => "Times New Roman Bold", // unused
+            "timesbi.ttf" => "Times New Roman Bold Italic", // unused
+            "timesi.ttf" => "Times New Roman Italic", // unused
+            "transdings-waoo.ttf" => "Transdings",
+            "nexa bold.otf" => "Nexa Bold",
+            "nexabook.otf" => "Nexa Book",
+            "sans mita aprilia.ttf" => "Sans Sans",
+            "spookyhollow.ttf" => "SpookyHollow",
+            "arcadeclassic.ttf" => "Arcade Classic",
+            "skytree.ttf" => "Skytree",
+            "skytree_mono.ttf" => "Skytree Mono",
+
+            // vg ported
+            "majormonodisplay-regular.ttf" => "MajorMonoDisplay",
+            "poorstory-regular.ttf" => "Poorstory",
+            "hellovetica regular.ttf" => "Hellovetica",
+
+            #endregion
+
+            #region Thai Fonts
+
+            "angsa.ttf" => "Angsana",
+            "angsab.ttf" => "Angsana Bold",
+            "angsai.ttf" => "Angsana Italic",
+            "angsananewbolditalic.ttf" => "Angsana Bold Italic",
+            "krr manga s.otf" => "Manga",
+            "pixellet.ttf" => "Pixellet",
+            "ploypilinfont.ttf" => "Ploypilin",
+
+            #endregion
+
+            #region Russian Fonts
+
+            "18vag rounded m bold.ttf" => "VAG Rounded",
+            "milk(rus by lyajka) regular.ttf" => "LemonMilkRus",
+            "1 nevrouz m regular.ttf" => "Nevrouz",
+            "robotomono-bold.ttf" => "Roboto Mono Bold",
+            "robotomono-italic.ttf" => "Roboto Mono Italic",
+            "robotomono-light.ttf" => "Roboto Mono Light",
+            "robotomono-light_0.ttf" => "Roboto Mono Light 1",
+            "robotomono-lightitalic.ttf" => "Roboto Mono Light Italic",
+            "robotomono-lightitalic_0.ttf" => "Roboto Mono Light Italic 1",
+            "robotomono-thin.ttf" => "Roboto Mono Thin",
+            "robotomono-thin_0.ttf" => "Roboto Mono Thin 1",
+            "robotomono-thinitalic.ttf" => "Roboto Mono Thin Italic",
+            "robotomono-thinitalic_0.ttf" => "Roboto Mono Thin Italic 1",
+
+            #endregion
+
+            #region Japanese Fonts
+
+            "dotgothic16-regular.ttf" => "DotGothic16",
+            "jkg-l_3.ttf" => "Jkg",
+            "monomaniacone-regular.ttf" => "Monomaniac One",
+            "rocknrollone-regular.ttf" => "RocknRoll One",
+            "ronde-b_square.otf" => "Ronde-B",
+            "yokomoji.otf" => "Yokomoji",
+
+            #endregion
+
+            #region Korean Fonts
+
+            "himelody-regular.ttf" => "HiMelody",
+            "jua-regular.ttf" => "Jua",
+            "kiranghaerang-regular.ttf" => "KirangHaerang",
+            "notosanskr-variablefont_wght.ttf" => "NotoSansKR",
+
+            #endregion
+
+            #region Chinese Fonts
+
+            "azppt regular.ttf" => "AZPPT",
+            "hanyisentypagoda regular.ttf" => "HanyiSentyPagoda",
+            "notosanstc-variablefont.ttf" => "NotoSansTC",
+            "notosanshk-variablefont.ttf" => "NotoSansHK",
+            "notosanssc-variablefont.ttf" => "NotoSansSC",
+            "yrdzst medium.ttf" => "YRDZST",
+
+            #endregion
+
+            #region Tagalog Fonts
+
+            "notosanstagalog-regular.ttf" => "NotoSansTagalog", // unused
+            "tagdoc93.ttf" => "TagDoc93", // unused
+
+            #endregion
+
+            _ => name,
+        };
     }
 }
