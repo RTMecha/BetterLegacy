@@ -159,6 +159,26 @@ namespace BetterLegacy.Editor.Managers
 
         #region Methods
 
+        public void ApplyAnimationsToSelected(List<PAAnimation> animations)
+        {
+            foreach (var animation in animations)
+                ApplyAnimationToSelected(animation, false);
+            RTLevel.Current.RecacheAllSequences();
+        }
+
+        public void ApplyAnimationToSelected(PAAnimation animation, bool update)
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedBeatmapObjects)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                if (beatmapObject.animID == animation.ReferenceID)
+                    beatmapObject.CopyAnimatableData(animation);
+            }
+
+            if (update)
+                RTLevel.Current.RecacheAllSequences();
+        }
+
         #region Editor
 
         /// <summary>
@@ -425,6 +445,7 @@ namespace BetterLegacy.Editor.Managers
                                 }
 
                                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                animation.ReferenceID = beatmapObject.animID;
                                 animation.CopyAnimatableData(beatmapObject);
                                 if (Dialog.IsCurrent && Dialog.Timeline.CurrentObject == animation)
                                     RenderDialog(animation, onReturn);

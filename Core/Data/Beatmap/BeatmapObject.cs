@@ -545,6 +545,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         #region Editor
 
         /// <summary>
+        /// Reference ID for animations.
+        /// </summary>
+        public string animID;
+
+        /// <summary>
         /// Data for the object in the editor.
         /// </summary>
         public ObjectEditorData editorData = new ObjectEditorData();
@@ -607,6 +612,8 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             this.CopyParentData(orig);
             Parent = orig.parent;
+
+            animID = orig.animID;
 
             renderLayerType = orig.renderLayerType;
             opacityCollision = orig.opacityCollision;
@@ -1161,6 +1168,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["o"] != null)
                 origin = jn["o"].AsVector2();
 
+            if (jn["anim_id"] != null)
+                animID = jn["anim_id"];
+
             if (jn["ed"] != null)
                 editorData = ObjectEditorData.Parse(jn["ed"]);
 
@@ -1336,6 +1346,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             if (!string.IsNullOrEmpty(name))
                 jn["name"] = name;
+
+            if (!string.IsNullOrEmpty(animID))
+                jn["anim_id"] = animID;
 
             jn["ot"] = (int)objectType;
             jn["akt"] = (int)autoKillType;
