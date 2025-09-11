@@ -151,18 +151,7 @@ namespace BetterLegacy.Editor.Data.Popups
             EditorThemeManager.AddScrollbar(ContentScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
             EditorThemeManager.AddInputField(SearchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
-            if (TopPanel)
-            {
-                var topElements = Creator.NewUIObject("elements", TopPanel);
-                TopElements = topElements.transform.AsRT();
-                new RectValues(Vector2.zero, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.one, new Vector2(0f, 32f)).AssignToRectTransform(TopElements);
-                var topElementsLayout = topElements.AddComponent<HorizontalLayoutGroup>();
-                topElementsLayout.childControlHeight = true;
-                topElementsLayout.childControlWidth = false;
-                topElementsLayout.childForceExpandHeight = true;
-                topElementsLayout.childForceExpandWidth = false;
-                topElementsLayout.spacing = 2f;
-            }
+            InitTopElementsParent();
 
             Render();
         }
@@ -284,11 +273,32 @@ namespace BetterLegacy.Editor.Data.Popups
             return storage;
         }
 
+        public void InitTopElementsParent()
+        {
+            if (!TopPanel)
+                return;
+
+            var topElements = Creator.NewUIObject("elements", TopPanel);
+            TopElements = topElements.transform.AsRT();
+            new RectValues(Vector2.zero, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.one, new Vector2(0f, 32f)).AssignToRectTransform(TopElements);
+            var topElementsLayout = topElements.AddComponent<HorizontalLayoutGroup>();
+            topElementsLayout.childControlHeight = true;
+            topElementsLayout.childControlWidth = false;
+            topElementsLayout.childForceExpandHeight = true;
+            topElementsLayout.childForceExpandWidth = false;
+            topElementsLayout.spacing = 2f;
+        }
+
         /// <summary>
         /// Initializes the path field.
         /// </summary>
         public void InitPath()
         {
+            if (!TopElements)
+                InitTopElementsParent();
+            if (!TopElements)
+                return;
+
             var path = EditorPrefabHolder.Instance.DefaultInputField.Duplicate(TopElements, "editor path");
             path.transform.AsRT().sizeDelta = new Vector2(104f, 32f);
 
@@ -305,6 +315,11 @@ namespace BetterLegacy.Editor.Data.Popups
         /// </summary>
         public void InitReload()
         {
+            if (!TopElements)
+                InitTopElementsParent();
+            if (!TopElements)
+                return;
+
             var reload = EditorPrefabHolder.Instance.SpriteButton.Duplicate(TopElements, "reload");
             reload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
@@ -327,6 +342,11 @@ namespace BetterLegacy.Editor.Data.Popups
         /// </summary>
         public void InitPageField()
         {
+            if (!TopElements)
+                InitTopElementsParent();
+            if (!TopElements)
+                return;
+
             var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(TopElements, "page");
             page.GetComponent<HorizontalLayoutGroup>().spacing = 4f;
             page.transform.AsRT().sizeDelta = new Vector2(144f, 32f);
