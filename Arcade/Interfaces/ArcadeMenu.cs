@@ -73,6 +73,8 @@ namespace BetterLegacy.Arcade.Interfaces
             "", // Steam
         };
 
+        MenuInputField pageField;
+
         public ArcadeMenu() : base()
         {
             InterfaceManager.inst.CurrentInterface = this;
@@ -260,7 +262,7 @@ namespace BetterLegacy.Arcade.Interfaces
                         };
                         elements.Add(ascendButton);
 
-                        var pageField = new MenuInputField
+                        pageField = new MenuInputField
                         {
                             id = "842848",
                             name = "Page Bar",
@@ -399,7 +401,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             name = "Search Bar",
                             parentLayout = "online settings",
                             //rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 350f).SizeDelta(-126f, 64f),
-                            rect = RectValues.Default.SizeDelta(1000, 64f),
+                            rect = RectValues.Default.SizeDelta(400, 64f),
                             text = currentSearch,
                             valueChangedFunc = SearchOnlineLevels,
                             placeholder = "Search levels...",
@@ -420,7 +422,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             parentLayout = "online settings",
                             selectionPosition = new Vector2Int(0, 1),
                             rect = RectValues.Default.SizeDelta(200f, 64f),
-                            func = RefreshOnlineLevels().Start,
+                            func = () => CoroutineHelper.StartCoroutine(RefreshOnlineLevels()),
                             color = 6,
                             opacity = 0.1f,
                             textColor = 6,
@@ -431,11 +433,13 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
+                        var subTab = SubTab.GetValueOrDefault(Tab.Online, 0);
+
                         elements.Add(new MenuButton
                         {
                             id = "25428852",
                             name = "Search Button",
-                            text = $"<align=center><b>[ {(SubTab.GetValueOrDefault(Tab.Online, 0) == 0 ? "COLLECTIONS" : "LEVELS")} ]",
+                            text = $"<align=center><b>[ {(subTab == 0 ? "COLLECTIONS" : "LEVELS")} ]",
                             parentLayout = "online settings",
                             selectionPosition = new Vector2Int(1, 1),
                             rect = RectValues.Default.SizeDelta(300f, 64f),
@@ -457,13 +461,159 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
+                        var sortButton = new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Sort Button",
+                            text = $"<align=center><b>[ SORT: {(subTab == 0 ? ArcadeConfig.Instance.OnlineLevelOrderby.Value : ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value)} ]",
+                            parentLayout = "online settings",
+                            selectionPosition = new Vector2Int(2, 1),
+                            rect = RectValues.Default.SizeDelta(400f, 64f),
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        };
+                        sortButton.func = () =>
+                        {
+                            switch (subTab)
+                            {
+                                case 0: {
+                                        var num = (int)ArcadeConfig.Instance.OnlineLevelOrderby.Value;
+                                        num++;
+                                        if (num >= Enum.GetNames(typeof(OnlineLevelSort)).Length)
+                                            num = 0;
+                                        ArcadeConfig.Instance.OnlineLevelOrderby.Value = (OnlineLevelSort)num;
+                                        sortButton.text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.OnlineLevelOrderby.Value} ]";
+                                        if (sortButton.textUI)
+                                        {
+                                            sortButton.textUI.maxVisibleCharacters = 9999;
+                                            sortButton.textUI.text = sortButton.text;
+                                        }
+                                        break;
+                                    }
+                                case 1: {
+                                        var num = (int)ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value;
+                                        num++;
+                                        if (num >= Enum.GetNames(typeof(OnlineLevelCollectionSort)).Length)
+                                            num = 0;
+                                        ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value = (OnlineLevelCollectionSort)num;
+                                        sortButton.text = $"<align=center><b>[ SORT: {ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value} ]";
+                                        if (sortButton.textUI)
+                                        {
+                                            sortButton.textUI.maxVisibleCharacters = 9999;
+                                            sortButton.textUI.text = sortButton.text;
+                                        }
+                                        break;
+                                    }
+                            }
+
+                            if (ArcadeConfig.Instance.AutoSearch.Value)
+                                CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
+                        };
+                        elements.Add(sortButton);
+
+                        var ascendButton = new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Sort Button",
+                            text = $"<align=center><b><rotate={((subTab == 0 ? ArcadeConfig.Instance.OnlineLevelAscend.Value : ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value) ? "90" : "-90")}>>",
+                            parentLayout = "online settings",
+                            selectionPosition = new Vector2Int(3, 1),
+                            rect = RectValues.Default.SizeDelta(64f, 64f),
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        };
+                        ascendButton.func = () =>
+                        {
+                            switch (subTab)
+                            {
+                                case 0: {
+                                        ArcadeConfig.Instance.OnlineLevelAscend.Value = !ArcadeConfig.Instance.OnlineLevelAscend.Value;
+                                        ascendButton.text = $"<align=center><b><rotate={(ArcadeConfig.Instance.OnlineLevelAscend.Value ? "90" : "-90")}>>";
+                                        break;
+                                    }
+                                case 1: {
+                                        ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value = !ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value;
+                                        ascendButton.text = $"<align=center><b><rotate={(ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value ? "90" : "-90")}>>";
+                                        break;
+                                    }
+                            }
+
+                            if (ascendButton.textUI)
+                            {
+                                ascendButton.textUI.maxVisibleCharacters = 9999;
+                                ascendButton.textUI.text = ascendButton.text;
+                            }
+
+                            if (ArcadeConfig.Instance.AutoSearch.Value)
+                                CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
+                        };
+                        elements.Add(ascendButton);
+
+                        pageField = new MenuInputField
+                        {
+                            id = "842848",
+                            name = "Page Bar",
+                            parentLayout = "online settings",
+                            rect = RectValues.Default.SizeDelta(132f, 64f),
+                            text = currentPage.ToString(),
+                            textAnchor = TextAnchor.MiddleCenter,
+                            valueChangedFunc = _val => SetOnlineLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            placeholder = "Set page...",
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            placeholderColor = 6,
+                            length = 0.1f,
+                            wait = false,
+                            regenerate = false,
+                        };
+                        pageField.triggers = new EventTrigger.Entry[]
+                        {
+                            TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                            {
+                                var pointerEventData = (PointerEventData)eventData;
+
+                                var inputField = pageField.inputField;
+                                if (!inputField)
+                                    return;
+
+                                if (int.TryParse(inputField.text, out int result))
+                                {
+                                    bool large = Input.GetKey(KeyCode.LeftControl);
+
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        result -= 1 * (large ? 10 : 1);
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        result += 1 * (large ? 10 : 1);
+
+                                    if (inputField.text != result.ToString())
+                                    {
+                                        inputField.text = result.ToString();
+                                        SoundManager.inst.PlaySound(DefaultSounds.menuflip);
+                                    }
+                                }
+                            }),
+                        };
+
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "online settings",
-                            selectionPosition = new Vector2Int(2, 1),
+                            selectionPosition = new Vector2Int(4, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -482,13 +632,15 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
+                        elements.Add(pageField);
+
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "online settings",
-                            selectionPosition = new Vector2Int(3, 1),
+                            selectionPosition = new Vector2Int(5, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () => SetOnlineLevelsPage(Pages[(int)CurrentTab] + 1),
                             color = 6,
@@ -541,7 +693,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
-                        var pageField = new MenuInputField
+                        pageField = new MenuInputField
                         {
                             id = "842848",
                             name = "Page Bar",
@@ -792,7 +944,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             regenerate = false,
                         });
 
-                        var pageField = new MenuInputField
+                        pageField = new MenuInputField
                         {
                             id = "842848",
                             name = "Page Bar",
@@ -1090,7 +1242,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             elements.Add(ascendButton);
                         }
 
-                        var pageField = new MenuInputField
+                        pageField = new MenuInputField
                         {
                             id = "842848",
                             name = "Page Bar",
@@ -1322,6 +1474,8 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             Searches[0] = search;
             Pages[0] = 0;
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify("0");
 
             RefreshLocalLevels(true);
         }
@@ -1751,13 +1905,20 @@ namespace BetterLegacy.Arcade.Interfaces
         public void SetOnlineLevelsPage(int page)
         {
             Pages[1] = page;
-            CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
+
+            if (ArcadeConfig.Instance.AutoSearch.Value)
+                CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
         }
 
         public void SearchOnlineLevels(string search)
         {
             Searches[1] = search;
             Pages[1] = 0;
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify("0");
+
+            if (ArcadeConfig.Instance.AutoSearch.Value)
+                CoroutineHelper.StartCoroutine(RefreshOnlineLevels());
         }
 
         void ClearOnlineLevelButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty");
@@ -1775,8 +1936,10 @@ namespace BetterLegacy.Arcade.Interfaces
             int currentPage = page + 1;
 
             var search = OnlineSearch;
+            var sort = currentTab == 0 ? (int)ArcadeConfig.Instance.OnlineLevelOrderby.Value : (int)ArcadeConfig.Instance.OnlineLevelCollectionOrderby.Value;
+            var ascend = currentTab == 0 ? ArcadeConfig.Instance.OnlineLevelAscend.Value : ArcadeConfig.Instance.OnlineLevelCollectionAscend.Value;
 
-            string query = AlephNetwork.BuildQuery(currentTab == 0 ? AlephNetwork.LevelSearchURL : AlephNetwork.LevelCollectionSearchURL, search, page, OnlineSort, OnlineAscend);
+            string query = AlephNetwork.BuildQuery(currentTab == 0 ? AlephNetwork.LevelSearchURL : AlephNetwork.LevelCollectionSearchURL, search, page, sort, ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1890,12 +2053,11 @@ namespace BetterLegacy.Arcade.Interfaces
                 {
                     CoreHelper.LogException(ex);
                 }
+                loadingOnlineLevels = false;
             }, headers));
 
             loadingOnlineLevels = false;
             StartGeneration();
-            while (generating)
-                yield return null;
         }
 
         public bool loadingOnlineLevels;
@@ -1923,16 +2085,9 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             Searches[2] = search;
             Pages[2] = 0;
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify("0");
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
             RefreshBrowserLevels(true);
         }
 
@@ -1940,20 +2095,15 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             Pages[2] = Mathf.Clamp(page, 0, BrowserPageCount);
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
             RefreshBrowserLevels(true);
         }
 
+        void ClearBrowserButtons() => ClearElements(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+
         public void RefreshBrowserLevels(bool regenerateUI)
         {
+            ClearBrowserButtons();
+
             var currentPage = Pages[(int)CurrentTab] + 1;
             int max = currentPage * (MAX_LEVELS_PER_PAGE - 1);
             var currentSearch = Searches[(int)CurrentTab];
@@ -2182,6 +2332,9 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             Searches[3] = search;
             Pages[3] = 0;
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify("0");
+
             RefreshQueueLevels(true);
         }
 
@@ -2450,6 +2603,8 @@ namespace BetterLegacy.Arcade.Interfaces
         {
             Searches[4] = search;
             Pages[4] = 0;
+            if (pageField && pageField.inputField)
+                pageField.inputField.SetTextWithoutNotify("0");
 
             RefreshSubscribedSteamLevels(true, true);
         }

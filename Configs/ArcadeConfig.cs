@@ -116,6 +116,11 @@ namespace BetterLegacy.Configs
         #region Sorting
 
         /// <summary>
+        /// If searching should automatically run when sort, ascend, etc is changed.
+        /// </summary>
+        public Setting<bool> AutoSearch { get; set; }
+
+        /// <summary>
         /// How the level list is ordered.
         /// </summary>
         public Setting<LevelSort> LocalLevelOrderby { get; set; }
@@ -124,6 +129,26 @@ namespace BetterLegacy.Configs
         /// If the level order should be up or down.
         /// </summary>
         public Setting<bool> LocalLevelAscend { get; set; }
+
+        /// <summary>
+        /// How the online level list is ordered.
+        /// </summary>
+        public Setting<OnlineLevelSort> OnlineLevelOrderby { get; set; }
+
+        /// <summary>
+        /// If the online level order should be up or down.
+        /// </summary>
+        public Setting<bool> OnlineLevelAscend { get; set; }
+
+        /// <summary>
+        /// How the online level collection list is ordered.
+        /// </summary>
+        public Setting<OnlineLevelCollectionSort> OnlineLevelCollectionOrderby { get; set; }
+
+        /// <summary>
+        /// If the online level collection order should be up or down.
+        /// </summary>
+        public Setting<bool> OnlineLevelCollectionAscend { get; set; }
 
         /// <summary>
         /// How the Steam level list is ordered.
@@ -194,8 +219,16 @@ namespace BetterLegacy.Configs
 
             #region Sorting
 
+            AutoSearch = Bind(this, SORTING, "Auto Search", true, "If searching should automatically run when sort, ascend, etc is changed.");
+
             LocalLevelOrderby = BindEnum(this, SORTING, "Local Orderby", LevelSort.Cover, "How the level list is ordered.");
             LocalLevelAscend = Bind(this, SORTING, "Local Ascend", true, "If the level order should be up or down.");
+
+            OnlineLevelOrderby = BindEnum(this, SORTING, "Online Level Orderby", OnlineLevelSort.DatePublished, "How the online level list is ordered.");
+            OnlineLevelAscend = Bind(this, SORTING, "Online Level Ascend", true, "If the online level order should be up or down.");
+
+            OnlineLevelCollectionOrderby = BindEnum(this, SORTING, "Online Level Collection Orderby", OnlineLevelCollectionSort.DatePublished, "How the online level collection list is ordered.");
+            OnlineLevelCollectionAscend = Bind(this, SORTING, "Online Level Collection Ascend", true, "If the online level collection order should be up or down.");
 
             SteamLevelOrderby = BindEnum(this, SORTING, "Steam Orderby", LevelSort.Cover, "How the Steam level list is ordered.");
             SteamLevelAscend = Bind(this, SORTING, "Steam Ascend", true, "If the Steam level order should be up or down.");

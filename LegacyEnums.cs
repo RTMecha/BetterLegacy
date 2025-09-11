@@ -1422,6 +1422,8 @@ namespace BetterLegacy
         #endregion
     }
 
+    #region Sort
+
     /// <summary>
     /// How the Steam Workshop Query should be sorted.
     /// </summary>
@@ -1455,6 +1457,37 @@ namespace BetterLegacy
         DatePublished,
         Ranking,
     }
+
+    public enum OnlineLevelSort
+    {
+        Default,
+        Name,
+        SongTitle,
+        Difficulty,
+        Creator,
+        SongArtist,
+        DatePublished,
+    }
+    
+    public enum OnlineLevelCollectionSort
+    {
+        Default,
+        Name,
+        Difficulty,
+        Creator,
+        DatePublished,
+    }
+    
+    public enum OnlinePrefabSort
+    {
+        Default,
+        Name,
+        Creator,
+        TypeID,
+        DatePublished,
+    }
+
+    #endregion
 
     /// <summary>
     /// Game speed / pitch setting.
