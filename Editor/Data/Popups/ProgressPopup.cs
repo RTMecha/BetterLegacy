@@ -76,7 +76,7 @@ namespace BetterLegacy.Editor.Data.Popups
 
         public void UpdateProgress(float value)
         {
-            ProgressBar.sizeDelta = new Vector2(RTMath.Clamp(value * 300f, 0f, 300f), 32f);
+            ProgressBar.sizeDelta = new Vector2(RTMath.Clamp(value * 600f, 0f, 300f), 32f);
         }
 
         public override void Render()
