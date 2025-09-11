@@ -3,6 +3,11 @@
 ### Core
 - callModifierBlock modifiers now check for modifier blocks in the objects' associated Prefab. Good for per-Prefab functions.
 - Fully implemented Level Collections, item collaborating and Prefabs to the Arcade server.
+- Server now has support for date published values. Levels uploaded before this update will not have this value, and as such won't be sorted.
+
+### Arcade
+- Added viewing online Level Collections to the Arcade menu.
+- Online tab now has sort settings.
 
 ### Editor
 - Added "Snap Created" in Config Manager > Editor > BPM. This forces new objects to snap to the BPM.
