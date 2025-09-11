@@ -4,6 +4,7 @@
 - callModifierBlock modifiers now check for modifier blocks in the objects' associated Prefab. Good for per-Prefab functions.
 - Fully implemented Level Collections, item collaborating and Prefabs to the Arcade server.
 - Server now has support for date published values. Levels uploaded before this update will not have this value, and as such won't be sorted.
+- Added a bunch of fonts.
 
 ### Arcade
 - Added viewing online Level Collections to the Arcade menu.
