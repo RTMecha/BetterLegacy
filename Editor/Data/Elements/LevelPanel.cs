@@ -528,11 +528,11 @@ namespace BetterLegacy.Editor.Data.Elements
                 }
 
                 var selectedLevels = EditorLevelManager.inst.SelectedLevels;
+                var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
 
                 if (eventData.button == PointerEventData.InputButton.Right)
                 {
                     var list = new List<ButtonFunction>();
-                    var currentLevelCollection = EditorLevelManager.inst.CurrentLevelCollection ?? EditorLevelManager.inst.OpenLevelCollection;
 
                     if (!selectedLevels.IsEmpty())
                     {
@@ -746,12 +746,15 @@ namespace BetterLegacy.Editor.Data.Elements
                     return;
                 }
 
+                if (currentLevelCollection && Info)
+                {
+                    EditorLevelManager.inst.OpenLevelInfoEditor(Info);
+                    return;
+                }
+
                 if (!Item)
                 {
-                    if (Info)
-                        EditorLevelManager.inst.OpenLevelInfoEditor(Info);
-                    else
-                        EditorManager.inst.DisplayNotification($"No level was found.", 2f, EditorManager.NotificationType.Error);
+                    EditorManager.inst.DisplayNotification($"No level was found.", 2f, EditorManager.NotificationType.Error);
                     return;
                 }
 

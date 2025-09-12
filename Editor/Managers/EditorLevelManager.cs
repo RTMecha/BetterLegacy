@@ -437,6 +437,7 @@ namespace BetterLegacy.Editor.Managers
                     else
                     {
                         levelInfo.level = level;
+                        level.collectionInfo = levelInfo;
                         currentLevelCollection.levels.Add(level);
 
                         var levelPanel = new LevelPanel();
