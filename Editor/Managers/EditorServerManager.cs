@@ -1286,7 +1286,11 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelDownloadURL}{id}.zip", bytes =>
+            if (!RTEditor.inst.ProgressPopup.IsOpen)
+                RTEditor.inst.ProgressPopup.Open();
+            RTEditor.inst.ProgressPopup.Text = "Downloading level, please wait...";
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelDownloadURL}{id}.zip", RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
             {
                 RTFile.DeleteDirectory(directory);
                 Directory.CreateDirectory(directory);
@@ -1485,7 +1489,11 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionDownloadURL}{id}.zip", bytes =>
+            if (!RTEditor.inst.ProgressPopup.IsOpen)
+                RTEditor.inst.ProgressPopup.Open();
+            RTEditor.inst.ProgressPopup.Text = "Downloading level collection, please wait...";
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionDownloadURL}{id}.zip", RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
             {
                 RTFile.DeleteDirectory(directory);
                 Directory.CreateDirectory(directory);
@@ -1604,7 +1612,7 @@ namespace BetterLegacy.Editor.Managers
                         type.transform.AsRT().anchoredPosition = new Vector2(-300f, 32f);
                         type.transform.AsRT().sizeDelta = new Vector2(100f, 100f);
                         EditorThemeManager.ApplyGraphic(typeImage, ThemeGroup.Null, true);
-                        typeImage.color = RTColors.HexToColor(typeColor.ToString(RTColors.X2));
+                        typeImage.color = RTColors.HexToColor(typeColor.ToString(RTColors.X6));
 
                         var iconBase = Creator.NewUIObject("icon base", type.transform);
                         var iconBaseImage = iconBase.AddComponent<Image>();
@@ -1694,7 +1702,11 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp", bytes =>
+            if (!RTEditor.inst.ProgressPopup.IsOpen)
+                RTEditor.inst.ProgressPopup.Open();
+            RTEditor.inst.ProgressPopup.Text = "Downloading prefab, please wait...";
+
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}.lsp", RTEditor.inst.ProgressPopup.UpdateProgress, bytes =>
             {
                 DownloadPrefabType(id, name, bytes, source);
                 onDownload?.Invoke();
@@ -1715,7 +1727,7 @@ namespace BetterLegacy.Editor.Managers
         public void DownloadPrefabType(string id, string name, byte[] bytes, ObjectSource source = ObjectSource.External)
         {
             // if the user does not have the Prefab's Prefab Type locally, download it off the server.
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt", typeBytes =>
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabDownloadURL}{id}_type.lspt", RTEditor.inst.ProgressPopup.UpdateProgress, typeBytes =>
             {
                 var tempFilePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"{id}.lspt");
                 File.WriteAllBytes(tempFilePath, typeBytes);
