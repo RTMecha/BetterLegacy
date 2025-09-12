@@ -19,6 +19,10 @@ namespace BetterLegacy.Core
         /// Hex ToString format.
         /// </summary>
         public const string X2 = "X2";
+        /// <summary>
+        /// Hex ToString format.
+        /// </summary>
+        public const string X6 = "X6";
 
         public const string WHITE_HEX_CODE = "FFFFFF";
         public const string BLACK_HEX_CODE = "000000";
