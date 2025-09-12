@@ -344,7 +344,7 @@ namespace BetterLegacy.Arcade.Interfaces
 
         public static List<Level> Levels { get; set; }
         public static int LocalLevelPageCount => LocalLevels.Count / ArcadeMenu.MAX_LEVELS_PER_PAGE;
-        public static List<Level> LocalLevels => Levels.FindAll(level =>
+        public static List<Level> LocalLevels => Levels.FindAll(level => !level ||
             RTString.SearchString(Search,
                 new SearchMatcher(level.id, SearchMatchType.Exact),
                 new SearchListMatcher(level.metadata.tags),

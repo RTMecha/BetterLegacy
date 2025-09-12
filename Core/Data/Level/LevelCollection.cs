@@ -62,7 +62,7 @@ namespace BetterLegacy.Core.Data.Level
                 if (levelInformation.InRange(this.entryLevelIndex))
                     return this.entryLevelIndex;
 
-                int entryLevelIndex = levels.FindIndex(x => x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.saveData && x.saveData.Unlocked));
+                int entryLevelIndex = levels.FindIndex(x => x && x.metadata != null && x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.saveData && x.saveData.Unlocked));
 
                 if (entryLevelIndex < 0)
                     entryLevelIndex = 0;
@@ -665,7 +665,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <param name="level">Level to add.</param>
         public void AddLevel(Level level)
         {
-            if (!levels.IsEmpty() && levels.Any(x => x.id == level.id)) // don't want to have duplicate levels
+            if (!levels.IsEmpty() && levels.Any(x => x && x.id == level.id)) // don't want to have duplicate levels
                 return;
 
             var actualLevel = new Level(level.path);
@@ -790,7 +790,7 @@ namespace BetterLegacy.Core.Data.Level
         /// <returns>Returns the rank.</returns>
         public Rank GetRank()
         {
-            var hits = 0;
+            var hits = -1;
             for (int i = 0; i < levelInformation.Count; i++)
             {
                 var levelInfo = levelInformation[i];
@@ -798,7 +798,12 @@ namespace BetterLegacy.Core.Data.Level
                 var saveData = LevelManager.GetSaveData(levelInfo.id);
                 var levelHits = saveData?.Hits ?? -1;
                 if (levelHits > 0)
+                {
+                    if (hits < -1)
+                        hits = 0;
+
                     hits += levelHits;
+                }
             }
             return LevelManager.GetLevelRank(hits);
         }
