@@ -3111,7 +3111,7 @@ namespace BetterLegacy.Core.Components.Player
             Assign(boost, currentModel.boostPart, true);
             Assign(boostTail, currentModel.boostTailPart);
 
-            int initialHealthCount = Core ? this.initialHealthCount : currentModel.basePart.health;
+            int initialHealthCount = Mathf.Clamp(Core ? this.initialHealthCount : currentModel.basePart.health, 3, int.MaxValue);
 
             while (tailParts.Count > initialHealthCount)
             {
