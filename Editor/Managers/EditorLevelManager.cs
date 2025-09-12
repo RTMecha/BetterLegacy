@@ -962,6 +962,10 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(SavePlayers());
             RTEditor.inst.SaveSettings();
 
+            var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
+            if (currentLevelCollection)
+                currentLevelCollection.Save();
+
             return;
         }
 
