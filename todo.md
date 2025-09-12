@@ -53,6 +53,8 @@ Next: 1.8.0 pre-release test and release
   - Tracks can be loaded / unloaded via modifiers.
 - Metadata controller config that can be used via modifiers.
 - End level music via custom audio source.
+- Backup arcade and story savedata onto the server.
+- Way to download all levels in Level Collection.
 
 ### Story
 - Chapter 1.  
@@ -162,6 +164,7 @@ Next: 1.8.0 pre-release test and release
 ### Fixes
 - Fix 1 life restart bug
 - Fix checkpoint sound duplication
+- Fix levels not progressing correctly in Level Collections.
 
 
 ## Ideas
