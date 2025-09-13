@@ -418,8 +418,7 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(inputFieldStorage.leftButton.gameObject);
                 Destroy(inputFieldStorage.rightGreaterButton.gameObject);
 
-                inputFieldStorage.middleButton.onClick.ClearAll();
-                inputFieldStorage.middleButton.onClick.AddListener(() =>
+                inputFieldStorage.middleButton.onClick.NewListener(() =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
@@ -443,8 +442,7 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.rightButton.transform.AsRT().anchoredPosition = new Vector2(339f, 0f);
                 inputFieldStorage.rightButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
-                inputFieldStorage.rightButton.onClick.ClearAll();
-                inputFieldStorage.rightButton.onClick.AddListener(() =>
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                     {
@@ -478,22 +476,15 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(inputFieldStorage.inputField);
 
-                Destroy(inputFieldStorage.leftGreaterButton.gameObject);
-                Destroy(inputFieldStorage.leftButton.gameObject);
-                Destroy(inputFieldStorage.middleButton.gameObject);
-                Destroy(inputFieldStorage.rightGreaterButton.gameObject);
+                CoreHelper.Delete(inputFieldStorage.leftGreaterButton);
+                CoreHelper.Delete(inputFieldStorage.leftButton);
+                CoreHelper.Delete(inputFieldStorage.middleButton);
+                CoreHelper.Delete(inputFieldStorage.rightButton);
+                CoreHelper.Delete(inputFieldStorage.rightGreaterButton);
 
-                inputFieldStorage.rightButton.name = "+";
-
-                inputFieldStorage.rightButton.image.sprite = EditorSprites.AddSprite;
-
-                var mtnLeftLE = inputFieldStorage.rightButton.gameObject.AddComponent<LayoutElement>();
-                mtnLeftLE.ignoreLayout = true;
-
-                inputFieldStorage.rightButton.transform.AsRT().anchoredPosition = new Vector2(339f, 0f);
-                inputFieldStorage.rightButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                inputFieldStorage.addButton.gameObject.SetActive(true);
+                inputFieldStorage.addButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+                inputFieldStorage.addButton.onClick.NewListener(() =>
                 {
                     var tag = inputFieldStorage.inputField.text;
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
@@ -522,7 +513,34 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(inputFieldStorage.addButton, ThemeGroup.Function_2, false);
+                
+                inputFieldStorage.subButton.gameObject.SetActive(true);
+                inputFieldStorage.subButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+                inputFieldStorage.subButton.onClick.NewListener(() =>
+                {
+                    var tag = inputFieldStorage.inputField.text;
+                    foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+                    {
+                        switch (timelineObject.TimelineReference)
+                        {
+                            case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                                    timelineObject.GetData<BeatmapObject>().tags.Remove(tag);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.PrefabObject: {
+                                    timelineObject.GetData<PrefabObject>().tags.Remove(tag);
+                                    break;
+                                }
+                            case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                                    timelineObject.GetData<BackgroundObject>().tags.Remove(tag);
+                                    break;
+                                }
+                        }
+                    }
+                });
+
+                EditorThemeManager.AddSelectable(inputFieldStorage.subButton, ThemeGroup.Function_2, false);
 
                 EditorHelper.SetComplexity(labels, Complexity.Advanced);
                 EditorHelper.SetComplexity(multiNameSet, Complexity.Advanced);
