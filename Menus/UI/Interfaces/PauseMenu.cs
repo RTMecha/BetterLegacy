@@ -61,6 +61,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 val = -999f,
                 opacity = 0.7f,
                 length = 0f,
+                wait = false,
             });
 
             elements.Add(new MenuText

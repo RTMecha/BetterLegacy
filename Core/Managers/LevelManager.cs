@@ -802,7 +802,7 @@ namespace BetterLegacy.Core.Managers
                 currentLevel.saveData.Update(RTBeatmap.Current.deaths.Count, RTBeatmap.Current.hits.Count, RTBeatmap.Current.boosts.Count, true);
             }
 
-            if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion && (currentLevel.metadata.song.DifficultyType == DifficultyType.Animation || !RTBeatmap.Current.challengeMode.Invincible))
+            if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion)
                 currentLevel.saveData.Unlocked = true;
 
             if (Saves.TryFindIndex(x => x.ID == currentLevel.id, out int saveIndex))

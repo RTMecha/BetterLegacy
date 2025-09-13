@@ -24,6 +24,20 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     wait = false,
                 });
 
+            if (CoreHelper.InGame)
+                elements.Add(new MenuImage
+                {
+                    id = "35255236785",
+                    name = "Background",
+                    siblingIndex = 0,
+                    rect = RectValues.FullAnchored,
+                    color = 0,
+                    val = -999f,
+                    opacity = 0.7f,
+                    length = 0f,
+                    wait = false,
+                });
+
             elements.Add(new MenuText
             {
                 id = "0",
@@ -31,7 +45,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 text = $"<align=center>{currentMessage}",
                 rect = RectValues.Default,
                 hideBG = true,
-                textColor = 6,
+                color = 0,
+                opacity = 1f,
+                val = CoreHelper.InGame ? 40f : 0f,
+                textColor = CoreHelper.InGame ? 0 : 6,
+                textVal = CoreHelper.InGame ? 40f : 0f,
             });
 
             elements.Add(new MenuImage
@@ -39,8 +57,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 id = "1",
                 name = "progress base",
                 rect = RectValues.Default.AnchoredPosition(0f, -100f).SizeDelta(900f, 64f),
-                color = 6,
+                color = CoreHelper.InGame ? 0 : 6,
                 opacity = 0.1f,
+                val = CoreHelper.InGame ? 40f : 0f,
                 length = 0f,
                 wait = false,
             });
@@ -50,8 +69,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 name = "progress",
                 parent = "1",
                 rect = RectValues.Default.AnchorMax(0f, 0.5f).AnchorMin(0f, 0.5f).Pivot(0f, 0.5f).SizeDelta(0f, 64f),
-                color = 6,
+                color = CoreHelper.InGame ? 0 : 6,
                 opacity = 1f,
+                val = CoreHelper.InGame ? 40f : 0f,
                 length = 0f,
                 wait = false,
             };
