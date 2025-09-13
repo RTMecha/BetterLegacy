@@ -1,7 +1,8 @@
-﻿using LSFunctions;
+﻿using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Core.Data.Level
@@ -56,6 +57,10 @@ namespace BetterLegacy.Core.Data.Level
         public string editorPath = string.Empty;
 
         /// <summary>
+        /// Artist of the song the level uses.
+        /// </summary>
+        public string songArtist = string.Empty;
+        /// <summary>
         /// Title of the song the level uses.
         /// </summary>
         public string songTitle = string.Empty;
@@ -67,6 +72,19 @@ namespace BetterLegacy.Core.Data.Level
         /// Creator of the level.
         /// </summary>
         public string creator = string.Empty;
+        /// <summary>
+        /// Difficulty of the level.
+        /// </summary>
+        public int difficulty = 0;
+        /// <summary>
+        /// Difficulty of the level.
+        /// </summary>
+        public DifficultyType DifficultyType { get => difficulty; set => difficulty = value; }
+
+        /// <summary>
+        /// Icon of the level to display if the level does not exist.
+        /// </summary>
+        public Sprite icon;
 
         /// <summary>
         /// Arcade ID reference.
@@ -160,18 +178,20 @@ namespace BetterLegacy.Core.Data.Level
         public static LevelInfo Parse(JSONNode jn, int index) => new LevelInfo
         {
             index = index,
-            id = jn["id"] ?? PAObjectBase.GetNumberID(),
+            id = jn.GetValueOrDefault("id", PAObjectBase.GetNumberID()),
 
-            path = jn["path"],
-            editorPath = jn["editor_path"],
+            path = jn.GetValueOrDefault("path", string.Empty),
+            editorPath = jn.GetValueOrDefault("editor_path", string.Empty),
 
             name = jn["name"],
-            creator = jn["creator"],
-            songTitle = jn["song_title"],
+            creator = jn.GetValueOrDefault("creator", string.Empty),
+            songArtist = jn.GetValueOrDefault("song_artist", string.Empty),
+            songTitle = jn.GetValueOrDefault("song_title", string.Empty),
+            difficulty = jn.GetValueOrDefault("difficulty", string.Empty),
 
-            arcadeID = jn["arcade_id"],
-            serverID = jn["server_id"],
-            workshopID = jn["workshop_id"],
+            arcadeID = jn.GetValueOrDefault("arcade_id", string.Empty),
+            serverID = jn.GetValueOrDefault("server_id", string.Empty),
+            workshopID = jn.GetValueOrDefault("workshop_id", string.Empty),
 
             hidden = jn["hidden"].AsBool,
             showAfterUnlock = jn["show_after_unlock"].AsBool,
@@ -181,6 +201,8 @@ namespace BetterLegacy.Core.Data.Level
             requireUnlock = jn["require_unlock"].AsBool,
             overwriteUnlockAfterCompletion = jn["unlock_complete"] != null,
             unlockAfterCompletion = jn["unlock_complete"].AsBool,
+
+            icon = jn["icon"] != null ? SpriteHelper.StringToSprite(jn["icon"]) : null,
         };
 
         /// <summary>
@@ -202,8 +224,11 @@ namespace BetterLegacy.Core.Data.Level
                 jn["name"] = name;
             if (!string.IsNullOrEmpty(creator))
                 jn["creator"] = creator;
+            if (!string.IsNullOrEmpty(songArtist))
+                jn["song_artist"] = songArtist;
             if (!string.IsNullOrEmpty(songTitle))
                 jn["song_title"] = songTitle;
+            jn["difficulty"] = difficulty;
 
             if (!string.IsNullOrEmpty(arcadeID))
                 jn["arcade_id"] = arcadeID;
@@ -213,16 +238,19 @@ namespace BetterLegacy.Core.Data.Level
                 jn["workshop_id"] = workshopID;
 
             if (hidden)
-                jn["hidden"] = hidden.ToString();
+                jn["hidden"] = hidden;
             if (showAfterUnlock)
                 jn["show_after_unlock"] = showAfterUnlock;
             if (skip)
-                jn["skip"] = skip.ToString();
+                jn["skip"] = skip;
 
             if (overwriteRequireUnlock && requireUnlock)
                 jn["require_unlock"] = requireUnlock;
             if (overwriteUnlockAfterCompletion && unlockAfterCompletion)
                 jn["unlock_complete"] = unlockAfterCompletion;
+
+            if (icon)
+                jn["icon"] = SpriteHelper.SpriteToString(icon);
 
             return jn;
         }
@@ -237,17 +265,20 @@ namespace BetterLegacy.Core.Data.Level
             level = level,
             id = PAObjectBase.GetNumberID(),
 
-            name = level.metadata?.beatmap?.name,
-            creator = level.metadata?.creator?.name,
-            songTitle = level.metadata?.song?.title,
+            name = level.metadata?.beatmap?.name ?? string.Empty,
+            creator = level.metadata?.creator?.name ?? string.Empty,
+            songTitle = level.metadata?.song?.title ?? string.Empty,
+            songArtist = level.metadata?.artist?.name ?? string.Empty,
+            difficulty = level.metadata?.song?.difficulty ?? 0,
+            icon = level.icon,
 
-            arcadeID = level.metadata?.arcadeID,
-            serverID = level.metadata?.serverID,
+            arcadeID = level.metadata?.arcadeID ?? string.Empty,
+            serverID = level.metadata?.serverID ?? string.Empty,
             workshopID = level.metadata?.beatmap?.workshopID.ToString() ?? string.Empty,
 
             hidden = false,
-            requireUnlock = level.metadata.requireUnlock,
-            unlockAfterCompletion = level.metadata.unlockAfterCompletion,
+            requireUnlock = level.metadata?.requireUnlock ?? false,
+            unlockAfterCompletion = level.metadata?.unlockAfterCompletion ?? true,
         };
 
         #endregion

@@ -411,7 +411,7 @@ namespace BetterLegacy.Arcade.Interfaces
                             name = "Level Button",
                             parentLayout = "levels",
                             selectionPosition = new Vector2Int(column, row),
-                            icon = LegacyPlugin.AtanPlaceholder,
+                            icon = levelInfo.icon ?? LegacyPlugin.AtanPlaceholder,
                             iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                             text = "<size=24><#FF000045>" + levelInfo.name,
                             textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
@@ -440,6 +440,20 @@ namespace BetterLegacy.Arcade.Interfaces
                                 LevelManager.currentLevelIndex = index;
                                 LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo);
                             }
+                        });
+
+                        elements.Add(new MenuImage
+                        {
+                            id = "0",
+                            name = "Difficulty",
+                            parent = levelInfo.id,
+                            rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
+                            overrideColor = levelInfo.DifficultyType.Color,
+                            useOverrideColor = true,
+                            opacity = 1f,
+                            roundedSide = SpriteHelper.RoundedSide.Left,
+                            length = 0f,
+                            wait = false,
                         });
                     }
                     else
@@ -603,7 +617,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     wait = false,
                 });
 
-                if (rank != Rank.Null)
+                if (rank != Rank.Null && level.metadata.song.DifficultyType != DifficultyType.Animation) // don't display rank for animation levels
                     elements.Add(new MenuText
                     {
                         id = "0",

@@ -251,6 +251,7 @@ namespace BetterLegacy.Editor.Managers
 
         public Action<LevelCollectionPanel, PointerEventData> onLevelCollectionSelected;
 
+        public bool LevelInfoCollapseIcon { get; set; } = true;
         public bool CollapseIcon { get; set; } = true;
         public bool CollapseBanner { get; set; } = true;
 
@@ -431,7 +432,10 @@ namespace BetterLegacy.Editor.Managers
                         var levelPanel = new LevelPanel();
                         levelPanel.Init(levelInfo);
 
-                        levelPanel.SetDefaultIcon();
+                        if (levelInfo.icon)
+                            levelPanel.SetIcon(levelInfo.icon);
+                        else
+                            levelPanel.SetDefaultIcon();
                         LevelPanels.Add(levelPanel);
                     }
                     else
@@ -449,7 +453,10 @@ namespace BetterLegacy.Editor.Managers
                             list.Add(levelPanel.LoadImageCoroutine(Level.COVER_JPG, LevelPanels.Add));
                         else
                         {
-                            levelPanel.SetDefaultIcon();
+                            if (levelInfo.icon)
+                                levelPanel.SetIcon(levelInfo.icon);
+                            else
+                                levelPanel.SetDefaultIcon();
                             LevelPanels.Add(levelPanel);
                         }
                     }
@@ -943,9 +950,16 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void SaveLevel()
         {
+            var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
+            if (currentLevelCollection)
+                currentLevelCollection.Save();
+
             if (!EditorManager.inst.hasLoadedLevel)
             {
-                EditorManager.inst.DisplayNotification("Beatmap can't be saved until you load a level.", 5f, EditorManager.NotificationType.Error);
+                if (currentLevelCollection)
+                    EditorManager.inst.DisplayNotification($"Saved level collection!", 2f, EditorManager.NotificationType.Success);
+                else
+                    EditorManager.inst.DisplayNotification("Beatmap can't be saved until you load a level.", 5f, EditorManager.NotificationType.Error);
                 return;
             }
 
@@ -961,10 +975,6 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(SaveData());
             CoroutineHelper.StartCoroutine(SavePlayers());
             RTEditor.inst.SaveSettings();
-
-            var currentLevelCollection = CurrentLevelCollection ?? OpenLevelCollection;
-            if (currentLevelCollection)
-                currentLevelCollection.Save();
 
             return;
         }
@@ -1764,14 +1774,28 @@ namespace BetterLegacy.Editor.Managers
             }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
         }
 
+        public void OpenIconSelector(LevelInfo levelInfo)
+        {
+            string jpgFile = FileBrowser.OpenSingleFile("jpg");
+            CoreHelper.Log("Selected file: " + jpgFile);
+            if (string.IsNullOrEmpty(jpgFile))
+                return;
+
+            CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
+            {
+                levelInfo.icon = cover;
+                RenderLevelInfoEditor(levelInfo);
+            }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
+        }
+
         public void SetLevelCollectionIcon(LevelCollection levelCollection, Sprite sprite)
         {
-            if (levelCollection)
-            {
-                levelCollection.icon = sprite;
-                LevelCollectionDialog.IconImage.sprite = levelCollection.icon;
-                levelCollection.Save();
-            }
+            if (!levelCollection)
+                return;
+
+            levelCollection.icon = sprite;
+            LevelCollectionDialog.IconImage.sprite = levelCollection.icon;
+            levelCollection.Save();
         }
 
         public void OpenBannerSelector(LevelCollection levelCollection)
@@ -1830,6 +1854,10 @@ namespace BetterLegacy.Editor.Managers
                 LoadLevels();
             });
 
+            LevelInfoDialog.SongArtistField.SetTextWithoutNotify(levelInfo.songArtist);
+            LevelInfoDialog.SongArtistField.onValueChanged.NewListener(_val => levelInfo.songArtist = _val);
+            LevelInfoDialog.SongArtistField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+            
             LevelInfoDialog.SongTitleField.SetTextWithoutNotify(levelInfo.songTitle);
             LevelInfoDialog.SongTitleField.onValueChanged.NewListener(_val => levelInfo.songTitle = _val);
             LevelInfoDialog.SongTitleField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
@@ -1842,6 +1870,8 @@ namespace BetterLegacy.Editor.Managers
             LevelInfoDialog.CreatorField.onValueChanged.NewListener(_val => levelInfo.creator = _val);
             LevelInfoDialog.CreatorField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
 
+            RenderLevelInfoDifficulty(levelInfo);
+
             LevelInfoDialog.ArcadeIDField.SetTextWithoutNotify(levelInfo.arcadeID);
             LevelInfoDialog.ArcadeIDField.onValueChanged.NewListener(_val => levelInfo.arcadeID = _val);
             LevelInfoDialog.ArcadeIDField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
@@ -1853,6 +1883,17 @@ namespace BetterLegacy.Editor.Managers
             LevelInfoDialog.WorkshopIDField.SetTextWithoutNotify(levelInfo.workshopID);
             LevelInfoDialog.WorkshopIDField.onValueChanged.NewListener(_val => levelInfo.workshopID = _val);
             LevelInfoDialog.WorkshopIDField.onEndEdit.NewListener(_val => levelInfo.collection?.Save());
+
+            LevelInfoDialog.IconImage.sprite = levelInfo.icon ?? LegacyPlugin.AtanPlaceholder;
+
+            LevelInfoDialog.CollapseIcon(LevelInfoCollapseIcon);
+            LevelInfoDialog.SelectIconButton.onClick.NewListener(() => OpenIconSelector(levelInfo));
+            LevelInfoDialog.CollapseIconToggle.SetIsOnWithoutNotify(LevelInfoCollapseIcon);
+            LevelInfoDialog.CollapseIconToggle.onValueChanged.NewListener(_val =>
+            {
+                LevelInfoDialog.CollapseIcon(_val);
+                LevelInfoCollapseIcon = _val;
+            });
 
             LevelInfoDialog.UnlockRequiredToggle.SetIsOnWithoutNotify(levelInfo.requireUnlock);
             LevelInfoDialog.UnlockRequiredToggle.onValueChanged.NewListener(_val =>
@@ -1905,6 +1946,42 @@ namespace BetterLegacy.Editor.Managers
 
             LevelInfoDialog.SubmitButton.gameObject.SetActive(onSubmit != null);
             LevelInfoDialog.SubmitButton.onClick.NewListener(() => onSubmit?.Invoke());
+        }
+
+        public void RenderLevelInfoDifficulty(LevelInfo levelInfo)
+        {
+            LSHelpers.DeleteChildren(LevelInfoDialog.DifficultyContent);
+
+            var values = CustomEnumHelper.GetValues<DifficultyType>();
+            var count = values.Length - 1;
+
+            foreach (var difficulty in values)
+            {
+                if (difficulty.Ordinal < 0) // skip unknown difficulty
+                    continue;
+
+                var gameObject = RTMetaDataEditor.inst.difficultyToggle.Duplicate(LevelInfoDialog.DifficultyContent, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
+                gameObject.transform.localScale = Vector3.one;
+
+                gameObject.transform.AsRT().sizeDelta = difficultySize;
+
+                var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
+                text.color = LSColors.ContrastColor(difficulty.Color);
+                text.text = difficulty == count - 1 ? "Anim" : difficulty.DisplayName;
+                text.fontSize = 17;
+                var toggle = gameObject.GetComponent<Toggle>();
+                toggle.image.color = difficulty.Color;
+                toggle.group = null;
+                toggle.SetIsOnWithoutNotify(levelInfo.DifficultyType == difficulty);
+                toggle.onValueChanged.NewListener(_val =>
+                {
+                    levelInfo.DifficultyType = difficulty;
+                    RenderLevelInfoDifficulty(levelInfo);
+                });
+
+                EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
+            }
         }
 
         #region Functions
