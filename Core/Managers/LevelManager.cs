@@ -791,7 +791,32 @@ namespace BetterLegacy.Core.Managers
             if (currentLevel && currentLevel.saveData)
                 currentLevel.saveData.LevelName = currentLevel.metadata?.beatmap?.name; // update level name
 
-            if (update)
+            if (update && currentLevel.metadata && currentLevel.metadata.song.DifficultyType == DifficultyType.Animation) // animation levels shouldn't update rank data
+            {
+                currentLevel.saveData.Completed = true;
+
+                try
+                {
+                    if (!AudioManager.inst.CurrentAudioSource.clip)
+                        return;
+
+                    var length = AudioManager.inst.CurrentAudioSource.clip.length;
+                    if (currentLevel.saveData.LevelLength != length)
+                        currentLevel.saveData.LevelLength = length;
+
+                    float calc = AudioManager.inst.CurrentAudioSource.time / length * 100f;
+
+                    if (currentLevel.saveData.Percentage < calc)
+                        currentLevel.saveData.Percentage = calc;
+
+                    currentLevel.saveData.TimeInLevel = RTBeatmap.Current.levelTimer.time;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+            else if (update)
             {
                 CoreHelper.Log($"Updating save data\n" +
                     $"New Player Data = {makeNewSaveData}\n" +
