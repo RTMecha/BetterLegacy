@@ -445,11 +445,8 @@ namespace BetterLegacy.Arcade.Interfaces
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
-                                SoundManager.inst.PlaySound(DefaultSounds.Block);
-                                CoreHelper.Notify("Not implemented yet.", Color.red);
-
-                                //SubTab[Tab.Online] = SubTab.GetValueOrDefault(Tab.Online, 0) == 0 ? 1 : 0;
-                                //RefreshOnlineLevels().Start();
+                                SubTab[Tab.Online] = SubTab.GetValueOrDefault(Tab.Online, 0) == 0 ? 1 : 0;
+                                RefreshOnlineLevels().Start();
                             },
                             color = 6,
                             opacity = 0.1f,
