@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.UI;
 
 using LSFunctions;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
@@ -18,9 +15,9 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data.Dialogs
 {
-    public class UploadedLevelsDialog : EditorDialog, IContentUI, IPageUI
+    public class ViewUploadedDialog : EditorDialog, IContentUI, IPageUI
     {
-        public UploadedLevelsDialog() : base() { }
+        public ViewUploadedDialog() : base() { }
 
         public RectTransform TabsContent { get; set; }
         public List<Button> TabButtons { get; set; } = new List<Button>();
@@ -91,6 +88,11 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SearchField.SetTextWithoutNotify(string.Empty);
             SearchField.GetPlaceholderText().text = "Search levels...";
             SearchField.onValueChanged.ClearAll();
+            SearchField.onEndEdit.NewListener(_val =>
+            {
+                if (EditorConfig.Instance.AutoSearch.Value)
+                    EditorServerManager.inst.Search();
+            });
             var contextClickable = search.AddComponent<ContextClickable>();
             contextClickable.onClick = pointerEventData =>
             {
@@ -143,6 +145,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 {
                     EditorServerManager.inst.CurrentTabSettings.ascend = !EditorServerManager.inst.CurrentTabSettings.ascend;
                     RTEditor.inst.SaveGlobalSettings();
+
+                    if (EditorConfig.Instance.AutoSearch.Value)
+                        EditorServerManager.inst.Search();
                 }));
                 EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
             };
@@ -164,6 +169,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 EditorServerManager.inst.CurrentTabSettings.page = Mathf.Clamp(p, 0, int.MaxValue);
                 RTEditor.inst.SaveGlobalSettings();
+
+                if (EditorConfig.Instance.AutoSearch.Value)
+                    EditorServerManager.inst.Search();
             });
 
             pageStorage.leftGreaterButton.onClick.NewListener(() =>
@@ -198,6 +206,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
             {
                 EditorServerManager.inst.CurrentTabSettings.uploaded = _val;
                 RTEditor.inst.SaveGlobalSettings();
+
+                if (EditorConfig.Instance.AutoSearch.Value)
+                    EditorServerManager.inst.Search();
             });
             EditorThemeManager.AddToggle(uploadedToggleStorage.toggle, graphic: uploadedToggleStorage.label);
 
@@ -241,6 +252,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
         {
             EditorServerManager.inst.CurrentTabSettings.sort = sort;
             RTEditor.inst.SaveGlobalSettings();
+
+            if (EditorConfig.Instance.AutoSearch.Value)
+                EditorServerManager.inst.Search();
         });
 
         void SetupTab(string name, EditorServerManager.Tab tab)

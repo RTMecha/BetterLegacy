@@ -58,7 +58,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                Dialog = new UploadedLevelsDialog();
+                Dialog = new ViewUploadedDialog();
                 Dialog.Init();
             }
             catch (Exception ex)
@@ -82,7 +82,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Values
 
-        public UploadedLevelsDialog Dialog { get; set; }
+        public ViewUploadedDialog Dialog { get; set; }
 
         public ContentPopup TagPopup { get; set; }
 
@@ -1117,12 +1117,12 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ClearContent();
 
-            var page = tabSettings[Tab.Levels].page;
-            int currentPage = page + 1;
+            var settings = tabSettings[Tab.Levels];
 
-            var search = Dialog.SearchTerm;
+            Dialog.PageField.SetTextWithoutNotify(settings.page.ToString());
+            Dialog.UploadedToggle.SetIsOnWithoutNotify(settings.uploaded);
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page, CurrentTabSettings.sort, CurrentTabSettings.ascend);
+            string query = AlephNetwork.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1323,12 +1323,12 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ClearContent();
 
-            var page = tabSettings[Tab.LevelCollections].page;
-            int currentPage = page + 1;
+            var settings = tabSettings[Tab.LevelCollections];
 
-            var search = Dialog.SearchTerm;
+            Dialog.PageField.SetTextWithoutNotify(settings.page.ToString());
+            Dialog.UploadedToggle.SetIsOnWithoutNotify(settings.uploaded);
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page, CurrentTabSettings.sort, CurrentTabSettings.ascend);
+            string query = AlephNetwork.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
@@ -1526,12 +1526,12 @@ namespace BetterLegacy.Editor.Managers
 
             Dialog.ClearContent();
 
-            var page = tabSettings[Tab.Prefabs].page;
-            int currentPage = page + 1;
+            var settings = tabSettings[Tab.Prefabs];
 
-            var search = Dialog.SearchTerm;
+            Dialog.PageField.SetTextWithoutNotify(settings.page.ToString());
+            Dialog.UploadedToggle.SetIsOnWithoutNotify(settings.uploaded);
 
-            string query = AlephNetwork.BuildQuery(SearchURL, search, page, CurrentTabSettings.sort, CurrentTabSettings.ascend);
+            string query = AlephNetwork.BuildQuery(SearchURL, Dialog.SearchTerm, settings.page, settings.sort, settings.ascend);
 
             CoreHelper.Log($"Search query: {query}");
 
