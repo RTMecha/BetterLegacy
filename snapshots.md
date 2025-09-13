@@ -1,4 +1,18 @@
-﻿# 1.8.0-pre.1 > [Sep 12, 2025]
+﻿# ???
+## Features
+### Editor
+- Added "Auto Search" in Config Manager > Editor > Data.
+- You can now save the currently selected Level Collection either by the save keybind or the Level Collection Editor.
+- Added some default tags.
+- "Next Level" button on the End Level Menu that shows for Levels in Level Collections now only display if user is not in zen mode or the level is a cutscene (difficulty type).
+- Unlock After Completion toggle now applies regardless of challenge mode.
+
+## Fixes
+- Fixed the progress popup not being used in some cases.
+- Fixed saved View Uploaded Dialog data not being rendered to the dialog.
+- Fixed online Level Collections not being viewable in the Arcade.
+
+# 1.8.0-pre.1 > [Sep 12, 2025]
 ## Features
 ### Core
 - callModifierBlock modifiers now check for modifier blocks in the objects' associated Prefab. Good for per-Prefab functions.
