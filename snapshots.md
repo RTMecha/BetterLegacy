@@ -6,11 +6,14 @@
 - Added some default tags.
 - "Next Level" button on the End Level Menu that shows for Levels in Level Collections now only display if user is not in zen mode or the level is a cutscene (difficulty type).
 - Unlock After Completion toggle now applies regardless of challenge mode.
+- Added a subtract button to the tag field of the Multi Object Editor. This removes a specified tag from selected objects.
 
 ## Fixes
 - Fixed the progress popup not being used in some cases.
 - Fixed saved View Uploaded Dialog data not being rendered to the dialog.
 - Fixed online Level Collections not being viewable in the Arcade.
+
+-------------------------------------------------------------------
 
 # 1.8.0-pre.1 > [Sep 12, 2025]
 ## Features
