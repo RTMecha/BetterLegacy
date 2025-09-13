@@ -48,7 +48,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #endregion
 
-        #region Icon
+        #region Banner
 
         public RectTransform BannerBase { get; set; }
         public Image BannerImage { get; set; }
