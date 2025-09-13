@@ -36,6 +36,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public Button ViewLevelsButton { get; set; }
 
+        public Button SaveButton { get; set; }
+
         #region Icon
 
         public RectTransform IconBase { get; set; }
@@ -284,6 +286,14 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.AddSelectable(viewLevelsStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(viewLevelsStorage.label, ThemeGroup.Function_2_Text);
+            
+            var save = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "save");
+            var saveStorage = save.GetComponent<FunctionButtonStorage>();
+            SaveButton = saveStorage.button;
+            saveStorage.Text = "Save";
+
+            EditorThemeManager.AddSelectable(saveStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(saveStorage.label, ThemeGroup.Function_2_Text);
 
             #region Server
 

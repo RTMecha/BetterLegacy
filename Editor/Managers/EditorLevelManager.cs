@@ -1681,6 +1681,11 @@ namespace BetterLegacy.Editor.Managers
             EditorContextMenu.inst.AddContextMenu(LevelCollectionDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(levelCollection, () => RenderLevelCollectionEditor(levelCollection)));
 
             LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() => LoadLevelCollection(levelCollection));
+            LevelCollectionDialog.SaveButton.onClick.NewListener(() =>
+            {
+                levelCollection.Save();
+                EditorManager.inst.DisplayNotification($"Saved level collection!", 2f, EditorManager.NotificationType.Success);
+            });
 
             LevelCollectionDialog.ArcadeIDText.text = !string.IsNullOrEmpty(levelCollection.id) ? $"Arcade ID: {levelCollection.id} (Click to copy)" : "Arcade ID: No ID";
             LevelCollectionDialog.ArcadeIDContextMenu.onClick = eventData =>
