@@ -487,7 +487,19 @@ namespace BetterLegacy.Editor.Data.Elements
                                         EditorManager.inst.DisplayNotification($"Added theme {Item} to the prefab.", 2f, EditorManager.NotificationType.Success);
                                     }
                                     else
-                                        EditorManager.inst.DisplayNotification($"Prefab already has a theme with the same ID!", 2f, EditorManager.NotificationType.Warning);
+                                    {
+                                        RTEditor.inst.ShowWarningPopup("Theme already exists in the Prefab! Do you wish to overwrite it?",
+                                            onConfirm: () =>
+                                            {
+                                                prefabPanel.Item.OverwriteTheme(Item);
+                                                if (prefabPanel.IsExternal)
+                                                    RTPrefabEditor.inst.UpdatePrefabFile(prefabPanel);
+                                                EditorManager.inst.DisplayNotification($"Updated theme {Item} in the prefab.", 2f, EditorManager.NotificationType.Success);
+                                            },
+                                            onCancel: RTEditor.inst.HideWarningPopup,
+                                            confirm: "Overwrite",
+                                            cancel: "Cancel");
+                                    }
                                 };
                             })
                             );
