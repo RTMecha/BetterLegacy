@@ -35,6 +35,9 @@ namespace BetterLegacy.Core
         /// </summary>
         public static string ArcadeServerURL => !string.IsNullOrEmpty(Configs.CoreConfig.Instance.ArcadeServerURL.Value) ? RTFile.AppendEndSlash(Configs.CoreConfig.Instance.ArcadeServerURL.Value) : ARCADE_SERVER_URL;
 
+        public static string UserURL => $"{ArcadeServerURL}api/user/";
+        public static string UserSearchURL => $"{UserURL}search";
+
         public static string LevelURL => $"{ArcadeServerURL}api/level/";
         public static string LevelSearchURL => $"{LevelURL}search";
         public static string LevelCoverURL => $"{LevelURL}cover/";

@@ -174,7 +174,7 @@ namespace BetterLegacy.Core.Data.Level
 
         public string UploaderID { get; set; }
 
-        public List<string> Uploaders { get; set; } = new List<string>();
+        public List<ServerUser> Uploaders { get; set; } = new List<ServerUser>();
 
         public ServerVisibility Visibility { get; set; }
 

@@ -2354,7 +2354,7 @@ namespace BetterLegacy.Core
             uploadable.ServerID = orig.ServerID ?? string.Empty;
             uploadable.UploaderName = orig.UploaderName ?? string.Empty;
             uploadable.UploaderID = orig.UploaderID ?? string.Empty;
-            uploadable.Uploaders = new List<string>(orig.Uploaders);
+            uploadable.Uploaders = new List<ServerUser>(orig.Uploaders.Select(x => x.Copy(false)));
             uploadable.Visibility = orig.Visibility;
             uploadable.Changelog = orig.Changelog ?? string.Empty;
             uploadable.ArcadeTags = new List<string>(orig.ArcadeTags);
@@ -2645,10 +2645,10 @@ namespace BetterLegacy.Core
             uploadable.UploaderName = jn["uploader_name"] ?? string.Empty;
             uploadable.UploaderID = jn["uploader_id"] ?? string.Empty;
 
-            uploadable.Uploaders = new List<string>();
+            uploadable.Uploaders = new List<ServerUser>();
             if (jn["uploaders"] != null)
                 for (int i = 0; i < jn["uploaders"].Count; i++)
-                    uploadable.Uploaders.Add(jn["uploaders"][i]["id"]);
+                    uploadable.Uploaders.Add(ServerUser.Parse(jn["uploaders"][i]));
 
             if (!string.IsNullOrEmpty(jn["visibility"]))
                 uploadable.Visibility = (ServerVisibility)jn["visibility"].AsInt;
@@ -2680,7 +2680,7 @@ namespace BetterLegacy.Core
                 jn["uploader_id"] = uploadable.UploaderID;
 
             for (int i = 0; i < uploadable.Uploaders.Count; i++)
-                jn["uploaders"][i]["id"] = uploadable.Uploaders[i];
+                jn["uploaders"][i] = uploadable.Uploaders[i].ToJSON();
 
             if (uploadable.Visibility != ServerVisibility.Public)
                 jn["visibility"] = ((int)uploadable.Visibility).ToString();

@@ -102,6 +102,7 @@ namespace BetterLegacy.Editor.Data.Popups
         public const string ANIMATIONS_POPUP = "Animations Popup";
         public const string ACHIEVEMENTS_POPUP = "Achievements Popup";
         public const string PROGRESS_POPUP = "Progress Popup";
+        public const string USER_SEARCH_POPUP = "User Search Popup";
 
         #endregion
 

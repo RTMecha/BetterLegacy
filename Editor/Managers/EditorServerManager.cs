@@ -60,6 +60,25 @@ namespace BetterLegacy.Editor.Managers
             {
                 Dialog = new ViewUploadedDialog();
                 Dialog.Init();
+
+                UserSearchPopup = RTEditor.inst.GeneratePopup(EditorPopup.USER_SEARCH_POPUP, "Users", Vector2.zero, new Vector2(600f, 400f),
+                    refreshSearch: _val => { },
+                    placeholderText: "Search users...");
+                UserSearchPopup.Grid.cellSize = new Vector2(595f, 80f);
+                UserSearchPopup.InitTopElementsParent();
+                UserSearchPopup.InitPageField();
+                var searchUsers = EditorPrefabHolder.Instance.Function2Button.Duplicate(UserSearchPopup.TopElements, "search");
+                searchUsers.transform.AsRT().sizeDelta = new Vector2(138f, 32f);
+                var searchUsersButton = searchUsers.GetComponent<FunctionButtonStorage>();
+                searchUsersButton.Text = "Search";
+                searchUsersButton.OnClick.ClearAll();
+                SearchUsersButton = searchUsersButton.button;
+
+                EditorThemeManager.AddSelectable(SearchUsersButton, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(searchUsersButton.label, ThemeGroup.Function_2_Text);
+
+                UserSearchPopup.PageField.OnEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
+                UserSearchPopup.SearchField.onEndEdit.NewListener(_val => SearchUsersButton.onClick.Invoke());
             }
             catch (Exception ex)
             {
@@ -85,6 +104,10 @@ namespace BetterLegacy.Editor.Managers
         public ViewUploadedDialog Dialog { get; set; }
 
         public ContentPopup TagPopup { get; set; }
+
+        public ContentPopup UserSearchPopup { get; set; }
+
+        public Button SearchUsersButton { get; set; }
 
         public bool uploading;
 
@@ -184,6 +207,12 @@ namespace BetterLegacy.Editor.Managers
         }, tab != Tab.Prefabs || CurrentTabSettings.uploaded ? "uploaded" : "search");
 
         public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
+
+        #endregion
+
+        #region User Search
+
+        bool loadingOnlineUsers;
 
         #endregion
 
@@ -594,6 +623,38 @@ namespace BetterLegacy.Editor.Managers
                         RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
                     }));
                 });
+                var inputContextClickable = input.gameObject.GetOrAddComponent<ContextClickable>();
+                inputContextClickable.onClick = pointerEventData =>
+                {
+                    if (pointerEventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Search User", () => OpenUserSearchPopup(user =>
+                        {
+                            if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
+                                return;
+
+                            uploadable.Uploaders.Add(user);
+                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+
+                            EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        uploadable.Uploaders = new List<ServerUser>();
+                                    uploadable.Uploaders.Add(user);
+                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                },
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        return;
+                                    uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                }));
+                        })));
+                };
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.button.onClick.NewListener(() =>
@@ -612,7 +673,7 @@ namespace BetterLegacy.Editor.Managers
                     }, () =>
                     {
                         if (uploadable.Uploaders == null)
-                            uploadable.Uploaders = new List<string>();
+                            uploadable.Uploaders = new List<ServerUser>();
                         uploadable.Uploaders.Insert(index, oldUploader);
                         dialog.Open();
                         RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
@@ -634,8 +695,38 @@ namespace BetterLegacy.Editor.Managers
             var contextClickable = add.gameObject.GetOrAddComponent<ContextClickable>();
             contextClickable.onClick = pointerEventData =>
             {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    EditorContextMenu.inst.ShowContextMenu(
+                        new ButtonFunction("Search User", () => OpenUserSearchPopup(user =>
+                        {
+                            if (user == null || string.IsNullOrEmpty(user.ID) || uploadable.Uploaders.Has(x => x && x.ID == user.ID))
+                                return;
+
+                            uploadable.Uploaders.Add(user);
+                            RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+
+                            EditorManager.inst.history.Add(new History.Command("Add Collaborator",
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        uploadable.Uploaders = new List<ServerUser>();
+                                    uploadable.Uploaders.Add(user);
+                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                },
+                                () =>
+                                {
+                                    if (uploadable.Uploaders == null)
+                                        return;
+                                    uploadable.Uploaders.RemoveAt(uploadable.Uploaders.Count - 1);
+                                    RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
+                                }));
+                        })));
+                    return;
+                }
+
                 if (uploadable.Uploaders == null)
-                    uploadable.Uploaders = new List<string>();
+                    uploadable.Uploaders = new List<ServerUser>();
                 uploadable.Uploaders.Add(string.Empty);
                 RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
 
@@ -643,7 +734,7 @@ namespace BetterLegacy.Editor.Managers
                     () =>
                     {
                         if (uploadable.Uploaders == null)
-                            uploadable.Uploaders = new List<string>();
+                            uploadable.Uploaders = new List<ServerUser>();
                         uploadable.Uploaders.Add(string.Empty);
                         RenderServerDialog(uploadable, dialog, upload, pull, delete, verify);
                     },
@@ -1786,6 +1877,125 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.EnablePrefabWatcher();
             EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
 
+        }
+
+        #endregion
+
+        #region User Search
+
+        public void OpenUserSearchPopup(Action<ServerUser> onSelect)
+        {
+            UserSearchPopup.Open();
+            SearchUsers(onSelect);
+            SearchUsersButton.onClick.NewListener(() => SearchUsers(onSelect));
+        }
+
+        public void SearchUsers(Action<ServerUser> onSelect) => CoroutineHelper.StartCoroutine(ISearchUsers(onSelect));
+
+        public IEnumerator ISearchUsers(Action<ServerUser> onSelect)
+        {
+            if (loadingOnlineUsers)
+                yield break;
+
+            loadingOnlineUsers = true;
+
+            UserSearchPopup.ClearContent();
+
+            string query = AlephNetwork.BuildQuery(AlephNetwork.UserSearchURL, UserSearchPopup.SearchTerm, UserSearchPopup.Page, 0, false);
+
+            CoreHelper.Log($"Search query: {query}");
+
+            var headers = new Dictionary<string, string>();
+            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+
+            yield return CoroutineHelper.StartCoroutine(AlephNetwork.DownloadJSONFile(query, json =>
+            {
+                try
+                {
+                    var jn = JSON.Parse(json);
+
+                    if (jn["items"] == null)
+                        return;
+
+                    for (int i = 0; i < jn["items"].Count; i++)
+                    {
+                        var item = jn["items"][i];
+
+                        string id = item["id"];
+                        string steamID = item["steamId"];
+                        string displayName = item["displayName"];
+
+                        if (id == null || id == "0")
+                            continue;
+
+                        var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(UserSearchPopup.Content, $"Folder [{displayName}]");
+                        var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                        var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
+
+                        folderButtonStorage.label.text =
+                            $"<b>ID</b>: {id}\n" +
+                            $"<b>Display Name</b>: {displayName}";
+                        RectValues.FullAnchored.SizeDelta(-32f, -8f).AssignToRectTransform(folderButtonStorage.label.rectTransform);
+
+                        gameObject.transform.AsRT().sizeDelta = new Vector2(0f, 200f);
+
+                        //folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
+                        //folderButtonStorage.text.verticalOverflow = verticalOverflow;
+                        //folderButtonStorage.text.fontSize = fontSize;
+
+                        folderButtonStorage.button.onClick.ClearAll();
+                        folderButtonFunction.onClick = pointerEventData =>
+                        {
+                            onSelect?.Invoke(new ServerUser
+                            {
+                                ID = id,
+                                SteamID = steamID,
+                                DisplayName = displayName,
+                            });
+                        };
+
+                        EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
+                        EditorThemeManager.ApplyLightText(folderButtonStorage.label);
+                    }
+
+                    if (jn["count"] != null)
+                        itemCount = jn["count"].AsInt;
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }, (string onError, long responseCode, string errorMsg) =>
+            {
+                switch (responseCode)
+                {
+                    case 404: {
+                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+                    case 401: {
+                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                            {
+                                CoroutineHelper.StartCoroutine(RefreshTokens(() => SearchUsers(onSelect)));
+                                return;
+                            }
+                            ShowLoginPopup(() => SearchUsers(onSelect));
+                            break;
+                        }
+                    default: {
+                            EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                            break;
+                        }
+                }
+
+                if (errorMsg != null)
+                    CoreHelper.LogError($"Error Message: {errorMsg}");
+            }, headers));
+
+            loadingOnlineUsers = false;
+
+            yield break;
         }
 
         #endregion

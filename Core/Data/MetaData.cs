@@ -66,8 +66,8 @@ namespace BetterLegacy.Core.Data
         public string uploaderID;
         public string UploaderID { get => uploaderID; set => uploaderID = value; }
 
-        public List<string> uploaders = new List<string>();
-        public List<string> Uploaders { get => uploaders; set => uploaders = value; }
+        public List<ServerUser> uploaders = new List<ServerUser>();
+        public List<ServerUser> Uploaders { get => uploaders; set => uploaders = value; }
 
         public ServerVisibility visibility;
         public ServerVisibility Visibility { get => visibility; set => visibility = value; }

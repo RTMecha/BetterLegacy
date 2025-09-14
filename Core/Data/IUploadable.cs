@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// List of item collaborators that can post to the item on the server.
         /// </summary>
-        public List<string> Uploaders { get; set; }
+        public List<ServerUser> Uploaders { get; set; }
 
         /// <summary>
         /// Visibility of the item on the server.
