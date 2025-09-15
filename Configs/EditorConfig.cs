@@ -764,7 +764,7 @@ namespace BetterLegacy.Configs
 
             #region Animations
 
-            PlayEditorAnimations = Bind(this, ANIMATIONS, "Play Editor Animations", false, "If popups should be animated.");
+            PlayEditorAnimations = Bind(this, ANIMATIONS, "Play Editor Animations", true, "If popups should be animated.");
 
             RegisterPopupAnimation(EditorPopup.OPEN_FILE_POPUP);
             RegisterPopupAnimation(EditorPopup.NEW_FILE_POPUP);
