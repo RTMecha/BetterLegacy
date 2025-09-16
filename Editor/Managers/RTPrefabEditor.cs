@@ -34,13 +34,16 @@ using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
+    // todo:
+    // - cleanup this class
+
     public class RTPrefabEditor : MonoBehaviour
     {
         public static RTPrefabEditor inst;
 
         #region Values
 
-        public PrefabCreatorDialog PrefabCreator { get; set; }
+        public PrefabCreatorDialog PrefabCreatorDialog { get; set; }
         public PrefabObjectEditorDialog PrefabObjectEditor { get; set; }
         public PrefabEditorDialog PrefabEditorDialog { get; set; }
 
@@ -67,6 +70,7 @@ namespace BetterLegacy.Editor.Managers
 
         public string NewPrefabTypeID { get; set; }
         public string NewPrefabDescription { get; set; }
+        public Sprite NewPrefabIcon { get; set; }
 
         public PrefabPanel CurrentPrefabPanel { get; set; }
         public List<PrefabPanel> PrefabPanels { get; set; } = new List<PrefabPanel>();
@@ -102,6 +106,7 @@ namespace BetterLegacy.Editor.Managers
         public PrefabObject copiedInstanceData;
 
         public bool CollapseIcon { get; set; } = false;
+        public bool CollapseCreatorIcon { get; set; } = false;
 
         public Dictionary<string, bool> selectedForPrefabCreator = new Dictionary<string, bool>();
 
@@ -315,8 +320,8 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                PrefabCreator = new PrefabCreatorDialog();
-                PrefabCreator.Init();
+                PrefabCreatorDialog = new PrefabCreatorDialog();
+                PrefabCreatorDialog.Init();
                 PrefabObjectEditor = new PrefabObjectEditorDialog();
                 PrefabObjectEditor.Init();
                 PrefabEditorDialog = new PrefabEditorDialog();
@@ -2122,6 +2127,12 @@ namespace BetterLegacy.Editor.Managers
             AchievementManager.inst.UnlockAchievement("time_machine");
         }
 
+        public void OpenPrefabEditorDialog(PrefabPanel prefabPanel)
+        {
+            PrefabEditorDialog.Open();
+            RenderPrefabEditorDialog(prefabPanel);
+        }
+
         /// <summary>
         /// Renders the External Prefab Editor.
         /// </summary>
@@ -2206,42 +2217,39 @@ namespace BetterLegacy.Editor.Managers
                 RenderPrefabEditorDialog(prefabPanel);
             }));
 
-            if (PrefabEditorDialog.IconImage)
-            {
-                PrefabEditorDialog.IconImage.sprite = prefab.icon;
-                EditorContextMenu.inst.AddContextMenu(PrefabEditorDialog.IconImage.gameObject,
-                    new ButtonFunction("Select File", () => OpenIconSelector(prefabPanel)),
-                    new ButtonFunction("Extract Icon", () =>
+            PrefabEditorDialog.IconImage.sprite = prefab.icon;
+            EditorContextMenu.inst.AddContextMenu(PrefabEditorDialog.IconImage.gameObject,
+                new ButtonFunction("Select File", () => OpenIconSelector(prefabPanel)),
+                new ButtonFunction("Extract Icon", () =>
+                {
+                    if (!prefab.icon)
                     {
-                        if (!prefab.icon)
-                        {
-                            EditorManager.inst.DisplayNotification("Prefab does not have an icon.", 1.5f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
+                        EditorManager.inst.DisplayNotification("Prefab does not have an icon.", 1.5f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
 
-                        var jpgFile = FileBrowser.SaveFile(extension: "jpg");
-                        CoreHelper.Log("Selected file: " + jpgFile);
-                        if (string.IsNullOrEmpty(jpgFile))
-                            return;
+                    var jpgFile = FileBrowser.SaveFile(extension: "jpg");
+                    CoreHelper.Log("Selected file: " + jpgFile);
+                    if (string.IsNullOrEmpty(jpgFile))
+                        return;
 
-                        File.WriteAllBytes(jpgFile, prefab.icon.texture.EncodeToJPG());
-                    }),
-                    new ButtonFunction("Capture Icon", () =>
-                    {
-                        prefab.icon = CaptureArea.inst?.Capture();
-                        prefabPanel.RenderPrefabType();
-                        UpdatePrefabFile(prefabPanel);
-                        RenderPrefabEditorDialog(prefabPanel);
-                    }),
-                    new ButtonFunction("Clear Icon", () =>
-                    {
-                        prefab.icon = null;
-                        prefab.iconData = null;
-                        prefabPanel.RenderPrefabType();
-                        UpdatePrefabFile(prefabPanel);
-                        RenderPrefabEditorDialog(prefabPanel);
-                    }));
-            }
+                    File.WriteAllBytes(jpgFile, prefab.icon.texture.EncodeToJPG());
+                }),
+                new ButtonFunction("Capture Icon", () =>
+                {
+                    prefab.icon = CaptureArea.inst?.Capture();
+                    prefabPanel.RenderPrefabType();
+                    UpdatePrefabFile(prefabPanel);
+                    RenderPrefabEditorDialog(prefabPanel);
+                }),
+                new ButtonFunction("Clear Icon", () =>
+                {
+                    prefab.icon = null;
+                    prefab.iconData = null;
+                    prefabPanel.RenderPrefabType();
+                    UpdatePrefabFile(prefabPanel);
+                    RenderPrefabEditorDialog(prefabPanel);
+                }));
 
             PrefabEditorDialog.CollapseIcon(CollapseIcon);
             PrefabEditorDialog.SelectIconButton.onClick.NewListener(() => OpenIconSelector(prefabPanel));
@@ -2268,6 +2276,20 @@ namespace BetterLegacy.Editor.Managers
                 verify: null);
         }
 
+        public void OpenIconSelector()
+        {
+            string jpgFile = FileBrowser.OpenSingleFile("jpg");
+            CoreHelper.Log("Selected file: " + jpgFile);
+            if (string.IsNullOrEmpty(jpgFile))
+                return;
+
+            CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
+            {
+                NewPrefabIcon = cover;
+                RenderPrefabCreator();
+            }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
+        }
+        
         public void OpenIconSelector(PrefabPanel prefabPanel)
         {
             string jpgFile = FileBrowser.OpenSingleFile("jpg");
@@ -2348,6 +2370,7 @@ namespace BetterLegacy.Editor.Managers
 
             prefab.creator = CoreConfig.Instance.DisplayName.Value;
             prefab.description = NewPrefabDescription;
+            prefab.icon = NewPrefabIcon;
             prefab.typeID = NewPrefabTypeID;
             prefab.beatmapThemes = new List<BeatmapTheme>(selectedBeatmapThemes.Select(x => x.Copy(false)));
             prefab.modifierBlocks = new List<ModifierBlock>(selectedModifierBlocks.Select(x => x.Copy(false)));
@@ -2373,14 +2396,11 @@ namespace BetterLegacy.Editor.Managers
             else
                 SavePrefab(prefab);
 
-            PrefabCreator.Close();
+            PrefabCreatorDialog.Close();
             OpenPopup();
 
             if (prefab.prefabPanel)
-            {
-                PrefabEditorDialog.Open();
-                RenderPrefabEditorDialog(prefab.prefabPanel);
-            }
+                OpenPrefabEditorDialog(prefab.prefabPanel);
         }
 
         /// <summary>
@@ -2637,7 +2657,7 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void OpenDialog()
         {
-            PrefabCreator.Open();
+            PrefabCreatorDialog.Open();
             selectedForPrefabCreator.Clear();
             selectedBeatmapThemes.Clear();
             selectedModifierBlocks.Clear();
@@ -2649,11 +2669,11 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void RenderPrefabCreator()
         {
-            PrefabCreator.NameField.onValueChanged.NewListener(_val => PrefabEditor.inst.NewPrefabName = _val);
+            PrefabCreatorDialog.NameField.onValueChanged.NewListener(_val => PrefabEditor.inst.NewPrefabName = _val);
             RenderPrefabCreatorOffsetSlider();
             RenderPrefabCreatorOffsetField();
 
-            var offsetInputContextMenu = PrefabCreator.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
+            var offsetInputContextMenu = PrefabCreatorDialog.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
             offsetInputContextMenu.onClick = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -2673,13 +2693,13 @@ namespace BetterLegacy.Editor.Managers
                     })
                     );
             };
-            var offsetSliderContextMenu = PrefabCreator.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
+            var offsetSliderContextMenu = PrefabCreatorDialog.OffsetField.gameObject.GetOrAddComponent<ContextClickable>();
             offsetSliderContextMenu.onClick = offsetInputContextMenu.onClick;
 
-            TriggerHelper.AddEventTriggers(PrefabCreator.OffsetField.gameObject, TriggerHelper.ScrollDelta(PrefabCreator.OffsetField));
+            TriggerHelper.AddEventTriggers(PrefabCreatorDialog.OffsetField.gameObject, TriggerHelper.ScrollDelta(PrefabCreatorDialog.OffsetField));
 
             RenderPrefabCreatorTypeSelector(NewPrefabTypeID);
-            PrefabCreator.TypeButton.button.onClick.NewListener(() =>
+            PrefabCreatorDialog.TypeButton.button.onClick.NewListener(() =>
             {
                 OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {
@@ -2688,15 +2708,53 @@ namespace BetterLegacy.Editor.Managers
                     RenderPrefabCreatorTypeSelector(id);
                 });
             });
-            PrefabCreator.DescriptionField.onValueChanged.NewListener(_val => NewPrefabDescription = _val);
+            PrefabCreatorDialog.DescriptionField.onValueChanged.NewListener(_val => NewPrefabDescription = _val);
+
+            PrefabCreatorDialog.IconImage.sprite = NewPrefabIcon;
+            EditorContextMenu.inst.AddContextMenu(PrefabCreatorDialog.IconImage.gameObject,
+                new ButtonFunction("Select File", () => OpenIconSelector()),
+                new ButtonFunction("Extract Icon", () =>
+                {
+                    if (!NewPrefabIcon)
+                    {
+                        EditorManager.inst.DisplayNotification("Prefab Creator does not have an icon.", 1.5f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    var jpgFile = FileBrowser.SaveFile(extension: "jpg");
+                    CoreHelper.Log("Selected file: " + jpgFile);
+                    if (string.IsNullOrEmpty(jpgFile))
+                        return;
+
+                    File.WriteAllBytes(jpgFile, NewPrefabIcon.texture.EncodeToJPG());
+                }),
+                new ButtonFunction("Capture Icon", () =>
+                {
+                    NewPrefabIcon = CaptureArea.inst?.Capture();
+                    RenderPrefabCreator();
+                }),
+                new ButtonFunction("Clear Icon", () =>
+                {
+                    NewPrefabIcon = null;
+                    RenderPrefabCreator();
+                }));
+
+            PrefabCreatorDialog.CollapseIcon(CollapseCreatorIcon);
+            PrefabCreatorDialog.SelectIconButton.onClick.NewListener(() => OpenIconSelector());
+            PrefabCreatorDialog.CollapseToggle.SetIsOnWithoutNotify(CollapseCreatorIcon);
+            PrefabCreatorDialog.CollapseToggle.onValueChanged.NewListener(_val =>
+            {
+                PrefabCreatorDialog.CollapseIcon(_val);
+                CollapseCreatorIcon = _val;
+            });
 
             ReloadSelectionContent();
         }
 
         public void RenderPrefabCreatorOffsetSlider()
         {
-            PrefabCreator.OffsetSlider.SetValueWithoutNotify(PrefabEditor.inst.NewPrefabOffset);
-            PrefabCreator.OffsetSlider.onValueChanged.NewListener(_val =>
+            PrefabCreatorDialog.OffsetSlider.SetValueWithoutNotify(PrefabEditor.inst.NewPrefabOffset);
+            PrefabCreatorDialog.OffsetSlider.onValueChanged.NewListener(_val =>
             {
                 PrefabEditor.inst.NewPrefabOffset = Mathf.Round(_val * 100f) / 100f;
                 RenderPrefabCreatorOffsetField();
@@ -2705,8 +2763,8 @@ namespace BetterLegacy.Editor.Managers
         
         public void RenderPrefabCreatorOffsetField()
         {
-            PrefabCreator.OffsetField.SetTextWithoutNotify(PrefabEditor.inst.NewPrefabOffset.ToString());
-            PrefabCreator.OffsetField.onValueChanged.NewListener(_val =>
+            PrefabCreatorDialog.OffsetField.SetTextWithoutNotify(PrefabEditor.inst.NewPrefabOffset.ToString());
+            PrefabCreatorDialog.OffsetField.onValueChanged.NewListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
                 {
@@ -2720,8 +2778,8 @@ namespace BetterLegacy.Editor.Managers
         {
             if (prefabTypes.TryFind(x => x.id == id, out PrefabType prefabType))
             {
-                PrefabCreator.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
-                PrefabCreator.TypeButton.button.image.color = prefabType.color;
+                PrefabCreatorDialog.TypeButton.label.text = prefabType.name + " [ Click to Open Prefab Type Editor ]";
+                PrefabCreatorDialog.TypeButton.button.image.color = prefabType.color;
             }
         }
         
@@ -2730,27 +2788,27 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void ReloadSelectionContent()
         {
-            PrefabCreator.SelectionSearchField.onValueChanged.NewListener(_val => ReloadSelectionContent());
-            for (int i = 0; i < PrefabCreator.SelectionTabButtons.Count; i++)
+            PrefabCreatorDialog.SelectionSearchField.onValueChanged.NewListener(_val => ReloadSelectionContent());
+            for (int i = 0; i < PrefabCreatorDialog.SelectionTabButtons.Count; i++)
             {
                 int index = i;
-                PrefabCreator.SelectionTabButtons[i].onClick.NewListener(() =>
+                PrefabCreatorDialog.SelectionTabButtons[i].onClick.NewListener(() =>
                 {
                     prefabCreatorSelectionTab = index;
                     ReloadSelectionContent();
                 });
             }
 
-            PrefabCreator.ClearSelectionContent();
+            PrefabCreatorDialog.ClearSelectionContent();
             switch (prefabCreatorSelectionTab)
             {
                 case 0: {
                         foreach (var timelineObject in EditorTimeline.inst.timelineObjects)
                         {
-                            if (!RTString.SearchString(PrefabCreator.SelectionSearchTerm, timelineObject.Name))
+                            if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, timelineObject.Name))
                                 continue;
 
-                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreator.SelectionContent, "grid");
+                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreatorDialog.SelectionContent, "grid");
                             var text = selection.transform.Find("text").GetComponent<Text>();
                             text.text = timelineObject.Name;
                             text.rectTransform.sizeDelta = new Vector2(300f, 32f);
@@ -2766,10 +2824,10 @@ namespace BetterLegacy.Editor.Managers
                 case 1: {
                         foreach (var beatmapTheme in GameData.Current.beatmapThemes)
                         {
-                            if (!RTString.SearchString(PrefabCreator.SelectionSearchTerm, beatmapTheme.name))
+                            if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, beatmapTheme.name))
                                 continue;
 
-                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreator.SelectionContent, "grid");
+                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreatorDialog.SelectionContent, "grid");
                             var text = selection.transform.Find("text").GetComponent<Text>();
                             text.text = beatmapTheme.name;
                             text.rectTransform.sizeDelta = new Vector2(300f, 32f);
@@ -2792,10 +2850,10 @@ namespace BetterLegacy.Editor.Managers
                 case 2: {
                         foreach (var modifierBlock in GameData.Current.modifierBlocks)
                         {
-                            if (!RTString.SearchString(PrefabCreator.SelectionSearchTerm, modifierBlock.Name))
+                            if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, modifierBlock.Name))
                                 continue;
 
-                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreator.SelectionContent, "grid");
+                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreatorDialog.SelectionContent, "grid");
                             var text = selection.transform.Find("text").GetComponent<Text>();
                             text.text = modifierBlock.Name;
                             text.rectTransform.sizeDelta = new Vector2(300f, 32f);

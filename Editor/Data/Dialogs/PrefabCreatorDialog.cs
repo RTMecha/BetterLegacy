@@ -7,6 +7,7 @@ using LSFunctions;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -33,6 +34,12 @@ namespace BetterLegacy.Editor.Data.Dialogs
         public string SelectionSearchTerm { get => SelectionSearchField.text; set => SelectionSearchField.text = value; }
         public RectTransform SelectionContent { get; set; }
 
+        public RectTransform IconBase { get; set; }
+        public Image IconImage { get; set; }
+
+        public Button SelectIconButton { get; set; }
+        public Toggle CollapseToggle { get; set; }
+
         #endregion
 
         public override void Init()
@@ -45,6 +52,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #region Setup
 
             GameObject.name = "PrefabCreatorDialog";
+            GameObject.AddComponent<ActiveState>().onStateChanged = enabled => CaptureArea.inst.SetActive(enabled);
             EditorThemeManager.AddGraphic(GameObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var prefabEditorData = GameObject.transform.Find("data");
@@ -128,6 +136,38 @@ namespace BetterLegacy.Editor.Data.Dialogs
             selectionGroup.cellSize = new Vector2(355f, 32f);
             selectionGroup.constraintCount = 2;
 
+            #region Icon
+
+            var iconBase = Creator.NewUIObject("icon", Content);
+            IconBase = iconBase.transform.AsRT();
+            RectValues.Default.SizeDelta(764f, 574f).AssignToRectTransform(IconBase);
+            new Labels(Labels.InitSettings.Default.Parent(IconBase).Rect(new RectValues(new Vector2(16f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, -32f))), new Label("Icon") { fontStyle = FontStyle.Bold, });
+
+            var icon = Creator.NewUIObject("image", IconBase);
+            IconImage = icon.AddComponent<Image>();
+            icon.AddComponent<Button>();
+            new RectValues(new Vector2(16f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(512f, 512f)).AssignToRectTransform(IconImage.rectTransform);
+
+            var selectIcon = EditorPrefabHolder.Instance.Function2Button.Duplicate(IconBase, "select");
+            new RectValues(new Vector2(240f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(150f, 32f)).AssignToRectTransform(selectIcon.transform.AsRT());
+            var selectIconStorage = selectIcon.GetComponent<FunctionButtonStorage>();
+            SelectIconButton = selectIconStorage.button;
+            selectIconStorage.label.text = "Browse";
+
+            EditorThemeManager.AddSelectable(SelectIconButton, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(selectIconStorage.label, ThemeGroup.Function_2_Text);
+
+            var collapser = EditorPrefabHolder.Instance.CollapseToggle.Duplicate(IconBase, "collapse");
+            new RectValues(new Vector2(340f, -62f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(32f, 32f)).AssignToRectTransform(collapser.transform.AsRT());
+            CollapseToggle = collapser.GetComponent<Toggle>();
+
+            EditorThemeManager.AddToggle(CollapseToggle, ThemeGroup.Background_1);
+
+            for (int i = 0; i < collapser.transform.Find("dots").childCount; i++)
+                EditorThemeManager.AddGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+
+            #endregion
+
             #endregion
 
             #region Editor Themes
@@ -159,6 +199,15 @@ namespace BetterLegacy.Editor.Data.Dialogs
             EditorThemeManager.AddScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.Scrollbar_2, ThemeGroup.Scrollbar_2_Handle);
 
             #endregion
+        }
+
+        public void CollapseIcon(bool collapse)
+        {
+            var size = collapse ? 32f : 512f;
+            IconImage.rectTransform.sizeDelta = new Vector2(size, size);
+            IconBase.transform.AsRT().sizeDelta = new Vector2(764f, collapse ? 94f : 574f);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(Content);
         }
 
         void SetupTab(string name)

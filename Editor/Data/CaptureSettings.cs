@@ -67,6 +67,11 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public bool matchSize;
 
+        /// <summary>
+        /// If players should be hidden from the capture.
+        /// </summary>
+        public bool hidePlayers = true;
+
         #endregion
 
         #region Methods
@@ -79,6 +84,7 @@ namespace BetterLegacy.Editor.Data
             zoom = orig.zoom;
             rot = orig.rot;
             matchSize = orig.matchSize;
+            hidePlayers = orig.hidePlayers;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -91,6 +97,7 @@ namespace BetterLegacy.Editor.Data
                 move = jn["move"].AsBool;
             pos = Parser.TryParse(jn["pos"], Vector2.zero);
             rot = jn["rot"].AsFloat;
+            hidePlayers = jn["hide_players"].AsBool;
         }
 
         public override JSONNode ToJSON()
@@ -104,6 +111,8 @@ namespace BetterLegacy.Editor.Data
                 jn["pos"] = pos.ToJSON();
             if (rot != 0f)
                 jn["rot"] = rot;
+            if (hidePlayers)
+                jn["hide_players"] = hidePlayers;
 
             return jn;
         }

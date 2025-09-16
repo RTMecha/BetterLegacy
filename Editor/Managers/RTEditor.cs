@@ -4465,6 +4465,7 @@ namespace BetterLegacy.Editor.Managers
             var editorDialogObject = EditorPrefabHolder.Instance.Dialog.Duplicate(EditorManager.inst.dialogs, "ScreenshotDialog");
             editorDialogObject.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
             editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            editorDialogObject.AddComponent<ActiveState>().onStateChanged = enabled => CaptureArea.inst.SetActive(enabled);
             var dialogStorage = editorDialogObject.GetComponent<EditorDialogStorage>();
 
             dialogStorage.topPanel.color = LSColors.HexToColor("00FF8C");
@@ -4481,9 +4482,8 @@ namespace BetterLegacy.Editor.Managers
             var pageStorage = page.GetComponent<InputFieldStorage>();
             screenshotPageField = pageStorage.inputField;
 
-            pageStorage.inputField.onValueChanged.ClearAll();
-            pageStorage.inputField.text = screenshotPage.ToString();
-            pageStorage.inputField.onValueChanged.AddListener(_val =>
+            pageStorage.inputField.SetTextWithoutNotify(screenshotPage.ToString());
+            pageStorage.inputField.onValueChanged.NewListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
                 {
@@ -4491,30 +4491,22 @@ namespace BetterLegacy.Editor.Managers
                     RefreshScreenshots();
                 }
             });
-
-            pageStorage.leftGreaterButton.onClick.ClearAll();
-            pageStorage.leftGreaterButton.onClick.AddListener(() =>
+            pageStorage.leftGreaterButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = "0";
             });
-
-            pageStorage.leftButton.onClick.ClearAll();
-            pageStorage.leftButton.onClick.AddListener(() =>
+            pageStorage.leftButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, screenshotCount / screenshotsPerPage).ToString();
             });
-
-            pageStorage.rightButton.onClick.ClearAll();
-            pageStorage.rightButton.onClick.AddListener(() =>
+            pageStorage.rightButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, screenshotCount / screenshotsPerPage).ToString();
             });
-
-            pageStorage.rightGreaterButton.onClick.ClearAll();
-            pageStorage.rightGreaterButton.onClick.AddListener(() =>
+            pageStorage.rightGreaterButton.onClick.NewListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = (screenshotCount / screenshotsPerPage).ToString();

@@ -80,6 +80,8 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Reset Zoom", () => Settings.Zoom = 1f),
                         new ButtonFunction("Reset Rotation", () => Settings.rot = 0f),
                         new ButtonFunction(true),
+                        new ButtonFunction($"Hide Players [{(Settings.hidePlayers ? "On" : "Off")}]", () => Settings.hidePlayers = !Settings.hidePlayers),
+                        new ButtonFunction(true),
                         new ButtonFunction("Copy", () => copiedSettings = Settings.Copy()),
                         new ButtonFunction("Paste", () =>
                         {
@@ -343,24 +345,28 @@ namespace BetterLegacy.Editor.Managers
                                         captureSettings.SetResolutionWidth(cacheResolution.x - (int)(mousePosition.x * RESOLUTION_MULTIPLY));
                                         if (MatchSize)
                                             captureSettings.SetResolutionHeight(captureSettings.Resolution.x);
+                                        captureSettings.Resolution = RTMath.Clamp(captureSettings.Resolution, Vector2Int.zero, ResolutionLimit);
                                         break;
                                     }
                                 case Direction.Right: {
                                         captureSettings.SetResolutionWidth(cacheResolution.x + (int)(mousePosition.x * RESOLUTION_MULTIPLY));
                                         if (MatchSize)
                                             captureSettings.SetResolutionHeight(captureSettings.Resolution.x);
+                                        captureSettings.Resolution = RTMath.Clamp(captureSettings.Resolution, Vector2Int.zero, ResolutionLimit);
                                         break;
                                     }
                                 case Direction.Top: {
                                         captureSettings.SetResolutionHeight(cacheResolution.y - (int)(mousePosition.y * RESOLUTION_MULTIPLY));
                                         if (MatchSize)
                                             captureSettings.SetResolutionWidth(captureSettings.Resolution.y);
+                                        captureSettings.Resolution = RTMath.Clamp(captureSettings.Resolution, Vector2Int.zero, ResolutionLimit);
                                         break;
                                     }
                                 case Direction.Bottom: {
                                         captureSettings.SetResolutionHeight(cacheResolution.y + (int)(mousePosition.y * RESOLUTION_MULTIPLY));
                                         if (MatchSize)
                                             captureSettings.SetResolutionWidth(captureSettings.Resolution.y);
+                                        captureSettings.Resolution = RTMath.Clamp(captureSettings.Resolution, Vector2Int.zero, ResolutionLimit);
                                         break;
                                     }
                             }
@@ -412,7 +418,7 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// If the capture area is currently visible.
         /// </summary>
-        public bool Active => forceActive || View != ViewType.Null;
+        public bool Active => forceActive;
         bool forceActive;
 
         bool prevMatchSize;
@@ -420,6 +426,12 @@ namespace BetterLegacy.Editor.Managers
         /// If the capture area's resolution should have a 1:1 aspect ratio.
         /// </summary>
         public bool MatchSize => View == ViewType.Prefab || (Settings?.matchSize ?? false);
+
+        public Vector2Int ResolutionLimit => View switch
+        {
+            ViewType.Prefab => new Vector2Int(512, 512),
+            _ => ResolutionType.p2160.Resolution.ToInt(),
+        };
 
         ViewType prevView;
         /// <summary>
@@ -429,7 +441,7 @@ namespace BetterLegacy.Editor.Managers
         {
             get
             {
-                if (RTPrefabEditor.inst && (RTPrefabEditor.inst.PrefabEditorDialog && RTPrefabEditor.inst.PrefabEditorDialog.IsCurrent))
+                if (RTPrefabEditor.inst && (RTPrefabEditor.inst.PrefabCreatorDialog && RTPrefabEditor.inst.PrefabCreatorDialog.IsCurrent || RTPrefabEditor.inst.PrefabEditorDialog && RTPrefabEditor.inst.PrefabEditorDialog.IsCurrent))
                     return ViewType.Prefab;
                 if (RTEditor.inst && RTEditor.inst.ScreenshotsDialog && RTEditor.inst.ScreenshotsDialog.IsCurrent)
                     return ViewType.Screenshot;
@@ -560,6 +572,13 @@ namespace BetterLegacy.Editor.Managers
             switch (View)
             {
                 case ViewType.Prefab: {
+                        if (RTPrefabEditor.inst.PrefabCreatorDialog.IsCurrent)
+                        {
+                            RTPrefabEditor.inst.NewPrefabIcon = Capture();
+                            RTPrefabEditor.inst.RenderPrefabCreator();
+                            return;
+                        }
+
                         if (!RTPrefabEditor.inst.CurrentPrefabPanel)
                             break;
 
@@ -591,6 +610,13 @@ namespace BetterLegacy.Editor.Managers
             switch (View)
             {
                 case ViewType.Prefab: {
+                        if (RTPrefabEditor.inst.PrefabCreatorDialog.IsCurrent)
+                        {
+                            RTPrefabEditor.inst.NewPrefabIcon = null;
+                            RTPrefabEditor.inst.RenderPrefabCreator();
+                            return;
+                        }
+
                         if (!RTPrefabEditor.inst.CurrentPrefabPanel)
                             break;
 
@@ -618,6 +644,10 @@ namespace BetterLegacy.Editor.Managers
             var total = captureSettings.Resolution.x + captureSettings.Resolution.y;
             RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * captureSettings.Zoom);
 
+            var playersActive = GameManager.inst.players.activeSelf;
+            if (captureSettings.hidePlayers)
+                GameManager.inst.players.SetActive(false);
+
             var icon = SpriteHelper.CaptureFrame(
                 camera: RTLevel.Cameras.FG,
                 move: captureSettings.move,
@@ -630,9 +660,15 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
             baseObject.SetActive(true);
 
+            // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
+            Arcade.Managers.RTEventManager.inst.glitchCam.enabled = false;
+            Arcade.Managers.RTEventManager.inst.glitchCam.enabled = true;
+
             // disable and re-enable the UI camera to ensure the UI camera is ordered last.
             RTLevel.Cameras.UI.enabled = false;
             RTLevel.Cameras.UI.enabled = true;
+
+            GameManager.inst.players.SetActive(false);
 
             SoundManager.inst.PlaySound(DefaultSounds.menuflip);
 

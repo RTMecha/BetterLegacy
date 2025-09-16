@@ -90,6 +90,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             #region Generation
 
+            GameObject.AddComponent<ActiveState>().onStateChanged = enabled => CaptureArea.inst.SetActive(enabled);
+
             editorDialogStorage.topPanel.color = LSColors.HexToColor("4C4C4C");
             editorDialogStorage.title.text = "- Prefab Editor -";
             editorDialogStorage.title.color = new Color(0.9f, 0.9f, 0.9f, 1f);

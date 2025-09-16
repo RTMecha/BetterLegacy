@@ -466,11 +466,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                         CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.RefreshInternalPrefabs());
                                     }),
                                     new ButtonFunction(true),
-                                    new ButtonFunction("Edit", () =>
-                                    {
-                                        RTPrefabEditor.inst.PrefabEditorDialog.Open();
-                                        RTPrefabEditor.inst.RenderPrefabEditorDialog(this);
-                                    }),
+                                    new ButtonFunction("Edit", () => RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
                                     new ButtonFunction("Delete", () => RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                                     {
                                         RTPrefabEditor.inst.DeleteInternalPrefab(Item);
@@ -553,11 +549,7 @@ namespace BetterLegacy.Editor.Data.Elements
                                             EditorManager.inst.DisplayNotification($"No internal Prefab was found to update!", 2f, EditorManager.NotificationType.Warning);
                                     }),
                                     new ButtonFunction("Convert to VG", () => RTPrefabEditor.inst.ConvertPrefab(Item)),
-                                    new ButtonFunction("Open", () =>
-                                    {
-                                        RTPrefabEditor.inst.PrefabEditorDialog.Open();
-                                        RTPrefabEditor.inst.RenderPrefabEditorDialog(this);
-                                    }),
+                                    new ButtonFunction("Open", () =>  RTPrefabEditor.inst.OpenPrefabEditorDialog(this)),
                                     new ButtonFunction(true),
                                     new ButtonFunction("Create folder", () => RTEditor.inst.ShowFolderCreator(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.PrefabPath), () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); })),
                                     new ButtonFunction("Create Prefab", () =>
@@ -592,10 +584,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             }
 
                             if (!RTPrefabEditor.ImportPrefabsDirectly)
-                            {
-                                RTPrefabEditor.inst.PrefabEditorDialog.Open();
-                                RTPrefabEditor.inst.RenderPrefabEditorDialog(this);
-                            }
+                                RTPrefabEditor.inst.OpenPrefabEditorDialog(this);
                             else
                                 RTPrefabEditor.inst.ImportPrefabIntoLevel(Item);
                         };
