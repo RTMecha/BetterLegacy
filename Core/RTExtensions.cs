@@ -325,6 +325,9 @@ namespace BetterLegacy.Core
         /// <returns>Returns a component.</returns>
         public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component => gameObject.GetComponent<T>() ?? gameObject.AddComponent<T>();
 
+        public static Vector2Int ToInt(this Vector2 vector2) => new Vector2Int((int)vector2.x, (int)vector2.y);
+        public static Vector3Int ToInt(this Vector3 vector3) => new Vector3Int((int)vector3.x, (int)vector3.y, (int)vector3.z);
+
         #endregion
 
         #region Coroutines
