@@ -7,6 +7,11 @@
 - "Next Level" button on the End Level Menu that shows for Levels in Level Collections now only display if user is not in zen mode or the level is a cutscene (difficulty type).
 - Unlock After Completion toggle now applies regardless of challenge mode.
 - Added a subtract button to the tag field of the Multi Object Editor. This removes a specified tag from selected objects.
+- Added icon to Prefab Creator.
+
+## Changes
+### Editor
+- Improved Capture Area usage.
 
 ## Fixes
 - Fixed the progress popup not being used in some cases.
