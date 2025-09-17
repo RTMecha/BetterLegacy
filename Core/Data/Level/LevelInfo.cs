@@ -85,6 +85,10 @@ namespace BetterLegacy.Core.Data.Level
         /// Icon of the level to display if the level does not exist.
         /// </summary>
         public Sprite icon;
+        /// <summary>
+        /// Icon of the level to display if the level is locked.
+        /// </summary>
+        public Sprite lockedIcon;
 
         /// <summary>
         /// Arcade ID reference.
@@ -153,6 +157,8 @@ namespace BetterLegacy.Core.Data.Level
             if (level.metadata)
             {
                 level.metadata = level.metadata.Copy(false);
+                if (!string.IsNullOrEmpty(name))
+                    level.metadata.beatmap.name = name;
                 level.metadata.arcadeID = id;
                 if (overwriteRequireUnlock)
                     level.metadata.requireUnlock = requireUnlock;
@@ -203,6 +209,7 @@ namespace BetterLegacy.Core.Data.Level
             unlockAfterCompletion = jn["unlock_complete"].AsBool,
 
             icon = jn["icon"] != null ? SpriteHelper.StringToSprite(jn["icon"]) : null,
+            lockedIcon = jn["locked_icon"] != null ? SpriteHelper.StringToSprite(jn["locked_icon"]) : null,
         };
 
         /// <summary>
@@ -244,13 +251,15 @@ namespace BetterLegacy.Core.Data.Level
             if (skip)
                 jn["skip"] = skip;
 
-            if (overwriteRequireUnlock && requireUnlock)
+            if (overwriteRequireUnlock)
                 jn["require_unlock"] = requireUnlock;
-            if (overwriteUnlockAfterCompletion && unlockAfterCompletion)
+            if (overwriteUnlockAfterCompletion)
                 jn["unlock_complete"] = unlockAfterCompletion;
 
             if (icon)
                 jn["icon"] = SpriteHelper.SpriteToString(icon);
+            if (lockedIcon)
+                jn["locked_icon"] = SpriteHelper.SpriteToString(lockedIcon);
 
             return jn;
         }
@@ -271,6 +280,7 @@ namespace BetterLegacy.Core.Data.Level
             songArtist = level.metadata?.artist?.name ?? string.Empty,
             difficulty = level.metadata?.song?.difficulty ?? 0,
             icon = level.icon,
+            lockedIcon = level.lockedIcon,
 
             arcadeID = level.metadata?.arcadeID ?? string.Empty,
             serverID = level.metadata?.serverID ?? string.Empty,

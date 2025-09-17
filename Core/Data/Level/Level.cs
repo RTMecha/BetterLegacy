@@ -49,10 +49,14 @@ namespace BetterLegacy.Core.Data.Level
             this.metadata = metadata;
 
             if (loadIcon)
+            {
                 icon =
                     RTFile.FileExists(GetFile(LEVEL_JPG)) ? SpriteHelper.LoadSprite(GetFile(LEVEL_JPG)) :
                     RTFile.FileExists(GetFile(COVER_JPG)) ? SpriteHelper.LoadSprite(GetFile(COVER_JPG)) :
                     SteamWorkshop.inst.defaultSteamImageSprite;
+
+                lockedIcon = RTFile.FileExists(GetFile(LOCKED_JPG)) ? SpriteHelper.LoadSprite(GetFile(LOCKED_JPG)) : null;
+            }    
 
             UpdateDefaults();
         }
@@ -78,6 +82,11 @@ namespace BetterLegacy.Core.Data.Level
         /// Icon of the level.
         /// </summary>
         public Sprite icon;
+
+        /// <summary>
+        /// Locked icon of the level.
+        /// </summary>
+        public Sprite lockedIcon;
 
         /// <summary>
         /// Song the level plays.
@@ -203,6 +212,11 @@ namespace BetterLegacy.Core.Data.Level
         /// The cover file in Alpha.
         /// </summary>
         public const string COVER_JPG = "cover.jpg";
+
+        /// <summary>
+        /// The locked cover file.
+        /// </summary>
+        public const string LOCKED_JPG = "locked.jpg";
 
         /// <summary>
         /// The metadata file in Legacy.
