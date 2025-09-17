@@ -885,6 +885,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setIntroFade),  ModifierFunctions.setIntroFade, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setLevelEndFunc),  ModifierFunctions.setLevelEndFunc, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelID),  ModifierFunctions.getCurrentLevelID),
+            new ModifierAction(nameof(ModifierFunctions.getCurrentLevelName),  ModifierFunctions.getCurrentLevelName),
             new ModifierAction(nameof(ModifierFunctions.getCurrentLevelRank),  ModifierFunctions.getCurrentLevelRank),
 
             #endregion
@@ -3797,6 +3798,14 @@ namespace BetterLegacy.Core.Helpers
                 variables[modifier.GetValue(0)] = LevelManager.CurrentLevel.id;
             if (CoreHelper.InEditor && EditorLevelManager.inst.CurrentLevel)
                 variables[modifier.GetValue(0)] = EditorLevelManager.inst.CurrentLevel.id;
+        }
+        
+        public static void getCurrentLevelName(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (LevelManager.CurrentLevel && LevelManager.CurrentLevel.metadata)
+                variables[modifier.GetValue(0)] = LevelManager.CurrentLevel.metadata.beatmap.name;
+            if (CoreHelper.InEditor && EditorLevelManager.inst.CurrentLevel && EditorLevelManager.inst.CurrentLevel.metadata)
+                variables[modifier.GetValue(0)] = EditorLevelManager.inst.CurrentLevel.metadata.beatmap.name;
         }
 
         public static void getCurrentLevelRank(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -9036,6 +9045,8 @@ namespace BetterLegacy.Core.Helpers
             if (prefabable == null)
                 return;
 
+            var tag = modifier.GetValue(0, variables);
+
             var fromType = modifier.GetInt(1, 0, variables);
             var fromAxis = modifier.GetInt(2, 0, variables);
             var toType = modifier.GetInt(3, 0, variables);
@@ -9048,7 +9059,14 @@ namespace BetterLegacy.Core.Helpers
             var loop = modifier.GetFloat(10, 9999f, variables);
             var useVisual = modifier.GetBool(11, false, variables);
 
-            var bm = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+
+            var bm = cache.obj;
             if (!bm)
                 return;
 
@@ -9109,6 +9127,8 @@ namespace BetterLegacy.Core.Helpers
 
             try
             {
+                var tag = modifier.GetValue(0, variables);
+
                 var fromType = modifier.GetInt(1, 0, variables);
                 var fromAxis = modifier.GetInt(2, 0, variables);
                 var toType = modifier.GetInt(3, 0, variables);
@@ -9119,7 +9139,15 @@ namespace BetterLegacy.Core.Helpers
                 var evaluation = modifier.GetValue(8, variables);
                 var useVisual = modifier.GetBool(9, false, variables);
 
-                if (!GameData.Current.TryFindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables), out BeatmapObject bm))
+                var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+                if (cache.tag != tag)
+                {
+                    cache.UpdateCache(modifier, prefabable, tag);
+                    modifier.Result = cache;
+                }
+
+                var bm = cache.obj;
+                if (!bm)
                     return;
 
                 var time = ModifiersHelper.GetTime(bm);
@@ -10182,11 +10210,11 @@ namespace BetterLegacy.Core.Helpers
 
             var group = modifier.GetValue(0, variables);
 
-            var result = modifier.GetResultOrDefault(() => SetParentCache.FromSingle(modifier, prefabable, group));
+            var result = modifier.GetResultOrDefault(() => GroupCache.FromSingle(modifier, prefabable, group));
 
             if (result.group != group)
             {
-                result = SetParentCache.FromSingle(modifier, prefabable, group);
+                result = GroupCache.FromSingle(modifier, prefabable, group);
                 modifier.Result = result;
             }
 
@@ -10209,11 +10237,11 @@ namespace BetterLegacy.Core.Helpers
 
             var group = modifier.GetValue(2, variables);
 
-            var result = modifier.GetResultOrDefault(() => SetParentCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables)));
+            var result = modifier.GetResultOrDefault(() => GroupCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables)));
 
             if (result.group != group)
             {
-                result = SetParentCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables));
+                result = GroupCache.FromGroup(reference, modifier, prefabable, group, modifier.GetValue(0, variables));
                 modifier.Result = result;
             }
 
@@ -11618,6 +11646,8 @@ namespace BetterLegacy.Core.Helpers
             if (prefabable == null)
                 return false;
 
+            var tag = modifier.GetValue(0, variables);
+
             int fromType = modifier.GetInt(1, 0, variables);
             int fromAxis = modifier.GetInt(2, 0, variables);
 
@@ -11630,7 +11660,13 @@ namespace BetterLegacy.Core.Helpers
             bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
-            var beatmapObject = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+            var beatmapObject = cache.obj;
             if (!beatmapObject)
                 return false;
 
@@ -11647,6 +11683,8 @@ namespace BetterLegacy.Core.Helpers
             if (prefabable == null)
                 return false;
 
+            var tag = modifier.GetValue(0, variables);
+
             int fromType = modifier.GetInt(1, 0, variables);
             int fromAxis = modifier.GetInt(2, 0, variables);
 
@@ -11659,7 +11697,13 @@ namespace BetterLegacy.Core.Helpers
             bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
-            var beatmapObject = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+            var beatmapObject = cache.obj;
             if (!beatmapObject)
                 return false;
 
@@ -11676,6 +11720,8 @@ namespace BetterLegacy.Core.Helpers
             if (prefabable == null)
                 return false;
 
+            var tag = modifier.GetValue(0, variables);
+
             int fromType = modifier.GetInt(1, 0, variables);
             int fromAxis = modifier.GetInt(2, 0, variables);
 
@@ -11688,7 +11734,13 @@ namespace BetterLegacy.Core.Helpers
             bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
-            var beatmapObject = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+            var beatmapObject = cache.obj;
             if (!beatmapObject)
                 return false;
 
@@ -11705,6 +11757,8 @@ namespace BetterLegacy.Core.Helpers
             if (prefabable == null)
                 return false;
 
+            var tag = modifier.GetValue(0, variables);
+
             int fromType = modifier.GetInt(1, 0, variables);
             int fromAxis = modifier.GetInt(2, 0, variables);
 
@@ -11717,7 +11771,13 @@ namespace BetterLegacy.Core.Helpers
             bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
-            var beatmapObject = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+            var beatmapObject = cache.obj;
             if (!beatmapObject)
                 return false;
 
@@ -11734,6 +11794,8 @@ namespace BetterLegacy.Core.Helpers
             if (prefabable == null)
                 return false;
 
+            var tag = modifier.GetValue(0, variables);
+
             int fromType = modifier.GetInt(1, 0, variables);
             int fromAxis = modifier.GetInt(2, 0, variables);
 
@@ -11746,7 +11808,13 @@ namespace BetterLegacy.Core.Helpers
             bool useVisual = modifier.GetBool(9, false, variables);
             float loop = modifier.GetFloat(10, 9999f, variables);
 
-            var beatmapObject = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+            var beatmapObject = cache.obj;
             if (!beatmapObject)
                 return false;
 
@@ -12630,22 +12698,22 @@ namespace BetterLegacy.Core.Helpers
         public float startTime;
     }
 
-    public class SetParentCache
+    public class GroupCache
     {
-        public SetParentCache() { }
+        public GroupCache() { }
 
-        public static SetParentCache FromSingle(Modifier modifier, IPrefabable prefabable, string group)
+        public static GroupCache FromSingle(Modifier modifier, IPrefabable prefabable, string group)
         {
-            var cache = new SetParentCache();
+            var cache = new GroupCache();
             cache.group = group;
             if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target))
                 cache.target = target;
             return cache;
         }
 
-        public static SetParentCache FromGroup(IModifierReference reference, Modifier modifier, IPrefabable prefabable, string group, string otherGroup)
+        public static GroupCache FromGroup(IModifierReference reference, Modifier modifier, IPrefabable prefabable, string group, string otherGroup)
         {
-            var cache = new SetParentCache();
+            var cache = new GroupCache();
             cache.group = group;
             if (!string.IsNullOrEmpty(group) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, group, out BeatmapObject target))
                 cache.target = target;
@@ -12658,6 +12726,27 @@ namespace BetterLegacy.Core.Helpers
         public string group;
         public BeatmapObject target;
         public List<IParentable> parentables;
+    }
+
+    public class GroupBeatmapObjectCache
+    {
+        public GroupBeatmapObjectCache(string tag) => this.tag = tag;
+
+        public static GroupBeatmapObjectCache Get(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            var cache = new GroupBeatmapObjectCache(tag);
+            cache.UpdateCache(modifier, prefabable, tag);
+            return cache;
+        }
+
+        public void UpdateCache(Modifier modifier, IPrefabable prefabable, string tag)
+        {
+            if (!string.IsNullOrEmpty(tag) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, out BeatmapObject target))
+                obj = target;
+        }
+
+        public string tag;
+        public BeatmapObject obj;
     }
 
     public class MaskCache
