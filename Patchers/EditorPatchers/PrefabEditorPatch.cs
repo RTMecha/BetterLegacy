@@ -172,7 +172,7 @@ namespace BetterLegacy.Patchers
                 Debug.LogErrorFormat("External Prefabs Error: \n{0}\n{1}\n{2}", Instance.externalPrefabDialog, Instance.externalSearch, Instance.externalContent);
             }
             Debug.Log("Loading External Prefabs Popup");
-            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.RenderExternalPrefabs());
+            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.IRenderExternalPrefabs());
             return false;
         }
 
@@ -193,7 +193,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadExternalPrefabsPrefix(ref IEnumerator __result)
         {
-            __result = RTPrefabEditor.inst.LoadPrefabs();
+            __result = CoroutineHelper.IEmpty();
             return false;
         }
 

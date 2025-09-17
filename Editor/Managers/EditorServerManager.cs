@@ -1873,7 +1873,7 @@ namespace BetterLegacy.Editor.Managers
                 prefabPanel.Render();
             }
             else
-                CoroutineHelper.StartCoroutine(RTPrefabEditor.inst.LoadPrefabs());
+                RTPrefabEditor.inst.LoadPrefabs();
             RTEditor.inst.EnablePrefabWatcher();
             EditorManager.inst.DisplayNotification($"Downloaded {name}!", 1.5f, EditorManager.NotificationType.Success);
 

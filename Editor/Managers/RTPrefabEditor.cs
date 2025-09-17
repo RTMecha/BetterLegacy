@@ -132,7 +132,7 @@ namespace BetterLegacy.Editor.Managers
             // A
             {
                 loadingPrefabTypes = true;
-                PrefabEditor.inst.StartCoroutine(LoadPrefabs());
+                LoadPrefabs();
                 PrefabEditor.inst.OffsetLine = PrefabEditor.inst.OffsetLinePrefab.Duplicate(EditorManager.inst.timeline.transform, "offset line");
                 PrefabEditor.inst.OffsetLine.transform.AsRT().pivot = Vector2.one;
 
@@ -411,7 +411,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.PrefabPopups.GameObject.transform.GetChild(0).gameObject.SetActive(false);
 
                 if (PrefabEditor.inst.externalContent)
-                    StartCoroutine(RenderExternalPrefabs());
+                    StartCoroutine(IRenderExternalPrefabs());
 
                 savingToPrefab = true;
                 prefabToSaveFrom = prefab;
@@ -1930,7 +1930,17 @@ namespace BetterLegacy.Editor.Managers
 
         #region Prefabs
 
-        public IEnumerator LoadPrefabs()
+        /// <summary>
+        /// Loads the external Prefabs.
+        /// </summary>
+        /// <param name="onLoad">Function to run when the Prefabs have finished loading.</param>
+        public void LoadPrefabs(Action onLoad = null) => CoroutineHelper.StartCoroutine(ILoadPrefabs(onLoad));
+
+        /// <summary>
+        /// Loads the external Prefabs.
+        /// </summary>
+        /// <param name="onLoad">Function to run when the Prefabs have finished loading.</param>
+        public IEnumerator ILoadPrefabs(Action onLoad = null)
         {
             if (prefabsLoading)
                 yield break;
@@ -2084,14 +2094,8 @@ namespace BetterLegacy.Editor.Managers
 
             prefabsLoading = false;
 
-            yield break;
-        }
+            onLoad?.Invoke();
 
-        public IEnumerator UpdatePrefabs()
-        {
-            yield return inst.StartCoroutine(LoadPrefabs());
-            StartCoroutine(RenderExternalPrefabs());
-            EditorManager.inst.DisplayNotification("Updated external prefabs!", 2f, EditorManager.NotificationType.Success);
             yield break;
         }
 
@@ -2127,6 +2131,10 @@ namespace BetterLegacy.Editor.Managers
             AchievementManager.inst.UnlockAchievement("time_machine");
         }
 
+        /// <summary>
+        /// Opens the Prefab Editor.
+        /// </summary>
+        /// <param name="prefabPanel">Prefab to edit.</param>
         public void OpenPrefabEditorDialog(PrefabPanel prefabPanel)
         {
             PrefabEditorDialog.Open();
@@ -2134,9 +2142,9 @@ namespace BetterLegacy.Editor.Managers
         }
 
         /// <summary>
-        /// Renders the External Prefab Editor.
+        /// Renders the Prefab Editor.
         /// </summary>
-        /// <param name="prefabPanel"></param>
+        /// <param name="prefabPanel">Prefab to edit.</param>
         public void RenderPrefabEditorDialog(PrefabPanel prefabPanel)
         {
             CurrentPrefabPanel = prefabPanel;
@@ -2600,7 +2608,7 @@ namespace BetterLegacy.Editor.Managers
             PrefabEditor.inst.externalSearch.onValueChanged.NewListener(_val =>
             {
                 PrefabEditor.inst.externalSearchStr = _val;
-                StartCoroutine(RenderExternalPrefabs());
+                StartCoroutine(IRenderExternalPrefabs());
             });
 
             PrefabEditor.inst.internalSearch.onValueChanged.NewListener(_val =>
@@ -2648,7 +2656,7 @@ namespace BetterLegacy.Editor.Managers
                 externalPrefab.GetComponent<ScrollRect>().horizontal = EditorConfig.Instance.PrefabExternalHorizontalScroll.Value;
             }
 
-            StartCoroutine(RenderExternalPrefabs());
+            StartCoroutine(IRenderExternalPrefabs());
             StartCoroutine(RefreshInternalPrefabs());
         }
 
@@ -3032,10 +3040,12 @@ namespace BetterLegacy.Editor.Managers
             return gameObject;
         }
 
+        public void RenderExternalPrefabs() => CoroutineHelper.StartCoroutine(IRenderExternalPrefabs());
+
         /// <summary>
         /// Renders the External Prefabs UI.
         /// </summary>
-        public IEnumerator RenderExternalPrefabs()
+        public IEnumerator IRenderExternalPrefabs()
         {
             foreach (var prefabPanel in PrefabPanels.Where(x => x.Source == ObjectSource.External))
             {

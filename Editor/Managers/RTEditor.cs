@@ -1783,7 +1783,7 @@ namespace BetterLegacy.Editor.Managers
 
                     SaveGlobalSettings();
 
-                    StartCoroutine(RTPrefabEditor.inst.UpdatePrefabs());
+                    RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
 
                     HideWarningPopup();
                     prefabPathField.interactable = true;
@@ -1798,7 +1798,7 @@ namespace BetterLegacy.Editor.Managers
 
             SaveGlobalSettings();
 
-            StartCoroutine(RTPrefabEditor.inst.UpdatePrefabs());
+            RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
         }
 
         /// <summary>
@@ -2179,7 +2179,7 @@ namespace BetterLegacy.Editor.Managers
         {
             yield return Ninja.JumpToUnity;
             CoreHelper.Log($"------- [UPDATING PREFAB FILEWATCHER] -------");
-            StartCoroutine(RTPrefabEditor.inst.UpdatePrefabs());
+            RTPrefabEditor.inst.LoadPrefabs(RTPrefabEditor.inst.RenderExternalPrefabs);
             yield break;
         }
 
