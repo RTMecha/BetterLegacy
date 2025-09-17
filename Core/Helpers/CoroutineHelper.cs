@@ -8,6 +8,8 @@ using CielaSpike;
 
 using BetterLegacy.Core.Threading;
 
+using Task = System.Threading.Tasks.Task;
+
 namespace BetterLegacy.Core.Helpers
 {
     /// <summary>
@@ -265,7 +267,7 @@ namespace BetterLegacy.Core.Helpers
         public static string DefaultYieldInstructionDescription => "Some options will run faster but freeze the game, while others run slower but allow you to see them update in real time.";
 
         // this works, cool
-        public static void RunTestCoroutineToTask() => System.Threading.Tasks.Task.Run(TestCoroutineToTask);
+        public static void RunTestCoroutineToTask() => Task.Run(TestCoroutineToTask);
 
         public static async void TestCoroutineToTask()
         {
@@ -277,6 +279,21 @@ namespace BetterLegacy.Core.Helpers
         static IEnumerator ITestCoroutine()
         {
             yield return Seconds(1f);
+        }
+
+        // CoroutineHelper.RunTestTaskToCoroutine();
+        public static void RunTestTaskToCoroutine() => StartCoroutine(TestTaskToCoroutine());
+
+        public static IEnumerator TestTaskToCoroutine()
+        {
+            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Started"));
+            yield return StartCoroutine(TestAsync().AsIEnumerator());
+            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Done"));
+        }
+
+        static async Task TestAsync()
+        {
+            await Task.Delay(1000);
         }
 
         #endregion
