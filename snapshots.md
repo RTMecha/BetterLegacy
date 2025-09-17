@@ -8,8 +8,13 @@
 - Unlock After Completion toggle now applies regardless of challenge mode.
 - Added a subtract button to the tag field of the Multi Object Editor. This removes a specified tag from selected objects.
 - Added icon to Prefab Creator.
+- Levels can now have their icon set to a "locked.jpg" file if the level is locked.
+- Added "Allow Zen Progression" to Level Collections. This allows players to play through the entirety of the Level Collection in Zen Mode. However, levels will not be ranked nor unlocked.
 
 ## Changes
+### Core
+- Tweaked some Level Collection behavior.
+
 ### Editor
 - Improved Capture Area usage.
 
