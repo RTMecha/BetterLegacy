@@ -842,7 +842,7 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.InfoPopup.SetInfo($"Updating states for [ {name} ]");
             if (CoreConfig.Instance.DiscordTimestampUpdatesPerLevel.Value)
                 DiscordController.inst.presence.startTimestamp = SteamworksFacepunch.Epoch.Current;
-            CoreHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.song.title}", "In Editor", "editor");
+            CoreHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.beatmap.name}", "In Editor", "editor");
 
             CoreHelper.Log("Spawning players...");
             try
