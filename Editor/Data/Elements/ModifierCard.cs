@@ -829,6 +829,11 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getCurrentLevelName): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getCurrentLevelRank): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
