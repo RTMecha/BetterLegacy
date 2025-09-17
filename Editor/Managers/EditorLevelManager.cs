@@ -1387,7 +1387,10 @@ namespace BetterLegacy.Editor.Managers
                 levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
             }
             else
-                levelPanels = LevelPanels;
+            {
+                levelPanels = levelPanels.Order(x => x.Item?.collectionInfo?.index ?? 0, true);
+                levelPanels = levelPanels.Order(x => x.isFolder, true); // folders should always be at the top.
+            }
 
             var content = OpenLevelPopup.Content;
 
@@ -1657,11 +1660,9 @@ namespace BetterLegacy.Editor.Managers
 
             LevelCollectionDialog.DescriptionField.SetTextWithoutNotify(levelCollection.description);
             LevelCollectionDialog.DescriptionField.onValueChanged.NewListener(_val => levelCollection.description = _val);
-            LevelCollectionDialog.DescriptionField.onEndEdit.NewListener(_val => levelCollection.Save());
 
             LevelCollectionDialog.CreatorField.SetTextWithoutNotify(levelCollection.creator);
             LevelCollectionDialog.CreatorField.onValueChanged.NewListener(_val => levelCollection.creator = _val);
-            LevelCollectionDialog.CreatorField.onEndEdit.NewListener(_val => levelCollection.Save());
 
             LevelCollectionDialog.IconImage.sprite = levelCollection.icon;
 
@@ -1689,6 +1690,9 @@ namespace BetterLegacy.Editor.Managers
             LevelCollectionDialog.VersionField.onValueChanged.NewListener(_val => levelCollection.ObjectVersion = _val);
             LevelCollectionDialog.VersionField.onEndEdit.NewListener(_val => RenderLevelCollectionEditor(levelCollection));
             EditorContextMenu.inst.AddContextMenu(LevelCollectionDialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(levelCollection, () => RenderLevelCollectionEditor(levelCollection)));
+
+            LevelCollectionDialog.AllowZenProgressionToggle.SetIsOnWithoutNotify(levelCollection.allowZenProgression);
+            LevelCollectionDialog.AllowZenProgressionToggle.onValueChanged.NewListener(_val => levelCollection.allowZenProgression = _val);
 
             LevelCollectionDialog.ViewLevelsButton.onClick.NewListener(() => LoadLevelCollection(levelCollection));
             LevelCollectionDialog.SaveButton.onClick.NewListener(() =>
@@ -1774,7 +1778,7 @@ namespace BetterLegacy.Editor.Managers
             }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
         }
 
-        public void OpenIconSelector(LevelInfo levelInfo)
+        public void OpenIconSelector(LevelInfo levelInfo, Action onSubmit = null)
         {
             string jpgFile = FileBrowser.OpenSingleFile("jpg");
             CoreHelper.Log("Selected file: " + jpgFile);
@@ -1784,7 +1788,7 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(EditorManager.inst.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
             {
                 levelInfo.icon = cover;
-                RenderLevelInfoEditor(levelInfo);
+                RenderLevelInfoEditor(levelInfo, onSubmit);
             }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
         }
 
@@ -1887,7 +1891,7 @@ namespace BetterLegacy.Editor.Managers
             LevelInfoDialog.IconImage.sprite = levelInfo.icon ?? LegacyPlugin.AtanPlaceholder;
 
             LevelInfoDialog.CollapseIcon(LevelInfoCollapseIcon);
-            LevelInfoDialog.SelectIconButton.onClick.NewListener(() => OpenIconSelector(levelInfo));
+            LevelInfoDialog.SelectIconButton.onClick.NewListener(() => OpenIconSelector(levelInfo, onSubmit));
             LevelInfoDialog.CollapseIconToggle.SetIsOnWithoutNotify(LevelInfoCollapseIcon);
             LevelInfoDialog.CollapseIconToggle.onValueChanged.NewListener(_val =>
             {

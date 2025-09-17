@@ -392,10 +392,13 @@ namespace BetterLegacy.Arcade.Interfaces
                 int row = (int)((index % ArcadeMenu.MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[index];
+                var levelInfo = level?.collectionInfo ?? LevelManager.CurrentLevelCollection?.levelInformation.Find(x => x.index == index);
+                var saveData = level?.saveData ?? (levelInfo ? LevelManager.GetSaveData(levelInfo.id) : null);
+                var levelIsLocked = (level && level.metadata && level.metadata.requireUnlock || levelInfo && levelInfo.requireUnlock && levelInfo.overwriteRequireUnlock) && (!saveData || !saveData.Unlocked);
 
                 if (!level)
                 {
-                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelInfo levelInfo))
+                    if (levelInfo)
                     {
                         CoreHelper.Log($"A collection level was not found. It was probably not installed.\n" +
                             $"Level Name: {levelInfo.name}\n" +
@@ -437,8 +440,9 @@ namespace BetterLegacy.Arcade.Interfaces
                                     $"Server ID: {levelInfo.serverID}\n" +
                                     $"Workshop ID: {levelInfo.workshopID}");
 
+                                var levels = Levels;
                                 LevelManager.currentLevelIndex = index;
-                                LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo);
+                                LevelManager.CurrentLevelCollection.DownloadLevel(levelInfo, downloadedLevel => Init(levels));
                             }
                         });
 
@@ -461,11 +465,8 @@ namespace BetterLegacy.Arcade.Interfaces
 
                     continue;
                 }
-                else
-                {
-                    if (LevelManager.CurrentLevelCollection && LevelManager.CurrentLevelCollection.levelInformation.TryFind(x => x.index == index, out LevelInfo levelInfo) && levelInfo.hidden && (!levelInfo.showAfterUnlock || level.Locked))
-                        continue;
-                }
+                else if (levelInfo && levelInfo.hidden && (!levelInfo.showAfterUnlock || levelIsLocked))
+                    continue;
 
                 var rank = LevelManager.GetLevelRank(level);
                 var isSSRank = rank == Rank.SS;
@@ -478,7 +479,7 @@ namespace BetterLegacy.Arcade.Interfaces
                     name = "Level Button",
                     parentLayout = "levels",
                     selectionPosition = new Vector2Int(column, row),
-                    icon = level.icon,
+                    icon = levelIsLocked ? levelInfo.lockedIcon ?? level.lockedIcon ?? level.icon : level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                     text = "<size=24>" + level.metadata?.beatmap?.name,
                     textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
@@ -530,7 +531,6 @@ namespace BetterLegacy.Arcade.Interfaces
                 };
                 MenuImage locked = null;
 
-                var levelIsLocked = level.Locked;
                 if (levelIsLocked)
                 {
                     locked = new MenuImage

@@ -34,6 +34,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         public InputField VersionField { get; set; }
 
+        public Toggle AllowZenProgressionToggle { get; set; }
+
         public Button ViewLevelsButton { get; set; }
 
         public Button SaveButton { get; set; }
@@ -278,6 +280,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 EditorThemeManager.AddGraphic(collapseBanner.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
 
             #endregion
+
+            AllowZenProgressionToggle = GenerateToggle(Content, "Allow Zen Progression");
 
             var viewLevels = EditorPrefabHolder.Instance.Function2Button.Duplicate(Content, "view levels");
             var viewLevelsStorage = viewLevels.GetComponent<FunctionButtonStorage>();

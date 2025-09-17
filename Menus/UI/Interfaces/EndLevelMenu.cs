@@ -180,7 +180,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
 
             var nextLevel = LevelManager.NextLevelInCollection;
-            if (LevelManager.CurrentLevelCollection && (metadata.song.DifficultyType == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || !RTBeatmap.Current.challengeMode.Invincible) && LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count || !LevelManager.IsNextEndOfQueue)
+            if (LevelManager.CurrentLevelCollection && (metadata.song.DifficultyType == DifficultyType.Animation || nextLevel && nextLevel.saveData && nextLevel.saveData.Unlocked || LevelManager.CurrentLevelCollection.allowZenProgression || !RTBeatmap.Current.challengeMode.Invincible) && LevelManager.currentLevelIndex + 1 != LevelManager.CurrentLevelCollection.Count || !LevelManager.IsNextEndOfQueue)
             {
                 if (nextLevel)
                     CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");

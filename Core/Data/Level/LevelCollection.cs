@@ -161,6 +161,11 @@ namespace BetterLegacy.Core.Data.Level
         /// </summary>
         public LevelCollectionPanel editorPanel;
 
+        /// <summary>
+        /// If progression is allowed in zen mode.
+        /// </summary>
+        public bool allowZenProgression;
+
         #region Server
 
         /// <summary>
@@ -276,6 +281,8 @@ namespace BetterLegacy.Core.Data.Level
             collection.path = path;
             if (jn["entry_level_index"] != null)
                 collection.entryLevelIndex = jn["entry_level_index"].AsInt;
+            if (jn["allow_zen_progression"] != null)
+                collection.allowZenProgression = jn["allow_zen_progression"].AsBool;
 
             if (!string.IsNullOrEmpty(jn["date_edited"]))
                 collection.dateEdited = jn["date_edited"];
@@ -627,6 +634,8 @@ namespace BetterLegacy.Core.Data.Level
                 jn["difficulty"] = difficulty;
             if (levelInformation.InRange(entryLevelIndex))
                 jn["entry_level_index"] = entryLevelIndex;
+            if (allowZenProgression)
+                jn["allow_zen_progression"] = allowZenProgression;
 
             jn["date_created"] = dateCreated;
             jn["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
