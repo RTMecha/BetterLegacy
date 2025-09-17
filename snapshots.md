@@ -1,5 +1,8 @@
 ﻿# ???
 ## Features
+### Core
+- Added getCurrentLevelName modifier. This passed the current levels' name to other modifiers.
+
 ### Editor
 - Added "Auto Search" in Config Manager > Editor > Data.
 - You can now save the currently selected Level Collection either by the save keybind or the Level Collection Editor.
