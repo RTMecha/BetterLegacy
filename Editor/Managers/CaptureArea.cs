@@ -40,7 +40,7 @@ namespace BetterLegacy.Editor.Managers
         public static void Init()
         {
             var canvas = UIManager.GenerateUICanvas("Capture Canvas", null);
-            canvas.SetWorldSpace(RTLevel.FOREGROUND_LAYER, RTLevel.Cameras.FG);
+            canvas.SetWorldSpace(RTLevel.UI_LAYER, RTLevel.Cameras.FG);
             var captureArea = canvas.GameObject.AddComponent<CaptureArea>();
             captureArea.canvas = canvas;
             captureArea.InternalInit();
