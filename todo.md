@@ -1,6 +1,6 @@
 ﻿# TODO
-Current: Server finalization
-Next: 1.8.0 pre-release test and release
+Current: null
+Next: null
 
 ## Features
 ### Core
@@ -92,7 +92,7 @@ Next: 1.8.0 pre-release test and release
   NEEDS IMPLEMENTATION  
   Details: rewards the player with a prefab, theme, player model or player toolkit item.  
   Notes:  
-  - Change this to be a Prefab instead, since Prefabs can now store themes. (maybe they should also be able to store Player models?)
+  - Change this to be a Prefab instead, since Prefabs can now store themes. (maybe they should also be able to store Player models? make Player models use the import / export system first)
 - playerAction trigger (allows for multiple different keybinds and buttons)  
 - Ignore opacity toggle for color modifiers.  
   Update: 1.8.0+  
@@ -164,7 +164,6 @@ Next: 1.8.0 pre-release test and release
 ### Fixes
 - Fix 1 life restart bug
 - Fix checkpoint sound duplication
-- Fix levels not progressing correctly in Level Collections.
 
 
 ## Ideas
