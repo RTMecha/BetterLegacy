@@ -1,4 +1,4 @@
-﻿# ???
+﻿# 1.8.0 [Sep 19, 2025]
 ## Features
 ### Core
 - Added getCurrentLevelName modifier. This passed the current levels' name to other modifiers.
@@ -31,7 +31,7 @@
 
 -------------------------------------------------------------------
 
-# 1.8.0-pre.1 > [Sep 12, 2025]
+# 1.8.0-pre.1 [Sep 12, 2025]
 ## Features
 ### Core
 - callModifierBlock modifiers now check for modifier blocks in the objects' associated Prefab. Good for per-Prefab functions.
