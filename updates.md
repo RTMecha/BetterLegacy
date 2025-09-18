@@ -1,4 +1,245 @@
-﻿# 1.7.7 [Jul 6, 2025]
+﻿# BetterLegacy 1.8.0 [Expansion Update]
+## Features
+### Story
+- The story intro now features a keypad where you can enter a custom name for the save slot.
+- The base interface also includes a keypad.
+
+### Core
+- Server:
+  - Level Collections can now be uploaded and downloaded.
+  - Prefabs can now be uploaded and downloaded. Uploaded Prefabs from you or other people can be viewed from the View Uploaded dialog.
+  - All server items can be collaborated on. This means you can grant specified people permissions to update the level and view it if the level is unlisted / private.
+- Configs:
+  - Added "Modifiers Display Achievements" in Config Manager > Editor > Modifiers. This allows achievements to display in the editor when they're unlocked via a modifier.
+  - Added "Load Sound Asset On Click" in Config Manager > Editor > Data.
+  - Finally added Borderless Fullscreen. If the window is in fullscreen, it will not minimize when unfocused with this setting on.
+  - Added a few settings for the Object Drag Helper for customization.
+  - Added "Open Custom Object Creation Options" in Config Manager > Editor > General. This opens the custom object options popup by default when clicking the Object button.
+  - Moved Object Creation settings from Editor > General to Editor > Creation, and added a few more settings for this tab.
+  - Added "Analyze BPM On Level Load" in > Config Manager > Editor > BPM.
+  - Added "Apply Tail Delay" in Config Manager > Player > General. This forces the tail to not apply the Tail Base Time value. Older versions of PA does not apply the time value delay and ends up making it look nicer.
+  - Added "Marker Loop Behavior" in Config Manager > Editor > Markers. This allows you to control how the marker looping works.
+  - Added "Snap Created" in Config Manager > Editor > BPM. This forces new objects to snap to the BPM.
+  - Added "Retain Copied Prefab Instance Data" in Config Manager > Editor > Data. If the copied Prefab instance data should be kept when loading a different level.
+  - Added "Timeline Object Prefab Icon" in Config Manager > Editor > Timeline. With it on, the Prefabs' icon will be prioritzed over the Prefab Type icon.
+  - Added "Auto Search" in Config Manager > Editor > Data and Config Manager > Arcade > Sorting.
+- Prefabs:
+  - Prefab Objects can now use modifiers.
+  - Prefabs should now support recursive prefabs. This means prefabs can be contained in other prefabs.
+  - Prefab Objects now have a depth offset value.
+  - Themes and modifier blocks can now be stored in Prefabs.
+  - Reworked Prefab Objects to have their own runtime system. Using prefabs should now be a whole lot more optimized.
+- Modifiers:
+  - Added else trigger modifier. This inverts the current trigger modifier check. It can be used either as a "not gate" or after a set of triggers & actions to act as an "else" statement in programming.
+  - Added a "comment" modifier that allows you to describe what a modifier function does. The comment can be locked / unlocked by right clicking the input field and selecting the context menu button. (editor only)
+  - Added await and awaitCounter trigger modifiers. This waits for a set amount of time when active and then triggers.
+  - Added resetLoop modifier. This allows already activated non-constant modifiers to run again. The current loop continues running.
+  - Added isFocused trigger modifier.
+  - Added setRenderType and setRenderTypeOther modifiers. These can Set the render type of the object. Don't know why these weren't in there earlier.
+  - Added setTheme and lerpTheme action modifiers. This sets a custom fixed theme that overwrites the theme interpolation.
+  - Added spawnPrefabCopy modifiers. These search for an existing Prefab Object and if one is found, copies its data.
+  - Added setPrefabTime modifier. This overrides the Prefab Objects' runtime time and sets a custom time.
+  - Added playerCollideIndex modifier. Acts like the regular playerCollide modifier except for a specific player.
+  - Added storeLocalVariables modifiers. This stores the current local modifier variables to this modifier and passes it to other modifiers in future tick updates.
+  - Added playerDrag modifiers. This drags the player with the object but allows it to move. Currently the "Use Rotation" value does not work.
+  - Added eventEquals modifiers. These compare an event keyframes' value at a specified time or the current time if the "Time" value is left empty.
+  - Added onLevelStart and onLevelRewind modifiers.
+  - Added getCurrentLevelID and getCurrentLevelRank modifiers.
+  - Added loadLevelCollection modifier.
+  - Added getPlayerLives, getLives and getMaxLives modifiers.
+  - Added exitInterface modifier. Used for cases where you want to exit the currently open interface under specific circumstances. (Does not work on the pause menu / end level menu. It's just for the loadInterface modifier)
+  - Added "Pause Level" and "Pass Variables" values to the loadInterface modifier.
+  - Actually implemented playerVelocity modifiers. (they didn't have code before)
+  - Added "Remove After Despawn" value to spawnPrefab modifiers.
+  - Added whiteHole and more blackHole modifiers. The blackHole modifier now only targets the nearest player and no longer has the "Use Opacity" setting, as there are better ways of doing it now.
+  - Added getVisualOpacity modifier.
+  - Added playerLockX and playerLockY action modifiers. These prevent the player from moving in the specified axis.
+  - Added getAchievementUnlocked and achievementUnlocked trigger modifiers. These check for achievement unlocked states.
+  - Added playerEnable modifers. This shows / hides specific players.
+  - Added playerEnableDamage modifies. Modifies players damageable state.
+  - Added getEditorBin, getEditorLayer and getObjectName modifiers. Good for debugging, level editing and sandboxing. Can be used outside the editor.
+  - Added loadSoundAsset action modifier. This loads / unloads a specified sound asset. If loaded, the sound asset will have no load time when playing the sound.
+  - Added setCustomObjectIdle modifier. Player animations no longer override the idle state of the object. Only compatible with player related objects.
+  - Added onCheckpoint and onMarker trigger modifiers. These trigger when a checkpoint / marker matching the provided values is reached.
+  - Added objectActive and objectCustomActive trigger modifiers. These check if the objects' active state is true.
+  - Added callModifierBlockTrigger trigger modifier. This does the same thing as the regular callModifierBlock action modifier, except this modifier checks for the final trigger state of the modifier block.
+- Player:
+  - Implemented Player Modifiers.
+  - Added "Allow Player Model Controls" to the Player settings. This allows player models to retain their control values, while making regular levels fair again.
+  - Tail parts can now be added / removed in player models.
+  - Added rotation speed and curve type to player editor.
+  - Added Sprint & Sneak speeds to the Player.
+  - You can now edit Player object animations by going to the Custom tab in the Player Editor, selecting a custom object and clicking "View Animations".
+  - You can also view the levels' animation library by going to the View dropdown and selecting "View Animations".
+- The Audio event keyframe and sound modifiers now have a "Pan Stereo" value. This allows control of the left / right direction the sound is coming from, emulating 3D spaces.
+- Implemented seed based random. Can be turned off by going to Config Manager > Core > Level > Use Seed Based Random and turning the setting off if anything breaks or you prefer the original randomization method.
+- Implemented the new Checkpoint features to the Checkpoint Editor.
+- Added Lives count and Respawn Immediately toggle to the Player Editor.
+- Implemented custom achievements. These can be edited via the Edit dropdown in the editor and via the View Achievements button in the Arcade's play level menu.
+- Implemented level modifiers. Level modifiers can be converted to triggers in the VG format, but will only save the first trigger and action of a set of modifiers.
+- Implemented modifier blocks. These can be called using the callModifierBlock modifier. Good for compacting and reusing modifier code, but not recommended for prefab models, unless you add the modifier blocks to the prefab.
+- Level now has settings for start & end offset, default end function, if the level should auto end, etc.
+- Added "Preferred Control Type" setting to level metadata. This will be used to notify users of levels with specific mechanics.
+- Implemented uploader & creator data to Prefabs, Beatmap Themes and Player Models.
+- Fully implemented sprite & sound asset system. These include a list in the editor and a new modifier: "loadSoundAsset".
+- Levels now include a video link, where you can provide a recorded video of the level. The link can only be the ID of the video, or after the "watch?v=" part of the link.
+- Added a Creator value to Themes and Prefabs, so you can finally credit those assets.
+- Added a bunch of fonts.
+- Levels can now have their icon set to a "locked.jpg" file if the level is locked.
+
+### Arcade
+- Online tab now automatically searches when you switch to that tab.
+- Added viewing online Level Collections to the Arcade menu.
+- Online tab now has sort settings.
+
+### Interfaces
+- Interface now has a dynamic variable system that allows for specific variables to affect anything in the interface.
+- Implemented interface list. This allows for easier interface branching and interface loading.
+- Improved the Profile menu to include pages and a list of achievements.
+
+### Example Companion
+- You can now close Example's chat bubble by clicking it. Useful if his dialogue gets in the way of something.
+
+### Editor
+- Object keyframe UI can now be customized via right clicking the X / Y / Z values and changing the UI to a Input Field, Dropdown or Toggle. You can also customize how each of these display.
+- Added a way to view your user ID and copy it to the Metadata editor.
+- Collaborators can now be added to a level. This means other users can post to the same level and also see it in the Arcade / Editor, even if it's private.
+- Fully implemented level collection editing. You can view them in the Level Collections popup under the File dropdown.
+  - Levels can be added to the collection either via the level collection itself or via the level panel context menu.
+  - "Add File to Collection" context menu button copies the level folder to the collection and adds the reference to the collection. This is only if you want the level to be exclusive to the level collection.
+  - "Add Ref to Collection" context menu button only adds the reference. It's recommended the level is on the Arcade server or the workshop before using this button.
+- You can now replace the current loaded levels' song by dragging a song file onto the PA window.
+- Fully implemented new "Pinned Editor Layer" system. This allows you to fully organize your editor layers, including layer names, descriptions and custom colors!
+- Default Prefab Object instance data can now be saved to and loaded from Prefabs. If you have copied instance data, that will be priotized over the saved instance data. This can be used by spawnPrefab modifiers.
+- You can now add a default tag to the levels' metadata by right clicking the "Add Tag" button and selecting "Add a Default Tag".
+- If you want to refresh an objects' randomization, you can go to the Object Editor, right click the ID and click "Shuffle ID".
+- "Pull Level" now exists as a server button in the MetaData Editor.
+- The Player editor now has a way to edit the Player Control of a Player by turning "Edit Controls" on in the editor.
+- You can now enable / disable the "Show Collapse Prefab Warning" setting via the "Apply / Collapse" buttons' context menu.
+- Modifier cards can now display a custom name and have a description display in the info box.
+- Keybinds
+  - Overhauled the keybind editor to include a new "Keybind Profile" system. Due to this, you will need to setup your keybinds again.
+  - With the new profile system, a "SwitchKeybindProfile" function was added to the keybind functions.
+  - Added "SetPitch" keybind.
+  - Added "ToggleObjectDragHelper" keybind.
+  - Added "SetObjectDragHelperAxisX" and "SetObjectDragHelperAxisY" keybind.
+- Added "Screen Overlay" default object in the "More Options" popup. Good for fading the screen in / out.
+- The animation timeline should now use the Use Mouse As Zoom Point setting.
+- Overhauled the Theme system to have internal / external themes. The "View Themes" popup is now used for viewing and importing external themes and the theme keyframe is now for viewing internal level themes.
+- Object and Parent Object Search Popups now have a page system.
+- Tweaked some editor UI.
+- Added some functions to the Multi Object editor.
+- Added a file version field to Prefabs, levels, level collections and player models. You can right click the field to edit the version number.
+- Player models now have a creator field.
+- .vgp Prefabs now load in the External Prefabs list.
+- Ported Prefab preview from VG, except you can customize the Prefab's icon with any JPG image file. You can also use the new Capture Area box.
+- Added a Capture Area box. This acts as an in-game camera that is draggable. The outline can be dragged to resize the resolution, the slider can be changed to set the zoom, the corners can be dragged to rotate and the inner box can be clicked to take a screenshot of that area.
+- Server related processes now have a progress bar popup.
+
+## Changes
+### Story
+- The end of chapter 1 now has a confirmation interface, giving you a chance to do anything else before you're locked out of progressing the chapter.
+
+### Core
+- Beware, some stuff might be broken and definitely will not be compatible with 1.7.x and below.
+- Updated demo (Beatmap.zip) files to include some prefabs that demonstrate more features.
+- Modifiers:
+  - Overhauled modifier system to be a lot more unified than before.
+  - Modifier JSON format has been tweaked. 1.7.x should still be compatible with this change as it was accounted for a while ago.
+  - Tweaked the audioSource modifier a little. It should be better to use, hopefully.
+  - Some group modifiers should now be compatible with more object types.
+  - The "Object Group" value in modifiers can be left empty to specify the object the modifier is stored in.
+  - containsTag modifier now checks for prefab object tags if the object was spawned from a prefab.
+  - spawnPrefab modifiers now use the Prefabs' default instance data.
+  - Reworked updateObject modifiers into updateObject, updateObjectOther and reinitLevel.
+  - The return modifier now resets the trigger check.
+  - The "Else if" toggle on trigger modifiers now allows for multiple "or gate" conditions. (e.g. trigger a is false, trigger b has else if on and is true and trigger c is true, which allows the modifier actions to run)
+- Player:
+  - Player stop boost function no longer depends on the moveable state of the player.
+  - Player Model & Player Editor code has been heavily cleaned up.
+  - Preferred Player Count value now blocks the user from entering the level if the player count does not match.
+- Reworked some MetaData values.
+- Tried optimizing the keyframe sequences a little.
+- Optimized parent chain updating by a lot.
+- Changed some system library references.
+- Renamed playSoundOnline modifier to "playOnlineSound" to match "playDefaultSound".
+- Players now respawn when UpdateEverything keybind is used.
+- Unlock After Completion toggle now applies regardless of challenge mode.
+
+### Interfaces
+- Due to the interface list feature, some interfaces have been combined into one file and there's also some new tests to demonstrate the capabilities of the interface now.
+- Updated the splash text.
+
+### Editor
+- Renamed "Show Intro" to "Hide Intro". This is because in vanilla "Show Intro" was saved as off, despite the intro showing by default, so had to rename it to something.
+- Reorganized the default modifiers list and added icons that display the type of the modifier. 
+- The "Create Objects Modifier Order Default" setting now applies to imported Prefab Objects and new Background Objects.
+- Refractored some editor element code.
+- Overhauled the Metadata editor UI.
+- Recently opened popups now appear above previously opened popups.
+- The editor context menu should no longer overflow to the right of the application.
+- Base Player Model control values can now show in default models if Edit Controls is turned on.
+- Removed "Adjust Position Inputs" setting. This isn't needed anymore since position Z has been a part of the mod for a long while.
+- Improved timeline object loading by a tiny amount.
+- Keybinds
+  - Renamed keybind function "OpenPrefabDialog" to "OpenPrefabCreator" to make it more clear as to what it does.
+  - Renamed keybind function "ToggleEditor" to "TogglePreview".
+  - Renamed keybind function "GoToCurrent" to "GoToCurrentTime".
+  - Renamed keybind function "ToggleObjectDragger" to "ToggleObjectDragging".
+  - Renamed keybind function "SaveBeatmap" to "SaveLevel".
+  - Renamed keybind function "OpenBeatmapPopup" to "OpenLevelPopup".
+  - Renamed keybind function "OpenSaveAs" to "SaveLevelCopy".
+  - Renamed keybind function "OpenNewLevel" to "CreateNewLevel".
+  - ToggleBPMSnap keybind function now notifies the user about whether the BPM snap was turned on or off.
+- Removed the Level Combiner dialog as you can just select multiple levels in the Open Level Popup, right click them and select "Combine".
+- Simplified the editor popup animation register code to make it easier to add new popups.
+- Holding alt while BPM snap is on no longer plays the BPM snap sound.
+- Reworked the "View Uploaded" editor dialog to allow viewing of Levels, Level Collections and Prefabs.
+- Optimized layer setting a little by updating timeline objects in chunks.
+- Collapsed Prefab Objects now have their start position set to the Prefab offset.
+- Changed Creator Links.
+- Increased amount you scroll in some scroll views
+- Changed the Document Full View editor in the Project Planner to be scrollable.
+
+## Fixes
+- Fixed the labels in the global Prefab section of the Prefab Object editor not displaying.
+- Optimized hidden prefab objects in editor.
+- Fixed the Fade Colors list in the Background Object editor.
+- Fixed spawnPrefabs modifiers being broken.
+- Fixed use visual values in axis modifiers not allowing rotation axis other than the first.
+- Prefab Name doesn't wrap now.
+- Optimized modifiers and prefabs (FPS should be doubled for enableObjectGroup modifiers).
+- Fixed entering editor preview taking the song time to the last seeked time.
+- Fixed some issues with the Player face parent.
+- Fixed polygon shape in Player Editor.
+- Fixed the downloadLevel modifier causing a softlock.
+- Fixed editor breaking if you were never logged in.
+- Fixed config preset breaking render depth.
+- Fixed song link not working.
+- Fixed setParent modifier re-activating objects when it shouldn't.
+- Cursor position modifiers no longer force the position if the application isn't focused or the user isn't editing.
+- Fixed some Player model values not saving & loading.
+- Fixed the currently selected Custom Player Object being removed when deleting a different custom object.
+- Fixed searching Custom Player Objects not working.
+- Fixed updateObject modifiers throwing an error.
+- Fixed dragging an empty object not updating the time offset of child objects.
+- Fixed Window events persisting in menus.
+- Fixed Editor colors for BG objects not rendering correctly.
+- Fixed camera parenting not being set properly in some cases.
+- Fixed negative zoom being grainy due to UI layer camera.
+- Fixed setOpacityOther modifier not having prefab group only toggle.
+- Finally fixed polygon shape conversion not working in some cases (why so many edge cases omg).
+- Fixed Prefab Object speed not affecting the lifetime.
+- The Object Drag Helper should now line up more consistently with objects.
+
+
+## Up Next in 1.9.0
+- Online Multiplayer
+- New Player features (versus, etc)
+
+------------------------------------------------------------------------------------------
+
+# 1.7.7 [Jul 6, 2025]
 ## Features
 ### Core
 - Added playerEnableMove action modifiers. These work like the "Moveable" value of the Player event keyframe.
