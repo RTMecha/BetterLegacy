@@ -21,11 +21,13 @@
 ### Editor
 - Improved Capture Area usage.
 - Increased amount you scroll in some scroll views.
+- Changed the Document Full View editor in the Project Planner to be scrollable.
 
 ## Fixes
 - Fixed the progress popup not being used in some cases.
 - Fixed saved View Uploaded Dialog data not being rendered to the dialog.
 - Fixed online Level Collections not being viewable in the Arcade.
+- Fixed capture area being affected by effects.
 
 -------------------------------------------------------------------
 
