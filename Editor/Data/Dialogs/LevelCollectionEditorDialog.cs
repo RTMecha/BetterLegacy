@@ -179,6 +179,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RectValues.Default.SizeDelta(522f, 40f).AssignToRectTransform(TagsScrollView);
 
             var scroll = tagScrollView.AddComponent<ScrollRect>();
+            scroll.scrollSensitivity = 20f;
             scroll.horizontal = true;
             scroll.vertical = false;
 

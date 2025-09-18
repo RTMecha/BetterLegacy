@@ -892,7 +892,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             tagsScrollView.sizeDelta = new Vector2(522f, 40f);
 
             var scroll = tagScrollView.AddComponent<ScrollRect>();
-
+            scroll.scrollSensitivity = 20f;
             scroll.horizontal = true;
             scroll.vertical = false;
 

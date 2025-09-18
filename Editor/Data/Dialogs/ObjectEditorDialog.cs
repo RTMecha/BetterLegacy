@@ -515,7 +515,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
                 tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 40f);
                 var scroll = tagScrollView.AddComponent<ScrollRect>();
-
+                scroll.scrollSensitivity = 20f;
                 scroll.horizontal = true;
                 scroll.vertical = false;
 
@@ -1958,6 +1958,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 shape.gameObject.AddComponent<Mask>();
                 var image = shape.gameObject.AddComponent<Image>();
 
+                scroll.scrollSensitivity = 20f;
                 scroll.horizontal = true;
                 scroll.vertical = false;
                 scroll.content = shape.AsRT();
@@ -2040,6 +2041,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                         so.gameObject.AddComponent<Mask>();
                         var ad = so.gameObject.AddComponent<Image>();
 
+                        scroll.scrollSensitivity = 20f;
                         scroll.horizontal = true;
                         scroll.vertical = false;
                         scroll.content = rect;
