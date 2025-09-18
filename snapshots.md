@@ -20,6 +20,7 @@
 
 ### Editor
 - Improved Capture Area usage.
+- Increased amount you scroll in some scroll views.
 
 ## Fixes
 - Fixed the progress popup not being used in some cases.
