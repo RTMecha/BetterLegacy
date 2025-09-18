@@ -15,6 +15,7 @@ using Crosstales.FB;
 
 using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -685,15 +686,6 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddGraphic(fullViewImage, ThemeGroup.Background_1);
 
-                documentInputField = fullView.AddComponent<TMP_InputField>();
-
-                var docText = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(fullView.transform, "text");
-                docText.transform.AsRT().anchoredPosition = new Vector2(0f, -50f);
-                docText.transform.AsRT().sizeDelta = new Vector2(-32f, 840f);
-                var t = docText.GetComponent<TextMeshProUGUI>();
-
-                documentInputField.textComponent = t;
-
                 var docTitle = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(fullView.transform, "title");
 
                 docTitle.transform.AsRT().anchoredPosition = new Vector2(0f, 15f);
@@ -703,8 +695,24 @@ namespace BetterLegacy.Editor.Managers
                 documentTitle.alignment = TextAlignmentOptions.TopLeft;
                 documentTitle.fontSize = 32;
 
+                var docTextInput = Creator.NewUIObject("text", fullView.transform);
+                new RectValues(new Vector2(0f, -50f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-32f, 812f)).AssignToRectTransform(docTextInput.transform.AsRT());
+                docTextInput.AddComponent<Image>();
+                docTextInput.AddComponent<Mask>();
+
+                documentInputField = docTextInput.AddComponent<TMP_InputField>();
+
+                var docText = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(docTextInput.transform, "text");
+                RectValues.FullAnchored.AssignToRectTransform(docText.transform.AsRT());
+                var t = docText.GetComponent<TextMeshProUGUI>();
+                t.overflowMode = TextOverflowModes.Overflow;
                 t.alignment = TextAlignmentOptions.TopLeft;
                 t.enableWordWrapping = true;
+
+                documentInputField.textViewport = docText.transform.AsRT();
+                documentInputField.textComponent = t;
+                documentInputField.lineType = TMP_InputField.LineType.MultiLineNewline;
+                documentInputField.scrollSensitivity = 20f;
 
                 EditorThemeManager.AddLightText(documentTitle);
                 EditorThemeManager.AddInputField(documentInputField);
