@@ -53,6 +53,12 @@ namespace BetterLegacy.Editor.Managers
             var gameObject = Creator.NewUIObject("Capture Area", baseObject.transform);
             baseImage = gameObject.AddComponent<Image>();
             baseImage.color = new Color(0.1f, 0.1f, 0.1f, 0.01f);
+
+            var origin = Creator.NewUIObject("Origin", gameObject.transform);
+            origin.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
+            var originImage = origin.AddComponent<Image>();
+            originImage.sprite = EditorSprites.CloseSprite;
+
             var outline = Creator.NewUIObject("Outline", gameObject.transform);
             RectValues.FullAnchored.AssignToRectTransform(outline.transform.AsRT());
             outlineImage = outline.AddComponent<Image>();
@@ -641,6 +647,8 @@ namespace BetterLegacy.Editor.Managers
                 return null;
 
             baseObject.SetActive(false);
+            var rect = RTLevel.Cameras.FG.rect;
+            RTLevel.Cameras.FG.rect = new Rect(0f, 0f, 1f, 1f);
             var total = captureSettings.Resolution.x + captureSettings.Resolution.y;
             RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * captureSettings.Zoom);
 
@@ -668,7 +676,8 @@ namespace BetterLegacy.Editor.Managers
             RTLevel.Cameras.UI.enabled = false;
             RTLevel.Cameras.UI.enabled = true;
 
-            GameManager.inst.players.SetActive(false);
+            if (captureSettings.hidePlayers)
+                GameManager.inst.players.SetActive(true);
 
             SoundManager.inst.PlaySound(DefaultSounds.menuflip);
 
@@ -693,6 +702,8 @@ namespace BetterLegacy.Editor.Managers
                 flashAnim = null;
             };
             AnimationManager.inst.Play(flashAnim);
+
+            RTLevel.Cameras.FG.rect = rect;
             return icon;
         }
 
