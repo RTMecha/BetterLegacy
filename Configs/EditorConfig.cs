@@ -645,7 +645,7 @@ namespace BetterLegacy.Configs
             PrefabExternalConstraint = Bind(this, EDITOR_GUI, "Prefab External Constraint", 1, "How many columns the prefabs are divided into.");
             PrefabExternalSpacing = Bind(this, EDITOR_GUI, "Prefab External Spacing", new Vector2(8f, 8f), "Distance between each Prefab Cell.");
             PrefabExternalStartAxis = BindEnum(this, EDITOR_GUI, "Prefab External Start Axis", GridLayoutGroup.Axis.Horizontal, "Start axis of the prefab list.");
-            PrefabExternalDeleteButtonPos = Bind(this, EDITOR_GUI, "Prefab External Delete Button Pos", new Vector2(567f, -16f), "Position of the Delete Button.");
+            PrefabExternalDeleteButtonPos = Bind(this, EDITOR_GUI, "Prefab External Delete Button Pos", new Vector2(467f, -16f), "Position of the Delete Button.");
             PrefabExternalDeleteButtonSca = Bind(this, EDITOR_GUI, "Prefab External Delete Button Sca", new Vector2(32f, 32f), "Scale of the Delete Button.");
             PrefabExternalNameHorizontalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Name Horizontal Wrap", HorizontalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
             PrefabExternalNameVerticalWrap = BindEnum(this, EDITOR_GUI, "Prefab External Name Vertical Wrap", VerticalWrapMode.Overflow, "If the text overflows into another line or keeps going.");
