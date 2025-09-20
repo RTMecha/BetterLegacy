@@ -2450,6 +2450,9 @@ namespace BetterLegacy.Core.Data.Beatmap
 
                         baseData.prefabs.AddRange(gameDatas[i].prefabs.FindAll(x => !baseData.prefabs.Has(y => y.id == x.id)));
 
+                        if (baseData.backgroundObjects == null)
+                            baseData.backgroundObjects = new List<BackgroundObject>();
+
                         baseData.backgroundObjects.AddRange(gameDatas[i].backgroundObjects.Where(x => !baseData.backgroundObjects.Has(y =>
                         {
                             return y.active == x.active &&
@@ -2480,6 +2483,16 @@ namespace BetterLegacy.Core.Data.Beatmap
                                     y.text == x.text &&
                                     y.zscale == x.zscale;
                         })));
+
+                        if (baseData.modifierBlocks == null)
+                            baseData.modifierBlocks = new List<ModifierBlock>();
+
+                        baseData.modifierBlocks.AddRange(gameDatas[i].modifierBlocks.FindAll(x => !baseData.modifierBlocks.Has(y => y.Name == x.Name)));
+                        
+                        if (baseData.animations == null)
+                            baseData.animations = new List<PAAnimation>();
+
+                        baseData.animations.AddRange(gameDatas[i].animations.FindAll(x => !baseData.animations.Has(y => y.id == x.id)));
 
                         if (baseData.events == null)
                             baseData.events = new List<List<EventKeyframe>>();
