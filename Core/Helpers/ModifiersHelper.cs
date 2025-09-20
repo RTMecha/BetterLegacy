@@ -1411,6 +1411,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
+                        modifier.Result = default;
                     }
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
@@ -1423,6 +1424,20 @@ namespace BetterLegacy.Core.Helpers
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
+                        modifier.Result = default;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.blurVariable),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                        beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
+                        modifier.GetBool(1, false, variables))
+                    {
+                        runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                        solidObject.material = runtimeObject.visualObject.renderer.material;
+                        modifier.Result = default;
                     }
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
@@ -1435,6 +1450,33 @@ namespace BetterLegacy.Core.Helpers
                     {
                         runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
                         solidObject.material = runtimeObject.visualObject.renderer.material;
+                        modifier.Result = default;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.blurColored),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                        beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
+                        modifier.GetBool(2, false, variables))
+                    {
+                        runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                        solidObject.material = runtimeObject.visualObject.renderer.material;
+                        modifier.Result = default;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.blurColoredOther),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
+                        beatmapObject.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject.renderer && runtimeObject.visualObject is SolidObject solidObject &&
+                        modifier.GetBool(2, false, variables))
+                    {
+                        runtimeObject.visualObject.renderer.material = LegacyResources.objectMaterial;
+                        solidObject.material = runtimeObject.visualObject.renderer.material;
+                        modifier.Result = default;
                     }
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
