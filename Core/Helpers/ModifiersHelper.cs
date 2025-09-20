@@ -1480,6 +1480,40 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }, ModifierCompatibility.BeatmapObjectCompatible
             ),
+            new ModifierInactive(nameof(ModifierFunctions.particleSystem),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.Result is ParticleSystem particleSystem && particleSystem)
+                    {
+                        var emission = particleSystem.emission;
+                        emission.enabled = false;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.particleSystemHex),
+                (modifier, reference, variables) =>
+                {
+                    if (modifier.Result is ParticleSystem particleSystem && particleSystem)
+                    {
+                        var emission = particleSystem.emission;
+                        emission.enabled = false;
+                    }
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.trailRenderer),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.trailRenderer)
+                        beatmapObject.trailRenderer.emitting = false;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
+            new ModifierInactive(nameof(ModifierFunctions.trailRendererHex),
+                (modifier, reference, variables) =>
+                {
+                    if (reference is BeatmapObject beatmapObject && beatmapObject.trailRenderer)
+                        beatmapObject.trailRenderer.emitting = false;
+                }, ModifierCompatibility.BeatmapObjectCompatible
+            ),
 
             #endregion
 
@@ -12785,6 +12819,8 @@ namespace BetterLegacy.Core.Helpers
         {
             if (!string.IsNullOrEmpty(tag) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, out BeatmapObject target))
                 obj = target;
+            else if (prefabable is BeatmapObject beatmapObject)
+                obj = beatmapObject;
         }
 
         public string tag;
