@@ -636,11 +636,46 @@ namespace BetterLegacy.Core.Helpers
             CoroutineHelper.StartCoroutine(EditorThemeManager.RenderElements());
         }
 
+        public static void ShuffleIDs()
+        {
+            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+                ShuffleID(GameData.Current.beatmapObjects[i], false);
+            for (int i = 0; i < GameData.Current.backgroundObjects.Count; i++)
+                GameData.Current.backgroundObjects[i].id = PAObjectBase.GetStringID();
+            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+                ShuffleID(GameData.Current.prefabObjects[i]);
+            RTLevel.Reinit();
+        }
+
+        public static void ShuffleSelectedIDs()
+        {
+            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
+            {
+                switch (timelineObject.TimelineReference)
+                {
+                    case TimelineObject.TimelineReferenceType.BeatmapObject: {
+                            ShuffleID(timelineObject.GetData<BeatmapObject>(), false);
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.BackgroundObject: {
+                            timelineObject.GetData<BackgroundObject>().id = PAObjectBase.GetStringID();
+                            break;
+                        }
+                    case TimelineObject.TimelineReferenceType.PrefabObject: {
+                            ShuffleID(timelineObject.GetData<PrefabObject>());
+                            break;
+                        }
+                }
+            }
+
+            RTLevel.Reinit();
+        }
+
         /// <summary>
         /// Shuffles a Beatmap Objects' ID and updates all references to the old ID.
         /// </summary>
         /// <param name="beatmapObject">Beatmap Object to shuffle the ID of.</param>
-        public static void ShuffleID(BeatmapObject beatmapObject)
+        public static void ShuffleID(BeatmapObject beatmapObject, bool update = true)
         {
             var newID = PAObjectBase.GetStringID();
             var oldID = beatmapObject.id;
@@ -654,7 +689,8 @@ namespace BetterLegacy.Core.Helpers
                 ShuffleSetID(oldID, newID, p.beatmapObjects, p.prefabObjects);
             }
 
-            RTLevel.Reinit();
+            if (update)
+                RTLevel.Reinit();
         }
 
         static void ShuffleSetID(string oldID, string newID, List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects)
