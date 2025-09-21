@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 using LSFunctions;
 
 using Crosstales.FB;
-using SimpleJSON;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
@@ -18,31 +15,26 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Components;
-using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
-using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// Manages editing level metadata.
+    /// </summary>
     public class RTMetaDataEditor : MonoBehaviour
     {
-        public static RTMetaDataEditor inst;
-
-        #region Values
-
-        public GameObject difficultyToggle;
-        
-        public MetaDataEditorDialog Dialog { get; set; }
-
-        public bool CollapseIcon { get; set; } = true;
-
-        #endregion
-
         #region Init
 
+        /// <summary>
+        /// The <see cref="RTMetaDataEditor"/> global instance reference.
+        /// </summary>
+        public static RTMetaDataEditor inst;
+
+        /// <summary>
+        /// Initializes <see cref="RTMetaDataEditor"/>.
+        /// </summary>
         public static void Init() => MetadataEditor.inst?.gameObject?.AddComponent<RTMetaDataEditor>();
 
         void Awake()
@@ -61,6 +53,27 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #endregion
+
+        #region Values
+
+        /// <summary>
+        /// The MetaData editor dialog.
+        /// </summary>
+        public MetaDataEditorDialog Dialog { get; set; }
+
+        /// <summary>
+        /// If the icon should be collapsed.
+        /// </summary>
+        public bool CollapseIcon { get; set; } = true;
+
+        /// <summary>
+        /// Difficulty toggle prefab.
+        /// </summary>
+        public GameObject difficultyToggle;
+
+        #endregion
+
+        #region Methods
 
         #region Dialog
 
@@ -153,6 +166,10 @@ namespace BetterLegacy.Editor.Managers
             Dialog.ConvertButton.onClick.NewListener(ConvertLevel);
         }
 
+        /// <summary>
+        /// Renders the artist section.
+        /// </summary>
+        /// <param name="metadata">Metadata to render.</param>
         public void RenderArtist(MetaData metadata)
         {
             Dialog.ArtistNameField.SetTextWithoutNotify(metadata.artist.name);
@@ -211,6 +228,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Renders the creator section.
+        /// </summary>
+        /// <param name="metadata">Metadata to render.</param>
         public void RenderCreator(MetaData metadata)
         {
             if (Dialog.UploaderNameField)
@@ -262,6 +283,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Renders the song section.
+        /// </summary>
+        /// <param name="metadata">Metadata to render.</param>
         public void RenderSong(MetaData metadata)
         {
             Dialog.SongTitleField.SetTextWithoutNotify(metadata.song.title);
@@ -307,6 +332,10 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        /// <summary>
+        /// Renders the level section.
+        /// </summary>
+        /// <param name="metadata">Metadata to render.</param>
         public void RenderLevel(MetaData metadata)
         {
             Dialog.LevelNameField.SetTextWithoutNotify(metadata.beatmap.name);
@@ -360,6 +389,10 @@ namespace BetterLegacy.Editor.Managers
             EditorContextMenu.inst.AddContextMenu(Dialog.VersionField.gameObject, EditorContextMenu.GetObjectVersionFunctions(metadata, () => RenderLevel(metadata)));
         }
 
+        /// <summary>
+        /// Renders the settings section.
+        /// </summary>
+        /// <param name="metadata">Metadata to render.</param>
         public void RenderSettings(MetaData metadata)
         {
             Dialog.IsHubLevelToggle.SetIsOnWithoutNotify(metadata.isHubLevel);
@@ -403,7 +436,10 @@ namespace BetterLegacy.Editor.Managers
             Dialog.VersionComparison.onValueChanged.NewListener(_val => metadata.versionRange = (DataManager.VersionComparison)_val);
         }
 
-        static Vector2 difficultySize = new Vector2(100f, 32f);
+        /// <summary>
+        /// Renders the difficulty section.
+        /// </summary>
+        /// <param name="metadata">Metadata to render.</param>
         public void RenderDifficulty(MetaData metadata)
         {
             LSHelpers.DeleteChildren(Dialog.DifficultyContent);
@@ -419,7 +455,7 @@ namespace BetterLegacy.Editor.Managers
                 var gameObject = difficultyToggle.Duplicate(Dialog.DifficultyContent, difficulty.DisplayName.ToLower(), difficulty == count - 1 ? 0 : difficulty + 1);
                 gameObject.transform.localScale = Vector3.one;
 
-                gameObject.transform.AsRT().sizeDelta = difficultySize;
+                gameObject.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
 
                 var text = gameObject.transform.Find("Background/Text").GetComponent<Text>();
                 text.color = LSColors.ContrastColor(difficulty.Color);
@@ -459,6 +495,10 @@ namespace BetterLegacy.Editor.Managers
             }, errorFile => EditorManager.inst.DisplayNotification("Please resize your image to be less than or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error)));
         }
 
+        /// <summary>
+        /// Sets the current levels' icon.
+        /// </summary>
+        /// <param name="sprite">Icon to set.</param>
         public void SetLevelCover(Sprite sprite)
         {
             if (EditorLevelManager.inst.CurrentLevel)
@@ -468,6 +508,9 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Verifies the current level is on the Arcade server.
+        /// </summary>
         public void VerifyLevelIsOnServer() => EditorServerManager.inst.Verify(
                 url: AlephNetwork.LevelURL,
                 uploadable: MetaData.Current,
@@ -477,6 +520,9 @@ namespace BetterLegacy.Editor.Managers
                     RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.METADATA_LSB), jn.ToString());
                 });
 
+        /// <summary>
+        /// Converts the current level to the VG format.
+        /// </summary>
         public void ConvertLevel()
         {
             var exportPath = EditorConfig.Instance.ConvertLevelLSToVGExportPath.Value;
@@ -536,6 +582,9 @@ namespace BetterLegacy.Editor.Managers
             AchievementManager.inst.UnlockAchievement("time_machine");
         }
 
+        /// <summary>
+        /// Uploads the current level to the Arcade server.
+        /// </summary>
         public void UploadLevel() => EditorServerManager.inst.Upload(
             url: $"{AlephNetwork.ArcadeServerURL}api/level",
             fileName: EditorManager.inst.currentLoadedLevel,
@@ -565,6 +614,9 @@ namespace BetterLegacy.Editor.Managers
             },
             onUpload: RenderDialog);
 
+        /// <summary>
+        /// Removes the current level from the Arcade server.
+        /// </summary>
         public void DeleteLevel() => EditorServerManager.inst.Delete(
                 url: AlephNetwork.LevelURL,
                 uploadable: MetaData.Current,
@@ -575,6 +627,9 @@ namespace BetterLegacy.Editor.Managers
                 },
                 onDelete: RenderDialog);
 
+        /// <summary>
+        /// Pulls the current level's file from the Arcade server.
+        /// </summary>
         public void PullLevel()
         {
             if (EditorManager.inst.savingBeatmap)
@@ -592,6 +647,8 @@ namespace BetterLegacy.Editor.Managers
                     EditorServerManager.inst.DownloadLevel(jn["id"], RTFile.RemoveEndSlash(EditorLevelManager.inst.CurrentLevel.path), jn["name"], EditorLevelManager.inst.ILoadLevel(EditorLevelManager.inst.CurrentLevel).Start);
                 });
         }
+
+        #endregion
 
         #endregion
     }

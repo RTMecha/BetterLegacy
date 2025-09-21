@@ -31,6 +31,9 @@ using BetterLegacy.Editor.Data.Popups;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// Manages BetterLegacy server uploading, downloading, etc.
+    /// </summary>
     public class EditorServerManager : MonoBehaviour
     {
         #region Init
@@ -101,14 +104,29 @@ namespace BetterLegacy.Editor.Managers
 
         #region Values
 
+        /// <summary>
+        /// Server content dialog.
+        /// </summary>
         public ViewUploadedDialog Dialog { get; set; }
 
+        /// <summary>
+        /// Default tag list popup.
+        /// </summary>
         public ContentPopup TagPopup { get; set; }
 
+        /// <summary>
+        /// User list popup.
+        /// </summary>
         public ContentPopup UserSearchPopup { get; set; }
 
+        /// <summary>
+        /// User search button.
+        /// </summary>
         public Button SearchUsersButton { get; set; }
 
+        /// <summary>
+        /// If a server process is running.
+        /// </summary>
         public bool uploading;
 
         #region Tags
@@ -157,18 +175,40 @@ namespace BetterLegacy.Editor.Managers
 
         #region Search
 
+        /// <summary>
+        /// Amount of items that was searched.
+        /// </summary>
         public int itemCount;
 
         bool loadingOnlineLevels;
 
+        /// <summary>
+        /// The current server content tab.
+        /// </summary>
         public Tab tab;
+
+        /// <summary>
+        /// Server content tab.
+        /// </summary>
         public enum Tab
         {
+            /// <summary>
+            /// Server Levels tab.
+            /// </summary>
             Levels,
+            /// <summary>
+            /// Server Level Collections tab.
+            /// </summary>
             LevelCollections,
+            /// <summary>
+            /// Server Prefabs tab.
+            /// </summary>
             Prefabs,
         }
 
+        /// <summary>
+        /// Settings dictionary for the server content tabs.
+        /// </summary>
         public Dictionary<Tab, TabSettings> tabSettings = new Dictionary<Tab, TabSettings>
         {
             { Tab.Levels, new TabSettings() { sort = (int)OnlineLevelSort.DatePublished, ascend = true, } },
@@ -176,6 +216,9 @@ namespace BetterLegacy.Editor.Managers
             { Tab.Prefabs, new TabSettings() { sort = (int)OnlinePrefabSort.DatePublished, ascend = true, } },
         };
 
+        /// <summary>
+        /// The current tabs' settings.
+        /// </summary>
         public TabSettings CurrentTabSettings
         {
             get
@@ -192,12 +235,27 @@ namespace BetterLegacy.Editor.Managers
 
         public class TabSettings
         {
+            /// <summary>
+            /// Current page.
+            /// </summary>
             public int page;
+            /// <summary>
+            /// Current sort.
+            /// </summary>
             public int sort;
+            /// <summary>
+            /// Ascend sort.
+            /// </summary>
             public bool ascend;
+            /// <summary>
+            /// If only the users' uploadable content should display.
+            /// </summary>
             public bool uploaded = true;
         }
 
+        /// <summary>
+        ///The current search URL.
+        /// </summary>
         public string SearchURL => RTFile.CombinePaths(tab switch
         {
             Tab.Levels => AlephNetwork.LevelURL,
@@ -206,7 +264,10 @@ namespace BetterLegacy.Editor.Managers
             _ => null,
         }, tab != Tab.Prefabs || CurrentTabSettings.uploaded ? "uploaded" : "search");
 
-        public static Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
+        /// <summary>
+        /// Cached icons.
+        /// </summary>
+        public static Dictionary<string, Sprite> OnlineIcons { get; set; } = new Dictionary<string, Sprite>();
 
         #endregion
 
@@ -1301,20 +1362,20 @@ namespace BetterLegacy.Editor.Managers
                         icon.transform.AsRT().anchoredPosition = Vector3.zero;
                         icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
 
-                        if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
+                        if (OnlineIcons.TryGetValue(id, out Sprite sprite))
                             iconImage.sprite = sprite;
                         else
                         {
                             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
-                                OnlineLevelIcons.Add(id, sprite);
+                                OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
                             }, onError =>
                             {
                                 var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                                OnlineLevelIcons.Add(id, sprite);
+                                OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
                             }));
@@ -1359,6 +1420,11 @@ namespace BetterLegacy.Editor.Managers
 			loadingOnlineLevels = false;
 		}
 
+        /// <summary>
+        /// Downloads a level from the Arcade server to the editor.
+        /// </summary>
+        /// <param name="jn">Server level JSON.</param>
+        /// <param name="onDownload">Function to run when the level has downloaded.</param>
         public void DownloadLevel(JSONNode jn, Action onDownload = null)
         {
             var name = jn["name"].Value;
@@ -1369,6 +1435,13 @@ namespace BetterLegacy.Editor.Managers
             DownloadLevel(jn["id"], directory, name, onDownload);
         }
 
+        /// <summary>
+        /// Downloads a level from the Arcade server to the editor.
+        /// </summary>
+        /// <param name="id">ID of the level.</param>
+        /// <param name="directory">Directory to save the level to.</param>
+        /// <param name="name">Name to display.</param>
+        /// <param name="onDownload">Function to run when the level has downloaded.</param>
         public void DownloadLevel(string id, string directory, string name, Action onDownload = null)
         {
             if (string.IsNullOrEmpty(id))
@@ -1504,20 +1577,20 @@ namespace BetterLegacy.Editor.Managers
                         icon.transform.AsRT().anchoredPosition = Vector3.zero;
                         icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
 
-                        if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
+                        if (OnlineIcons.TryGetValue(id, out Sprite sprite))
                             iconImage.sprite = sprite;
                         else
                         {
                             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.LevelCollectionCoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
-                                OnlineLevelIcons.Add(id, sprite);
+                                OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
                             }, onError =>
                             {
                                 var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                                OnlineLevelIcons.Add(id, sprite);
+                                OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
                             }));
@@ -1562,6 +1635,11 @@ namespace BetterLegacy.Editor.Managers
 			loadingOnlineLevels = false;
         }
 
+        /// <summary>
+        /// Downloads a level collection from the Arcade server to the editor.
+        /// </summary>
+        /// <param name="jn">Server level collection JSON.</param>
+        /// <param name="onDownload">Function to run when the level collection has downloaded.</param>
         public void DownloadLevelCollection(JSONNode jn, Action onDownload = null)
         {
             var name = jn["name"].Value;
@@ -1572,6 +1650,13 @@ namespace BetterLegacy.Editor.Managers
             DownloadLevelCollection(jn["id"], directory, name, onDownload);
         }
 
+        /// <summary>
+        /// Downloads a level collection from the Arcade server to the editor.
+        /// </summary>
+        /// <param name="id">ID of the level collection.</param>
+        /// <param name="directory">Directory to save the level collection to.</param>
+        /// <param name="name">Name to display.</param>
+        /// <param name="onDownload">Function to run when the level collection has downloaded.</param>
         public void DownloadLevelCollection(string id, string directory, string name, Action onDownload = null)
         {
             if (string.IsNullOrEmpty(id))
@@ -1608,7 +1693,7 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        public IEnumerator GetPrefabs()
+        IEnumerator GetPrefabs()
         {
 			if (loadingOnlineLevels)
 				yield break;
@@ -1718,20 +1803,20 @@ namespace BetterLegacy.Editor.Managers
                         icon.transform.AsRT().anchoredPosition = Vector3.zero;
                         icon.transform.AsRT().sizeDelta = new Vector2(90f, 90f);
 
-                        if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
+                        if (OnlineIcons.TryGetValue(id, out Sprite sprite))
                             iconImage.sprite = sprite;
                         else
                         {
                             CoroutineHelper.StartCoroutine(AlephNetwork.DownloadBytes($"{AlephNetwork.PrefabCoverURL}{id}{FileFormat.JPG.Dot()}", bytes =>
                             {
                                 var sprite = SpriteHelper.LoadSprite(bytes);
-                                OnlineLevelIcons.Add(id, sprite);
+                                OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
                             }, onError =>
                             {
                                 var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                                OnlineLevelIcons.Add(id, sprite);
+                                OnlineIcons[id] = sprite;
                                 if (iconImage)
                                     iconImage.sprite = sprite;
                             }));
@@ -1776,6 +1861,12 @@ namespace BetterLegacy.Editor.Managers
 			loadingOnlineLevels = false;
         }
 
+        /// <summary>
+        /// Downloads a prefab from the Arcade server to the editor.
+        /// </summary>
+        /// <param name="jn">Server prefab JSON.</param>
+        /// <param name="source">Source to save the prefab to.</param>
+        /// <param name="onDownload">Function to run when the prefab has downloaded.</param>
         public void DownloadPrefab(JSONNode jn, ObjectSource source = ObjectSource.External, Action onDownload = null)
         {
             var name = jn["name"].Value;
@@ -1785,6 +1876,13 @@ namespace BetterLegacy.Editor.Managers
             DownloadPrefab(jn["id"], name, source, onDownload);
         }
 
+        /// <summary>
+        /// Downloads a prefab from the Arcade server to the editor.
+        /// </summary>
+        /// <param name="id">ID of the prefab.</param>
+        /// <param name="name">Name to display.</param>
+        /// <param name="source">Source to save the prefab to.</param>
+        /// <param name="onDownload">Function to run when the prefab has downloaded.</param>
         public void DownloadPrefab(string id, string name, ObjectSource source = ObjectSource.External, Action onDownload = null)
         {
             if (string.IsNullOrEmpty(id))
@@ -1883,6 +1981,10 @@ namespace BetterLegacy.Editor.Managers
 
         #region User Search
 
+        /// <summary>
+        /// Opens the User Search Popup.
+        /// </summary>
+        /// <param name="onSelect">Function to run when a server user is selected. Passes a <see cref="ServerUser"/>.</param>
         public void OpenUserSearchPopup(Action<ServerUser> onSelect)
         {
             UserSearchPopup.Open();
@@ -1890,8 +1992,16 @@ namespace BetterLegacy.Editor.Managers
             SearchUsersButton.onClick.NewListener(() => SearchUsers(onSelect));
         }
 
+        /// <summary>
+        /// Renders the User Search Popup.
+        /// </summary>
+        /// <param name="onSelect">Function to run when a server user is selected. Passes a <see cref="ServerUser"/>.</param>
         public void SearchUsers(Action<ServerUser> onSelect) => CoroutineHelper.StartCoroutine(ISearchUsers(onSelect));
 
+        /// <summary>
+        /// Renders the User Search Popup.
+        /// </summary>
+        /// <param name="onSelect">Function to run when a server user is selected. Passes a <see cref="ServerUser"/>.</param>
         public IEnumerator ISearchUsers(Action<ServerUser> onSelect)
         {
             if (loadingOnlineUsers)
@@ -2002,6 +2112,10 @@ namespace BetterLegacy.Editor.Managers
 
         #region Login
 
+        /// <summary>
+        /// Shows the login popup.
+        /// </summary>
+        /// <param name="onLogin">Function to run when the user has successfully logged in.</param>
         public void ShowLoginPopup(Action onLogin) => RTEditor.inst.ShowWarningPopup("You are not logged in.", () =>
         {
             Application.OpenURL($"{AlephNetwork.ArcadeServerURL}api/auth/login");
@@ -2009,6 +2123,10 @@ namespace BetterLegacy.Editor.Managers
             RTEditor.inst.HideWarningPopup();
         }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
 
+        /// <summary>
+        /// Refreshes the users' login tokens.
+        /// </summary>
+        /// <param name="onRefreshed">Function to run when refreshed.</param>
         public IEnumerator RefreshTokens(Action onRefreshed)
         {
             EditorManager.inst.DisplayNotification("Access token expired. Refreshing...", 5f, EditorManager.NotificationType.Warning);
