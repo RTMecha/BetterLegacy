@@ -1,4 +1,21 @@
-﻿# BetterLegacy 1.8.0 [Expansion Update]
+﻿# 1.8.1 [Sep 21, 2025]
+## Features
+### Editor
+- Added an origin indicator to the capture area.
+
+## Changes
+### Core
+- particleSystem and trailRenderer modifiers now stop emitting when the modifier is inactive. This means you can now precisely control when these emit.
+
+## Fixes
+- Fixed capture area becoming offset in some cases.
+- Fixed Prefab Panel delete button position setting having the wrong default value.
+- Fixed some of the blur modifiers not applying the "Set Back to Normal" value.
+- Fixed level combining not carrying over some data.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.0 [Expansion Update]
 ## Features
 ### Story
 - The story intro now features a keypad where you can enter a custom name for the save slot.
