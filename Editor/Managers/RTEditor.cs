@@ -2821,19 +2821,46 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (eventData.button != PointerEventData.InputButton.Right)
                 {
-                    if (EditorConfig.Instance.OpenCustomObjectOptions.Value)
+                    switch (EditorConfig.Instance.ObjectCreationClickBehavior.Value)
                     {
-                        ObjectEditor.inst.ShowObjectTemplates();
-                        return;
+                        case ObjectCreationClickBehaviorType.OpenOptionsPopup: {
+                                ObjectOptionsPopup.Open();
+                                break;
+                            }
+                        case ObjectCreationClickBehaviorType.OpenMoreOptionsPopup: {
+                                ObjectEditor.inst.ShowObjectTemplates();
+                                break;
+                            }
+                        case ObjectCreationClickBehaviorType.CreateObject: {
+                                ObjectEditor.inst.CreateNewNormalObject();
+                                break;
+                            }
                     }
-
-                    ObjectOptionsPopup.Open();
                     return;
                 }
 
                 EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Create Object", () => ObjectEditor.inst.CreateNewNormalObject()),
                     new ButtonFunction("Options", ObjectOptionsPopup.Open),
-                    new ButtonFunction("More Options", ObjectEditor.inst.ShowObjectTemplates)
+                    new ButtonFunction("More Options", ObjectEditor.inst.ShowObjectTemplates),
+                    new ButtonFunction(true),
+                    new ButtonFunction($"{(EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.OpenOptionsPopup ? "> " : string.Empty)}Behavior: Open Options Popup", () =>
+                    {
+                        EditorConfig.Instance.ObjectCreationClickBehavior.Value = ObjectCreationClickBehaviorType.OpenOptionsPopup;
+                        EditorManager.inst.DisplayNotification($"Set the Object Creation button's click behavior to {EditorConfig.Instance.ObjectCreationClickBehavior.Value}!", 3f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction($"{(EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.OpenMoreOptionsPopup ? "> " : string.Empty)}Behavior: Open More Options Popup", () =>
+                    {
+                        EditorConfig.Instance.ObjectCreationClickBehavior.Value = ObjectCreationClickBehaviorType.OpenMoreOptionsPopup;
+                        EditorManager.inst.DisplayNotification($"Set the Object Creation button's click behavior to {EditorConfig.Instance.ObjectCreationClickBehavior.Value}!", 3f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction($"{(EditorConfig.Instance.ObjectCreationClickBehavior.Value == ObjectCreationClickBehaviorType.CreateObject ? "> " : string.Empty)}Behavior: Create Object", () =>
+                    {
+                        EditorConfig.Instance.ObjectCreationClickBehavior.Value = ObjectCreationClickBehaviorType.CreateObject;
+                        EditorManager.inst.DisplayNotification($"Set the Object Creation button's click behavior to {EditorConfig.Instance.ObjectCreationClickBehavior.Value}!", 3f, EditorManager.NotificationType.Success);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Search Objects", ObjectEditor.inst.ShowObjectSearch)
                     );
             };
 

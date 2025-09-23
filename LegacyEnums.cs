@@ -2222,6 +2222,13 @@ namespace BetterLegacy
         StopAtEnd,
     }
 
+    public enum ObjectCreationClickBehaviorType
+    {
+        OpenOptionsPopup,
+        OpenMoreOptionsPopup,
+        CreateObject,
+    }
+
     #endregion
 
     #region Menus
