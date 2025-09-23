@@ -2894,6 +2894,27 @@ namespace BetterLegacy.Editor.Managers
             if (beatmapObjects == null)
                 beatmapObjects = GameData.Current.beatmapObjects;
 
+            var searchTerm = ObjectSearchPopup.SearchTerm;
+            List<string> matchTags = null;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                try
+                {
+                    var jn = JSON.Parse(searchTerm);
+                    var jnTags = jn["tags"];
+                    if (jnTags != null && jnTags.IsArray)
+                    {
+                        matchTags = new List<string>(jnTags.Count);
+                        for (int i = 0; i < jnTags.Count; i++)
+                            matchTags.Add(jnTags[i]);
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+
             var list = beatmapObjects.FindAll(x => !x.fromPrefab);
             int index = 0;
             int pageIndex = 0;
@@ -2902,7 +2923,15 @@ namespace BetterLegacy.Editor.Managers
                 if (beatmapObject.fromPrefab)
                     continue;
 
-                if (!RTString.SearchString(ObjectSearchPopup.SearchTerm, beatmapObject.name, new SearchMatcher(beatmapObject.id, SearchMatchType.Exact)))
+                if (matchTags != null)
+                {
+                    if (!beatmapObject.tags.Has(x => matchTags.Contains(x)))
+                    {
+                        index++;
+                        continue;
+                    }
+                }
+                else if (!RTString.SearchString(ObjectSearchPopup.SearchTerm, beatmapObject.name, new SearchMatcher(beatmapObject.id, SearchMatchType.Exact)))
                 {
                     index++;
                     continue;
