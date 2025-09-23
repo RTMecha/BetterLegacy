@@ -2670,6 +2670,7 @@ namespace BetterLegacy.Editor.Managers
             selectedBeatmapThemes.Clear();
             selectedModifierBlocks.Clear();
             RenderPrefabCreator();
+            RTEditor.inst.PrefabPopups.Close();
         }
 
         /// <summary>
