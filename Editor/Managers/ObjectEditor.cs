@@ -1209,6 +1209,7 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObject.modifiers.ForEach(modifier =>
                     {
                         modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                        ModifiersHelper.OnRemoveCache(modifier);
                         modifier.Result = default;
                     });
 
@@ -1233,6 +1234,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
                     modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
 
@@ -1253,6 +1255,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
                     modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
 
@@ -1271,6 +1274,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
                     modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
 
@@ -1291,6 +1295,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
                     modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
 
@@ -1311,6 +1316,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.modifiers.ForEach(modifier =>
                 {
                     modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = default;
                 });
 
@@ -1369,6 +1375,7 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.modifiers.ForEach(modifier =>
                         {
                             modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                            ModifiersHelper.OnRemoveCache(modifier);
                             modifier.Result = default;
                         });
 

@@ -1404,6 +1404,43 @@ namespace BetterLegacy.Core.Helpers
         {
             #region Actions
 
+            #region Audio
+
+            new ModifierInactive(nameof(ModifierFunctions.playSound),
+                (modifier, reference, variables) =>
+                {
+                    if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
+                        return;
+
+                    cache.Pause();
+                }),
+            new ModifierInactive(nameof(ModifierFunctions.playOnlineSound),
+                (modifier, reference, variables) =>
+                {
+                    if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
+                        return;
+
+                    cache.Pause();
+                }),
+            new ModifierInactive(nameof(ModifierFunctions.playDefaultSound),
+                (modifier, reference, variables) =>
+                {
+                    if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
+                        return;
+
+                    cache.Pause();
+                }),
+            new ModifierInactive(nameof(ModifierFunctions.loadSoundAsset),
+                (modifier, reference, variables) =>
+                {
+                    if (!modifier.constant || !modifier.TryGetResult(out AudioSource cache) || !cache)
+                        return;
+
+                    cache.Pause();
+                }),
+
+            #endregion
+
             #region Component
 
             new ModifierInactive(nameof(ModifierFunctions.blur),
@@ -2188,7 +2225,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void GetSoundPath(string id, string path, bool fromSoundLibrary = false, float pitch = 1f, float volume = 1f, bool loop = false, float panStereo = 0f)
+        public static void GetSoundPath(string id, string path, bool fromSoundLibrary = false, float pitch = 1f, float volume = 1f, bool loop = false, float panStereo = 0f, Action<AudioSource> getAudioSource = null)
         {
             string fullPath = !fromSoundLibrary ? RTFile.CombinePaths(RTFile.BasePath, path) : RTFile.CombinePaths(RTFile.ApplicationDirectory, ModifiersManager.SOUNDLIBRARY_PATH, path);
 
@@ -2204,19 +2241,34 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             if (!fullPath.EndsWith(FileFormat.MP3.Dot()))
-                CoroutineHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip => PlaySound(id, audioClip, pitch, volume, loop, panStereo)));
+                CoroutineHelper.StartCoroutine(LoadMusicFileRaw(fullPath, audioClip =>
+                {
+                    var audioSource = PlaySound(id, audioClip, pitch, volume, loop, panStereo);
+                    getAudioSource?.Invoke(audioSource);
+                }));
             else
-                PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, loop, panStereo);
+            {
+                var audioSource = PlaySound(id, LSAudio.CreateAudioClipUsingMP3File(fullPath), pitch, volume, loop, panStereo);
+                getAudioSource?.Invoke(audioSource);
+            }
         }
 
-        public static void DownloadSoundAndPlay(string id, string path, float pitch = 1f, float volume = 1f, bool loop = false, float panStereo = 0f)
+        public static void DownloadSoundAndPlay(string id, string path, float pitch = 1f, float volume = 1f, bool loop = false, float panStereo = 0f, Action<AudioSource> getAudioSource = null)
         {
             try
             {
                 var audioType = RTFile.GetAudioType(path);
 
                 if (audioType != AudioType.UNKNOWN)
-                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(path, audioType, audioClip => PlaySound(id, audioClip, pitch, volume, loop, panStereo), (string onError, long responseCode, string errorMsg) => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip(
+                        path: path, 
+                        audioType: audioType,
+                        callback: audioClip =>
+                        {
+                            var audioSource = PlaySound(id, audioClip, pitch, volume, loop, panStereo);
+                            getAudioSource?.Invoke(audioSource);
+                        },
+                        onError: (string onError, long responseCode, string errorMsg) => CoreHelper.Log($"Error! Could not download audioclip.\n{onError}")));
             }
             catch
             {
@@ -2224,11 +2276,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void PlaySound(string id, AudioClip clip, float pitch, float volume, bool loop, float panStereo = 0f)
+        public static AudioSource PlaySound(string id, AudioClip clip, float pitch, float volume, bool loop, float panStereo = 0f)
         {
             var audioSource = SoundManager.inst.PlaySound(clip, volume, pitch * AudioManager.inst.CurrentAudioSource.pitch, loop, panStereo);
-            if (loop && !ModifiersManager.audioSources.ContainsKey(id))
-                ModifiersManager.audioSources.Add(id, audioSource);
+            if (loop)
+                ModifiersManager.audioSources.TryAdd(id, audioSource);
+            return audioSource;
         }
 
         public static IEnumerator LoadMusicFileRaw(string path, Action<AudioClip> callback)
@@ -2472,8 +2525,31 @@ namespace BetterLegacy.Core.Helpers
         public static string FormatStringVariables(string input, Dictionary<string, string> variables)
         {
             foreach (var variable in variables)
-                input = Regex.Replace(input, "{" + variable.Key + "}", variable.Value);
+                input = input.Replace("{" + variable.Key + "}", variable.Value);
             return input;
+        }
+
+        public static void OnRemoveCache(Modifier modifier)
+        {
+            if (!modifier)
+                return;
+
+            switch (modifier.Name)
+            {
+                case nameof(ModifierFunctions.playSound):
+                case nameof(ModifierFunctions.playSoundOnline):
+                case nameof(ModifierFunctions.playOnlineSound):
+                case nameof(ModifierFunctions.playDefaultSound): 
+                case nameof(ModifierFunctions.loadSoundAsset): {
+                        if (modifier.TryGetResult(out AudioSource cache) && cache)
+                        {
+                            CoreHelper.Destroy(cache);
+                            return;
+                        }
+
+                        break;
+                    }
+            }
         }
 
         #endregion
@@ -2565,8 +2641,16 @@ namespace BetterLegacy.Core.Helpers
             float max = modifier.GetFloat(7, 9999f, variables);
             bool useVisual = modifier.GetBool(8, false, variables);
             float loop = modifier.GetFloat(9, 9999f, variables);
+            var tag = modifier.GetValue(10, variables);
 
-            var beatmapObject = modifier.GetResultOrDefault(() => GameData.Current.FindObjectWithTag(modifier, prefabable, modifier.GetValue(10, variables)));
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+
+            var beatmapObject = cache.obj;
             if (!beatmapObject)
                 return;
 
@@ -3439,6 +3523,12 @@ namespace BetterLegacy.Core.Helpers
 
         public static void playSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
+            {
+                cache.UnPause();
+                return;
+            }
+
             var path = modifier.GetValue(0, variables);
             var global = modifier.GetBool(1, false, variables);
             var pitch = modifier.GetFloat(2, 1f, variables);
@@ -3457,22 +3547,28 @@ namespace BetterLegacy.Core.Helpers
                     CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() =>
                     {
                         if (soundAsset.audio)
-                            ModifiersHelper.PlaySound(id, soundAsset.audio, pitch, vol, loop, panStereo);
+                            modifier.Result = ModifiersHelper.PlaySound(id, soundAsset.audio, pitch, vol, loop, panStereo);
                     }));
                     return;
                 }
 
-                ModifiersHelper.PlaySound(id, soundAsset.audio, pitch, vol, loop, panStereo);
+                modifier.Result = ModifiersHelper.PlaySound(id, soundAsset.audio, pitch, vol, loop, panStereo);
                 return;
             }
 
-            ModifiersHelper.GetSoundPath(id, path, global, pitch, vol, loop, panStereo);
+            ModifiersHelper.GetSoundPath(id, path, global, pitch, vol, loop, panStereo, audioSource => modifier.Result = audioSource);
         }
 
         public static void playSoundOnline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables) => playOnlineSound(modifier, reference, variables);
 
         public static void playOnlineSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
+            {
+                cache.UnPause();
+                return;
+            }
+
             var url = modifier.GetValue(0, variables);
             var pitch = modifier.GetFloat(1, 1f, variables);
             var vol = modifier.GetFloat(2, 1f, variables);
@@ -3484,11 +3580,17 @@ namespace BetterLegacy.Core.Helpers
                 loop = false;
 
             if (!string.IsNullOrEmpty(url))
-                ModifiersHelper.DownloadSoundAndPlay(id, url, pitch, vol, loop, panStereo);
+                ModifiersHelper.DownloadSoundAndPlay(id, url, pitch, vol, loop, panStereo, audioSource => modifier.Result = audioSource);
         }
 
         public static void playDefaultSound(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
+            {
+                cache.UnPause();
+                return;
+            }
+
             var pitch = modifier.GetFloat(1, 1f, variables);
             var vol = modifier.GetFloat(2, 1f, variables);
             var loop = modifier.GetBool(3, false, variables);
@@ -3516,6 +3618,8 @@ namespace BetterLegacy.Core.Helpers
             var id = reference is PAObjectBase obj ? obj.id : reference is RTPlayer.RTPlayerObject playerObject ? playerObject.id : string.Empty;
             if (string.IsNullOrEmpty(id))
                 loop = false;
+
+            modifier.Result = audioSource;
 
             if (!loop)
                 CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
@@ -3602,6 +3706,12 @@ namespace BetterLegacy.Core.Helpers
 
         public static void loadSoundAsset(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            if (modifier.constant && modifier.TryGetResult(out AudioSource cache) && cache)
+            {
+                cache.UnPause();
+                return;
+            }
+
             var name = modifier.GetValue(0, variables);
             var soundAsset = GameData.Current.assets.sounds.Find(x => x.name == name);
             if (!soundAsset)
@@ -3621,7 +3731,7 @@ namespace BetterLegacy.Core.Helpers
                 CoroutineHelper.StartCoroutine(soundAsset.LoadAudioClip(() =>
                 {
                     if (play)
-                        SoundManager.inst.PlaySound(soundAsset.audio, vol, pitch, loop, panStereo);
+                        modifier.Result = SoundManager.inst.PlaySound(soundAsset.audio, vol, pitch, loop, panStereo);
                 }));
             }
             else
@@ -3922,8 +4032,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.HasResult())
             {
-                var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
-                onDestroy.Modifier = modifier;
+                DestroyModifierResult.Init(runtimeObject.visualObject.gameObject, modifier);
                 modifier.Result = runtimeObject.visualObject.gameObject;
                 renderer.material = LegacyResources.blur;
             }

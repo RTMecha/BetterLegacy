@@ -606,6 +606,7 @@ namespace BetterLegacy.Core.Runtime
                             runtimeModifiers.modifiers.ForLoop(modifier =>
                             {
                                 modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                                ModifiersHelper.OnRemoveCache(modifier);
                                 modifier.Result = null;
                             });
 
@@ -688,6 +689,7 @@ namespace BetterLegacy.Core.Runtime
                 runtimeModifiers.modifiers.ForLoop(modifier =>
                 {
                     modifier.Inactive?.Invoke(modifier, beatmapObject, null);
+                    ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = null;
                 });
 

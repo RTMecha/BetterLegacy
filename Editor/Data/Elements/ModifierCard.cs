@@ -4893,6 +4893,8 @@ namespace BetterLegacy.Editor.Data.Elements
             modifier.active = false;
             modifier.runCount = 0;
             modifier.Inactive?.Invoke(modifier, reference as IModifierReference, null);
+            ModifiersHelper.OnRemoveCache(modifier);
+            modifier.Result = default;
         }
 
         public void SetValue<T>(int index, string value, T reference)

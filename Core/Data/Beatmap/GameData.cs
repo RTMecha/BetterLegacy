@@ -1812,6 +1812,7 @@ namespace BetterLegacy.Core.Data.Beatmap
                     modifier.Action = null;
                     modifier.Trigger = null;
                     modifier.Inactive = null;
+                    ModifiersHelper.OnRemoveCache(modifier);
                     modifier.Result = null;
                 }
             }
