@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 
 using UnityEngine;
 
@@ -192,6 +193,38 @@ namespace BetterLegacy.Core.Managers
             if (musicGroup.music.Length > 1 && !musicGroup.alwaysRandom) // not alwaysRandom is apparently ACTUALLY RANDOM???
                 Library.musicClipsRandomIndex[musicGroup.musicID] = Random.Range(0, musicGroup.music.Length);
             Library.musicClips[musicGroup.musicID] = musicGroup.music;
+        }
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Fade transitions between two audio sources.
+        /// </summary>
+        /// <param name="a">Audio source to fade from.</param>
+        /// <param name="b">Audio source to fade to.</param>
+        /// <param name="duration">Amount of time to fade.</param>
+        /// <param name="volume">The current volume.</param>
+        public void FadeTransition(AudioSource a, AudioSource b, float duration, float volume) => CoroutineHelper.StartCoroutine(IFadeTransition(a, b, duration, volume));
+
+        /// <summary>
+        /// Fade transitions between two audio sources.
+        /// </summary>
+        /// <param name="a">Audio source to fade from.</param>
+        /// <param name="b">Audio source to fade to.</param>
+        /// <param name="duration">Amount of time to fade.</param>
+        /// <param name="volume">The current volume.</param>
+        public IEnumerator IFadeTransition(AudioSource a, AudioSource b, float duration, float volume)
+        {
+            float percent = 0f;
+            while (percent < 1f)
+            {
+                percent += Time.deltaTime * 1f / duration;
+                a.volume = Mathf.Lerp(0f, volume, percent);
+                b.volume = Mathf.Lerp(volume, 0f, percent);
+                yield return null;
+            }
         }
 
         #endregion
