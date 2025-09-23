@@ -269,7 +269,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     new ButtonFunction(true),
                     new ButtonFunction("Set Custom Name", () =>
                     {
-                        RTEditor.inst.ShowNameEditor("Set Custom Name", "Custom name", "modifierName", "Set", () =>
+                        RTEditor.inst.ShowNameEditor("Set Custom Name", "Custom name", string.IsNullOrEmpty(modifier.customName) ? "modifierName" : modifier.customName, "Set", () =>
                         {
                             modifier.customName = RTEditor.inst.folderCreatorName.text;
                             RenderModifier(reference);
@@ -278,7 +278,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     }),
                     new ButtonFunction("Set Description", () =>
                     {
-                        RTEditor.inst.ShowNameEditor("Set Description", "Description", "This modifier does...", "Set", () =>
+                        RTEditor.inst.ShowNameEditor("Set Description", "Description", string.IsNullOrEmpty(modifier.description) ? "This modifier does..." : modifier.description, "Set", () =>
                         {
                             modifier.description = RTEditor.inst.folderCreatorName.text;
                             RenderModifier(reference);
@@ -3767,6 +3767,16 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.enablePrefab): {
+                        BoolGenerator(modifier, reference, "Enabled", 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.updatePrefab): {
+                        BoolGenerator(modifier, reference, "Respawn", 0);
+
+                        break;
+                    }
 
                 #endregion
 
@@ -4629,6 +4639,21 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 case nameof(ModifierFunctions.playerCollideIndex): {
                         IntegerGenerator(modifier, reference, "Index", 0);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerCollideOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.playerCollideIndexOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                        IntegerGenerator(modifier, reference, "Index", 1);
 
                         break;
                     }

@@ -511,6 +511,8 @@ namespace BetterLegacy.Core.Helpers
 
             new ModifierTrigger(nameof(ModifierFunctions.playerCollide), ModifierFunctions.playerCollide, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierTrigger(nameof(ModifierFunctions.playerCollideIndex), ModifierFunctions.playerCollideIndex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierTrigger(nameof(ModifierFunctions.playerCollideOther), ModifierFunctions.playerCollideOther, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierTrigger(nameof(ModifierFunctions.playerCollideIndexOther), ModifierFunctions.playerCollideIndexOther, ModifierCompatibility.FullBeatmapCompatible),
             new ModifierTrigger(nameof(ModifierFunctions.playerHealthEquals), ModifierFunctions.playerHealthEquals),
             new ModifierTrigger(nameof(ModifierFunctions.playerHealthLesserEquals), ModifierFunctions.playerHealthLesserEquals),
             new ModifierTrigger(nameof(ModifierFunctions.playerHealthGreaterEquals), ModifierFunctions.playerHealthGreaterEquals),
@@ -1270,6 +1272,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.spawnMultiPrefabCopy),  ModifierFunctions.spawnMultiPrefabCopy, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.clearSpawnedPrefabs),  ModifierFunctions.clearSpawnedPrefabs, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.setPrefabTime),  ModifierFunctions.setPrefabTime, ModifierCompatibility.PrefabObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.enablePrefab),  ModifierFunctions.enablePrefab, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierAction(nameof(ModifierFunctions.updatePrefab),  ModifierFunctions.updatePrefab, ModifierCompatibility.FullBeatmapCompatible),
 
             #endregion
 
@@ -10050,6 +10054,31 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void enablePrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var prefabable = reference.AsPrefabable();
+            if (prefabable != null && prefabable.FromPrefab)
+                prefabable.GetPrefabObject()?.runtimeObject?.SetCustomActive(modifier.GetBool(0, true, variables));
+        }
+
+        public static void updatePrefab(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (modifier.constant)
+                return;
+
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null || !prefabable.FromPrefab)
+                return;
+
+            var reinsert = modifier.GetBool(0, true, variables);
+            RTLevel.Current.postTick.Enqueue(() =>
+            {
+                var prefabObject = prefabable.GetPrefabObject();
+                if (prefabObject)
+                    prefabObject.GetParentRuntime()?.UpdatePrefab(prefabObject, reinsert: reinsert);
+            });
+        }
+
         #endregion
 
         #region Ranking
@@ -10942,6 +10971,69 @@ namespace BetterLegacy.Core.Helpers
                 if (PlayerManager.Players.TryGetAt(modifier.GetInt(0, 0, variables), out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CurrentCollider)
                     return player.RuntimePlayer.CurrentCollider.IsTouching(collider);
             }
+            return false;
+        }
+
+        public static bool playerCollideOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
+                return false;
+
+            var tag = modifier.GetValue(0, variables);
+
+            var cache = modifier.GetResultOrDefault(() => new GenericGroupCache<BeatmapObject>(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag)));
+            if (cache.tag != tag)
+                cache.UpdateCache(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag));
+
+            for (int i = 0; i < cache.group.Count; i++)
+            {
+                var runtimeObject = cache.group[i]?.runtimeObject;
+                if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
+                    continue;
+
+                var collider = runtimeObject.visualObject.collider;
+
+                var players = PlayerManager.Players;
+                for (int j = 0; j < players.Count; j++)
+                {
+                    var player = players[j];
+                    if (!player.RuntimePlayer || !player.RuntimePlayer.CurrentCollider)
+                        continue;
+
+                    if (player.RuntimePlayer.CurrentCollider.IsTouching(collider))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool playerCollideIndexOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
+                return false;
+
+            var tag = modifier.GetValue(0, variables);
+            var index = modifier.GetInt(1, 0, variables);
+
+            var cache = modifier.GetResultOrDefault(() => new GenericGroupCache<BeatmapObject>(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag)));
+            if (cache.tag != tag)
+                cache.UpdateCache(tag, GameData.Current.FindObjectsWithTag(modifier, prefabable, tag));
+
+            for (int i = 0; i < cache.group.Count; i++)
+            {
+                var runtimeObject = cache.group[i]?.runtimeObject;
+                if (!runtimeObject || !runtimeObject.visualObject || !runtimeObject.visualObject.collider)
+                    continue;
+
+                var collider = runtimeObject.visualObject.collider;
+
+                if (PlayerManager.Players.TryGetAt(index, out PAPlayer player) && player.RuntimePlayer && player.RuntimePlayer.CurrentCollider && player.RuntimePlayer.CurrentCollider.IsTouching(collider))
+                    return true;
+            }
+
             return false;
         }
 
@@ -12578,6 +12670,22 @@ namespace BetterLegacy.Core.Helpers
     }
 
     #region Caches
+
+    public class GenericGroupCache<T>
+    {
+        public GenericGroupCache() { }
+
+        public GenericGroupCache(string tag, List<T> group) => UpdateCache(tag, group);
+
+        public string tag;
+        public List<T> group;
+
+        public void UpdateCache(string tag, List<T> group)
+        {
+            this.tag = tag;
+            this.group = group;
+        }
+    }
 
     /// <summary>
     /// Cache for <see cref="ModifierFunctions.translateShape(Modifier, IModifierReference, Dictionary{string, string})"/>.
