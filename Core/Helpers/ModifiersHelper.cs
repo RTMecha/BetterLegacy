@@ -12817,10 +12817,8 @@ namespace BetterLegacy.Core.Helpers
 
         public void UpdateCache(Modifier modifier, IPrefabable prefabable, string tag)
         {
-            if (!string.IsNullOrEmpty(tag) && GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, out BeatmapObject target))
+            if (GameData.Current.TryFindObjectWithTag(modifier, prefabable, tag, out BeatmapObject target))
                 obj = target;
-            else if (prefabable is BeatmapObject beatmapObject)
-                obj = beatmapObject;
         }
 
         public string tag;
