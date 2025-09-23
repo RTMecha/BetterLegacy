@@ -896,9 +896,9 @@ namespace BetterLegacy.Editor.Managers
             UpdatePreview();
             UpdateKey();
 
-            if (RTEditor.inst.editorInfo.time > 36000f)
+            if (editorInfo.time > 36000f)
                 AchievementManager.inst.UnlockAchievement("serious_dedication");
-            if (RTEditor.inst.editorInfo.time > 86400f)
+            if (editorInfo.time > 86400f)
                 AchievementManager.inst.UnlockAchievement("true_dedication");
 
             // Only want this during April Fools.
@@ -1004,6 +1004,45 @@ namespace BetterLegacy.Editor.Managers
 
         void UpdatePreview()
         {
+            if (RTLevel.Current && RTLevel.Current.eventEngine)
+            {
+                if (MouseOverPreview)
+                {
+                    if (Input.GetMouseButtonDown((int)PointerEventData.InputButton.Middle))
+                    {
+                        draggingCamera = true;
+                        startDragPos = Input.mousePosition;
+                        cachePos = RTLevel.Current.eventEngine.editorCamPosition;
+
+                        if (EditorConfig.Instance.EnableEditorCameraOnDrag.Value)
+                            EventsConfig.Instance.EditorCamEnabled.Value = true;
+                    }
+
+                    if (EventsConfig.Instance.EditorCameraEnabled)
+                    {
+                        var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 10f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 1f : 5f;
+
+                        if (Input.mouseScrollDelta.y > 0f)
+                            RTLevel.Current.eventEngine.editorCamZoom -= amount;
+                        if (Input.mouseScrollDelta.y < 0f)
+                            RTLevel.Current.eventEngine.editorCamZoom += amount;
+                    }
+                }
+
+                if (!Input.GetMouseButton((int)PointerEventData.InputButton.Middle) || !EventsConfig.Instance.EditorCameraEnabled)
+                    draggingCamera = false;
+
+                if (draggingCamera)
+                {
+                    var amount = Input.GetKey(EditorConfig.Instance.ScrollwheelLargeAmountKey.Value) ? 40f : Input.GetKey(EditorConfig.Instance.ScrollwheelSmallAmountKey.Value) ? 500f : 100f;
+
+                    var val = RTLevel.Current.eventEngine.editorCamZoom / amount;
+                    var mousePosition = (startDragPos - (Vector2)Input.mousePosition) * val;
+                    RTLevel.Current.eventEngine.editorCamPosition += mousePosition;
+                    startDragPos = Input.mousePosition;
+                }
+            }
+
             try
             {
                 if (previewGrid)
@@ -1031,9 +1070,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 float num = AudioManager.inst.CurrentAudioSource.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
                 if (timelinePosition)
-                {
                     timelinePosition.anchoredPosition = new Vector2(num, 0f);
-                }
 
                 timelinePreview.localPosition = GameManager.inst.timeline.transform.localPosition;
                 timelinePreview.localScale = GameManager.inst.timeline.transform.localScale;
@@ -1096,6 +1133,11 @@ namespace BetterLegacy.Editor.Managers
         /// Custom editor thread for performing larger tasks.
         /// </summary>
         public Core.Threading.TickRunner editorThread;
+
+        /// <summary>
+        /// If the mouse cursor is over the level preview.
+        /// </summary>
+        public static bool MouseOverPreview => RTLevel.Cameras.FG.rect.Contains(new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height));
 
         /// <summary>
         /// A list of easing dropdowns.
@@ -1195,6 +1237,10 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool DraggingPlaysSound { get; set; }
         public static bool DraggingPlaysSoundBPM { get; set; }
+
+        bool draggingCamera;
+        Vector2 startDragPos;
+        Vector2 cachePos;
 
         #endregion
 

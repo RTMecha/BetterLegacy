@@ -392,6 +392,7 @@ namespace BetterLegacy.Configs
         public Setting<Color> ObjectDraggerHelperOutlineColor { get; set; }
 
         public Setting<bool> ObjectDraggerEnabled { get; set; }
+        public Setting<bool> PrefabObjectDraggerEnabled { get; set; }
         public Setting<bool> ObjectDraggerCreatesKeyframe { get; set; }
         public Setting<float> ObjectDraggerRotatorRadius { get; set; }
         public Setting<float> ObjectDraggerScalerOffset { get; set; }
@@ -403,6 +404,8 @@ namespace BetterLegacy.Configs
         public Setting<float> PreviewGridSize { get; set; }
         public Setting<float> PreviewGridThickness { get; set; }
         public Setting<Color> PreviewGridColor { get; set; }
+
+        public Setting<bool> EnableEditorCameraOnDrag { get; set; }
 
         #endregion
 
@@ -867,6 +870,7 @@ namespace BetterLegacy.Configs
             ObjectDraggerHelperOutlineColor = Bind(this, PREVIEW, "Object Drag Helper Outline Color", Color.black, "Size of the Object Drag Helper outline.");
 
             ObjectDraggerEnabled = Bind(this, PREVIEW, "Object Dragging Enabled", false, "If an object can be dragged around.");
+            PrefabObjectDraggerEnabled = Bind(this, PREVIEW, "Prefab Object Dragging Enabled", true, "If a Prefab object can be dragged around.");
             ObjectDraggerCreatesKeyframe = Bind(this, PREVIEW, "Object Dragging Creates Keyframe", false, "When an object is dragged, create a keyframe.");
             ObjectDraggerRotatorRadius = Bind(this, PREVIEW, "Object Dragger Rotator Radius", 22f, "The size of the Object Draggers' rotation ring.");
             ObjectDraggerScalerOffset = Bind(this, PREVIEW, "Object Dragger Scaler Offset", 6f, "The distance of the Object Draggers' scale arrows.");
@@ -879,6 +883,8 @@ namespace BetterLegacy.Configs
             PreviewGridSize = Bind(this, PREVIEW, "Grid Size", 0.5f, "The overall size of the preview grid.");
             PreviewGridThickness = Bind(this, PREVIEW, "Grid Thickness", 0.1f, "The line thickness of the preview grid.", 0.01f, 2f);
             PreviewGridColor = Bind(this, PREVIEW, "Grid Color", Color.white, "The color of the preview grid.");
+
+            EnableEditorCameraOnDrag = Bind(this, PREVIEW, "Enable Editor Camera On Drag", true, "If the editor camera should enable on preview drag.");
 
             #endregion
 

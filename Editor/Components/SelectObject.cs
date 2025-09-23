@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using LSFunctions;
 
 using BetterLegacy.Arcade.Managers;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
@@ -20,11 +21,6 @@ namespace BetterLegacy.Editor.Components
     /// </summary>
     public class SelectObject : MonoBehaviour
     {
-        /// <summary>
-        /// If user is only looking at one object, then allow drag.
-        /// </summary>
-        public bool CanDrag => EditorTimeline.inst.SelectedObjectCount < 2;
-
         /// <summary>
         /// If dragging is enabled via <see cref="Configs.EditorConfig.ObjectDraggerEnabled"/>.
         /// </summary>
@@ -138,6 +134,10 @@ namespace BetterLegacy.Editor.Components
             if (!CoreHelper.IsEditing || CoreHelper.IsUsingInputField || EventSystem.current.IsPointerOverGameObject())
                 return;
 
+            // don't drag object if Example is being dragged.
+            if (Companion.Entity.Example.Current && Companion.Entity.Example.Current.Dragging)
+                return;
+
             startDragTime = Time.time;
 
             EditorTimeline.inst.SelectObject(EditorTimeline.inst.GetTimelineObject(beatmapObject));
@@ -170,8 +170,19 @@ namespace BetterLegacy.Editor.Components
 
         void OnMouseDrag()
         {
+            dragTime = Time.time;
+            if (!CoreHelper.IsEditing || dragTime <= startDragTime + 0.15f || EditorTimeline.inst.SelectedObjectCount >= 2 || EventSystem.current.IsPointerOverGameObject())
+                return;
+
+            var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
+            var vector2 = Camera.main.ScreenToWorldPoint(vector);
+            var vector3 = new Vector3((float)((int)vector2.x), (float)((int)vector2.y), transform.localPosition.z);
+
             if (beatmapObject.fromPrefab)
             {
+                if (!EditorConfig.Instance.PrefabObjectDraggerEnabled.Value)
+                    return;
+
                 var currentSelection = EditorTimeline.inst.CurrentSelection;
 
                 if (!currentSelection.isPrefabObject || currentSelection.ID != beatmapObject.prefabInstanceID)
@@ -181,10 +192,6 @@ namespace BetterLegacy.Editor.Components
 
                 selectedKeyframe = prefabObjectToDrag.events[0];
 
-                var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
-                var vector2 = Camera.main.ScreenToWorldPoint(vector);
-                var vector3 = new Vector3((float)((int)vector2.x), (float)((int)vector2.y), transform.localPosition.z);
-
                 dragging = true;
 
                 Drag(vector2, vector3);
@@ -192,21 +199,16 @@ namespace BetterLegacy.Editor.Components
                 return;
             }
 
-            dragTime = Time.time;
-            if (CoreHelper.IsEditing && dragTime > startDragTime + 0.1f && CanDrag && Enabled && !EventSystem.current.IsPointerOverGameObject())
+            if (!EditorConfig.Instance.ObjectDraggerEnabled.Value)
+                return;
+
+            if (!dragging && selectedKeyframe == null)
             {
-                var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);
-                var vector2 = Camera.main.ScreenToWorldPoint(vector);
-                var vector3 = new Vector3((float)((int)vector2.x), (float)((int)vector2.y), transform.localPosition.z);
-
-                if (!dragging && selectedKeyframe == null)
-                {
-                    dragging = true;
-                    selectedKeyframe = beatmapObject.GetOrCreateKeyframe(0, CreateKeyframe);
-                }
-
-                Drag(vector2, vector3);
+                dragging = true;
+                selectedKeyframe = beatmapObject.GetOrCreateKeyframe(0, CreateKeyframe);
             }
+
+            Drag(vector2, vector3);
         }
 
         void Drag(Vector3 vector2, Vector3 vector3)
