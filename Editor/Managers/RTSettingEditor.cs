@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -105,11 +105,20 @@ namespace BetterLegacy.Editor.Managers
             input.SetTextWithoutNotify(RTEditor.inst.editorInfo.bpm.ToString());
             input.onValueChanged.NewListener(_val =>
             {
-                var bpm = Parser.TryParse(_val, 120f);
-                MetaData.Current.song.bpm = bpm;
-                RTEditor.inst.editorInfo.bpm = bpm;
-                SetBPMSlider(slider, input);
-                EditorTimeline.inst.SetTimelineGridSize();
+                var variables = new Dictionary<string, float>
+                {
+                    { "bpm", RTEditor.inst.editorInfo.bpm },
+                    { "bpmOffset", RTEditor.inst.editorInfo.bpmOffset },
+                    { "timeSignature", RTEditor.inst.editorInfo.timeSignature },
+                };
+
+                if (RTMath.TryParse(_val, RTEditor.inst.editorInfo.bpm, variables, out float bpm))
+                {
+                    MetaData.Current.song.bpm = bpm;
+                    RTEditor.inst.editorInfo.bpm = bpm;
+                    SetBPMSlider(slider, input);
+                    EditorTimeline.inst.SetTimelineGridSize();
+                }
             });
         }
 
@@ -121,7 +130,6 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.editorInfo.bpmOffset = _val;
                 SetBPMOffsetInputField(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();
-                RTEditor.inst.SaveSettings();
             });
         }
 
@@ -130,11 +138,19 @@ namespace BetterLegacy.Editor.Managers
             input.SetTextWithoutNotify(RTEditor.inst.editorInfo.bpmOffset.ToString());
             input.onValueChanged.NewListener(_val =>
             {
-                var bpm = Parser.TryParse(_val, 0f);
-                RTEditor.inst.editorInfo.bpmOffset = bpm;
-                SetBPMOffsetSlider(slider, input);
-                EditorTimeline.inst.SetTimelineGridSize();
-                RTEditor.inst.SaveSettings();
+                var variables = new Dictionary<string, float>
+                {
+                    { "bpm", RTEditor.inst.editorInfo.bpm },
+                    { "bpmOffset", RTEditor.inst.editorInfo.bpmOffset },
+                    { "timeSignature", RTEditor.inst.editorInfo.timeSignature },
+                };
+
+                if (RTMath.TryParse(_val, RTEditor.inst.editorInfo.bpmOffset, variables, out float bpm))
+                {
+                    RTEditor.inst.editorInfo.bpmOffset = bpm;
+                    SetBPMOffsetSlider(slider, input);
+                    EditorTimeline.inst.SetTimelineGridSize();
+                }
             });
         }
 
@@ -146,7 +162,6 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.editorInfo.timeSignature = _val;
                 SetBPMTimingInputField(slider, input);
                 EditorTimeline.inst.SetTimelineGridSize();
-                RTEditor.inst.SaveSettings();
             });
         }
 
@@ -155,11 +170,19 @@ namespace BetterLegacy.Editor.Managers
             input.SetTextWithoutNotify(RTEditor.inst.editorInfo.timeSignature.ToString());
             input.onValueChanged.NewListener(_val =>
             {
-                var bpm = Parser.TryParse(_val, 0f);
-                RTEditor.inst.editorInfo.timeSignature = bpm;
-                SetBPMTimingSlider(slider, input);
-                EditorTimeline.inst.SetTimelineGridSize();
-                RTEditor.inst.SaveSettings();
+                var variables = new Dictionary<string, float>
+                {
+                    { "bpm", RTEditor.inst.editorInfo.bpm },
+                    { "bpmOffset", RTEditor.inst.editorInfo.bpmOffset },
+                    { "timeSignature", RTEditor.inst.editorInfo.timeSignature },
+                };
+
+                if (RTMath.TryParse(_val, RTEditor.inst.editorInfo.timeSignature, variables, out float bpm))
+                {
+                    RTEditor.inst.editorInfo.timeSignature = bpm;
+                    SetBPMTimingSlider(slider, input);
+                    EditorTimeline.inst.SetTimelineGridSize();
+                }
             });
         }
 
