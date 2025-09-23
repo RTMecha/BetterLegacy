@@ -1,4 +1,28 @@
-﻿# 1.8.1 [Sep 21, 2025]
+﻿# 1.8.2 [Sep 23, 2025]
+## Features
+### Core
+- Added enablePrefab and updatePrefab action modifiers.
+- Added playerCollideOther and playerCollideIndexOther trigger modifiers. These do the same as the regular playerCollide trigger modifiers, except these check other objects.
+
+### Editor
+- Added input field editors to the capture area.
+- You can now set a custom background color for the capture.
+- The capture areas' position X / Y can be locked via its context menu.
+- Starting to work on a JSON match system for object searching, so you can better define what you're looking for.
+- You can now drag the level preview area around by clicking and holding the mouse scrollwheel on the level preview area.
+- BPM values in the Setting editor now support math evaluation.
+
+## Changes
+### Editor
+- Changed the "Open Custom Object Creation Options" setting to "Object Creation Click Behavior" in > Config Manager > Editor > Creation. This allows you to customize how the button behaves.
+- The Prefab Popups now close when creating a new Prefab.
+
+## Fixes
+- Fixed an issue with some group modifiers not finding the associated objects correctly.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.1 [Sep 21, 2025]
 ## Features
 ### Editor
 - Added an origin indicator to the capture area.
