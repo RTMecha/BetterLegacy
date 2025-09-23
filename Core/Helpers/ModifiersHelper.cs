@@ -2469,6 +2469,13 @@ namespace BetterLegacy.Core.Helpers
                 customActivatable.SetCustomActive(active);
         }
 
+        public static string FormatStringVariables(string input, Dictionary<string, string> variables)
+        {
+            foreach (var variable in variables)
+                input = Regex.Replace(input, "{" + variable.Key + "}", variable.Value);
+            return input;
+        }
+
         #endregion
     }
 
@@ -10625,9 +10632,11 @@ namespace BetterLegacy.Core.Helpers
 
         public static void editorNotify(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
+            var text = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+
             if (CoreHelper.InEditor)
                 EditorManager.inst.DisplayNotification(
-                    /*text: */ modifier.GetValue(0, variables),
+                    /*text: */ text,
                     /*time: */ modifier.GetFloat(1, 0.5f, variables),
                     /*type: */ (EditorManager.NotificationType)modifier.GetInt(2, 0, variables));
         }
@@ -10639,15 +10648,22 @@ namespace BetterLegacy.Core.Helpers
             var discordSubIcons = CoreHelper.discordSubIcons;
             var discordIcons = CoreHelper.discordIcons;
 
-            var state = modifier.GetValue(0, variables);
-            var details = modifier.GetValue(1, variables);
+            var state = ModifiersHelper.FormatStringVariables(modifier.GetValue(0, variables), variables);
+            var details = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
             var discordSubIcon = modifier.GetInt(2, 0, variables);
             var discordIcon = modifier.GetInt(3, 0, variables);
 
-            CoreHelper.UpdateDiscordStatus(
-                string.Format(state, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
-                string.Format(details, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
-                discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
+            try
+            {
+                CoreHelper.UpdateDiscordStatus(
+                    string.Format(state, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                    string.Format(details, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                    discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
+            }
+            catch
+            {
+                CoreHelper.UpdateDiscordStatus((CoreHelper.InEditor ? "Editing: " : "Level: ") + MetaData.Current.beatmap.name, CoreHelper.InEditor ? "In Editor" : "In Arcade", CoreHelper.InEditor ? "editor" : "arcade");
+            }
         }
 
         public static void callModifierBlock(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
