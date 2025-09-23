@@ -87,6 +87,19 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Reset Rotation", () => Settings.rot = 0f),
                         new ButtonFunction(true),
                         new ButtonFunction($"Hide Players [{(Settings.hidePlayers ? "On" : "Off")}]", () => Settings.hidePlayers = !Settings.hidePlayers),
+                        new ButtonFunction($"Show Editor [{(Settings.showEditor ? "On" : "Off")}]", () => Settings.showEditor = !Settings.showEditor),
+                        new ButtonFunction(true),
+                        new ButtonFunction($"Use Custom BG Color [{(Settings.useCustomBGColor ? "On" : "Off")}]", () => Settings.useCustomBGColor = !Settings.useCustomBGColor),
+                        new ButtonFunction($"Set Custom BG Color", () =>
+                        {
+                            RTColorPicker.inst.Show(
+                                currentColor: Settings.customBGColor,
+                                colorChanged: (col, hex) => { },
+                                colorSaved: (col, hex) =>
+                                {
+                                    Settings.customBGColor = col;
+                                });
+                        }),
                         new ButtonFunction(true),
                         new ButtonFunction("Copy", () => copiedSettings = Settings.Copy()),
                         new ButtonFunction("Paste", () =>
@@ -122,6 +135,26 @@ namespace BetterLegacy.Editor.Managers
                                 break;
                             }
                     }
+
+                    buttonFunctions.AddRange(new List<ButtonFunction>
+                    {
+                        new ButtonFunction(true),
+                        new ButtonFunction($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.None ? "> " : string.Empty)}No Lock", () =>
+                        {
+                            Settings.lockDragMode = CaptureSettings.LockDragMode.None;
+                            EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonFunction($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionX ? "> " : string.Empty)}Position X Lock", () =>
+                        {
+                            Settings.lockDragMode = CaptureSettings.LockDragMode.PositionX;
+                            EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                        new ButtonFunction($"{(Settings.lockDragMode == CaptureSettings.LockDragMode.PositionY ? "> " : string.Empty)}Position Y Lock", () =>
+                        {
+                            Settings.lockDragMode = CaptureSettings.LockDragMode.PositionY;
+                            EditorManager.inst.DisplayNotification($"Set lock drag to {Settings.lockDragMode}!", 2f, EditorManager.NotificationType.Success);
+                        }),
+                    });
 
                     EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
                     return;
@@ -300,6 +333,89 @@ namespace BetterLegacy.Editor.Managers
             var zoomBarBottom = Creator.NewUIObject("Bar Bottom", zoom.transform);
             new RectValues(Vector2.zero, new Vector2(1f, 0f), Vector2.zero, new Vector2(0.5f, 0f), new Vector2(0f, 4f)).AssignToRectTransform(zoomBarBottom.transform.AsRT());
             zoomBarBottom.AddComponent<Image>();
+
+            editors = Creator.NewUIObject("Editor", gameObject.transform);
+            new RectValues(new Vector2(0f, 32f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(400f, 32f)).AssignToRectTransform(editors.transform.AsRT());
+
+            var positionFieldsLayout = editors.AddComponent<HorizontalLayoutGroup>();
+
+            var xPosition = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editors.transform, "pos_x");
+            xPositionField = xPosition.GetComponent<InputFieldStorage>();
+            xPositionField.OnValueChanged.NewListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "posX", Settings.pos.x },
+                    { "posY", Settings.pos.y },
+                    { "zoom", Settings.Zoom },
+                    { "rot", Settings.rot },
+                };
+
+                if (RTMath.TryParse(_val, Settings.pos.x, variables, out float result))
+                    Settings.pos.x = result;
+            });
+            xPositionField.inputField.GetPlaceholderText().text = "Set Pos X...";
+            CoreHelper.Delete(xPositionField.leftGreaterButton);
+            CoreHelper.Delete(xPositionField.middleButton);
+            CoreHelper.Delete(xPositionField.rightGreaterButton);
+            EditorThemeManager.AddInputField(xPositionField);
+            TriggerHelper.IncreaseDecreaseButtons(xPositionField);
+            TriggerHelper.InversableField(xPositionField);
+
+            var yPosition = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editors.transform, "pos_y");
+            yPositionField = yPosition.GetComponent<InputFieldStorage>();
+            yPositionField.OnValueChanged.NewListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "posX", Settings.pos.x },
+                    { "posY", Settings.pos.y },
+                    { "zoom", Settings.Zoom },
+                    { "rot", Settings.rot },
+                };
+
+                if (RTMath.TryParse(_val, Settings.pos.y, variables, out float result))
+                    Settings.pos.y = result;
+            });
+            yPositionField.inputField.GetPlaceholderText().text = "Set Pos Y...";
+            CoreHelper.Delete(yPositionField.leftGreaterButton);
+            CoreHelper.Delete(yPositionField.middleButton);
+            CoreHelper.Delete(yPositionField.rightGreaterButton);
+            EditorThemeManager.AddInputField(yPositionField);
+            TriggerHelper.IncreaseDecreaseButtons(yPositionField);
+            TriggerHelper.InversableField(yPositionField);
+
+            TriggerHelper.AddEventTriggers(xPositionField.inputField.gameObject,
+                TriggerHelper.ScrollDelta(xPositionField.inputField, multi: true),
+                TriggerHelper.ScrollDeltaVector2(xPositionField.inputField, yPositionField.inputField));
+            TriggerHelper.AddEventTriggers(yPositionField.inputField.gameObject,
+                TriggerHelper.ScrollDelta(yPositionField.inputField, multi: true),
+                TriggerHelper.ScrollDeltaVector2(xPositionField.inputField, yPositionField.inputField));
+
+            var rotation = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editors.transform, "rot");
+            rotationField = rotation.GetComponent<InputFieldStorage>();
+            rotationField.OnValueChanged.NewListener(_val =>
+            {
+                var variables = new Dictionary<string, float>
+                {
+                    { "posX", Settings.pos.x },
+                    { "posY", Settings.pos.y },
+                    { "zoom", Settings.Zoom },
+                    { "rot", Settings.rot },
+                };
+
+                if (RTMath.TryParse(_val, Settings.rot, variables, out float result))
+                    Settings.rot = result;
+            });
+            rotationField.inputField.GetPlaceholderText().text = "Set Rot...";
+            CoreHelper.Delete(rotationField.leftGreaterButton);
+            CoreHelper.Delete(rotationField.middleButton);
+            CoreHelper.Delete(rotationField.rightGreaterButton);
+            EditorThemeManager.AddInputField(rotationField);
+            TriggerHelper.IncreaseDecreaseButtons(rotationField);
+            TriggerHelper.InversableField(rotationField);
+
+            TriggerHelper.AddEventTriggers(rotationField.inputField.gameObject, TriggerHelper.ScrollDelta(rotationField.inputField, 15f, 3f));
         }
 
         void Scroll(PointerEventData pointerEventData)
@@ -379,6 +495,10 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     case DragType.Position: {
+                            if (Settings.lockDragMode == CaptureSettings.LockDragMode.PositionX)
+                                mousePosition.x = 0f;
+                            if (Settings.lockDragMode == CaptureSettings.LockDragMode.PositionY)
+                                mousePosition.y = 0f;
                             captureSettings.pos = cachePos - mousePosition;
                             break;
                         }
@@ -395,6 +515,15 @@ namespace BetterLegacy.Editor.Managers
 
             if (zoomSlider && zoomSlider.value != captureSettings.Zoom)
                 zoomSlider.SetValueWithoutNotify(captureSettings.Zoom);
+            if (xPositionField && xPositionField.inputField && !xPositionField.inputField.isFocused)
+                xPositionField.SetTextWithoutNotify(captureSettings.pos.x.ToString());
+            if (yPositionField && yPositionField.inputField && !yPositionField.inputField.isFocused)
+                yPositionField.SetTextWithoutNotify(captureSettings.pos.y.ToString());
+            if (rotationField && rotationField.inputField && !rotationField.inputField.isFocused)
+                rotationField.SetTextWithoutNotify(captureSettings.rot.ToString());
+
+            if (editors)
+                editors.SetActive(Settings.showEditor);
 
             prevView = View;
             prevMatchSize = MatchSize;
@@ -485,6 +614,12 @@ namespace BetterLegacy.Editor.Managers
         public Image outlineImage;
 
         public Slider zoomSlider;
+
+        public GameObject editors;
+
+        public InputFieldStorage xPositionField;
+        public InputFieldStorage yPositionField;
+        public InputFieldStorage rotationField;
 
         #endregion
 
@@ -656,6 +791,14 @@ namespace BetterLegacy.Editor.Managers
             if (captureSettings.hidePlayers)
                 GameManager.inst.players.SetActive(false);
 
+            var clearFlags = RTLevel.Cameras.FG.clearFlags;
+            var bgColor = RTLevel.Cameras.FG.backgroundColor;
+            if (captureSettings.useCustomBGColor)
+            {
+                RTLevel.Cameras.FG.clearFlags = CameraClearFlags.SolidColor;
+                RTLevel.Cameras.FG.backgroundColor = captureSettings.customBGColor;
+            }
+
             var icon = SpriteHelper.CaptureFrame(
                 camera: RTLevel.Cameras.FG,
                 move: captureSettings.move,
@@ -678,6 +821,12 @@ namespace BetterLegacy.Editor.Managers
 
             if (captureSettings.hidePlayers)
                 GameManager.inst.players.SetActive(true);
+
+            if (captureSettings.useCustomBGColor)
+            {
+                RTLevel.Cameras.FG.clearFlags = clearFlags;
+                RTLevel.Cameras.FG.backgroundColor = bgColor;
+            }
 
             SoundManager.inst.PlaySound(DefaultSounds.menuflip);
 

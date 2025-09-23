@@ -72,6 +72,36 @@ namespace BetterLegacy.Editor.Data
         /// </summary>
         public bool hidePlayers = true;
 
+        /// <summary>
+        /// If the precise editor display should show.
+        /// </summary>
+        public bool showEditor;
+
+        /// <summary>
+        /// If a custom background color should be used.
+        /// </summary>
+        public bool useCustomBGColor;
+
+        /// <summary>
+        /// The custom background color.
+        /// </summary>
+        public Color customBGColor;
+
+        /// <summary>
+        /// Specific value that should be locked when dragging.
+        /// </summary>
+        public LockDragMode lockDragMode;
+
+        /// <summary>
+        /// Specific value that should be locked when dragging.
+        /// </summary>
+        public enum LockDragMode
+        {
+            None,
+            PositionX,
+            PositionY,
+        }
+
         #endregion
 
         #region Methods
@@ -85,6 +115,12 @@ namespace BetterLegacy.Editor.Data
             rot = orig.rot;
             matchSize = orig.matchSize;
             hidePlayers = orig.hidePlayers;
+            showEditor = orig.showEditor;
+
+            useCustomBGColor = orig.useCustomBGColor;
+            customBGColor = orig.customBGColor;
+
+            lockDragMode = orig.lockDragMode;
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -97,7 +133,16 @@ namespace BetterLegacy.Editor.Data
                 move = jn["move"].AsBool;
             pos = Parser.TryParse(jn["pos"], Vector2.zero);
             rot = jn["rot"].AsFloat;
-            hidePlayers = jn["hide_players"].AsBool;
+            if (jn["hide_players"] != null)
+                hidePlayers = jn["hide_players"].AsBool;
+            showEditor = jn["show_editor"].AsBool;
+
+            useCustomBGColor = jn["use_custom_bg_color"].AsBool;
+            if (jn["custom_bg_color"] != null)
+                customBGColor = RTColors.HexToColor(jn["custom_bg_color"]);
+
+            if (jn["lock_drag_mode"] != null)
+                lockDragMode = (LockDragMode)jn["lock_drag_mode"].AsInt;
         }
 
         public override JSONNode ToJSON()
@@ -113,6 +158,14 @@ namespace BetterLegacy.Editor.Data
                 jn["rot"] = rot;
             if (hidePlayers)
                 jn["hide_players"] = hidePlayers;
+            if (showEditor)
+                jn["show_editor"] = showEditor;
+            if (useCustomBGColor)
+                jn["use_custom_bg_color"] = useCustomBGColor;
+            if (customBGColor != Color.white)
+                jn["custom_bg_color"] = RTColors.ColorToHex(customBGColor);
+            if (lockDragMode != LockDragMode.None)
+                jn["lock_drag_mode"] = (int)lockDragMode;
 
             return jn;
         }
@@ -127,6 +180,11 @@ namespace BetterLegacy.Editor.Data
             pos = Vector2.zero;
             zoom = 1f;
             rot = 0f;
+            matchSize = false;
+            hidePlayers = true;
+            useCustomBGColor = false;
+            customBGColor = Color.white;
+            lockDragMode = LockDragMode.None;
         }
 
         /// <summary>
