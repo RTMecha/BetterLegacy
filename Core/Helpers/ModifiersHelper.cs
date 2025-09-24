@@ -1044,6 +1044,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getPitch),  ModifierFunctions.getPitch),
             new ModifierAction(nameof(ModifierFunctions.getMusicTime),  ModifierFunctions.getMusicTime),
             new ModifierAction(nameof(ModifierFunctions.getAxis),  ModifierFunctions.getAxis),
+            new ModifierAction(nameof(ModifierFunctions.getAxisMath),  ModifierFunctions.getAxisMath),
             new ModifierAction(nameof(ModifierFunctions.getMath),  ModifierFunctions.getMath),
             new ModifierAction(nameof(ModifierFunctions.getNearestPlayer),  ModifierFunctions.getNearestPlayer, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.getCollidingPlayers),  ModifierFunctions.getCollidingPlayers, ModifierCompatibility.BeatmapObjectCompatible),
@@ -2206,6 +2207,7 @@ namespace BetterLegacy.Core.Helpers
             name == nameof(ModifierFunctions.axisLesser) ||
             name == nameof(ModifierFunctions.axisLesserEquals) ||
             name == nameof(ModifierFunctions.getAxis) ||
+            name == nameof(ModifierFunctions.getAxisMath) ||
             name == nameof(ModifierFunctions.activateModifier) ||
             name == nameof(ModifierFunctions.legacyTail) ||
             name.ToLower().Contains("signal") ||
@@ -2432,7 +2434,26 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static float GetAnimation(IPrefabable prefabable, BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
+        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float delay, bool visual)
+        {
+            var time = GetTime(reference);
+            var t = time - reference.StartTime - delay;
+
+            if (!visual && reference.cachedSequences)
+                return fromType switch
+                {
+                    0 => reference.cachedSequences.PositionSequence.GetValue(t).At(fromAxis),
+                    1 => reference.cachedSequences.ScaleSequence.GetValue(t).At(fromAxis),
+                    2 => reference.cachedSequences.RotationSequence.GetValue(t),
+                    _ => 0f,
+                };
+            else if (visual && reference.runtimeObject is RTBeatmapObject runtimeObject && runtimeObject.visualObject && runtimeObject.visualObject.gameObject)
+                return runtimeObject.visualObject.gameObject.transform.GetVector(fromType).At(fromAxis);
+
+            return 0f;
+        }
+
+        public static float GetAnimation(BeatmapObject reference, int fromType, int fromAxis, float min, float max, float offset, float multiply, float delay, float loop, bool visual)
         {
             var time = GetTime(reference);
             var t = time - reference.StartTime - delay;
@@ -2552,6 +2573,85 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static GradientColors GetColors(BeatmapObject beatmapObject) => GetColors(beatmapObject, beatmapObject.GetParentRuntime().CurrentTime - beatmapObject.StartTime);
+
+        public static GradientColors GetColors(BeatmapObject beatmapObject, float time)
+        {
+            Color color;
+            Color secondColor;
+            {
+                var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.time < time);
+
+                if (prevKFIndex < 0)
+                    return new GradientColors(RTColors.errorColor, RTColors.errorColor);
+
+                var prevKF = beatmapObject.events[3][prevKFIndex];
+                var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
+                var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
+                int prevcolor = (int)prevKF.values[0];
+                int nextColor = (int)nextKF.values[0];
+                var lerp = RTMath.Lerp(0f, 1f, easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 1f;
+
+                color = Color.Lerp(
+                    CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
+                    CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                    lerp);
+
+                lerp = RTMath.Lerp(prevKF.values[1], nextKF.values[1], easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 0f;
+
+                color = RTColors.FadeColor(color, -(lerp - 1f));
+
+                var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
+                var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
+                var lerpVal = RTMath.Lerp(prevKF.values[4], nextKF.values[4], easing);
+
+                if (float.IsNaN(lerpHue))
+                    lerpHue = nextKF.values[2];
+                if (float.IsNaN(lerpSat))
+                    lerpSat = nextKF.values[3];
+                if (float.IsNaN(lerpVal))
+                    lerpVal = nextKF.values[4];
+
+                color = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+
+                prevcolor = (int)prevKF.values[5];
+                nextColor = (int)nextKF.values[5];
+                lerp = RTMath.Lerp(0f, 1f, easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 1f;
+
+                secondColor = Color.Lerp(
+                    CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
+                    CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                    lerp);
+
+                lerp = RTMath.Lerp(prevKF.values[6], nextKF.values[6], easing);
+                if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                    lerp = 0f;
+
+                secondColor = RTColors.FadeColor(secondColor, -(lerp - 1f));
+
+                lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
+                lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
+                lerpVal = RTMath.Lerp(prevKF.values[9], nextKF.values[9], easing);
+
+                if (float.IsNaN(lerpHue))
+                    lerpHue = nextKF.values[7];
+                if (float.IsNaN(lerpSat))
+                    lerpSat = nextKF.values[8];
+                if (float.IsNaN(lerpVal))
+                    lerpVal = nextKF.values[9];
+
+                secondColor = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+            } // assign
+
+            return new GradientColors(color, secondColor);
+        }
+
         #endregion
     }
 
@@ -2585,17 +2685,17 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getString(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0)] = modifier.GetValue(1, variables);
+            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables);
         }
 
         public static void getStringLower(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0)] = modifier.GetValue(1, variables).ToLower();
+            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables).ToLower();
         }
 
         public static void getStringUpper(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            variables[modifier.GetValue(0)] = modifier.GetValue(1, variables).ToUpper();
+            variables[ModifiersHelper.FormatStringVariables(modifier.GetValue(0), variables)] = ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables).ToUpper();
         }
 
         public static void getColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -2661,7 +2761,53 @@ namespace BetterLegacy.Core.Helpers
             if (fromType < 0 || fromType > 2)
                 return;
 
-            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(prefabable, beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
+            variables[modifier.GetValue(0)] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual).ToString();
+        }
+
+        public static void getAxisMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var prefabable = reference.AsPrefabable();
+            if (prefabable == null)
+                return;
+
+            if (reference is not IEvaluatable evaluatable)
+                return;
+
+            int fromType = modifier.GetInt(1, 0, variables);
+            int fromAxis = modifier.GetInt(2, 0, variables);
+
+            float delay = modifier.GetFloat(3, 0f, variables);
+            bool useVisual = modifier.GetBool(4, false, variables);
+            var tag = modifier.GetValue(5, variables);
+            var evaluation = modifier.GetValue(6, variables);
+
+            var cache = modifier.GetResultOrDefault(() => GroupBeatmapObjectCache.Get(modifier, prefabable, tag));
+            if (cache.tag != tag)
+            {
+                cache.UpdateCache(modifier, prefabable, tag);
+                modifier.Result = cache;
+            }
+
+            var beatmapObject = cache.obj;
+            if (!beatmapObject)
+                return;
+
+            fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
+            if (!useVisual)
+                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
+
+            if (fromType < 0 || fromType > 2)
+                return;
+
+            var numberVariables = evaluatable.GetObjectVariables();
+            ModifiersHelper.SetVariables(variables, numberVariables);
+
+            numberVariables["axis"] = ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, delay, useVisual);
+            beatmapObject.SetOtherObjectVariables(numberVariables);
+
+            float value = RTMath.Parse(evaluation, numberVariables);
+
+            variables[modifier.GetValue(0)] = value.ToString();
         }
 
         public static void getMath(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -2987,9 +3133,19 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getVisualColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is BeatmapObject beatmapObject && beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
+            if (reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
             {
                 var colors = solidObject.GetColors();
+                var startColorName = modifier.GetValue(0);
+                var endColorName = modifier.GetValue(1);
+                if (!string.IsNullOrEmpty(startColorName))
+                    variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
+                if (!string.IsNullOrEmpty(endColorName))
+                    variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
+            }
+            else if (reference is BeatmapObject beatmapObject)
+            {
+                var colors = ModifiersHelper.GetColors(beatmapObject);
                 var startColorName = modifier.GetValue(0);
                 var endColorName = modifier.GetValue(1);
                 if (!string.IsNullOrEmpty(startColorName))
@@ -7188,78 +7344,10 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                var time = reference.GetParentRuntime().CurrentTime - beatmapObject.StartTime;
-                Color color;
-                Color secondColor;
-                {
-                    var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.time < time);
-
-                    if (prevKFIndex < 0)
-                        return;
-
-                    var prevKF = beatmapObject.events[3][prevKFIndex];
-                    var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
-                    var easing = Ease.GetEaseFunction(nextKF.curve.ToString())(RTMath.InverseLerp(prevKF.time, nextKF.time, time));
-                    int prevcolor = (int)prevKF.values[0];
-                    int nextColor = (int)nextKF.values[0];
-                    var lerp = RTMath.Lerp(0f, 1f, easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 1f;
-
-                    color = Color.Lerp(
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
-                        lerp);
-
-                    lerp = RTMath.Lerp(prevKF.values[1], nextKF.values[1], easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 0f;
-
-                    color = RTColors.FadeColor(color, -(lerp - 1f));
-
-                    var lerpHue = RTMath.Lerp(prevKF.values[2], nextKF.values[2], easing);
-                    var lerpSat = RTMath.Lerp(prevKF.values[3], nextKF.values[3], easing);
-                    var lerpVal = RTMath.Lerp(prevKF.values[4], nextKF.values[4], easing);
-
-                    if (float.IsNaN(lerpHue))
-                        lerpHue = nextKF.values[2];
-                    if (float.IsNaN(lerpSat))
-                        lerpSat = nextKF.values[3];
-                    if (float.IsNaN(lerpVal))
-                        lerpVal = nextKF.values[4];
-
-                    color = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
-
-                    prevcolor = (int)prevKF.values[5];
-                    nextColor = (int)nextKF.values[5];
-                    lerp = RTMath.Lerp(0f, 1f, easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 1f;
-
-                    secondColor = Color.Lerp(
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
-                        CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
-                        lerp);
-
-                    lerp = RTMath.Lerp(prevKF.values[6], nextKF.values[6], easing);
-                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
-                        lerp = 0f;
-
-                    secondColor = RTColors.FadeColor(secondColor, -(lerp - 1f));
-
-                    lerpHue = RTMath.Lerp(prevKF.values[7], nextKF.values[7], easing);
-                    lerpSat = RTMath.Lerp(prevKF.values[8], nextKF.values[8], easing);
-                    lerpVal = RTMath.Lerp(prevKF.values[9], nextKF.values[9], easing);
-
-                    if (float.IsNaN(lerpHue))
-                        lerpHue = nextKF.values[7];
-                    if (float.IsNaN(lerpSat))
-                        lerpSat = nextKF.values[8];
-                    if (float.IsNaN(lerpVal))
-                        lerpVal = nextKF.values[9];
-
-                    secondColor = RTColors.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
-                } // assign
+                var time = beatmapObject.GetParentRuntime().CurrentTime - beatmapObject.StartTime;
+                var colors = ModifiersHelper.GetColors(beatmapObject, time);
+                Color color = colors.startColor;
+                Color secondColor = colors.endColor;
 
                 var isEmpty = beatmapObject.objectType == BeatmapObject.ObjectType.Empty;
 
@@ -7277,18 +7365,18 @@ namespace BetterLegacy.Core.Helpers
                     _ => 0f
                 };
 
-                foreach (var bm in list)
+                foreach (var other in list)
                 {
-                    var otherLevelObject = bm.runtimeObject;
-                    if (!otherLevelObject)
+                    var otherRuntimeObject = other.runtimeObject;
+                    if (!otherRuntimeObject)
                         continue;
 
-                    if (!otherLevelObject.visualObject.isGradient)
-                        otherLevelObject.visualObject.SetColor(Color.Lerp(otherLevelObject.visualObject.GetPrimaryColor(), color, t));
-                    else if (otherLevelObject.visualObject is SolidObject solidObject)
+                    if (!otherRuntimeObject.visualObject.isGradient)
+                        otherRuntimeObject.visualObject.SetColor(Color.Lerp(otherRuntimeObject.visualObject.GetPrimaryColor(), color, t));
+                    else if (otherRuntimeObject.visualObject is SolidObject solidObject)
                     {
-                        var colors = solidObject.GetColors();
-                        solidObject.SetColor(Color.Lerp(colors.startColor, color, t), Color.Lerp(colors.endColor, secondColor, t));
+                        var otherColors = solidObject.GetColors();
+                        solidObject.SetColor(Color.Lerp(otherColors.startColor, color, t), Color.Lerp(otherColors.endColor, secondColor, t));
                     }
                 }
             });
@@ -7889,6 +7977,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var value = modifier.GetValue(0, variables);
+            value = ModifiersHelper.FormatStringVariables(value, variables);
             var sprite = GameData.Current.assets.GetSprite(value);
             if (beatmapObject.runtimeObject.visualObject is ImageObject imageObject)
             {
@@ -7950,6 +8039,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var value = modifier.GetValue(0, variables);
+            value = ModifiersHelper.FormatStringVariables(value, variables);
 
             var sprite = GameData.Current.assets.GetSprite(value);
             if (sprite)
@@ -7995,10 +8085,13 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
+            var text = modifier.GetValue(0, variables);
+            text = ModifiersHelper.FormatStringVariables(text, variables);
+
             if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
-                textObject.SetText(modifier.GetValue(0, variables));
+                textObject.SetText(text);
             else
-                textObject.text = modifier.GetValue(0, variables);
+                textObject.text = text;
         }
 
         public static void setTextOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -8012,6 +8105,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var text = modifier.GetValue(0, variables);
+            text = ModifiersHelper.FormatStringVariables(text, variables);
 
             foreach (var bm in list)
             {
@@ -8030,10 +8124,13 @@ namespace BetterLegacy.Core.Helpers
             if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Text || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not TextObject textObject)
                 return;
 
+            var text = modifier.GetValue(0, variables);
+            text = ModifiersHelper.FormatStringVariables(text, variables);
+
             if (modifier.constant || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
-                textObject.SetText(textObject.textMeshPro.text + modifier.GetValue(0, variables));
+                textObject.SetText(textObject.textMeshPro.text + text);
             else
-                textObject.text += modifier.GetValue(0, variables);
+                textObject.text += text;
         }
 
         public static void addTextOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -8047,6 +8144,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var text = modifier.GetValue(0, variables);
+            text = ModifiersHelper.FormatStringVariables(text, variables);
 
             foreach (var bm in list)
             {
@@ -8158,6 +8256,7 @@ namespace BetterLegacy.Core.Helpers
 
             var value = modifier.GetValue(9, variables);
             var text = !string.IsNullOrEmpty(value) ? value : beatmapObject.text;
+            text = ModifiersHelper.FormatStringVariables(text, variables);
 
             if (!modifier.setTimer)
             {
@@ -11967,7 +12066,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) == equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) == equals;
         }
 
         public static bool axisLesserEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -12004,7 +12103,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) <= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) <= equals;
         }
 
         public static bool axisGreaterEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -12041,7 +12140,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) >= equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) >= equals;
         }
 
         public static bool axisLesser(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -12078,7 +12177,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) < equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) < equals;
         }
 
         public static bool axisGreater(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -12115,7 +12214,7 @@ namespace BetterLegacy.Core.Helpers
             if (!useVisual)
                 fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].values.Length);
 
-            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(prefabable, beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) > equals;
+            return fromType >= 0 && fromType <= 2 && ModifiersHelper.GetAnimation(beatmapObject, fromType, fromAxis, min, max, offset, multiply, delay, loop, useVisual) > equals;
         }
 
         public static bool eventEquals(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)

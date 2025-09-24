@@ -1760,6 +1760,24 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getAxisMath): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 5);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                        DropdownGenerator(modifier, reference, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+
+                        SingleGenerator(modifier, reference, "Delay", 3, 0f);
+
+                        BoolGenerator(modifier, reference, "Use Visual", 4, false);
+
+                        StringGenerator(modifier, reference, "Expression", 6);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getPitch): {
                         StringGenerator(modifier, reference, "Variable Name", 0);
 
