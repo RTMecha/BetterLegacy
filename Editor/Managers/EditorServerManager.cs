@@ -350,6 +350,25 @@ namespace BetterLegacy.Editor.Managers
                 if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                     headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
 
+                var info = new FileInfo(path);
+                if (info.Length > 50 * 1024 * 1024)
+                {
+                    uploading = false;
+                    // Only downgrade if server ID wasn't already assigned.
+                    if (string.IsNullOrEmpty(uploadable.ServerID))
+                    {
+                        uploadable.UploaderID = null;
+                        uploadable.DatePublished = string.Empty;
+                        uploadable.VersionNumber--;
+                        saveFile?.Invoke();
+                    }
+
+                    RTFile.DeleteFile(path);
+
+                    EditorManager.inst.DisplayNotification($"Item filesize cannot be greater than 50 MB. Try compressing or removing some files.", 5f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
                 RTEditor.inst.ProgressPopup.Text = "Uploading item to the server, please wait...";
                 RTEditor.inst.ProgressPopup.Open();
 
