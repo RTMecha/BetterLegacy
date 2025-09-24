@@ -30,6 +30,9 @@ Next: null
   - Movement (controls the players velocity)
   - Consumable toggle (removes the item after use, heal mechanic always has this on for balance sake or I might go for a cooldown mechanic instead)
   - Aiming behavior (mouse, right stick, rotate with player, etc)
+- Endless shuffle.
+  Notes:  
+  - "Next Level" button always shows in endless shuffle mode. Clicking it takes the player to a random level.
 - Arcade auto plays song config.
 - Global animation library.
   Notes:  
@@ -183,6 +186,13 @@ Next: null
 - Transition time for applyAnimation modifiers.  
 - Update the TextMeshPro sprite asset.  
 - Event Modifiers layer that interpolate through a sequence and pass the variables to the modifiers.  
+- Prefab collections.
+- Asset pack
+  Notes:  
+  - Overhauls the Assets folder.
+  - Allows custom UI layout, displays, etc.
+  - Rework editor complexity and themes to use this?
+  - Only client-side stuff will be affected.
 
 
 ## Demos
