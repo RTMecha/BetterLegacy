@@ -6,6 +6,7 @@ using UnityEngine;
 
 using SimpleJSON;
 
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Modifiers;
 
 using Version = BetterLegacy.Core.Data.Version;
@@ -203,6 +204,14 @@ namespace BetterLegacy.Core
                 jn[i] = jnModifierBlock;
             }
             return jn;
+        }
+
+        public static List<T> ParseObjectList<T>(JSONNode jn) where T : PAObject<T>, new()
+        {
+            var list = new List<T>();
+            for (int i = 0; i < jn.Count; i++)
+                list.Add(PAObject<T>.Parse(jn[i]));
+            return list;
         }
 
         public static JSONNode NewJSONObject() => JSON.Parse("{}");
