@@ -115,22 +115,26 @@ namespace BetterLegacy.Editor.Data
         {
             if (!string.IsNullOrEmpty(iconReference))
             {
-                System.Text.RegularExpressions.Match match;
-                if (RTString.RegexMatch(iconReference, new System.Text.RegularExpressions.Regex(@"shape/([0-9]+)/([0-9]+)"), out match))
+                var split = iconReference.Split('/');
+                switch (split[0])
                 {
-                    var shape = Parser.TryParse(match.Groups[1].ToString(), 0);
-                    var shapeOption = Parser.TryParse(match.Groups[2].ToString(), 0);
-                    shape = RTMath.Clamp(shape, 0, ShapeManager.inst.Shapes2D.Count - 1);
-                    shapeOption = RTMath.Clamp(shapeOption, 0, ShapeManager.inst.Shapes2D[shape].Count - 1);
+                    case "shape": {
+                            if (split.Length <= 1)
+                                break;
 
-                    return ShapeManager.inst.Shapes2D[shape][shapeOption].icon;
-                }
-                if (RTString.RegexMatch(iconReference, new System.Text.RegularExpressions.Regex(@"shape/([0-9]+)"), out match))
-                {
-                    var shape = Parser.TryParse(match.Groups[1].ToString(), 0);
-                    shape = RTMath.Clamp(shape, 0, ShapeManager.inst.Shapes2D.Count - 1);
+                            var shape = Parser.TryParse(split[1].ToString(), 0);
+                            shape = RTMath.Clamp(shape, 0, ShapeManager.inst.Shapes2D.Count - 1);
 
-                    return ShapeManager.inst.Shapes2D[shape].icon;
+                            if (split.Length > 2)
+                            {
+                                var shapeOption = Parser.TryParse(split[2].ToString(), 0);
+                                shapeOption = RTMath.Clamp(shapeOption, 0, ShapeManager.inst.Shapes2D[shape].Count - 1);
+
+                                return ShapeManager.inst.Shapes2D[shape][shapeOption].icon;
+                            }
+
+                            return ShapeManager.inst.Shapes2D[shape].icon;
+                        }
                 }
             }
 
