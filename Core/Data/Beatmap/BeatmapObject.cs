@@ -1490,6 +1490,14 @@ namespace BetterLegacy.Core.Data.Beatmap
             return selected;
         }
 
+        public void InitDefaultEvents()
+        {
+            events[0].Add(EventKeyframe.DefaultPositionKeyframe);
+            events[1].Add(EventKeyframe.DefaultScaleKeyframe);
+            events[2].Add(EventKeyframe.DefaultRotationKeyframe);
+            events[3].Add(EventKeyframe.DefaultColorKeyframe);
+        }
+
         public void SortKeyframes() => SortKeyframes(events);
 
         public void SortKeyframes(List<List<EventKeyframe>> events)

@@ -27,6 +27,7 @@ using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
+using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
 using BetterLegacy.Editor.Data.Timeline;
 
@@ -350,6 +351,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Create New Objects
 
+        public List<ObjectOptionPanel> defaultObjectOptions = new List<ObjectOptionPanel>();
+
         /// <summary>
         /// List of extra options used to create objects.
         /// </summary>
@@ -439,17 +442,60 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void LoadObjectTemplates()
         {
-            var filePath = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"create_object_templates{FileFormat.JSON.Dot()}");
-            if (!RTFile.FileExists(filePath))
-                return;
-
-            customObjectOptions.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile(filePath));
-
-            for (int i = 0; i < jn["objects"].Count; i++)
+            if (RTFile.TryReadFromFile(RTFile.GetAsset($"object_templates{FileFormat.JSON.Dot()}"), out string defaultTemplatesFile))
             {
-                var data = jn["data"];
-                customObjectOptions.Add(new ObjectOption(jn["name"], jn["desc"], timelineObject => timelineObject.GetData<BeatmapObject>().ReadJSON(data)));
+                var jn = JSON.Parse(defaultTemplatesFile);
+
+                if (jn["layout"] != null)
+                {
+                    var gridLayoutGroup = RTEditor.inst.ObjectOptionsPopup.GameObject.GetComponent<GridLayoutGroup>();
+                    gridLayoutGroup.cellSize = Parser.TryParse(jn["layout"]["cell_size"], new Vector2(142f, 34f));
+                    gridLayoutGroup.spacing = Parser.TryParse(jn["layout"]["spacing"], new Vector2(8f, 8f));
+                    gridLayoutGroup.constraint = jn["layout"]["constraint"] != null ? (GridLayoutGroup.Constraint)jn["layout"]["constraint"].AsInt : GridLayoutGroup.Constraint.FixedColumnCount;
+                    gridLayoutGroup.constraintCount = jn["layout"]["constraint_count"] != null ? jn["layout"]["constraint_count"].AsInt : 2;
+                }
+
+                defaultObjectOptions.Clear();
+
+                var parent = RTEditor.inst.ObjectOptionsPopup.GameObject.transform;
+                for (int i = parent.childCount - 1; i >= 1; i--)
+                    CoreHelper.Delete(parent.GetChild(i));
+
+                for (int i = 0; i < jn["options"].Count; i++)
+                {
+                    var jnOption = jn["options"][i];
+                    var objectOptionPanel = new ObjectOptionPanel(true, parent);
+
+                    if (jnOption["options"] != null)
+                    {
+                        var options = Parser.ParseObjectList<ObjectOption>(jnOption["options"]);
+                        var cellSize = new Vector2(34f, 32f);
+                        var spacing = new Vector2(2f, 0f);
+                        if (jnOption["layout"] != null)
+                        {
+                            cellSize = Parser.TryParse(jnOption["layout"]["cell_size"], new Vector2(34f, 34f));
+                            spacing = Parser.TryParse(jnOption["layout"]["spacing"], new Vector2(2f, 0f));
+                        }
+
+                        objectOptionPanel.Init(options, cellSize, spacing);
+                    }
+                    else
+                        objectOptionPanel.Init(ObjectOption.Parse(jnOption));
+
+                    defaultObjectOptions.Add(objectOptionPanel);
+                }
+            }
+
+            if (RTFile.TryReadFromFile(RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, $"create_object_templates{FileFormat.JSON.Dot()}"), out string customTemplatesFile))
+            {
+                customObjectOptions.Clear();
+                var jn = JSON.Parse(customTemplatesFile);
+
+                for (int i = 0; i < jn["objects"].Count; i++)
+                {
+                    var data = jn["data"];
+                    customObjectOptions.Add(new ObjectOption(jn["name"], jn["desc"], timelineObject => timelineObject.GetData<BeatmapObject>().ReadJSON(data)));
+                }
             }
         }
 
@@ -531,19 +577,8 @@ namespace BetterLegacy.Editor.Managers
             var beatmapObject = CreateNewBeatmapObject(AudioManager.inst.CurrentAudioSource.time);
             beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 5f;
-            beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
-            beatmapObject.opacityCollision = EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value;
-            beatmapObject.autoTextAlign = EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value;
 
-            // setup default parent values
-            beatmapObject.SetParentType(0, EditorConfig.Instance.CreateObjectPositionParentDefault.Value);
-            beatmapObject.SetParentType(1, EditorConfig.Instance.CreateObjectScaleParentDefault.Value);
-            beatmapObject.SetParentType(2, EditorConfig.Instance.CreateObjectRotationParentDefault.Value);
-
-            // setup default keyframe values
-            beatmapObject.events[0][0].relative = EditorConfig.Instance.CreateObjectPositionKFRelativeDefault.Value;
-            beatmapObject.events[1][0].relative = EditorConfig.Instance.CreateObjectScaleKFRelativeDefault.Value;
-            beatmapObject.events[2][0].relative = EditorConfig.Instance.CreateObjectRotationKFRelativeDefault.Value;
+            ApplyObjectCreationSettings(beatmapObject);
 
             if (EditorTimeline.inst.layerType == EditorTimeline.LayerType.Events)
                 EditorTimeline.inst.SetLayer(beatmapObject.editorData.Layer, EditorTimeline.LayerType.Objects);
@@ -558,6 +593,23 @@ namespace BetterLegacy.Editor.Managers
                 EditorTimeline.inst.SetCurrentObject(timelineObject);
 
             return timelineObject;
+        }
+
+        public void ApplyObjectCreationSettings(BeatmapObject beatmapObject)
+        {
+            beatmapObject.orderModifiers = EditorConfig.Instance.CreateObjectModifierOrderDefault.Value;
+            beatmapObject.opacityCollision = EditorConfig.Instance.CreateObjectOpacityCollisionDefault.Value;
+            beatmapObject.autoTextAlign = EditorConfig.Instance.CreateObjectAutoTextAlignDefault.Value;
+
+            // setup default parent values
+            beatmapObject.SetParentType(0, EditorConfig.Instance.CreateObjectPositionParentDefault.Value);
+            beatmapObject.SetParentType(1, EditorConfig.Instance.CreateObjectScaleParentDefault.Value);
+            beatmapObject.SetParentType(2, EditorConfig.Instance.CreateObjectRotationParentDefault.Value);
+
+            // setup default keyframe values
+            beatmapObject.events[0][0].relative = EditorConfig.Instance.CreateObjectPositionKFRelativeDefault.Value;
+            beatmapObject.events[1][0].relative = EditorConfig.Instance.CreateObjectScaleKFRelativeDefault.Value;
+            beatmapObject.events[2][0].relative = EditorConfig.Instance.CreateObjectRotationKFRelativeDefault.Value;
         }
 
         /// <summary>

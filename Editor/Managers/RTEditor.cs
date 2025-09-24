@@ -2906,7 +2906,9 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.DisplayNotification($"Set the Object Creation button's click behavior to {EditorConfig.Instance.ObjectCreationClickBehavior.Value}!", 3f, EditorManager.NotificationType.Success);
                     }),
                     new ButtonFunction(true),
-                    new ButtonFunction("Search Objects", ObjectEditor.inst.ShowObjectSearch)
+                    new ButtonFunction("Search Objects", ObjectEditor.inst.ShowObjectSearch),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Reload Templates", ObjectEditor.inst.LoadObjectTemplates)
                     );
             };
 
@@ -3223,44 +3225,44 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupCreateObjects()
         {
-            var dialog = EditorManager.inst.GetDialog("Object Options Popup").Dialog;
+            //var dialog = EditorManager.inst.GetDialog("Object Options Popup").Dialog;
 
-            var persistent = dialog.Find("persistent").gameObject.GetComponent<Button>();
-            dialog.Find("persistent/text").gameObject.GetComponent<Text>().text = "No Autokill";
-            persistent.onClick.ClearAll();
-            persistent.onClick.AddListener(() => ObjectEditor.inst.CreateNewNoAutokillObject());
+            //var persistent = dialog.Find("persistent").gameObject.GetComponent<Button>();
+            //dialog.Find("persistent/text").gameObject.GetComponent<Text>().text = "No Autokill";
+            //persistent.onClick.ClearAll();
+            //persistent.onClick.AddListener(() => ObjectEditor.inst.CreateNewNoAutokillObject());
 
-            var empty = dialog.Find("empty").gameObject.GetComponent<Button>();
-            empty.onClick.ClearAll();
-            empty.onClick.AddListener(() => ObjectEditor.inst.CreateNewEmptyObject());
+            //var empty = dialog.Find("empty").gameObject.GetComponent<Button>();
+            //empty.onClick.ClearAll();
+            //empty.onClick.AddListener(() => ObjectEditor.inst.CreateNewEmptyObject());
 
-            var decoration = dialog.Find("decoration").gameObject.GetComponent<Button>();
-            decoration.onClick.ClearAll();
-            decoration.onClick.AddListener(() => ObjectEditor.inst.CreateNewDecorationObject());
+            //var decoration = dialog.Find("decoration").gameObject.GetComponent<Button>();
+            //decoration.onClick.ClearAll();
+            //decoration.onClick.AddListener(() => ObjectEditor.inst.CreateNewDecorationObject());
 
-            var helper = dialog.Find("helper").gameObject.GetComponent<Button>();
-            helper.onClick.ClearAll();
-            helper.onClick.AddListener(() => ObjectEditor.inst.CreateNewHelperObject());
+            //var helper = dialog.Find("helper").gameObject.GetComponent<Button>();
+            //helper.onClick.ClearAll();
+            //helper.onClick.AddListener(() => ObjectEditor.inst.CreateNewHelperObject());
 
-            var normal = dialog.Find("normal").gameObject.GetComponent<Button>();
-            normal.onClick.ClearAll();
-            normal.onClick.AddListener(() => ObjectEditor.inst.CreateNewNormalObject());
+            //var normal = dialog.Find("normal").gameObject.GetComponent<Button>();
+            //normal.onClick.ClearAll();
+            //normal.onClick.AddListener(() => ObjectEditor.inst.CreateNewNormalObject());
 
-            var circle = dialog.Find("shapes/circle").gameObject.GetComponent<Button>();
-            circle.onClick.ClearAll();
-            circle.onClick.AddListener(() => ObjectEditor.inst.CreateNewCircleObject());
+            //var circle = dialog.Find("shapes/circle").gameObject.GetComponent<Button>();
+            //circle.onClick.ClearAll();
+            //circle.onClick.AddListener(() => ObjectEditor.inst.CreateNewCircleObject());
 
-            var triangle = dialog.Find("shapes/triangle").gameObject.GetComponent<Button>();
-            triangle.onClick.ClearAll();
-            triangle.onClick.AddListener(() => ObjectEditor.inst.CreateNewTriangleObject());
+            //var triangle = dialog.Find("shapes/triangle").gameObject.GetComponent<Button>();
+            //triangle.onClick.ClearAll();
+            //triangle.onClick.AddListener(() => ObjectEditor.inst.CreateNewTriangleObject());
 
-            var text = dialog.Find("shapes/text").gameObject.GetComponent<Button>();
-            text.onClick.ClearAll();
-            text.onClick.AddListener(() => ObjectEditor.inst.CreateNewTextObject());
+            //var text = dialog.Find("shapes/text").gameObject.GetComponent<Button>();
+            //text.onClick.ClearAll();
+            //text.onClick.AddListener(() => ObjectEditor.inst.CreateNewTextObject());
 
-            var hexagon = dialog.Find("shapes/hexagon").gameObject.GetComponent<Button>();
-            hexagon.onClick.ClearAll();
-            hexagon.onClick.AddListener(() => ObjectEditor.inst.CreateNewHexagonObject());
+            //var hexagon = dialog.Find("shapes/hexagon").gameObject.GetComponent<Button>();
+            //hexagon.onClick.ClearAll();
+            //hexagon.onClick.AddListener(() => ObjectEditor.inst.CreateNewHexagonObject());
 
             ObjectTemplatePopup = GeneratePopup(EditorPopup.OBJECT_TEMPLATES_POPUP, "Pick a template", Vector2.zero, new Vector2(600f, 400f), placeholderText: "Search for template...");
         }
@@ -4499,21 +4501,21 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(options.GetComponent<Image>(), ThemeGroup.Background_1, true);
                 EditorThemeManager.AddGraphic(options.Find("arrow").GetComponent<Image>(), ThemeGroup.Background_1);
 
-                for (int i = 1; i < options.childCount - 1; i++)
-                {
-                    var child = options.GetChild(i);
+                //for (int i = 1; i < options.childCount - 1; i++)
+                //{
+                //    var child = options.GetChild(i);
 
-                    EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
-                    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_3_Text);
-                }
+                //    EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
+                //    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_3_Text);
+                //}
 
-                for (int i = 0; i < options.Find("shapes").childCount; i++)
-                {
-                    var child = options.Find("shapes").GetChild(i);
+                //for (int i = 0; i < options.Find("shapes").childCount; i++)
+                //{
+                //    var child = options.Find("shapes").GetChild(i);
 
-                    EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
-                    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
-                }
+                //    EditorThemeManager.AddGraphic(child.GetComponent<Image>(), ThemeGroup.Function_3, true);
+                //    EditorThemeManager.AddGraphic(child.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
+                //}
             }
 
             // BG Options
