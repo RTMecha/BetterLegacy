@@ -1942,6 +1942,18 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getVisualColorRGBA): {
+                        StringGenerator(modifier, reference, "Color 1 R Var Name", 0);
+                        StringGenerator(modifier, reference, "Color 1 G Var Name", 1);
+                        StringGenerator(modifier, reference, "Color 1 B Var Name", 2);
+                        StringGenerator(modifier, reference, "Color 1 A Var Name", 3);
+                        StringGenerator(modifier, reference, "Color 2 R Var Name", 4);
+                        StringGenerator(modifier, reference, "Color 2 G Var Name", 5);
+                        StringGenerator(modifier, reference, "Color 2 B Var Name", 6);
+                        StringGenerator(modifier, reference, "Color 2 A Var Name", 7);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getVisualOpacity): {
                         StringGenerator(modifier, reference, "Opacity 1 Var Name", 0);
                         StringGenerator(modifier, reference, "Opacity 2 Var Name", 1);

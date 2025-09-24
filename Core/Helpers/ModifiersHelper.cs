@@ -1064,6 +1064,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getModifiedColor),  ModifierFunctions.getModifiedColor),
             new ModifierAction(nameof(ModifierFunctions.getMixedColors),  ModifierFunctions.getMixedColors),
             new ModifierAction(nameof(ModifierFunctions.getVisualColor),  ModifierFunctions.getVisualColor),
+            new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBA),  ModifierFunctions.getVisualColorRGBA),
             new ModifierAction(nameof(ModifierFunctions.getVisualOpacity),  ModifierFunctions.getVisualOpacity),
             new ModifierAction(nameof(ModifierFunctions.getJSONString),  ModifierFunctions.getJSONString),
             new ModifierAction(nameof(ModifierFunctions.getJSONFloat),  ModifierFunctions.getJSONFloat),
@@ -3152,6 +3153,66 @@ namespace BetterLegacy.Core.Helpers
                     variables[startColorName] = RTColors.ColorToHexOptional(colors.startColor);
                 if (!string.IsNullOrEmpty(endColorName))
                     variables[endColorName] = RTColors.ColorToHexOptional(colors.endColor);
+            }
+        }
+
+        public static void getVisualColorRGBA(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference.GetRuntimeObject() is RTBeatmapObject runtimeObject && runtimeObject.visualObject is SolidObject solidObject)
+            {
+                var colors = solidObject.GetColors();
+                var startColorRName = modifier.GetValue(0);
+                var startColorGName = modifier.GetValue(1);
+                var startColorBName = modifier.GetValue(2);
+                var startColorAName = modifier.GetValue(3);
+                var endColorRName = modifier.GetValue(4);
+                var endColorGName = modifier.GetValue(5);
+                var endColorBName = modifier.GetValue(6);
+                var endColorAName = modifier.GetValue(7);
+                if (!string.IsNullOrEmpty(startColorRName))
+                    variables[startColorRName] = colors.startColor.r.ToString();
+                if (!string.IsNullOrEmpty(startColorGName))
+                    variables[startColorGName] = colors.startColor.g.ToString();
+                if (!string.IsNullOrEmpty(startColorBName))
+                    variables[startColorBName] = colors.startColor.b.ToString();
+                if (!string.IsNullOrEmpty(startColorAName))
+                    variables[startColorAName] = colors.startColor.a.ToString();
+                if (!string.IsNullOrEmpty(endColorRName))
+                    variables[endColorRName] = colors.endColor.r.ToString();
+                if (!string.IsNullOrEmpty(endColorGName))
+                    variables[endColorGName] = colors.endColor.g.ToString();
+                if (!string.IsNullOrEmpty(endColorBName))
+                    variables[endColorBName] = colors.endColor.b.ToString();
+                if (!string.IsNullOrEmpty(endColorAName))
+                    variables[endColorAName] = colors.endColor.a.ToString();
+            }
+            else if (reference is BeatmapObject beatmapObject)
+            {
+                var colors = ModifiersHelper.GetColors(beatmapObject);
+                var startColorRName = modifier.GetValue(0);
+                var startColorGName = modifier.GetValue(1);
+                var startColorBName = modifier.GetValue(2);
+                var startColorAName = modifier.GetValue(3);
+                var endColorRName = modifier.GetValue(4);
+                var endColorGName = modifier.GetValue(5);
+                var endColorBName = modifier.GetValue(6);
+                var endColorAName = modifier.GetValue(7);
+                if (!string.IsNullOrEmpty(startColorRName))
+                    variables[startColorRName] = colors.startColor.r.ToString();
+                if (!string.IsNullOrEmpty(startColorGName))
+                    variables[startColorGName] = colors.startColor.g.ToString();
+                if (!string.IsNullOrEmpty(startColorBName))
+                    variables[startColorBName] = colors.startColor.b.ToString();
+                if (!string.IsNullOrEmpty(startColorAName))
+                    variables[startColorAName] = colors.startColor.a.ToString();
+                if (!string.IsNullOrEmpty(endColorRName))
+                    variables[endColorRName] = colors.endColor.r.ToString();
+                if (!string.IsNullOrEmpty(endColorGName))
+                    variables[endColorGName] = colors.endColor.g.ToString();
+                if (!string.IsNullOrEmpty(endColorBName))
+                    variables[endColorBName] = colors.endColor.b.ToString();
+                if (!string.IsNullOrEmpty(endColorAName))
+                    variables[endColorAName] = colors.endColor.a.ToString();
             }
         }
 
