@@ -1,0 +1,319 @@
+{
+  "items": [
+    {
+      "id": "welcome",
+      "name": "Welcome",
+      "desc": "Welcome to BetterLegacy!",
+      "difficulty": 6,
+      "icon_ref": "welcome",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "editor",
+      "name": "Create Something Awesome!",
+      "desc": "Open the Project Arrhythmia editor.",
+      "difficulty": 0,
+      "icon_ref": "editor",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "no_boost",
+      "name": "No Boosting!",
+      "desc": "Do not boost once in a level.",
+      "difficulty": 3,
+      "icon_ref": "no_boost",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "complete_animation",
+      "name": "Masterpiece.",
+      "desc": "Complete an animation level.",
+      "difficulty": 0,
+      "icon_ref": "complete_animation",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "costume_party",
+      "name": "Costume Party",
+      "desc": "Play a level with a custom player model.",
+      "difficulty": 1,
+      "icon_ref": "costume_party",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "f_rank",
+      "name": "At least we made it...",
+      "desc": "Complete a level with an F rank",
+      "difficulty": 0,
+      "icon_ref": "f_rank",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "expert_plus_ss_rank",
+      "name": "A true expert!",
+      "desc": "Complete an expert+ difficulty level with an SS rank.",
+      "difficulty": 4,
+      "icon_ref": "expert_plus_ss_rank",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "master_ss_rank",
+      "name": "A true master!",
+      "desc": "Complete a master difficulty level with an SS rank.",
+      "difficulty": 5,
+      "icon_ref": "master_ss_rank",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "editor_reverse_speed",
+      "name": "!yaw gnorw eht s'thaT",
+      "desc": "Reverse the level in the editor.",
+      "difficulty": 2,
+      "icon_ref": "editor_reverse_speed",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "editor_layer_lol",
+      "name": "nice",
+      "desc": "nice.",
+      "difficulty": 3,
+      "icon_ref": "editor_layer_lol",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "editor_layer_funny",
+      "name": "Thai Funny",
+      "desc": "Find the funny Thailand number.",
+      "difficulty": 3,
+      "icon_ref": "editor_layer_funny",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "example_chat",
+      "name": "Having a Conversation",
+      "desc": "Talk with Example.",
+      "difficulty": 2,
+      "icon_ref": "example_chat",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "example_touch",
+      "name": "No touchie touchie!",
+      "desc": "Do not the Example.",
+      "difficulty": 2,
+      "icon_ref": "example_touch",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "editor_zoom_break",
+      "name": "Breaking Boundaries",
+      "desc": "Change the zoom keyframe to a value lower than 0.",
+      "difficulty": 2,
+      "icon_ref": "editor_zoom_break",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "no_volume",
+      "name": "Is the Sound Off?",
+      "desc": "Complete a level with volume turned down to 0.",
+      "difficulty": 2,
+      "icon_ref": "no_volume",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "queue_ten",
+      "name": "Sequencer",
+      "desc": "Play 10 levels in a row in a Queue.",
+      "difficulty": 3,
+      "icon_ref": "queue_ten",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "friendship",
+      "name": "Friendship!",
+      "desc": "Play with friends!",
+      "difficulty": 3,
+      "icon_ref": "friendship",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "holy_keyframes",
+      "name": "Holy Keyframes!",
+      "desc": "Look at an object in the editor with over 1000 keyframes.",
+      "difficulty": 5,
+      "icon_ref": "holy_keyframes",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "serious_dedication",
+      "name": "Serious Dedication",
+      "desc": "Spend 10 hours in a level in the editor.",
+      "difficulty": 4,
+      "icon_ref": "serious_dedication",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "true_dedication",
+      "name": "True Dedication",
+      "desc": "Spend 24 hours in a level in the editor.",
+      "difficulty": 5,
+      "icon_ref": "true_dedication",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "upload_level",
+      "name": "Posted!",
+      "desc": "Publish an item to the Arcade server.",
+      "difficulty": 1,
+      "icon_ref": "upload_level",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "youve_been_trolled",
+      "name": "You've Been Trolled",
+      "desc": "Play a meme / joke level.",
+      "difficulty": 2,
+      "icon_ref": "youve_been_trolled",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "no_fps",
+      "name": "No FPS?",
+      "desc": "Play a high detail level.",
+      "difficulty": 3,
+      "icon_ref": "no_fps",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "ten_levels",
+      "name": "That's some data.",
+      "desc": "Complete 10 levels.",
+      "difficulty": 1,
+      "icon_ref": "ten_levels",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "fifty_levels",
+      "name": "That's more data!",
+      "desc": "Complete 50 levels.",
+      "difficulty": 2,
+      "icon_ref": "fifty_levels",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "one_hundred_levels",
+      "name": "That's a lot of data!",
+      "desc": "Complete 100 levels.",
+      "difficulty": 3,
+      "icon_ref": "one_hundred_levels",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "hackerman",
+      "name": "Hackerman",
+      "desc": "Open UnityExplorer in the editor.",
+      "difficulty": 6,
+      "icon_ref": "hackerman",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "death_hd",
+      "name": "Death HD",
+      "desc": "Die in the editor.",
+      "difficulty": 2,
+      "icon_ref": "death_hd",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "select_player",
+      "name": "This is not a clicker game!",
+      "desc": "Select the player in the editor preview area.",
+      "difficulty": 3,
+      "icon_ref": "select_player",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "time_machine",
+      "name": "Time Machine",
+      "desc": "Convert a VG file to an LS file, or the other way around.",
+      "difficulty": 3,
+      "icon_ref": "time_machine",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "time_traveler",
+      "name": "Time Traveler",
+      "desc": "Play a level made in the modern (alpha / public) editor.",
+      "difficulty": 1,
+      "icon_ref": "time_traveler",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "discover_hidden_levels",
+      "name": "Still in Alpha",
+      "desc": "Discover a secret.",
+      "difficulty": 5,
+      "icon_ref": "discover_hidden_levels",
+      "hidden": true,
+      "hint": "Enter certain keywords."
+    },
+    {
+      "id": "more_bins",
+      "name": "There's MORE?!",
+      "desc": "Expand the editor timeline's bin count.",
+      "difficulty": 2,
+      "icon_ref": "more_bins",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "story_doc01_complete",
+      "name": "The Purpose",
+      "desc": "Complete Story Mode chapter 1.",
+      "difficulty": 0,
+      "icon_ref": "story_doc01_complete",
+      "hidden": false,
+      "hint": null
+    },
+    {
+      "id": "story_doc01_secret",
+      "name": "Fall into the Night",
+      "desc": "Discover the flower.",
+      "difficulty": 1,
+      "icon_ref": "story_doc01_secret",
+      "hidden": true,
+      "hint": "Discover a secret in the story mode to unlock this achievement."
+    }
+  ]
+}
