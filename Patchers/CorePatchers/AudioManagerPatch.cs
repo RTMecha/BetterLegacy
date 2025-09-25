@@ -60,10 +60,17 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetMusicTimePrefix(AudioManager __instance, float __0)
         {
-            if (__instance.CurrentAudioSource.clip == null)
+            if (!__instance.CurrentAudioSource.clip)
                 return false;
-            
-            __instance.CurrentAudioSource.time = Mathf.Clamp(__0, 0f, __instance.CurrentAudioSource.clip.length);
+
+            var val = Mathf.Clamp(__0, 0f, __instance.CurrentAudioSource.clip.length);
+            __instance.CurrentAudioSource.time = val;
+
+            if (RTLevel.Current)
+            {
+                RTLevel.Current.previousAudioTime = val;
+                RTLevel.Current.audioTimeVelocity = 0f;
+            }
 
             try
             {
