@@ -1,0 +1,168 @@
+{
+	"entry_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/disclaimer_interface.lsi",
+	"chapters": [
+		{
+			"name": "Prologue",
+			"interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/doc01/base_interface.lsi",
+			"levels": [
+				{
+					"id": "0603661088835365",
+					"song_title": "Granite",
+					"name": "Tutorial",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_01.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Granite/level.lsb"
+					},
+					"pre_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_01_pre_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Introduction to Nano/level.lsb"
+						}
+					],
+					"post_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_01_post_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Nanobots/level.lsb",
+							"song": "distance"
+						}
+					],
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/logs/log_the_research.lsi"
+				}, // Tutorial
+				{
+					"id": "7376679616786413",
+					"song_title": "Ahead of the Curve",
+					"name": "Spinning Bars",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_02.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Ahead of the Curve/level.lsb"
+					},
+					"pre_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_02_pre_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Nanobots Searching/level.lsb",
+							"song": "in_the_distance"
+						}
+					],
+					"post_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_02_post_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Nanobots Mystery/level.lsb"
+						}
+					],
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/logs/log_symptoms.lsi"
+				}, // Spinning Bars
+				{
+					"id": "9784345755418661",
+					"song_title": "Super Gamer Girl 3D",
+					"name": "Learning Symptoms",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_03.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Super Gamer Girl 3D/level.lsb"
+					},
+					"pre_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_03_pre_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Anna Discovered/level.lsb"
+						}
+					],
+					"post_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_03_post_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Anna Noticed/level.lsb",
+							"song": "truepianoskg"
+						}
+					],
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/logs/log_tests.lsi"
+				}, // Learning Symptoms
+				{
+					"id": "1146543276592507",
+					"song_title": "Slime Boy Color",
+					"name": "Pulsing Loops",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_04.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Slime Boy Color/level.lsb"
+					},
+					"pre_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_04_pre_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Anna Meet/level.lsb"
+						}
+					],
+					"post_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_04_post_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/HAL Forming/level.lsb"
+						}
+					],
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/logs/log_understanding.lsi"
+				}, // Pulsing Loops
+				{
+					"id": "6698982684586290",
+					"song_title": "Node",
+					"name": "BOSS 1 - Para",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_05.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Node (Para)/level.lsb"
+					},
+					"pre_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_05_pre_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Approaching the Edge/level.lsb"
+						}
+					],
+					"post_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_05_post_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/Para Discussion/level.lsb"
+						}
+					],
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/logs/log_paramecium_tests.lsi"
+				}, // BOSS 1 - Para
+				{
+					"id": "4462948827770399",
+					"song_title": "Moonflowers",
+					"name": "SECRET 1",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_06.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Moonflowers/level.lsb"
+					},
+					"post_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/doc01_06_post_cutscene_01.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Cutscenes/The Flower Drowns In The Night/level.lsb"
+						}
+					],
+					"return_replayable": "False",
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/logs/terminal_log_01.lsi",
+					"bonus": "True"
+				} // SECRET 1
+			],
+			"transition": {
+				"interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/doc01/base_interface.lsi",
+				"level": {
+					"id": "9518342185211017",
+					"song_title": "Crystal Tokyo",
+					"name": "SECTOR UNLOCK",
+					"file": {
+						"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/doc01_07.asset",
+						"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Chapter 01/Crystal Tokyo/level.lsb"
+					},
+					"post_cutscenes": [
+						{
+							"path": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Levels/Cutscenes/credits.asset",
+							"editor_path": "{{AppDirectory}}beatmaps/editor/Classic Arrhythmia/Credits/level.lsb",
+							"song": "nostalgia"
+						}
+					],
+					"return_replayable": "False", // with this off, the return interface will not be loaded and instead the main chapter interface will be loaded when returning from a level played from level selection.
+					"return_interface": "{{AppDirectory}}{{BepInExAssetsDirectory}}Story/Interfaces/doc01/base_interface.lsi"
+				}
+			}
+		} // Prologue
+	]
+}

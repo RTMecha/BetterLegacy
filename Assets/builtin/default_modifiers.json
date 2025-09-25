@@ -1,0 +1,3362 @@
+{
+  "modifiers": [
+    {
+      "type": 0,
+      "name": "break",
+      "values": [],
+      "const": "True",
+      "collapse": "True"
+    }, // break
+    {
+      "type": 0,
+      "name": "disableModifier",
+      "value": "",
+      "values": [],
+      "const": "True",
+      "collapse": "True"
+    }, // disableModifier
+    {
+      "type": 1,
+      "commands": [ "resetLoop" ],
+      "value": "",
+      "const": "True"
+    }, // resetLoop
+    {
+      "type": 1,
+      "commands": [ "forLoop", "0", "10", "1" ],
+      "value": "INDEX_VAR",
+      "const": "True"
+    }, // forLoop
+    {
+      "type": 1,
+      "name": "continue",
+      "values": [],
+      "const": "True",
+      "collapse": "True"
+    }, // continue
+    {
+      "type": 1,
+      "name": "return",
+      "values": [],
+      "const": "True",
+      "collapse": "True"
+    }, // return
+    {
+      "type": 0,
+      "name": "await",
+      "values": [ "0", "1", "True" ],
+      "const": "True"
+    }, // await
+    {
+      "type": 0,
+      "name": "awaitCounter",
+      "values": [ "0", "10", "1" ],
+      "const": "True"
+    }, // awaitCounter
+    {
+      "type": 0,
+      "name": "else",
+      "values": [],
+      "const": "True",
+      "collapse": "True"
+    }, // else
+    {
+      "type": 1,
+      "name": "comment",
+      "values": [ "Default comment.", "False" ],
+      "const": "True"
+    }, // comment
+
+    // Variable
+    [
+      {
+        "type": 1,
+        "commands": [ "getToggle", "False", "False" ],
+        "value": "TOGGLE_VAR",
+        "const": "True"
+      }, // getToggle
+      {
+        "type": 1,
+        "commands": [ "getFloat", "0" ],
+        "value": "FLOAT_VAR",
+        "const": "True"
+      }, // getFloat
+      {
+        "type": 1,
+        "commands": [ "getInt", "0" ],
+        "value": "INT_VAR",
+        "const": "True"
+      }, // getInt
+      {
+        "type": 1,
+        "commands": [ "getString", "Text" ],
+        "value": "STRING_VAR",
+        "const": "True"
+      }, // getString
+      {
+        "type": 1,
+        "commands": [ "getStringLower", "Text" ],
+        "value": "STRING_VAR",
+        "const": "True"
+      }, // getStringLower
+      {
+        "type": 1,
+        "commands": [ "getStringUpper", "Text" ],
+        "value": "STRING_VAR",
+        "const": "True"
+      }, // getStringUpper
+      {
+        "type": 1,
+        "commands": [ "getEnum", "0", "False" ],
+        "value": "ENUM_VAR",
+        "const": "True"
+      }, // getEnum
+      {
+        "type": 1,
+        "commands": [ "getCurrentKey" ],
+        "value": "KEYCODE_VAR",
+        "const": "True"
+      }, // getCurrentKey
+      {
+        "type": 1,
+        "commands": [ "getSubString", "0", "1" ],
+        "value": "SUBSTRING_VAR",
+        "const": "True"
+      }, // getSubString
+      {
+        "type": 1,
+        "commands": [ "getSplitString", " " ],
+        "value": "split this text",
+        "const": "True"
+      }, // getSplitString
+      {
+        "type": 1,
+        "commands": [ "getSplitStringAt", " ", "STRING_INDEX_VAR", "0" ],
+        "value": "split this text",
+        "const": "True"
+      }, // getSplitStringAt
+      {
+        "type": 1,
+        "commands": [ "getSplitStringCount", " ", "STRING_COUNT_VAR" ],
+        "value": "split this text",
+        "const": "True"
+      }, // getSplitStringCount
+      {
+        "type": 1,
+        "commands": [ "getStringLength", "text" ],
+        "value": "STRINGLENGTH_VAR",
+        "const": "True"
+      }, // getStringLength
+      {
+        "type": 1,
+        "commands": [ "getParsedString", "text" ],
+        "value": "PARSEDSTRING_VAR",
+        "const": "True"
+      }, // getParsedString
+      {
+        "type": 1,
+        "commands": [ "getRegex", "text is awesome!" ],
+        "value": "text is (.*?)!",
+        "const": "True"
+      }, // getRegex
+      {
+        "type": 1,
+        "commands": [ "getFormatVariable", "text is {0}!" ],
+        "value": "STRINGFORMAT_VAR",
+        "const": "True"
+      }, // getFormatVariable
+      {
+        "type": 1,
+        "commands": [ "getComparison", "text equals", "text equals" ],
+        "value": "COMPARE_VAR",
+        "const": "True"
+      }, // getComparison
+      {
+        "type": 1,
+        "commands": [ "getComparisonMath", "1 + 1", "1 + 1" ],
+        "value": "COMPAREMATH_VAR",
+        "const": "True"
+      }, // getComparisonMath
+      {
+        "type": 1,
+        "name": "getEditorBin",
+        "values": [ "EDITOR_BIN_VAR", "False" ],
+        "const": "True",
+        "compat": "obj"
+      }, // getEditorBin
+      {
+        "type": 1,
+        "name": "getEditorLayer",
+        "values": [ "EDITOR_LAYER_VAR", "False" ],
+        "const": "True",
+        "compat": "obj"
+      }, // getEditorLayer
+      {
+        "type": 1,
+        "name": "getObjectName",
+        "values": [ "OBJECT_NAME_VAR" ],
+        "const": "True",
+        "compat": {
+          "obj": true,
+          "bg_obj": true,
+          "prefab_obj": true,
+          "player_obj": true
+        }
+      }, // getObjectName
+      {
+        "type": 1,
+        "commands": [ "getSignaledVariables" ],
+        "value": "True",
+        "const": "True"
+      }, // getSignaledVariables
+      {
+        "type": 1,
+        "commands": [ "signalLocalVariables" ],
+        "value": "Object Group",
+        "const": "True"
+      }, // signalLocalVariables
+      {
+        "type": 1,
+        "commands": [ "clearLocalVariables" ],
+        "value": "",
+        "const": "True"
+      }, // clearLocalVariables
+      {
+        "type": 1,
+        "commands": [ "storeLocalVariables" ],
+        "value": "",
+        "const": "True"
+      }, // storeLocalVariables
+
+      {
+        "type": 0,
+        "commands": [ "localVariableEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableEquals
+      {
+        "type": 0,
+        "commands": [ "localVariableLesserEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableLesserEquals
+      {
+        "type": 0,
+        "commands": [ "localVariableGreaterEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "localVariableLesser", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableLesser
+      {
+        "type": 0,
+        "commands": [ "localVariableGreater", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableGreater
+      {
+        "type": 0,
+        "commands": [ "localVariableContains", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableContains
+      {
+        "type": 0,
+        "commands": [ "localVariableStartsWith", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableStartsWith
+      {
+        "type": 0,
+        "commands": [ "localVariableEndsWith", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableEndsWith
+      {
+        "type": 0,
+        "commands": [ "localVariableExists" ],
+        "value": "0",
+        "const": "True"
+      }, // localVariableExists
+
+      {
+        "type": 1,
+        "commands": [ "addVariable" ],
+        "value": "1",
+        "const": "False"
+      }, // addVariable
+      {
+        "type": 1,
+        "commands": [ "addVariableOther", "Object Group" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // addVariableOther
+      {
+        "type": 1,
+        "commands": [ "subVariable" ],
+        "value": "1",
+        "const": "False"
+      }, // subVariable
+      {
+        "type": 1,
+        "commands": [ "subVariableOther", "Object Group" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // subVariableOther
+      {
+        "type": 1,
+        "commands": [ "setVariable" ],
+        "value": "1",
+        "const": "False"
+      }, // setVariable
+      {
+        "type": 1,
+        "commands": [ "setVariableOther", "Object Group" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // setVariableOther
+      {
+        "type": 1,
+        "commands": [ "loadVariable", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "False"
+      }, // loadVariable
+      {
+        "type": 1,
+        "commands": [ "loadVariableOther", "save_file", "chapter", "data" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadVariableOther
+      {
+        "type": 1,
+        "commands": [ "animateVariableOther", "0", "0", "0", "1", "0", "-99999", "99999", "99999" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "level_control"
+      }, // animateVariableOther
+      {
+        "type": 1,
+        "commands": [ "clampVariable", "0", "1" ],
+        "value": "0",
+        "const": "False"
+      }, // clampVariable
+      {
+        "type": 1,
+        "commands": [ "clampVariableOther", "0", "1" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "level_control"
+      }, // clampVariableOther
+
+      {
+        "type": 0,
+        "commands": [ "variableEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // variableEquals
+      {
+        "type": 0,
+        "commands": [ "variableLesserEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // variableLesserEquals
+      {
+        "type": 0,
+        "commands": [ "variableGreaterEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // variableGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "variableLesser" ],
+        "value": "1",
+        "const": "True"
+      }, // variableLesser
+      {
+        "type": 0,
+        "commands": [ "variableGreater" ],
+        "value": "1",
+        "const": "True"
+      }, // variableGreater
+      {
+        "type": 0,
+        "commands": [ "variableOtherEquals", "Object Name" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // variableOtherEquals
+      {
+        "type": 0,
+        "commands": [ "variableOtherLesserEquals", "Object Name" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // variableOtherLesserEquals
+      {
+        "type": 0,
+        "commands": [ "variableOtherGreaterEquals", "Object Name" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // variableOtherGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "variableOtherLesser", "Object Name" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // variableOtherLesser
+      {
+        "type": 0,
+        "commands": [ "variableOtherGreater", "Object Name" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      } // variableOtherGreater
+    ],
+
+    // Audio
+    [
+      {
+        "type": 1,
+        "commands": [ "getPitch" ],
+        "value": "PITCH_VAR",
+        "const": "True",
+        "compat": {
+          "full_beatmap": true,
+          "full_player": true,
+          "game": true
+        }
+      }, // getPitch
+      {
+        "type": 1,
+        "commands": [ "getMusicTime" ],
+        "value": "MUSIC_TIME_VAR",
+        "const": "True"
+      }, // getMusicTime
+
+      {
+        "type": 1,
+        "commands": [ "setPitch" ],
+        "value": "1",
+        "const": "True",
+        "compat": "level_control"
+      }, // setPitch
+      {
+        "type": 1,
+        "commands": [ "addPitch" ],
+        "value": "0.1",
+        "const": "True",
+        "compat": "level_control"
+      }, // addPitch
+      {
+        "type": 1,
+        "commands": [ "setPitchMath" ],
+        "value": "1",
+        "const": "True",
+        "compat": "level_control"
+      }, // setPitchMath
+      {
+        "type": 1,
+        "commands": [ "addPitchMath" ],
+        "value": "0.1",
+        "const": "True",
+        "compat": "level_control"
+      }, // addPitchMath
+      {
+        "type": 1,
+        "commands": [ "setMusicTime" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // setMusicTime
+      {
+        "type": 1,
+        "commands": [ "setMusicTimeMath" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // setMusicTimeMath
+      {
+        "type": 1,
+        "commands": [ "setMusicTimeStartTime" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // setMusicTimeStartTime
+      {
+        "type": 1,
+        "commands": [ "setMusicTimeAutokill" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // setMusicTimeAutokill
+      {
+        "type": 1,
+        "commands": [ "setMusicPlaying" ],
+        "value": "False",
+        "const": "False",
+        "compat": "level_control"
+      }, // setMusicPlaying
+      {
+        "type": 1,
+        "commands": [ "playSound", "False", "1", "1", "False", "0" ],
+        "value": "sounds/audio.wav",
+        "const": "False"
+      }, // playSound
+      {
+        "type": 1,
+        "name": "playOnlineSound",
+        "values": [ "sounds/audio.wav", "1", "1", "False", "0" ],
+        "const": "False"
+      }, // playOnlineSound
+      {
+        "type": 1,
+        "commands": [ "playDefaultSound", "1", "1", "False", "0" ],
+        "value": "blip",
+        "const": "False"
+      }, // playDefaultSound
+      {
+        "type": 1,
+        "commands": [ "audioSource", "False", "1", "1", "False", "0", "True", "0", "True", "0" ],
+        "value": "sounds/audio.wav",
+        "const": "True",
+        "compat": "obj"
+      }, // audioSource
+      {
+        "type": 1,
+        "name": "loadSoundAsset",
+        "values": [ "audio.ogg", "True", "False", "1", "1", "False", "0" ],
+        "const": "True"
+      }, // loadSoundAsset
+
+      {
+        "type": 0,
+        "commands": [ "pitchEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // pitchEquals
+      {
+        "type": 0,
+        "commands": [ "pitchLesserEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // pitchLesserEquals
+      {
+        "type": 0,
+        "commands": [ "pitchGreaterEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // pitchGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "pitchLesser" ],
+        "value": "1",
+        "const": "True"
+      }, // pitchLesser
+      {
+        "type": 0,
+        "commands": [ "pitchGreater" ],
+        "value": "1",
+        "const": "True"
+      }, // pitchGreater
+      {
+        "type": 0,
+        "commands": [ "musicTimeGreater", "False" ],
+        "value": "0",
+        "const": "True"
+      }, // musicTimeGreater
+      {
+        "type": 0,
+        "commands": [ "musicTimeLesser", "False" ],
+        "value": "0",
+        "const": "True"
+      }, // musicTimeLesser
+      {
+        "type": 0,
+        "commands": [ "musicPlaying" ],
+        "value": "0",
+        "const": "True"
+      } // musicPlaying
+    ],
+
+    // Reactive
+    [
+      {
+        "type": 1,
+        "commands": [ "getSample", "0", "0" ],
+        "value": "SAMPLE_VAR",
+        "const": "True"
+      }, // getSample
+
+      {
+        "type": 1,
+        "commands": [ "reactivePos", "0", "0", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // reactivePos
+      {
+        "type": 1,
+        "commands": [ "reactiveSca", "0", "0", "1", "1" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // reactiveSca
+      {
+        "type": 1,
+        "commands": [ "reactiveRot", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // reactiveRot
+      {
+        "type": 1,
+        "commands": [ "reactiveCol", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // reactiveCol
+      {
+        "type": 1,
+        "commands": [ "reactiveColLerp", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // reactiveColLerp
+      {
+        "type": 1,
+        "commands": [ "reactivePosChain", "0", "0", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // reactivePosChain
+      {
+        "type": 1,
+        "commands": [ "reactiveScaChain", "0", "0", "1", "1" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // reactiveScaChain
+      {
+        "type": 1,
+        "commands": [ "reactiveRotChain", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      } // reactiveRotChain
+    ],
+
+    // Level
+    [
+      {
+        "type": 1,
+        "commands": [ "loadLevel" ],
+        "value": "level name",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadLevel
+      {
+        "type": 1,
+        "commands": [ "loadLevelID" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadLevelID
+      {
+        "type": 1,
+        "commands": [ "loadLevelInternal" ],
+        "value": "level name",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadLevelInternal
+      {
+        "type": 1,
+        "commands": [ "loadLevelPrevious" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadLevelPrevious
+      {
+        "type": 1,
+        "commands": [ "loadLevelHub" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadLevelHub
+      {
+        "type": 1,
+        "commands": [ "loadLevelInCollection" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadLevelInCollection
+      {
+        "type": 1,
+        "commands": [ "loadLevelCollection", "" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadLevelInCollection
+      {
+        "type": 1,
+        "commands": [ "downloadLevel", "", "", "", "", "True" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // downloadLevel
+      {
+        "type": 1,
+        "commands": [ "endLevel", "", "True" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // endLevel
+      {
+        "type": 1,
+        "commands": [ "setAudioTransition" ],
+        "value": "0.5",
+        "const": "False",
+        "compat": "level_control"
+      }, // setAudioTransition
+      {
+        "type": 1,
+        "commands": [ "setIntroFade" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // setIntroFade
+      {
+        "type": 1,
+        "commands": [ "setLevelEndFunc", "", "True" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // setLevelEndFunc
+
+      {
+        "type": 1,
+        "name": "getCurrentLevelID",
+        "values": [ "ID_VAR" ],
+        "const": "True"
+      }, // getCurrentLevelID
+      {
+        "type": 1,
+        "name": "getCurrentLevelName",
+        "values": [ "NAME_VAR" ],
+        "const": "True"
+      }, // getCurrentLevelName
+      {
+        "type": 1,
+        "commands": [ "getCurrentLevelRank" ],
+        "value": "RANK_VAR",
+        "const": "True"
+      }, // getCurrentLevelRank
+
+      {
+        "type": 0,
+        "commands": [ "levelRankEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankLesserEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankLesserEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankGreaterEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankLesser" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankLesser
+      {
+        "type": 0,
+        "commands": [ "levelRankGreater" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankGreater
+
+      {
+        "type": 0,
+        "commands": [ "levelRankOtherEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankOtherEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankOtherLesserEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankOtherLesserEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankOtherGreaterEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankOtherGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankOtherLesser", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankOtherLesser
+      {
+        "type": 0,
+        "commands": [ "levelRankOtherGreater", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankOtherGreater
+
+      {
+        "type": 0,
+        "commands": [ "levelRankCurrentEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankCurrentEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankCurrentLesserEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankCurrentLesserEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankCurrentGreaterEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankCurrentGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "levelRankCurrentLesser" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankCurrentLesser
+      {
+        "type": 0,
+        "commands": [ "levelRankCurrentGreater" ],
+        "value": "0",
+        "const": "True"
+      }, // levelRankCurrentGreater
+
+      {
+        "type": 0,
+        "commands": [ "onLevelStart" ],
+        "value": "",
+        "const": "True"
+      }, // onLevelStart
+      {
+        "type": 0,
+        "commands": [ "onLevelRewind" ],
+        "value": "",
+        "const": "True"
+      }, // onLevelRewind
+      {
+        "type": 0,
+        "commands": [ "levelUnlocked" ],
+        "value": "0",
+        "const": "True"
+      }, // levelUnlocked
+      {
+        "type": 0,
+        "commands": [ "levelCompleted" ],
+        "value": "0",
+        "const": "True"
+      }, // levelCompleted
+      {
+        "type": 0,
+        "commands": [ "levelCompletedOther" ],
+        "value": "0",
+        "const": "True"
+      }, // levelCompletedOther
+      {
+        "type": 0,
+        "commands": [ "levelExists" ],
+        "value": "0",
+        "const": "True"
+      }, // levelExists
+      {
+        "type": 0,
+        "commands": [ "levelPathExists" ],
+        "value": "Path",
+        "const": "True"
+      }, // levelPathExists
+
+      {
+        "type": 1,
+        "commands": [ "unlockAchievement" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // unlockAchievement
+      {
+        "type": 1,
+        "commands": [ "lockAchievement" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // lockAchievement
+      {
+        "type": 1,
+        "commands": [ "getAchievementUnlocked", "0", "False" ],
+        "value": "UNLOCKED_VAR",
+        "const": "False"
+      }, // getAchievementUnlocked
+      {
+        "type": 0,
+        "commands": [ "achievementUnlocked", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // achievementUnlocked
+      {
+        "type": 1,
+        "commands": [ "saveLevelRank" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // saveLevelRank
+      {
+        "type": 1,
+        "commands": [ "clearHits" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // clearHits
+      {
+        "type": 1,
+        "commands": [ "addHit", "" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // addHit
+      {
+        "type": 1,
+        "commands": [ "subHit" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // subHit
+      {
+        "type": 1,
+        "commands": [ "clearDeaths" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // clearDeaths
+      {
+        "type": 1,
+        "commands": [ "addDeath", "" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // addDeath
+      {
+        "type": 1,
+        "commands": [ "subDeath" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // subDeath
+      {
+        "type": 1,
+        "commands": [ "getHitCount" ],
+        "value": "HIT_COUNT_VAR",
+        "const": "True"
+      }, // getHitCount
+      {
+        "type": 1,
+        "commands": [ "getDeathCount" ],
+        "value": "DEATH_COUNT_VAR",
+        "const": "True"
+      } // getDeathCount
+    ],
+
+    // Game State
+    [
+      {
+        "type": 0,
+        "commands": [ "inZenMode" ],
+        "value": "0",
+        "const": "True"
+      }, // inZenMode
+      {
+        "type": 0,
+        "commands": [ "inNormal" ],
+        "value": "0",
+        "const": "True"
+      }, // inNormal
+      {
+        "type": 0,
+        "commands": [ "in1Life" ],
+        "value": "0",
+        "const": "True"
+      }, // in1Life
+      {
+        "type": 0,
+        "commands": [ "inNoHit" ],
+        "value": "0",
+        "const": "True"
+      }, // inNoHit
+      {
+        "type": 0,
+        "commands": [ "inPractice" ],
+        "value": "0",
+        "const": "True"
+      }, // inPractice
+      {
+        "type": 0,
+        "commands": [ "inEditor" ],
+        "value": "",
+        "const": "True"
+      }, // inEditor
+      {
+        "type": 0,
+        "commands": [ "isEditing" ],
+        "value": "",
+        "const": "True"
+      } // isEditing
+    ],
+
+    // Component
+    [
+      {
+        "type": 1,
+        "commands": [ "blur", "False", "False" ],
+        "value": "0.5",
+        "const": "True",
+        "compat": "obj"
+      }, // blur
+      {
+        "type": 1,
+        "commands": [ "blurOther", "Object Group", "False" ],
+        "value": "0.5",
+        "const": "True",
+        "compat": "obj"
+      }, // blurOther
+      {
+        "type": 1,
+        "commands": [ "blurVariable", "False" ],
+        "value": "0.5",
+        "const": "True",
+        "compat": "obj"
+      }, // blurVariable
+      {
+        "type": 1,
+        "commands": [ "blurVariableOther", "Object Group", "False" ],
+        "value": "0.5",
+        "const": "True",
+        "compat": "obj"
+      }, // blurVariableOther
+      {
+        "type": 1,
+        "commands": [ "blurColored", "False", "False" ],
+        "value": "0.5",
+        "const": "True",
+        "compat": "obj"
+      }, // blurColored
+      {
+        "type": 1,
+        "commands": [ "blurColoredOther", "Object Group", "False" ],
+        "value": "0.5",
+        "const": "True",
+        "compat": "obj"
+      }, // blurColoredOther
+      {
+        "type": 1,
+        "commands": [ "doubleSided" ],
+        "value": "",
+        "const": "False",
+        "compat": "obj"
+      }, // doubleSided
+      {
+        "type": 1,
+        "commands": [ "particleSystem", "0", "0", "0", "1", "0", "1", "0", "0", "5", "1", "1", "0", "0", "True", "90", "1" ],
+        "value": "5",
+        "const": "True",
+        "compat": "obj"
+      }, // particleSystem
+      {
+        "type": 1,
+        "name": "particleSystemHex",
+        "values": [ "5", "0", "0", "FFFFFF", "1", "0", "1", "0", "0", "5", "1", "1", "0", "0", "True", "90", "1" ],
+        "const": "True",
+        "compat": "obj"
+      }, // particleSystemHex
+      {
+        "type": 1,
+        "commands": [ "trailRenderer", "1", "0", "0", "1", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // trailRenderer
+      {
+        "type": 1,
+        "commands": [ "trailRendererHex", "1", "0", "FFFFFF", "FFFFFF00" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // trailRendererHex
+      {
+        "type": 1,
+        "commands": [ "rigidbody", "0", "0", "0", "0", "0", "0" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // rigidbody
+      {
+        "type": 1,
+        "commands": [ "rigidbodyOther", "0", "0", "0", "0", "0", "0" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      }, // rigidbodyOther
+      {
+        "type": 1,
+        "commands": [ "setRenderType" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // setRenderType
+      {
+        "type": 1,
+        "commands": [ "setRenderTypeOther", "0" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      } // setRenderTypeOther
+    ],
+
+    // Player
+    [
+      {
+        "type": 1,
+        "commands": [ "getNearestPlayer" ],
+        "value": "PLAYER_INDEX_VAR",
+        "const": "True",
+        "compat": "obj"
+      }, // getNearestPlayer
+      {
+        "type": 1,
+        "commands": [ "getCollidingPlayers" ],
+        "value": "PLAYER_COLLIDE_VAR",
+        "const": "True",
+        "compat": "obj"
+      }, // getCollidingPlayers
+      {
+        "type": 1,
+        "commands": [ "getPlayerHealth", "0" ],
+        "value": "PLAYER_HEALTH_VAR",
+        "const": "True"
+      }, // getPlayerHealth
+      {
+        "type": 1,
+        "commands": [ "getPlayerLives", "0" ],
+        "value": "PLAYER_LIVES_VAR",
+        "const": "True"
+      }, // getPlayerLives
+      {
+        "type": 1,
+        "commands": [ "getPlayerPosX", "0" ],
+        "value": "PLAYER_POSX_VAR",
+        "const": "True"
+      }, // getPlayerPosX
+      {
+        "type": 1,
+        "commands": [ "getPlayerPosY", "0" ],
+        "value": "PLAYER_POSY_VAR",
+        "const": "True"
+      }, // getPlayerPosY
+      {
+        "type": 1,
+        "commands": [ "getPlayerRot", "0" ],
+        "value": "PLAYER_ROT_VAR",
+        "const": "True"
+      }, // getPlayerRot
+
+      {
+        "type": 0,
+        "commands": [ "playerCollide" ],
+        "value": "",
+        "const": "True",
+        "compat": "obj"
+      }, // playerCollide
+      {
+        "type": 0,
+        "commands": [ "playerCollideIndex" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerCollideIndex
+      {
+        "type": 0,
+        "name": "playerCollideOther",
+        "values": [ "Object Group" ],
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // playerCollideOther
+      {
+        "type": 0,
+        "name": "playerCollideIndexOther",
+        "values": [ "Object Group", "0" ],
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // playerCollideIndexOther
+      {
+        "type": 0,
+        "commands": [ "playerHealthEquals" ],
+        "value": "3",
+        "const": "True"
+      }, // playerHealthEquals
+      {
+        "type": 0,
+        "commands": [ "playerHealthLesserEquals" ],
+        "value": "3",
+        "const": "True"
+      }, // playerHealthLesserEquals
+      {
+        "type": 0,
+        "commands": [ "playerHealthGreaterEquals" ],
+        "value": "3",
+        "const": "True"
+      }, // playerHealthGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "playerHealthLesser" ],
+        "value": "3",
+        "const": "True"
+      }, // playerHealthLesser
+      {
+        "type": 0,
+        "commands": [ "playerHealthGreater" ],
+        "value": "3",
+        "const": "True"
+      }, // playerHealthGreater
+      {
+        "type": 0,
+        "commands": [ "playerDeathsEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // playerDeathsEquals
+      {
+        "type": 0,
+        "commands": [ "playerDeathsLesserEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // playerDeathsLesserEquals
+      {
+        "type": 0,
+        "commands": [ "playerDeathsGreaterEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // playerDeathsGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "playerDeathsLesser" ],
+        "value": "1",
+        "const": "True"
+      }, // playerDeathsLesser
+      {
+        "type": 0,
+        "commands": [ "playerDeathsGreater" ],
+        "value": "1",
+        "const": "True"
+      }, // playerDeathsGreater
+      {
+        "type": 0,
+        "commands": [ "playerBoostEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // playerBoostEquals
+      {
+        "type": 0,
+        "commands": [ "playerBoostLesserEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // playerBoostLesserEquals
+      {
+        "type": 0,
+        "commands": [ "playerBoostGreaterEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // playerBoostGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "playerBoostLesser" ],
+        "value": "0",
+        "const": "True"
+      }, // playerBoostLesser
+      {
+        "type": 0,
+        "commands": [ "playerBoostGreater" ],
+        "value": "0",
+        "const": "True"
+      }, // playerBoostGreater
+      {
+        "type": 0,
+        "commands": [ "playerCountEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // playerCountEquals
+      {
+        "type": 0,
+        "commands": [ "playerCountLesserEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // playerCountLesserEquals
+      {
+        "type": 0,
+        "commands": [ "playerCountGreaterEquals" ],
+        "value": "1",
+        "const": "True"
+      }, // playerCountGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "playerCountLesser" ],
+        "value": "1",
+        "const": "True"
+      }, // playerCountLesser
+      {
+        "type": 0,
+        "commands": [ "playerCountGreater" ],
+        "value": "1",
+        "const": "True"
+      }, // playerCountGreater
+      {
+        "type": 0,
+        "commands": [ "playerMoving" ],
+        "value": "0",
+        "const": "True"
+      }, // playerMoving
+      {
+        "type": 0,
+        "commands": [ "playerBoosting" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerBoosting
+      {
+        "type": 0,
+        "commands": [ "playerAlive" ],
+        "value": "0",
+        "const": "True"
+      }, // playerAlive
+      {
+        "type": 0,
+        "commands": [ "playerDistanceLesser" ],
+        "value": "5",
+        "const": "True"
+      }, // playerDistanceLesser
+      {
+        "type": 0,
+        "commands": [ "playerDistanceGreater" ],
+        "value": "5",
+        "const": "True"
+      }, // playerDistanceGreater
+      {
+        "type": 0,
+        "commands": [ "onPlayerHit" ],
+        "value": "",
+        "const": "True"
+      }, // onPlayerHit
+      {
+        "type": 0,
+        "commands": [ "onPlayerDeath" ],
+        "value": "",
+        "const": "True"
+      }, // onPlayerDeath
+
+      {
+        "type": 1,
+        "commands": [ "playerHeal" ],
+        "value": "1",
+        "const": "False",
+        "compat": "obj"
+      }, // playerHeal
+      {
+        "type": 1,
+        "commands": [ "playerHealIndex", "1" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerHealIndex
+      {
+        "type": 1,
+        "commands": [ "playerHealAll" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerHealAll
+      {
+        "type": 1,
+        "commands": [ "playerHit" ],
+        "value": "1",
+        "const": "False",
+        "compat": "obj"
+      }, // playerHit
+      {
+        "type": 1,
+        "commands": [ "playerHitIndex", "1" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerHitIndex
+      {
+        "type": 1,
+        "commands": [ "playerHitAll" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerHitAll
+      {
+        "type": 1,
+        "commands": [ "playerKill" ],
+        "value": "",
+        "const": "False",
+        "compat": "obj"
+      }, // playerKill
+      {
+        "type": 1,
+        "commands": [ "playerKillIndex" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerKillIndex
+      {
+        "type": 1,
+        "commands": [ "playerKillAll" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerKillAll
+      {
+        "type": 1,
+        "commands": [ "playerRespawn" ],
+        "value": "",
+        "const": "False",
+        "compat": "obj"
+      }, // playerRespawn
+      {
+        "type": 1,
+        "commands": [ "playerRespawnIndex" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerRespawnIndex
+      {
+        "type": 1,
+        "commands": [ "playerRespawnAll" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerRespawnAll
+
+      {
+        "type": 1,
+        "commands": [ "playerLockX" ],
+        "value": "True",
+        "const": "False",
+        "compat": "obj"
+      }, // playerLockX
+      {
+        "type": 1,
+        "commands": [ "playerLockXIndex", "True" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerLockXIndex
+      {
+        "type": 1,
+        "commands": [ "playerLockXAll" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerLockXAll
+      {
+        "type": 1,
+        "commands": [ "playerLockY" ],
+        "value": "True",
+        "const": "False",
+        "compat": "obj"
+      }, // playerLockY
+      {
+        "type": 1,
+        "commands": [ "playerLockYIndex", "True" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerLockYIndex
+      {
+        "type": 1,
+        "commands": [ "playerLockYAll" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerLockYAll
+
+      {
+        "type": 1,
+        "commands": [ "playerEnable" ],
+        "value": "False",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerEnable
+      {
+        "type": 1,
+        "commands": [ "playerEnableIndex", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerEnableIndex
+      {
+        "type": 1,
+        "commands": [ "playerEnableAll" ],
+        "value": "False",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerEnableAll
+
+      {
+        "type": 1,
+        "commands": [ "playerMove", "0", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // playerMove
+      {
+        "type": 1,
+        "commands": [ "playerMoveIndex", "0", "0", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerMoveIndex
+      {
+        "type": 1,
+        "commands": [ "playerMoveAll", "0", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerMoveAll
+      {
+        "type": 1,
+        "commands": [ "playerMoveX", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // playerMoveX
+      {
+        "type": 1,
+        "commands": [ "playerMoveXIndex", "0", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerMoveXIndex
+      {
+        "type": 1,
+        "commands": [ "playerMoveXAll", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerMoveXAll
+      {
+        "type": 1,
+        "commands": [ "playerMoveY", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // playerMoveY
+      {
+        "type": 1,
+        "commands": [ "playerMoveYIndex", "0", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerMoveYIndex
+      {
+        "type": 1,
+        "commands": [ "playerMoveYAll", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerMoveYAll
+      {
+        "type": 1,
+        "commands": [ "playerRotate", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // playerRotate
+      {
+        "type": 1,
+        "commands": [ "playerRotateIndex", "0", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerRotateIndex
+      {
+        "type": 1,
+        "commands": [ "playerRotateAll", "1", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerRotateAll
+      {
+        "type": 1,
+        "commands": [ "playerMoveToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveIndexToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveIndexToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveAllToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveAllToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveXToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveXToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveXIndexToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveXIndexToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveXAllToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveXAllToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveYToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveYToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveYIndexToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveYIndexToObject
+      {
+        "type": 1,
+        "commands": [ "playerMoveYAllToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerMoveYAllToObject
+      {
+        "type": 1,
+        "commands": [ "playerRotateToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerRotateToObject
+      {
+        "type": 1,
+        "commands": [ "playerRotateIndexToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerRotateIndexToObject
+      {
+        "type": 1,
+        "commands": [ "playerRotateAllToObject" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // playerRotateAllToObject
+      {
+        "type": 1,
+        "commands": [ "playerDrag", "False", "False" ],
+        "value": "True",
+        "const": "True",
+        "compat": "obj"
+      }, // playerDrag
+
+      {
+        "type": 1,
+        "commands": [ "playerBoost", "" ],
+        "value": "",
+        "const": "False",
+        "compat": "obj"
+      }, // playerBoost
+      {
+        "type": 1,
+        "commands": [ "playerBoostIndex", "", "" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerBoostIndex
+      {
+        "type": 1,
+        "commands": [ "playerBoostAll", "" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerBoostAll
+      {
+        "type": 1,
+        "commands": [ "playerCancelBoost" ],
+        "value": "",
+        "const": "False",
+        "compat": "obj"
+      }, // playerCancelBoost
+      {
+        "type": 1,
+        "commands": [ "playerCancelBoostIndex" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerCancelBoostIndex
+      {
+        "type": 1,
+        "commands": [ "playerCancelBoostAll" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerCancelBoostAll
+      {
+        "type": 1,
+        "commands": [ "playerEnableBoost" ],
+        "value": "True",
+        "const": "False",
+        "compat": "obj"
+      }, // playerEnableBoost
+      {
+        "type": 1,
+        "commands": [ "playerEnableBoostIndex", "True" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerEnableBoostIndex
+      {
+        "type": 1,
+        "commands": [ "playerEnableBoostAll" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerEnableBoostAll
+      {
+        "type": 1,
+        "commands": [ "playerEnableMove", "True" ],
+        "value": "True",
+        "const": "False",
+        "compat": "obj"
+      }, // playerEnableMove
+      {
+        "type": 1,
+        "commands": [ "playerEnableMoveIndex", "True", "True" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerEnableMoveIndex
+      {
+        "type": 1,
+        "commands": [ "playerEnableMoveAll", "True" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerEnableMoveAll
+
+      {
+        "type": 1,
+        "commands": [ "playerSpeed" ],
+        "value": "1",
+        "const": "True",
+        "compat": "level_control"
+      }, // playerSpeed
+      {
+        "type": 1,
+        "commands": [ "playerVelocity", "10" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // playerVelocity
+      {
+        "type": 1,
+        "commands": [ "playerVelocityIndex", "0", "10" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerVelocityIndex
+      {
+        "type": 1,
+        "commands": [ "playerVelocityAll", "10" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerVelocityAll
+      {
+        "type": 1,
+        "commands": [ "playerVelocityX" ],
+        "value": "10",
+        "const": "False",
+        "compat": "obj"
+      }, // playerVelocityX
+      {
+        "type": 1,
+        "commands": [ "playerVelocityXIndex", "0" ],
+        "value": "10",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerVelocityXIndex
+      {
+        "type": 1,
+        "commands": [ "playerVelocityXAll" ],
+        "value": "10",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerVelocityXAll
+      {
+        "type": 1,
+        "commands": [ "playerVelocityY" ],
+        "value": "10",
+        "const": "False",
+        "compat": "obj"
+      }, // playerVelocityY
+      {
+        "type": 1,
+        "commands": [ "playerVelocityYIndex", "0" ],
+        "value": "10",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerVelocityYIndex
+      {
+        "type": 1,
+        "commands": [ "playerVelocityYAll" ],
+        "value": "10",
+        "const": "False",
+        "compat": "level_control"
+      }, // playerVelocityYAll
+
+      {
+        "type": 1,
+        "commands": [ "playerEnableDamage" ],
+        "value": "False",
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableDamage
+      {
+        "type": 1,
+        "commands": [ "playerEnableDamageIndex", "False" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableDamageIndex
+      {
+        "type": 1,
+        "commands": [ "playerEnableDamageAll" ],
+        "value": "False",
+        "const": "True",
+        "compat": "level_control"
+      }, // playerEnableDamageIndex
+
+      {
+        "type": 1,
+        "commands": [ "setGameMode" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // setGameMode
+      {
+        "type": 1,
+        "commands": [ "setPlayerModel", "0" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // setPlayerModel
+      {
+        "type": 1,
+        "commands": [ "blackHole" ],
+        "value": "0.01",
+        "const": "True",
+        "compat": "obj"
+      }, // blackHole
+      {
+        "type": 1,
+        "commands": [ "blackHoleIndex", "0.01" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // blackHoleIndex
+      {
+        "type": 1,
+        "commands": [ "blackHoleAll" ],
+        "value": "0.01",
+        "const": "True",
+        "compat": "obj"
+      }, // blackHoleAll
+      {
+        "type": 1,
+        "commands": [ "whiteHole" ],
+        "value": "0.01",
+        "const": "True",
+        "compat": "obj"
+      }, // whiteHole
+      {
+        "type": 1,
+        "commands": [ "whiteHoleIndex", "0.01" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // whiteHoleIndex
+      {
+        "type": 1,
+        "commands": [ "whiteHoleAll" ],
+        "value": "0.01",
+        "const": "True",
+        "compat": "obj"
+      } // whiteHoleAll
+    ],
+
+    // Controls
+    [
+      {
+        "type": 1,
+        "commands": [ "showMouse" ],
+        "value": "True",
+        "const": "False",
+        "compat": "level_control"
+      }, // showMouse
+      {
+        "type": 1,
+        "commands": [ "hideMouse" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // hideMouse
+      {
+        "type": 1,
+        "commands": [ "setMousePosition", "0", "0" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // setMousePosition
+      {
+        "type": 1,
+        "commands": [ "followMousePosition", "1" ],
+        "value": "1",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // followMousePosition
+
+      {
+        "type": 0,
+        "commands": [ "keyPressDown" ],
+        "value": "0",
+        "const": "True"
+      }, // keyPressDown
+      {
+        "type": 0,
+        "commands": [ "keyPress" ],
+        "value": "0",
+        "const": "True"
+      }, // keyPress
+      {
+        "type": 0,
+        "commands": [ "keyPressUp" ],
+        "value": "0",
+        "const": "True"
+      }, // keyPressUp
+      {
+        "type": 0,
+        "commands": [ "controlPressDown" ],
+        "value": "0",
+        "const": "True"
+      }, // controlPressDown
+      {
+        "type": 0,
+        "commands": [ "controlPress" ],
+        "value": "0",
+        "const": "True"
+      }, // controlPress
+      {
+        "type": 0,
+        "commands": [ "controlPressUp" ],
+        "value": "0",
+        "const": "True"
+      }, // controlPressUp
+      {
+        "type": 0,
+        "commands": [ "mouseButtonDown" ],
+        "value": "0",
+        "const": "True"
+      }, // mouseButtonDown
+      {
+        "type": 0,
+        "commands": [ "mouseButton" ],
+        "value": "0",
+        "const": "True"
+      }, // mouseButton
+      {
+        "type": 0,
+        "commands": [ "mouseButtonUp" ],
+        "value": "0",
+        "const": "True"
+      }, // mouseButtonUp
+      {
+        "type": 0,
+        "commands": [ "mouseOver" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      } // mouseOver
+    ],
+
+    // Physics
+    [
+      {
+        "type": 0,
+        "commands": [ "bulletCollide" ],
+        "value": "",
+        "const": "True",
+        "compat": "obj"
+      }, // bulletCollide
+      {
+        "type": 0,
+        "commands": [ "objectCollide" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // objectCollide
+
+      {
+        "type": 1,
+        "commands": [ "setCollision" ],
+        "value": "False",
+        "const": "True",
+        "compat": "obj"
+      }, // setCollision
+      {
+        "type": 1,
+        "commands": [ "setCollisionOther", "Object Group" ],
+        "value": "False",
+        "const": "True",
+        "compat": "full_beatmap"
+      } // setCollisionOther
+    ],
+
+    // Enable
+    [
+      {
+        "type": 1,
+        "commands": [ "enableObject", "False" ],
+        "value": "True",
+        "const": "False",
+        "compat": {
+          "obj": true,
+          "bg_obj": true,
+          "prefab_obj": true,
+          "player": true,
+          "player_obj": true
+        }
+      }, // enableObject
+      {
+        "type": 1,
+        "commands": [ "enableObjectTree", "False", "True" ],
+        "value": "True",
+        "const": "False",
+        "compat": "obj"
+      }, // enableObjectTree
+      {
+        "type": 1,
+        "commands": [ "enableObjectOther", "False", "True" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": {
+          "obj": true,
+          "bg_obj": true,
+          "prefab_obj": true
+        }
+      }, // enableObjectOther
+      {
+        "type": 1,
+        "commands": [ "enableObjectTreeOther", "Object Group", "False", "True" ],
+        "value": "True",
+        "const": "False",
+        "compat": "obj"
+      }, // enableObjectTreeOther
+      {
+        "type": 1,
+        "commands": [ "enableObjectGroup", "0" ],
+        "value": "True",
+        "const": "True",
+        "compat": {
+          "obj": true,
+          "bg_obj": true,
+          "prefab_obj": true
+        }
+      } // enableObjectGroup
+    ],
+
+    // JSON
+    [
+      {
+        "type": 1,
+        "commands": [ "getJSONString", "save_file", "chapter", "data" ],
+        "value": "JSON_VAR",
+        "const": "True",
+        "compat": "level_control"
+      }, // getJSONString
+      {
+        "type": 1,
+        "commands": [ "getJSONFloat", "save_file", "chapter", "data" ],
+        "value": "JSON_VAR",
+        "const": "True",
+        "compat": "level_control"
+      }, // getJSONFloat
+      {
+        "type": 1,
+        "commands": [ "getJSON", "{\"value\":\"Returned value\"}", "value" ],
+        "value": "JSON_VAR",
+        "const": "True",
+        "compat": "level_control"
+      }, // getJSON
+
+      {
+        "type": 1,
+        "commands": [ "saveFloat", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // saveFloat
+      {
+        "type": 1,
+        "commands": [ "saveString", "save_file", "chapter", "data" ],
+        "value": "Text",
+        "const": "False",
+        "compat": "level_control"
+      }, // saveString
+      {
+        "type": 1,
+        "commands": [ "saveVariable", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // saveVariable
+      {
+        "type": 1,
+        "commands": [ "saveText", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "False",
+        "compat": "obj"
+      }, // saveText
+      {
+        "type": 1,
+        "commands": [ "loadVariable", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadVariable
+      {
+        "type": 1,
+        "commands": [ "loadVariableOther", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadVariableOther
+      {
+        "type": 0,
+        "commands": [ "loadEquals", "save_file", "chapter", "data", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // loadEquals
+      {
+        "type": 0,
+        "commands": [ "loadLesserEquals", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "True"
+      }, // loadLesserEquals
+      {
+        "type": 0,
+        "commands": [ "loadGreaterEquals", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "True"
+      }, // loadGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "loadLesser", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "True"
+      }, // loadLesser
+      {
+        "type": 0,
+        "commands": [ "loadGreater", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "True"
+      }, // loadGreater
+      {
+        "type": 0,
+        "commands": [ "loadExists", "save_file", "chapter", "data" ],
+        "value": "0",
+        "const": "True"
+      } // loadExists
+    ],
+
+    // Events
+    [
+      {
+        "type": 1,
+        "commands": [ "getEventValue", "0", "0", "0", "1", "0", "-99999", "99999", "99999" ],
+        "value": "EVENT_VAR",
+        "const": "True"
+      }, // getEventValue
+
+      {
+        "type": 1,
+        "commands": [ "eventOffset", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "level_control"
+      }, // eventOffset
+      {
+        "type": 1,
+        "commands": [ "eventOffsetVariable", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "level_control"
+      }, // eventOffsetVariable
+      {
+        "type": 1,
+        "commands": [ "eventOffsetMath", "0", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "level_control"
+      }, // eventOffsetMath
+      {
+        "type": 1,
+        "commands": [ "eventOffsetAnimate", "0", "0", "1", "0", "False" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // eventOffsetAnimate
+      {
+        "type": 1,
+        "commands": [ "eventOffsetCopyAxis", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "False" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // eventOffsetCopyAxis
+      {
+        "type": 1,
+        "commands": [ "vignetteTracksPlayer" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // vignetteTracksPlayer
+      {
+        "type": 1,
+        "commands": [ "lensTracksPlayer" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      }, // lensTracksPlayer
+
+      {
+        "type": 0,
+        "commands": [ "eventEquals", "0", "0", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // eventEquals
+      {
+        "type": 0,
+        "commands": [ "eventLesserEquals", "0", "0", "0" ],
+        "value": "Object Group",
+        "const": "True"
+      }, // eventLesserEquals
+      {
+        "type": 0,
+        "commands": [ "eventGreaterEquals", "0", "0", "0" ],
+        "value": "Object Group",
+        "const": "True"
+      }, // eventGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "eventLesser", "0", "0", "0" ],
+        "value": "Object Group",
+        "const": "True"
+      }, // eventLesser
+      {
+        "type": 0,
+        "commands": [ "eventGreater", "0", "0", "0" ],
+        "value": "Object Group",
+        "const": "True"
+      } // eventGreater
+    ],
+
+    // Color
+    [
+      {
+        "type": 1,
+        "commands": [ "getColor", "0" ],
+        "value": "COLOR_VAR",
+        "const": "True"
+      }, // getColor
+      {
+        "type": 1,
+        "commands": [ "getColorSlotHexCode", "0", "1", "0", "0", "0" ],
+        "value": "COLORHEX_VAR",
+        "const": "True"
+      }, // getColorSlotHexCode
+      {
+        "type": 1,
+        "commands": [ "getFloatFromHexCode", "FF" ],
+        "value": "HEX_VAR",
+        "const": "True"
+      }, // getFloatFromHexCode
+      {
+        "type": 1,
+        "commands": [ "getHexCodeFromFloat", "0" ],
+        "value": "HEX_VAR",
+        "const": "True"
+      }, // getHexCodeFromFloat
+      {
+        "type": 1,
+        "commands": [ "getModifiedColor", "FFFFFF", "1", "0", "0", "0" ],
+        "value": "MODIFIEDCOLORS_VAR",
+        "const": "True"
+      }, // getModifiedColor
+      {
+        "type": 1,
+        "commands": [ "getMixedColors" ],
+        "value": "MIXEDCOLORS_VAR",
+        "const": "True"
+      }, // getMixedColors
+      {
+        "type": 1,
+        "name": "getVisualColor",
+        "values": [ "VISUALCOLOR1_VAR", "VISUALCOLOR2_VAR" ],
+        "const": "True",
+        "compat": "obj"
+      }, // getVisualColor
+      {
+        "type": 1,
+        "name": "getVisualColorRGBA",
+        "values": [ "VISUALCOLOR1R_VAR", "VISUALCOLOR1G_VAR", "VISUALCOLOR1B_VAR", "VISUALCOLOR1A_VAR", "VISUALCOLOR2R_VAR", "VISUALCOLOR2G_VAR", "VISUALCOLOR2B_VAR", "VISUALCOLOR2A_VAR" ],
+        "const": "True",
+        "compat": "obj"
+      }, // getVisualColorRGBA
+      {
+        "type": 1,
+        "name": "getVisualOpacity",
+        "values": [ "VISUALOPACITY1_VAR", "VISUALOPACITY2_VAR" ],
+        "const": "True",
+        "compat": "obj"
+      }, // getVisualOpacity
+
+      {
+        "type": 1,
+        "name": "setTheme",
+        "values": [ "" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // setTheme
+      {
+        "type": 1,
+        "name": "lerpTheme",
+        "values": [ "0", "1", "0.5" ],
+        "const": "True",
+        "compat": "level_control"
+      }, // lerpTheme
+
+      {
+        "type": 1,
+        "commands": [ "setOpacity" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // setOpacity
+      {
+        "type": 1,
+        "commands": [ "setOpacityOther", "Object Group" ],
+        "value": "0",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // setOpacityOther
+      {
+        "type": 1,
+        "commands": [ "addColor", "0", "0", "0", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // addColor
+      {
+        "type": 1,
+        "commands": [ "addColorOther", "Object Group", "0", "0", "0", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // addColorOther
+      {
+        "type": 1,
+        "commands": [ "addColorPlayerDistance", "0", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // addColorPlayerDistance
+      {
+        "type": 1,
+        "commands": [ "lerpColorPlayerDistance", "0", "0", "1", "0", "0", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // lerpColorPlayerDistance
+      {
+        "type": 1,
+        "commands": [ "lerpColor", "0", "0", "0", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // lerpColor
+      {
+        "type": 1,
+        "commands": [ "lerpColorOther", "Object Group", "0", "0", "0", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // lerpColorOther
+      {
+        "type": 1,
+        "commands": [ "copyColor", "True", "True" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // copyColor
+      {
+        "type": 1,
+        "commands": [ "copyColorOther", "True", "True" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // copyColorOther
+      {
+        "type": 1,
+        "commands": [ "setColorHex", "FFFFFFFF" ],
+        "value": "FFFFFFFF",
+        "const": "True",
+        "compat": "obj"
+      }, // setColorHex
+      {
+        "type": 1,
+        "commands": [ "setColorHexOther", "Object Group", "FFFFFFFF" ],
+        "value": "FFFFFFFF",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // setColorHexOther
+      {
+        "type": 1,
+        "commands": [ "applyColorGroup", "0", "0" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // applyColorGroup
+      {
+        "type": 1,
+        "commands": [ "setColorRGBA", "1", "1", "1", "1", "1", "1", "1" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // setColorRGBA
+      {
+        "type": 1,
+        "commands": [ "setColorRGBAOther", "1", "1", "1", "1", "1", "1", "1", "Object Group" ],
+        "value": "1",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // setColorRGBAOther
+      {
+        "type": 1,
+        "commands": [ "animateColorKF", "0", "0", "1", "0", "0", "0", "0", "1", "0", "0", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": {
+          "obj": true,
+          "bg_obj": true
+        }
+      }, // animateColorKF
+      {
+        "type": 1,
+        "commands": [ "animateColorKFHex", "FFFFFF", "FFFFFF" ],
+        "value": "0",
+        "const": "True",
+        "compat": {
+          "obj": true,
+          "bg_obj": true
+        }
+      } // animateColorKFHex
+    ],
+
+    // Shape
+    [
+      {
+        "type": 1,
+        "commands": [ "translateShape", "0", "0", "1", "1", "0" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // translateShape
+      {
+        "type": 1,
+        "commands": [ "setShape", "0" ],
+        "value": "0",
+        "const": "False",
+        "compat": {
+          "obj": true,
+          "bg_obj": true
+        }
+      }, // setShape
+      {
+        "type": 1,
+        "commands": [ "setPolygonShape", "3", "0", "1", "3", "0", "0", "1", "1", "0" ],
+        "value": "0.5",
+        "const": "True",
+        "compat": "obj"
+      }, // setPolygonShape
+      {
+        "type": 1,
+        "commands": [ "setPolygonShapeOther", "0.5", "3", "0", "1", "3", "0", "0", "1", "1", "0" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // setPolygonShapeOther
+
+      {
+        "type": 1,
+        "commands": [ "getText", "False" ],
+        "value": "TEXT_VAR",
+        "const": "True",
+        "compat": "obj"
+      }, // getText
+      {
+        "type": 1,
+        "commands": [ "getTextOther", "False", "Object Group" ],
+        "value": "TEXT_VAR",
+        "const": "True",
+        "compat": "obj"
+      }, // getTextOther
+      {
+        "type": 1,
+        "commands": [ "setText" ],
+        "value": "Text",
+        "const": "False",
+        "compat": "obj"
+      }, // setText
+      {
+        "type": 1,
+        "commands": [ "setTextOther", "Objects Group" ],
+        "value": "Text",
+        "const": "False",
+        "compat": "obj"
+      }, // setTextOther
+      {
+        "type": 1,
+        "commands": [ "addText" ],
+        "value": "Text",
+        "const": "False",
+        "compat": "obj"
+      }, // addText
+      {
+        "type": 1,
+        "commands": [ "addTextOther", "Objects Group" ],
+        "value": "Text",
+        "const": "False",
+        "compat": "obj"
+      }, // addTextOther
+      {
+        "type": 1,
+        "commands": [ "removeText" ],
+        "value": "1",
+        "const": "False",
+        "compat": "obj"
+      }, // removeText
+      {
+        "type": 1,
+        "commands": [ "removeTextOther", "Objects Group" ],
+        "value": "1",
+        "const": "False",
+        "compat": "obj"
+      }, // removeTextOther
+      {
+        "type": 1,
+        "commands": [ "removeTextAt" ],
+        "value": "1",
+        "const": "False",
+        "compat": "obj"
+      }, // removeTextAt
+      {
+        "type": 1,
+        "commands": [ "removeTextOtherAt", "Objects Group" ],
+        "value": "1",
+        "const": "False",
+        "compat": "obj"
+      }, // removeTextOtherAt
+      {
+        "type": 1,
+        "commands": [ "formatText" ],
+        "value": "",
+        "const": "True",
+        "compat": "obj"
+      }, // formatText
+      {
+        "type": 1,
+        "commands": [ "textSequence", "True", "True", "False", "Path", "False", "1", "1", "0", "", "0", "False", "0" ],
+        "value": "1",
+        "const": "True",
+        "compat": "obj"
+      }, // textSequence
+
+      {
+        "type": 1,
+        "name": "mask",
+        "values": [ "0", "512", "512", "0", "0" ],
+        "const": "False",
+        "compat": "obj"
+      }, // actorFrameTexture
+      {
+        "type": 1,
+        "commands": [ "setImage" ],
+        "value": "Path",
+        "const": "False",
+        "compat": "obj"
+      }, // setImage
+      {
+        "type": 1,
+        "commands": [ "setImageOther", "Objects Group" ],
+        "value": "Path",
+        "const": "False",
+        "compat": "obj"
+      }, // setImageOther
+
+      {
+        "type": 1,
+        "commands": [ "backgroundShape" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      }, // backgroundShape
+      {
+        "type": 1,
+        "commands": [ "sphereShape" ],
+        "value": "0",
+        "const": "True",
+        "compat": "obj"
+      } // sphereShape
+    ],
+
+    // Animation
+    [
+      {
+        "type": 1,
+        "name": "getAxis",
+        "values": [ "AXIS_VAR", "0", "0", "0", "1", "0", "-99999", "99999", "False", "99999", "Object Group" ],
+        "const": "True"
+      }, // getAxis
+      {
+        "type": 1,
+        "name": "getAxisMath",
+        "values": [ "AXIS_VAR", "0", "0", "0", "False", "Object Group", "axis + 0" ],
+        "const": "True"
+      }, // getAxisMath
+
+      {
+        "type": 1,
+        "commands": [ "animateObject", "0", "0", "0", "0", "True", "0", "True" ],
+        "value": "1",
+        "const": "False"
+      }, // animateObject
+      {
+        "type": 1,
+        "commands": [ "animateObjectOther", "0", "0", "0", "0", "True", "0", "Object Group", "True" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // animateObjectOther
+      {
+        "type": 1,
+        "commands": [ "animateSignal", "0", "0", "0", "0", "True", "0", "Object Group", "0", "True", "True" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // animateSignal
+      {
+        "type": 1,
+        "commands": [ "animateSignalOther", "0", "0", "0", "0", "True", "0", "Object Group", "Object Group", "0", "True", "True" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // animateSignalOther
+      {
+        "type": 1,
+        "commands": [ "animateObjectMath", "0", "0", "0", "0", "True", "0", "True" ],
+        "value": "1",
+        "const": "False"
+      }, // animateObjectMath
+      {
+        "type": 1,
+        "commands": [ "animateObjectMathOther", "0", "0", "0", "0", "True", "0", "Object Group", "True" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // animateObjectMathOther
+      {
+        "type": 1,
+        "commands": [ "animateSignalMath", "0", "0", "0", "0", "True", "0", "Object Group", "0", "True", "True" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // animateSignalMath
+      {
+        "type": 1,
+        "commands": [ "animateSignalMathOther", "0", "0", "0", "0", "True", "0", "Object Group", "Object Group", "0", "True", "True" ],
+        "value": "1",
+        "const": "False",
+        "compat": "level_control"
+      }, // animateSignalMathOther
+      {
+        "type": 1,
+        "commands": [ "applyAnimation", "True", "True", "True", "0", "0", "0", "False", "1", "1", "Object Group" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      }, // applyAnimation
+      {
+        "type": 1,
+        "commands": [ "applyAnimationFrom", "True", "True", "True", "0", "0", "0", "False", "1", "1" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      }, // applyAnimationFrom
+      {
+        "type": 1,
+        "commands": [ "applyAnimationTo", "True", "True", "True", "0", "0", "0", "False", "1", "1" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      }, // applyAnimationTo
+      {
+        "type": 1,
+        "commands": [ "applyAnimationMath", "True", "True", "True", "0", "0", "0", "False", "1", "1", "Object Group", "audioTime" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      }, // applyAnimationMath
+      {
+        "type": 1,
+        "commands": [ "applyAnimationFromMath", "True", "True", "True", "0", "0", "0", "False", "1", "1", "audioTime" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      }, // applyAnimationFromMath
+      {
+        "type": 1,
+        "commands": [ "applyAnimationToMath", "True", "True", "True", "0", "0", "0", "False", "1", "1", "audioTime" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "obj"
+      }, // applyAnimationToMath
+      {
+        "type": 1,
+        "commands": [ "copyAxis", "0", "0", "0", "0", "0", "1", "0", "-99999", "99999", "99999", "False" ],
+        "value": "Object Group",
+        "const": "True"
+      }, // copyAxis
+      {
+        "type": 1,
+        "commands": [ "copyAxisMath", "0", "0", "0", "0", "0", "-99999", "99999", "(axis - 0) * 1 % 9999", "False" ],
+        "value": "Object Group",
+        "const": "True"
+      }, // copyAxisMath
+      {
+        "type": 1,
+        "commands": [ "copyAxisGroup", "0", "0", "var", "Object Group", "0", "0", "0", "-99999", "99999", "False" ],
+        "value": "var + 0",
+        "const": "True"
+      }, // copyAxisGroup
+      {
+        "type": 1,
+        "commands": [ "copyPlayerAxis", "0", "0", "0", "0", "1", "1", "0", "-99999", "99999" ],
+        "value": "0",
+        "const": "True"
+      }, // copyPlayerAxis
+      {
+        "type": 1,
+        "commands": [ "legacyTail" ],
+        "value": "200",
+        "const": "False",
+        "compat": "obj"
+      }, // legacyTail
+      {
+        "type": 1,
+        "commands": [ "gravity", "0", "-1", "1", "2" ],
+        "value": "0",
+        "const": "True"
+      }, // gravity
+      {
+        "type": 1,
+        "commands": [ "gravityOther", "0", "-1", "1", "2" ],
+        "value": "Object Group",
+        "const": "True"
+      }, // gravityOther
+
+      {
+        "type": 0,
+        "commands": [ "axisEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // axisEquals
+      {
+        "type": 0,
+        "commands": [ "axisLesserEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // axisLesserEquals
+      {
+        "type": 0,
+        "commands": [ "axisGreaterEquals", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // axisGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "axisLesser", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // axisLesser
+      {
+        "type": 0,
+        "commands": [ "axisGreater", "0", "0", "0", "1", "0", "-99999", "99999", "1", "False", "99999" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      } // axisGreater
+    ],
+
+    // Prefab
+    [
+      {
+        "type": 1,
+        "commands": [ "spawnPrefab", "0", "0", "1", "1", "0", "0", "0", "1", "False", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnPrefab
+      {
+        "type": 1,
+        "commands": [ "spawnPrefabOffset", "0", "0", "1", "1", "0", "0", "0", "1", "False", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnPrefabOffset
+      {
+        "type": 1,
+        "commands": [ "spawnPrefabOffsetOther", "0", "0", "1", "1", "0", "0", "0", "1", "False", "Object Group", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnPrefabOffsetOther
+      {
+        "type": 1,
+        "commands": [ "spawnPrefabCopy", "Prefab Group", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnPrefabCopy
+      {
+        "type": 1,
+        "commands": [ "spawnMultiPrefab", "0", "0", "1", "1", "0", "0", "0", "1", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnMultiPrefab
+      {
+        "type": 1,
+        "commands": [ "spawnMultiPrefabOffset", "0", "0", "1", "1", "0", "0", "0", "1", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnMultiPrefabOffset
+      {
+        "type": 1,
+        "commands": [ "spawnMultiPrefabOffsetOther", "0", "0", "1", "1", "0", "0", "0", "1", "Object Group", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnMultiPrefabOffsetOther
+      {
+        "type": 1,
+        "commands": [ "spawnMultiPrefabCopy", "Prefab Group", "0", "True", "0", "False" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // spawnMultiPrefabCopy
+      {
+        "type": 1,
+        "commands": [ "clearSpawnedPrefabs" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "level_control"
+      }, // clearSpawnedPrefabs
+      {
+        "type": 1,
+        "commands": [ "setPrefabTime", "True" ],
+        "value": "0",
+        "const": "True",
+        "compat": "prefab_obj"
+      }, // setPrefabTime
+      {
+        "type": 1,
+        "name": "enablePrefab",
+        "values": [ "True" ],
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // enablePrefab
+      {
+        "type": 1,
+        "name": "updatePrefab",
+        "values": [ "True" ],
+        "const": "False",
+        "compat": "full_beatmap"
+      }, // updatePrefab
+
+      {
+        "type": 0,
+        "commands": [ "fromPrefab" ],
+        "value": "",
+        "const": "True",
+        "compat": "level_control"
+      } // fromPrefab
+    ],
+
+    // Updates
+    [
+      {
+        "type": 1,
+        "name": "reinitLevel",
+        "values": [],
+        "const": "False",
+        "compat": "level_control"
+      }, // reinitLevel
+      {
+        "type": 1,
+        "name": "updateObject",
+        "values": [ "True" ],
+        "const": "False",
+        "compat": "full_beatmap"
+      }, // updateObject
+      {
+        "type": 1,
+        "name": "updateObjectOther",
+        "values": [ "Object Group", "True" ],
+        "const": "False",
+        "compat": "full_beatmap"
+      }, // updateObjectOther
+      {
+        "type": 1,
+        "commands": [ "setParent" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": {
+          "obj": true,
+          "prefab_obj": true
+        }
+      }, // setParent
+      {
+        "type": 1,
+        "commands": [ "setParentOther", "False", "" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": {
+          "obj": true,
+          "prefab_obj": true
+        }
+      }, // setParentOther
+      {
+        "type": 1,
+        "commands": [ "detachParent" ],
+        "value": "True",
+        "const": "False",
+        "compat": {
+          "obj": true,
+          "prefab_obj": true
+        }
+      }, // detachParent
+      {
+        "type": 1,
+        "commands": [ "detachParentOther", "Object Group" ],
+        "value": "True",
+        "const": "False",
+        "compat": {
+          "obj": true,
+          "prefab_obj": true
+        }
+      }, // detachParentOther
+      {
+        "type": 1,
+        "commands": [ "setSeed" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // setSeed
+
+      {
+        "type": 0,
+        "name": "objectActive",
+        "values": [],
+        "const": "True",
+        "compat": "obj"
+      }, // objectActive
+      {
+        "type": 0,
+        "name": "objectCustomActive",
+        "values": [],
+        "const": "True",
+        "compat": "obj"
+      }, // objectCustomActive
+      {
+        "type": 0,
+        "commands": [ "objectAlive" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      }, // objectAlive
+      {
+        "type": 0,
+        "commands": [ "objectSpawned" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "obj"
+      } // objectSpawned
+    ],
+
+    // Checkpoint / Marker
+    [
+      {
+        "type": 1,
+        "commands": [ "createCheckpoint", "True", "0", "0", "False", "True", "True", "True", "0" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // createCheckpoint
+      {
+        "type": 1,
+        "commands": [ "resetCheckpoint" ],
+        "value": "False",
+        "const": "False",
+        "compat": "level_control"
+      }, // resetCheckpoint
+      {
+        "type": 0,
+        "name": "onCheckpoint",
+        "values": [ "Checkpoint Name" ],
+        "const": "True"
+      }, // onCheckpoint
+      {
+        "type": 0,
+        "name": "onMarker",
+        "values": [ "Marker Name", "-1", "-1" ],
+        "const": "True"
+      } // onMarker
+    ],
+
+    // Interfaces
+    [
+      {
+        "type": 1,
+        "commands": [ "loadInterface", "True", "False" ],
+        "value": "interface_file_name",
+        "const": "False",
+        "compat": "level_control"
+      }, // loadInterface
+      {
+        "type": 1,
+        "commands": [ "exitInterface" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // exitInterface
+      {
+        "type": 1,
+        "commands": [ "pauseLevel" ],
+        "value": "",
+        "const": "False",
+        "compat": "level_control"
+      }, // pauseLevel
+      {
+        "type": 1,
+        "commands": [ "quitToMenu" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      }, // quitToMenu
+      {
+        "type": 1,
+        "commands": [ "quitToArcade" ],
+        "value": "0",
+        "const": "False",
+        "compat": "level_control"
+      } // quitToArcade
+    ],
+
+    // Application
+    [
+      {
+        "type": 1,
+        "commands": [ "setWindowTitle" ],
+        "value": "Project Arrhythmia",
+        "const": "False",
+        "compat": "level_control"
+      }, // setWindowTitle
+      {
+        "type": 1,
+        "commands": [ "setDiscordStatus", "In {3}", "0", "0" ],
+        "value": "{1}: {0}",
+        "const": "False",
+        "compat": "level_control"
+      }, // setDiscordStatus
+      {
+        "type": 1,
+        "commands": [ "editorNotify", "2", "1" ],
+        "value": "Modifier triggered!",
+        "const": "False"
+      }, // editorNotify
+      {
+        "type": 0,
+        "commands": [ "isFullscreen" ],
+        "value": "",
+        "const": "True"
+      }, // isFullscreen
+      {
+        "type": 0,
+        "commands": [ "isFocused" ],
+        "value": "",
+        "const": "True"
+      } // isFocused
+    ],
+
+    // Modifier
+    [
+      {
+        "type": 1,
+        "commands": [ "signalModifier", "Object Group" ],
+        "value": "0.5",
+        "const": "False",
+        "compat": "level_control"
+      }, // signalModifier
+      {
+        "type": 1,
+        "commands": [ "activateModifier", "True", "0", "modifierName" ],
+        "value": "Object Group",
+        "const": "False",
+        "compat": "level_control"
+      }, // activateModifier
+      {
+        "type": 1,
+        "commands": [ "callModifierBlock" ],
+        "value": "modifierBlock",
+        "const": "True",
+        "compat": "level_control"
+      }, // callModifierBlock
+      {
+        "type": 1,
+        "commands": [ "callModifierBlockTrigger" ],
+        "value": "modifierBlock",
+        "const": "True",
+        "compat": "level_control"
+      }, // callModifierBlockTrigger
+      {
+        "type": 1,
+        "commands": [ "getTag", "0" ],
+        "value": "TAG_VAR",
+        "const": "True"
+      }, // getTag
+      {
+        "type": 0,
+        "commands": [ "containsTag" ],
+        "value": "Tag",
+        "const": "True"
+      }, // containsTag
+      {
+        "type": 0,
+        "commands": [ "requireSignal" ],
+        "value": "0",
+        "const": "True",
+        "compat": "level_control"
+      } // requireSignal
+    ],
+
+    // Random
+    [
+      {
+        "type": 0,
+        "commands": [ "randomGreater", "0", "1" ],
+        "value": "0",
+        "const": "True"
+      }, // randomGreater
+      {
+        "type": 0,
+        "commands": [ "randomLesser", "0", "1" ],
+        "value": "0",
+        "const": "True"
+      }, // randomLesser
+      {
+        "type": 0,
+        "commands": [ "randomEquals", "0", "1" ],
+        "value": "0",
+        "const": "True"
+      } // randomEquals
+    ],
+
+    // Math
+    [
+      {
+        "type": 1,
+        "commands": [ "getMath", "1 + 1" ],
+        "value": "MATH_VAR",
+        "const": "True"
+      }, // getMath
+
+      {
+        "type": 0,
+        "commands": [ "mathEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // mathEquals
+      {
+        "type": 0,
+        "commands": [ "mathLesserEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // mathLesserEquals
+      {
+        "type": 0,
+        "commands": [ "mathGreaterEquals", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // mathGreaterEquals
+      {
+        "type": 0,
+        "commands": [ "mathLesser", "0" ],
+        "value": "0",
+        "const": "True"
+      }, // mathLesser
+      {
+        "type": 0,
+        "commands": [ "mathGreater", "0" ],
+        "value": "0",
+        "const": "True"
+      } // mathGreater
+    ],
+
+    // Real Time
+    [
+      {
+        "type": 0,
+        "name": "realTimeEquals",
+        "values": [ "yyyy-MM-dd_HH.mm.ss", "2019-06-15_00.00.00" ],
+        "const": "True"
+      }, // realTimeEquals
+      {
+        "type": 0,
+        "name": "realTimeLesserEquals",
+        "values": [ "1", "0" ],
+        "const": "True"
+      }, // realTimeLesserEquals
+      {
+        "type": 0,
+        "name": "realTimeGreaterEquals",
+        "values": [ "1", "0" ],
+        "const": "True"
+      }, // realTimeGreaterEquals
+      {
+        "type": 0,
+        "name": "realTimeLesser",
+        "values": [ "1", "0" ],
+        "const": "True"
+      }, // realTimeLesser
+      {
+        "type": 0,
+        "name": "realTimeGreater",
+        "values": [ "1", "0" ],
+        "const": "True"
+      } // realTimeGreater
+    ],
+
+    // Config
+    [
+      {
+        "type": 0,
+        "commands": [ "configLDM" ],
+        "value": "0",
+        "const": "True"
+      }, // configLDM
+      {
+        "type": 0,
+        "commands": [ "usernameEquals" ],
+        "value": "Player",
+        "const": "True"
+      }, // usernameEquals
+      {
+        "type": 0,
+        "commands": [ "languageEquals" ],
+        "value": "0",
+        "const": "True"
+      }, // languageEquals
+      {
+        "type": 0,
+        "commands": [ "configShowEffects" ],
+        "value": "0",
+        "const": "True"
+      }, // configShowEffects
+      {
+        "type": 0,
+        "commands": [ "configShowPlayerGUI" ],
+        "value": "0",
+        "const": "True"
+      }, // configShowPlayerGUI
+      {
+        "type": 0,
+        "commands": [ "configShowIntro" ],
+        "value": "0",
+        "const": "True"
+      } // configShowIntro
+    ]
+  ]
+}

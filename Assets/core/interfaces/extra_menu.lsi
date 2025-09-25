@@ -1,0 +1,324 @@
+{
+  "id": "4",
+  "name": "Extra Menu",
+  "music_name": "menu",
+  "layouts": {
+    "backgrounds": {
+      "type": "grid",
+      "cell_size": [ "200", "200" ],
+      "spacing": [ "11", "11" ],
+      "rect": {
+        "anc_pos": [ "0", "2000" ],
+        "anc_max": [ "1", "1" ],
+        "anc_min": [ "0", "0" ],
+        "size": [ "-32", "-32" ]
+      }
+    },
+    "buttons": {
+      "type": "vertical",
+      "control_width": "True",
+      "force_expand_width": "True",
+      "spacing": "4",
+      "rect": {
+        "anc_pos": [ "-500", "200" ],
+        "size": [ "800", "200" ]
+      }
+    },
+    "wave": {
+      "type": "horizontal",
+      "spacing": "4",
+      "rect": "FullAnchored"
+    }
+  },
+  "elements": [
+    {
+      "type": "Event",
+      "id": "632626",
+      "name": "Effect",
+      "func": "SetDefaultEvents",
+      "anim_length": "0",
+      "wait": "False"
+    },
+    {
+      "type": "Image",
+      "id": "374848",
+      "name": "Backgrounds",
+      "sibling_index": "0",
+      "rect": {
+        "anc_pos": [ "0", "0" ]
+      },
+      "opacity": "0",
+      "anim_length": "0",
+      "wait": "False"
+    },
+    {
+      "type": "Image",
+      "id": "43534677",
+      "name": "Spinning BG",
+      "parent": "374848",
+      "rect": {
+        "anc_pos": [ "0", "0" ],
+        "size": [ "3300", "3300" ]
+      },
+      "opacity": "0.05",
+      "col": "6",
+      "rounded": "0",
+      "icon": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA30lEQVR4Ae2aQQrDMBADk9L/f7kN+YIHdoXGd8uyNGsI5P496ypen+K7v1c3AAkoT8ARKAfgkgAJKE/AESgHwEfQEWgfge9JAPezTvZTe08+6R0BqoVUHQlIbY7yLQFUkqk6EpDaHOVbAqgkU3UkILU5yrcEUEmm6khAanOUbwmgkkzVkYDU5ijfEkAlmaojAanNUb4lgEoyVUcCUpujfEsAlWSqjgSkNkf5rifgPvm7gmphUqeeAAOYxG/D2RKwoYVJDxIwmf6GsyVgQwuTHiRgMv0NZ0vAhhYmPdQT8AdZXQx5N0zQPAAAAABJRU5ErkJggg==",
+      "spawn_func": {
+        "name": "AnimateID",
+        "params": [
+          "43534677",
+          "2",
+          "True",
+          {
+            "z": [
+              {
+                "t": "0",
+                "val": "0",
+                "rel": "True"
+              },
+              {
+                "t": "30",
+                "val": "360",
+                "rel": "True"
+              }
+            ]
+          }
+        ]
+      },
+      "anim_length": "0",
+      "wait": "False"
+    },
+    {
+      "type": "Image",
+      "id": "5343663626",
+      "name": "BG",
+      "parent": "374848",
+      "rect": {
+        "anc_pos": [ "800", "400" ],
+        "size": [ "400", "400" ],
+        "rot": "45"
+      },
+      "opacity": "0.1",
+      "col": "6",
+      "rounded": "5",
+      "anim_length": "0",
+      "wait": "False"
+    },
+    {
+      "type": "Image",
+      "id": "3626467234",
+      "name": "BG",
+      "parent": "374848",
+      "rect": {
+        "anc_pos": [ "-800", "-400" ],
+        "size": [ "400", "400" ],
+        "rot": "45"
+      },
+      "opacity": "0.1",
+      "col": "6",
+      "anim_length": "0",
+      "wait": "False"
+    },
+    {
+      "type": "Image",
+      "id": "347436736",
+      "name": "BG",
+      "parent": "374848",
+      "rect": {
+        "anc_pos": [ "600", "-100" ],
+        "size": [ "120", "120" ],
+        "rot": "45"
+      },
+      "opacity": "0.1",
+      "col": "6",
+      "anim_length": "0",
+      "wait": "False"
+    },
+    {
+      "type": "Image",
+      "id": "347436736",
+      "name": "BG",
+      "parent": "374848",
+      "rect": {
+        "anc_pos": [ "-900", "600" ],
+        "size": [ "700", "700" ],
+        "rot": "45"
+      },
+      "opacity": "0.1",
+      "col": "6",
+      "anim_length": "0",
+      "wait": "False"
+    },
+    {
+      "type": "Image",
+      "id": "9998",
+      "name": "Reactive Object",
+      "parent_layout": "wave",
+      "rect": {
+        "size": [ "32.2", "40" ]
+      },
+      "col": "6",
+      "opacity": "0.1",
+      "loop": "53",
+      "anim_length": "0",
+      "reactive": {
+        "channels": [ "0", "0" ],
+        "intensity": [ "0", "4" ],
+        "controls": "1",
+        "increase_loop": "True"
+      },
+      "wait": "False"
+    },
+    {
+      "type": "Auto",
+      "name": "TopBar",
+      "title": {
+        "english": "Extras Menu",
+        "spanish": "Extras Menu"
+      },
+      "text_col": "6"
+    },
+    {
+      "type": "For",
+      "from": "JSON",
+      "element_prefabs": [
+        {
+          "type": "Button",
+          "id": "0",
+          "name": "Button",
+          "parent_layout": "buttons",
+          "align_select": "True",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True"
+        },
+        {
+          "type": "Image",
+          "id": "1",
+          "name": "Spacer",
+          "parent_layout": "buttons",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0"
+        }
+      ],
+      "to": [
+        {
+          "0": {
+            "id": "7",
+            "name": "Return Button",
+            "text": "<b> [ RETURN ]",
+            "func": {
+              "name": "Parse",
+              "params": [
+                "{{Asset=core/interfaces/main_menu.lsi}}",
+                "True"
+              ]
+            }
+          },
+          "1": {
+            "name": "Spacer"
+          }
+        },
+        {
+          "0": {
+            "id": "5",
+            "name": "Profile Button",
+            "text": "<b> [ PROFILE ]",
+            "func": "Profile"
+          }
+        },
+        {
+          "0": {
+            "id": "5",
+            "name": "Input Button",
+            "text": "<b> [ INPUT SELECT ]",
+            "func": [
+              {
+                "name": "LoadScene",
+                "params": [
+                  "Input Select",
+                  "False",
+                  "True"
+                ]
+              },
+              {
+                "name": "OnInputsSelected",
+                "params": {
+                  "continue": {
+                    "name": "LoadScene",
+                    "params": [ "Main Menu" ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "0": {
+            "id": "6",
+            "name": "Load Levels Button",
+            "text": "<b> [ LOAD LEVELS ]",
+            "func": {
+              "name": "LoadLevels",
+              "params": {
+                "on_loading_end": {
+                  "name": "Parse",
+                  "params": [
+                    "{{Asset=core/interfaces/extra_menu.lsi}}",
+                    "True"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "0": {
+            "id": "6",
+            "name": "Changelog Button",
+            "text": "<b> [ CHANGELOG ]",
+            "func": "OpenChangelog"
+          }
+        },
+        {
+          "0": {
+            "id": "6",
+            "name": "Tests Button",
+            "text": "<b> [ TESTS ]",
+            "func": {
+              "name": "Parse",
+              "params": [
+                "{{Asset=core/interfaces/tests_examples.lsi}}",
+                "True"
+              ]
+            }
+          }
+        },
+        {
+          "0": {
+            "id": "7",
+            "name": "Reload Button",
+            "text": "<b> [ RELOAD ]",
+            "func": "Reload"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Auto",
+      "name": "BottomBar",
+      "text_col": "6"
+    }
+  ]
+}

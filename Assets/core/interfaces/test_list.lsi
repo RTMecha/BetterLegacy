@@ -1,0 +1,618 @@
+{
+  "type": "List",
+
+  "id": "64363464624353",
+  "name": "Test Interface List",
+  "default_branch": "353474365325645",
+  "branches": [
+    {
+      "id": "353474365325645",
+      "name": "BRANCH DEMO Interface",
+      "exit_func": {
+        "name": "LoadScene",
+        "params": [ "Main Menu" ]
+      },
+      "layouts": {
+        "buttons": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "-500", "200" ],
+            "size": [ "800", "200" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": {
+            "name": "SetDefaultEvents"
+          },
+          "anim_length": "0"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "BRANCH DEMO",
+          "text_col": "6"
+        },
+        {
+          "type": "For", // ForLoop
+          "from": "JSON",
+          "element_prefabs": [
+            {
+              "type": "Button",
+              "id": "0",
+              "name": "Branch 1 Button",
+              "parent_layout": "buttons",
+              "align_select": "True",
+              "rect": {
+                "size": [ "200", "64" ]
+              },
+              "opacity": "0.1",
+              "sel_opacity": "1",
+              "col": "6",
+              "sel_col": "6",
+              "text_col": "6",
+              "sel_text_col": "7",
+              "anim_length": "1",
+              "play_blip_sound": "True"
+            }
+          ],
+          "to": [
+            {
+              "0": {
+                "text": "<b> [ BRANCH 01 ]",
+                "func": {
+                  "name": "LIST_SetCurrentInterface",
+                  "params": [ "74674362437324" ]
+                }
+              }
+            },
+            {
+              "0": {
+                "text": "<b> [ BRANCH 02 ]",
+                "func": {
+                  "name": "LIST_SetCurrentInterface",
+                  "params": [ "626264732452575325" ]
+                }
+              }
+            },
+            {
+              "0": {
+                "text": "<b> [ RESET ]",
+                "func": [
+                  {
+                    "name": "Notify",
+                    "params": [ "Reset!" ]
+                  },
+                  {
+                    "name": "ForLoop",
+                    "params": {
+                      "index": "0",
+                      "count": "3",
+                      "func": {
+                        "name": "SaveProfileValue",
+                        "params": [
+                          {
+                            "name": "FormatString",
+                            "params": [
+                              "USED_ITEM_{0}",
+                              [
+                                {
+                                  "name": "ToStoryNumber",
+                                  "params": [ "index" ]
+                                }
+                              ]
+                            ]
+                          },
+                          false
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "name": "Parse",
+                    "params": [
+                      "{{Asset=core/interfaces/test_list.lsi}}",
+                      "True"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "0": {
+                "text": "<b> [ RETURN ]",
+                "func": {
+                  "name": "LoadScene",
+                  "params": [ "Main Menu" ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        }
+      ]
+    },
+    {
+      "id": "74674362437324",
+      "name": "BRANCH DEMO Interface",
+      "exit_func": "LIST_ExitInterface",
+      "layouts": {
+        "buttons": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "-500", "200" ],
+            "size": [ "800", "200" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": {
+            "name": "SetDefaultEvents"
+          },
+          "anim_length": "0"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "BRANCH DEMO",
+          "text_col": "6"
+        },
+        {
+          "type": "Text",
+          "id": "4",
+          "name": "Branch 1 Text",
+          "parent_layout": "buttons",
+          "text": "<b>It's a! Branch!!!",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": {
+            "name": "Log",
+            "params": [ "HI" ]
+          }
+        },
+        {
+          "type": "For",
+          "from": "Loop",
+          "index": "0",
+          "count": "3",
+          "to": [
+            {
+              "type": "Button",
+              "id": "4",
+              "name": "Back Button",
+              "parent_layout": "buttons",
+              "text": {
+                "name": "FormatString",
+                "params": [
+                  "<b>[ ITEM {0} ]",
+                  [
+                    {
+                      "name": "ToStoryNumber",
+                      "params": [ "index" ]
+                    }
+                  ]
+                ]
+              },
+              "align_select": "True",
+              "rect": {
+                "size": [ "200", "64" ]
+              },
+              "opacity": "0.1",
+              "sel_opacity": "1",
+              "col": "6",
+              "sel_col": "6",
+              "text_col": "6",
+              "sel_text_col": "7",
+              "anim_length": "1",
+              "play_blip_sound": "True",
+              "func": [
+                {
+                  "name": "Notify",
+                  "params": [
+                    {
+                      "name": "FormatString",
+                      "params": [
+                        "Took item {0}",
+                        [
+                          {
+                            "name": "ToStoryNumber",
+                            "params": [ "index" ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "SaveProfileValue",
+                  "params": [
+                    {
+                      "name": "FormatString",
+                      "params": [
+                        "USED_ITEM_{0}",
+                        [
+                          {
+                            "name": "ToStoryNumber",
+                            "params": [ "index" ]
+                          }
+                        ]
+                      ]
+                    },
+                    true
+                  ]
+                },
+                {
+                  "name": "Parse",
+                  "params": [
+                    "{{Asset=core/interfaces/test_list.lsi}}",
+                    "True",
+                    null,
+                    "74674362437324",
+                    [ "353474365325645" ]
+                  ]
+                }
+              ],
+              "spawn_if_func": {
+                "name": "!ProfileLoadBool",
+                "params": [
+                  {
+                    "name": "FormatString",
+                    "params": [
+                      "USED_ITEM_{0}",
+                      [
+                        {
+                          "name": "ToStoryNumber",
+                          "params": [ "index" ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Button",
+              "id": "4",
+              "name": "Back Button",
+              "parent_layout": "buttons",
+              "text": {
+                "name": "FormatString",
+                "params": [
+                  "<b>[ ITEM {0} ]",
+                  [
+                    {
+                      "name": "ToStoryNumber",
+                      "params": [ "index" ]
+                    }
+                  ]
+                ]
+              },
+              "align_select": "True",
+              "rect": {
+                "size": [ "200", "64" ]
+              },
+              "opacity": "0.02",
+              "sel_opacity": "0.7",
+              "col": "6",
+              "sel_col": "6",
+              "text_col": "6",
+              "sel_text_col": "7",
+              "anim_length": "1",
+              "play_blip_sound": "True",
+              "func": [
+                {
+                  "name": "Notify",
+                  "params": [
+                    {
+                      "name": "FormatString",
+                      "params": [
+                        "Cannot take item {0} because it's already been obtained.",
+                        [
+                          {
+                            "name": "ToStoryNumber",
+                            "params": [ "index" ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "PlaySound",
+                  "params": [ "Block" ]
+                }
+              ],
+              "spawn_if_func": {
+                "name": "ProfileLoadBool",
+                "params": [
+                  {
+                    "name": "FormatString",
+                    "params": [
+                      "USED_ITEM_{0}",
+                      [
+                        {
+                          "name": "ToStoryNumber",
+                          "params": [ "index" ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "Button",
+          "id": "4",
+          "name": "Back Button",
+          "parent_layout": "buttons",
+          "text": "<b> [ RETURN ]",
+          "align_select": "True",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": "LIST_ExitInterface"
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        }
+      ]
+    },
+    {
+      "id": "626264732452575325",
+      "name": "BRANCH DEMO Interface",
+      "exit_func": "LIST_ExitInterface",
+      "layouts": {
+        "buttons": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "-500", "200" ],
+            "size": [ "800", "200" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": {
+            "name": "SetDefaultEvents"
+          },
+          "anim_length": "0"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "BRANCH DEMO",
+          "text_col": "6"
+        },
+        {
+          "type": "Text",
+          "id": "4",
+          "name": "Branch 1 Text",
+          "parent_layout": "buttons",
+          "text": "<b>It's another! Branch!!!",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": {
+            "name": "Log",
+            "params": [ "HI" ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "4",
+          "name": "Back Button",
+          "parent_layout": "buttons",
+          "text": "<b> [ ENTER ]",
+          "align_select": "True",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": {
+            "name": "LIST_SetCurrentInterface",
+            "params": [ "267425762426236" ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "4",
+          "name": "Back Button",
+          "parent_layout": "buttons",
+          "text": "<b> [ RETURN ]",
+          "align_select": "True",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": "LIST_ExitInterface"
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        }
+      ]
+    },
+    {
+      "id": "267425762426236",
+      "name": "BRANCH DEMO Interface",
+      "exit_func": "LIST_ExitInterface",
+      "layouts": {
+        "buttons": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "-500", "200" ],
+            "size": [ "800", "200" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": {
+            "name": "SetDefaultEvents"
+          },
+          "anim_length": "0"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "BRANCH DEMO",
+          "text_col": "6"
+        },
+        {
+          "type": "Text",
+          "id": "4",
+          "name": "Branch 1 Text",
+          "parent_layout": "buttons",
+          "text": {
+            "name": "If",
+            "params": [
+              {
+                "if": [
+                  {
+                    "name": "ProfileLoadBool",
+                    "params": [ "USED_ITEM_01" ]
+                  },
+                  {
+                    "name": "ProfileLoadBool",
+                    "params": [ "USED_ITEM_02" ]
+                  },
+                  {
+                    "name": "ProfileLoadBool",
+                    "params": [ "USED_ITEM_03" ]
+                  }
+                ],
+                "return": "<b>..."
+              },
+              {
+                "if": [
+                  {
+                    "name": "ProfileLoadBool",
+                    "params": [ "USED_ITEM_01" ]
+                  }
+                ],
+                "return": "<b>got item 1?"
+              },
+              {
+                "return": "is that all?"
+              }
+            ]
+          },
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": {
+            "name": "Log",
+            "params": [ "what" ]
+          }
+        },
+        {
+          "type": "Button",
+          "id": "4",
+          "name": "Back Button",
+          "parent_layout": "buttons",
+          "text": "<b> [ RETURN ]",
+          "align_select": "True",
+          "rect": {
+            "size": [ "200", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": "LIST_ExitInterface"
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        }
+      ]
+    }
+  ]
+}

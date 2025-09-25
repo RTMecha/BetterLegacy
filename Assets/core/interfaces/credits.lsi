@@ -1,0 +1,631 @@
+{
+  "type": "List",
+
+  "id": "64363464624353",
+  "name": "Test Interface List",
+  "default_branch": "493848394843",
+  "branches": [
+    // Main
+    {
+      "id": "493848394843",
+      "name": "Credits Interface",
+      "exit_func": {
+        "name": "LoadScene",
+        "params": [ "Main Menu" ]
+      },
+      "layouts": {
+        "test": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "0", "100" ],
+            "size": [ "500", "200" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": "SetDefaultEvents",
+          "anim_length": "0",
+          "wait": "False"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "Credits Menu",
+          "text_col": "6"
+        },
+        {
+          "type": "Text",
+          "id": "0",
+          "name": "Test Object",
+          "text": "<align=center>Thanks.",
+          "parent_layout": "test",
+          "rect": {
+            "size": [ "1400", "64" ]
+          },
+          "hide_bg": "True",
+          "col": "0",
+          "text_col": "6",
+          "anim_length": "1",
+          "func": {
+            "name": "Log",
+            "params": [
+              "What?"
+            ]
+          }
+        },
+        {
+          "type": "For",
+          "from": "JSON",
+          "element_prefabs": [
+            {
+              "type": "Button",
+              "id": "1",
+              "name": "Credits Button",
+              "parent_layout": "test",
+              "align_select": "True",
+              "rect": {
+                "size": [ "200", "64" ]
+              },
+              "opacity": "0.1",
+              "sel_opacity": "1",
+              "col": "6",
+              "sel_col": "6",
+              "text_col": "6",
+              "sel_text_col": "7",
+              "anim_length": "1",
+              "play_blip_sound": "True"
+            }
+          ],
+          "to": [
+            {
+              "1": {
+                "text": "<align=center><b>[ CREATORS ]",
+                "func": {
+                  "name": "LIST_SetCurrentInterface",
+                  "params": [ "9392592995" ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "<align=center><b>[ MUSICIANS ]",
+                "func": {
+                  "name": "LIST_SetCurrentInterface",
+                  "params": [ "6436475464" ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "<align=center><b>[ SPECIAL ]",
+                "func": {
+                  "name": "LIST_SetCurrentInterface",
+                  "params": [ "134412341" ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "<align=center><b>[ VISIT DISCORD ]",
+                "func": "ModderDiscord"
+              }
+            },
+            {
+              "1": {
+                "text": "<align=center><b>[ SOURCE CODE ]",
+                "func": "SourceCode"
+              }
+            },
+            {
+              "1": {
+                "text": "<align=center><b>[ RETURN ]",
+                "func": {
+                  "name": "LoadScene",
+                  "params": [ "Main Menu" ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        }
+      ]
+    },
+
+    // Creators
+    {
+      "id": "9392592995",
+      "name": "Credits Creators Interface",
+      "exit_func": "LIST_ExitInterface",
+      "layouts": {
+        "credits_layout": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "0", "0" ],
+            "anc_max": [ "1", "1" ],
+            "anc_min": [ "0", "0" ],
+            "size": [ "-256", "-400" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": {
+            "name": "SetDefaultEvents"
+          },
+          "anim_length": "0",
+          "wait": "False"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "Credits [CREATORS]",
+          "text_col": "6"
+        },
+        {
+          "type": "For",
+          "from": "JSON",
+          "element_prefabs": [
+            {
+              "type": "Text",
+              "id": "1",
+              "name": "Test Object",
+              "parent_layout": "credits_layout",
+              "rect": {
+                "size": [ "1400", "64" ]
+              },
+              "hide_bg": "True",
+              "col": "0",
+              "text_col": "6",
+              "anim_length": "1"
+            }
+          ],
+          "to": [
+            {
+              "1": {
+                "text": "- <b>Pidge"
+              }
+            },
+            {
+              "1": {
+                "text": "Creator of Project Arrhythmia."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>RTMecha"
+              }
+            },
+            {
+              "1": {
+                "text": "Creator of the BetterLegacy mod."
+              }
+            }
+          ]
+        },
+        {
+          "type": "Image",
+          "id": "5",
+          "name": "Spacer",
+          "parent_layout": "credits_layout",
+          "rect": {
+            "size": [ "1400", "64" ]
+          },
+          "opacity": "0"
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        },
+        {
+          "type": "Event",
+          "id": "42356352",
+          "name": "Pause",
+          "anim_length": "2"
+        },
+        {
+          "type": "Button",
+          "id": "436346",
+          "name": "Back Button",
+          "text": "<align=center><b>[ RETURN ]",
+          "select": [ "0", "0" ],
+          "rect": {
+            "anc_pos": [ "0", "-300" ],
+            "size": [ "400", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": "LIST_ExitInterface"
+        }
+      ]
+    },
+
+    // Music
+    {
+      "id": "6436475464",
+      "name": "Credits Music Interface",
+      "exit_func": "LIST_ExitInterface",
+      "layouts": {
+        "credits_layout": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "0", "0" ],
+            "anc_max": [ "1", "1" ],
+            "anc_min": [ "0", "0" ],
+            "size": [ "-256", "-400" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": {
+            "name": "SetDefaultEvents"
+          },
+          "anim_length": "0",
+          "wait": "False"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "Credits [MUSICIANS]",
+          "text_col": "6"
+        },
+        {
+          "type": "For",
+          "from": "JSON",
+          "element_prefabs": [
+            {
+              "type": "Text",
+              "id": "1",
+              "name": "Test Object",
+              "text": "- <b><#FF0048>meganeko",
+              "parent_layout": "credits_layout",
+              "rect": {
+                "size": [ "1400", "64" ]
+              },
+              "hide_bg": "True",
+              "col": "0",
+              "text_col": "6",
+              "anim_length": "1"
+            }
+          ],
+          "to": [
+            {
+              "1": {
+                "text": "- <b><#FF0048>meganeko",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "2",
+                    "meganeko"
+                  ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "- <b><#2B2B2B>Creo",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "2",
+                    "creo"
+                  ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "- <b><#4c3293>Chipzel",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "2",
+                    "chipzelmusic"
+                  ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "- <b><#2196f3>Miyolophone",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "4",
+                    "miyolophone"
+                  ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "- <b><#22d5ff>Shirobon",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "2",
+                    "shirobon"
+                  ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "- <b><#8E4141>Jukio -Kozilek- Kallio",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "2",
+                    "jukiokallio"
+                  ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "- <b><#7528A9>F-777",
+                "func": {
+                  "name": "OpenLink",
+                  "params": [
+                    "Artist",
+                    "4",
+                    "f-777"
+                  ]
+                }
+              }
+            },
+            {
+              "1": {
+                "text": "- <b><#7528A9>AiR",
+                "func": {
+                  "name": "PlaySound",
+                  "params": [
+                    "Block"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        },
+        {
+          "type": "Event",
+          "id": "42356352",
+          "name": "Pause",
+          "anim_length": "2"
+        },
+        {
+          "type": "Button",
+          "id": "436346",
+          "name": "Back Button",
+          "text": "<align=center><b>[ RETURN ]",
+          "select": [ "0", "0" ],
+          "rect": {
+            "anc_pos": [ "0", "-300" ],
+            "size": [ "400", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": "LIST_ExitInterface"
+        }
+      ]
+    },
+
+    // Special
+    {
+      "id": "134412341",
+      "name": "Credits Special Interface",
+      "exit_func": "LIST_ExitInterface",
+      "layouts": {
+        "credits_layout": {
+          "type": "vertical",
+          "control_width": "True",
+          "force_expand_width": "True",
+          "spacing": "4",
+          "rect": {
+            "anc_pos": [ "0", "0" ],
+            "anc_max": [ "1", "1" ],
+            "anc_min": [ "0", "0" ],
+            "size": [ "-256", "-400" ]
+          }
+        }
+      },
+      "elements": [
+        {
+          "type": "Event",
+          "id": "632626",
+          "name": "Effect",
+          "func": {
+            "name": "SetDefaultEvents"
+          },
+          "anim_length": "0",
+          "wait": "False"
+        },
+        {
+          "type": "Auto",
+          "name": "TopBar",
+          "title": "Credits [SPECIAL]",
+          "text_col": "6"
+        },
+        {
+          "type": "For",
+          "from": "JSON",
+          "element_prefabs": [
+            {
+              "type": "Text",
+              "id": "1",
+              "name": "Test Object",
+              "parent_layout": "credits_layout",
+              "rect": {
+                "size": [ "1400", "32" ]
+              },
+              "hide_bg": "True",
+              "col": "0",
+              "text_col": "6",
+              "anim_length": "1"
+            }
+          ],
+          "to": [
+            {
+              "1": {
+                "text": "- <b>Diggydog"
+              }
+            },
+            {
+              "1": {
+                "text": "An awesome friend."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>KarasuTori"
+              }
+            },
+            {
+              "1": {
+                "text": "Pushes the boundaries of all of our expectations."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>SleepyzGamer"
+              }
+            },
+            {
+              "1": {
+                "text": "Bug hunter and researcher."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>CubeCube"
+              }
+            },
+            {
+              "1": {
+                "text": "Casual tester."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>enchart"
+              }
+            },
+            {
+              "1": {
+                "text": "<s>:nerd:</s>Started the modding journey."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>Reimnop"
+              }
+            },
+            {
+              "1": {
+                "text": "<s>:nerd:</s>Created Catalyst, which BetterLegacys' animation and object spawning system is taken from."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>MoNsTeR"
+              }
+            },
+            {
+              "1": {
+                "text": "Helped with polishing BetterLegacy."
+              }
+            },
+            {
+              "1": {
+                "text": "- <b>aiden_ytarame"
+              }
+            },
+            {
+              "1": {
+                "text": "Alpha porting support."
+              }
+            }
+          ]
+        },
+        {
+          "type": "Auto",
+          "name": "BottomBar",
+          "text_col": "6"
+        },
+        {
+          "type": "Event",
+          "id": "42356352",
+          "name": "Pause",
+          "anim_length": "2"
+        },
+        {
+          "type": "Button",
+          "id": "436346",
+          "name": "Back Button",
+          "text": "<align=center><b>[ RETURN ]",
+          "select": [ "0", "0" ],
+          "rect": {
+            "anc_pos": [ "0", "-300" ],
+            "size": [ "400", "64" ]
+          },
+          "opacity": "0.1",
+          "sel_opacity": "1",
+          "col": "6",
+          "sel_col": "6",
+          "text_col": "6",
+          "sel_text_col": "7",
+          "anim_length": "1",
+          "play_blip_sound": "True",
+          "func": "LIST_ExitInterface"
+        }
+      ]
+    }
+  ]
+}

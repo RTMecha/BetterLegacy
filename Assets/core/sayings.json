@@ -1,0 +1,44 @@
+{
+  "sayings": {
+    "null": [
+      "Maybe don't play in zen mode next time HAL?",
+      "Nice practice! Let's go for real next time!",
+      "Sometimes it's nice to just sit back and watch the pretty colors.",
+      "Sometimes the patterns made by the virus seem too well orchestrated... almost like they're designed by a higher being?"
+    ], // - (Zen Mode or Practice Mode)
+    "ss": [
+      "That was incredible! Where did you learn all that? Oh right me {{QuickElement=smug}}",
+      "WOW!! {{QuickElement=party}} Amazing job HAL!",
+      "You're killin' it HAL! That virus is going down! {{QuickElement=surprise}}",
+      "Didn't know you had moves like that programmed into you! {{QuickElement=surprise}}",
+      "WOOO! YOU GO HAL! {{QuickElement=surprise}}"
+    ], // SS
+    "s": [
+      "WOW!! {{QuickElement=party}} Amazing job HAL!",
+      "You're killin' it HAL! That virus is going down! {{QuickElement=surprise}}",
+      "Didn't know you had moves like that programmed into you! {{QuickElement=surprise}}"
+    ], // S
+    "a": [
+      "Good job HAL! We might really be able to figure out that cure soon. {{QuickElement=happy}}",
+      "Good job HAL! This new batch of nanobots is really something! {{QuickElement=happy}}",
+      "Good! Now on to the next one! {{QuickElement=happy}}"
+    ], // A
+    "b": [
+      "HAL you gotta do better! Let's try to fail in less generations so we can move quicker towards that cure! {{QuickElement=nervous}}",
+      "What do you think HAL? Should we move forward with iteration 23,647,647?"
+    ], // B
+    "c": [
+      "HAL you gotta do better! Let's try to fail in less generations so we can move quicker towards that cure! {{QuickElement=nervous}}",
+      "What do you think HAL? Should we move forward with iteration 23,647,647?"
+    ], // C
+    "d": [
+      "The next nanobot iteration will be better! Let's make sure of it! {{QuickElement=happy}}",
+      "Maybe we should give those cyan nanobots another chance? {{QuickElement=nervous}}"
+    ], // D
+    "f": [
+      "The next nanobot iteration will be better! Let's make sure of it! {{QuickElement=happy}}",
+      "Maybe we should give those cyan nanobots another chance? {{QuickElement=nervous}}",
+      "I normally wanna be supportive...    but...     that sucked. {{QuickElement=nervous}}"
+    ] // F
+  }
+}

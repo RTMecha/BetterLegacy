@@ -1,0 +1,34 @@
+{
+  "level": [
+    "boss_level",
+    "enemy_level",
+    "joke_level",
+    "meme",
+    "boss_rush",
+    "flashing_lights",
+    "high_detail",
+    "reupload",
+    "remake",
+    "wip",
+    "old",
+    "experimental",
+    "feature_window",
+    "feature_video_bg",
+    "story",
+    "media",
+    "horror"
+  ],
+  "prefab": [
+    "boss",
+    "enemy",
+    "attack",
+    "high_detail",
+    "reupload",
+    "remake",
+    "wip",
+    "old",
+    "experimental",
+    "media",
+    "horror"
+  ]
+}
