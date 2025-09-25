@@ -34,8 +34,6 @@ namespace BetterLegacy.Patchers
         [HarmonyPostfix]
         static void StartPostfix(DataManager __instance)
         {
-            LegacyPlugin.ParseProfile();
-
             // Initialize managers
             ModCompatibility.Init();
             ShapeManager.Init();
@@ -214,17 +212,6 @@ namespace BetterLegacy.Patchers
             }
 
             InterfaceManager.Init();
-
-            try
-            {
-                var path = Example.GetFile($"pa_example_m{FileFormat.LSP.Dot()}");
-                if (RTFile.FileExists(path))
-                    LegacyPlugin.ExamplePrefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to parse Example prefab.\n{ex}");
-            } // Example Prefab
 
             Instance.PrefabTypes.Clear();
 

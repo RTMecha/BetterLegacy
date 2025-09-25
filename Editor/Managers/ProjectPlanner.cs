@@ -74,7 +74,7 @@ namespace BetterLegacy.Editor.Managers
             var closeX = close.transform.GetChild(0).gameObject;
             EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-            EditorHelper.AddEditorDropdown("Open Project Planner", "", "Edit", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_planner.png"), () =>
+            EditorHelper.AddEditorDropdown("Open Project Planner", "", "Edit", EditorSprites.DocumentSprite, () =>
             {
                 Open();
                 EditorManager.inst.HideAllDropdowns();
@@ -198,7 +198,7 @@ namespace BetterLegacy.Editor.Managers
                                     character.CharacterAbilities.Add("???");
                                 }
 
-                                character.CharacterSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "CA Hal.png");
+                                character.CharacterSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"editor/example{FileFormat.PNG.Dot()}"));
                                 character.Name = Path.GetFileName(fullPath);
                                 character.FullPath = fullPath;
                                 character.Gender = "He";
@@ -297,7 +297,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(reloadText, ThemeGroup.Function_2_Text);
             }
 
-            gradientSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "linear_gradient.png");
+            gradientSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/linear_gradient{FileFormat.PNG.Dot()}"));
 
             // Item Prefabs
             {
@@ -435,7 +435,7 @@ namespace BetterLegacy.Editor.Managers
                     editPrefabButton.colors = UIManager.SetColorBlock(editPrefabButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
                     var spritePrefabImage = editPrefab.transform.GetChild(0).GetComponent<Image>();
                     spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
-                    spritePrefabImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
+                    spritePrefabImage.sprite = EditorSprites.EditSprite;
 
                     var deletePrefab = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
                     UIManager.SetRectTransform(deletePrefab.transform.AsRT(), new Vector2(-12f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
@@ -506,7 +506,7 @@ namespace BetterLegacy.Editor.Managers
                     editButton.colors = UIManager.SetColorBlock(editButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
                     var spriteImage = edit.transform.GetChild(0).GetComponent<Image>();
                     spriteImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
-                    spriteImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
+                    spriteImage.sprite = EditorSprites.EditSprite;
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(timelineButtonPrefab.transform, "delete");
                     UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(-16f, -16f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f));
@@ -604,7 +604,7 @@ namespace BetterLegacy.Editor.Managers
                     editPrefabButton.colors = UIManager.SetColorBlock(editPrefabButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
                     var spritePrefabImage = editPrefab.transform.GetChild(0).GetComponent<Image>();
                     spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
-                    spritePrefabImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
+                    spritePrefabImage.sprite = EditorSprites.EditSprite;
 
                     var closeB = EditorPrefabHolder.Instance.CloseButton.Duplicate(prefabPanel.transform, "close");
                     UIManager.SetRectTransform(closeB.transform.AsRT(), new Vector2(-16f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
@@ -658,7 +658,7 @@ namespace BetterLegacy.Editor.Managers
             // Mouse Drag Textures
             {
                 horizontalDrag = new Texture2D(2, 2, TextureFormat.ARGB32, false);
-                var bytes = File.ReadAllBytes(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_mouse_scroll_h.png");
+                var bytes = File.ReadAllBytes(AssetPack.GetFile($"core/sprites/mouse_scroll_h{FileFormat.PNG.Dot()}"));
                 horizontalDrag.LoadImage(bytes);
 
                 horizontalDrag.wrapMode = TextureWrapMode.Clamp;
@@ -666,7 +666,7 @@ namespace BetterLegacy.Editor.Managers
                 horizontalDrag.Apply();
 
                 verticalDrag = new Texture2D(2, 2, TextureFormat.ARGB32, false);
-                bytes = File.ReadAllBytes(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_mouse_scroll_v.png");
+                bytes = File.ReadAllBytes(AssetPack.GetFile($"core/sprites/mouse_scroll_v{FileFormat.PNG.Dot()}"));
                 verticalDrag.LoadImage(bytes);
 
                 verticalDrag.wrapMode = TextureWrapMode.Clamp;

@@ -600,6 +600,10 @@ namespace BetterLegacy
         /// Legacy Prize file format.
         /// </summary>
         LSPO,
+        /// <summary>
+        /// Legacy Asset Pack file format.
+        /// </summary>
+        LSAP,
 
         #endregion
 

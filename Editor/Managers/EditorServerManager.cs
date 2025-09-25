@@ -970,7 +970,7 @@ namespace BetterLegacy.Editor.Managers
             customDefaultTags.Clear();
             customDefaultPrefabTags.Clear();
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"default_tags{FileFormat.JSON.Dot()}")));
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/default_tags{FileFormat.JSON.Dot()}")));
             if (jn["level"] != null)
                 for (int i = 0; i < jn["level"].Count; i++)
                     defaultTags.Add(jn["level"][i]);

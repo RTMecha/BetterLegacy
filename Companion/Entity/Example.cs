@@ -119,18 +119,6 @@ namespace BetterLegacy.Companion.Entity
 
         #region Values
 
-        /// <summary>
-        /// The folder containing all of Example's assets and files.
-        /// </summary>
-        public const string EXAMPLE_FOLDER = "Example Companion";
-
-        /// <summary>
-        /// Gets a file in Example's folder.
-        /// </summary>
-        /// <param name="file">File to get.</param>
-        /// <returns>Returns the full path to the file.</returns>
-        public static string GetFile(string file) => RTFile.GetAsset(RTFile.CombinePaths(EXAMPLE_FOLDER, file));
-
         string internalID;
 
         /// <summary>

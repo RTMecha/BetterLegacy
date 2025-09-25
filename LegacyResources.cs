@@ -15,7 +15,7 @@ namespace BetterLegacy
         public static Material blur;
         public static Material GetBlur()
         {
-            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}objectmaterials.asset"); // Get AssetBundle from assets folder.
+            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/objectmaterials.asset")); // Get AssetBundle from assets folder.
             var assetToLoad = assetBundle.LoadAsset<Material>("blur.mat"); // Load asset
             var blurMat = UnityEngine.Object.Instantiate(assetToLoad); // Instantiate so we can keep the material
             assetBundle.Unload(false); // Unloads AssetBundle
@@ -25,7 +25,7 @@ namespace BetterLegacy
 
         public static Shader GetBlurColored()
         {
-            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}shadercolored.asset");
+            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/shadercolored.asset"));
             var blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
             assetBundle.Unload(false);
             return blurColored;
@@ -40,7 +40,7 @@ namespace BetterLegacy
 
         public static void GetKinoGlitch()
         {
-            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}effects.asset"); // Get AssetBundle from assets folder.
+            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/effects.asset")); // Get AssetBundle from assets folder.
             analogGlitchMaterial = assetBundle.LoadAsset<Material>("analogglitchmaterial.mat"); // Load asset
             digitalGlitchMaterial = assetBundle.LoadAsset<Material>("digitalglitchmaterial.mat"); // Load asset
             analogGlitchShader = assetBundle.LoadAsset<Shader>("analogglitch.shader"); // Load asset
@@ -70,7 +70,7 @@ namespace BetterLegacy
             blur = GetBlur();
             blurColored = GetBlurColored();
 
-            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}bmobjectmaterials.asset"); // Get AssetBundle from assets folder.
+            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/bmobjectmaterials.asset")); // Get AssetBundle from assets folder.
 
             // normal
             objectShader = assetBundle.LoadAsset<Shader>("objectshader.shader"); // Load asset
@@ -97,7 +97,7 @@ namespace BetterLegacy
         // from https://stackoverflow.com/questions/59138535/unity-ui-image-alpha-overlap
         public static void GetGUIAssets()
         {
-            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("gui.asset"));
+            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("builtin/gui.asset"));
             canvasImageMask = new Material(assetBundle.LoadAsset<Shader>("canvasimagemask.shader"));
             assetBundle.Unload(false);
         }
@@ -108,7 +108,7 @@ namespace BetterLegacy
 
         public static void GetEffects()
         {
-            postProcessResourcesAssetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("effectresources.asset"));
+            postProcessResourcesAssetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset("builtin/effectresources.asset"));
             postProcessResources = postProcessResourcesAssetBundle.LoadAsset<PostProcessResources>("postprocessresources.asset");
         }
 
@@ -126,7 +126,10 @@ namespace BetterLegacy
 
         public static void GetSayings()
         {
-            var sayingsJN = JSON.Parse(RTFile.ReadFromFile(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}") ? $"{RTFile.ApplicationDirectory}profile/sayings{FileFormat.JSON.Dot()}" : $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sayings{FileFormat.JSON.Dot()}"))["sayings"];
+            if (!AssetPack.TryReadFromFile($"core/sayings{FileFormat.JSON.Dot()}", out string file))
+                return;
+
+            var sayingsJN = JSON.Parse(file)["sayings"];
 
             if (sayingsJN == null)
                 return;

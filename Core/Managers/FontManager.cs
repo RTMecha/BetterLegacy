@@ -101,10 +101,10 @@ namespace BetterLegacy.Core.Managers
             var refer = MaterialReferenceManager.instance;
             var dictionary = (Dictionary<int, TMP_FontAsset>)refer.GetType().GetField("m_FontAssetReferenceLookup", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(refer);
 
-            var path = RTFile.GetAsset($"customfonts{FileFormat.ASSET.Dot()}");
+            var path = RTFile.GetAsset($"builtin/customfonts{FileFormat.ASSET.Dot()}");
             if (!RTFile.FileExists(path))
             {
-                Debug.LogError($"{className}customfonts{FileFormat.ASSET.Dot()} does not exist in the BepInEx/plugins/Assets folder.");
+                Debug.LogError($"{className}customfonts{FileFormat.ASSET.Dot()} does not exist in the BepInEx/plugins/Assets/builtin folder.");
                 yield break;
             }
 

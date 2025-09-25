@@ -32,7 +32,7 @@ namespace BetterLegacy.Core.Managers
         {
             inst = this;
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"default_themes{FileFormat.LST.Dot()}")));
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/default_themes{FileFormat.LST.Dot()}")));
             for (int i = 0; i < jn["themes"].Count; i++)
             {
                 var beatmapTheme = BeatmapTheme.Parse(jn["themes"][i]);

@@ -25,7 +25,7 @@ namespace BetterLegacy.Core.Helpers
         {
             try
             {
-                var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sprites.asset");
+                var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/sprites.asset"));
 
                 var allAssetNames = assetBundle.GetAllAssetNames();
 
@@ -68,7 +68,7 @@ namespace BetterLegacy.Core.Helpers
             return CreateSprite(texture2d);
         }
 
-        public static void SaveSprite(Sprite sprite, string path) => File.WriteAllBytes(path, sprite.texture.EncodeToPNG());
+        public static void SaveSprite(Sprite sprite, string path) => File.WriteAllBytes(path, RTFile.FileIsFormat(path, FileFormat.JPG) ? sprite.texture.EncodeToJPG() : sprite.texture.EncodeToPNG());
 
         public static Sprite CreateSprite(Texture2D texture2D) => Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
 

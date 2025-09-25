@@ -105,7 +105,7 @@ namespace BetterLegacy.Configs
             RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(closeX.transform.AsRT());
 
             var closeXImage = closeX.AddComponent<Image>();
-            closeXImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
+            closeXImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/close{FileFormat.PNG.Dot()}"));
 
             EditorThemeManager.ApplyGraphic(closeXImage, ThemeGroup.Close_X);
 
@@ -203,7 +203,7 @@ namespace BetterLegacy.Configs
 
                 var leftGreater = Creator.NewUIObject("<<", page.transform);
                 var leftGreaterImage = leftGreater.AddComponent<Image>();
-                leftGreaterImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_left_double.png");
+                leftGreaterImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/left_double{FileFormat.PNG.Dot()}"));
                 var leftGreaterButton = leftGreater.AddComponent<Button>();
                 leftGreaterButton.image = leftGreaterImage;
                 var leftGreaterLayoutElement = leftGreater.AddComponent<LayoutElement>();
@@ -213,7 +213,7 @@ namespace BetterLegacy.Configs
 
                 var left = Creator.NewUIObject("<", page.transform);
                 var leftImage = left.AddComponent<Image>();
-                leftImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_left_small.png");
+                leftImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/left_small{FileFormat.PNG.Dot()}"));
                 var leftButton = left.AddComponent<Button>();
                 leftButton.image = leftImage;
                 var leftLayoutElement = left.AddComponent<LayoutElement>();
@@ -223,7 +223,7 @@ namespace BetterLegacy.Configs
 
                 var right = Creator.NewUIObject(">", page.transform);
                 var rightImage = right.AddComponent<Image>();
-                rightImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png");
+                rightImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/right_small{FileFormat.PNG.Dot()}"));
                 var rightButton = right.AddComponent<Button>();
                 rightButton.image = rightImage;
                 var rightLayoutElement = right.AddComponent<LayoutElement>();
@@ -233,7 +233,7 @@ namespace BetterLegacy.Configs
 
                 var rightGreater = Creator.NewUIObject(">>", page.transform);
                 var rightGreaterImage = rightGreater.AddComponent<Image>();
-                rightGreaterImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_double.png");
+                rightGreaterImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/right_double{FileFormat.PNG.Dot()}"));
                 var rightGreaterButton = rightGreater.AddComponent<Button>();
                 rightGreaterButton.image = rightGreaterImage;
                 var rightGreaterLayoutElement = rightGreater.AddComponent<LayoutElement>();
@@ -497,7 +497,7 @@ namespace BetterLegacy.Configs
                         var checkmark = Creator.NewUIObject("Checkmark", boolean.transform);
                         RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(checkmark.transform.AsRT());
                         var checkmarkImage = checkmark.AddComponent<Image>();
-                        checkmarkImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_checkmark.png");
+                        checkmarkImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/checkmark{FileFormat.PNG.Dot()}"));
 
                         var booleanToggle = boolean.AddComponent<Toggle>();
                         booleanToggle.image = booleanImage;

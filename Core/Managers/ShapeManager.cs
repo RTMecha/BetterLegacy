@@ -16,16 +16,6 @@ namespace BetterLegacy.Core.Managers
     {
         public static ShapeManager inst;
 
-        /// <summary>
-        /// The path of the shapes folder.
-        /// </summary>
-        public static string ShapesPath => $"{RTFile.BepInExAssetsPath}Shapes/";
-
-        /// <summary>
-        /// The path of the shapes setup file.
-        /// </summary>
-        public static string ShapesSetup => $"{ShapesPath}setup.lss";
-
         public bool loadedShapes;
         public Transform shapeParent;
 
@@ -53,7 +43,7 @@ namespace BetterLegacy.Core.Managers
         {
             inst = this;
 
-            if (!RTFile.FileExists(RTFile.GetAsset($"shapes{FileFormat.JSON.Dot()}")))
+            if (!RTFile.FileExists(RTFile.GetAsset($"builtin/shapes{FileFormat.JSON.Dot()}")))
             {
                 System.Windows.Forms.MessageBox.Show("Shapes Setup file does not exist.\nYou may run into issues with playing the game from here on, so it is recommended to\ndownload the proper assets from Github and place them into the appropriate folders.", "Error!");
                 return;
@@ -67,12 +57,14 @@ namespace BetterLegacy.Core.Managers
             Shapes2D.Clear();
             Shapes3D.Clear();
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"shapes{FileFormat.JSON.Dot()}")));
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/shapes{FileFormat.JSON.Dot()}")));
 
             for (int i = 0; i < jn["types"].Count; i++)
             {
                 Sprite groupIcon = null;
-                if (jn["types"][i]["icon"] != null)
+                if (AssetPack.TryGetFile($"core/sprites/shapes/{i}/group{FileFormat.PNG.Dot()}", out string groupIconPath))
+                    groupIcon = SpriteHelper.LoadSprite(groupIconPath);
+                else if (jn["types"][i]["icon"] != null)
                     groupIcon = SpriteHelper.StringToSprite(jn["types"][i]["icon"]);
 
                 var shapeGroup = new ShapeGroup(jn["types"][i]["name"], i, groupIcon);
@@ -100,7 +92,9 @@ namespace BetterLegacy.Core.Managers
 
                     var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
 
-                    if (sjn["icon"] != null)
+                    if (AssetPack.TryGetFile($"core/sprites/shapes/{i}/{j}{FileFormat.PNG.Dot()}", out string shapeIconPath))
+                        shape.icon = SpriteHelper.LoadSprite(shapeIconPath);
+                    else if (sjn["icon"] != null)
                         shape.icon = SpriteHelper.StringToSprite(sjn["icon"]);
 
                     shapeGroup.Add(shape);
@@ -109,12 +103,14 @@ namespace BetterLegacy.Core.Managers
                 Shapes2D.Add(shapeGroup);
             }
 
-            jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"shapes_bg{FileFormat.JSON.Dot()}")));
+            jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/shapes_bg{FileFormat.JSON.Dot()}")));
 
             for (int i = 0; i < jn["types"].Count; i++)
             {
                 Sprite groupIcon = null;
-                if (jn["types"][i]["icon"] != null)
+                if (AssetPack.TryGetFile($"core/sprites/shapes/{i}/group{FileFormat.PNG.Dot()}", out string groupIconPath))
+                    groupIcon = SpriteHelper.LoadSprite(groupIconPath);
+                else if (jn["types"][i]["icon"] != null)
                     groupIcon = SpriteHelper.StringToSprite(jn["types"][i]["icon"]);
 
                 var shapeGroup = new ShapeGroup(jn["types"][i]["name"], i, groupIcon);
@@ -142,7 +138,9 @@ namespace BetterLegacy.Core.Managers
 
                     var shape = new Shape(sjn["name"], i, j, mesh, null, string.IsNullOrEmpty(sjn["p"]) ? Shape.Property.RegularObject : (Shape.Property)sjn["p"].AsInt);
 
-                    if (sjn["icon"] != null)
+                    if (AssetPack.TryGetFile($"core/sprites/shapes/{i}/{j}{FileFormat.PNG.Dot()}", out string shapeIconPath))
+                        shape.icon = SpriteHelper.LoadSprite(shapeIconPath);
+                    else if (sjn["icon"] != null)
                         shape.icon = SpriteHelper.StringToSprite(sjn["icon"]);
 
                     shapeGroup.Add(shape);

@@ -65,7 +65,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> UpdateHomingKeyframesDrag { get; set; }
         public Setting<bool> RoundToNearest { get; set; }
         public Setting<bool> ScrollOnEasing { get; set; }
-        public Setting<bool> PrefabExampleTemplate { get; set; }
         public Setting<bool> PasteOffset { get; set; }
         public Setting<bool> BringToSelection { get; set; }
         public Setting<bool> SelectPasted { get; set; }
@@ -465,7 +464,6 @@ namespace BetterLegacy.Configs
             UpdateHomingKeyframesDrag = Bind(this, GENERAL, "Update Homing Keyframes on Drag", true, "If all homing keyframes should retarget when the audio position is changed via the timeline cursor.");
             RoundToNearest = Bind(this, GENERAL, "Round To Nearest", true, "If numbers should be rounded up to 3 decimal points (for example, 0.43321245 into 0.433).");
             ScrollOnEasing = Bind(this, GENERAL, "Scroll on Easing Changes Value", true, "If Scolling on an easing dropdown changes the easing.");
-            PrefabExampleTemplate = Bind(this, GENERAL, "Prefab Example Template", true, "Example Template prefab will always be generated into the internal prefabs for you to use.");
             PasteOffset = Bind(this, GENERAL, "Paste Offset", false, "When enabled objects that are pasted will be pasted at an offset based on the distance between the audio time and the copied object. Otherwise, the objects will be pasted at the earliest objects start time.");
             BringToSelection = Bind(this, GENERAL, "Bring To Selection", false, "When an object is selected (whether it be a regular object, a marker, etc), it will move the layer and audio time to that object.");
             SelectPasted = Bind(this, GENERAL, "Select Pasted Keyframes", false, "Select a pasted keyframe.");

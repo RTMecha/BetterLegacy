@@ -1724,7 +1724,7 @@ namespace BetterLegacy.Editor.Managers
             loadingPrefabTypes = true;
             prefabTypes.Clear();
 
-            var defaultPrefabTypesJN = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_prefabtypes{FileFormat.LSPT.Dot()}"));
+            var defaultPrefabTypesJN = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/default_prefabtypes{FileFormat.LSPT.Dot()}")));
             for (int i = 0; i < defaultPrefabTypesJN["prefab_types"].Count; i++)
             {
                 var prefabType = PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i]);
@@ -2958,10 +2958,6 @@ namespace BetterLegacy.Editor.Managers
                 yield break;
 
             var config = EditorConfig.Instance;
-
-            // Here we add the Example prefab provided to you.
-            if (!GameData.Current.prefabs.Exists(x => x.id == LegacyPlugin.ExamplePrefab.id) && config.PrefabExampleTemplate.Value)
-                GameData.Current.prefabs.Add(LegacyPlugin.ExamplePrefab.Copy(false));
 
             yield return CoroutineHelper.Seconds(0.03f);
 

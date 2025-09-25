@@ -586,7 +586,7 @@ namespace BetterLegacy.Editor.Managers
 
                 floatInputFieldStorage.subButton = floatInputFieldStorage.middleButton.gameObject.Duplicate(prefabHolder.NumberInputField.transform, "sub").GetComponent<Button>();
                 floatInputFieldStorage.subButton.image = floatInputFieldStorage.subButton.GetComponent<Image>();
-                floatInputFieldStorage.subButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_sub.png"));
+                floatInputFieldStorage.subButton.image.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/sub.png"));
                 var subButtonLayout = floatInputFieldStorage.subButton.GetComponent<LayoutElement>();
                 subButtonLayout.minWidth = 16f;
                 subButtonLayout.preferredWidth = 16f;
@@ -594,7 +594,7 @@ namespace BetterLegacy.Editor.Managers
                 floatInputFieldStorage.subButton.gameObject.SetActive(false);
                 floatInputFieldStorage.addButton = floatInputFieldStorage.middleButton.gameObject.Duplicate(prefabHolder.NumberInputField.transform, "add").GetComponent<Button>();
                 floatInputFieldStorage.addButton.image = floatInputFieldStorage.addButton.GetComponent<Image>();
-                floatInputFieldStorage.addButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_add.png"));
+                floatInputFieldStorage.addButton.image.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/add.png"));
                 var addButtonLayout = floatInputFieldStorage.addButton.GetComponent<LayoutElement>();
                 addButtonLayout.minWidth = 32f;
                 addButtonLayout.preferredWidth = 32f;
@@ -3279,15 +3279,15 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.ClearPopups();
             });
 
-            EditorHelper.AddEditorDropdown("Editor Settings", "", EditorHelper.SETTINGS_DROPDOWN, EditorSprites.EditSprite, () => RTSettingEditor.inst.OpenDialog());
+            EditorHelper.AddEditorDropdown("Editor Settings", string.Empty, EditorHelper.SETTINGS_DROPDOWN, EditorSprites.EditSprite, () => RTSettingEditor.inst.OpenDialog());
 
-            var quitToArcade = EditorHelper.AddEditorDropdown("Quit to Arcade", "", EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var quitToArcade = EditorHelper.AddEditorDropdown("Quit to Arcade", string.Empty, EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
             }, 7);
             EditorHelper.SetComplexity(quitToArcade, Complexity.Normal);
 
-            var copyLevelToArcade = EditorHelper.AddEditorDropdown("Copy Level to Arcade", "", EditorHelper.FILE_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
+            var copyLevelToArcade = EditorHelper.AddEditorDropdown("Copy Level to Arcade", string.Empty, EditorHelper.FILE_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/right_small{FileFormat.PNG.Dot()}")), () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3328,7 +3328,7 @@ namespace BetterLegacy.Editor.Managers
             }, 7);
             EditorHelper.SetComplexity(copyLevelToArcade, Complexity.Normal);
 
-            var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", "", EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
+            var restartEditor = EditorHelper.AddEditorDropdown("Restart Editor", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 DG.Tweening.DOTween.Clear();
 
@@ -3339,17 +3339,17 @@ namespace BetterLegacy.Editor.Managers
             }, 7);
             EditorHelper.SetComplexity(restartEditor, Complexity.Normal);
 
-            var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", "", EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
+            var openLevelBrowser = EditorHelper.AddEditorDropdown("Open Level Browser", string.Empty, EditorHelper.FILE_DROPDOWN, titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
             {
                 BrowserPopup.Open();
                 EditorLevelManager.inst.RefreshFileBrowserLevels();
             }, 3);
             EditorHelper.SetComplexity(openLevelBrowser, Complexity.Normal);
 
-            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", "", EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, ConvertVGToLS, 4);
+            var convertVGToLS = EditorHelper.AddEditorDropdown("Convert VG to LS", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, ConvertVGToLS, 4);
             EditorHelper.SetComplexity(convertVGToLS, Complexity.Normal);
 
-            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, () =>
+            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.SearchSprite, () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3409,7 +3409,7 @@ namespace BetterLegacy.Editor.Managers
             }, 5);
             EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
 
-            var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", "", EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
+            var reloadLevel = EditorHelper.AddEditorDropdown("Reload Level", string.Empty, EditorHelper.FILE_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -3431,13 +3431,13 @@ namespace BetterLegacy.Editor.Managers
             }, 4);
             EditorHelper.SetComplexity(reloadLevel, Complexity.Normal);
 
-            EditorHelper.AddEditorDropdown("Editor Config", "", EditorHelper.SETTINGS_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
+            EditorHelper.AddEditorDropdown("Editor Config", string.Empty, EditorHelper.SETTINGS_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), () =>
             {
                 ConfigManager.inst.SetTab(2);
                 ConfigManager.inst.Show();
             });
 
-            var clearSpriteData = EditorHelper.AddEditorDropdown("Clear Sprite Data", "", EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var clearSpriteData = EditorHelper.AddEditorDropdown("Clear Sprite Data", string.Empty, EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", () =>
                 {
@@ -3447,7 +3447,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(clearSpriteData, Complexity.Advanced);
 
-            var clearModifierPrefabs = EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", "", EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            var clearModifierPrefabs = EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", string.Empty, EditorHelper.EDIT_DROPDOWN, titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
                 ShowWarningPopup("Are you sure you want to remove all Prefab Objects spawned from modifiers?", () =>
                 {
@@ -3469,7 +3469,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(clearModifierPrefabs, Complexity.Advanced);
 
-            var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
+            var resetEventOffsets = EditorHelper.AddEditorDropdown("Reset Event Offsets", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
                 RTLevel.Current?.eventEngine?.ResetOffsets();
 
@@ -3477,7 +3477,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(resetEventOffsets, Complexity.Advanced);
 
-            var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.ReloadSprite, () =>
+            var renderWaveform = EditorHelper.AddEditorDropdown("Render Waveform", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.ReloadSprite, () =>
             {
                 if (EditorConfig.Instance.WaveformGenerate.Value)
                     StartCoroutine(EditorTimeline.inst.AssignTimelineTexture(AudioManager.inst.CurrentAudioSource.clip, true));
@@ -3486,7 +3486,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(renderWaveform, Complexity.Normal);
 
-            var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
+            var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
                 if (!GameData.Current)
                     return;
@@ -3514,7 +3514,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(deactivateModifiers, Complexity.Advanced);
 
-            var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
+            var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", string.Empty, EditorHelper.EDIT_DROPDOWN, EditorSprites.CloseSprite, () =>
             {
                 if (!GameData.Current)
                     return;
@@ -3537,7 +3537,7 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(resetObjectVariables, Complexity.Advanced);
 
-            EditorHelper.AddEditorDropdown("Get Example", "", EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), () =>
+            EditorHelper.AddEditorDropdown("Get Example", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/example{FileFormat.PNG.Dot()}")), () =>
             {
                 if (!Example.Current)
                     Example.Init();
@@ -3545,9 +3545,9 @@ namespace BetterLegacy.Editor.Managers
                     Example.Current.brain?.Notice(ExampleBrain.Notices.ALREADY_SPAWNED);
             });
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", "", EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
+            EditorHelper.AddEditorDropdown("Show Config Manager", string.Empty, EditorHelper.VIEW_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/preferences{FileFormat.PNG.Dot()}")), ConfigManager.inst.Show);
 
-            EditorHelper.AddEditorDropdown("Open Color Picker", "", EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
+            EditorHelper.AddEditorDropdown("Open Color Picker", string.Empty, EditorHelper.VIEW_DROPDOWN, EditorSprites.DropperSprite, () =>
             {
                 RTColorPicker.inst.Show(Color.white,
                     (col, hex) => { },
@@ -3562,7 +3562,7 @@ namespace BetterLegacy.Editor.Managers
             steamLayoutElement.minWidth = 95f;
             steamLayoutElement.preferredWidth = 95f;
 
-            EditorHelper.AddEditorDropdown("Login", "", EditorHelper.UPLOAD_DROPDOWN, SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_login.png"), () =>
+            EditorHelper.AddEditorDropdown("Login", string.Empty, EditorHelper.UPLOAD_DROPDOWN, SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/login{FileFormat.PNG.Dot()}")), () =>
             {
                 if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                 {
@@ -4374,7 +4374,7 @@ namespace BetterLegacy.Editor.Managers
 
             reloadButton.image.sprite = EditorSprites.ReloadSprite;
 
-            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger{FileFormat.PNG.Dot()}"), () =>
+            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/debugger{FileFormat.PNG.Dot()}")), () =>
             {
                 DebuggerPopup.Open();
                 RefreshDebugger();

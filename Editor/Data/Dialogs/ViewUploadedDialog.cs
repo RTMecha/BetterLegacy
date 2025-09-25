@@ -237,7 +237,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorHelper.AddEditorDropdown("View Uploaded", string.Empty, "Steam", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_levels{FileFormat.PNG.Dot()}"), () =>
+            EditorHelper.AddEditorDropdown("View Uploaded", string.Empty, "Steam", EditorSprites.ListSprite, () =>
             {
                 EditorServerManager.inst.Dialog.Open();
                 EditorServerManager.inst.Search();

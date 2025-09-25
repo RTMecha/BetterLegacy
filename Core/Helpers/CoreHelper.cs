@@ -925,7 +925,6 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Legacy;
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = true;
-                        EditorConfig.Instance.PrefabExampleTemplate.Value = true;
                         EditorConfig.Instance.WaveformMode.Value = WaveformType.Split;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Reset();
@@ -964,7 +963,6 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Legacy;
                         EditorConfig.Instance.RoundedUI.Value = false;
                         EditorConfig.Instance.DraggingPlaysSound.Value = false;
-                        EditorConfig.Instance.PrefabExampleTemplate.Value = true;
                         EditorConfig.Instance.WaveformMode.Value = WaveformType.Split;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Reset();
@@ -1003,7 +1001,6 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Modern;
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = false;
-                        EditorConfig.Instance.PrefabExampleTemplate.Value = false;
                         EditorConfig.Instance.WaveformMode.Value = WaveformType.Bottom;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Reset();
@@ -1042,7 +1039,6 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.EditorTheme.Value = EditorThemeType.Dark;
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = true;
-                        EditorConfig.Instance.PrefabExampleTemplate.Value = false;
                         EditorConfig.Instance.WaveformMode.Value = WaveformType.SplitDetailed;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Value = LSColors.HexToColor("2FCBD6");

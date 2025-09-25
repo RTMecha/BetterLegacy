@@ -246,12 +246,23 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Parses specific properties with the proper paths.
         /// </summary>
-        /// <param name="str">String to parse.</param>
+        /// <param name="input">String to parse.</param>
         /// <returns>Returns a file parsed string.</returns>
-        public static string ParsePaths(string str) => string.IsNullOrEmpty(str) ? str : str
-            .Replace("{{AppDirectory}}", ApplicationDirectory)
-            .Replace("{{BepInExAssetsDirectory}}", BepInExAssetsPath)
-            .Replace("{{LevelPath}}", GameManager.inst ? BasePath : ApplicationDirectory);
+        public static string ParsePaths(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            RTString.RegexMatches(input, new Regex("{{Asset=(.*?)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), AssetPack.GetFile(match.Groups[1].ToString()));
+            });
+
+            return input
+                .Replace("{{AppDirectory}}", ApplicationDirectory)
+                .Replace("{{BepInExAssetsDirectory}}", BepInExAssetsPath)
+                .Replace("{{LevelPath}}", GameManager.inst ? BasePath : ApplicationDirectory);
+        }
 
         /// <summary>
         /// Combines two paths together and ensures a correct set of slashes.
@@ -462,7 +473,7 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">Type of the object to create. Must have a parameterless constructor.</typeparam>
         /// <param name="path">File path to read from.</param>
         /// <returns>Returns the created object.</returns>
-        public static T CreateFromFile<T>(string path) where T : PAObject<T>, IFile, new()
+        public static T CreateFromFile<T>(string path) where T : IFile, new()
         {
             var file = new T();
             file.ReadFromFile(path);

@@ -86,9 +86,9 @@ namespace BetterLegacy.Core.Managers
                 quickElements.Add("blink_loop", blinkLoop);
             }
 
-            if (RTFile.FileExists(RTFile.GetAsset($"default_quick_elements{FileFormat.JSON.Dot()}")))
+            if (RTFile.FileExists(RTFile.GetAsset($"builtin/default_quick_elements{FileFormat.JSON.Dot()}")))
             {
-                var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"default_quick_elements{FileFormat.JSON.Dot()}")));
+                var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/default_quick_elements{FileFormat.JSON.Dot()}")));
                 for (int i = 0; i < jn["quick_elements"].Count; i++)
                 {
                     var quickElement = Parse(jn["quick_elements"][i]);

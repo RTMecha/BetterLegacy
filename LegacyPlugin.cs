@@ -95,6 +95,27 @@ namespace BetterLegacy
 
             try
             {
+                CoreHelper.Log("Loading profile...");
+
+                ParseProfile();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Profile failed to load.\n{ex}");
+            }
+
+            try
+            {
+                CoreHelper.Log("Loading asset packs...");
+                AssetPack.LoadAssetPacks();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Asset Packs failed to load.\n{ex}");
+            } // Asset Pack loading
+
+            try
+            {
                 CoreHelper.Log("Loading assets...");
 
                 LegacyResources.GetKinoGlitch();
@@ -103,15 +124,15 @@ namespace BetterLegacy
                 LegacyResources.GetEffects();
                 LegacyResources.GetSayings();
                 
-                LockSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
-                EmptyObjectSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
-                AtanPlaceholder = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");
-                PALogoSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}pa_logo.png");
-                PAVGLogoSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}pa_logo_vg.png");
+                LockSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/lock{FileFormat.PNG.Dot()}"));
+                EmptyObjectSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/empty{FileFormat.PNG.Dot()}"));
+                AtanPlaceholder = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/atan-placeholder{FileFormat.PNG.Dot()}"));
+                PALogoSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/pa_logo{FileFormat.PNG.Dot()}"));
+                PAVGLogoSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/pa_logo_vg{FileFormat.PNG.Dot()}"));
             }
             catch (Exception ex)
             {
-                CoreHelper.LogError($"Blur materials failed to load.\n{ex}");
+                CoreHelper.LogError($"Assets failed to load.\n{ex}");
             } // Asset handling
 
             try
@@ -272,7 +293,7 @@ namespace BetterLegacy
         {
             try
             {
-                var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
+                var splashTextPath = AssetPack.GetFile("core/splashes.txt");
                 if (RTFile.FileExists(splashTextPath))
                 {
                     var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
@@ -320,6 +341,12 @@ namespace BetterLegacy
                 num++;
             }
 
+            for (int i = 0; i < AssetPack.Settings.Count; i++)
+            {
+                jn["asset_packs"][i]["id"] = AssetPack.Settings[i].id;
+                jn["asset_packs"][i]["enabled"] = AssetPack.Settings[i].enabled;
+            }
+
             if (player.memory != null)
                 jn["memory"] = player.memory;
 
@@ -363,6 +390,14 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Exception: {ex}");
+            }
+
+            AssetPack.Settings.Clear();
+
+            for (int i = 0; i < jn["asset_packs"].Count; i++)
+            {
+                var jnAssetPack = jn["asset_packs"][i];
+                AssetPack.Settings.Add(new AssetPack.UserSettings(jnAssetPack["id"], jnAssetPack["enabled"].AsBool));
             }
 
             if (jn["memory"] != null)

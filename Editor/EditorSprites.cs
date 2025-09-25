@@ -19,38 +19,52 @@ namespace BetterLegacy.Editor
         {
             try
             {
-                PALogo = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_pa_logo{FileFormat.PNG.Dot()}"));
+                #region File
 
-                DownArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_down{FileFormat.PNG.Dot()}"));
-                LeftArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_left{FileFormat.PNG.Dot()}"));
-                RightArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_right{FileFormat.PNG.Dot()}"));
-                UpArrow = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_up{FileFormat.PNG.Dot()}"));
+                NewSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/file/new{FileFormat.PNG.Dot()}"));
+                OpenSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/file/open{FileFormat.PNG.Dot()}"));
+                DocumentSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/file/document{FileFormat.PNG.Dot()}"));
+                ListSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/file/list{FileFormat.PNG.Dot()}"));
 
-                AddSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_add{FileFormat.PNG.Dot()}"));
-                EditSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_edit{FileFormat.PNG.Dot()}"));
-                CopySprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_copy{FileFormat.PNG.Dot()}"));
-                CloseSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_close{FileFormat.PNG.Dot()}"));
-                DropperSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_dropper{FileFormat.PNG.Dot()}"));
-                SearchSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_search{FileFormat.PNG.Dot()}"));
-                ReloadSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_refresh-white{FileFormat.PNG.Dot()}"));
-                CheckmarkSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_checkmark{FileFormat.PNG.Dot()}"));
-                PauseSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_pause{FileFormat.PNG.Dot()}"));
-                PlaySprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_play{FileFormat.PNG.Dot()}"));
-                PlayerSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_player{FileFormat.PNG.Dot()}"));
+                #endregion
 
-                NewSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_new{FileFormat.PNG.Dot()}"));
-                OpenSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_open{FileFormat.PNG.Dot()}"));
+                #region Operations
 
-                LinkSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_link{FileFormat.PNG.Dot()}"));
-                SoundSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_sound{FileFormat.PNG.Dot()}"));
+                DownArrow = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/down{FileFormat.PNG.Dot()}"));
+                LeftArrow = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/left{FileFormat.PNG.Dot()}"));
+                RightArrow = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/right{FileFormat.PNG.Dot()}"));
+                UpArrow = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/up{FileFormat.PNG.Dot()}"));
 
-                FlagStartSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_start{FileFormat.PNG.Dot()}"));
-                FlagEndSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_flag_end{FileFormat.PNG.Dot()}"));
+                AddSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/add{FileFormat.PNG.Dot()}"));
+                EditSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/edit{FileFormat.PNG.Dot()}"));
+                CopySprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/copy{FileFormat.PNG.Dot()}"));
+                CloseSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/close{FileFormat.PNG.Dot()}"));
+                DropperSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/dropper{FileFormat.PNG.Dot()}"));
+                SearchSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/search{FileFormat.PNG.Dot()}"));
+                ReloadSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/refresh{FileFormat.PNG.Dot()}"));
+                CheckmarkSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/checkmark{FileFormat.PNG.Dot()}"));
+                PauseSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/pause{FileFormat.PNG.Dot()}"));
+                PlaySprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/play{FileFormat.PNG.Dot()}"));
+                FlagStartSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/flag_start{FileFormat.PNG.Dot()}"));
+                FlagEndSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/operations/flag_end{FileFormat.PNG.Dot()}"));
 
-                CircleSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_circle{FileFormat.PNG.Dot()}"));
+                #endregion
 
-                QuestionSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_question{FileFormat.PNG.Dot()}"));
-                ExclaimSprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_exclaim{FileFormat.PNG.Dot()}"));
+                #region Generic
+
+                PALogo = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/pa_logo{FileFormat.PNG.Dot()}"));
+
+                PlayerSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/player{FileFormat.PNG.Dot()}"));
+
+                LinkSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/link{FileFormat.PNG.Dot()}"));
+                SoundSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/sound{FileFormat.PNG.Dot()}"));
+
+                CircleSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/circle{FileFormat.PNG.Dot()}"));
+
+                QuestionSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/question{FileFormat.PNG.Dot()}"));
+                ExclaimSprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/exclaim{FileFormat.PNG.Dot()}"));
+
+                #endregion
             }
             catch (Exception ex)
             {
@@ -96,6 +110,9 @@ namespace BetterLegacy.Editor
         public static Sprite NewSprite { get; set; }
 
         public static Sprite OpenSprite { get; set; }
+
+        public static Sprite DocumentSprite { get; set; }
+        public static Sprite ListSprite { get; set; }
 
         public static Sprite LinkSprite { get; set; }
         public static Sprite SoundSprite { get; set; }

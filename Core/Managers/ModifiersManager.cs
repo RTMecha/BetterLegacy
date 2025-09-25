@@ -27,7 +27,7 @@ namespace BetterLegacy.Core.Managers
             inst = this;
             modifiers.Clear();
 
-            LoadFile(modifiers, RTFile.CombinePaths(RTFile.ApplicationDirectory, RTFile.BepInExAssetsPath, "default_modifiers.json"));
+            LoadFile(modifiers, RTFile.GetAsset("builtin/default_modifiers.json"));
 
             AddDevelopmentModifiers();
 

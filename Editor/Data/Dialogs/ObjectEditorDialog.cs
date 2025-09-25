@@ -451,7 +451,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 parentPickerButton.onClick.NewListener(() => RTEditor.inst.parentPickerEnabled = true);
 
                 var parentPickerIcon = parentPicker.transform.GetChild(0).GetComponent<Image>();
-                parentPickerIcon.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_dropper{FileFormat.PNG.Dot()}"));
+                parentPickerIcon.sprite = EditorSprites.DropperSprite;
 
                 var searchParent = parent.transform.Find("parent").GetComponent<Image>();
                 EditorThemeManager.AddGraphic(searchParent, ThemeGroup.Function_3, true);
@@ -594,7 +594,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     EditorThemeManager.AddGraphic(additiveImage, ThemeGroup.Toggle_1_Check);
                     EditorThemeManager.AddInputField(parallax.GetComponent<InputField>());
 
-                    var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_{array[i]}_addtoggle.png";
+                    var path = AssetPack.GetFile($"core/sprites/icons/{array[i]}_addtoggle.png");
                     if (RTFile.FileExists(path))
                         additiveImage.sprite = SpriteHelper.LoadSprite(path);
                 }
@@ -892,13 +892,16 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 randomPosition.Find("interval-input/x").gameObject.SetActive(false);
                 var homingStaticPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-static", 4);
 
-                if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png"))
-                    homingStaticPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png");
+                var staticHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_static{FileFormat.PNG}");
+                var dynamicHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_dynamic{FileFormat.PNG}");
+
+                if (RTFile.FileExists(staticHomingSpritePath))
+                    homingStaticPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(staticHomingSpritePath);
 
                 var homingDynamicPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-dynamic", 5);
 
-                if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png"))
-                    homingDynamicPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png");
+                if (RTFile.FileExists(dynamicHomingSpritePath))
+                    homingDynamicPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(dynamicHomingSpritePath);
 
                 var scale = ObjEditor.inst.KeyframeDialogs[1].transform;
                 var scaleRotation = scale.Find("random");
@@ -910,13 +913,13 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 randomRotation.Find("interval-input/x").gameObject.SetActive(false);
                 var homingStaticRotation = randomRotation.Find("none").gameObject.Duplicate(randomRotation, "homing-static", 3);
 
-                if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png"))
-                    homingStaticRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png");
+                if (RTFile.FileExists(staticHomingSpritePath))
+                    homingStaticRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(staticHomingSpritePath);
 
                 var homingDynamicRotation = randomRotation.Find("none").gameObject.Duplicate(randomRotation, "homing-dynamic", 4);
 
-                if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png"))
-                    homingDynamicRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png");
+                if (RTFile.FileExists(dynamicHomingSpritePath))
+                    homingDynamicRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(dynamicHomingSpritePath);
 
                 var rRotation = rotation.Find("r_rotation");
                 var rRotationX = rRotation.Find("x");
@@ -1567,7 +1570,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         var normalToggle = GradientParent.GetChild(0);
                         var normalToggleImage = normalToggle.Find("Image").GetComponent<Image>();
-                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
+                        normalToggleImage.sprite = EditorSprites.CloseSprite;
 
                         EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
                         var tog = normalToggle.GetComponent<Toggle>();
@@ -1579,7 +1582,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         var normalToggle = GradientParent.GetChild(0).gameObject.Duplicate(gradient.transform, "2");
                         var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
-                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_linear_gradient_right.png");
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/gradients/linear_right{FileFormat.PNG.Dot()}"));
 
                         EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
                         var tog = normalToggle.GetComponent<Toggle>();
@@ -1591,7 +1594,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         var normalToggle = GradientParent.GetChild(0).gameObject.Duplicate(gradient.transform, "3");
                         var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
-                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_linear_gradient_left.png");
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/gradients/linear_left{FileFormat.PNG.Dot()}"));
 
                         EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
                         var tog = normalToggle.GetComponent<Toggle>();
@@ -1603,7 +1606,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         var normalToggle = GradientParent.GetChild(0).gameObject.Duplicate(gradient.transform, "4");
                         var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
-                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_radial_gradient_in.png");
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/gradients/radial_in{FileFormat.PNG.Dot()}"));
 
                         EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
                         var tog = normalToggle.GetComponent<Toggle>();
@@ -1615,7 +1618,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     {
                         var normalToggle = GradientParent.GetChild(0).gameObject.Duplicate(gradient.transform, "5");
                         var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
-                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_radial_gradient_out.png");
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/gradients/radial_out{FileFormat.PNG.Dot()}"));
 
                         EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
                         var tog = normalToggle.GetComponent<Toggle>();

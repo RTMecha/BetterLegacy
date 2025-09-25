@@ -612,7 +612,7 @@ namespace BetterLegacy.Core.Helpers
                 index++;
             }
 
-            RTFile.WriteToFile(RTFile.GetAsset("default_prefabtypes" + FileFormat.LSPT.Dot()), jn.ToString(3));
+            RTFile.WriteToFile(RTFile.GetAsset("builtin/default_prefabtypes" + FileFormat.LSPT.Dot()), jn.ToString(3));
         }
 
         public static void ModifyEditorThemes(Action<EditorTheme> action)

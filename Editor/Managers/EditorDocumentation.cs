@@ -43,7 +43,7 @@ namespace BetterLegacy.Editor.Managers
                 RefreshDocumentation();
             }, placeholderText: "Search for document...");
 
-            EditorHelper.AddEditorDropdown("Wiki / Documentation", "", "Help", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_question.png"), () =>
+            EditorHelper.AddEditorDropdown("Wiki / Documentation", string.Empty, "Help", EditorSprites.QuestionSprite, () =>
             {
                 RTEditor.inst.DocumentationPopup.Open();
                 RefreshDocumentation();
@@ -189,17 +189,17 @@ namespace BetterLegacy.Editor.Managers
                         "Clicking on the ID will copy it to your clipboard.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>LDM (Low Detail Mode) [MODDED]</b>\nLDM is useful for having objects not render for lower end devices. If the option is on and the user has " +
                         "Low Detail Mode enabled through the RTFunctions mod config, the Beatmap Object will not render.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_id_ldm.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_id_ldm.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Name [VANILLA]</b>\nNaming an object is incredibly helpful for readablility and knowing what an object does at a glance. " +
                         "Clicking your scroll wheel over it will flip any left / right.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_name_type.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_name_type.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Tags [MODDED]</b>\nBeing able to group objects together or even specify things about an object is possible with Object Tags. This feature " +
                         "is mostly used by modifiers, but can be used in other ways such as a \"DontRotate\" tag which prevents Player Shapes from rotating automatically.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tags.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_tags.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Beatmap Objects' start time from being changed. It's patched because unmodded PA doesn't " +
                         "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Start Time [VANILLA]</b>\nUsed for when the Beatmap Object spawns.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_start_time.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_start_time.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Time of Death [VANILLA]</b>\nUsed for when the Beatmap Object despawns." +
                         "\n<b>[PATCHED]</b> No Autokill - Beatmap Objects never despawn. This option is viable in modded PA due to heavily optimized object code, so don't worry " +
                         "about having a couple of objects with this. Just make sure to only use this when necessary, like for backgrounds or a persistent character." +
@@ -209,9 +209,9 @@ namespace BetterLegacy.Editor.Managers
                         "\n<b>[VANILLA]</b> Fixed Time - Beatmap Objects despawn at a fixed time, regardless of animations. Fixed time is Beatmap Objects Start Time with an offset added to it." +
                         "\n<b>[VANILLA]</b> Song Time - Same as above, except it ignores the Beatmap Object Start Time, despawning the object at song time.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Collapse [VANILLA]</b>\nBeatmap Objects in the editor timeline have their length shortened to the smallest amount if this is on.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tod.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_tod.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Parent Search [PATCHED]</b>\nHere you can search for an object to parent the Beatmap Object to. It includes Camera Parenting.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_parent_search.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_parent_search.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Camera Parent [MODDED]</b>\nBeatmap Objects parented to the camera will always follow it, depending on the parent settings. This includes " +
                         "anything that makes the camera follow the player. This feature does exist in modern PA, but doesn't work the same way this does.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Clear Parent [MODDED]</b>\nClicking this will remove the Beatmap Object from its parent.", EditorDocument.Element.Type.Text),
@@ -219,7 +219,7 @@ namespace BetterLegacy.Editor.Managers
                         "in the timeline will set the current selected Beatmap Objects parent to the selected Timeline Object.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Parent Display [VANILLA]</b>\nShows what the Beatmap Object is parented to. Clicking this button selects the parent. " +
                         "Hovering your mouse over it shows parent chain info in the Hover Info box.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_parent.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_parent.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Parent Settings [PATCHED]</b>\nParent settings can be adjusted here. Each of the below settings refer to both " +
                         "position / scale / rotation. Position, scale and rotation are the rows and the types of Parent Settings are the columns.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Parent Type [VANILLA]</b>\nWhether the Beatmap Object applies this type of animation from the parent. " +
@@ -232,57 +232,57 @@ namespace BetterLegacy.Editor.Managers
                 new EditorDocument.Element("<b>Parent Parallax [MODDED]</b>\nParent animations are multiplied by this amount, allowing for a parallax effect. Say the amount was 2 and the parent " +
                         "moves to position X 20, the object would move to 40 due to it being multiplied by 2. " +
                         "It is the fourth column in the Parent Settings UI.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_parent_more.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_parent_more.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Origin [PATCHED]</b>\nOrigin is the offset applied to the visual of the Beatmap Object. Only usable for non-Empty object types. " +
                         "It's patched because of the number input fields instead of the direction buttons.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_origin.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_origin.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Shape [PATCHED]</b>\nShape is whatever the visual of the Beatmap Object displays as. This doesn't just include actual shapes but stuff " +
                         "like text, images and player models too. More shape types and options were added. Unmodded PA does not include Image Shape, Pentagon Shape, Misc Shape, Player Shape.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_shape.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_shape.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Render Depth [PATCHED]</b>\nDepth is how deep an object is in visual layers. Higher amount of Render Depth means the object is lower " +
                         "in the layers. Unmodded PA Legacy allows from 219 to -98. PA Alpha only allows from 40 to 0. Player is located at -60 depth. Z Axis Position keyframes use depth as a " +
                         "multiplied offset.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_depth.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_depth.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Render Type [MODDED]</b>\nRender Type is if the visual of the Beatmap Object renders in the 2D layer or the 3D layer, aka Foreground / Background.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_render_type.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_render_type.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Layer [PATCHED]</b>\nLayer is what editor layer the Beatmap Object renders on. It can go as high as 2147483646. " +
                         "In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Bin [VANILLA]</b>\nBin is what row of the timeline the Beatmap Objects' timeline object renders on.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_editordata.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_editordata.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Object Debug [MODDED]</b>\nThis UI element only generates if UnityExplorer is installed. If it is, clicking on either button will inspect " +
                         "the internal data of the respective item.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_object_debug.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_object_debug.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Integer Variable [MODDED]</b>\nEvery object has a whole number stored that Modifiers can use.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Modifiers [MODDED]</b>\nModifiers are made up of two different types: Triggers and Actions. " +
                             "Triggers check if a specified thing is happening and Actions do things depending on if any triggers are active or there aren't any. A detailed description of every modifier " +
                             "can be found in the Modifiers documentation. [WIP]", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_object_modifiers_edit.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_object_modifiers_edit.png"), EditorDocument.Element.Type.Image),
             });
 
             GenerateDocument("[PATCHED] Beatmap Object Keyframes (WIP)", "The things that animate objects in different ways.", new List<EditorDocument.Element>
             {
                 new EditorDocument.Element("The keyframes in the Beatmap Objects' keyframe timeline allow animating several aspects of a Beatmap Objects' visual.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>POSITION [PATCHED]</b>", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_none.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_normal.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_toggle.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_scale.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_static_homing.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_dynamic_homing.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("<b>SCALE [VANILLA]</b>", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_none.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_normal.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_toggle.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_scale.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("<b>ROTATION [VANILLA]</b>", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_none.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_normal.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_toggle.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_static_homing.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_dynamic_homing.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("<b>COLOR [PATCHED]</b>", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_col_none.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_col_dynamic_homing.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element("<b>POSITION [PATCHED]</b>", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pos_none.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pos_normal.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pos_toggle.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pos_scale.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pos_static_homing.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pos_dynamic_homing.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element("<b>SCALE [VANILLA]</b>", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_sca_none.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_sca_normal.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_sca_toggle.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_sca_scale.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element("<b>ROTATION [VANILLA]</b>", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_rot_none.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_rot_normal.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_rot_toggle.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_rot_static_homing.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_rot_dynamic_homing.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element("<b>COLOR [PATCHED]</b>", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_col_none.png", EditorDocument.Element.Type.Image),
+                //new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_col_dynamic_homing.png", EditorDocument.Element.Type.Image),
             });
 
             GenerateDocument("[PATCHED] Prefabs", "A package of objects that can be transfered from level to level. They can also be added to the level as a Prefab Object.", new List<EditorDocument.Element>
@@ -290,18 +290,18 @@ namespace BetterLegacy.Editor.Managers
                     new EditorDocument.Element("Prefabs are collections of objects grouped together for easy transfering from level to level.", EditorDocument.Element.Type.Text),
                     new EditorDocument.Element("<b>Name [VANILLA]</b>\nThe name of the Prefab. External prefabs gets saved with this as its file name, but all lowercase and " +
                         "spaces replaced with underscores.", EditorDocument.Element.Type.Text),
-                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_name.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pc_name.png"), EditorDocument.Element.Type.Image),
                     new EditorDocument.Element("<b>Offset [VANILLA]</b>\nThe delay set to every Prefab Objects' spawned objects related to this Prefab.", EditorDocument.Element.Type.Text),
-                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_offset.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pc_offset.png"), EditorDocument.Element.Type.Image),
                     new EditorDocument.Element("<b>Type [PATCHED]</b>\nThe group name and color of the Prefab. Good for color coding what a Prefab does at a glance.", EditorDocument.Element.Type.Text),
-                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_type.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pc_type.png"), EditorDocument.Element.Type.Image),
                     new EditorDocument.Element("<b>Description [MODDED]</b>\nA good way to tell you and others what the Prefab does or contains in great detail.", EditorDocument.Element.Type.Text),
-                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_description.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pc_description.png"), EditorDocument.Element.Type.Image),
                     new EditorDocument.Element("<b>Seletion List [PATCHED]</b>\nShows every object, you can toggle the selection on any of them to add them to the prefab. All selected " +
                         "objects will be copied into the Prefab. This is patched because the UI and the code for it already existed in Legacy, it was just unused.", EditorDocument.Element.Type.Text),
-                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_search.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pc_search.png"), EditorDocument.Element.Type.Image),
                     new EditorDocument.Element("<b>Create [MODDED]</b>\nApplies all data and copies all selected objects to a new Prefab.", EditorDocument.Element.Type.Text),
-                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_create.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_pc_create.png"), EditorDocument.Element.Type.Image),
 
             });
 
@@ -311,49 +311,49 @@ namespace BetterLegacy.Editor.Managers
                     "and add them to the level, meaning you can have multiple copies of the same group of objects. Editing the objects of the prefab by expanding it applies all changes to " +
                     "the prefab, updating every Prefab Object (once collapsed back into a Prefab Object).", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Expand [VANILLA]</b>\nExpands all the objects contained within the original prefab into the level and deletes the Prefab Object.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_expand.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_expand.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Layer [PATCHED]</b>\nWhat Editor Layer the Prefab Object displays on. Can go from 1 to 2147483646. In unmodded Legacy its 1 to 5.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_layer.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_layer.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Time of Death [MODDED]</b>\nTime of Death allows every object spawned from the Prefab Object still alive at a certain point to despawn." +
                     "\nRegular - Just how the game handles Prefab Objects kill time normally." +
                     "\nStart Offset - Kill time is offset plus the Prefab Object start time." +
                     "\nSong Time - Kill time is song time, so no matter where you change the start time to the kill time remains the same.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_tod.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_tod.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Prefab Objects' start time from being changed. It's patched because unmodded PA doesn't " +
                     "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Collapse [PATCHED]</b>\nIf on, collapses the Prefab Objects' timeline object. This is patched because it literally doesn't " +
                     "work in unmodded PA.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Start Time [VANILLA]</b>\nWhere the objects spawned from the Prefab Object start.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_time.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_time.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Position Offset [PATCHED]</b>\nEvery objects' top-most-parent has its position set to this offset. Unmodded PA technically has this " +
                     "feature, but it's not editable in the editor.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_pos_offset.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_pos_offset.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Scale Offset [PATCHED]</b>\nEvery objects' top-most-parent has its scale set to this offset. Unmodded PA technically has this " +
                     "feature, but it's not editable in the editor.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_sca_offset.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_sca_offset.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Rotation Offset [PATCHED]</b>\nEvery objects' top-most-parent has its rotation set to this offset. Unmodded PA technically has this " +
                     "feature, but it's not editable in the editor.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_rot_offset.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_rot_offset.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Repeat [MODDED]</b>\nWhen spawning the objects from the Prefab Object, every object gets repeated a set amount of times" +
                     "with their start offset added onto each time they repeat depending on the Repeat Offset Time set. The data for Repeat Count and Repeat Offset Time " +
                     "already existed in unmodded PA, it just went completely unused.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_repeat.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_repeat.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Speed [MODDED]</b>\nHow fast each object spawned from the Prefab Object spawns and is animated.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_speed.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_object_speed.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Lead Time / Offset [VANILLA]</b>\nEvery Prefab Object starts at an added offset from the Offset amount. I have no idea why " +
                     "it's called Lead Time here even though its Offset everywhere else.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_lead.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_lead.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Name [MODDED]</b>\nChanges the name of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
                     "change this in the Prefab Object editor.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_name.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_name.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Type [MODDED]</b>\nChanges the Type of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
                     "change this in the Prefab Object editor. (You can scroll-wheel over the input field to change the type easily)", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_type.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_type.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Save [MODDED]</b>\nSaves all changes made to the original Prefab to any External Prefab with a matching name.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_save.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_save.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Count [MODDED]</b>\nTells how many objects are in the original Prefab and how many Prefab Objects there are in the timeline " +
                     "for the Prefab. The Prefab Object Count goes unused for now...?", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_counts.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_prefab_counts.png"), EditorDocument.Element.Type.Image),
             });
 
             GenerateDocument("[LEGACY] Background Objects (WIP)", "The classic 3D style backgrounds.", new List<EditorDocument.Element>
@@ -466,8 +466,8 @@ namespace BetterLegacy.Editor.Managers
                 },
 
                 new EditorDocument.Element("<b><size=36><align=center>- FONTS -</b>", EditorDocument.Element.Type.Text, 40f),
-                new EditorDocument.Element(RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png", EditorDocument.Element.Type.Image)
-                { Function = () => { RTFile.OpenInFileBrowser.OpenFile(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png"); }},
+                new EditorDocument.Element(AssetPack.GetFile($"editor/documentation/doc_fonts{FileFormat.PNG.Dot()}"), EditorDocument.Element.Type.Image)
+                { Function = () => { RTFile.OpenInFileBrowser.OpenFile(AssetPack.GetFile($"editor/documentation/doc_fonts{FileFormat.PNG.Dot()}")); }},
                 new EditorDocument.Element("To use a font, do <font=Font Name>. To clear, do <noparse></font></noparse>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
                     "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", EditorDocument.Element.Type.Text),
 
@@ -518,7 +518,7 @@ namespace BetterLegacy.Editor.Managers
                 FontElement(EditorDocument.SupportType.MODDED, "Revue", "The font used early 2000s Transformers titles."),
                 FontElement(EditorDocument.SupportType.MODDED, "Revue 1", "The font used early 2000s Transformers titles."),
                 FontElement(EditorDocument.SupportType.MODDED, "Transdings", "A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter of the alphabet."),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tf.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_tf.png"), EditorDocument.Element.Type.Image),
                 FontElement(EditorDocument.SupportType.MODDED, "Transformers Movie", "A font based on the Transformers movies title font."),
 
                 new EditorDocument.Element("<b><size=30><align=center>- LANGUAGE SUPPORT FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
@@ -564,29 +564,29 @@ namespace BetterLegacy.Editor.Managers
                 new EditorDocument.Element("Markers can organize certain parts of your level or help with aligning objects to a specific time.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("In the image below is two types of markers. The blue marker is the Audio Marker and the marker with a circle on the top is just a Marker. " +
                     "Left clicking on the Marker's circle knob moves the Audio Marker to the regular Marker. Right clicking the Marker's circle knob deletes it.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_timeline.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_marker_timeline.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Name [VANILLA]</b>\nThe name of the Marker. This renders next to the Marker's circle knob in the timeline.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_name.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_marker_name.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Time [VANILLA]</b>\nThe time the Marker renders at in the timeline.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_time.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_marker_time.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Description [PATCHED]</b>\nDescription helps you remember details about specific parts of a song or even stuff about the level you're " +
                     "editing. Typing setLayer(1) will set the editor layer to 1 when the Marker is selected. You can also have it be setLayer(events), setLayer(objects), setLayer(toggle), which " +
                     "sets the layer type to those respective types (toggle switches between Events and Objects layer types). Fun fact, the title for description in the UI in unmodded Legacy " +
                     "said \"Name\" lol.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_description.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_marker_description.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Colors [PATCHED]</b>\nWhat color the marker displays as. You can customize the colors in the Settings window.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_colors.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_marker_colors.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Index [MODDED]</b>\nThe number of the Marker in the list.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_index.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_marker_index.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("On the right-hand-side of the Marker Editor window is a list of markers. At the top is a Search field and a Delete Markers button. " +
                     "Delete Markers clears every marker in the level and closes the Marker Editor.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_delete.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_marker_delete.png"), EditorDocument.Element.Type.Image),
             });
 
             GenerateDocument("[PATCHED] Title Bar (OUTDATED)", "The thing at the top of the editor UI with dropdowns.", new List<EditorDocument.Element>
             {
                 new EditorDocument.Element("Title Bar has the main functions for loading, saving and editing.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_td.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>File [PATCHED]</b>" +
                     "\nPowerful functions related to the application or files." +
                     "\n<b>[VANILLA]</b> New Level - Creates a new level." +
@@ -601,7 +601,7 @@ namespace BetterLegacy.Editor.Managers
                     "\n<b>[MODDED]</b> Quit to Arcade - Opens the Input Select scene just before loading arcade levels." +
                     "\n<b>[VANILLA]</b> Quit to Main Menu - Exits to the main menu." +
                     "\n<b>[VANILLA]</b> Quit Game - Quits the game.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_file.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_td_file.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Edit [PATCHED]</b>" +
                     "\nHow far can you edit in a modded editor?" +
                     "\n<b>[PATCHED]</b> Undo - Undoes the most recent action. Still heavily WIP. (sorry)" +
@@ -610,23 +610,23 @@ namespace BetterLegacy.Editor.Managers
                     "\n<b>[MODDED]</b> Preferences - Modify editor specific mod configs directly in the editor. Also known as Editor Properties." +
                     "\n<b>[MODDED]</b> Player Editor - Only shows if you have CreativePlayers installed. Opens the Player Editor." +
                     "\n<b>[MODDED]</b> View Keybinds - Customize the keybinds of the editor in any way you want.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_edit.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_td_edit.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>View [PATCHED]</b>" +
                     "\nView specific things." +
                     "\n<b>[MODDED]</b> Get Example - Only shows if you have ExampleCompanion installed. It summons Example to the scene." +
                     "\n<b>[VANILLA]</b> Show Help - Toggles the Info box.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_view.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_td_view.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Steam [VANILLA]</b>" +
                     "\nView Steam related things... even though modded PA doesn't use Steam anymore lol" +
                     "\n<b>[VANILLA]</b> Open Workshop - Opens a link to the Steam workshop." +
                     "\n<b>[VANILLA]</b> Publish / Update Level - Opens the Metadata Editor / Level Uploader.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_steam.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_td_steam.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Help [PATCHED]</b>" +
                     "\nGet some help." +
                     "\n<b>[MODDED]</b> Modder's Discord - Opens a link to the mod creator's Discord server." +
                     "\n<b>[MODDED]</b> Watch PA History - Since there are no <i>modded</i> guides yet, this just takes you to the System Error BTS PA History playlist." +
                     "\n<b>[MODDED]</b> Wiki / Documentation - In-editor documentation of everything the game has to offer. You're reading it right now!", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_help.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_td_help.png"), EditorDocument.Element.Type.Image),
             });
 
             GenerateDocument("[PATCHED] Timeline Bar (OUTDATED)", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<EditorDocument.Element>
@@ -637,26 +637,26 @@ namespace BetterLegacy.Editor.Managers
                     "audio time to 0.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Pause / Play [VANILLA]</b>\nPressing this toggles if the song is playing or not.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Pitch [PATCHED]</b>\nThe speed of the song. Clicking the buttons adjust the pitch by 0.1, depending on the direction the button is facing.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_audio.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_tb_audio.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Editor Layer [PATCHED]</b>\nEditor Layer is what objects show in the timeline, depending on their own Editor Layer. " +
                     "It can go as high as 2147483646. In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Editor Layer Type [MODDED]</b>\nWhether the timeline shows objects or event keyframes / checkpoints.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_layer.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_tb_layer.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Prefab [VANILLA]</b>\nOpens the Prefab list popups (Internal & External).", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Object [PATCHED]</b>\nOpens a popup featuring different object templates such as Decoration, Empty, etc. It's patched because " +
                     "Persistent was replaced with No Autokill.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Marker [VANILLA]</b>\nCreates a Marker.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>BG [VANILLA]</b>\nOpens a popup to open the BG editor or create a new BG.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_create.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_tb_create.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Preview Mode [VANILLA]</b>\nSwitches the game to Preview Mode.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_preview_mode.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_tb_preview_mode.png"), EditorDocument.Element.Type.Image),
             });
 
             GenerateDocument("[MODDED] Keybinds (WIP)", "Perform specific actions when pressing set keys.", new List<EditorDocument.Element>
             {
                 new EditorDocument.Element("Keybinds intro.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_list.png", EditorDocument.Element.Type.Image),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_editor.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_keybind_list.png"), EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_keybind_editor.png"), EditorDocument.Element.Type.Image),
             });
 
             GenerateDocument("[MODDED] Object Modifiers", "Make your levels dynamic!", new List<EditorDocument.Element>
@@ -992,10 +992,10 @@ namespace BetterLegacy.Editor.Managers
                     "\nTitle - Order by Song Title." +
                     "\nDifficulty - Order by (Easy, Normal, Hard, Expert, Expert+, Master, Animation)" +
                     "\nDate Edited - Order by last saved time, so recently edited levels appear at one side and older levels appear at the other.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_open_level_top.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_open_level_top.png"), EditorDocument.Element.Type.Image),
                 new EditorDocument.Element("<b>Loading Autosaves [MODDED]</b>\nHolding shift when you click on a level in the level list will open an Autosave popup instead of " +
                     "loading the level. This allows you to load any autosaved file so you don't need to go into the level folder and change one of the autosaves to the level.lsb.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element(AssetPack.GetFile("editor/documentation/doc_autosaves.png"), EditorDocument.Element.Type.Image),
             });
 
             if (Seasons.IsAprilFools)

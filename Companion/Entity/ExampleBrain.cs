@@ -869,7 +869,7 @@ namespace BetterLegacy.Companion.Entity
         {
             checks.Add(new ExampleCheck(Checks.APPLICATION_FOCUSED, () => Application.isFocused));
             checks.Add(new ExampleCheck(Checks.APRIL_FOOLS, () => Seasons.IsAprilFools));
-            checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.DirectoryExists(RTFile.GetAsset("Example Companion"))));
+            checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.DirectoryExists(RTFile.GetAsset("companion"))));
             checks.Add(new ExampleCheck(Checks.HAS_NOT_LOADED_LEVEL, () => CoreHelper.InEditor && !EditorManager.inst.hasLoadedLevel && !EditorLevelManager.inst.LevelPanels.IsEmpty()));
             checks.Add(new ExampleCheck(Checks.HAS_LOADED_LEVEL, () => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel));
             checks.Add(new ExampleCheck(Checks.BEING_DRAGGED, () => reference && reference.dragging));

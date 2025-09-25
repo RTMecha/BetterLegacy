@@ -15,7 +15,7 @@ namespace BetterLegacy.Core.Helpers
         public static void InitTooltips()
         {
             Tooltips.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_tooltips.json"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(AssetPack.GetFile($"editor/tooltips{FileFormat.JSON.Dot()}")));
             for (int i = 0; i < jn["tooltip_groups"].Count; i++)
                 LoadTooltips(jn["tooltip_groups"][i]);
         }

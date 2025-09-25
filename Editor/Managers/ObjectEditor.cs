@@ -442,7 +442,9 @@ namespace BetterLegacy.Editor.Managers
         /// </summary>
         public void LoadObjectTemplates()
         {
-            if (RTFile.TryReadFromFile(RTFile.GetAsset($"object_templates{FileFormat.JSON.Dot()}"), out string defaultTemplatesFile))
+            var defaultTemplatesFilePath = AssetPack.GetFile($"editor/data/object_templates{FileFormat.JSON.Dot()}");
+
+            if (RTFile.TryReadFromFile(defaultTemplatesFilePath, out string defaultTemplatesFile))
             {
                 var jn = JSON.Parse(defaultTemplatesFile);
 

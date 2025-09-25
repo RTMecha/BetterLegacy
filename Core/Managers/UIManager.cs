@@ -112,7 +112,7 @@ namespace BetterLegacy.Core.Managers
             labelText.alignment = TextAnchor.MiddleLeft;
 
             var arrowImage = GenerateImage("Arrow", dropdownBase.transform);
-            arrowImage.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_left.png"));
+            arrowImage.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/left.png"));
             arrowImage.color = new Color(0.2157f, 0.2157f, 0.2196f, 1f);
             arrowImage.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
 
@@ -179,7 +179,7 @@ namespace BetterLegacy.Core.Managers
 
             var itemCheckmark = GenerateImage("Item Checkmark", item.transform);
             SetRectTransform(itemCheckmark.rectTransform, new Vector2(8f, 0f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(32f, 32f));
-            itemCheckmark.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset("editor_gui_diamond.png"));
+            itemCheckmark.sprite = SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/diamond.png"));
             itemCheckmark.color = new Color(0.1216f, 0.1216f, 0.1216f, 1f);
             itemCheckmark.transform.localScale = Vector3.one;
 

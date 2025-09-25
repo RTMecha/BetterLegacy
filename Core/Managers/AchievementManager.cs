@@ -69,7 +69,7 @@ namespace BetterLegacy.Core.Managers
 
         Sprite LoadIcon(string name)
         {
-            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Achievements/{name}.png";
+            var path = AssetPack.GetFile($"core/achievements/{name}{FileFormat.PNG.Dot()}");
             return !RTFile.FileExists(path) ? LegacyPlugin.AtanPlaceholder : SpriteHelper.LoadSprite(path);
         }
 

@@ -491,7 +491,7 @@ namespace BetterLegacy.Menus
 
             Companion.Entity.Example.Current?.model?.SetActive(true); // if Example was disabled
 
-            ParseInterface(RTFile.GetAsset($"Interfaces/main_menu{FileFormat.LSI.Dot()}"));
+            ParseInterface(AssetPack.GetFile($"core/interfaces/main_menu{FileFormat.LSI.Dot()}"));
 
             interfaces.Add(new StoryMenu());
 
@@ -556,7 +556,7 @@ namespace BetterLegacy.Menus
         public void LoadThemes()
         {
             themes.Clear();
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"Interfaces/default_themes{FileFormat.LST.Dot()}")));
+            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset($"builtin/default_interface_themes{FileFormat.LST.Dot()}")));
             for (int i = 0; i < jn["themes"].Count; i++)
                 themes.Add(BeatmapTheme.Parse(jn["themes"][i]));
 
@@ -763,6 +763,14 @@ namespace BetterLegacy.Menus
 
                     case "Equals": {
                             return ParseVarFunction(parameters.Get(0, "first"), thisElement, customVariables) == ParseVarFunction(parameters.Get(1, "second"), thisElement, customVariables);
+                        }
+
+                    case "HasAsset": {
+                            if (parameters == null)
+                                break;
+
+                            var value = AssetPack.TryGetFile(parameters.Get(0, "path"), out string filePath);
+                            return !not ? value : !value;
                         }
 
                     #endregion
@@ -1720,7 +1728,11 @@ namespace BetterLegacy.Menus
                 // Reloads the interface and sets it to the main menu. Only recommended if you want to return to the main menu and unload every other interface.
                 // Function has no parameters.
                 case "Reload": {
+                        if (CoreHelper.InGame) // don't allow reload in game
+                            break;
+
                         LegacyPlugin.ParseProfile();
+                        AssetPack.LoadAssetPacks();
                         LegacyPlugin.LoadSplashText();
                         ChangeLogMenu.Seen = false;
                         randomIndex = -1;
@@ -1786,12 +1798,14 @@ namespace BetterLegacy.Menus
                         if (!MainDirectory.Contains(RTFile.ApplicationDirectory))
                             MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, MainDirectory);
 
-                        var path = RTFile.CombinePaths(MainDirectory, file + FileFormat.LSI.Dot());
+                        string path = file.Value.Contains(RTFile.ApplicationDirectory) || mainDirectory == null ? file : RTFile.CombinePaths(MainDirectory, file + FileFormat.LSI.Dot());
+
+                        if (!path.EndsWith(FileFormat.LSI.Dot()))
+                            path += FileFormat.LSI.Dot();
 
                         if (!RTFile.FileExists(path))
                         {
                             CoreHelper.LogError($"Interface {file} does not exist!");
-
                             break;
                         }
 
@@ -4917,6 +4931,18 @@ namespace BetterLegacy.Menus
                         var chapters = bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters;
 
                         return chapters.TryGetAt(chapterIndex.AsInt, out StoryMode.Chapter chapter) ? chapter.Count : ParseVarFunction(parameters.Get(2, "default"), thisElement, customVariables);
+                    }
+
+                #endregion
+
+                #region GetAsset
+
+                case "GetAsset": {
+                        if (parameters == null)
+                            break;
+
+                        var assetPath = parameters.Get(0, "path");
+                        return AssetPack.GetFile(assetPath);
                     }
 
                 #endregion

@@ -273,7 +273,7 @@ namespace BetterLegacy.Editor.Managers
                     delete.transform.AsRT().anchoredPosition = new Vector2(744f, -16f);
                 }
 
-                EditorHelper.AddEditorDropdown("Edit Keybinds", "", "Edit", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), OpenPopup);
+                EditorHelper.AddEditorDropdown("Edit Keybinds", string.Empty, "Edit", SpriteHelper.LoadSprite(AssetPack.GetFile($"core/sprites/icons/keybind{FileFormat.PNG.Dot()}")), OpenPopup);
             }
             catch (Exception ex)
             {

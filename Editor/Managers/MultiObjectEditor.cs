@@ -172,7 +172,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
                         timelineObject.Layer = Mathf.Clamp(timelineObject.Layer + num, 0, int.MaxValue);
                 });
-                inputFieldStorage.rightGreaterButton.image.sprite = SpriteHelper.LoadSprite(RTFile.GetAsset($"editor_gui_down{FileFormat.PNG.Dot()}"));
+                inputFieldStorage.rightGreaterButton.image.sprite = EditorSprites.DownArrow;
                 inputFieldStorage.rightGreaterButton.onClick.NewListener(() =>
                 {
                     foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)

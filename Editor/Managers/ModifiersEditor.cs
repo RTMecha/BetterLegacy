@@ -368,7 +368,7 @@ namespace BetterLegacy.Editor.Managers
             checkmarkRT.pivot = new Vector2(0.5f, 0.5f);
             checkmarkRT.sizeDelta = new Vector2(20f, 20f);
             var checkmarkImage = checkmark.AddComponent<Image>();
-            checkmarkImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_checkmark.png");
+            checkmarkImage.sprite = EditorSprites.CheckmarkSprite;
             checkmarkImage.color = new Color(0.1294f, 0.1294f, 0.1294f);
 
             toggle.image = backgroundImage;
@@ -390,13 +390,13 @@ namespace BetterLegacy.Editor.Managers
             input.transform.localScale = Vector2.one;
             ((RectTransform)input.transform.Find("Text")).sizeDelta = Vector2.zero;
 
-            var buttonL = Button("<", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_left_small.png"));
+            var buttonL = Button("<", SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/left_small.png")));
             buttonL.transform.SetParent(rectTransform);
             buttonL.transform.localScale = Vector3.one;
 
             ((RectTransform)buttonL.transform).sizeDelta = new Vector2(16f, 32f);
 
-            var buttonR = Button(">", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_right_small.png"));
+            var buttonR = Button(">", SpriteHelper.LoadSprite(AssetPack.GetFile("core/sprites/icons/operations/right_small.png")));
             buttonR.transform.SetParent(rectTransform);
             buttonR.transform.localScale = Vector3.one;
 

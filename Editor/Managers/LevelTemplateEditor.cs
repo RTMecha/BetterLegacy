@@ -72,7 +72,7 @@ namespace BetterLegacy.Editor.Managers
                 noLevelText.text = "No Preview";
                 noLevel.SetActive(false);
 
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_template.png", texture2D => newLevelTemplateBaseSprite = SpriteHelper.CreateSprite(texture2D)));
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture(AssetPack.GetFile($"editor/default_template{FileFormat.PNG.Dot()}"), texture2D => newLevelTemplateBaseSprite = SpriteHelper.CreateSprite(texture2D)));
 
                 var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(newLevelTemplatePrefab.transform, "Delete");
                 RectValues.Default.AnchoredPosition(335f, 75f).SizeDelta(32f, 32f).AssignToRectTransform(delete.transform.AsRT());

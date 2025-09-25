@@ -16,7 +16,7 @@ namespace BetterLegacy.Patchers
         public static SoundLibrary Instance => AudioManager.inst.library;
         static SoundLibrary inst;
 
-        public static string SFXPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}SFX/";
+        public static string SFXPath => RTFile.GetAsset($"core/sfx/");
 
         static bool ran = false;
 
@@ -29,7 +29,7 @@ namespace BetterLegacy.Patchers
                 return false; // only run once due to Awake being run every time a scene is loaded.
             ran = true;
 
-            var ostFilePath = RTFile.GetAsset($"Story/ost{FileFormat.ASSET.Dot()}");
+            var ostFilePath = RTFile.GetAsset($"builtin/ost{FileFormat.ASSET.Dot()}");
 
             if (RTFile.FileExists(ostFilePath))
             {
@@ -65,7 +65,7 @@ namespace BetterLegacy.Patchers
                     __instance.soundClips["qe_" + audioClip.name] = new AudioClip[] { audioClip };
 
             var ogg = FileFormat.OGG.Dot();
-            AddSound(Example.GetFile($"example speak{ogg}"), DefaultSounds.example_speak);
+            AddSound(AssetPack.GetFile($"companion/model/example speak{ogg}"), DefaultSounds.example_speak);
             AddSound($"{SFXPath}anna speak{ogg}", DefaultSounds.anna_speak);
             AddSound($"{SFXPath}hal speak{ogg}", DefaultSounds.hal_speak);
             AddSound($"{SFXPath}para speak{ogg}", DefaultSounds.para_speak);

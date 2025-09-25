@@ -73,7 +73,7 @@ namespace BetterLegacy.Editor.Managers
         {
             EditorThemes.Clear();
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.GetAsset("editor_themes.lst")));
+            var jn = JSON.Parse(RTFile.ReadFromFile(AssetPack.GetFile("editor/data/editor_themes.json")));
 
             for (int i = 0; i < jn["themes"].Count; i++)
                 EditorThemes.Add(EditorTheme.Parse(jn["themes"][i]));
@@ -84,7 +84,7 @@ namespace BetterLegacy.Editor.Managers
             var jn = Parser.NewJSONObject();
             for (int i = 0; i < EditorThemes.Count; i++)
                 jn["themes"][i] = EditorThemes[i].ToJSON();
-            RTFile.WriteToFile(RTFile.GetAsset("editor_themes.lst"), jn.ToString());
+            RTFile.WriteToFile(AssetPack.GetFile("editor/data/editor_themes.json"), jn.ToString());
         }
 
         public static EditorTheme CurrentTheme => EditorThemes[Mathf.Clamp(currentTheme, 0, EditorThemes.Count - 1)];

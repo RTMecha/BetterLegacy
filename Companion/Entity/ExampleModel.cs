@@ -347,7 +347,7 @@ namespace BetterLegacy.Companion.Entity
                 part?.SetRotation(rotation);
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.HEAD).ParentID(Parts.BASE).Name("Head").ImagePath(Example.GetFile("example head.png"))
+            parts.Add(ImagePart.Default.ID(Parts.HEAD).ParentID(Parts.BASE).Name("Head").ImagePath(AssetPack.GetFile("companion/model/example head.png"))
             .OnTick(part =>
             {
                 // tick function
@@ -445,11 +445,11 @@ namespace BetterLegacy.Companion.Entity
                 part.rotation = facePosition.x * 0.8f;
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_LEFT).ParentID(Parts.EARS).Name("Ear Bottom Left").ImagePath(Example.GetFile("example ear bottom.png"))
+            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_LEFT).ParentID(Parts.EARS).Name("Ear Bottom Left").ImagePath(AssetPack.GetFile("companion/model/example ear bottom.png"))
             .Rect(RectValues.Default.AnchoredPosition(25f, 35f).Rotation(-30f))
             .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_LEFT).ParentID(Parts.EAR_BOTTOM_LEFT).Name("Ear Top Left").ImagePath(Example.GetFile("example ear top.png"))
+            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_LEFT).ParentID(Parts.EAR_BOTTOM_LEFT).Name("Ear Top Left").ImagePath(AssetPack.GetFile("companion/model/example ear top.png"))
             .Rect(RectValues.Default)
             .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(-90f))
             .OnClick((part, pointerEventData) =>
@@ -457,11 +457,11 @@ namespace BetterLegacy.Companion.Entity
                 SetPose(Poses.EAR_LEFT_FLICK);
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_RIGHT).ParentID(Parts.EARS).Name("Ear Bottom Right").ImagePath(Example.GetFile("example ear bottom.png"))
+            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_RIGHT).ParentID(Parts.EARS).Name("Ear Bottom Right").ImagePath(AssetPack.GetFile("companion/model/example ear bottom.png"))
             .Rect(RectValues.Default.AnchoredPosition(-25f, 35f).Rotation(30f))
             .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_RIGHT).ParentID(Parts.EAR_BOTTOM_RIGHT).Name("Ear Top Right").ImagePath(Example.GetFile("example ear top.png"))
+            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_RIGHT).ParentID(Parts.EAR_BOTTOM_RIGHT).Name("Ear Top Right").ImagePath(AssetPack.GetFile("companion/model/example ear top.png"))
             .Rect(RectValues.Default)
             .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(90f))
             .OnClick((part, pointerEventData) =>
@@ -471,7 +471,7 @@ namespace BetterLegacy.Companion.Entity
 
             #endregion
 
-            parts.Add(ImagePart.Default.ID(Parts.TAIL).ParentID(Parts.HEAD).SiblingIndex(0).Name("Tail").ImagePath(Example.GetFile("example tail.png"))
+            parts.Add(ImagePart.Default.ID(Parts.TAIL).ParentID(Parts.HEAD).SiblingIndex(0).Name("Tail").ImagePath(AssetPack.GetFile("companion/model/example tail.png"))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -58f).SizeDelta(28f, 42f))
             .OnTick(part =>
             {
@@ -487,12 +487,12 @@ namespace BetterLegacy.Companion.Entity
 
             #region Eyes
 
-            parts.Add(ImagePart.Default.ID(Parts.EYES).ParentID(Parts.FACE).Name("Eyes").ImagePath(Example.GetFile("example eyes.png"))
+            parts.Add(ImagePart.Default.ID(Parts.EYES).ParentID(Parts.FACE).Name("Eyes").ImagePath(AssetPack.GetFile("companion/model/example eyes.png"))
             .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
             .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
             .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
 
-            parts.Add(ImagePart.Default.ID(Parts.PUPILS).ParentID(Parts.EYES).Name("Pupils").ImagePath(Example.GetFile("example pupils.png"))
+            parts.Add(ImagePart.Default.ID(Parts.PUPILS).ParentID(Parts.EYES).Name("Pupils").ImagePath(AssetPack.GetFile("companion/model/example pupils.png"))
             .ImageRect(RectValues.Default.SizeDelta(47f, 22f))
             .OnTick(part =>
             {
@@ -512,17 +512,17 @@ namespace BetterLegacy.Companion.Entity
             .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
             .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
 
-            parts.Add(ImagePart.Default.ID(Parts.TOP_EYELIDS).ParentID(Parts.EYES).Name("Top Eyelids").ImagePath(Example.GetFile("example eyelids.png"))
+            parts.Add(ImagePart.Default.ID(Parts.TOP_EYELIDS).ParentID(Parts.EYES).Name("Top Eyelids").ImagePath(AssetPack.GetFile("companion/model/example eyelids.png"))
             .Position(new Vector2(0f, 18f)).Scale(new Vector2(1f, 0f))
             .Rect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(74f, 18f))
             .ImageRect(RectValues.FullAnchored));
             
-            parts.Add(ImagePart.Default.ID(Parts.BOTTOM_EYELIDS).ParentID(Parts.EYES).Name("Bottom Eyelids").ImagePath(Example.GetFile("example eyelids.png"))
+            parts.Add(ImagePart.Default.ID(Parts.BOTTOM_EYELIDS).ParentID(Parts.EYES).Name("Bottom Eyelids").ImagePath(AssetPack.GetFile("companion/model/example eyelids.png"))
             .Position(new Vector2(0f, -18f)).Scale(new Vector2(1f, 0f))
             .Rect(RectValues.Default.Pivot(0.5f, 0f).SizeDelta(74f, 18f))
             .ImageRect(RectValues.FullAnchored));
 
-            parts.Add(ImagePart.Default.ID(Parts.BLINK).ParentID(Parts.EYES).Name("Blink").ImagePath(Example.GetFile("example blink.png"))
+            parts.Add(ImagePart.Default.ID(Parts.BLINK).ParentID(Parts.EYES).Name("Blink").ImagePath(AssetPack.GetFile("companion/model/example blink.png"))
             .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
             .OnTick(part =>
             {
@@ -549,11 +549,11 @@ namespace BetterLegacy.Companion.Entity
             parts.Add(ParentPart.Default.ID(Parts.BROWS).ParentID(Parts.FACE).Name("Brows")
             .Rect(RectValues.Default.AnchoredPosition(0f, 30f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.BROW_LEFT).ParentID(Parts.BROWS).Name("Brow Left").ImagePath(Example.GetFile("example brow.png"))
+            parts.Add(ImagePart.Default.ID(Parts.BROW_LEFT).ParentID(Parts.BROWS).Name("Brow Left").ImagePath(AssetPack.GetFile("companion/model/example brow.png"))
             .Rect(RectValues.Default.AnchoredPosition(22f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(18f, 0f).Pivot(1.7f, 0.5f).SizeDelta(20f, 6f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.BROW_RIGHT).ParentID(Parts.BROWS).Name("Brow Right").ImagePath(Example.GetFile("example brow.png"))
+            parts.Add(ImagePart.Default.ID(Parts.BROW_RIGHT).ParentID(Parts.BROWS).Name("Brow Right").ImagePath(AssetPack.GetFile("companion/model/example brow.png"))
             .Rect(RectValues.Default.AnchoredPosition(-22f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(-18f, 0f).Pivot(-0.7f, 0.5f).SizeDelta(20f, 6f)));
 
@@ -561,7 +561,7 @@ namespace BetterLegacy.Companion.Entity
 
             #region Snout
 
-            parts.Add(ImagePart.Default.ID(Parts.SNOUT).ParentID(Parts.FACE).Name("Snout").ImagePath(Example.GetFile("example snout.png"))
+            parts.Add(ImagePart.Default.ID(Parts.SNOUT).ParentID(Parts.FACE).Name("Snout").ImagePath(AssetPack.GetFile("companion/model/example snout.png"))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -31f).SizeDelta(60f, 31f)));
 
             parts.Add(ParentPart.Default.ID(Parts.MOUTH_BASE).ParentID(Parts.SNOUT).Name("Mouth Base")
@@ -571,21 +571,21 @@ namespace BetterLegacy.Companion.Entity
                 part?.SetPosition(new Vector2(facePosition.x, facePosition.y * 0.5f));
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.MOUTH_UPPER).ParentID(Parts.MOUTH_BASE).Name("Mouth Upper").ImagePath(Example.GetFile("example mouth.png"))
+            parts.Add(ImagePart.Default.ID(Parts.MOUTH_UPPER).ParentID(Parts.MOUTH_BASE).Name("Mouth Upper").ImagePath(AssetPack.GetFile("companion/model/example mouth.png"))
             .Rect(RectValues.Default.Rotation(180f)).Scale(new Vector2(1f, 0.15f))
             .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.MOUTH_LOWER).ParentID(Parts.MOUTH_BASE).Name("Mouth Lower").ImagePath(Example.GetFile("example mouth.png"))
+            parts.Add(ImagePart.Default.ID(Parts.MOUTH_LOWER).ParentID(Parts.MOUTH_BASE).Name("Mouth Lower").ImagePath(AssetPack.GetFile("companion/model/example mouth.png"))
             .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f))
             .OnTick(part =>
             {
                 part?.SetScale(new Vector2(part.scale.x, Mathf.Clamp(mouthOpenAmount, 0f, 1f)));
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.LIPS).ParentID(Parts.MOUTH_BASE).Name("Lips").ImagePath(Example.GetFile("example lips.png"))
+            parts.Add(ImagePart.Default.ID(Parts.LIPS).ParentID(Parts.MOUTH_BASE).Name("Lips").ImagePath(AssetPack.GetFile("companion/model/example lips.png"))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, 3f).Pivot(0.5f, 1f).SizeDelta(32f, 8f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.NOSE).ParentID(Parts.SNOUT).Name("Nose").ImagePath(Example.GetFile("example nose.png"))
+            parts.Add(ImagePart.Default.ID(Parts.NOSE).ParentID(Parts.SNOUT).Name("Nose").ImagePath(AssetPack.GetFile("companion/model/example nose.png"))
             .Rect(RectValues.Default.AnchoredPosition(0f, -20f))
             .ImageRect(RectValues.Default.SizeDelta(22f, 8f))
             .OnTick(part =>
@@ -599,7 +599,7 @@ namespace BetterLegacy.Companion.Entity
 
             parts.Add(ParentPart.Default.ID(Parts.HANDS_BASE).ParentID("BASE").Name("Hands Base"));
 
-            parts.Add(ImagePart.Default.ID(Parts.HAND_LEFT).ParentID(Parts.HANDS_BASE).Name("Hand Left").ImagePath(Example.GetFile("example hand.png"))
+            parts.Add(ImagePart.Default.ID(Parts.HAND_LEFT).ParentID(Parts.HANDS_BASE).Name("Hand Left").ImagePath(AssetPack.GetFile("companion/model/example hand.png"))
             .Position(new Vector2(40f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
             .OnTick(part =>
@@ -658,7 +658,7 @@ namespace BetterLegacy.Companion.Entity
                 CompanionManager.inst.animationController.Play(animation);
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.HAND_RIGHT).ParentID(Parts.HANDS_BASE).Name("Hand Right").ImagePath(Example.GetFile("example hand.png"))
+            parts.Add(ImagePart.Default.ID(Parts.HAND_RIGHT).ParentID(Parts.HANDS_BASE).Name("Hand Right").ImagePath(AssetPack.GetFile("companion/model/example hand.png"))
             .Position(new Vector2(-40f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
             .OnTick(part =>

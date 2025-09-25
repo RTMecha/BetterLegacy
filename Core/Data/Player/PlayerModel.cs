@@ -153,6 +153,10 @@ namespace BetterLegacy.Core.Data.Player
                     betaPlayer.IsDefault = true;
                     betaPlayer.basePart.id = BETA_ID;
                     betaPlayer.basePart.name = "Beta";
+                    betaPlayer.basePart.moveSpeed = 28f;
+                    betaPlayer.basePart.boostSpeed = 95f;
+                    betaPlayer.basePart.boostCooldown = 0.11f;
+                    betaPlayer.basePart.maxBoostTime = 0.16f;
                     betaPlayer.boostTailPart.active = true;
                     betaPlayer.boostTailPart.rotation = 45f;
 
