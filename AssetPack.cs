@@ -159,9 +159,11 @@ namespace BetterLegacy
         /// <param name="assetPath">Path to the asset.</param>
         /// <param name="forceAdd">If multiple entries are prioritized.</param>
         /// <returns>Returns a JSON array of the items.</returns>
-        public static JSONNode GetArray(string assetPath, bool forceAdd = false)
+        public static JSONArray GetArray(string assetPath, bool forceAdd = false)
         {
-            var jsonArray = Parser.NewJSONArray();
+            var jsonArray = Parser.NewJSONArray().AsArray;
+
+            jsonArray = AddArray(jsonArray, RTFile.ReadFromFile(RTFile.CombinePaths(BuiltIn.path, assetPath)), false);
 
             for (int i = AssetPacks.Count - 1; i >= 0; i--)
             {
@@ -173,25 +175,32 @@ namespace BetterLegacy
                 if (!assetPack.HasFile(assetPath) || RTFile.TryReadFromFile(RTFile.CombinePaths(assetPack.path, assetPath), out string file))
                     continue;
 
-                var jn = JSON.Parse(file);
+                jsonArray = AddArray(jsonArray, file, forceAdd);
+            }
 
-                if (!jn.IsArray)
-                {
-                    var overwrite = jn["overwrite"].AsBool;
-                    if (forceAdd || !overwrite)
-                        for (int j = 0; j < jn["items"].Count; j++)
-                            jsonArray.Add(jn["items"][i]);
-                    else
-                        jsonArray = jn["items"];
-                }
+            return jsonArray;
+        }
+
+        static JSONArray AddArray(JSONArray jsonArray, string file, bool forceAdd)
+        {
+            var jn = JSON.Parse(file);
+
+            if (!jn.IsArray)
+            {
+                var overwrite = jn["overwrite"].AsBool;
+                if (forceAdd || !overwrite)
+                    for (int j = 0; j < jn["items"].Count; j++)
+                        jsonArray.Add(jn["items"][j]);
                 else
-                {
-                    if (forceAdd)
-                        for (int j = 0; j < jn["items"].Count; j++)
-                            jsonArray.Add(jn["items"][i]);
-                    else
-                        jsonArray = jn["items"];
-                }
+                    jsonArray = jn["items"].AsArray;
+            }
+            else
+            {
+                if (forceAdd)
+                    for (int j = 0; j < jn["items"].Count; j++)
+                        jsonArray.Add(jn["items"][j]);
+                else
+                    jsonArray = jn["items"].AsArray;
             }
 
             return jsonArray;
