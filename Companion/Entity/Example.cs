@@ -243,16 +243,6 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void Build()
         {
-            try
-            {
-                if (RTFile.TryReadFromFile(RTFile.ApplicationDirectory + "settings/ExampleHooks.cs", out string exampleHooksFile))
-                    RTCode.Evaluate(exampleHooksFile);
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Custom code parsing failed. Exception: {ex}");
-            }
-
             LogStartup("Beginning timer...");
             var sw = CoreHelper.StartNewStopwatch();
             timer.Reset();

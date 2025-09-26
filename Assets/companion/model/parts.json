@@ -1,0 +1,760 @@
+﻿{
+  "override": true,
+  "parts": [
+    {
+      "id": "BASE",
+      "name": "Base",
+      "type": "Parent",
+      "on_tick": [
+        {
+          "name": "SetPartPosition",
+          "params": {
+            "x": "posX",
+            "y": {
+              "name": "ParseMath",
+              "params": [ "posY + ((easing#InOutSine(timer * 0.5 % 2) - 0.5) * 2)" ]
+            }
+          }
+        },
+        {
+          "name": "SetPartScale",
+          "params": {
+            "x": "scaX",
+            "y": "scaY"
+          }
+        },
+        {
+          "name": "SetPartRotation",
+          "params": {
+            "x": {
+              "name": "ParseMath",
+              "params": [ "rot" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "HEAD",
+      "p": "BASE",
+      "name": "Head",
+      "type": "Image",
+      "image_path": "companion/model/example_head.png",
+      "on_tick": {
+        "if_func": "Dragging",
+        "name": "Drag"
+      },
+      "on_click": {
+        "if_func": {
+          "name": "Equals",
+          "params": {
+            "first": "pointerEventButton",
+            "second": "Right"
+          }
+        },
+        "name": "ToggleOptions"
+      },
+      "on_down": [
+        {
+          "if_func": [
+            {
+              "name": "Equals",
+              "params": {
+                "first": "pointerEventButton",
+                "second": "Left"
+              }
+            },
+            "CanDrag",
+            "!Leaving"
+          ],
+          "sub_func": [
+            {
+              "name": "Interact",
+              "params": [ "Pet" ]
+            },
+            "StartDrag",
+            {
+              "name": "PlaySound",
+              "params": [
+                "example_speak",
+                {
+                  "name": "RandomRange",
+                  "params": [ 0.6, 0.7 ]
+                },
+                {
+                  "name": "RandomRange",
+                  "params": [ 1.1, 1.3 ]
+                }
+              ]
+            },
+            {
+              "name": "SetPose",
+              "params": [ "Start Drag" ]
+            },
+            {
+              "if_func": "CurrentAction",
+              "sub_func": [
+                {
+                  "name": "Interact",
+                  "params": [ "Interrupt" ]
+                },
+                "StopCurrentAction"
+              ]
+            }
+          ]
+        }
+      ],
+      "on_up": [
+        {
+          "if_func": [
+            "Dragging",
+            "!Leaving"
+          ],
+          "sub_func": [
+            "EndDrag",
+            {
+              "name": "SetPose",
+              "params": [ "End Drag" ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "FACE",
+      "p": "HEAD",
+      "name": "Face",
+      "type": "Parent",
+      "on_tick": [
+        {
+          "if_func": "Transform",
+          "sub_func": [
+            {
+              "if_func": {
+                "name": "Equals",
+                "params": {
+                  "first": {
+                    "name": "GetAttribute",
+                    "params": [ "FACE_CAN_LOOK" ]
+                  },
+                  "second": 1.0
+                }
+              },
+              "sub_func": [
+                {
+                  "name": "CacheVariable",
+                  "params": [
+                    "partPosX",
+                    {
+                      "name": "ParseMath",
+                      "params": [ "lerp(0, lookingAtPosX - partTransformPosX, 0.006)" ]
+                    }
+                  ]
+                },
+                {
+                  "name": "CacheVariable",
+                  "params": [
+                    "partPosY",
+                    {
+                      "name": "ParseMath",
+                      "params": [ "lerp(0, lookingAtPosY - partTransformPosY, 0.006)" ]
+                    }
+                  ]
+                },
+                {
+                  "name": "SetPartPosition",
+                  "params": {
+                    "x": "partPosX",
+                    "y": "partPosY"
+                  }
+                },
+                {
+                  "name": "SetFacePosition",
+                  "params": {
+                    "x": "partPosX",
+                    "y": "partPosY"
+                  }
+                }
+              ],
+              "else": {
+                "name": "SetPartPosition",
+                "params": {
+                  "x": {
+                    "name": "ParseMath",
+                    "params": [ "facePosX" ]
+                  },
+                  "y": {
+                    "name": "ParseMath",
+                    "params": [ "facePosY" ]
+                  }
+                }
+              }
+            },
+            {
+              "if_func": "Dragging",
+              "name": "SetFacePosition",
+              "params": {
+                "x": {
+                  "name": "ParseMath",
+                  "params": [ "clamp(-((dragTargetX - dragPosX) * dragDelay), -14f, 14f)" ]
+                },
+                "y": {
+                  "name": "ParseMath",
+                  "params": [ "clamp(-((dragTargetY - dragPosY) * dragDelay), -14f, 14f)" ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EARS",
+      "p": "HEAD",
+      "sib_index": 0,
+      "name": "Ears",
+      "type": "Parent",
+      "on_tick": {
+        "name": "SetPartRotation",
+        "params": [
+          {
+            "name": "ParseMath",
+            "params": [ "facePosX * 0.8" ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "EAR_BOTTOM_LEFT",
+      "p": "EARS",
+      "name": "Ear Bottom Left",
+      "type": "Image",
+      "image_path": "companion/model/example_ear_bottom.png",
+      "rect": {
+        "anc_pos": [ 25.0, 35.0 ],
+        "rot": -30
+      },
+      "image_rect": {
+        "pivot": [ 0.5, 0.2 ],
+        "size": [ 44, 52 ]
+      }
+    },
+    {
+      "id": "EAR_TOP_LEFT",
+      "p": "EAR_BOTTOM_LEFT",
+      "name": "Ear Top Left",
+      "type": "Image",
+      "image_path": "companion/model/example_ear_top.png",
+      "rect": "Default",
+      "image_rect": {
+        "anc_pos": [ 0.0, 45.0 ],
+        "pivot": [ 0.5, 0.275 ],
+        "size": [ 44, 80 ],
+        "rot": -90
+      },
+      "on_click": {
+        "name": "SetPose",
+        "params": [ "Ear Left Flick" ]
+      }
+    },
+    {
+      "id": "EAR_BOTTOM_RIGHT",
+      "p": "EARS",
+      "name": "Ear Bottom Right",
+      "type": "Image",
+      "image_path": "companion/model/example_ear_bottom.png",
+      "rect": {
+        "anc_pos": [ -25.0, 35.0 ],
+        "rot": 30
+      },
+      "image_rect": {
+        "pivot": [ 0.5, 0.2 ],
+        "size": [ 44, 52 ]
+      }
+    },
+    {
+      "id": "EAR_TOP_RIGHT",
+      "p": "EAR_BOTTOM_RIGHT",
+      "name": "Ear Top Right",
+      "type": "Image",
+      "image_path": "companion/model/example_ear_top.png",
+      "rect": "Default",
+      "image_rect": {
+        "anc_pos": [ 0.0, 45.0 ],
+        "pivot": [ 0.5, 0.275 ],
+        "size": [ 44, 80 ],
+        "rot": 90
+      },
+      "on_click": {
+        "name": "SetPose",
+        "params": [ "Ear Right Flick" ]
+      }
+    },
+    {
+      "id": "TAIL",
+      "p": "HEAD",
+      "sib_index": 0,
+      "name": "Tail",
+      "type": "Image",
+      "image_path": "companion/model/example_tail.png",
+      "image_rect": {
+        "anc_pos": [ 0, -58 ],
+        "size": [ 28, 42 ]
+      },
+      "on_tick": [
+        {
+          "name": "SetPartRotation",
+          "params": [
+            {
+              "name": "ParseMath",
+              "params": [ "-(facePosX * 5)" ]
+            }
+          ]
+        },
+        {
+          "name": "SetPartImageRotation",
+          "params": [
+            {
+              "name": "ParseMath",
+              "params": [ "-(facePosX * 5)" ]
+            }
+          ]
+        }
+      ],
+      "on_click": {
+        "if_func": "!Leaving",
+        "name": "Interact",
+        "params": [ "Touchie" ]
+      }
+    },
+    {
+      "id": "EYES",
+      "p": "FACE",
+      "name": "Eyes",
+      "type": "Image",
+      "image_path": "companion/model/example_eyes.png",
+      "image_rect": {
+        "size": [ 74, 34 ]
+      },
+      "on_down": {
+        "name": "SetAttribute",
+        "params": [
+          "POKING_EYES",
+          1.0
+        ]
+      },
+      "on_up": {
+        "name": "SetAttribute",
+        "params": [
+          "POKING_EYES",
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "PUPILS",
+      "p": "EYES",
+      "name": "Pupils",
+      "type": "Image",
+      "image_path": "companion/model/example_pupils.png",
+      "image_rect": {
+        "size": [ 47, 22 ]
+      },
+      "on_tick": {
+        "if_func": [
+          "Transform",
+          {
+            "name": "!Equals",
+            "params": {
+              "first": {
+                "name": "GetAttribute",
+                "params": [ "PUPILS_CAN_LOOK" ]
+              },
+              "second": 0.0
+            }
+          }
+        ],
+        "sub_func": [
+          {
+            "if_func": [
+              {
+                "name": "Greater",
+                "params": {
+                  "first": {
+                    "name": "ParseMath",
+                    "params": [ "timer % 3" ]
+                  },
+                  "second": 2.7
+                }
+              },
+              {
+                "name": "Equals",
+                "params": {
+                  "first": {
+                    "name": "GetAttribute",
+                    "params": [ "PUPILS_CAN_CHANGE" ]
+                  },
+                  "second": 1.0
+                }
+              }
+            ],
+            "name": "UpdatePupilsOffset"
+          },
+          {
+            "name": "SetAttribute",
+            "params": [
+              "PUPILS_CAN_CHANGE",
+              {
+                "name": "ParseMath",
+                "params": [ "lesserEquals(timer % 3, 2.7, 0.0, 1.0)" ]
+              }
+            ]
+          },
+          {
+            "name": "SetPartPosition",
+            "params": {
+              "x": {
+                "name": "ParseMath",
+                "params": [ "lerp(0, lookingAtPosX - partTransformPosX, 0.004) + pupilsOffsetX" ]
+              },
+              "y": {
+                "name": "ParseMath",
+                "params": [ "lerp(0, lookingAtPosY - partTransformPosY, 0.004) + pupilsOffsetY" ]
+              }
+            }
+          }
+        ]
+      },
+      "on_down": {
+        "name": "SetAttribute",
+        "params": [
+          "POKING_EYES",
+          1.0
+        ]
+      },
+      "on_up": {
+        "name": "SetAttribute",
+        "params": [
+          "POKING_EYES",
+          0.0
+        ]
+      }
+    },
+    {
+      "id": "TOP_EYELIDS",
+      "p": "EYES",
+      "name": "Top Eyelids",
+      "type": "Image",
+      "image_path": "companion/model/example_eyelids.png",
+      "pos": {
+        "x": 0,
+        "y": 18
+      },
+      "sca": {
+        "x": 1,
+        "y": 0
+      },
+      "rect": {
+        "pivot": [ 0.5, 1 ],
+        "size": [ 74, 18 ]
+      },
+      "image_rect": "fullanchored"
+    },
+    {
+      "id": "BOTTOM_EYELIDS",
+      "p": "EYES",
+      "name": "Bottom Eyelids",
+      "type": "Image",
+      "image_path": "companion/model/example_eyelids.png",
+      "pos": {
+        "x": 0,
+        "y": -18
+      },
+      "sca": {
+        "x": 1,
+        "y": 0
+      },
+      "rect": {
+        "pivot": [ 0.5, 0 ],
+        "size": [ 74, 18 ]
+      },
+      "image_rect": "fullanchored"
+    },
+    {
+      "id": "BLINK",
+      "p": "EYES",
+      "name": "Blink",
+      "type": "Image",
+      "image_path": "companion/model/example_blink.png",
+      "image_rect": {
+        "size": [ 74, 34 ]
+      },
+      "on_tick": {
+        "if_func": "Transform",
+        "sub_func": "UpdateBlinking"
+      }
+    },
+    {
+      "id": "BROWS",
+      "p": "FACE",
+      "name": "Brows",
+      "type": "Parent",
+      "rect": {
+        "anc_pos": [ 0, 30 ]
+      }
+    },
+    {
+      "id": "BROW_LEFT",
+      "p": "BROWS",
+      "name": "Brow Left",
+      "type": "Image",
+      "image_path": "companion/model/example_brow.png",
+      "rect": {
+        "anc_pos": [ 22, 0 ]
+      },
+      "image_rect": {
+        "anc_pos": [ 18, 0 ],
+        "pivot": [ 1.7, 0.5 ],
+        "size": [ 20, 6 ]
+      }
+    },
+    {
+      "id": "BROW_RIGHT",
+      "p": "BROWS",
+      "name": "Brow Right",
+      "type": "Image",
+      "image_path": "companion/model/example_brow.png",
+      "rect": {
+        "anc_pos": [ -22, 0 ]
+      },
+      "image_rect": {
+        "anc_pos": [ -18, 0 ],
+        "pivot": [ -0.7, 0.5 ],
+        "size": [ 20, 6 ]
+      }
+    },
+    {
+      "id": "SNOUT",
+      "p": "FACE",
+      "name": "Snout",
+      "type": "Image",
+      "image_path": "companion/model/example_snout.png",
+      "image_rect": {
+        "anc_pos": [ 0, -31 ],
+        "size": [ 60, 31 ]
+      }
+    },
+    {
+      "id": "MOUTH_BASE",
+      "p": "SNOUT",
+      "name": "Mouth Base",
+      "type": "Parent",
+      "rect": {
+        "anc_pos": [ 0, -30 ]
+      },
+      "on_tick": {
+        "name": "SetPartPosition",
+        "params": {
+          "x": "facePosX",
+          "y": {
+            "name": "ParseMath",
+            "params": [ "facePosY * 0.5" ]
+          }
+        }
+      }
+    },
+    {
+      "id": "MOUTH_UPPER",
+      "p": "MOUTH_BASE",
+      "name": "Mouth Upper",
+      "type": "Image",
+      "image_path": "companion/model/example_mouth.png",
+      "rect": {
+        "rot": 180,
+        "sca": [ 1, 0.15 ]
+      },
+      "image_rect": {
+        "pivot": [ 0.5, 1 ],
+        "size": [ 32, 16 ]
+      }
+    },
+    {
+      "id": "MOUTH_LOWER",
+      "p": "MOUTH_BASE",
+      "name": "Mouth Lower",
+      "type": "Image",
+      "image_path": "companion/model/example_mouth.png",
+      "image_rect": {
+        "pivot": [ 0.5, 1 ],
+        "size": [ 32, 16 ]
+      },
+      "on_tick": {
+        "name": "SetPartScale",
+        "params": {
+          "x": "partScaX",
+          "y": {
+            "name": "ParseMath",
+            "params": [ "clamp(mouthOpenAmount, 0, 1)" ]
+          }
+        }
+      }
+    },
+    {
+      "id": "LIPS",
+      "p": "MOUTH_BASE",
+      "name": "Lips",
+      "type": "Image",
+      "image_path": "companion/model/example_lips.png",
+      "image_rect": {
+        "anc_pos": [ 0, 3 ],
+        "pivot": [ 0.5, 1 ],
+        "size": [ 32, 8 ]
+      }
+    },
+    {
+      "id": "NOSE",
+      "p": "SNOUT",
+      "name": "Nose",
+      "type": "Image",
+      "image_path": "companion/model/example_nose.png",
+      "rect": {
+        "anc_pos": [ 0, -20 ]
+      },
+      "image_rect": {
+        "size": [ 22, 8 ]
+      },
+      "on_tick": {
+        "name": "SetPartPosition",
+        "params": {
+          "x": "facePosX",
+          "y": {
+            "name": "ParseMath",
+            "params": [ "facePosY * 0.5" ]
+          }
+        }
+      }
+    },
+    {
+      "id": "HANDS_BASE",
+      "p": "BASE",
+      "name": "Hands Base",
+      "type": "Parent"
+    },
+    {
+      "id": "HAND_LEFT",
+      "p": "HANDS_BASE",
+      "name": "Hand Left",
+      "type": "Image",
+      "image_path": "companion/model/example_hand.png",
+      "pos": {
+        "x": 40,
+        "y": 0
+      },
+      "image_rect": {
+        "anc_pos": [ 0, -80 ],
+        "size": [ 42, 42 ]
+      },
+      "on_tick": {
+        "if_func": "DraggingLeftHand",
+        "name": "SetPartPosition",
+        "params": {
+          "x": {
+            "name": "ParseMath",
+            "params": [ "partPosX + ((dragTargetX - partPosX) * dragDelay)" ]
+          },
+          "y": {
+            "name": "ParseMath",
+            "params": [ "partPosY + ((dragTargetY - partPosY) * dragDelay)" ]
+          }
+        }
+      },
+      "on_down": {
+        "if_func": "!Leaving",
+        "sub_func": [
+          {
+            "name": "Interact",
+            "params": [ "Hold Hand" ]
+          },
+          {
+            "if_func": "CanDragLeftHand",
+            "sub_func": [
+              "StartLeftHandDrag",
+              "StopCurrentAction"
+            ]
+          }
+        ]
+      },
+      "on_up": {
+        "if_func": [
+          "CanDragLeftHand",
+          "!Leaving"
+        ],
+        "sub_func": [
+          "EndLeftHandDrag",
+          {
+            "name": "SetPose",
+            "params": [ "End Left Hand Drag" ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "HAND_RIGHT",
+      "p": "HANDS_BASE",
+      "name": "Hand Right",
+      "type": "Image",
+      "image_path": "companion/model/example_hand.png",
+      "pos": {
+        "x": -40,
+        "y": 0
+      },
+      "image_rect": {
+        "anc_pos": [ 0, -80 ],
+        "size": [ 42, 42 ]
+      },
+      "on_tick": {
+        "if_func": "DraggingRightHand",
+        "name": "SetPartPosition",
+        "params": {
+          "x": {
+            "name": "ParseMath",
+            "params": [ "partPosX + ((dragTargetX - partPosX) * dragDelay)" ]
+          },
+          "y": {
+            "name": "ParseMath",
+            "params": [ "partPosY + ((dragTargetY - partPosY) * dragDelay)" ]
+          }
+        }
+      },
+      "on_down": {
+        "if_func": "!Leaving",
+        "sub_func": [
+          {
+            "name": "Interact",
+            "params": [ "Hold Hand" ]
+          },
+          {
+            "if_func": "CanDragRightHand",
+            "sub_func": [
+              "StartRightHandDrag",
+              "StopCurrentAction"
+            ]
+          }
+        ]
+      },
+      "on_up": {
+        "if_func": [
+          "CanDragRightHand",
+          "!Leaving"
+        ],
+        "sub_func": [
+          "EndRightHandDrag",
+          {
+            "name": "SetPose",
+            "params": [ "End Right Hand Drag" ]
+          }
+        ]
+      }
+    }
+  ]
+}

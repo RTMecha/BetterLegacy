@@ -1,0 +1,35 @@
+﻿{
+  "override": true,
+  "attributes": [
+    {
+      "id": "POKING_EYES",
+      "value": 0.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "ALLOW_BLINKING",
+      "value": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "PUPILS_CAN_CHANGE",
+      "value": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "FACE_CAN_LOOK",
+      "value": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "PUPILS_CAN_LOOK",
+      "value": 1.0,
+      "min": 0.0,
+      "max": 1.0
+    }
+  ]
+}

@@ -42,6 +42,7 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
+            attributes.Clear();
             AddAttribute("HAPPINESS", 0.0, -1000.0, 1000.0);
 
             RegisterActions();
@@ -478,6 +479,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void RegisterActions()
         {
+            actions.Clear();
             actions.Add(new ExampleAction(Actions.DANCING,
                 () =>
                 {
@@ -867,6 +869,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void RegisterChecks()
         {
+            checks.Clear();
             checks.Add(new ExampleCheck(Checks.APPLICATION_FOCUSED, () => Application.isFocused));
             checks.Add(new ExampleCheck(Checks.APRIL_FOOLS, () => Seasons.IsAprilFools));
             checks.Add(new ExampleCheck(Checks.NO_ASSETS, () => !RTFile.DirectoryExists(RTFile.GetAsset("companion"))));

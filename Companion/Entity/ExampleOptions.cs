@@ -51,6 +51,38 @@ namespace BetterLegacy.Companion.Entity
             }));
             if (ModCompatibility.UnityExplorerInstalled)
                 options.Add(new Option("Inspect", () => ModCompatibility.Inspect(reference)));
+            options.Add(new Option("Refresh", () =>
+            {
+                CompanionManager.Log("Beginning timer...");
+                var sw = CoreHelper.StartNewStopwatch();
+                reference.timer.Reset();
+                CompanionManager.Log("Initializing defaults...");
+                reference.brain.InitDefault();
+                reference.model.InitDefault();
+                reference.chatBubble.InitDefault();
+                reference.options.InitDefault();
+                reference.commands.InitDefault();
+                reference.tutorials.InitDefault();
+                CompanionManager.Log("Building the brain...");
+                reference.brain.Build();
+                CompanionManager.Log("Building the model...");
+                reference.model.Build();
+                CompanionManager.Log("Building the chat bubble...");
+                reference.chatBubble.Build();
+                CompanionManager.Log("Building the options...");
+                reference.options.Build();
+                CompanionManager.Log("Building the commands...");
+                reference.commands.Build();
+                CompanionManager.Log("Building the tutorials...");
+                reference.tutorials.Build();
+                if (reference.modules != null)
+                {
+                    CompanionManager.Log("Building the custom modules...");
+                    reference.modules.ForLoop(module => module?.Build());
+                }
+
+                CompanionManager.Log($"Done! Took {sw.Elapsed} to build. Now Example should enter the scene");
+            }));
             options.Add(new Option("Cya later", () => reference?.Exit()));
         }
 

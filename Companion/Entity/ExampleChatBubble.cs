@@ -114,6 +114,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void RegisterDialogues()
         {
+            dialogues.Clear();
             dialogues.Add(new ExampleDialogueGroup(Dialogues.SPAWN, new ExampleDialogue[]
             {
                 new ExampleDialogue((companion, parameters) => "Hello"),

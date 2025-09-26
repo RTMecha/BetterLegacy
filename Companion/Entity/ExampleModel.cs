@@ -41,17 +41,8 @@ namespace BetterLegacy.Companion.Entity
 
         public override void InitDefault()
         {
-            #region Register Attributes
-
-            attributes.Clear();
-            AddAttribute("POKING_EYES", 0.0, 0.0, 1.0);
-            AddAttribute("ALLOW_BLINKING", 1.0, 0.0, 1.0);
-            AddAttribute("PUPILS_CAN_CHANGE", 1.0, 0.0, 1.0);
-            AddAttribute("FACE_CAN_LOOK", 1.0, 0.0, 1.0);
-            AddAttribute("PUPILS_CAN_LOOK", 1.0, 0.0, 1.0);
-
-            #endregion
-
+            RegisterAttributes();
+            RegisterFunctions();
             RegisterParts();
             RegisterPoses();
 
@@ -71,6 +62,30 @@ namespace BetterLegacy.Companion.Entity
                 Debug.Log($"{CompanionManager.className}Example has stopped dancing!");
                 StopDanceAnimation();
             };
+        }
+
+        public virtual void RegisterAttributes()
+        {
+            attributes.Clear();
+            if (AssetPack.TryReadFromFile("companion/model/attributes.json", out string attributesFile))
+            {
+                var jn = JSON.Parse(attributesFile);
+                if (jn != null && jn["override"].AsBool)
+                {
+                    for (int i = 0; i < jn["attributes"].Count; i++)
+                    {
+                        var jnAttribute = jn["attributes"][i];
+                        AddAttribute(jnAttribute["id"], jnAttribute["value"].AsDouble, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble, jnAttribute["is_int"].AsBool);
+                    }
+
+                    return;
+                }
+            }
+            AddAttribute("POKING_EYES", 0.0, 0.0, 1.0);
+            AddAttribute("ALLOW_BLINKING", 1.0, 0.0, 1.0);
+            AddAttribute("PUPILS_CAN_CHANGE", 1.0, 0.0, 1.0);
+            AddAttribute("FACE_CAN_LOOK", 1.0, 0.0, 1.0);
+            AddAttribute("PUPILS_CAN_LOOK", 1.0, 0.0, 1.0);
         }
 
         #endregion
@@ -338,7 +353,34 @@ namespace BetterLegacy.Companion.Entity
         public virtual void RegisterParts()
         {
             parts.Clear();
-            parts.Add(ParentPart.Default.ID(Parts.BASE).Name("Base")
+
+            // parse custom model
+            JSONNode jn = null;
+            if (AssetPack.TryReadFromFile("companion/model/parts.json", out string partsFile))
+            {
+                jn = JSON.Parse(partsFile);
+                if (jn != null && jn["override"].AsBool)
+                {
+                    for (int i = 0; i < jn["parts"].Count; i++)
+                    {
+                        var jnPart = jn["parts"][i];
+                        var type = Parser.TryParse(jnPart["type"], BasePart.PartType.Parent);
+                        BasePart part = type switch
+                        {
+                            BasePart.PartType.Parent => ParentPart.Default,
+                            BasePart.PartType.Image => ImagePart.Default,
+                            _ => null,
+                        };
+                        part.model = this;
+                        part.Parse(jnPart);
+                        parts.Add(part);
+                    }
+
+                    return;
+                }
+            }
+
+            parts.Add(ParentPart.Default.Model(this).ID(Parts.BASE).Name("Base")
             .OnTick(part =>
             {
                 // render the models' transforms
@@ -347,7 +389,7 @@ namespace BetterLegacy.Companion.Entity
                 part?.SetRotation(rotation);
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.HEAD).ParentID(Parts.BASE).Name("Head").ImagePath(AssetPack.GetFile("companion/model/example_head.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.HEAD).ParentID(Parts.BASE).Name("Head").ImagePath(AssetPack.GetFile("companion/model/example_head.png"))
             .OnTick(part =>
             {
                 // tick function
@@ -414,7 +456,7 @@ namespace BetterLegacy.Companion.Entity
                 SetPose(Poses.END_DRAG);
             }));
 
-            parts.Add(ParentPart.Default.ID(Parts.FACE).ParentID(Parts.HEAD).Name("Face")
+            parts.Add(ParentPart.Default.Model(this).ID(Parts.FACE).ParentID(Parts.HEAD).Name("Face")
             .OnTick(part =>
             {
                 // tick function
@@ -439,17 +481,17 @@ namespace BetterLegacy.Companion.Entity
 
             #region Ears
 
-            parts.Add(ParentPart.Default.ID(Parts.EARS).ParentID(Parts.HEAD).SiblingIndex(0).Name("Ears")
+            parts.Add(ParentPart.Default.Model(this).ID(Parts.EARS).ParentID(Parts.HEAD).SiblingIndex(0).Name("Ears")
             .OnTick(part =>
             {
                 part.rotation = facePosition.x * 0.8f;
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_LEFT).ParentID(Parts.EARS).Name("Ear Bottom Left").ImagePath(AssetPack.GetFile("companion/model/example_ear_bottom.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.EAR_BOTTOM_LEFT).ParentID(Parts.EARS).Name("Ear Bottom Left").ImagePath(AssetPack.GetFile("companion/model/example_ear_bottom.png"))
             .Rect(RectValues.Default.AnchoredPosition(25f, 35f).Rotation(-30f))
             .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_LEFT).ParentID(Parts.EAR_BOTTOM_LEFT).Name("Ear Top Left").ImagePath(AssetPack.GetFile("companion/model/example_ear_top.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.EAR_TOP_LEFT).ParentID(Parts.EAR_BOTTOM_LEFT).Name("Ear Top Left").ImagePath(AssetPack.GetFile("companion/model/example_ear_top.png"))
             .Rect(RectValues.Default)
             .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(-90f))
             .OnClick((part, pointerEventData) =>
@@ -457,11 +499,11 @@ namespace BetterLegacy.Companion.Entity
                 SetPose(Poses.EAR_LEFT_FLICK);
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_BOTTOM_RIGHT).ParentID(Parts.EARS).Name("Ear Bottom Right").ImagePath(AssetPack.GetFile("companion/model/example_ear_bottom.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.EAR_BOTTOM_RIGHT).ParentID(Parts.EARS).Name("Ear Bottom Right").ImagePath(AssetPack.GetFile("companion/model/example_ear_bottom.png"))
             .Rect(RectValues.Default.AnchoredPosition(-25f, 35f).Rotation(30f))
             .ImageRect(RectValues.Default.Pivot(0.5f, 0.2f).SizeDelta(44f, 52f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.EAR_TOP_RIGHT).ParentID(Parts.EAR_BOTTOM_RIGHT).Name("Ear Top Right").ImagePath(AssetPack.GetFile("companion/model/example_ear_top.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.EAR_TOP_RIGHT).ParentID(Parts.EAR_BOTTOM_RIGHT).Name("Ear Top Right").ImagePath(AssetPack.GetFile("companion/model/example_ear_top.png"))
             .Rect(RectValues.Default)
             .ImageRect(RectValues.Default.AnchoredPosition(0f, 45f).Pivot(0.5f, 0.275f).SizeDelta(44f, 80f).Rotation(90f))
             .OnClick((part, pointerEventData) =>
@@ -471,7 +513,7 @@ namespace BetterLegacy.Companion.Entity
 
             #endregion
 
-            parts.Add(ImagePart.Default.ID(Parts.TAIL).ParentID(Parts.HEAD).SiblingIndex(0).Name("Tail").ImagePath(AssetPack.GetFile("companion/model/example_tail.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.TAIL).ParentID(Parts.HEAD).SiblingIndex(0).Name("Tail").ImagePath(AssetPack.GetFile("companion/model/example_tail.png"))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -58f).SizeDelta(28f, 42f))
             .OnTick(part =>
             {
@@ -487,12 +529,12 @@ namespace BetterLegacy.Companion.Entity
 
             #region Eyes
 
-            parts.Add(ImagePart.Default.ID(Parts.EYES).ParentID(Parts.FACE).Name("Eyes").ImagePath(AssetPack.GetFile("companion/model/example_eyes.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.EYES).ParentID(Parts.FACE).Name("Eyes").ImagePath(AssetPack.GetFile("companion/model/example_eyes.png"))
             .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
             .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
             .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
 
-            parts.Add(ImagePart.Default.ID(Parts.PUPILS).ParentID(Parts.EYES).Name("Pupils").ImagePath(AssetPack.GetFile("companion/model/example_pupils.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.PUPILS).ParentID(Parts.EYES).Name("Pupils").ImagePath(AssetPack.GetFile("companion/model/example_pupils.png"))
             .ImageRect(RectValues.Default.SizeDelta(47f, 22f))
             .OnTick(part =>
             {
@@ -512,17 +554,17 @@ namespace BetterLegacy.Companion.Entity
             .OnDown((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 1.0)
             .OnUp((part, pointerEventData) => GetAttribute("POKING_EYES").Value = 0.0));
 
-            parts.Add(ImagePart.Default.ID(Parts.TOP_EYELIDS).ParentID(Parts.EYES).Name("Top Eyelids").ImagePath(AssetPack.GetFile("companion/model/example_eyelids.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.TOP_EYELIDS).ParentID(Parts.EYES).Name("Top Eyelids").ImagePath(AssetPack.GetFile("companion/model/example_eyelids.png"))
             .Position(new Vector2(0f, 18f)).Scale(new Vector2(1f, 0f))
             .Rect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(74f, 18f))
             .ImageRect(RectValues.FullAnchored));
             
-            parts.Add(ImagePart.Default.ID(Parts.BOTTOM_EYELIDS).ParentID(Parts.EYES).Name("Bottom Eyelids").ImagePath(AssetPack.GetFile("companion/model/example_eyelids.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.BOTTOM_EYELIDS).ParentID(Parts.EYES).Name("Bottom Eyelids").ImagePath(AssetPack.GetFile("companion/model/example_eyelids.png"))
             .Position(new Vector2(0f, -18f)).Scale(new Vector2(1f, 0f))
             .Rect(RectValues.Default.Pivot(0.5f, 0f).SizeDelta(74f, 18f))
             .ImageRect(RectValues.FullAnchored));
 
-            parts.Add(ImagePart.Default.ID(Parts.BLINK).ParentID(Parts.EYES).Name("Blink").ImagePath(AssetPack.GetFile("companion/model/example_blink.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.BLINK).ParentID(Parts.EYES).Name("Blink").ImagePath(AssetPack.GetFile("companion/model/example_blink.png"))
             .ImageRect(RectValues.Default.SizeDelta(74f, 34f))
             .OnTick(part =>
             {
@@ -546,14 +588,14 @@ namespace BetterLegacy.Companion.Entity
                     part.gameObject.SetActive(true);
             }));
 
-            parts.Add(ParentPart.Default.ID(Parts.BROWS).ParentID(Parts.FACE).Name("Brows")
+            parts.Add(ParentPart.Default.Model(this).ID(Parts.BROWS).ParentID(Parts.FACE).Name("Brows")
             .Rect(RectValues.Default.AnchoredPosition(0f, 30f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.BROW_LEFT).ParentID(Parts.BROWS).Name("Brow Left").ImagePath(AssetPack.GetFile("companion/model/example_brow.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.BROW_LEFT).ParentID(Parts.BROWS).Name("Brow Left").ImagePath(AssetPack.GetFile("companion/model/example_brow.png"))
             .Rect(RectValues.Default.AnchoredPosition(22f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(18f, 0f).Pivot(1.7f, 0.5f).SizeDelta(20f, 6f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.BROW_RIGHT).ParentID(Parts.BROWS).Name("Brow Right").ImagePath(AssetPack.GetFile("companion/model/example_brow.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.BROW_RIGHT).ParentID(Parts.BROWS).Name("Brow Right").ImagePath(AssetPack.GetFile("companion/model/example_brow.png"))
             .Rect(RectValues.Default.AnchoredPosition(-22f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(-18f, 0f).Pivot(-0.7f, 0.5f).SizeDelta(20f, 6f)));
 
@@ -561,31 +603,31 @@ namespace BetterLegacy.Companion.Entity
 
             #region Snout
 
-            parts.Add(ImagePart.Default.ID(Parts.SNOUT).ParentID(Parts.FACE).Name("Snout").ImagePath(AssetPack.GetFile("companion/model/example_snout.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.SNOUT).ParentID(Parts.FACE).Name("Snout").ImagePath(AssetPack.GetFile("companion/model/example_snout.png"))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -31f).SizeDelta(60f, 31f)));
 
-            parts.Add(ParentPart.Default.ID(Parts.MOUTH_BASE).ParentID(Parts.SNOUT).Name("Mouth Base")
+            parts.Add(ParentPart.Default.Model(this).ID(Parts.MOUTH_BASE).ParentID(Parts.SNOUT).Name("Mouth Base")
             .Rect(RectValues.Default.AnchoredPosition(0f, -30f))
             .OnTick(part =>
             {
                 part?.SetPosition(new Vector2(facePosition.x, facePosition.y * 0.5f));
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.MOUTH_UPPER).ParentID(Parts.MOUTH_BASE).Name("Mouth Upper").ImagePath(AssetPack.GetFile("companion/model/example_mouth.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.MOUTH_UPPER).ParentID(Parts.MOUTH_BASE).Name("Mouth Upper").ImagePath(AssetPack.GetFile("companion/model/example_mouth.png"))
             .Rect(RectValues.Default.Rotation(180f)).Scale(new Vector2(1f, 0.15f))
             .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.MOUTH_LOWER).ParentID(Parts.MOUTH_BASE).Name("Mouth Lower").ImagePath(AssetPack.GetFile("companion/model/example_mouth.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.MOUTH_LOWER).ParentID(Parts.MOUTH_BASE).Name("Mouth Lower").ImagePath(AssetPack.GetFile("companion/model/example_mouth.png"))
             .ImageRect(RectValues.Default.Pivot(0.5f, 1f).SizeDelta(32f, 16f))
             .OnTick(part =>
             {
                 part?.SetScale(new Vector2(part.scale.x, Mathf.Clamp(mouthOpenAmount, 0f, 1f)));
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.LIPS).ParentID(Parts.MOUTH_BASE).Name("Lips").ImagePath(AssetPack.GetFile("companion/model/example_lips.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.LIPS).ParentID(Parts.MOUTH_BASE).Name("Lips").ImagePath(AssetPack.GetFile("companion/model/example_lips.png"))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, 3f).Pivot(0.5f, 1f).SizeDelta(32f, 8f)));
 
-            parts.Add(ImagePart.Default.ID(Parts.NOSE).ParentID(Parts.SNOUT).Name("Nose").ImagePath(AssetPack.GetFile("companion/model/example_nose.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.NOSE).ParentID(Parts.SNOUT).Name("Nose").ImagePath(AssetPack.GetFile("companion/model/example_nose.png"))
             .Rect(RectValues.Default.AnchoredPosition(0f, -20f))
             .ImageRect(RectValues.Default.SizeDelta(22f, 8f))
             .OnTick(part =>
@@ -597,9 +639,9 @@ namespace BetterLegacy.Companion.Entity
 
             #region Hands
 
-            parts.Add(ParentPart.Default.ID(Parts.HANDS_BASE).ParentID("BASE").Name("Hands Base"));
+            parts.Add(ParentPart.Default.Model(this).ID(Parts.HANDS_BASE).ParentID("BASE").Name("Hands Base"));
 
-            parts.Add(ImagePart.Default.ID(Parts.HAND_LEFT).ParentID(Parts.HANDS_BASE).Name("Hand Left").ImagePath(AssetPack.GetFile("companion/model/example_hand.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.HAND_LEFT).ParentID(Parts.HANDS_BASE).Name("Hand Left").ImagePath(AssetPack.GetFile("companion/model/example_hand.png"))
             .Position(new Vector2(40f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
             .OnTick(part =>
@@ -639,26 +681,10 @@ namespace BetterLegacy.Companion.Entity
                     CoreHelper.LogException(ex);
                 }
 
-                var animation = new RTAnimation("Example Hand Reset")
-                {
-                    animationHandlers = new List<AnimationHandlerBase>
-                    {
-                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                        {
-                            new Vector2Keyframe(0f, part.position, Ease.Linear),
-                            new Vector2Keyframe(0.3f, new Vector2(40f, 0f), Ease.SineOut),
-                            new Vector2Keyframe(0.32f, new Vector2(40f, 0f), Ease.Linear),
-                        }, part.SetPosition, interpolateOnComplete: true),
-                    },
-                };
-                animation.onComplete = () =>
-                {
-                    CompanionManager.inst.animationController.Remove(animation.id);
-                };
-                CompanionManager.inst.animationController.Play(animation);
+                SetPose(Poses.END_LEFT_HAND_DRAG);
             }));
 
-            parts.Add(ImagePart.Default.ID(Parts.HAND_RIGHT).ParentID(Parts.HANDS_BASE).Name("Hand Right").ImagePath(AssetPack.GetFile("companion/model/example_hand.png"))
+            parts.Add(ImagePart.Default.Model(this).ID(Parts.HAND_RIGHT).ParentID(Parts.HANDS_BASE).Name("Hand Right").ImagePath(AssetPack.GetFile("companion/model/example_hand.png"))
             .Position(new Vector2(-40f, 0f))
             .ImageRect(RectValues.Default.AnchoredPosition(0f, -80f).SizeDelta(42f, 42f))
             .OnTick(part =>
@@ -698,26 +724,29 @@ namespace BetterLegacy.Companion.Entity
                     CoreHelper.LogException(ex);
                 }
 
-                var animation = new RTAnimation("Example Hand Reset")
-                {
-                    animationHandlers = new List<AnimationHandlerBase>
-                    {
-                        new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
-                        {
-                            new Vector2Keyframe(0f, part.position, Ease.Linear),
-                            new Vector2Keyframe(0.3f, new Vector2(-40f, 0f), Ease.SineOut),
-                            new Vector2Keyframe(0.32f, new Vector2(-40f, 0f), Ease.Linear),
-                        }, part.SetPosition, interpolateOnComplete: true),
-                    },
-                };
-                animation.onComplete = () =>
-                {
-                    CompanionManager.inst.animationController.Remove(animation.id);
-                };
-                CompanionManager.inst.animationController.Play(animation);
+                SetPose(Poses.END_RIGHT_HAND_DRAG);
             }));
 
             #endregion
+
+            // add custom objects
+            if (jn != null)
+            {
+                for (int i = 0; i < jn["parts"].Count; i++)
+                {
+                    var jnPart = jn["parts"][i];
+                    var type = Parser.TryParse(jnPart["type"], BasePart.PartType.Parent);
+                    BasePart part = type switch
+                    {
+                        BasePart.PartType.Parent => ParentPart.Default,
+                        BasePart.PartType.Image => ImagePart.Default,
+                        _ => null,
+                    };
+                    part.model = this;
+                    part.Parse(jnPart);
+                    parts.Add(part);
+                }
+            }
         }
 
         /// <summary>
@@ -738,6 +767,57 @@ namespace BetterLegacy.Companion.Entity
             part = GetPart(id);
             return part;
         }
+
+        /// <summary>
+        /// Registers functions to the model.
+        /// </summary>
+        public virtual void RegisterFunctions()
+        {
+            partFunctions = new PartFunctions();
+            var array = AssetPack.GetArray("companion/model/functions.json");
+            for (int i = 0; i < array.Count; i++)
+                partFunctions.customJSONFunctions[array[i]["name"]] = array[i];
+        }
+
+        /// <summary>
+        /// Gets JSON variables from the object.
+        /// </summary>
+        /// <returns>Returns a dictionary of object variables.</returns>
+        public Dictionary<string, JSONNode> GetVariables()
+        {
+            var dictionary = new Dictionary<string, JSONNode>();
+            dictionary["posX"] = position.x;
+            dictionary["posY"] = position.y;
+            dictionary["scaX"] = scale.x;
+            dictionary["scaY"] = scale.y;
+            dictionary["rot"] = rotation;
+            dictionary["facePosX"] = facePosition.x;
+            dictionary["facePosY"] = facePosition.y;
+            dictionary["pupilsOffsetX"] = pupilsOffset.x;
+            dictionary["pupilsOffsetY"] = pupilsOffset.y;
+            dictionary["mouthOpenAmount"] = mouthOpenAmount;
+            if (reference)
+            {
+                dictionary["timer"] = reference.timer.time;
+                dictionary["dragTargetX"] = reference.DragTarget.x;
+                dictionary["dragTargetY"] = reference.DragTarget.y;
+                dictionary["dragPosX"] = reference.dragPos.x;
+                dictionary["dragPosY"] = reference.dragPos.y;
+                dictionary["dragDelay"] = reference.DragDelay;
+            }
+            if (reference && reference.brain)
+            {
+                var lookingAt = reference.brain.LookingAt;
+                dictionary["lookingAtPosX"] = lookingAt.x;
+                dictionary["lookingAtPosY"] = lookingAt.y;
+            }
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Parser for part functions.
+        /// </summary>
+        public JSONFunctionParser<BasePart> partFunctions;
 
         /// <summary>
         /// Top-most parent ID.
@@ -775,6 +855,8 @@ namespace BetterLegacy.Companion.Entity
         public abstract class BasePart : Exists
         {
             public BasePart(PartType partType) => this.partType = partType;
+
+            public ExampleModel model;
 
             /// <summary>
             /// GameObject reference.
@@ -839,9 +921,9 @@ namespace BetterLegacy.Companion.Entity
             }
 
             /// <summary>
-            /// CSharp code compiled to run per-tick.
+            /// JSON code compiled to run per-tick.
             /// </summary>
-            public string onTickCS;
+            public JSONNode onTickJSON;
 
             /// <summary>
             /// Function to run per-tick.
@@ -897,11 +979,15 @@ namespace BetterLegacy.Companion.Entity
             public virtual void Tick()
             {
                 onTick?.Invoke(this);
+
+                if (onTickJSON != null)
+                    model?.partFunctions?.ParseFunction(onTickJSON, this, GetVariables());
+
                 if (!transform)
                     return;
 
                 transform.localPosition = position + rect.anchoredPosition;
-                transform.localScale = scale * rect.scale;
+                transform.localScale = (scale * rect.scale).AsVector3(1f);
                 transform.localRotation = Quaternion.Euler(0f, 0f, rotation + rect.rotation);
             }
 
@@ -918,36 +1004,27 @@ namespace BetterLegacy.Companion.Entity
             public void SetTickFunction(Action<BasePart> action) => onTick = action;
 
             /// <summary>
-            /// Adds a CSharp string function to run per-tick.
+            /// Gets JSON variables from the object.
             /// </summary>
-            /// <param name="code">CSharp code to add.</param>
-            public void AddTickFunction(string code)
+            /// <returns>Returns a dictionary of object variables.</returns>
+            public virtual Dictionary<string, JSONNode> GetVariables()
             {
-                if (!string.IsNullOrEmpty(code))
-                    onTick += part => RTCode.Evaluator.Compile(GetVariables(code));
+                var dictionary = model?.GetVariables() ?? new Dictionary<string, JSONNode>();
+                if (transform)
+                {
+                    dictionary["partTransformPosX"] = transform.position.x;
+                    dictionary["partTransformPosY"] = transform.position.y;
+                    dictionary["partTransformScaX"] = transform.localScale.x;
+                    dictionary["partTransformScaY"] = transform.localScale.y;
+                    dictionary["partTransformRotZ"] = transform.localEulerAngles.z;
+                }
+                dictionary["partPosX"] = position.x;
+                dictionary["partPosY"] = position.y;
+                dictionary["partScaX"] = scale.x;
+                dictionary["partScaY"] = scale.y;
+                dictionary["partRot"] = rotation;
+                return dictionary;
             }
-
-            /// <summary>
-            /// Sets a CSharp string function to the per-tick function.
-            /// </summary>
-            /// <param name="code">CSharp code to set.</param>
-            public void SetTickFunction(string code)
-            {
-                if (!string.IsNullOrEmpty(code))
-                    onTick = part => RTCode.Evaluator.Compile(GetVariables(code));
-            }
-
-            /// <summary>
-            /// Gets the parts' variables.
-            /// </summary>
-            /// <param name="input">Input to replace.</param>
-            /// <returns>returns a string representing the part values.</returns>
-            public string GetVariables(string input) => input
-                .Replace("PART_ID", id)
-                .Replace("PART_POS_X", transform.position.x.ToString())
-                .Replace("PART_POS_Y", transform.position.y.ToString())
-                .Replace("PART_LOCAL_POS_X", transform.localPosition.x.ToString())
-                .Replace("PART_LOCAL_POS_Y", transform.localPosition.y.ToString());
 
             /// <summary>
             /// Parses a part from JSON.
@@ -974,6 +1051,12 @@ namespace BetterLegacy.Companion.Entity
             #region Init
 
             public static ParentPart Default => new ParentPart();
+
+            public ParentPart Model(ExampleModel model)
+            {
+                this.model = model;
+                return this;
+            }
 
             public ParentPart ID(string id)
             {
@@ -1023,9 +1106,9 @@ namespace BetterLegacy.Companion.Entity
                 return this;
             }
 
-            public ParentPart OnTick(string onTick)
+            public ParentPart OnTick(JSONNode onTickJSON)
             {
-                onTickCS = onTick;
+                this.onTickJSON = onTickJSON;
                 return this;
             }
 
@@ -1046,32 +1129,47 @@ namespace BetterLegacy.Companion.Entity
                 transform = gameObject.transform;
 
                 rect.AssignToRectTransform(transform.AsRT());
-
-                SetTickFunction(onTickCS);
             }
 
             public override void Parse(JSONNode jn)
             {
                 id = jn["id"];
                 parentID = jn["p"];
-                siblingIndex = jn["sib_index"].AsInt;
-                name = jn["n"];
+                if (jn["sib_index"] != null)
+                    siblingIndex = jn["sib_index"].AsInt;
+                name = jn["name"];
                 rect = RectValues.Parse(jn["rect"], RectValues.Default);
 
-                onTickCS = jn["tick"];
+                position = Parser.TryParse(jn["pos"], Vector2.zero);
+                scale = Parser.TryParse(jn["sca"], Vector2.one);
+                rotation = jn["rot"].AsFloat;
+
+                if (jn["on_tick"] != null)
+                    onTickJSON = jn["on_tick"];
             }
 
             public override JSONNode ToJSON()
             {
-                var jn = JSON.Parse("{}");
+                var jn = Parser.NewJSONObject();
 
-                jn["id"] = id;
-                jn["p"] = parentID;
+                if (!string.IsNullOrEmpty(id))
+                    jn["id"] = id;
+                if (!string.IsNullOrEmpty(parentID))
+                    jn["p"] = parentID;
                 jn["sib_index"] = siblingIndex;
-                jn["n"] = name;
+                if (!string.IsNullOrEmpty(name))
+                    jn["name"] = name;
                 jn["rect"] = rect.ToJSON();
 
-                jn["tick"] = onTickCS;
+                if (position.x != 0f || position.y != 0f)
+                    jn["pos"] = position.ToJSON();
+                if (scale.x != 1f || scale.y != 1f)
+                    jn["Sca"] = scale.ToJSON();
+                if (rotation != 0f)
+                    jn["rot"] = rotation;
+
+                if (onTickJSON != null)
+                    jn["tick"] = onTickJSON;
 
                 return jn;
             }
@@ -1122,23 +1220,29 @@ namespace BetterLegacy.Companion.Entity
             public Action<ImagePart, PointerEventData> onUp;
 
             /// <summary>
-            /// CSharp string to compile when the part is clicked.
+            /// JSON code compiled to run when the part is clicked.
             /// </summary>
-            public string onClickCS;
+            public JSONNode onClickJSON;
 
             /// <summary>
-            /// CSharp string to compile when the part is pressed down.
+            /// JSON code compiled to run when the part is pressed down.
             /// </summary>
-            public string onDownCS;
+            public JSONNode onDownJSON;
 
             /// <summary>
-            /// CSharp string to compile when the part is pressed up.
+            /// JSON code compiled to run when the part is pressed up.
             /// </summary>
-            public string onUpCS;
+            public JSONNode onUpJSON;
 
             #region Init
 
             public static ImagePart Default => new ImagePart();
+
+            public ImagePart Model(ExampleModel model)
+            {
+                this.model = model;
+                return this;
+            }
 
             public ImagePart ID(string id)
             {
@@ -1200,9 +1304,9 @@ namespace BetterLegacy.Companion.Entity
                 return this;
             }
 
-            public ImagePart OnTick(string onTick)
+            public ImagePart OnTick(JSONNode onTickJSON)
             {
-                onTickCS = onTick;
+                this.onTickJSON = onTickJSON;
                 return this;
             }
 
@@ -1246,17 +1350,49 @@ namespace BetterLegacy.Companion.Entity
                 rect.AssignToRectTransform(transform.AsRT());
                 imageRect.AssignToRectTransform(image.rectTransform);
 
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture(imagePath, image.AssignTexture));
+                var imagePath = this.imagePath;
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    if (!imagePath.Contains(RTFile.ApplicationDirectory))
+                        imagePath = AssetPack.GetFile(imagePath);
 
-                SetTickFunction(onTickCS);
+                    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture(imagePath, image.AssignTexture));
+                }
 
-                if (onClick == null && onDown == null && onUp == null)
+                if (onClick == null && onDown == null && onUp == null && onClickJSON == null && onDownJSON == null && onUpJSON == null)
                     return;
 
                 var clickable = imageGameObject.AddComponent<ExampleClickable>();
-                clickable.onClick = pointerEventData => onClick?.Invoke(this, pointerEventData);
-                clickable.onDown = pointerEventData => onDown?.Invoke(this, pointerEventData);
-                clickable.onUp = pointerEventData => onUp?.Invoke(this, pointerEventData);
+                clickable.onClick = pointerEventData =>
+                {
+                    if (onClickJSON != null)
+                    {
+                        var variables = GetVariables();
+                        variables["pointerEventButton"] = pointerEventData.button.ToString();
+                        model?.partFunctions?.ParseFunction(onClickJSON, this, variables);
+                    }
+                    onClick?.Invoke(this, pointerEventData);
+                };
+                clickable.onDown = pointerEventData =>
+                {
+                    if (onDownJSON != null)
+                    {
+                        var variables = GetVariables();
+                        variables["pointerEventButton"] = pointerEventData.button.ToString();
+                        model?.partFunctions?.ParseFunction(onDownJSON, this, variables);
+                    }
+                    onDown?.Invoke(this, pointerEventData);
+                };
+                clickable.onUp = pointerEventData =>
+                {
+                    if (onUpJSON != null)
+                    {
+                        var variables = GetVariables();
+                        variables["pointerEventButton"] = pointerEventData.button.ToString();
+                        model?.partFunctions?.ParseFunction(onUpJSON, this, variables);
+                    }
+                    onUp?.Invoke(this, pointerEventData);
+                };
             }
 
             public override void Tick()
@@ -1270,41 +1406,59 @@ namespace BetterLegacy.Companion.Entity
             {
                 id = jn["id"];
                 parentID = jn["p"];
-                siblingIndex = jn["sib_index"].AsInt;
-                name = jn["n"];
+                if (jn["sib_index"] != null)
+                    siblingIndex = jn["sib_index"].AsInt;
+                name = jn["name"];
                 rect = RectValues.Parse(jn["rect"], RectValues.Default);
                 imageRect = RectValues.Parse(jn["image_rect"], RectValues.Default);
                 imagePath = jn["image_path"];
 
-                onTickCS = jn["tick"];
-                onClickCS = jn["on_click"];
-                onDownCS = jn["on_down"];
-                onUpCS = jn["on_up"];
+                position = Parser.TryParse(jn["pos"], Vector2.zero);
+                scale = Parser.TryParse(jn["sca"], Vector2.one);
+                rotation = jn["rot"].AsFloat;
+                imageRotation = jn["image_rot"].AsFloat;
 
-                if (!string.IsNullOrEmpty(onClickCS))
-                    onClick = (part, eventData) => RTCode.Evaluate(GetVariables(onClickCS));
-                if (!string.IsNullOrEmpty(onDownCS))
-                    onDown = (part, eventData) => RTCode.Evaluate(GetVariables(onDownCS));
-                if (!string.IsNullOrEmpty(onUpCS))
-                    onUp = (part, eventData) => RTCode.Evaluate(GetVariables(onUpCS));
+                if (jn["on_tick"] != null)
+                    onTickJSON = jn["on_tick"];
+                if (jn["on_click"] != null)
+                    onClickJSON = jn["on_click"];
+                if (jn["on_down"] != null)
+                    onDownJSON = jn["on_down"];
+                if (jn["on_up"] != null)
+                    onUpJSON = jn["on_up"];
             }
 
             public override JSONNode ToJSON()
             {
-                var jn = JSON.Parse("{}");
+                var jn = Parser.NewJSONObject();
 
-                jn["id"] = id;
-                jn["p"] = parentID;
+                if (!string.IsNullOrEmpty(id))
+                    jn["id"] = id;
+                if (!string.IsNullOrEmpty(parentID))
+                    jn["p"] = parentID;
                 jn["sib_index"] = siblingIndex;
-                jn["n"] = name;
+                if (!string.IsNullOrEmpty(name))
+                    jn["name"] = name;
                 jn["rect"] = rect.ToJSON();
                 jn["image_rect"] = imageRect.ToJSON();
-                jn["image_path"] = imagePath;
+                if (!string.IsNullOrEmpty(imagePath))
+                    jn["image_path"] = imagePath;
 
-                jn["tick"] = onTickCS;
-                jn["on_click"] = onClickCS;
-                jn["on_down"] = onDownCS;
-                jn["on_up"] = onUpCS;
+                if (position.x != 0f || position.y != 0f)
+                    jn["pos"] = position.ToJSON();
+                if (scale.x != 1f || scale.y != 1f)
+                    jn["Sca"] = scale.ToJSON();
+                if (rotation != 0f)
+                    jn["rot"] = rotation;
+
+                if (onTickJSON != null)
+                    jn["on_tick"] = onTickJSON;
+                if (onClickJSON != null)
+                    jn["on_click"] = onClickJSON;
+                if (onDownJSON != null)
+                    jn["on_down"] = onDownJSON;
+                if (onUpJSON != null)
+                    jn["on_up"] = onUpJSON;
 
                 return jn;
             }
@@ -1448,6 +1602,328 @@ namespace BetterLegacy.Companion.Entity
             public const string HAND_RIGHT = "HAND_RIGHT";
         }
 
+        public class PartFunctions : JSONFunctionParser<BasePart>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "Transform": return thisElement && thisElement.transform;
+                    case "CanDrag": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDrag;
+                    case "CanDragLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragLeftHand;
+                    case "CanDragRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragRightHand;
+                    case "Dragging": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.dragging;
+                    case "DraggingLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingLeftHand;
+                    case "DraggingRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingRightHand;
+                    case "Leaving": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.leaving;
+                    case "CurrentAction": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction;
+                }
+
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "StartDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
+
+                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                            reference.startDragPos = new Vector2(thisElement.model.position.x, thisElement.model.position.y);
+                            reference.dragPos = new Vector3(thisElement.model.position.x, thisElement.model.position.y);
+                            reference.dragging = true;
+
+                            return;
+                        }
+                    case "Drag": {
+                            var reference = thisElement.model.reference;
+                            thisElement.model.rotation = (reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay;
+
+                            reference.dragPos += (reference.DragTarget - reference.dragPos) * reference.DragDelay;
+
+                            thisElement.model.position = new Vector3(Mathf.Clamp(reference.dragPos.x, -970f, 970f), Mathf.Clamp(reference.dragPos.y, -560f, 560f));
+
+                            break;
+                        }
+                    case "EndDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            thisElement.model.facePosition = Vector3.zero;
+
+                            reference.dragging = false;
+
+                            return;
+                        }
+                    case "StartLeftHandDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
+                            reference.draggingLeftHand = true;
+
+                            return;
+                        }
+                    case "EndLeftHandDrag": {
+                            if (thisElement && thisElement.model && thisElement.model.reference)
+                                thisElement.model.reference.draggingLeftHand = false;
+
+                            try
+                            {
+                                if (thisElement is ImagePart part)
+                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreHelper.LogException(ex);
+                            }
+
+                            return;
+                        }
+                    case "StartRightHandDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
+                            reference.draggingRightHand = true;
+
+                            return;
+                        }
+                    case "EndRightHandDrag": {
+                            if (thisElement && thisElement.model && thisElement.model.reference)
+                                thisElement.model.reference.draggingRightHand = false;
+
+                            try
+                            {
+                                if (thisElement is ImagePart part)
+                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreHelper.LogException(ex);
+                            }
+
+                            return;
+                        }
+
+                    case "SetPose": {
+                            if (!thisElement || !thisElement.model)
+                                return;
+
+                            var pose = ParseVarFunction(parameters.Get(0, "pose"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(pose))
+                                return;
+
+                            thisElement.model.SetPose(pose);
+
+                            return;
+                        }
+
+                    case "SetAttribute": {
+                            if (parameters == null || !thisElement || !thisElement.model)
+                                return;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return;
+
+                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                            thisElement.model.GetAttribute(id, value, min, max).Value = value;
+                            return;
+                        }
+
+                    case "SetFacePosition": {
+                            if (!thisElement || !thisElement.model)
+                                return;
+
+                            thisElement.model.facePosition = new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat);
+
+                            return;
+                        }
+
+                    #region PlaySound
+
+                    // Plays a sound. Can either be a default one already loaded in the SoundLibrary or a custom one from the menu's folder.
+                    // Supports both JSON array and JSON object.
+                    //
+                    // - JSON Array Structure -
+                    // 0 = sound
+                    // 1 = volume
+                    // 2 = pitch
+                    // Example:
+                    // [
+                    //   "blip" < plays the blip sound.
+                    //   "0.3" < sound is quiet.
+                    //   "2" < sound is fast.
+                    // ]
+                    //
+                    // - JSON Object Structure -
+                    // "sound"
+                    // "vol"
+                    // "pitch"
+                    // Example:
+                    // {
+                    //   "sound": "some kind of sound.ogg" < since this sound does not exist in the SoundLibrary, search for a file with the name. If it exists, play the sound.
+                    //   "vol": "1" < default
+                    //   "pitch": "0.5" < slow
+                    // }
+                    case "PlaySound": {
+                            if (parameters == null || !thisElement || !thisElement.model)
+                                return;
+
+                            string sound = ParseVarFunction(parameters.Get(0, "sound"));
+                            if (string.IsNullOrEmpty(sound))
+                                return;
+
+                            float volume = 1f;
+                            var volumeJN = ParseVarFunction(parameters.Get(1, "vol"));
+                            if (volumeJN != null)
+                                volume = volumeJN;
+                        
+                            float pitch = 1f;
+                            var pitchJN = ParseVarFunction(parameters.Get(2, "pitch"));
+                            if (pitchJN != null)
+                                pitch = pitchJN;
+
+                            if (SoundManager.inst.TryGetSound(sound, out AudioClip audioClip))
+                            {
+                                SoundManager.inst.PlaySound(thisElement.model.baseCanvas, audioClip, volume, pitch);
+                                return;
+                            }
+
+                            //var filePath = $"{Path.GetDirectoryName(inst.CurrentInterface.filePath)}{sound}";
+                            //if (!RTFile.FileExists(filePath))
+                            //    return;
+
+                            //var audioType = RTFile.GetAudioType(filePath);
+                            //if (audioType == AudioType.MPEG)
+                            //    SoundManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath), volume, pitch);
+                            //else
+                            //    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => SoundManager.inst.PlaySound(audioClip, volume, pitch)));
+
+                            return;
+                        }
+
+                    #endregion
+
+                    case "ToggleOptions": {
+                            thisElement?.model?.reference?.options?.Toggle();
+                            break;
+                        }
+                    case "Interact": {
+                            thisElement?.model?.reference?.brain?.Interact(ParseVarFunction(parameters.Get(0, "context"), thisElement, customVariables));
+                            break;
+                        }
+
+                    case "SetPartPosition": {
+                            if (parameters == null)
+                                return;
+
+                            thisElement?.SetPosition(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
+                            return;
+                        }
+                    case "SetPartScale": {
+                            if (parameters == null)
+                                return;
+
+                            thisElement?.SetScale(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
+                            return;
+                        }
+                    case "SetPartRotation": {
+                            if (parameters == null)
+                                return;
+
+                            thisElement?.SetRotation(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat);
+                            return;
+                        }
+
+                    case "SetPartImageRotation": {
+                            if (parameters == null || thisElement is not ImagePart imagePart)
+                                return;
+
+                            imagePart.imageRotation = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat;
+                            return;
+                        }
+
+                    case "StopCurrentAction": {
+                            if (thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction)
+                                thisElement.model.reference.brain.StopCurrentAction();
+                            break;
+                        }
+
+                    case "UpdatePupilsOffset": {
+                            if (thisElement && thisElement.model)
+                                thisElement.model.pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
+                            return;
+                        }
+                    case "UpdateBlinking": {
+                        if (!thisElement || !thisElement.gameObject || !thisElement.model)
+                            return;
+
+                            var reference = thisElement.model.reference;
+
+                            float t = reference.timer.time % CompanionManager.BLINK_RATE;
+
+                            if (!reference.Dragging && thisElement.model.GetAttribute("ALLOW_BLINKING").Value == 1.0 && thisElement.model.GetAttribute("DANCING").Value == 0.0 && thisElement.model.GetAttribute("POKING_EYES").Value == 0.0)
+                            {
+                                var blinkingAttribute = thisElement.model.GetAttribute("IS_BLINKING");
+                                var canUnblinkAttribute = thisElement.model.GetAttribute("CAN_UNBLINK");
+                                if (t > CompanionManager.BLINK_RATE - 0.3f && canUnblinkAttribute.Value == 1.0)
+                                    blinkingAttribute.Value = RandomHelper.PercentChance(45) ? 1.0 : 0.0;
+
+                                var active = t > CompanionManager.BLINK_RATE - 0.3f && blinkingAttribute.Value == 1.0;
+                                canUnblinkAttribute.Value = active ? 0.0 : 1.0;
+                                thisElement.gameObject.SetActive(active);
+                            }
+                            else
+                                thisElement.gameObject.SetActive(true);
+                            return;
+                        }
+                }
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "GetAttribute": {
+                            if (parameters == null || !thisElement || !thisElement.model)
+                                return 0.0;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return 0.0;
+
+                            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
+                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                            return thisElement.model.GetAttribute(id, defaultValue, min, max).Value;
+                        }
+                }
+
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
+        }
+
         #endregion
 
         #region Animations
@@ -1464,6 +1940,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void RegisterPoses()
         {
+            poses.Clear();
             poses.Add(new ExamplePose(Poses.IDLE, (model, parameters) =>
             {
                 var handsBase = model.GetPart(Parts.HANDS_BASE);
@@ -2063,6 +2540,44 @@ namespace BetterLegacy.Companion.Entity
 
                 return animation;
             }));
+            poses.Add(new ExamplePose(Poses.END_LEFT_HAND_DRAG, (model, parameters) =>
+            {
+                var handLeft = model.GetPart(Parts.HAND_LEFT);
+
+                ExceptionHelper.NullReference(handLeft, "Example Hand Left");
+
+                var animation = new RTAnimation("Example Hand Reset");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, handLeft.position, Ease.Linear),
+                        new Vector2Keyframe(0.3f, new Vector2(40f, 0f), Ease.SineOut),
+                        new Vector2Keyframe(0.32f, new Vector2(40f, 0f), Ease.Linear),
+                    }, handLeft.SetPosition, interpolateOnComplete: true),
+                };
+
+                return animation;
+            }));
+            poses.Add(new ExamplePose(Poses.END_RIGHT_HAND_DRAG, (model, parameters) =>
+            {
+                var handLeft = model.GetPart(Parts.HAND_RIGHT);
+
+                ExceptionHelper.NullReference(handLeft, "Example Hand Right");
+
+                var animation = new RTAnimation("Example Hand Reset");
+                animation.animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                    {
+                        new Vector2Keyframe(0f, handLeft.position, Ease.Linear),
+                        new Vector2Keyframe(0.3f, new Vector2(-40f, 0f), Ease.SineOut),
+                        new Vector2Keyframe(0.32f, new Vector2(-40f, 0f), Ease.Linear),
+                    }, handLeft.SetPosition, interpolateOnComplete: true),
+                };
+
+                return animation;
+            }));
             poses.Add(new ExamplePose(Poses.TIRED, (model, parameters) =>
             {
                 var topEyelids = model.GetPart(Parts.TOP_EYELIDS);
@@ -2189,6 +2704,16 @@ namespace BetterLegacy.Companion.Entity
             /// Example's right ear flicks.
             /// </summary>
             public const string EAR_RIGHT_FLICK = "Ear Right Flick";
+
+            /// <summary>
+            /// Examples' hand resets after being dragged.
+            /// </summary>
+            public const string END_LEFT_HAND_DRAG = "End Left Hand Drag";
+            
+            /// <summary>
+            /// Examples' hand resets after being dragged.
+            /// </summary>
+            public const string END_RIGHT_HAND_DRAG = "End Right Hand Drag";
 
             /// <summary>
             /// Example is tired.

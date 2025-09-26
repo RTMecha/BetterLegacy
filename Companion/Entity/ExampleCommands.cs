@@ -235,6 +235,7 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public virtual void RegisterCommands()
         {
+            commands.Clear();
             RegisterChat("Greet Example", ExampleChatBubble.Dialogues.GREETING,
                 new List<ExampleCommand.Phrase>
                 {
