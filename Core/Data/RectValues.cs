@@ -292,16 +292,36 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed RectValue.</returns>
-        public static RectValues Parse(JSONNode jn) => jn.IsString ? FromString(jn) : new RectValues
+        public static RectValues Parse(JSONNode jn)
         {
-            anchoredPosition = Parser.TryParse(jn["anc_pos"], Vector2.zero),
-            anchorMax = Parser.TryParse(jn["anc_max"], CenterPivot),
-            anchorMin = Parser.TryParse(jn["anc_min"], CenterPivot),
-            pivot = Parser.TryParse(jn["pivot"], CenterPivot),
-            sizeDelta = Parser.TryParse(jn["size"], new Vector2(100f, 100f)),
-            rotation = jn["rot"].AsFloat,
-            scale = Parser.TryParse(jn["sca"], Vector2.one),
-        };
+            if (jn.IsString)
+                return FromString(jn);
+
+            var rect = new RectValues();
+
+            var jnBaseRect = jn["base"];
+            if (jnBaseRect != null)
+            {
+                var baseRect = FromString(jnBaseRect);
+                rect.anchoredPosition = baseRect.anchoredPosition;
+                rect.anchorMax = baseRect.anchorMax;
+                rect.anchorMin = baseRect.anchorMin;
+                rect.pivot = baseRect.pivot;
+                rect.sizeDelta = baseRect.sizeDelta;
+                rect.rotation = baseRect.rotation;
+                rect.scale = baseRect.scale;
+            }
+
+            rect.anchoredPosition = Parser.TryParse(jn["anc_pos"], Vector2.zero);
+            rect.anchorMax = Parser.TryParse(jn["anc_max"], CenterPivot);
+            rect.anchorMin = Parser.TryParse(jn["anc_min"], CenterPivot);
+            rect.pivot = Parser.TryParse(jn["pivot"], CenterPivot);
+            rect.sizeDelta = Parser.TryParse(jn["size"], new Vector2(100f, 100f));
+            rect.rotation = jn["rot"].AsFloat;
+            rect.scale = Parser.TryParse(jn["sca"], Vector2.one);
+
+            return rect;
+        }
 
         /// <summary>
         /// Parses a "rect" JSON.
@@ -309,16 +329,36 @@ namespace BetterLegacy.Core.Data
         /// <param name="jn">JSON to parse.</param>
         /// <param name="defaultValue">Default value to set if a value is null.</param>
         /// <returns>Returns a parsed RectValue.</returns>
-        public static RectValues Parse(JSONNode jn, RectValues defaultValue) => jn.IsString ? FromString(jn) : new RectValues
+        public static RectValues Parse(JSONNode jn, RectValues defaultValue)
         {
-            anchoredPosition = Parser.TryParse(jn["anc_pos"], defaultValue.anchoredPosition),
-            anchorMax = Parser.TryParse(jn["anc_max"], defaultValue.anchorMax),
-            anchorMin = Parser.TryParse(jn["anc_min"], defaultValue.anchorMin),
-            pivot = Parser.TryParse(jn["pivot"], defaultValue.pivot),
-            sizeDelta = Parser.TryParse(jn["size"], defaultValue.sizeDelta),
-            rotation = jn["rot"] != null ? jn["rot"].AsFloat : defaultValue.rotation,
-            scale = Parser.TryParse(jn["sca"], defaultValue.scale),
-        };
+            if (jn.IsString)
+                return FromString(jn);
+
+            var rect = new RectValues();
+
+            var jnBaseRect = jn["base"];
+            if (jnBaseRect != null)
+            {
+                var baseRect = FromString(jnBaseRect);
+                rect.anchoredPosition = baseRect.anchoredPosition;
+                rect.anchorMax = baseRect.anchorMax;
+                rect.anchorMin = baseRect.anchorMin;
+                rect.pivot = baseRect.pivot;
+                rect.sizeDelta = baseRect.sizeDelta;
+                rect.rotation = baseRect.rotation;
+                rect.scale = baseRect.scale;
+            }
+
+            rect.anchoredPosition = Parser.TryParse(jn["anc_pos"], defaultValue.anchoredPosition);
+            rect.anchorMax = Parser.TryParse(jn["anc_max"], defaultValue.anchorMax);
+            rect.anchorMin = Parser.TryParse(jn["anc_min"], defaultValue.anchorMin);
+            rect.pivot = Parser.TryParse(jn["pivot"], defaultValue.pivot);
+            rect.sizeDelta = Parser.TryParse(jn["size"], defaultValue.sizeDelta);
+            rect.rotation = jn["rot"] != null ? jn["rot"].AsFloat : defaultValue.rotation;
+            rect.scale = Parser.TryParse(jn["sca"], defaultValue.scale);
+
+            return rect;
+        }
 
         /// <summary>
         /// Tries to parse a "rect" JSON.
@@ -334,7 +374,7 @@ namespace BetterLegacy.Core.Data
         /// <returns>Returns a converted JSON.</returns>
         public JSONNode ToJSON()
         {
-            var jn = JSON.Parse("{}");
+            var jn = Parser.NewJSONObject();
 
             if (anchoredPosition != Vector2.zero)
                 jn["anc_pos"] = anchoredPosition.ToJSON();
