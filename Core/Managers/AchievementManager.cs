@@ -74,7 +74,7 @@ namespace BetterLegacy.Core.Managers
         {
             globalAchievements.Clear();
 
-            var array = AssetPack.GetArray($"core/achievements/achievements{FileFormat.JSON.Dot()}");
+            var array = AssetPack.GetArray($"core/achievements{FileFormat.JSON.Dot()}");
             for (int i = 0; i < array.Count; i++)
             {
                 var item = array[i];
@@ -86,7 +86,7 @@ namespace BetterLegacy.Core.Managers
                     var iconPath = item["icon_ref"] == null ? null : AssetPack.GetFile($"core/achievements/{item["icon_ref"].Value}{FileFormat.PNG.Dot()}");
                     var icon = !RTFile.FileExists(iconPath) ? LegacyPlugin.AtanPlaceholder : SpriteHelper.LoadSprite(iconPath);
 
-                    var achievement = new Achievement(id, item["name"], item["desc"], item["difficulty"].AsInt, icon, item["hidden"].AsBool, item["hint"] != null ? item["hint"] : string.Empty);
+                    var achievement = new Achievement(id, item["name"], item["desc"], item["difficulty"].AsInt, icon, item["hidden"].AsBool, item["hint"] ?? string.Empty);
                     achievement.unlocked = unlockedGlobalAchievements.TryGetValue(id, out bool unlocked) && unlocked;
                     globalAchievements.Add(achievement);
                 }
