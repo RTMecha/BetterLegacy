@@ -416,6 +416,9 @@ namespace BetterLegacy.Core
         /// <returns>Returns a color channel.</returns>
         public static float At(this Color color, int index) => color[Mathf.Clamp(index, 0, 3)];
 
+        public static Vector3 AsVector3(this Vector2 vector2) => new Vector3(vector2.x, vector2.y);
+        public static Vector3 AsVector3(this Vector2 vector2, float z) => new Vector3(vector2.x, vector2.y, z);
+
         public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe) => homingKeyframe.GetPlayer(HomingPriority.Closest);
 
         public static Transform GetPlayer(this Animation.Keyframe.IHomingKeyframe homingKeyframe, HomingPriority priority, int index = 0)
