@@ -12,7 +12,7 @@
 - You can now customize Example either by adding parts or replacing the model via the new Asset Pack system. Take a look at Assets/companion/model/parts.json and see if you can make anything with it! :D
 
 ## Editor
-- The Object Options popup is now editable via the object_templates.json file in the mod Assets folder. This will get overwritten when you update the mod, however.
+- The Object Options popup is now editable via the object_templates.json file in the mod Assets folder. This can be customized via Asset Packs.
 - Removed the Prefab Example Template setting. If you still need Example's model, you can find it in Upload > View Uploaded > Prefabs, then search "Example".
 
 ## Changes
