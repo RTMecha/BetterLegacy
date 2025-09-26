@@ -214,6 +214,8 @@ namespace BetterLegacy.Core
             return list;
         }
 
+        public static bool IsCompatibleString(JSONNode jn) => jn != null && jn.IsString && !string.IsNullOrEmpty(jn);
+
         public static JSONNode NewJSONObject() => JSON.Parse("{}");
         public static JSONNode NewJSONArray() => JSON.Parse("[]");
     }
