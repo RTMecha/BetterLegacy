@@ -107,16 +107,23 @@ namespace BetterLegacy.Core
                 // In-game only variables and functions
                 if (CoreHelper.InGame)
                 {
-                    context.RegisterVariable("deathCount", RTBeatmap.Current.deaths.Count);
-                    context.RegisterVariable("hitCount", RTBeatmap.Current.hits.Count);
-                    context.RegisterVariable("boostCount", RTBeatmap.Current.boosts.Count);
+                    if (RTBeatmap.Current)
+                    {
+                        context.RegisterVariable("deathCount", RTBeatmap.Current.deaths.Count);
+                        context.RegisterVariable("hitCount", RTBeatmap.Current.hits.Count);
+                        context.RegisterVariable("boostCount", RTBeatmap.Current.boosts.Count);
+                    }
                     if (RTLevel.Current)
                         context.RegisterVariable("smoothedTime", RTLevel.Current.CurrentTime);
-                    context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
-                    context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
-                    context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
-                    context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
-                    context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
+                    if (EventManager.inst && EventManager.inst.cam)
+                    {
+                        context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
+                        context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
+                        context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
+                        context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
+                    }
+                    if (RandomHelper.CurrentSeed != null)
+                        context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
 
                     if (RTBeatmap.Current && RTBeatmap.Current.ActiveCheckpoint)
                         context.RegisterVariable("activeCheckpointTime", RTBeatmap.Current.ActiveCheckpoint.time);
@@ -176,7 +183,7 @@ namespace BetterLegacy.Core
 
                 return (float)evaluator.Invoke(context);
             }
-            catch
+            catch (Exception ex)
             {
                 return 0f;
             }
