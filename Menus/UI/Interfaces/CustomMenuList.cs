@@ -399,7 +399,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             var jnPath = InterfaceManager.inst.ParseVarFunction(jn["path"], customVariables: customVariables);
             if (jnPath != null)
-                InterfaceManager.inst.MainDirectory = InterfaceManager.inst.ParseText(jnPath, customVariables);
+                InterfaceManager.inst.MainDirectory = InterfaceManager.inst.elementFunctions.ParseText(jnPath, customVariables);
 
             if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
                 InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
