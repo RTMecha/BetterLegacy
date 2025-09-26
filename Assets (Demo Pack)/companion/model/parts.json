@@ -1,0 +1,29 @@
+﻿{
+  "parts": [
+    {
+      "id": "TEST",
+      "p": "HAND_LEFT",
+      "name": "Test",
+      "type": "Image",
+      "image_path": "companion/model/pa_ice_cream.png",
+      "image_rect": {
+        "anc_pos": [ 0, -50 ],
+        "size": [ 80, 80 ]
+      },
+      "on_click": {
+        "name": "PlaySound",
+        "params": [
+          "example_speak",
+          {
+            "name": "RandomRange",
+            "params": [ 0.6, 0.7 ]
+          },
+          {
+            "name": "RandomRange",
+            "params": [ 1.1, 1.3 ]
+          }
+        ]
+      }
+    }
+  ]
+}

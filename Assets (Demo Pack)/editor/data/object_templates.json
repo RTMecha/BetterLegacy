@@ -1,0 +1,217 @@
+﻿{
+  "layout": {
+    "cell_size": [ 142.0, 34.0 ],
+    "spacing": [ 8.0, 8.0 ],
+    "constraint": 1,
+    "constraint_count": 3
+  },
+  "options": [
+    {
+      "name": "No Autokill",
+      "hint": "Persistent object.",
+      "obj": {
+        "st": 0,
+        "name": "no autokill",
+        "ot": 2,
+        "akt": 0,
+        "ako": 5
+      }
+    },
+    {
+      "name": "Empty",
+      "hint": "Invisible object.",
+      "obj": {
+        "st": 0,
+        "name": "empty",
+        "ot": 3,
+        "akt": 2,
+        "ako": 5
+      }
+    },
+    {
+      "name": "Decoration",
+      "hint": "Deco object.",
+      "obj": {
+        "st": 0,
+        "name": "decoration",
+        "ot": 2,
+        "akt": 2,
+        "ako": 5
+      }
+    },
+    {
+      "name": "Helper",
+      "hint": "Warning object.",
+      "obj": {
+        "st": 0,
+        "name": "helper",
+        "ot": 1,
+        "akt": 2,
+        "ako": 5
+      }
+    },
+    {
+      "name": "Normal",
+      "hint": "Damage object.",
+      "obj": {
+        "st": 0,
+        "name": "",
+        "ot": 0,
+        "akt": 2,
+        "ako": 5
+      }
+    },
+    {
+      "layout": {
+        "cell_size": [ 34.0, 34.0 ],
+        "spacing": [ 2.0, 0.0 ]
+      },
+      "options": [
+        {
+          "name": "Circle",
+          "icon_ref": "shape/1",
+          "hint": "Circle object.",
+          "obj": {
+            "st": 0,
+            "name": "circle",
+            "ot": 1,
+            "akt": 2,
+            "ako": 5,
+            "s": 1
+          }
+        },
+        {
+          "name": "Triangle",
+          "icon_ref": "shape/2",
+          "hint": "Triangle object.",
+          "obj": {
+            "st": 0,
+            "name": "triangle",
+            "ot": 1,
+            "akt": 2,
+            "ako": 5,
+            "s": 2
+          }
+        },
+        {
+          "name": "Text",
+          "icon_ref": "shape/4",
+          "hint": "Text object.",
+          "obj": {
+            "st": 0,
+            "name": "text",
+            "ot": 1,
+            "akt": 2,
+            "ako": 5,
+            "s": 4,
+            "text": "text"
+          }
+        },
+        {
+          "name": "Hexagon",
+          "icon_ref": "shape/5",
+          "hint": "Hexagon object.",
+          "obj": {
+            "st": 0,
+            "name": "hexagon",
+            "ot": 1,
+            "akt": 2,
+            "ako": 5,
+            "s": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "Solid",
+      "hint": "Collision object.",
+      "obj": {
+        "st": 0,
+        "name": "solid",
+        "ot": 4,
+        "akt": 2,
+        "ako": 5
+      }
+    },
+    {
+      "name": "Test",
+      "hint": "Test object.",
+      "obj": {
+        "st": 0,
+        "name": "solid",
+        "ot": 4,
+        "akt": 2,
+        "ako": 5
+      }
+    },
+    {
+      "layout": {
+        "cell_size": [ 34.0, 34.0 ],
+        "spacing": [ 2.0, 0.0 ]
+      },
+      "options": [
+        {
+          "name": "Pentagon",
+          "icon_ref": "shape/7",
+          "hint": "Pentagon object.",
+          "obj": {
+            "st": 0,
+            "name": "pentagon",
+            "ot": 1,
+            "akt": 2,
+            "ako": 5,
+            "s": 7
+          }
+        },
+        {
+          "name": "PA Logo",
+          "icon_ref": "shape/8/2",
+          "hint": "PA Logo object.",
+          "obj": {
+            "st": 0,
+            "name": "pa logo",
+            "ot": 2,
+            "akt": 2,
+            "ako": 5,
+            "s": 8,
+            "so": 2
+          }
+        },
+        {
+          "name": "Heart",
+          "icon_ref": "shape/8/11",
+          "hint": "Heart object.",
+          "obj": {
+            "st": 0,
+            "name": "heart",
+            "ot": 1,
+            "akt": 2,
+            "ako": 5,
+            "s": 8,
+            "so": 11
+          }
+        },
+        {
+          "name": "Polygon",
+          "icon_ref": "shape/8/17",
+          "hint": "Polygon object.",
+          "obj": {
+            "st": 0,
+            "name": "polygon",
+            "ot": 1,
+            "akt": 2,
+            "ako": 5,
+            "s": 9,
+            "csp": {
+              "si": 32,
+              "ro": 0.0,
+              "th": 0.0,
+              "sl": 16,
+              "ths": [ 0.5, 1.0 ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
