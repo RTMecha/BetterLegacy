@@ -1,0 +1,147 @@
+﻿{
+  "items": [
+    {
+      "name": "loading",
+      "clips": [
+        {
+          "index": 0,
+          "name": "Creo - Staring Down The Barrels"
+        }
+      ]
+    },
+    {
+      "name": "menu",
+      "clips": [
+        {
+          "index": 0,
+          "name": "Shirobon - Nostalgia"
+        },
+        {
+          "index": 1,
+          "name": "Shirobon - Galactic Freeway"
+        },
+        {
+          "index": 2,
+          "name": "meganeko - Distance"
+        }
+      ]
+    },
+    {
+      "name": "barrels",
+      "clips": [
+        {
+          "index": 0,
+          "name": "Creo - Staring Down The Barrels"
+        }
+      ]
+    },
+    {
+      "name": "nostalgia",
+      "clips": [
+        {
+          "index": 0,
+          "name": "Shirobon - Nostalgia"
+        }
+      ]
+    },
+    {
+      "name": "arcade_dream",
+      "clips": [
+        {
+          "index": 0,
+          "name": "Shirobon - Galactic Freeway"
+        }
+      ]
+    },
+    {
+      "name": "distance",
+      "clips": [
+        {
+          "index": 0,
+          "name": "meganeko - Distance"
+        }
+      ]
+    },
+    {
+      "name": "truepianoskg",
+      "clips": [
+        {
+          "path": "air_-_truepianoskg.ogg",
+          "name": "AiR - Truepianoskg"
+        }
+      ]
+    },
+    {
+      "name": "dread",
+      "clips": [
+        {
+          "path": "dread.ogg",
+          "name": "Dread"
+        }
+      ]
+    },
+    {
+      "name": "in_the_distance",
+      "clips": [
+        {
+          "path": "in the distance.ogg",
+          "name": "F-777 - In the Distance"
+        }
+      ]
+    },
+    {
+      "name": "io",
+      "clips": [
+        {
+          "path": "io.ogg",
+          "name": "meganeko - IO"
+        }
+      ]
+    },
+    {
+      "name": "jukio_distance",
+      "clips": [
+        {
+          "path": "jukio -kozilek- kallio - distance.ogg",
+          "name": "Jukio -Kozilek- Kallio - Distance"
+        }
+      ]
+    },
+    {
+      "name": "little_calculations",
+      "clips": [
+        {
+          "path": "shirobon - infinity - 06 little calculations.ogg",
+          "name": "Shirobon - Little Calculations"
+        }
+      ]
+    },
+    {
+      "name": "reflections",
+      "clips": [
+        {
+          "path": "shirobon - infinity - 10 reflections.ogg",
+          "name": "Shirobon - Reflections"
+        }
+      ]
+    },
+    {
+      "name": "fracture",
+      "clips": [
+        {
+          "path": "shirobon - rebirth - 01 fracture.ogg",
+          "name": "Shirobon - Fracture"
+        }
+      ]
+    },
+    {
+      "name": "xilioh",
+      "clips": [
+        {
+          "path": "shirobon - rebirth - 04 xilioh.ogg",
+          "name": "Shirobon - Xilioh"
+        }
+      ]
+    }
+  ]
+}

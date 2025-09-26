@@ -3813,10 +3813,10 @@ namespace BetterLegacy.Core.Helpers
             var loop = modifier.GetBool(3, false, variables);
             var panStereo = modifier.GetFloat(4, 0f, variables);
 
-            if (!AudioManager.inst.library.soundClips.TryGetValue(modifier.GetValue(0), out AudioClip[] audioClips))
+            if (!LegacyResources.soundClips.TryFind(x => x.id == modifier.GetValue(0), out SoundGroup soundGroup))
                 return;
 
-            var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
+            var clip = soundGroup.GetClip();
             var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
             audioSource.clip = clip;
             audioSource.playOnAwake = true;
@@ -3839,7 +3839,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = audioSource;
 
             if (!loop)
-                CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
+                CoroutineHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.clip.length / x));
             else if (!ModifiersManager.audioSources.ContainsKey(id))
                 ModifiersManager.audioSources.Add(id, audioSource);
         }

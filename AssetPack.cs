@@ -189,21 +189,34 @@ namespace BetterLegacy
             {
                 var overwrite = jn["overwrite"].AsBool;
                 if (forceAdd || !overwrite)
-                    for (int j = 0; j < jn["items"].Count; j++)
-                        jsonArray.Add(jn["items"][j]);
+                    ReadArray(jsonArray, jn["items"]);
                 else
                     jsonArray = jn["items"].AsArray;
             }
             else
             {
                 if (forceAdd)
-                    for (int j = 0; j < jn["items"].Count; j++)
-                        jsonArray.Add(jn["items"][j]);
+                    ReadArray(jsonArray, jn["items"]);
                 else
                     jsonArray = jn["items"].AsArray;
             }
 
             return jsonArray;
+        }
+
+        static void ReadArray(JSONArray jsonArray, JSONNode jn)
+        {
+            for (int i = 0; i < jn.Count; i++)
+            {
+                var item = jn[i];
+                if (item.IsArray)
+                {
+                    ReadArray(jsonArray, item);
+                    continue;
+                }
+
+                jsonArray.Add(item);
+            }
         }
 
         /// <summary>

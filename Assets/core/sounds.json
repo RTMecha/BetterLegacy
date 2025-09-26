@@ -1,0 +1,203 @@
+﻿{
+  "items": [
+    // UI
+    [
+      {
+        "name": "UpDown",
+        "clips": [
+          "core/sfx/click cut.ogg"
+        ]
+      },
+      {
+        "name": "LeftRight",
+        "clips": [
+          "core/sfx/click cut.ogg"
+        ]
+      },
+      {
+        "name": "Block",
+        "clips": [
+          "core/sfx/optionexit.ogg"
+        ]
+      },
+      {
+        "name": "Select"
+      },
+      {
+        "name": "Click",
+        "clips": [
+          {
+            "index": 0,
+            "name": "Terminal-Click 1"
+          },
+          {
+            "index": 1,
+            "name": "Terminal-Click 2"
+          },
+          {
+            "index": 2,
+            "name": "Terminal-Click 3"
+          }
+        ]
+      },
+      {
+        "name": "glitch",
+        "clips": [
+          {
+            "index": 0,
+            "name": "23"
+          },
+          {
+            "index": 1,
+            "name": "24"
+          },
+          {
+            "index": 2,
+            "name": "26"
+          },
+          {
+            "index": 3,
+            "name": "27"
+          }
+        ]
+      },
+      {
+        "name": "menuflip",
+        "clips": [
+          "core/sfx/menuflip.ogg"
+        ]
+      },
+      {
+        "name": "blip",
+        "clips": [
+          {
+            "index": 0,
+            "name": "blip"
+          },
+          {
+            "index": 1,
+            "name": "blip 2"
+          }
+        ]
+      },
+      {
+        "name": "loadsound"
+      },
+      {
+        "name": "pop",
+        "clips": [
+          "core/sfx/pop.ogg"
+        ]
+      }
+    ],
+
+    // Gameplay
+    [
+      {
+        "name": "rewind"
+      },
+      {
+        "name": "record_scratch",
+        "clips": [
+          "core/sfx/Record Scratch.ogg"
+        ]
+      },
+      {
+        "name": "checkpoint"
+      },
+      {
+        "name": "boost"
+      },
+      {
+        "name": "boost_recover"
+      },
+      {
+        "name": "shoot",
+        "clips": [
+          "core/sfx/shoot.ogg"
+        ]
+      },
+      {
+        "name": "pirate_KillPlayer",
+        "clips": [
+          {
+            "index": 0,
+            "name": "ar1"
+          },
+          {
+            "index": 1,
+            "name": "ar2"
+          },
+          {
+            "index": 2,
+            "name": "ar3"
+          }
+        ]
+      },
+      {
+        "name": "KillPlayer"
+      },
+      {
+        "name": "SpawnPlayer",
+        "clips": [
+          "core/sfx/SpawnPlayer.ogg"
+        ]
+      },
+      {
+        "name": "HealPlayer",
+        "clips": [
+          "core/sfx/HealPlayer.ogg"
+        ]
+      },
+      {
+        "name": "HurtPlayer"
+      },
+      {
+        "name": "HurtPlayer2",
+        "clips": [
+          "core/sfx/hit2.ogg"
+        ]
+      },
+      {
+        "name": "HurtPlayer3",
+        "clips": [
+          "core/sfx/hit3.ogg"
+        ]
+      }
+    ],
+
+    // Character
+    [
+      {
+        "name": "example_speak",
+        "clips": [
+          "companion/model/example speak.ogg"
+        ]
+      },
+      {
+        "name": "hal_speak",
+        "clips": [
+          "core/sfx/hal speak.ogg"
+        ]
+      },
+      {
+        "name": "anna_speak",
+        "clips": [
+          "core/sfx/anna speak.ogg"
+        ]
+      },
+      {
+        "name": "para_speak",
+        "clips": [
+          "core/sfx/para speak.ogg"
+        ]
+      },
+      {
+        "name": "t_speak",
+        "clips": [
+          "core/sfx/t speak.ogg"
+        ]
+      }
+    ]
+  ]
+}

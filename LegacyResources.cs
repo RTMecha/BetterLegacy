@@ -7,6 +7,10 @@ using UnityEngine.Rendering.PostProcessing;
 using SimpleJSON;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+
+using UnityObject = UnityEngine.Object;
 
 namespace BetterLegacy
 {
@@ -17,7 +21,7 @@ namespace BetterLegacy
         {
             var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/objectmaterials.asset")); // Get AssetBundle from assets folder.
             var assetToLoad = assetBundle.LoadAsset<Material>("blur.mat"); // Load asset
-            var blurMat = UnityEngine.Object.Instantiate(assetToLoad); // Instantiate so we can keep the material
+            var blurMat = UnityObject.Instantiate(assetToLoad); // Instantiate so we can keep the material
             assetBundle.Unload(false); // Unloads AssetBundle
 
             return blurMat;
@@ -141,5 +145,223 @@ namespace BetterLegacy
                     sayings[rank] = sayingsJN[rank.Name.ToLower()].Children.Select(x => x.Value).ToArray();
             }
         }
+
+        public static void LoadSounds()
+        {
+            var library = Patchers.SoundLibraryPatch.inst;
+
+            for (int i = 0; i < soundClips.Count; i++)
+            {
+                var soundGroup = soundClips[i];
+                for (int j = 0; j < soundGroup.Count; j++)
+                {
+                    var clip = soundGroup[j];
+                    if (!clip.custom)
+                        continue;
+
+                    clip.clip.UnloadAudioData();
+                    CoreHelper.Destroy(clip);
+                    soundGroup.group[j] = null;
+                }
+                soundGroup.group.Clear();
+            }
+            soundClips.Clear();
+
+            // load original sounds
+            for (int i = 0; i < library.soundGroups.Length; i++)
+                soundClips.Add(library.soundGroups[i]);
+
+            var sounds = AssetPack.GetArray("core/sounds.json");
+            for (int i = 0; i < sounds.Count; i++)
+            {
+                var sound = sounds[i];
+                if (sound["clips"] == null)
+                    continue;
+
+                var id = sound["name"];
+                CoreHelper.Log($"Loading sound {id}");
+
+                var soundGroupIndex = soundClips.FindIndex(x => x.id == id);
+                var soundGroup = soundGroupIndex >= 0 ? soundClips[soundGroupIndex] : new SoundGroup(id);
+                if (soundGroupIndex < 0)
+                    soundClips.Add(soundGroup);
+
+                for (int j = 0; j < sound["clips"].Count; j++)
+                {
+                    var clipIndex = j;
+                    var c = sound["clips"][j];
+                    if (c == null)
+                        continue;
+
+                    if (c.IsString)
+                    {
+                        LoadSound(c, id, clipIndex, soundGroup);
+                        continue;
+                    }
+
+                    if (c["path"] != null)
+                    {
+                        LoadSound(c["path"], id, clipIndex, soundGroup);
+                        continue;
+                    }
+
+                    var orig = soundGroup.orig;
+                    var findID = c["id"];
+                    if (!string.IsNullOrEmpty(findID))
+                        orig = library.soundGroups.First(x => x.soundID == findID);
+
+                    var index = c["index"].AsInt;
+                    if (orig != null && orig.group.TryGetAt(index, out AudioClip origClip))
+                        soundGroup.group.TryAdd(clipIndex, origClip);
+                    continue;
+                }
+            }
+        }
+
+        static void LoadSound(string c, string id, int clipIndex, SoundGroup soundGroup)
+        {
+            var path = AssetPack.GetFile(c);
+            if (RTFile.FileExists(path))
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{path}", RTFile.GetAudioType(path), audioClip =>
+                {
+                    audioClip.name = id;
+                    soundGroup.group.TryAdd(clipIndex, new SoundGroup.AudioClipWrapper(audioClip, true));
+                }));
+        }
+
+        public static void LoadMusic()
+        {
+            var library = Patchers.SoundLibraryPatch.inst;
+
+            var ostFilePath = RTFile.GetAsset($"builtin/ost{FileFormat.ASSET.Dot()}");
+            List<AudioClip> loadedClips = new List<AudioClip>();
+
+            if (RTFile.FileExists(ostFilePath))
+            {
+                var ost = AssetBundle.LoadFromFile(ostFilePath);
+
+                foreach (var asset in ost.GetAllAssetNames())
+                {
+                    var assetName = asset.Remove("assets/ost/");
+                    var music = ost.LoadAsset<AudioClip>(assetName);
+
+                    if (music == null)
+                    {
+                        Debug.LogError($"{library.className}The music ({assetName}) does not exist in the asset bundle for some reason.");
+                        continue;
+                    }
+
+                    var name = GetMusicName(assetName);
+                    var groupName = GetGroupName(assetName);
+
+                    music.name = assetName;
+
+                    loadedClips.Add(music);
+                }
+                ost.Unload(false);
+            }
+
+            // removes barrels from main menu music so it can serve as the loading music
+            var menuMusic = library.musicGroups[1];
+            var audioClips = menuMusic.music;
+            menuMusic.music = new AudioClip[audioClips.Length - 1];
+            for (int i = 1; i < audioClips.Length; i++)
+                menuMusic.music[i - 1] = audioClips[i];
+
+            foreach (var musicGroup in library.musicGroups)
+            {
+                if (musicGroup.music.Length > 1 && !musicGroup.alwaysRandom) // not alwaysRandom is apparently ACTUALLY RANDOM???
+                    library.musicClipsRandomIndex[musicGroup.musicID] = Random.Range(0, musicGroup.music.Length);
+
+                musicClips.Add(musicGroup);
+            }
+
+            var songs = AssetPack.GetArray("core/music.json");
+            for (int i = 0; i < songs.Count; i++)
+            {
+                var song = songs[i];
+                if (song["clips"] == null)
+                    continue;
+
+                var id = song["name"];
+                CoreHelper.Log($"Loading sound {id}");
+
+                var musicGroupIndex = musicClips.FindIndex(x => x.id == id);
+                var musicGroup = musicGroupIndex >= 0 ? musicClips[musicGroupIndex] : new MusicGroup(id);
+                if (musicGroupIndex < 0)
+                    musicClips.Add(musicGroup);
+
+                for (int j = 0; j < song["clips"].Count; j++)
+                {
+                    var clipIndex = j;
+                    var c = song["clips"][j];
+                    if (c == null)
+                        continue;
+
+                    if (c.IsString)
+                    {
+                        LoadMusic(c, id, clipIndex, musicGroup, loadedClips);
+                        continue;
+                    }
+
+                    if (c["path"] != null)
+                    {
+                        LoadMusic(c["path"], id, clipIndex, musicGroup, loadedClips);
+                        continue;
+                    }
+
+                    var orig = musicGroup.orig;
+                    var findID = c["id"];
+                    if (!string.IsNullOrEmpty(findID))
+                        orig = library.musicGroups.First(x => x.musicID == findID);
+
+                    var index = c["index"].AsInt;
+                    if (orig != null && orig.music.TryGetAt(index, out AudioClip origClip))
+                        musicGroup.group.TryAdd(clipIndex, origClip);
+                    continue;
+                }
+            }
+
+            loadedClips.Clear();
+        }
+
+        static void LoadMusic(string c, string id, int clipIndex, MusicGroup musicGroup, List<AudioClip> loadedClips)
+        {
+            if (loadedClips.TryFind(x => x.name == c, out AudioClip loadedSong))
+                musicGroup.group.TryAdd(clipIndex, loadedSong);
+            else
+                LoadSound(c, id, clipIndex, musicGroup);
+        }
+
+        static string GetMusicName(string input) => input switch
+        {
+            "air_-_truepianoskg.ogg" => "AiR - Truepianoskg",
+            "dread.ogg" => "Dread",
+            "in the distance.ogg" => "F-777 - In the Distance",
+            "io.ogg" => "meganeko - IO",
+            "jukio -kozilek- kallio - distance.ogg" => "Jukio -Kozilek- Kallio - Distance",
+            "shirobon - infinity - 06 little calculations.ogg" => "Shirobon - Little Calculations",
+            "shirobon - infinity - 10 reflections.ogg" => "Shirobon - Reflections",
+            "shirobon - rebirth - 01 fracture.ogg" => "Shirobon - Fracture",
+            "shirobon - rebirth - 04 xilioh.ogg" => "Shirobon - Xilioh",
+            _ => input
+        };
+
+        static string GetGroupName(string input) => input switch
+        {
+            "air_-_truepianoskg.ogg" => "truepianoskg",
+            "dread.ogg" => "dread",
+            "in the distance.ogg" => "in_the_distance",
+            "io.ogg" => "io",
+            "jukio -kozilek- kallio - distance.ogg" => "jukio_distance",
+            "shirobon - infinity - 06 little calculations.ogg" => "little_calculations",
+            "shirobon - infinity - 10 reflections.ogg" => "reflections",
+            "shirobon - rebirth - 01 fracture.ogg" => "fracture",
+            "shirobon - rebirth - 04 xilioh.ogg" => "xilioh",
+            _ => input
+        };
+
+        public static List<SoundGroup> soundClips = new List<SoundGroup>();
+        public static List<MusicGroup> musicClips = new List<MusicGroup>();
     }
 }

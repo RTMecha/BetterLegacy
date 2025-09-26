@@ -1,16 +1,11 @@
 ﻿using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
 
 using UnityEngine;
-
-using HarmonyLib;
 
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
-
-using SoundGroup = SoundLibrary.SoundGroup;
-using MusicGroup = SoundLibrary.MusicGroup;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -107,17 +102,13 @@ namespace BetterLegacy.Core.Managers
 
         public AudioClip GetSound(DefaultSounds defaultSound) => GetSound(defaultSound.ToString());
 
-        public AudioClip GetSound(string name)
-        {
-            var soundClips = Library.soundClips[name];
-            return soundClips[UnityEngine.Random.Range(0, soundClips.Length)];
-        }
+        public AudioClip GetSound(string name) => LegacyResources.soundClips.TryFind(x => x.id == name, out SoundGroup soundGroup) ? soundGroup.GetClip() : null;
 
         public bool TryGetSound(string name, out AudioClip audioClip)
         {
-            if (Library.soundClips.TryGetValue(name, out AudioClip[] soundClips))
+            if (LegacyResources.soundClips.TryFind(x => x.id == name, out SoundGroup soundGroup))
             {
-                audioClip = soundClips[Random.Range(0, soundClips.Length)];
+                audioClip = soundGroup.GetClip();
                 return true;
             }
 
@@ -125,19 +116,13 @@ namespace BetterLegacy.Core.Managers
             return false;
         }
 
-        public void AddSound(string id, AudioClip[] audioClips)
+        public void AddSound(string id, List<SoundGroup.AudioClipWrapper> audioClips)
         {
-            if (Library == null)
-                return;
-
-            var soundGroup = new SoundGroup
+            LegacyResources.soundClips.Add(new SoundGroup
             {
-                soundID = id,
+                id = id,
                 group = audioClips,
-            };
-
-            Library.soundGroups = Library.soundGroups.AddItem(soundGroup).ToArray();
-            Library.soundClips[id] = audioClips;
+            });
         }
 
         #endregion
@@ -164,35 +149,30 @@ namespace BetterLegacy.Core.Managers
 
         public bool TryGetMusic(string name, out AudioClip audioClip)
         {
-            if (!Library.musicClips.TryGetValue(name, out AudioClip[] audioClips))
+            if (!LegacyResources.musicClips.TryFind(x => x.id == name, out MusicGroup musicGroup))
             {
                 audioClip = null;
                 return false;
             }
-            if (Library.musicClipsRandomIndex.TryGetValue(name, out int randomIndex))
-            {
-                audioClip = audioClips[randomIndex];
-                return true;
-            }
 
-            audioClip = audioClips.Length == 1 ? audioClips[0] : audioClips[Random.Range(0, audioClips.Length)];
+            audioClip = musicGroup.GetClip();
             return true;
         }
 
-        public void AddMusic(string id, AudioClip[] audioClips)
+        public void AddMusic(string id, List<SoundGroup.AudioClipWrapper> audioClips)
         {
             if (Library == null)
                 return;
 
             var musicGroup = new MusicGroup
             {
-                musicID = id,
-                music = audioClips,
+                id = id,
+                group = audioClips,
             };
 
-            if (musicGroup.music.Length > 1 && !musicGroup.alwaysRandom) // not alwaysRandom is apparently ACTUALLY RANDOM???
-                Library.musicClipsRandomIndex[musicGroup.musicID] = Random.Range(0, musicGroup.music.Length);
-            Library.musicClips[musicGroup.musicID] = musicGroup.music;
+            if (musicGroup.group.Count > 1 && musicGroup.alwaysRandom)
+                musicGroup.randomIndex = Random.Range(0, musicGroup.Count);
+            LegacyResources.musicClips.Add(musicGroup);
         }
 
         #endregion

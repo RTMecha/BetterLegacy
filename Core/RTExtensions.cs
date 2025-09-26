@@ -472,6 +472,21 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Helper for finding an item's index in an array.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="array">Array reference.</param>
+        /// <param name="match">Match predicate.</param>
+        /// <returns>Returns the items index if an item is found, otherwise returns -1.</returns>
+        public static int FindIndex<T>(this T[] array, Predicate<T> match)
+        {
+            for (int i = 0; i < array.Length; i++)
+                if (match(array[i]))
+                    return i;
+            return -1;
+        }
+
+        /// <summary>
         /// Tries to find a match in the list and outputs the first occurance of the match.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="IEnumerable{T}"/>.</typeparam>
