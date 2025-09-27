@@ -553,8 +553,7 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip { desc = name, hint = hint });
 
                 var button = gameObject.GetComponent<Button>();
-                button.onClick.ClearAll();
-                button.onClick.AddListener(objectOptions[i].Create);
+                button.onClick.NewListener(objectOptions[i].Create);
 
                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                 var text = gameObject.transform.GetChild(0).GetComponent<Text>();
@@ -629,10 +628,7 @@ namespace BetterLegacy.Editor.Managers
             if (!Seasons.IsAprilFools)
                 beatmapObject.editorData.Layer = EditorTimeline.inst.Layer;
 
-            beatmapObject.events[0].Add(EventKeyframe.DefaultPositionKeyframe);
-            beatmapObject.events[1].Add(EventKeyframe.DefaultScaleKeyframe);
-            beatmapObject.events[2].Add(EventKeyframe.DefaultRotationKeyframe);
-            beatmapObject.events[3].Add(EventKeyframe.DefaultColorKeyframe);
+            beatmapObject.InitDefaultEvents();
 
             return beatmapObject;
         }

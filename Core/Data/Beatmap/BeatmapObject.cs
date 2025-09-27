@@ -929,13 +929,15 @@ namespace BetterLegacy.Core.Data.Beatmap
 
         public override void ReadJSON(JSONNode jn)
         {
-            var events = new List<List<EventKeyframe>>();
-            events.Add(new List<EventKeyframe>());
-            events.Add(new List<EventKeyframe>());
-            events.Add(new List<EventKeyframe>());
-            events.Add(new List<EventKeyframe>());
             if (jn["events"] != null)
             {
+                var events = new List<List<EventKeyframe>>()
+                {
+                    new List<EventKeyframe>(),
+                    new List<EventKeyframe>(),
+                    new List<EventKeyframe>(),
+                    new List<EventKeyframe>(),
+                };
                 // Position
                 for (int i = 0; i < jn["events"]["pos"].Count; i++)
                 {
@@ -1112,9 +1114,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 }
 
                 SortKeyframes(events);
-            }
 
-            this.events = events;
+                this.events = events;
+            }
+            else if (events == null || events.IsEmpty() || events[0].IsEmpty())
+                InitDefaultEvents();
 
             id = jn["id"] ?? LSText.randomString(16);
 
@@ -1490,13 +1494,16 @@ namespace BetterLegacy.Core.Data.Beatmap
             return selected;
         }
 
-        public void InitDefaultEvents()
+        /// <summary>
+        /// Creates the events and sets the default keyframes.
+        /// </summary>
+        public void InitDefaultEvents() => events = new List<List<EventKeyframe>>
         {
-            events[0].Add(EventKeyframe.DefaultPositionKeyframe);
-            events[1].Add(EventKeyframe.DefaultScaleKeyframe);
-            events[2].Add(EventKeyframe.DefaultRotationKeyframe);
-            events[3].Add(EventKeyframe.DefaultColorKeyframe);
-        }
+            new List<EventKeyframe>() { EventKeyframe.DefaultPositionKeyframe },
+            new List<EventKeyframe>() { EventKeyframe.DefaultScaleKeyframe },
+            new List<EventKeyframe>() { EventKeyframe.DefaultRotationKeyframe },
+            new List<EventKeyframe>() { EventKeyframe.DefaultColorKeyframe },
+        };
 
         public void SortKeyframes() => SortKeyframes(events);
 

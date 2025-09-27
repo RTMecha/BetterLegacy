@@ -93,11 +93,9 @@ namespace BetterLegacy.Editor.Data
                         beatmapObject.StartTime = time;
                         beatmapObject.editorData.Layer = EditorTimeline.inst.Layer;
 
-                        if (obj["events"] == null)
-                            beatmapObject.InitDefaultEvents();
-
                         ObjectEditor.inst.ApplyObjectCreationSettings(beatmapObject);
-                    });
+                        EditorTimeline.inst.SelectObject(timelineObject);
+                    }, false);
                 else
                     ObjectEditor.inst.CreateNewObject(action);
             }
