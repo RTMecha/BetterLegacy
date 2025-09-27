@@ -163,7 +163,8 @@ namespace BetterLegacy
         {
             var jsonArray = Parser.NewJSONArray().AsArray;
 
-            jsonArray = AddArray(jsonArray, RTFile.ReadFromFile(RTFile.CombinePaths(BuiltIn.path, assetPath)), false);
+            if (RTFile.FileExists(RTFile.CombinePaths(BuiltIn.path, assetPath)))
+                jsonArray = AddArray(jsonArray, RTFile.ReadFromFile(RTFile.CombinePaths(BuiltIn.path, assetPath)), false);
 
             for (int i = AssetPacks.Count - 1; i >= 0; i--)
             {
