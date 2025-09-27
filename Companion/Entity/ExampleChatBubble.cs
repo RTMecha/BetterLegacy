@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -163,12 +163,35 @@ namespace BetterLegacy.Companion.Entity
         public virtual void RegisterDialogues()
         {
             dialogues.Clear();
+
+            // parse custom dialogues
+            JSONNode jn = null;
+            if (AssetPack.TryReadFromFile("companion/dialogue/dialogues.json", out string partsFile))
+            {
+                jn = JSON.Parse(partsFile);
+                if (jn != null && jn["override"].AsBool)
+                {
+                    for (int i = 0; i < jn["groups"].Count; i++)
+                    {
+                        var jnGroup = jn["groups"][i];
+                        var dialogueGroup = new ExampleDialogueGroup();
+                        dialogueGroup.key = jnGroup["key"];
+                        dialogueGroup.dialogues = new ExampleDialogue[jnGroup["dialogues"].Count];
+                        for (int j = 0; j < jnGroup["dialogues"].Count; j++)
+                            dialogueGroup.dialogues[j] = new ExampleDialogue((companion, parameters) => jnGroup["dialogues"][i], parameters => jnGroup["if_func"] == null || functions.ParseIfFunction(jnGroup["if_func"]));
+                        dialogues.Add(dialogueGroup);
+                    }
+
+                    return;
+                }
+            }
+
             dialogues.Add(new ExampleDialogueGroup(Dialogues.SPAWN, new ExampleDialogue[]
             {
                 new ExampleDialogue((companion, parameters) => "Hello"),
 
                 new ExampleDialogue((companion, parameters) => "YE\n        EAN",
-                    parameters => reference.brain.Check(ExampleBrain.Checks.IS_HAPPY)),
+                    parameters => reference.brain.Check(ExampleBrain.Checks.IS_HAPPY) && RandomHelper.PercentChance(10)),
                 new ExampleDialogue((companion, parameters) => "Hello!",
                     parameters => reference.brain.Check(ExampleBrain.Checks.IS_HAPPY)),
                 new ExampleDialogue((companion, parameters) => "Hey!",
@@ -630,6 +653,30 @@ namespace BetterLegacy.Companion.Entity
                     return NULL_DIALOGUE;
                 }, parameters => parameters is PlayerDialogueParameters),
             }));
+
+            // add custom dialogues
+            if (jn != null)
+            {
+                for (int i = 0; i < jn["groups"].Count; i++)
+                {
+                    var jnGroup = jn["groups"][i];
+                    var dialogueGroup = new ExampleDialogueGroup();
+                    dialogueGroup.key = jnGroup["key"];
+                    dialogueGroup.dialogues = new ExampleDialogue[jnGroup["dialogues"].Count];
+                    for (int j = 0; j < jnGroup["dialogues"].Count; j++)
+                        dialogueGroup.dialogues[j] = new ExampleDialogue((companion, parameters) => jnGroup["dialogues"][i]);
+                    if (dialogues.TryFindIndex(x => x.key == dialogueGroup.key, out int origIndex))
+                    {
+                        if (jnGroup["override"].AsBool)
+                            dialogues[origIndex] = dialogueGroup;
+                        else
+                            dialogues[origIndex].dialogues = dialogues[origIndex].dialogues.Union(dialogueGroup.dialogues).ToArray();
+
+                    }
+                    else
+                        dialogues.Add(dialogueGroup);
+                }
+            }
         }
 
         /// <summary>

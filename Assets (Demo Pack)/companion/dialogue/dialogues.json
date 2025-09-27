@@ -1,0 +1,14 @@
+﻿{
+  "groups": [
+    {
+      "override": true,
+      "key": "Spawn",
+      "dialogues": [
+        {
+          "text": "Hey!"
+        },
+        "Hey!"
+      ]
+    }
+  ]
+}
