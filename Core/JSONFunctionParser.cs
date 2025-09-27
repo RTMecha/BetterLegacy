@@ -33,6 +33,17 @@ namespace BetterLegacy.Core
         public Dictionary<string, JSONNode> customJSONFunctions = new Dictionary<string, JSONNode>();
 
         /// <summary>
+        /// Loads custom JSON functions from a JSON file.
+        /// </summary>
+        /// <param name="assetPath">Asset path to load from. Supports asset packs.</param>
+        public virtual void LoadCustomJSONFunctions(string assetPath)
+        {
+            var array = AssetPack.GetArray(assetPath);
+            for (int i = 0; i < array.Count; i++)
+                customJSONFunctions[array[i]["name"]] = array[i];
+        }
+
+        /// <summary>
         /// Parses text.
         /// </summary>
         /// <param name="input">Input string.</param>
@@ -46,13 +57,13 @@ namespace BetterLegacy.Core
         /// <param name="thisElement">Object reference.</param>
         /// <param name="customVariables">Passed custom variables.</param>
         /// <returns>Returns true if the passed JSON functions is true, otherwise false.</returns>
-        public bool ParseIfFunction(JSONNode jn, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
+        public bool ParseIfFunction(JSONNode jn, T thisElement = default, Dictionary<string, JSONNode> customVariables = null, bool checkSource = true)
         {
             if (jn == null)
                 return true;
 
             if (jn.IsObject || jn.IsString)
-                return ParseIfFunctionSingle(jn, thisElement, customVariables);
+                return ParseIfFunctionSingle(jn, thisElement, customVariables, checkSource);
 
             bool result = true;
 
@@ -84,10 +95,46 @@ namespace BetterLegacy.Core
         /// <param name="thisElement">Object reference.</param>
         /// <param name="customVariables">Passed custom variables.</param>
         /// <returns>Returns true if the passed JSON function is true, otherwise false.</returns>
-        public bool ParseIfFunctionSingle(JSONNode jn, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
+        public bool ParseIfFunctionSingle(JSONNode jn, T thisElement = default, Dictionary<string, JSONNode> customVariables = null, bool checkSource = true)
         {
             if (jn == null)
                 return false;
+            
+            if (jn.IsObject)
+            {
+                var jnSource = ParseVarFunction(jn["func_reference"], thisElement, customVariables);
+                if (jnSource != null && jnSource.IsString && checkSource)
+                {
+                    var split = jnSource.Value.Split('.');
+                    if (!split.IsEmpty())
+                    {
+                        var b = split[0];
+                        switch (b)
+                        {
+                            case "Example": {
+                                    if (!Example.Current)
+                                        break;
+
+                                    if (split.Length <= 1)
+                                        return Example.Current.functions.ParseIfFunction(jn, Example.Current, customVariables, false);
+
+                                    var sub = split[1];
+                                    if (sub == "Model" && split.Length > 2 && Example.Current.model)
+                                    {
+                                        var type = split[2];
+                                        if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
+                                            return Example.Current.model.partFunctions.ParseIfFunction(jn, part, customVariables, false);
+                                    }
+                                    if (sub == "ChatBubble" && Example.Current.chatBubble)
+                                        return Example.Current.chatBubble.functions.ParseIfFunction(jn, Example.Current.chatBubble, customVariables, false);
+
+                                    break;
+                                }
+                        }
+                        return jn;
+                    }
+                }
+            }
 
             var jnFunc = ParseVarFunction(jn["func"], thisElement, customVariables);
             if (jnFunc != null)
@@ -140,8 +187,8 @@ namespace BetterLegacy.Core
         {
             if (!jn.IsString)
             {
-                var jnSource = ParseVarFunction(jn["source"], thisElement, customVariables);
-                if (jnSource != null && jnSource.IsString)
+                var jnSource = ParseVarFunction(jn["func_reference"], thisElement, customVariables);
+                if (jnSource != null && jnSource.IsString && checkSource)
                 {
                     var split = jnSource.Value.Split('.');
                     if (!split.IsEmpty())
@@ -150,8 +197,14 @@ namespace BetterLegacy.Core
                         switch (b)
                         {
                             case "Example": {
-                                    if (split.Length <= 1 || !Example.Current)
+                                    if (!Example.Current)
                                         break;
+
+                                    if (split.Length <= 1)
+                                    {
+                                        Example.Current.functions.ParseFunction(jn, Example.Current, customVariables, false);
+                                        break;
+                                    }
 
                                     var sub = split[1];
                                     if (sub == "Model" && split.Length > 2 && Example.Current.model)
@@ -160,13 +213,19 @@ namespace BetterLegacy.Core
                                         if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
                                         {
                                             Example.Current.model.partFunctions.ParseFunction(jn, part, customVariables, false);
-                                            return;
+                                            break;
                                         }
+                                    }
+                                    if (sub == "ChatBubble" && Example.Current.chatBubble)
+                                    {
+                                        Example.Current.chatBubble.functions.ParseFunction(jn, Example.Current.chatBubble, customVariables, false);
+                                        break;
                                     }
 
                                     break;
                                 }
                         }
+                        return;
                     }
                 }
 
@@ -204,11 +263,47 @@ namespace BetterLegacy.Core
         /// <param name="thisElement">Object reference.</param>
         /// <param name="customVariables">Passed custom variables.</param>
         /// <returns>Returns the variable returned from the JSON function.</returns>
-        public JSONNode ParseVarFunction(JSONNode jn, T thisElement = default, Dictionary<string, JSONNode> customVariables = null)
+        public JSONNode ParseVarFunction(JSONNode jn, T thisElement = default, Dictionary<string, JSONNode> customVariables = null, bool checkSource = true)
         {
             // if json is null or it's an array, just return itself.
             if (jn == null || jn.IsArray)
                 return jn;
+
+            if (jn.IsObject)
+            {
+                var jnSource = ParseVarFunction(jn["func_reference"], thisElement, customVariables);
+                if (jnSource != null && jnSource.IsString && checkSource)
+                {
+                    var split = jnSource.Value.Split('.');
+                    if (!split.IsEmpty())
+                    {
+                        var b = split[0];
+                        switch (b)
+                        {
+                            case "Example": {
+                                    if (!Example.Current)
+                                        break;
+
+                                    if (split.Length <= 1)
+                                        return Example.Current.functions.ParseVarFunction(jn, Example.Current, customVariables, false);
+
+                                    var sub = split[1];
+                                    if (sub == "Model" && split.Length > 2 && Example.Current.model)
+                                    {
+                                        var type = split[2];
+                                        if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
+                                            return Example.Current.model.partFunctions.ParseVarFunction(jn, part, customVariables, false);
+                                    }
+                                    if (sub == "ChatBubble" && Example.Current.chatBubble)
+                                        return Example.Current.chatBubble.functions.ParseVarFunction(jn, Example.Current.chatBubble, customVariables, false);
+
+                                    break;
+                                }
+                        }
+                        return jn;
+                    }
+                }
+            }
 
             // item is a singular string
             if (jn.IsString)

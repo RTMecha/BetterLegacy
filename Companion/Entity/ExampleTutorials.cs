@@ -1,26 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using SimpleJSON;
+
 using BetterLegacy.Companion.Data;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Companion.Entity
 {
-    public class ExampleTutorials : ExampleModule
+    public class ExampleTutorials : ExampleModule<ExampleTutorials>
     {
         #region Default Instance
 
         public ExampleTutorials() { }
 
-        public static Func<ExampleTutorials> getDefault = () =>
+        public override void InitDefault()
         {
-            var tutorials = new ExampleTutorials();
-            tutorials.InitDefault();
-
-            return tutorials;
-        };
-
-        public override void InitDefault() { }
+            RegisterFunctions();
+        }
 
         #endregion
 
@@ -133,6 +131,36 @@ namespace BetterLegacy.Companion.Entity
             CurrentTutorial = ExampleTutorial.NONE;
             onTutorialEnd?.Invoke();
             inTutorial = false;
+        }
+
+        #endregion
+
+        #region JSON Functions
+
+        public override void RegisterFunctions()
+        {
+            functions = new Functions();
+            functions.LoadCustomJSONFunctions("companion/tutorials/functions.json");
+        }
+
+        public override Dictionary<string, JSONNode> GetVariables() => new Dictionary<string, JSONNode>();
+
+        public class Functions : JSONFunctionParser<ExampleTutorials>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, ExampleTutorials thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleTutorials thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleTutorials thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
         }
 
         #endregion

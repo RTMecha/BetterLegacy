@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,6 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using LSFunctions;
+
+using SimpleJSON;
 
 using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Data.Parameters;
@@ -21,24 +22,15 @@ namespace BetterLegacy.Companion.Entity
     /// <summary>
     /// Represents Example's commands. The user can use this to talk to Example.
     /// </summary>
-    public class ExampleCommands : ExampleModule
+    public class ExampleCommands : ExampleModule<ExampleCommands>
     {
         #region Default Instance
 
         public ExampleCommands() { }
 
-        /// <summary>
-        /// The default commands.
-        /// </summary>
-        public static Func<ExampleCommands> getDefault = () =>
-        {
-            var commands = new ExampleCommands();
-            commands.InitDefault();
-
-            return commands;
-        };
         public override void InitDefault()
         {
+            RegisterFunctions();
             RegisterCommands();
         }
 
@@ -447,6 +439,36 @@ namespace BetterLegacy.Companion.Entity
         InputField chatter;
         RectTransform chatterBase;
         RectTransform autocompleteContent;
+
+        #endregion
+
+        #region JSON Functions
+
+        public override void RegisterFunctions()
+        {
+            functions = new Functions();
+            functions.LoadCustomJSONFunctions("companion/commands/functions.json");
+        }
+
+        public override Dictionary<string, JSONNode> GetVariables() => new Dictionary<string, JSONNode>();
+
+        public class Functions : JSONFunctionParser<ExampleCommands>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, ExampleCommands thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleCommands thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleCommands thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
+        }
 
         #endregion
     }

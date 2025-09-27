@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using SimpleJSON;
+
 using BetterLegacy.Companion.Data;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -66,6 +68,35 @@ namespace BetterLegacy.Companion.Entity
         /// List of the module's attributes.
         /// </summary>
         public List<ExampleAttribute> attributes = new List<ExampleAttribute>();
+
+        /// <summary>
+        /// Registers attributes to the attributes list.
+        /// </summary>
+        public virtual void RegisterAttributes() { }
+
+        /// <summary>
+        /// Loads attributes from a JSON file.
+        /// </summary>
+        /// <param name="assetPath">Asset path to load from. Supports asset packs.</param>
+        /// <returns>Returns true if any asset pack contains the file, otherwise returns false.</returns>
+        public virtual bool LoadAttributes(string assetPath)
+        {
+            if (!AssetPack.TryReadFromFile(assetPath, out string attributesFile))
+                return false;
+
+            var jn = JSON.Parse(attributesFile);
+            if (jn == null || !jn["override"].AsBool)
+                return false;
+
+            attributes.Clear();
+            for (int i = 0; i < jn["attributes"].Count; i++)
+            {
+                var jnAttribute = jn["attributes"][i];
+                AddAttribute(jnAttribute["id"], jnAttribute["value"].AsDouble, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble, jnAttribute["is_int"].AsBool);
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// Adds an attribute to the module.
@@ -145,8 +176,7 @@ namespace BetterLegacy.Companion.Entity
                 switch (behavior)
                 {
                     case ExampleAttributeRetrieval.Throw: throw new NullReferenceException("Attribute is null.");
-                    case ExampleAttributeRetrieval.Add:
-                        {
+                    case ExampleAttributeRetrieval.Add: {
                             attribute = new ExampleAttribute(id, value, min, max, integer);
                             attributes.Add(attribute);
                             break;
@@ -170,6 +200,57 @@ namespace BetterLegacy.Companion.Entity
             RTMath.Operation(ref num, value, operation);
             attribute.Value = num;
         }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Represents a module used to create Example.
+    /// </summary>
+    public abstract class ExampleModule<T> : ExampleModule where T : ExampleModule<T>, new()
+    {
+        #region Core
+
+        /// <summary>
+        /// Creates a new <see cref="T"/> with the default values.
+        /// </summary>
+        public static Func<T> getDefault = () =>
+        {
+            var tutorials = new T();
+            tutorials.InitDefault();
+
+            return tutorials;
+        };
+
+        /// <summary>
+        /// Clears the module.
+        /// </summary>
+        public override void Clear()
+        {
+            base.Clear();
+            functions.customJSONFunctions?.Clear();
+            functions = null;
+        }
+
+        #endregion
+
+        #region Functions
+
+        /// <summary>
+        /// Registers functions to the module.
+        /// </summary>
+        public virtual void RegisterFunctions() { }
+
+        /// <summary>
+        /// Gets the JSON variables of the module.
+        /// </summary>
+        /// <returns>Returns a dictionary of JSON variables.</returns>
+        public virtual Dictionary<string, JSONNode> GetVariables() => new Dictionary<string, JSONNode>();
+
+        /// <summary>
+        /// JSON function parser.
+        /// </summary>
+        public JSONFunctionParser<T> functions;
 
         #endregion
     }

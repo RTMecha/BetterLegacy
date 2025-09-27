@@ -5,6 +5,8 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
+using SimpleJSON;
+
 using BetterLegacy.Companion.Data;
 using BetterLegacy.Companion.Data.Parameters;
 using BetterLegacy.Configs;
@@ -21,25 +23,15 @@ namespace BetterLegacy.Companion.Entity
     /// <summary>
     /// Represents Example's chat bubble. This is how he talks.
     /// </summary>
-    public class ExampleChatBubble : ExampleModule
+    public class ExampleChatBubble : ExampleModule<ExampleChatBubble>
     {
         #region Default Instance
 
         public ExampleChatBubble() { }
 
-        /// <summary>
-        /// The default chat bubble.
-        /// </summary>
-        public static Func<ExampleChatBubble> getDefault = () =>
-        {
-            var chatBubble = new ExampleChatBubble();
-            chatBubble.InitDefault();
-
-            return chatBubble;
-        };
-
         public override void InitDefault()
         {
+            RegisterFunctions();
             RegisterDialogues();
         }
 
@@ -98,6 +90,62 @@ namespace BetterLegacy.Companion.Entity
             dialogueBase = null;
             dialogueImage = null;
             dialogueText = null;
+        }
+
+        #endregion
+
+        #region JSON Functions
+
+        public override void RegisterFunctions()
+        {
+            functions = new Functions();
+            functions.LoadCustomJSONFunctions("companion/dialogue/functions.json");
+        }
+
+        public override Dictionary<string, JSONNode> GetVariables() => new Dictionary<string, JSONNode>();
+
+        public class Functions : JSONFunctionParser<ExampleChatBubble>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "Say": {
+                            if (parameters == null)
+                                return;
+
+                            var dialogue = parameters.Get(0, "text");
+                            if (Parser.IsCompatibleString(dialogue))
+                                thisElement?.Say(dialogue.Value);
+                            return;
+                        }
+                    case "SayDialogue": {
+                            if (parameters == null)
+                                return;
+
+                            var dialogue = parameters.Get(0, "dialogue");
+                            if (Parser.IsCompatibleString(dialogue))
+                                thisElement?.SayDialogue(dialogue.Value);
+                            return;
+                        }
+                    case "Close": {
+                            thisElement?.Close();
+                            return;
+                        }
+                }
+
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleChatBubble thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
         }
 
         #endregion

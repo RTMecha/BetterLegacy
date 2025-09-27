@@ -6,6 +6,8 @@ using UnityEngine;
 
 using LSFunctions;
 
+using SimpleJSON;
+
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -326,6 +328,42 @@ namespace BetterLegacy.Companion.Entity
         {
             if (ExampleConfig.Instance.LogStartup.Value)
                 CompanionManager.Log($"STARTUP -> {message}");
+        }
+
+        #endregion
+
+        #region JSON Functions
+
+        public virtual void RegisterFunctions()
+        {
+            functions = new Functions();
+        }
+
+        public virtual Dictionary<string, JSONNode> GetVariables()
+        {
+            var dictionary = new Dictionary<string, JSONNode>();
+
+            return dictionary;
+        }
+
+        public JSONFunctionParser<Example> functions;
+
+        public class Functions : JSONFunctionParser<Example>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, Example thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, Example thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, Example thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
         }
 
         #endregion

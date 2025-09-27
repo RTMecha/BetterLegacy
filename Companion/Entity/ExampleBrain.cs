@@ -23,30 +23,28 @@ namespace BetterLegacy.Companion.Entity
     /// <summary>
     /// Represents Example's brain. This controls his behavior.
     /// </summary>
-    public class ExampleBrain : ExampleModule
+    public class ExampleBrain : ExampleModule<ExampleBrain>
     {
         #region Default Instance
 
         public ExampleBrain() { }
 
-        /// <summary>
-        /// The default brain.
-        /// </summary>
-        public static Func<ExampleBrain> getDefault = () =>
-        {
-            var brain = new ExampleBrain();
-            brain.InitDefault();
-
-            return brain;
-        };
-
         public override void InitDefault()
         {
-            attributes.Clear();
-            AddAttribute("HAPPINESS", 0.0, -1000.0, 1000.0);
+            RegisterAttributes();
 
+            RegisterFunctions();
             RegisterActions();
             RegisterChecks();
+        }
+
+        public override void RegisterAttributes()
+        {
+            if (LoadAttributes("companion/brain/attributes.json"))
+                return;
+
+            attributes.Clear();
+            AddAttribute("HAPPINESS", 0.0, -1000.0, 1000.0);
         }
 
         #endregion
@@ -965,6 +963,36 @@ namespace BetterLegacy.Companion.Entity
             public const string IS_HAPPY = "Is Happy";
 
             public const string IS_SAD = "Is Sad";
+        }
+
+        #endregion
+
+        #region JSON Functions
+
+        public override void RegisterFunctions()
+        {
+            functions = new Functions();
+            functions.LoadCustomJSONFunctions("companion/brain/functions.json");
+        }
+
+        public override Dictionary<string, JSONNode> GetVariables() => new Dictionary<string, JSONNode>();
+
+        public class Functions : JSONFunctionParser<ExampleBrain>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, ExampleBrain thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleBrain thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleBrain thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
         }
 
         #endregion

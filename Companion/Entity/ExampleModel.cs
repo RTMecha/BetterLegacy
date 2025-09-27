@@ -22,22 +22,11 @@ namespace BetterLegacy.Companion.Entity
     /// <summary>
     /// Represents Example's model.
     /// </summary>
-    public class ExampleModel : ExampleModule
+    public class ExampleModel : ExampleModule<ExampleModel>
     {
         #region Default Instance
 
         public ExampleModel() { }
-
-        /// <summary>
-        /// The default Example model.
-        /// </summary>
-        public static Func<ExampleModel> getDefault = () =>
-        {
-            var model = new ExampleModel();
-            model.InitDefault();
-
-            return model;
-        };
 
         public override void InitDefault()
         {
@@ -64,23 +53,12 @@ namespace BetterLegacy.Companion.Entity
             };
         }
 
-        public virtual void RegisterAttributes()
+        public override void RegisterAttributes()
         {
-            attributes.Clear();
-            if (AssetPack.TryReadFromFile("companion/model/attributes.json", out string attributesFile))
-            {
-                var jn = JSON.Parse(attributesFile);
-                if (jn != null && jn["override"].AsBool)
-                {
-                    for (int i = 0; i < jn["attributes"].Count; i++)
-                    {
-                        var jnAttribute = jn["attributes"][i];
-                        AddAttribute(jnAttribute["id"], jnAttribute["value"].AsDouble, jnAttribute["min"].AsDouble, jnAttribute["max"].AsDouble, jnAttribute["is_int"].AsBool);
-                    }
+            if (LoadAttributes("companion/model/attributes.json"))
+                return;
 
-                    return;
-                }
-            }
+            attributes.Clear();
             AddAttribute("POKING_EYES", 0.0, 0.0, 1.0);
             AddAttribute("ALLOW_BLINKING", 1.0, 0.0, 1.0);
             AddAttribute("PUPILS_CAN_CHANGE", 1.0, 0.0, 1.0);
@@ -767,57 +745,6 @@ namespace BetterLegacy.Companion.Entity
             part = GetPart(id);
             return part;
         }
-
-        /// <summary>
-        /// Registers functions to the model.
-        /// </summary>
-        public virtual void RegisterFunctions()
-        {
-            partFunctions = new PartFunctions();
-            var array = AssetPack.GetArray("companion/model/functions.json");
-            for (int i = 0; i < array.Count; i++)
-                partFunctions.customJSONFunctions[array[i]["name"]] = array[i];
-        }
-
-        /// <summary>
-        /// Gets JSON variables from the object.
-        /// </summary>
-        /// <returns>Returns a dictionary of object variables.</returns>
-        public Dictionary<string, JSONNode> GetVariables()
-        {
-            var dictionary = new Dictionary<string, JSONNode>();
-            dictionary["posX"] = position.x;
-            dictionary["posY"] = position.y;
-            dictionary["scaX"] = scale.x;
-            dictionary["scaY"] = scale.y;
-            dictionary["rot"] = rotation;
-            dictionary["facePosX"] = facePosition.x;
-            dictionary["facePosY"] = facePosition.y;
-            dictionary["pupilsOffsetX"] = pupilsOffset.x;
-            dictionary["pupilsOffsetY"] = pupilsOffset.y;
-            dictionary["mouthOpenAmount"] = mouthOpenAmount;
-            if (reference)
-            {
-                dictionary["timer"] = reference.timer.time;
-                dictionary["dragTargetX"] = reference.DragTarget.x;
-                dictionary["dragTargetY"] = reference.DragTarget.y;
-                dictionary["dragPosX"] = reference.dragPos.x;
-                dictionary["dragPosY"] = reference.dragPos.y;
-                dictionary["dragDelay"] = reference.DragDelay;
-            }
-            if (reference && reference.brain)
-            {
-                var lookingAt = reference.brain.LookingAt;
-                dictionary["lookingAtPosX"] = lookingAt.x;
-                dictionary["lookingAtPosY"] = lookingAt.y;
-            }
-            return dictionary;
-        }
-
-        /// <summary>
-        /// Parser for part functions.
-        /// </summary>
-        public JSONFunctionParser<BasePart> partFunctions;
 
         /// <summary>
         /// Top-most parent ID.
@@ -1600,328 +1527,6 @@ namespace BetterLegacy.Companion.Entity
             /// Example's right hand.
             /// </summary>
             public const string HAND_RIGHT = "HAND_RIGHT";
-        }
-
-        public class PartFunctions : JSONFunctionParser<BasePart>
-        {
-            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-            {
-                switch (name)
-                {
-                    case "Transform": return thisElement && thisElement.transform;
-                    case "CanDrag": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDrag;
-                    case "CanDragLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragLeftHand;
-                    case "CanDragRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragRightHand;
-                    case "Dragging": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.dragging;
-                    case "DraggingLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingLeftHand;
-                    case "DraggingRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingRightHand;
-                    case "Leaving": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.leaving;
-                    case "CurrentAction": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction;
-                }
-
-                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
-            }
-
-            public override void Function(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-            {
-                switch (name)
-                {
-                    case "StartDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
-
-                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                            reference.startDragPos = new Vector2(thisElement.model.position.x, thisElement.model.position.y);
-                            reference.dragPos = new Vector3(thisElement.model.position.x, thisElement.model.position.y);
-                            reference.dragging = true;
-
-                            return;
-                        }
-                    case "Drag": {
-                            var reference = thisElement.model.reference;
-                            thisElement.model.rotation = (reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay;
-
-                            reference.dragPos += (reference.DragTarget - reference.dragPos) * reference.DragDelay;
-
-                            thisElement.model.position = new Vector3(Mathf.Clamp(reference.dragPos.x, -970f, 970f), Mathf.Clamp(reference.dragPos.y, -560f, 560f));
-
-                            break;
-                        }
-                    case "EndDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            thisElement.model.facePosition = Vector3.zero;
-
-                            reference.dragging = false;
-
-                            return;
-                        }
-                    case "StartLeftHandDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
-                            reference.draggingLeftHand = true;
-
-                            return;
-                        }
-                    case "EndLeftHandDrag": {
-                            if (thisElement && thisElement.model && thisElement.model.reference)
-                                thisElement.model.reference.draggingLeftHand = false;
-
-                            try
-                            {
-                                if (thisElement is ImagePart part)
-                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreHelper.LogException(ex);
-                            }
-
-                            return;
-                        }
-                    case "StartRightHandDrag": {
-                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
-                                return;
-
-                            var reference = thisElement.model.reference;
-
-                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
-                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
-                            reference.draggingRightHand = true;
-
-                            return;
-                        }
-                    case "EndRightHandDrag": {
-                            if (thisElement && thisElement.model && thisElement.model.reference)
-                                thisElement.model.reference.draggingRightHand = false;
-
-                            try
-                            {
-                                if (thisElement is ImagePart part)
-                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreHelper.LogException(ex);
-                            }
-
-                            return;
-                        }
-
-                    case "SetPose": {
-                            if (!thisElement || !thisElement.model)
-                                return;
-
-                            var pose = ParseVarFunction(parameters.Get(0, "pose"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(pose))
-                                return;
-
-                            thisElement.model.SetPose(pose);
-
-                            return;
-                        }
-
-                    case "SetAttribute": {
-                            if (parameters == null || !thisElement || !thisElement.model)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return;
-
-                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
-                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
-
-                            thisElement.model.GetAttribute(id, value, min, max).Value = value;
-                            return;
-                        }
-
-                    case "SetFacePosition": {
-                            if (!thisElement || !thisElement.model)
-                                return;
-
-                            thisElement.model.facePosition = new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat);
-
-                            return;
-                        }
-
-                    #region PlaySound
-
-                    // Plays a sound. Can either be a default one already loaded in the SoundLibrary or a custom one from the menu's folder.
-                    // Supports both JSON array and JSON object.
-                    //
-                    // - JSON Array Structure -
-                    // 0 = sound
-                    // 1 = volume
-                    // 2 = pitch
-                    // Example:
-                    // [
-                    //   "blip" < plays the blip sound.
-                    //   "0.3" < sound is quiet.
-                    //   "2" < sound is fast.
-                    // ]
-                    //
-                    // - JSON Object Structure -
-                    // "sound"
-                    // "vol"
-                    // "pitch"
-                    // Example:
-                    // {
-                    //   "sound": "some kind of sound.ogg" < since this sound does not exist in the SoundLibrary, search for a file with the name. If it exists, play the sound.
-                    //   "vol": "1" < default
-                    //   "pitch": "0.5" < slow
-                    // }
-                    case "PlaySound": {
-                            if (parameters == null || !thisElement || !thisElement.model)
-                                return;
-
-                            string sound = ParseVarFunction(parameters.Get(0, "sound"));
-                            if (string.IsNullOrEmpty(sound))
-                                return;
-
-                            float volume = 1f;
-                            var volumeJN = ParseVarFunction(parameters.Get(1, "vol"));
-                            if (volumeJN != null)
-                                volume = volumeJN;
-                        
-                            float pitch = 1f;
-                            var pitchJN = ParseVarFunction(parameters.Get(2, "pitch"));
-                            if (pitchJN != null)
-                                pitch = pitchJN;
-
-                            if (SoundManager.inst.TryGetSound(sound, out AudioClip audioClip))
-                            {
-                                SoundManager.inst.PlaySound(thisElement.model.baseCanvas, audioClip, volume, pitch);
-                                return;
-                            }
-
-                            //var filePath = $"{Path.GetDirectoryName(inst.CurrentInterface.filePath)}{sound}";
-                            //if (!RTFile.FileExists(filePath))
-                            //    return;
-
-                            //var audioType = RTFile.GetAudioType(filePath);
-                            //if (audioType == AudioType.MPEG)
-                            //    SoundManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath), volume, pitch);
-                            //else
-                            //    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => SoundManager.inst.PlaySound(audioClip, volume, pitch)));
-
-                            return;
-                        }
-
-                    #endregion
-
-                    case "ToggleOptions": {
-                            thisElement?.model?.reference?.options?.Toggle();
-                            break;
-                        }
-                    case "Interact": {
-                            thisElement?.model?.reference?.brain?.Interact(ParseVarFunction(parameters.Get(0, "context"), thisElement, customVariables));
-                            break;
-                        }
-
-                    case "SetPartPosition": {
-                            if (parameters == null)
-                                return;
-
-                            thisElement?.SetPosition(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
-                            return;
-                        }
-                    case "SetPartScale": {
-                            if (parameters == null)
-                                return;
-
-                            thisElement?.SetScale(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
-                            return;
-                        }
-                    case "SetPartRotation": {
-                            if (parameters == null)
-                                return;
-
-                            thisElement?.SetRotation(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat);
-                            return;
-                        }
-
-                    case "SetPartImageRotation": {
-                            if (parameters == null || thisElement is not ImagePart imagePart)
-                                return;
-
-                            imagePart.imageRotation = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat;
-                            return;
-                        }
-
-                    case "StopCurrentAction": {
-                            if (thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction)
-                                thisElement.model.reference.brain.StopCurrentAction();
-                            break;
-                        }
-
-                    case "UpdatePupilsOffset": {
-                            if (thisElement && thisElement.model)
-                                thisElement.model.pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
-                            return;
-                        }
-                    case "UpdateBlinking": {
-                        if (!thisElement || !thisElement.gameObject || !thisElement.model)
-                            return;
-
-                            var reference = thisElement.model.reference;
-
-                            float t = reference.timer.time % CompanionManager.BLINK_RATE;
-
-                            if (!reference.Dragging && thisElement.model.GetAttribute("ALLOW_BLINKING").Value == 1.0 && thisElement.model.GetAttribute("DANCING").Value == 0.0 && thisElement.model.GetAttribute("POKING_EYES").Value == 0.0)
-                            {
-                                var blinkingAttribute = thisElement.model.GetAttribute("IS_BLINKING");
-                                var canUnblinkAttribute = thisElement.model.GetAttribute("CAN_UNBLINK");
-                                if (t > CompanionManager.BLINK_RATE - 0.3f && canUnblinkAttribute.Value == 1.0)
-                                    blinkingAttribute.Value = RandomHelper.PercentChance(45) ? 1.0 : 0.0;
-
-                                var active = t > CompanionManager.BLINK_RATE - 0.3f && blinkingAttribute.Value == 1.0;
-                                canUnblinkAttribute.Value = active ? 0.0 : 1.0;
-                                thisElement.gameObject.SetActive(active);
-                            }
-                            else
-                                thisElement.gameObject.SetActive(true);
-                            return;
-                        }
-                }
-                base.Function(jn, name, parameters, thisElement, customVariables);
-            }
-
-            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
-            {
-                switch (name)
-                {
-                    case "GetAttribute": {
-                            if (parameters == null || !thisElement || !thisElement.model)
-                                return 0.0;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return 0.0;
-
-                            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
-                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
-
-                            return thisElement.model.GetAttribute(id, defaultValue, min, max).Value;
-                        }
-                }
-
-                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
-            }
         }
 
         #endregion
@@ -2828,6 +2433,414 @@ namespace BetterLegacy.Companion.Entity
         }
 
         RTAnimation danceLoopAnimation;
+
+        #endregion
+
+        #region JSON Functions
+
+        /// <summary>
+        /// Registers functions to the model.
+        /// </summary>
+        public override void RegisterFunctions()
+        {
+            functions = new Functions();
+            functions.LoadCustomJSONFunctions("companion/model/functions.json");
+            partFunctions = new PartFunctions();
+            partFunctions.LoadCustomJSONFunctions("companion/model/part_functions.json");
+        }
+
+        /// <summary>
+        /// Gets JSON variables from the object.
+        /// </summary>
+        /// <returns>Returns a dictionary of object variables.</returns>
+        public override Dictionary<string, JSONNode> GetVariables()
+        {
+            var dictionary = new Dictionary<string, JSONNode>();
+            dictionary["posX"] = position.x;
+            dictionary["posY"] = position.y;
+            dictionary["scaX"] = scale.x;
+            dictionary["scaY"] = scale.y;
+            dictionary["rot"] = rotation;
+            dictionary["facePosX"] = facePosition.x;
+            dictionary["facePosY"] = facePosition.y;
+            dictionary["pupilsOffsetX"] = pupilsOffset.x;
+            dictionary["pupilsOffsetY"] = pupilsOffset.y;
+            dictionary["mouthOpenAmount"] = mouthOpenAmount;
+            if (reference)
+            {
+                dictionary["timer"] = reference.timer.time;
+                dictionary["dragTargetX"] = reference.DragTarget.x;
+                dictionary["dragTargetY"] = reference.DragTarget.y;
+                dictionary["dragPosX"] = reference.dragPos.x;
+                dictionary["dragPosY"] = reference.dragPos.y;
+                dictionary["dragDelay"] = reference.DragDelay;
+            }
+            if (reference && reference.brain)
+            {
+                var lookingAt = reference.brain.LookingAt;
+                dictionary["lookingAtPosX"] = lookingAt.x;
+                dictionary["lookingAtPosY"] = lookingAt.y;
+            }
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Parser for part functions.
+        /// </summary>
+        public JSONFunctionParser<BasePart> partFunctions;
+
+        public class Functions : JSONFunctionParser<ExampleModel>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
+        }
+        
+        public class PartFunctions : JSONFunctionParser<BasePart>
+        {
+            public override bool IfFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "Transform": return thisElement && thisElement.transform;
+                    case "CanDrag": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDrag;
+                    case "CanDragLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragLeftHand;
+                    case "CanDragRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.canDragRightHand;
+                    case "Dragging": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.dragging;
+                    case "DraggingLeftHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingLeftHand;
+                    case "DraggingRightHand": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.draggingRightHand;
+                    case "Leaving": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.leaving;
+                    case "CurrentAction": return thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction;
+                }
+
+                if (thisElement && thisElement.model)
+                    return thisElement.model.functions.IfFunction(jn, name, parameters, thisElement.model, customVariables);
+
+                return base.IfFunction(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override void Function(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "StartDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            CompanionManager.inst.animationController.Remove(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
+
+                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                            reference.startDragPos = new Vector2(thisElement.model.position.x, thisElement.model.position.y);
+                            reference.dragPos = new Vector3(thisElement.model.position.x, thisElement.model.position.y);
+                            reference.dragging = true;
+
+                            return;
+                        }
+                    case "Drag": {
+                            var reference = thisElement.model.reference;
+                            thisElement.model.rotation = (reference.DragTarget.x - reference.dragPos.x) * reference.DragDelay;
+
+                            reference.dragPos += (reference.DragTarget - reference.dragPos) * reference.DragDelay;
+
+                            thisElement.model.position = new Vector3(Mathf.Clamp(reference.dragPos.x, -970f, 970f), Mathf.Clamp(reference.dragPos.y, -560f, 560f));
+
+                            break;
+                        }
+                    case "EndDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            thisElement.model.facePosition = Vector3.zero;
+
+                            reference.dragging = false;
+
+                            return;
+                        }
+                    case "StartLeftHandDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
+                            reference.draggingLeftHand = true;
+
+                            return;
+                        }
+                    case "EndLeftHandDrag": {
+                            if (thisElement && thisElement.model && thisElement.model.reference)
+                                thisElement.model.reference.draggingLeftHand = false;
+
+                            try
+                            {
+                                if (thisElement is ImagePart part)
+                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreHelper.LogException(ex);
+                            }
+
+                            return;
+                        }
+                    case "StartRightHandDrag": {
+                            if (!thisElement || !thisElement.model || !thisElement.model.reference)
+                                return;
+
+                            var reference = thisElement.model.reference;
+
+                            reference.startMousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y) * CoreHelper.ScreenScaleInverse;
+                            reference.startDragPos = new Vector2(thisElement.position.x, thisElement.position.y);
+                            reference.draggingRightHand = true;
+
+                            return;
+                        }
+                    case "EndRightHandDrag": {
+                            if (thisElement && thisElement.model && thisElement.model.reference)
+                                thisElement.model.reference.draggingRightHand = false;
+
+                            try
+                            {
+                                if (thisElement is ImagePart part)
+                                    thisElement?.model?.reference?.brain.SelectObject(part.image);
+                            }
+                            catch (Exception ex)
+                            {
+                                CoreHelper.LogException(ex);
+                            }
+
+                            return;
+                        }
+
+                    case "SetPose": {
+                            if (!thisElement || !thisElement.model)
+                                return;
+
+                            var pose = ParseVarFunction(parameters.Get(0, "pose"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(pose))
+                                return;
+
+                            thisElement.model.SetPose(pose);
+
+                            return;
+                        }
+
+                    case "SetAttribute": {
+                            if (parameters == null || !thisElement || !thisElement.model)
+                                return;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return;
+
+                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                            thisElement.model.GetAttribute(id, value, min, max).Value = value;
+                            return;
+                        }
+
+                    case "SetFacePosition": {
+                            if (!thisElement || !thisElement.model)
+                                return;
+
+                            thisElement.model.facePosition = new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat);
+
+                            return;
+                        }
+
+                    #region PlaySound
+
+                    // Plays a sound. Can either be a default one already loaded in the SoundLibrary or a custom one from the menu's folder.
+                    // Supports both JSON array and JSON object.
+                    //
+                    // - JSON Array Structure -
+                    // 0 = sound
+                    // 1 = volume
+                    // 2 = pitch
+                    // Example:
+                    // [
+                    //   "blip" < plays the blip sound.
+                    //   "0.3" < sound is quiet.
+                    //   "2" < sound is fast.
+                    // ]
+                    //
+                    // - JSON Object Structure -
+                    // "sound"
+                    // "vol"
+                    // "pitch"
+                    // Example:
+                    // {
+                    //   "sound": "some kind of sound.ogg" < since this sound does not exist in the SoundLibrary, search for a file with the name. If it exists, play the sound.
+                    //   "vol": "1" < default
+                    //   "pitch": "0.5" < slow
+                    // }
+                    case "PlaySound": {
+                            if (parameters == null || !thisElement || !thisElement.model)
+                                return;
+
+                            string sound = ParseVarFunction(parameters.Get(0, "sound"));
+                            if (string.IsNullOrEmpty(sound))
+                                return;
+
+                            float volume = 1f;
+                            var volumeJN = ParseVarFunction(parameters.Get(1, "vol"));
+                            if (volumeJN != null)
+                                volume = volumeJN;
+                        
+                            float pitch = 1f;
+                            var pitchJN = ParseVarFunction(parameters.Get(2, "pitch"));
+                            if (pitchJN != null)
+                                pitch = pitchJN;
+
+                            if (SoundManager.inst.TryGetSound(sound, out AudioClip audioClip))
+                            {
+                                SoundManager.inst.PlaySound(thisElement.model.baseCanvas, audioClip, volume, pitch);
+                                return;
+                            }
+
+                            //var filePath = $"{Path.GetDirectoryName(inst.CurrentInterface.filePath)}{sound}";
+                            //if (!RTFile.FileExists(filePath))
+                            //    return;
+
+                            //var audioType = RTFile.GetAudioType(filePath);
+                            //if (audioType == AudioType.MPEG)
+                            //    SoundManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath), volume, pitch);
+                            //else
+                            //    CoroutineHelper.StartCoroutine(AlephNetwork.DownloadAudioClip($"file://{filePath}", audioType, audioClip => SoundManager.inst.PlaySound(audioClip, volume, pitch)));
+
+                            return;
+                        }
+
+                    #endregion
+
+                    case "ToggleOptions": {
+                            thisElement?.model?.reference?.options?.Toggle();
+                            break;
+                        }
+                    case "Interact": {
+                            thisElement?.model?.reference?.brain?.Interact(ParseVarFunction(parameters.Get(0, "context"), thisElement, customVariables));
+                            break;
+                        }
+
+                    case "SetPartPosition": {
+                            if (parameters == null)
+                                return;
+
+                            thisElement?.SetPosition(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
+                            return;
+                        }
+                    case "SetPartScale": {
+                            if (parameters == null)
+                                return;
+
+                            thisElement?.SetScale(new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat));
+                            return;
+                        }
+                    case "SetPartRotation": {
+                            if (parameters == null)
+                                return;
+
+                            thisElement?.SetRotation(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat);
+                            return;
+                        }
+
+                    case "SetPartImageRotation": {
+                            if (parameters == null || thisElement is not ImagePart imagePart)
+                                return;
+
+                            imagePart.imageRotation = ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat;
+                            return;
+                        }
+
+                    case "StopCurrentAction": {
+                            if (thisElement && thisElement.model && thisElement.model.reference && thisElement.model.reference.brain && thisElement.model.reference.brain.CurrentAction)
+                                thisElement.model.reference.brain.StopCurrentAction();
+                            break;
+                        }
+
+                    case "UpdatePupilsOffset": {
+                            if (thisElement && thisElement.model)
+                                thisElement.model.pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
+                            return;
+                        }
+                    case "UpdateBlinking": {
+                        if (!thisElement || !thisElement.gameObject || !thisElement.model)
+                            return;
+
+                            var reference = thisElement.model.reference;
+
+                            float t = reference.timer.time % CompanionManager.BLINK_RATE;
+
+                            if (!reference.Dragging && thisElement.model.GetAttribute("ALLOW_BLINKING").Value == 1.0 && thisElement.model.GetAttribute("DANCING").Value == 0.0 && thisElement.model.GetAttribute("POKING_EYES").Value == 0.0)
+                            {
+                                var blinkingAttribute = thisElement.model.GetAttribute("IS_BLINKING");
+                                var canUnblinkAttribute = thisElement.model.GetAttribute("CAN_UNBLINK");
+                                if (t > CompanionManager.BLINK_RATE - 0.3f && canUnblinkAttribute.Value == 1.0)
+                                    blinkingAttribute.Value = RandomHelper.PercentChance(45) ? 1.0 : 0.0;
+
+                                var active = t > CompanionManager.BLINK_RATE - 0.3f && blinkingAttribute.Value == 1.0;
+                                canUnblinkAttribute.Value = active ? 0.0 : 1.0;
+                                thisElement.gameObject.SetActive(active);
+                            }
+                            else
+                                thisElement.gameObject.SetActive(true);
+                            return;
+                        }
+                }
+
+                if (thisElement && thisElement.model)
+                {
+                    thisElement.model.functions.Function(jn, name, parameters, thisElement.model, customVariables);
+                    return;
+                }
+
+                base.Function(jn, name, parameters, thisElement, customVariables);
+            }
+
+            public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
+            {
+                switch (name)
+                {
+                    case "GetAttribute": {
+                            if (parameters == null || !thisElement || !thisElement.model)
+                                return 0.0;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return 0.0;
+
+                            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
+                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                            return thisElement.model.GetAttribute(id, defaultValue, min, max).Value;
+                        }
+                }
+
+                if (thisElement && thisElement.model)
+                    return thisElement.model.functions.VarFunction(jn, name, parameters, thisElement.model, customVariables);
+
+                return base.VarFunction(jn, name, parameters, thisElement, customVariables);
+            }
+        }
 
         #endregion
     }
