@@ -119,11 +119,15 @@ namespace BetterLegacy.Core
                                         return Example.Current.functions.ParseIfFunction(jn, Example.Current, customVariables, false);
 
                                     var sub = split[1];
-                                    if (sub == "Model" && split.Length > 2 && Example.Current.model)
+                                    if (sub == "Model" && Example.Current.model)
                                     {
-                                        var type = split[2];
-                                        if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
-                                            return Example.Current.model.partFunctions.ParseIfFunction(jn, part, customVariables, false);
+                                        if (split.Length > 2)
+                                        {
+                                            var type = split[2];
+                                            if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
+                                                return Example.Current.model.partFunctions.ParseIfFunction(jn, part, customVariables, false);
+                                        }
+                                        return Example.Current.model.functions.ParseIfFunction(jn, Example.Current.model, customVariables, false);
                                     }
                                     if (sub == "ChatBubble" && Example.Current.chatBubble)
                                         return Example.Current.chatBubble.functions.ParseIfFunction(jn, Example.Current.chatBubble, customVariables, false);
@@ -207,14 +211,19 @@ namespace BetterLegacy.Core
                                     }
 
                                     var sub = split[1];
-                                    if (sub == "Model" && split.Length > 2 && Example.Current.model)
+                                    if (sub == "Model" && Example.Current.model)
                                     {
-                                        var type = split[2];
-                                        if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
+                                        if (split.Length > 2)
                                         {
-                                            Example.Current.model.partFunctions.ParseFunction(jn, part, customVariables, false);
-                                            break;
+                                            var type = split[2];
+                                            if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
+                                            {
+                                                Example.Current.model.partFunctions.ParseFunction(jn, part, customVariables, false);
+                                                break;
+                                            }
                                         }
+                                        Example.Current.model.functions.ParseFunction(jn, Example.Current.model, customVariables, false);
+                                        break;
                                     }
                                     if (sub == "ChatBubble" && Example.Current.chatBubble)
                                     {
@@ -288,11 +297,15 @@ namespace BetterLegacy.Core
                                         return Example.Current.functions.ParseVarFunction(jn, Example.Current, customVariables, false);
 
                                     var sub = split[1];
-                                    if (sub == "Model" && split.Length > 2 && Example.Current.model)
+                                    if (sub == "Model" && Example.Current.model)
                                     {
-                                        var type = split[2];
-                                        if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
-                                            return Example.Current.model.partFunctions.ParseVarFunction(jn, part, customVariables, false);
+                                        if (split.Length > 2)
+                                        {
+                                            var type = split[2];
+                                            if (type == "Parts" && split.Length > 3 && Example.Current.model.TryGetPart(split[3], out ExampleModel.BasePart part))
+                                                return Example.Current.model.partFunctions.ParseVarFunction(jn, part, customVariables, false);
+                                        }
+                                        return Example.Current.model.functions.ParseVarFunction(jn, Example.Current.model, customVariables, false);
                                     }
                                     if (sub == "ChatBubble" && Example.Current.chatBubble)
                                         return Example.Current.chatBubble.functions.ParseVarFunction(jn, Example.Current.chatBubble, customVariables, false);
