@@ -708,22 +708,22 @@ namespace BetterLegacy.Companion.Entity
             #endregion
 
             // add custom objects
-            if (jn != null)
+            if (jn == null || !(jn["add"] == null || jn["add"].AsBool))
+                return;
+
+            for (int i = 0; i < jn["parts"].Count; i++)
             {
-                for (int i = 0; i < jn["parts"].Count; i++)
+                var jnPart = jn["parts"][i];
+                var type = Parser.TryParse(jnPart["type"], BasePart.PartType.Parent);
+                BasePart part = type switch
                 {
-                    var jnPart = jn["parts"][i];
-                    var type = Parser.TryParse(jnPart["type"], BasePart.PartType.Parent);
-                    BasePart part = type switch
-                    {
-                        BasePart.PartType.Parent => ParentPart.Default,
-                        BasePart.PartType.Image => ImagePart.Default,
-                        _ => null,
-                    };
-                    part.model = this;
-                    part.Parse(jnPart);
-                    parts.Add(part);
-                }
+                    BasePart.PartType.Parent => ParentPart.Default,
+                    BasePart.PartType.Image => ImagePart.Default,
+                    _ => null,
+                };
+                part.model = this;
+                part.Parse(jnPart);
+                parts.Add(part);
             }
         }
 
