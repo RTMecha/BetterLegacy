@@ -1936,6 +1936,22 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.getLerpColor): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Hex Color 1", 1);
+                        StringGenerator(modifier, reference, "Hex Color 2", 2);
+                        SingleGenerator(modifier, reference, "Multiply", 3);
+
+                        break;
+                    }
+                case nameof(ModifierFunctions.getAddColor): {
+                        StringGenerator(modifier, reference, "Variable Name", 0);
+                        StringGenerator(modifier, reference, "Hex Color 1", 1);
+                        StringGenerator(modifier, reference, "Hex Color 2", 2);
+                        SingleGenerator(modifier, reference, "Add Amount", 3);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.getVisualColor): {
                         StringGenerator(modifier, reference, "Color 1 Var Name", 0);
                         StringGenerator(modifier, reference, "Color 2 Var Name", 1);

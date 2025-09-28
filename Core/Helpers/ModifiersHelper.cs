@@ -1063,6 +1063,8 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.getHexCodeFromFloat),  ModifierFunctions.getHexCodeFromFloat),
             new ModifierAction(nameof(ModifierFunctions.getModifiedColor),  ModifierFunctions.getModifiedColor),
             new ModifierAction(nameof(ModifierFunctions.getMixedColors),  ModifierFunctions.getMixedColors),
+            new ModifierAction(nameof(ModifierFunctions.getLerpColor),  ModifierFunctions.getLerpColor),
+            new ModifierAction(nameof(ModifierFunctions.getAddColor),  ModifierFunctions.getAddColor),
             new ModifierAction(nameof(ModifierFunctions.getVisualColor),  ModifierFunctions.getVisualColor),
             new ModifierAction(nameof(ModifierFunctions.getVisualColorRGBA),  ModifierFunctions.getVisualColorRGBA),
             new ModifierAction(nameof(ModifierFunctions.getVisualOpacity),  ModifierFunctions.getVisualOpacity),
@@ -3115,7 +3117,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void getModifiedColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            var color = RTColors.HexToColor(modifier.GetValue(1, variables));
+            var color = RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables));
 
             variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(RTColors.FadeColor(RTColors.ChangeColorHSV(color,
                     modifier.GetFloat(3, 0f, variables),
@@ -3127,9 +3129,23 @@ namespace BetterLegacy.Core.Helpers
         {
             var colors = new List<Color>();
             for (int i = 1; i < modifier.values.Count; i++)
-                colors.Add(RTColors.HexToColor(modifier.GetValue(1, variables)));
+                colors.Add(RTColors.HexToColor(ModifiersHelper.FormatStringVariables(modifier.GetValue(1, variables), variables)));
 
             variables[modifier.GetValue(0)] = RTColors.MixColors(colors).ToString();
+        }
+
+        public static void getLerpColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var a = RTColors.HexToColor(modifier.GetValue(1, variables));
+            var b = RTColors.HexToColor(modifier.GetValue(2, variables));
+            variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(RTMath.Lerp(a, b, modifier.GetFloat(3, 1f, variables)));
+        }
+
+        public static void getAddColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            var a = RTColors.HexToColor(modifier.GetValue(1, variables));
+            var b = RTColors.HexToColor(modifier.GetValue(2, variables));
+            variables[modifier.GetValue(0)] = RTColors.ColorToHexOptional(a + b * modifier.GetFloat(3, 1f, variables));
         }
 
         public static void getVisualColor(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
