@@ -311,6 +311,14 @@ namespace BetterLegacy.Configs
 
         public void UpdateTabs()
         {
+            LegacyPlugin.configs.RemoveAll(x => x is CustomConfig);
+            if (AssetPack.TryGetDirectory("configs", out string configsDirectory))
+            {
+                var configFiles = System.IO.Directory.GetFiles(configsDirectory, FileFormat.LSC.ToPattern());
+                for (int i = 0; i < configFiles.Length; i++)
+                    LegacyPlugin.configs.Add(new CustomConfig(System.IO.Path.GetFileName(configFiles[i])));
+            }
+
             LSHelpers.DeleteChildren(tabs);
 
             for (int i = 0; i < LegacyPlugin.configs.Count; i++)
