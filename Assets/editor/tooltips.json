@@ -4153,6 +4153,26 @@
             ]
           }, // getMixedColors
           {
+            "name": "Object Modifier - getLerpColor (Action)",
+            "tooltips": [
+              {
+                "desc": "getLerpColor (Action)",
+                "hint": "Gets two colors, interpolates them and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getLerpColor
+          {
+            "name": "Object Modifier - getAddColor (Action)",
+            "tooltips": [
+              {
+                "desc": "getAddColor (Action)",
+                "hint": "Gets two colors, adds all their color channels and passes it to other modifiers.",
+                "lang": 0
+              }
+            ]
+          }, // getAddColor
+          {
             "name": "Object Modifier - getVisualColor (Action)",
             "tooltips": [
               {

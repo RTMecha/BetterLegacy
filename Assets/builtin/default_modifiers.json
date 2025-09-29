@@ -2358,6 +2358,18 @@
       }, // getMixedColors
       {
         "type": 1,
+        "name": "getLerpColor",
+        "values": [ "LERPCOLOR_VAR", "FFFFFF", "000000", "0.5" ],
+        "const": "True"
+      }, // getLerpColor
+      {
+        "type": 1,
+        "name": "getAddColor",
+        "values": [ "ADDCOLOR_VAR", "FFFFFF", "000000", "0.5" ],
+        "const": "True"
+      }, // getAddColor
+      {
+        "type": 1,
         "name": "getVisualColor",
         "values": [ "VISUALCOLOR1_VAR", "VISUALCOLOR2_VAR" ],
         "const": "True",
