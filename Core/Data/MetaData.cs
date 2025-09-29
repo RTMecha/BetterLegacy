@@ -55,6 +55,11 @@ namespace BetterLegacy.Core.Data
         public SongMetaData song;
         public BeatmapMetaData beatmap;
 
+        /// <summary>
+        /// Required asset packs for the level.
+        /// </summary>
+        public List<RequiredAssetPackData> requiredAssetPacks = new List<RequiredAssetPackData>();
+
         #region Server
 
         public string serverID;
@@ -115,6 +120,7 @@ namespace BetterLegacy.Core.Data
             creator.CopyData(orig.creator, newID);
             song.CopyData(orig.song, newID);
             beatmap.CopyData(orig.beatmap, newID);
+            requiredAssetPacks = new List<RequiredAssetPackData>(orig.requiredAssetPacks.Select(x => x.Copy(false)));
 
             arcadeID = orig.arcadeID;
             nextID = orig.nextID;
@@ -157,6 +163,9 @@ namespace BetterLegacy.Core.Data
                 creator.ReadJSON(jn);
                 song.ReadJSON(jn);
                 beatmap.ReadJSON(jn);
+
+                if (jn["asset_packs"] != null)
+                    requiredAssetPacks = Parser.ParseObjectList<RequiredAssetPackData>(jn["asset_packs"]);
 
                 if (!string.IsNullOrEmpty(jn["arcade_id"]))
                     arcadeID = jn["arcade_id"];
@@ -238,6 +247,9 @@ namespace BetterLegacy.Core.Data
             jn["creator"] = creator.ToJSON();
             jn["song"] = song.ToJSON();
             jn["beatmap"] = beatmap.ToJSON();
+
+            for (int i = 0; i < requiredAssetPacks.Count; i++)
+                jn["asset_packs"][i] = requiredAssetPacks[i].ToJSON();
 
             if (!string.IsNullOrEmpty(arcadeID))
                 jn["arcade_id"] = arcadeID;
@@ -856,5 +868,57 @@ namespace BetterLegacy.Core.Data
         public override string ToString() => workshopID.ToString();
 
         #endregion
+    }
+
+    /// <summary>
+    /// Indicates an asset pack that is required to play the level. Useful for fully custom functions.
+    /// </summary>
+    public class RequiredAssetPackData : PAObject<RequiredAssetPackData>
+    {
+        public RequiredAssetPackData() { }
+
+        /// <summary>
+        /// Asset Pack ID reference.
+        /// </summary>
+        public string packID;
+        /// <summary>
+        /// Asset Pack Name.
+        /// </summary>
+        public string packName;
+        /// <summary>
+        /// ID of the Asset Pack on the server.
+        /// </summary>
+        public string serverID;
+
+        public override void CopyData(RequiredAssetPackData orig, bool newID = true)
+        {
+            packID = orig.packID;
+            packName = orig.packName;
+            serverID = orig.serverID;
+        }
+
+        public override void ReadJSON(JSONNode jn)
+        {
+            if (!string.IsNullOrEmpty(jn["pack_id"]))
+                packID = jn["pack_id"];
+            if (!string.IsNullOrEmpty(jn["pack_name"]))
+                packName = jn["pack_name"];
+            if (!string.IsNullOrEmpty(jn["server_id"]))
+                serverID = jn["server_id"];
+        }
+
+        public override JSONNode ToJSON()
+        {
+            var jn = Parser.NewJSONObject();
+
+            if (!string.IsNullOrEmpty(jn["pack_id"]))
+                jn["pack_id"] = packID;
+            if (!string.IsNullOrEmpty(jn["pack_name"]))
+                jn["pack_name"] = packName;
+            if (!string.IsNullOrEmpty(jn["server_id"]))
+                jn["server_id"] = serverID;
+
+            return jn;
+        }
     }
 }
