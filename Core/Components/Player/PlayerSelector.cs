@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 using LSFunctions;
 
@@ -15,6 +16,8 @@ namespace BetterLegacy.Core.Components.Player
     {
         public RTPlayer player;
 
+        bool dragging;
+
         void Awake()
         {
             if (!CoreHelper.InEditor)
@@ -23,10 +26,37 @@ namespace BetterLegacy.Core.Components.Player
 
         void OnMouseDown()
         {
+            if (!CoreHelper.IsEditing || EventSystem.current.IsPointerOverGameObject() || dragging)
+                return;
+
+            //    EditorContextMenu.inst.ShowContextMenu(
+            //        new ButtonFunction("Respawn", () =>
+            //        {
+            //            if (player)
+            //                PlayerManager.RespawnPlayer(player.playerIndex);
+            //        }),
+            //        new ButtonFunction("Hide", () =>
+            //        {
+            //            EventsConfig.Instance.ShowGUI.Value = false;
+            //            EditorManager.inst.DisplayNotification($"Hidden players and GUI. If you want to un-hide, press {EventsConfig.Instance.ShowGUIToggle.Value}.", 4f, EditorManager.NotificationType.Success);
+            //        }));
+            //    return;
+
             PlayerEditor.inst.Dialog.Open();
             StartCoroutine(PlayerEditor.inst.RefreshEditor());
             AchievementManager.inst.UnlockAchievement("select_player");
         }
+
+        void OnMouseDrag()
+        {
+            if (!player || !Input.GetMouseButton((int)PointerEventData.InputButton.Left))
+                return;
+
+            dragging = true;
+            player.rb.position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        }
+
+        void OnMouseUp() => dragging = false;
 
         void OnMouseEnter()
         {
