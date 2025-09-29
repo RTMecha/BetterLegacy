@@ -173,7 +173,7 @@ namespace BetterLegacy
                 if (settings && !settings.enabled)
                     continue;
 
-                if (!assetPack.HasFile(assetPath) || RTFile.TryReadFromFile(RTFile.CombinePaths(assetPack.path, assetPath), out string file))
+                if (!assetPack.HasFile(assetPath) || !RTFile.TryReadFromFile(RTFile.CombinePaths(assetPack.path, assetPath), out string file))
                     continue;
 
                 jsonArray = AddArray(jsonArray, file, forceAdd);
