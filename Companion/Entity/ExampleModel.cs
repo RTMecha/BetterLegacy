@@ -165,6 +165,16 @@ namespace BetterLegacy.Companion.Entity
 
             if (canvasGroup)
                 canvasGroup.alpha = (ExampleConfig.Instance.IsTransparent.Value ? ExampleConfig.Instance.TransparencyOpacity.Value : 1f) * opacity;
+
+            try
+            {
+                if (onTickJSON != null)
+                    functions.ParseFunction(onTickJSON, this, GetVariables());
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         /// <summary>
@@ -2447,6 +2457,9 @@ namespace BetterLegacy.Companion.Entity
             functions.LoadCustomJSONFunctions("companion/model/functions.json");
             partFunctions = new PartFunctions();
             partFunctions.LoadCustomJSONFunctions("companion/model/part_functions.json");
+
+            if (AssetPack.TryReadFromFile("companion/model/behavior.json", out string behaviorFile))
+                onTickJSON = JSON.Parse(behaviorFile)["on_tick"];
         }
 
         /// <summary>
@@ -2498,11 +2511,82 @@ namespace BetterLegacy.Companion.Entity
 
             public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
+                switch (name)
+                {
+                    case "SetPose": {
+                            if (!thisElement)
+                                return;
+
+                            var pose = ParseVarFunction(parameters.Get(0, "pose"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(pose))
+                                return;
+
+                            thisElement.SetPose(pose);
+
+                            return;
+                        }
+
+                    case "SetAttribute": {
+                            if (parameters == null || !thisElement)
+                                return;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return;
+
+                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                            thisElement.GetAttribute(id, value, min, max).Value = value;
+                            return;
+                        }
+                    case "SetAttributeOperation": {
+                            if (parameters == null || !thisElement)
+                                return;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return;
+
+                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                            var operation = Parser.TryParse(ParseVarFunction(parameters.Get(2, "operation"), thisElement, customVariables), MathOperation.Addition);
+                            thisElement.SetAttribute(id, value, operation);
+                            return;
+                        }
+
+                    case "SetFacePosition": {
+                            if (thisElement)
+                                thisElement.facePosition = new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat);
+
+                            return;
+                        }
+
+                }
+
                 base.Function(jn, name, parameters, thisElement, customVariables);
             }
 
             public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, ExampleModel thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
+                switch (name)
+                {
+                    case "GetAttribute": {
+                            if (parameters == null || !thisElement)
+                                return 0.0;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return 0.0;
+
+                            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
+                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                            return thisElement.GetAttribute(id, defaultValue, min, max).Value;
+                        }
+                }
+
                 return base.VarFunction(jn, name, parameters, thisElement, customVariables);
             }
         }
@@ -2624,44 +2708,6 @@ namespace BetterLegacy.Companion.Entity
                             {
                                 CoreHelper.LogException(ex);
                             }
-
-                            return;
-                        }
-
-                    case "SetPose": {
-                            if (!thisElement || !thisElement.model)
-                                return;
-
-                            var pose = ParseVarFunction(parameters.Get(0, "pose"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(pose))
-                                return;
-
-                            thisElement.model.SetPose(pose);
-
-                            return;
-                        }
-
-                    case "SetAttribute": {
-                            if (parameters == null || !thisElement || !thisElement.model)
-                                return;
-
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return;
-
-                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
-                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
-
-                            thisElement.model.GetAttribute(id, value, min, max).Value = value;
-                            return;
-                        }
-
-                    case "SetFacePosition": {
-                            if (!thisElement || !thisElement.model)
-                                return;
-
-                            thisElement.model.facePosition = new Vector2(ParseVarFunction(parameters.Get(0, "x"), thisElement, customVariables).AsFloat, ParseVarFunction(parameters.Get(1, "y"), thisElement, customVariables).AsFloat);
 
                             return;
                         }
@@ -2817,23 +2863,23 @@ namespace BetterLegacy.Companion.Entity
 
             public override JSONNode VarFunction(JSONNode jn, string name, JSONNode parameters, BasePart thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
-                switch (name)
-                {
-                    case "GetAttribute": {
-                            if (parameters == null || !thisElement || !thisElement.model)
-                                return 0.0;
+                //switch (name)
+                //{
+                //    case "GetAttribute": {
+                //            if (parameters == null || !thisElement || !thisElement.model)
+                //                return 0.0;
 
-                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
-                            if (!Parser.IsCompatibleString(id))
-                                return 0.0;
+                //            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                //            if (!Parser.IsCompatibleString(id))
+                //                return 0.0;
 
-                            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
-                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
-                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+                //            var defaultValue = ParseVarFunction(parameters.Get(1, "default"), thisElement, customVariables).AsDouble;
+                //            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                //            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
 
-                            return thisElement.model.GetAttribute(id, defaultValue, min, max).Value;
-                        }
-                }
+                //            return thisElement.model.GetAttribute(id, defaultValue, min, max).Value;
+                //        }
+                //}
 
                 if (thisElement && thisElement.model)
                     return thisElement.model.functions.VarFunction(jn, name, parameters, thisElement.model, customVariables);

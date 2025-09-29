@@ -252,6 +252,11 @@ namespace BetterLegacy.Companion.Entity
         /// </summary>
         public JSONFunctionParser<T> functions;
 
+        /// <summary>
+        /// JSON Function to run per-tick.
+        /// </summary>
+        public JSONNode onTickJSON;
+
         #endregion
     }
 }

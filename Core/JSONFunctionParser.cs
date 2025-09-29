@@ -43,6 +43,8 @@ namespace BetterLegacy.Core
                 customJSONFunctions[array[i]["name"]] = array[i];
         }
 
+        #region Parse
+
         /// <summary>
         /// Parses text.
         /// </summary>
@@ -131,6 +133,12 @@ namespace BetterLegacy.Core
                                     }
                                     if (sub == "ChatBubble" && Example.Current.chatBubble)
                                         return Example.Current.chatBubble.functions.ParseIfFunction(jn, Example.Current.chatBubble, customVariables, false);
+                                    if (sub == "Brain" && Example.Current.brain)
+                                        return Example.Current.brain.functions.ParseIfFunction(jn, Example.Current.brain, customVariables, false);
+                                    if (sub == "Commands" && Example.Current.commands)
+                                        return Example.Current.commands.functions.ParseIfFunction(jn, Example.Current.commands, customVariables, false);
+                                    if (sub == "Options" && Example.Current.options)
+                                        return Example.Current.options.functions.ParseIfFunction(jn, Example.Current.options, customVariables, false);
 
                                     break;
                                 }
@@ -230,6 +238,21 @@ namespace BetterLegacy.Core
                                         Example.Current.chatBubble.functions.ParseFunction(jn, Example.Current.chatBubble, customVariables, false);
                                         break;
                                     }
+                                    if (sub == "Brain" && Example.Current.brain)
+                                    {
+                                        Example.Current.brain.functions.ParseFunction(jn, Example.Current.brain, customVariables, false);
+                                        break;
+                                    }
+                                    if (sub == "Commands" && Example.Current.commands)
+                                    {
+                                        Example.Current.commands.functions.ParseFunction(jn, Example.Current.commands, customVariables, false);
+                                        break;
+                                    }
+                                    if (sub == "Options" && Example.Current.options)
+                                    {
+                                        Example.Current.options.functions.ParseFunction(jn, Example.Current.options, customVariables, false);
+                                        break;
+                                    }
 
                                     break;
                                 }
@@ -309,6 +332,12 @@ namespace BetterLegacy.Core
                                     }
                                     if (sub == "ChatBubble" && Example.Current.chatBubble)
                                         return Example.Current.chatBubble.functions.ParseVarFunction(jn, Example.Current.chatBubble, customVariables, false);
+                                    if (sub == "Brain" && Example.Current.brain)
+                                        return Example.Current.brain.functions.ParseVarFunction(jn, Example.Current.brain, customVariables, false);
+                                    if (sub == "Commands" && Example.Current.commands)
+                                        return Example.Current.commands.functions.ParseVarFunction(jn, Example.Current.commands, customVariables, false);
+                                    if (sub == "Options" && Example.Current.options)
+                                        return Example.Current.options.functions.ParseVarFunction(jn, Example.Current.options, customVariables, false);
 
                                     break;
                                 }
@@ -331,6 +360,39 @@ namespace BetterLegacy.Core
 
             return VarFunction(jn, name, parameters, thisElement, customVariables);
         }
+
+        #endregion
+
+        #region Call
+
+        public bool CallIfFunction(string name, T thisElement, Dictionary<string, JSONNode> customVariables, params JSONNode[] parameters)
+        {
+            var jn = Parser.NewJSONObject();
+            jn["name"] = name;
+            for (int i = 0; i < parameters.Length; i++)
+                jn["params"][i] = parameters[i];
+            return ParseIfFunction(jn, thisElement, customVariables, false);
+        }
+        
+        public void CallFunction(string name, T thisElement, Dictionary<string, JSONNode> customVariables, params JSONNode[] parameters)
+        {
+            var jn = Parser.NewJSONObject();
+            jn["name"] = name;
+            for (int i = 0; i < parameters.Length; i++)
+                jn["params"][i] = parameters[i];
+            ParseFunction(jn, thisElement, customVariables, false);
+        }
+
+        public JSONNode CallVarFunction(string name, T thisElement, Dictionary<string, JSONNode> customVariables, params JSONNode[] parameters)
+        {
+            var jn = Parser.NewJSONObject();
+            jn["name"] = name;
+            for (int i = 0; i < parameters.Length; i++)
+                jn["params"][i] = parameters[i];
+            return ParseVarFunction(jn, thisElement, customVariables, false);
+        }
+
+        #endregion
 
         #region Function Lists
 
@@ -423,6 +485,22 @@ namespace BetterLegacy.Core
                                 break;
 
                             return AssetPack.TryGetFile(parameters.Get(0, "path"), out string filePath);
+                        }
+
+                    case "ConfigSettingEquals": {
+                            if (parameters == null)
+                                break;
+
+                            var configName = ParseVarFunction(parameters.Get(0, "config"), thisElement, customVariables);
+                            if (!LegacyPlugin.configs.TryFind(x => x.Name == configName, out BaseConfig config))
+                                break;
+
+                            var section = ParseVarFunction(parameters.Get(1, "section"), thisElement, customVariables);
+                            var key = ParseVarFunction(parameters.Get(2, "key"), thisElement, customVariables);
+                            if (config.Settings.TryFind(x => x.Section == section && x.Key == key, out BaseSetting setting))
+                                return setting.BoxedValue?.ToString() == ParseVarFunction(parameters.Get(3, "value"), thisElement, customVariables);
+
+                            break;
                         }
 
                     #endregion
@@ -2118,6 +2196,26 @@ namespace BetterLegacy.Core
                             return 0f;
 
                         return UnityRandom.Range(parameters.Get(0, "min").AsInt, parameters.Get(1, "max").AsInt);
+                    }
+
+                #endregion
+
+                #region GetConfigSetting
+
+                case "GetConfigSetting": {
+                        if (parameters == null)
+                            break;
+
+                        var configName = ParseVarFunction(parameters.Get(0, "config"), thisElement, customVariables);
+                        if (!LegacyPlugin.configs.TryFind(x => x.Name == configName, out BaseConfig config))
+                            break;
+
+                        var section = ParseVarFunction(parameters.Get(1, "section"), thisElement, customVariables);
+                        var key = ParseVarFunction(parameters.Get(2, "key"), thisElement, customVariables);
+                        if (config.Settings.TryFind(x => x.Section == section && x.Key == key, out BaseSetting setting))
+                            return setting.BoxedValue?.ToString() ?? jn;
+
+                        break;
                     }
 
                 #endregion

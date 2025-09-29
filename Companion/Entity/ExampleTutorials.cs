@@ -31,7 +31,15 @@ namespace BetterLegacy.Companion.Entity
 
         public override void Tick()
         {
-
+            try
+            {
+                if (onTickJSON != null)
+                    functions.ParseFunction(onTickJSON, this, GetVariables());
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         public override void Clear()
@@ -141,6 +149,9 @@ namespace BetterLegacy.Companion.Entity
         {
             functions = new Functions();
             functions.LoadCustomJSONFunctions("companion/tutorials/functions.json");
+
+            if (AssetPack.TryReadFromFile("companion/tutorials/behavior.json", out string behaviorFile))
+                onTickJSON = JSON.Parse(behaviorFile)["on_tick"];
         }
 
         public override Dictionary<string, JSONNode> GetVariables() => new Dictionary<string, JSONNode>();
@@ -154,6 +165,38 @@ namespace BetterLegacy.Companion.Entity
 
             public override void Function(JSONNode jn, string name, JSONNode parameters, ExampleTutorials thisElement = null, Dictionary<string, JSONNode> customVariables = null)
             {
+                switch (name)
+                {
+                    case "SetAttribute": {
+                            if (parameters == null || !thisElement)
+                                return;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return;
+
+                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                            var min = ParseVarFunction(parameters.Get(2, "min"), thisElement, customVariables).AsDouble;
+                            var max = ParseVarFunction(parameters.Get(3, "max"), thisElement, customVariables).AsDouble;
+
+                            thisElement.GetAttribute(id, value, min, max).Value = value;
+                            return;
+                        }
+                    case "SetAttributeOperation": {
+                            if (parameters == null || !thisElement)
+                                return;
+
+                            var id = ParseVarFunction(parameters.Get(0, "id"), thisElement, customVariables);
+                            if (!Parser.IsCompatibleString(id))
+                                return;
+
+                            var value = ParseVarFunction(parameters.Get(1, "value"), thisElement, customVariables).AsDouble;
+                            var operation = Parser.TryParse(ParseVarFunction(parameters.Get(2, "operation"), thisElement, customVariables), MathOperation.Addition);
+                            thisElement.SetAttribute(id, value, operation);
+                            return;
+                        }
+                }
+
                 base.Function(jn, name, parameters, thisElement, customVariables);
             }
 
