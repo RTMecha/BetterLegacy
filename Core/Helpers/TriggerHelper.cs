@@ -335,6 +335,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry StartDragTrigger() => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
+            if (!EditorManager.inst.hasLoadedLevel)
+                return;
+
             var pointerEventData = (PointerEventData)eventData;
             EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
             if (pointerEventData.button == PointerEventData.InputButton.Middle)
@@ -349,6 +352,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry DragTrigger() => CreateEntry(EventTriggerType.Drag, eventData =>
         {
+            if (!EditorManager.inst.hasLoadedLevel)
+                return;
+
             if (EditorTimeline.inst.movingTimeline)
                 return;
 
@@ -366,6 +372,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry EndDragTrigger() => CreateEntry(EventTriggerType.EndDrag, eventData =>
         {
+            if (!EditorManager.inst.hasLoadedLevel)
+                return;
+
             EditorManager.inst.DragEndPos = ((PointerEventData)eventData).position;
             EditorManager.inst.SelectionBoxImage.gameObject.SetActive(false);
 
