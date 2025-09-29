@@ -2,6 +2,25 @@
 Current: null
 Next: null
 
+1.9.0 - Online Multiplayer Update  
+- Multiplayer with any level in Arcade (local, Steam, etc)
+- Multiplayer compatible with story mode (supports Asset Packs)
+- Joinable rooms / direct connect
+- Player toolkit system
+- Versus mode
+- Player Chat Bubble port (editable via Asset Packs and can select from a default list of bubble styles [Legacy, Modern, etc])
+1.10.0 - Editor Assistance Update  
+- Fully customizable layouts, editor complexity and themes via Asset Packs.
+- New Example expressions, dialogue, commands, notices and implemented tutorials.
+- Complete tooltip system (old tooltip system reserved for information rather than descriptions)
+- Complete documentation (maybe include selecting documentation in context menus)
+1.11.0 - Story Mode Update  
+- Chapter 2+
+1.12.0 - Multiplayer Editor Update  
+- Steam friends can join editor sessions.
+- Players get different perspectives of the host editor.
+- Currently editing objects aren't selectable by other users.
+
 ## Features
 ### Core
 - Online multiplayer.  
