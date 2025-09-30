@@ -2653,8 +2653,8 @@
 
       {
         "type": 1,
-        "name": "mask",
-        "values": [ "0", "512", "512", "0", "0" ],
+        "name": "actorFrameTexture",
+        "values": [ "0", "512", "512", "0", "0", "1", "0" ],
         "const": "False",
         "compat": "obj"
       }, // actorFrameTexture

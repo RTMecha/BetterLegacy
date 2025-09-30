@@ -1166,7 +1166,7 @@ namespace BetterLegacy.Core.Helpers
             // todo: implement gradients and different color controls
             #region Color
             
-            new ModifierAction(nameof(ModifierFunctions.mask),  ModifierFunctions.mask, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.actorFrameTexture),  ModifierFunctions.actorFrameTexture, ModifierCompatibility.BeatmapObjectCompatible),
 
             new ModifierAction(nameof(ModifierFunctions.setTheme),  ModifierFunctions.setTheme, ModifierCompatibility.LevelControlCompatible),
             new ModifierAction(nameof(ModifierFunctions.lerpTheme),  ModifierFunctions.lerpTheme, ModifierCompatibility.LevelControlCompatible),
@@ -4415,7 +4415,7 @@ namespace BetterLegacy.Core.Helpers
 
             var runtimeObject = beatmapObject.runtimeObject;
             if (runtimeObject && runtimeObject.visualObject is SolidObject solidObject && solidObject.gameObject)
-                solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, true, beatmapObject.gradientScale, beatmapObject.gradientRotation);
+                solidObject.UpdateRendering((int)beatmapObject.gradientType, (int)beatmapObject.renderLayerType, true, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode);
         }
 
         public static void particleSystem(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -7887,7 +7887,7 @@ namespace BetterLegacy.Core.Helpers
             modifier.Result = meshParams;
         }
 
-        public static void mask(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        public static void actorFrameTexture(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
             if (reference is not BeatmapObject beatmapObject)
                 return;
@@ -7901,6 +7901,8 @@ namespace BetterLegacy.Core.Helpers
             var height = modifier.GetInt(2, 512, variables);
             var offsetX = modifier.GetFloat(3, 0f, variables);
             var offsetY = modifier.GetFloat(4, 0f, variables);
+            var zoom = modifier.GetFloat(5, 1f, variables);
+            var rotate = modifier.GetFloat(6, 0f, variables);
 
             var renderer = runtimeObject.visualObject.renderer;
             if (!renderer)
@@ -7967,9 +7969,11 @@ namespace BetterLegacy.Core.Helpers
 
                 renderTexture.Release();
             }
-            else
+            else if (runtimeObject.visualObject is SolidObject solidObject)
             {
                 camera.transform.localPosition = new Vector3(offsetX, offsetY);
+                var rotation = camera.transform.localEulerAngles;
+                camera.transform.localEulerAngles = new Vector3(0f, 0f, rotate);
 
                 // Get render texture
                 var result = modifier.GetResultOrDefault(() =>
@@ -7983,8 +7987,7 @@ namespace BetterLegacy.Core.Helpers
                             name = SpriteHelper.DEFAULT_TEXTURE_NAME
                         },
                     };
-                    renderer.material.shader = Shader.Find("Unlit/Texture");
-                    //renderer.material.mainTexture = cache.renderTexture;
+                    solidObject.SetMaterial(LegacyResources.textureMaterial);
                     renderer.material.SetTexture("_MainTex", cache.renderTexture);
                     return cache;
                 });
@@ -7999,11 +8002,29 @@ namespace BetterLegacy.Core.Helpers
                             name = SpriteHelper.DEFAULT_TEXTURE_NAME,
                         },
                     };
-                    renderer.material.shader = Shader.Find("Unlit/Texture");
-                    //renderer.material.mainTexture = result.renderTexture;
+                    solidObject.SetMaterial(LegacyResources.textureMaterial);
                     renderer.material.SetTexture("_MainTex", result.renderTexture);
                     modifier.Result = result;
                 }
+
+                var rect = RTLevel.Cameras.FG.rect;
+                RTLevel.Cameras.FG.rect = new Rect(0f, 0f, 1f, 1f);
+                var total = width + height;
+                RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * zoom);
+
+                //var playersActive = GameManager.inst.players.activeSelf;
+                //if (hidePlayers)
+                //    GameManager.inst.players.SetActive(false);
+
+                //var clearFlags = RTLevel.Cameras.FG.clearFlags;
+                //var bgColor = RTLevel.Cameras.FG.backgroundColor;
+                //if (useCustomBGColor)
+                //{
+                //    RTLevel.Cameras.FG.clearFlags = CameraClearFlags.SolidColor;
+                //    RTLevel.Cameras.FG.backgroundColor = captureSettings.customBGColor;
+                //}
+
+                // create
                 var renderTexture = result.renderTexture;
 
                 var currentActiveRT = RenderTexture.active;
@@ -8021,6 +8042,28 @@ namespace BetterLegacy.Core.Helpers
                 camera.targetTexture = null;
                 RenderTexture.active = currentActiveRT;
                 camera.transform.localPosition = Vector3.zero;
+
+                RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
+                camera.transform.localEulerAngles = rotation;
+
+                // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
+                RTEventManager.inst.glitchCam.enabled = false;
+                RTEventManager.inst.glitchCam.enabled = true;
+
+                // disable and re-enable the UI camera to ensure the UI camera is ordered last.
+                RTLevel.Cameras.UI.enabled = false;
+                RTLevel.Cameras.UI.enabled = true;
+
+                RTLevel.Cameras.FG.rect = rect;
+
+                //if (hidePlayers)
+                //    GameManager.inst.players.SetActive(true);
+
+                //if (useCustomBGColor)
+                //{
+                //    RTLevel.Cameras.FG.clearFlags = clearFlags;
+                //    RTLevel.Cameras.FG.backgroundColor = bgColor;
+                //}
             }
 
 

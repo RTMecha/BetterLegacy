@@ -2526,12 +2526,14 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Color
                     
-                case nameof(ModifierFunctions.mask): {
+                case nameof(ModifierFunctions.actorFrameTexture): {
                         DropdownGenerator(modifier, reference, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
                         IntegerGenerator(modifier, reference, "Width", 1, 512);
                         IntegerGenerator(modifier, reference, "Height", 2, 512);
                         SingleGenerator(modifier, reference, "Pos X", 3, 0f);
                         SingleGenerator(modifier, reference, "Pos Y", 4, 0f);
+                        SingleGenerator(modifier, reference, "Zoom", 5, 1f);
+                        SingleGenerator(modifier, reference, "Rotate", 6, 0f, 15f, 3f);
 
                         break;
                     }
