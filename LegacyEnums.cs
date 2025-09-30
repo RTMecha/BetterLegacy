@@ -1122,6 +1122,17 @@ namespace BetterLegacy
     }
 
     /// <summary>
+    /// Color blend rendering mode.
+    /// </summary>
+    public enum ColorBlendMode
+    {
+        Normal,
+        Multiply,
+        Additive,
+        // ColorBurn,
+    }
+
+    /// <summary>
     /// Object despawn behavior.
     /// </summary>
     public enum AutoKillType

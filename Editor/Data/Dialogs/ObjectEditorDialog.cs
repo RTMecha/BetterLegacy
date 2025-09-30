@@ -91,6 +91,9 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
         #region Gradient / Shape
 
+        public Text ColorBlendModeLabel { get; set; }
+        public Dropdown ColorBlendModeDropdown { get; set; }
+
         public Text GradientShapesLabel { get; set; }
 
         public RectTransform GradientParent { get; set; }
@@ -1552,6 +1555,23 @@ namespace BetterLegacy.Editor.Data.Dialogs
             #endregion
 
             #region Gradient / Shape
+
+            // Color Blend
+            {
+                var label = EditorPrefabHolder.Instance.Labels.Duplicate(Content, "colorblend_label");
+                var index = Content.Find("shape").GetSiblingIndex() - 1;
+                label.transform.SetSiblingIndex(index);
+
+                ColorBlendModeLabel = label.transform.GetChild(0).GetComponent<Text>();
+                ColorBlendModeLabel.text = "Color Blend Mode";
+                EditorThemeManager.AddLightText(ColorBlendModeLabel);
+
+                var colorBlendMode = EditorPrefabHolder.Instance.Dropdown.Duplicate(Content, "colorblend", index + 1);
+                ColorBlendModeDropdown = colorBlendMode.GetComponent<Dropdown>();
+                ColorBlendModeDropdown.options = CoreHelper.ToOptionData<ColorBlendMode>();
+
+                EditorThemeManager.AddDropdown(ColorBlendModeDropdown);
+            }
 
             // Gradient
             {

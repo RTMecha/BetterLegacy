@@ -1089,6 +1089,7 @@ namespace BetterLegacy.Editor.Managers
             RenderParent(beatmapObject);
 
             RenderOrigin(beatmapObject);
+            RenderBlendMode(beatmapObject);
             RenderGradient(beatmapObject);
             RenderShape(beatmapObject);
             RenderDepth(beatmapObject);
@@ -1714,6 +1715,31 @@ namespace BetterLegacy.Editor.Managers
                     RenderOrigin(beatmapObject);
                 })
                 );
+        }
+        
+        public void RenderBlendMode(BeatmapObject beatmapObject)
+        {
+            var active = (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != BeatmapObject.ObjectType.Empty) && RTEditor.NotSimple;
+            Dialog.ColorBlendModeLabel.gameObject.SetActive(active);
+            Dialog.ColorBlendModeDropdown.gameObject.SetActive(active);
+
+            Dialog.ColorBlendModeDropdown.SetValueWithoutNotify((int)beatmapObject.colorBlendMode);
+            Dialog.ColorBlendModeDropdown.onValueChanged.NewListener(_val =>
+            {
+                beatmapObject.colorBlendMode = (ColorBlendMode)_val;
+                var incompatibleGradient = beatmapObject.colorBlendMode != ColorBlendMode.Normal && beatmapObject.IsSpecialShape;
+
+                if (incompatibleGradient)
+                {
+                    beatmapObject.Shape = 0;
+                    beatmapObject.ShapeOption = 0;
+                    RenderShape(beatmapObject);
+                }
+
+                // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                if (UpdateObjects)
+                    RTLevel.Current?.UpdateObject(beatmapObject, incompatibleGradient ? ObjectContext.SHAPE : ObjectContext.RENDERING);
+            });
         }
 
         /// <summary>

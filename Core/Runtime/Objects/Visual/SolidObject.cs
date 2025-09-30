@@ -30,7 +30,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// </summary>
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
 
-        public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation)
+        public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
         {
             this.gameObject = gameObject;
 
@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             collider = gameObject.GetComponent<Collider2D>();
 
-            UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation);
+            UpdateRendering(gradientType, renderType, false, gradientScale, gradientRotation, colorBlendMode);
             UpdateCollider(deco, solid, opacityCollision);
         }
 
@@ -68,22 +68,14 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// Updates the objects' materials based on specific values.
         /// </summary>
         /// <param name="gradientType">Type of gradient to render.</param>
-        public void UpdateRendering(int gradientType, int renderType, bool doubleSided = false, float gradientScale = 1f, float gradientRotation = 0f)
+        public void UpdateRendering(int gradientType, int renderType, bool doubleSided = false, float gradientScale = 1f, float gradientRotation = 0f, int colorBlendMode = 0)
         {
             SetRenderType(renderType);
 
             isGradient = gradientType != 0;
             this.gradientType = gradientType;
 
-            if (isGradient)
-                renderer.material = IsLinear ?
-                    (doubleSided ? LegacyResources.gradientDoubleSidedMaterial : LegacyResources.gradientMaterial) :
-                    (doubleSided ? LegacyResources.radialGradientDoubleSidedMaterial : LegacyResources.radialGradientMaterial);
-
-            else
-                renderer.material = doubleSided ? LegacyResources.objectDoubleSidedMaterial : LegacyResources.objectMaterial;
-
-            material = renderer.material;
+            SetMaterial(LegacyResources.GetObjectMaterial(doubleSided, gradientType, colorBlendMode));
 
             if (isGradient)
                 TranslateGradient(gradientScale, gradientRotation);
@@ -148,10 +140,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         public override Color GetPrimaryColor() => material.color;
 
-        /// <summary>
-        /// Gets the gradient objects' secondary color.
-        /// </summary>
-        /// <returns>Returns the secondary color of the gradient object.</returns>
         public override Color GetSecondaryColor() => !isGradient ? LSColors.pink500 : material.GetColor("_ColorSecondary");
 
         /// <summary>
@@ -186,6 +174,16 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
             material.SetFloat("_Scale", scale);
             if (IsLinear)
                 material.SetFloat("_Rotation", rotation);
+        }
+
+        /// <summary>
+        /// Sets the material of the visual object.
+        /// </summary>
+        /// <param name="material">Material to set.</param>
+        public void SetMaterial(Material material)
+        {
+            renderer.material = material;
+            this.material = renderer.material;
         }
 
         public override void Clear()

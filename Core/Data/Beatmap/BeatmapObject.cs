@@ -337,7 +337,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         }
 
         /// <summary>
-        /// Type of gradient the object should render as. Does not support text, image and player objects.
+        /// Type of gradient the object should render as. Does not support text and image.
         /// </summary>
         public GradientType gradientType;
 
@@ -350,6 +350,11 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// Rotation of the gradient.
         /// </summary>
         public float gradientRotation;
+
+        /// <summary>
+        /// Mode of color blend to apply to the object. Does not support text and image.
+        /// </summary>
+        public ColorBlendMode colorBlendMode;
 
         #endregion
 
@@ -606,6 +611,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             gradientType = orig.gradientType;
             gradientScale = orig.gradientScale;
             gradientRotation = orig.gradientRotation;
+            colorBlendMode = orig.colorBlendMode;
             this.CopyShapeableData(orig);
 
             LDM = orig.LDM;
@@ -1161,6 +1167,9 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (jn["gr"] != null)
                 gradientRotation = jn["gr"].AsFloat;
 
+            if (jn["cbm"] != null)
+                colorBlendMode = (ColorBlendMode)jn["cbm"].AsInt;
+
             if (jn["ak"] != null)
                 autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.NoAutokill;
             else if (jn["akt"] != null)
@@ -1366,6 +1375,9 @@ namespace BetterLegacy.Core.Data.Beatmap
                 if (gradientRotation != 0f)
                     jn["gr"] = gradientRotation;
             }
+
+            if (colorBlendMode != ColorBlendMode.Normal)
+                jn["cbm"] = (int)colorBlendMode;
 
             this.WriteShapeJSON(jn);
 

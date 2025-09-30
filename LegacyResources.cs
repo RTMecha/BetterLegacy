@@ -51,23 +51,65 @@ namespace BetterLegacy
             digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
         }
 
-        public static Shader objectShader;
-        public static Material objectMaterial;
+        public static MaterialGroup objectMaterial;
+        public static MaterialGroup textureMaterial;
+        
+        public static Dictionary<string, MaterialGroup> materials = new Dictionary<string, MaterialGroup>();
 
-        public static Shader gradientShader;
-        public static Material gradientMaterial;
+        public class MaterialGroup
+        {
+            public string key;
+            public Shader shader;
+            public Material material;
 
-        public static Shader radialGradientShader;
-        public static Material radialGradientMaterial;
+            public static implicit operator Material(MaterialGroup materialGroup) => materialGroup.material;
+            public static implicit operator Shader(MaterialGroup materialGroup) => materialGroup.shader;
+        }
 
-        public static Shader objectDoubleSidedShader;
-        public static Material objectDoubleSidedMaterial;
+        public static string GetObjectMaterialKey(bool doubleSided, int gradientType, int blendMode)
+        {
+            var key = (doubleSided ? "double/" : "single/");
 
-        public static Shader gradientDoubleSidedShader;
-        public static Material gradientDoubleSidedMaterial;
+            if (gradientType != 0)
+                key += "gradients/";
 
-        public static Shader radialGradientDoubleSidedShader;
-        public static Material radialGradientDoubleSidedMaterial;
+            if (blendMode != 0)
+                key += "blendmodes/";
+
+            key += blendMode switch
+            {
+                1 => "multiply",
+                2 => "add",
+                _ => string.Empty
+            };
+
+            if (gradientType != 0)
+            {
+                if (blendMode != 0)
+                    key += "_";
+
+                key += gradientType switch
+                {
+                    1 => "linear",
+                    2 => "linear",
+                    3 => "radial",
+                    4 => "radial",
+                    _ => string.Empty,
+                };
+            }
+
+            if (gradientType == 0 && blendMode == 0)
+                key += "object";
+
+            key += ".shader";
+
+            return key;
+        }
+
+        public static MaterialGroup GetObjectMaterial(bool doubleSided, int gradientType, int blendMode)
+        {
+            return materials.TryGetValue(GetObjectMaterialKey(doubleSided, gradientType, blendMode), out MaterialGroup materialGroup) ? materialGroup : objectMaterial;
+        }
 
         public static void GetObjectMaterials()
         {
@@ -76,25 +118,28 @@ namespace BetterLegacy
 
             var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/bmobjectmaterials.asset")); // Get AssetBundle from assets folder.
 
-            // normal
-            objectShader = assetBundle.LoadAsset<Shader>("objectshader.shader"); // Load asset
-            gradientShader = assetBundle.LoadAsset<Shader>("gradientshader.shader"); // Load asset
-            radialGradientShader = assetBundle.LoadAsset<Shader>("radialshader.shader"); // Load asset
+            foreach (var a in assetBundle.GetAllAssetNames())
+            {
+                var assetName = System.IO.Path.GetFileName(a);
+                if (!assetName.Contains(".shader"))
+                    assetName += ".shader";
+                var assetKey = a
+                    .Remove("assets/shaders/")
+                    .Remove("shaders/")
+                    .Remove("_double");
 
-            // double sided
-            objectDoubleSidedShader = assetBundle.LoadAsset<Shader>("doubleobjectshader.shader"); // Load asset
-            gradientDoubleSidedShader = assetBundle.LoadAsset<Shader>("doublegradientshader.shader"); // Load asset
-            radialGradientDoubleSidedShader = assetBundle.LoadAsset<Shader>("doubleradialshader.shader"); // Load asset
+                var materialGroup = new MaterialGroup();
+                materialGroup.key = assetKey;
+                materialGroup.shader = assetBundle.LoadAsset<Shader>(assetName);
+                materialGroup.material = new Material(materialGroup.shader);
 
-            // normal
-            objectMaterial = new Material(objectShader);
-            gradientMaterial = new Material(gradientShader);
-            radialGradientMaterial = new Material(radialGradientShader);
+                if (assetName == "object.shader")
+                    objectMaterial = materialGroup;
+                if (assetName == "object_texture.shader")
+                    textureMaterial = materialGroup;
 
-            // double sided
-            objectDoubleSidedMaterial = new Material(objectDoubleSidedShader);
-            gradientDoubleSidedMaterial = new Material(gradientDoubleSidedShader);
-            radialGradientDoubleSidedMaterial = new Material(radialGradientDoubleSidedShader);
+                materials[assetKey] = materialGroup;
+            }
         }
 
         public static Material canvasImageMask;

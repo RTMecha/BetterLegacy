@@ -22,7 +22,7 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         Vector2 thicknessScale = Vector2.one;
         float angle = 0f;
 
-        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation)
+        public PolygonObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode, PolygonShape polygonShape) : base(gameObject, opacity, hasCollider, solid, renderType, opacityCollision, gradientType, gradientScale, gradientRotation, colorBlendMode)
         {
             meshFilter = gameObject.GetComponent<MeshFilter>();
 
