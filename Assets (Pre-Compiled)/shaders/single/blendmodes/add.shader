@@ -16,8 +16,13 @@ Shader"Unlit/AddBlendModeTransparentShader"
         //Blend SrcColor OneMinusSrcColor
         //Blend SrcColor SrcAlpha
         //Blend SrcColor SrcAlpha, SrcAlpha OneMinusSrcAlpha
-        //Blend One One, DstAlpha OneMinusDstAlpha
-        Blend One One
+        //Blend One One, DstAlpha OneMinusDstAlpha // transition
+        //Blend One One, One One
+        //Blend One One, SrcAlpha OneMinusSrcAlpha
+        Blend One One, Zero Zero
+        //Blend SrcColor SrcColor, SrcAlpha SrcAlpha
+        //Blend SrcColor SrcAlpha, Zero One
+        //Blend SrcAlpha OneMinusSrcAlpha, SrcAlpha OneMinusSrcAlpha
         // regular blend
         //Blend SrcAlpha OneMinusSrcAlpha
         LOD 100
@@ -42,7 +47,7 @@ Shader"Unlit/AddBlendModeTransparentShader"
             {
                 float3 objectPos : TEXCOORD0; 
                 float4 vertex    : SV_POSITION;
-                fixed4 color    : COLOR;
+                float4 color    : COLOR;
             };
             
             sampler2D _MainTex;
