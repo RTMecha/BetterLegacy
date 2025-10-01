@@ -33,6 +33,11 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public bool colliderEnabled = true;
 
         /// <summary>
+        /// The current render layer type.
+        /// </summary>
+        public int renderType;
+
+        /// <summary>
         /// Helper opacity of the visual object.
         /// </summary>
         public float opacity = 1f;
@@ -56,12 +61,16 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// Sets the render type layer of the object.
         /// </summary>
         /// <param name="renderType">Render type to set.</param>
-        public void SetRenderType(int renderType) => gameObject.layer = renderType switch
+        public void SetRenderType(int renderType)
         {
-            1 => RTLevel.BACKGROUND_LAYER,
-            2 => RTLevel.UI_LAYER,
-            _ => RTLevel.FOREGROUND_LAYER,
-        };
+            this.renderType = renderType;
+            gameObject.layer = renderType switch
+            {
+                1 => RTLevel.BACKGROUND_LAYER,
+                2 => RTLevel.UI_LAYER,
+                _ => RTLevel.FOREGROUND_LAYER,
+            };
+        }
 
         /// <summary>
         /// Interpolates the visual objects' colors.

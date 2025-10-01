@@ -18,7 +18,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         bool opacityCollision;
 
-        int gradientType;
+        public bool doubleSided;
+
+        public int gradientType;
 
         /// <summary>
         /// If the gradient is linear.
@@ -29,6 +31,11 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// If the gradient is flipped.
         /// </summary>
         public bool IsFlipped => gradientType == 1 || gradientType == 3;
+
+        public float gradientScale;
+        public float gradientRotation;
+
+        public int colorBlendMode;
 
         public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
         {
@@ -70,10 +77,13 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="gradientType">Type of gradient to render.</param>
         public void UpdateRendering(int gradientType, int renderType, bool doubleSided = false, float gradientScale = 1f, float gradientRotation = 0f, int colorBlendMode = 0)
         {
+            this.doubleSided = doubleSided;
+
             SetRenderType(renderType);
 
             isGradient = gradientType != 0;
             this.gradientType = gradientType;
+            this.colorBlendMode = colorBlendMode;
 
             SetMaterial(LegacyResources.GetObjectMaterial(doubleSided, gradientType, colorBlendMode));
 
@@ -168,6 +178,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="rotation">Rotation of the gradient.</param>
         public void TranslateGradient(float scale = 1f, float rotation = 0f)
         {
+            gradientScale = scale;
+            gradientRotation = rotation;
+
             if (!isGradient)
                 return;
 
