@@ -1,4 +1,26 @@
-﻿# 1.8.3 [Sep 27, 2025]
+﻿# 1.8.4 [Oct 1, 2025]
+## Features
+### Core
+- Objects now have color blending! For now this includes: Multiply and Additive.
+- Mostly implemented the actorFrameTexture modifier. It should be able to work, but there might be cases where it breaks.
+
+### Example Companion
+- Continued work on customization.
+
+### Editor
+- You can now click and drag the player.
+
+## Changes
+### Core
+- setImage modifiers now apply the image to the texture of the shape.
+
+## Fixes
+- Fixed Object creation breaking default keyframe editing.
+- Fixed Prefab repeating not changing randomization per repeat.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.3 [Sep 27, 2025]
 ## Features
 ### Core
 - Added getAxisMath modifier. Works similarly to the copyAxisMath modifier.
