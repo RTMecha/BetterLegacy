@@ -180,15 +180,9 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var name = defaultModifier.Name;
 
-                    if (name.Contains("Text") && !name.Contains("Other") && shape != 4)
+                    if (name.Contains("Text") && !name.Contains("Other") && shape != 4 && name != nameof(ModifierFunctions.actorFrameTexture))
                     {
                         EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be a Text Object.", 2f, EditorManager.NotificationType.Error);
-                        return;
-                    }
-
-                    if (name.Contains("Image") && !name.Contains("Other") && shape != 6)
-                    {
-                        EditorManager.inst.DisplayNotification("Cannot add modifier to object because the object needs to be an Image Object.", 2f, EditorManager.NotificationType.Error);
                         return;
                     }
 

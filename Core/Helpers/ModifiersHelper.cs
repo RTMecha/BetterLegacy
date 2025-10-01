@@ -2573,6 +2573,21 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case nameof(ModifierFunctions.actorFrameTexture): {
+                        if (modifier.TryGetResult(out MaskCache cache))
+                            CoreHelper.Destroy(cache.renderTexture);
+                        break;
+                    }
+                case nameof(ModifierFunctions.translateShape): {
+                        if (modifier.TryGetResult(out TranslateShapeCache cache))
+                        {
+                            if (cache.meshFilter && cache.vertices != null)
+                                cache.meshFilter.mesh.vertices = cache.vertices;
+                            if (cache.collider2D && cache.points != null)
+                                cache.collider2D.points = cache.points;
+                        }
+                        break;
+                    }
             }
         }
 
@@ -7889,7 +7904,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void actorFrameTexture(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (reference is not BeatmapObject beatmapObject)
+            if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType == ShapeType.Image)
                 return;
 
             var runtimeObject = beatmapObject.runtimeObject;
@@ -7908,187 +7923,109 @@ namespace BetterLegacy.Core.Helpers
             if (!renderer)
                 return;
 
-            if (beatmapObject.ShapeType == ShapeType.Image)
+            if (runtimeObject.visualObject is not SolidObject solidObject)
+                return;
+
+            camera.transform.localPosition = new Vector3(offsetX, offsetY);
+            var rotation = camera.transform.localEulerAngles;
+            camera.transform.localEulerAngles = new Vector3(0f, 0f, rotate);
+
+            // Get render texture
+            var result = modifier.GetResultOrDefault(() =>
             {
-                if (renderer is not SpriteRenderer spriteRenderer)
-                    return;
-
-                camera.transform.localPosition = new Vector3(offsetX, offsetY);
-
-                // Get render texture
-                var result = modifier.GetResultOrDefault(() =>
+                var cache = new MaskCache()
                 {
-                    var cache = new MaskCache()
+                    width = width,
+                    height = height,
+                    renderTexture = new RenderTexture(width, height, 24)
                     {
-                        width = width,
-                        height = height,
-                        renderTexture = new RenderTexture(width, height, 24)
-                        {
-                            name = SpriteHelper.DEFAULT_TEXTURE_NAME
-                        },
-                    };
-                    //renderer.material.shader = Shader.Find("Unlit/Texture");
-                    //renderer.material.mainTexture = cache.renderTexture;
-                    //renderer.material.SetTexture("_MainTex", cache.renderTexture);
-                    return cache;
-                });
-                if (result.width != width || result.height != height)
-                {
-                    result = new MaskCache()
-                    {
-                        width = width,
-                        height = height,
-                        renderTexture = new RenderTexture(width, height, 24)
-                        {
-                            name = SpriteHelper.DEFAULT_TEXTURE_NAME,
-                        },
-                    };
-                    //renderer.material.shader = Shader.Find("Unlit/Texture");
-                    //renderer.material.mainTexture = result.renderTexture;
-                    //renderer.material.SetTexture("_MainTex", result.renderTexture);
-                    modifier.Result = result;
-                }
-                var renderTexture = result.renderTexture;
-
-                var currentActiveRT = RenderTexture.active;
-                RenderTexture.active = renderTexture;
-
-                var enabled = renderer.enabled;
-                renderer.enabled = false;
-                // Assign render texture to camera and render the camera
-                camera.targetTexture = renderTexture;
-                camera.Render();
-
-                spriteRenderer.sprite = SpriteHelper.RenderToSprite(renderTexture);
-
-                // Reset to defaults
-                renderer.enabled = enabled;
-                camera.targetTexture = null;
-                RenderTexture.active = currentActiveRT;
-                camera.transform.localPosition = Vector3.zero;
-
-                renderTexture.Release();
-            }
-            else if (runtimeObject.visualObject is SolidObject solidObject)
+                        name = SpriteHelper.DEFAULT_TEXTURE_NAME,
+                        wrapMode = TextureWrapMode.Clamp,
+                        useDynamicScale = true,
+                    },
+                };
+                solidObject.SetMaterial(LegacyResources.textureMaterial);
+                renderer.material.SetTexture("_MainTex", cache.renderTexture);
+                DestroyModifierResult.Init(solidObject.gameObject, modifier);
+                return cache;
+            });
+            if (result.width != width || result.height != height)
             {
-                camera.transform.localPosition = new Vector3(offsetX, offsetY);
-                var rotation = camera.transform.localEulerAngles;
-                camera.transform.localEulerAngles = new Vector3(0f, 0f, rotate);
+                CoreHelper.Destroy(result.renderTexture);
 
-                // Get render texture
-                var result = modifier.GetResultOrDefault(() =>
+                result = new MaskCache()
                 {
-                    var cache = new MaskCache()
+                    width = width,
+                    height = height,
+                    renderTexture = new RenderTexture(width, height, 24)
                     {
-                        width = width,
-                        height = height,
-                        renderTexture = new RenderTexture(width, height, 24)
-                        {
-                            name = SpriteHelper.DEFAULT_TEXTURE_NAME
-                        },
-                    };
-                    solidObject.SetMaterial(LegacyResources.textureMaterial);
-                    renderer.material.SetTexture("_MainTex", cache.renderTexture);
-                    return cache;
-                });
-                if (result.width != width || result.height != height)
-                {
-                    result = new MaskCache()
-                    {
-                        width = width,
-                        height = height,
-                        renderTexture = new RenderTexture(width, height, 24)
-                        {
-                            name = SpriteHelper.DEFAULT_TEXTURE_NAME,
-                        },
-                    };
-                    solidObject.SetMaterial(LegacyResources.textureMaterial);
-                    renderer.material.SetTexture("_MainTex", result.renderTexture);
-                    modifier.Result = result;
-                }
-
-                var rect = RTLevel.Cameras.FG.rect;
-                RTLevel.Cameras.FG.rect = new Rect(0f, 0f, 1f, 1f);
-                var total = width + height;
-                RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * zoom);
-
-                //var playersActive = GameManager.inst.players.activeSelf;
-                //if (hidePlayers)
-                //    GameManager.inst.players.SetActive(false);
-
-                //var clearFlags = RTLevel.Cameras.FG.clearFlags;
-                //var bgColor = RTLevel.Cameras.FG.backgroundColor;
-                //if (useCustomBGColor)
-                //{
-                //    RTLevel.Cameras.FG.clearFlags = CameraClearFlags.SolidColor;
-                //    RTLevel.Cameras.FG.backgroundColor = captureSettings.customBGColor;
-                //}
-
-                // create
-                var renderTexture = result.renderTexture;
-
-                var currentActiveRT = RenderTexture.active;
-                RenderTexture.active = renderTexture;
-
-                var enabled = renderer.enabled;
-                renderer.enabled = false;
-                // Assign render texture to camera and render the camera
-                camera.targetTexture = renderTexture;
-                camera.Render();
-                renderTexture.Create();
-
-                // Reset to defaults
-                renderer.enabled = enabled;
-                camera.targetTexture = null;
-                RenderTexture.active = currentActiveRT;
-                camera.transform.localPosition = Vector3.zero;
-
-                RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
-                camera.transform.localEulerAngles = rotation;
-
-                // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
-                RTEventManager.inst.glitchCam.enabled = false;
-                RTEventManager.inst.glitchCam.enabled = true;
-
-                // disable and re-enable the UI camera to ensure the UI camera is ordered last.
-                RTLevel.Cameras.UI.enabled = false;
-                RTLevel.Cameras.UI.enabled = true;
-
-                RTLevel.Cameras.FG.rect = rect;
-
-                //if (hidePlayers)
-                //    GameManager.inst.players.SetActive(true);
-
-                //if (useCustomBGColor)
-                //{
-                //    RTLevel.Cameras.FG.clearFlags = clearFlags;
-                //    RTLevel.Cameras.FG.backgroundColor = bgColor;
-                //}
+                        name = SpriteHelper.DEFAULT_TEXTURE_NAME,
+                        wrapMode = TextureWrapMode.Clamp,
+                        useDynamicScale = true,
+                    },
+                };
+                solidObject.SetMaterial(LegacyResources.textureMaterial);
+                renderer.material.SetTexture("_MainTex", result.renderTexture);
+                modifier.Result = result;
             }
 
+            var rect = RTLevel.Cameras.FG.rect;
+            RTLevel.Cameras.FG.rect = new Rect(0f, 0f, 1f, 1f);
+            var total = width + height;
+            RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * zoom);
 
-            //if (reference is not BeatmapObject beatmapObject || beatmapObject.ShapeType != ShapeType.Image || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not ImageObject imageObject)
-            //    return;
+            //var playersActive = GameManager.inst.players.activeSelf;
+            //if (hidePlayers)
+            //    GameManager.inst.players.SetActive(false);
 
-            //var camera = modifier.GetInt(0, 0, variables) == 0 ? EventManager.inst.cam : EventManager.inst.camPer;
+            var clearFlags = RTLevel.Cameras.FG.clearFlags;
+            var bgColor = RTLevel.Cameras.FG.backgroundColor;
+            RTLevel.Cameras.FG.clearFlags = CameraClearFlags.SolidColor;
+            RTLevel.Cameras.FG.backgroundColor = RTLevel.Cameras.BG.backgroundColor;
 
-            //var frame = SpriteHelper.CaptureFrame(camera, modifier.GetInt(1, 512, variables), modifier.GetInt(2, 512, variables), modifier.GetFloat(3, 0f, variables), modifier.GetFloat(4, 0f, variables));
+            // create
+            var renderTexture = result.renderTexture;
 
-            //var renderer = (SpriteRenderer)imageObject.renderer;
+            var currentActiveRT = RenderTexture.active;
+            RenderTexture.active = renderTexture;
 
-            //if (modifier.HasResult() && renderer.sprite != LegacyPlugin.PALogoSprite)
+            var enabled = renderer.enabled;
+            renderer.enabled = false;
+            // Assign render texture to camera and render the camera
+            camera.targetTexture = renderTexture;
+            camera.Render();
+            renderTexture.Create();
+
+            // Reset to defaults
+            renderer.enabled = enabled;
+            camera.targetTexture = null;
+            RenderTexture.active = currentActiveRT;
+            camera.transform.localPosition = Vector3.zero;
+
+            RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
+            camera.transform.localEulerAngles = rotation;
+
+            RTLevel.Cameras.FG.clearFlags = clearFlags;
+            RTLevel.Cameras.FG.backgroundColor = bgColor;
+
+            // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
+            RTEventManager.inst.glitchCam.enabled = false;
+            RTEventManager.inst.glitchCam.enabled = true;
+
+            // disable and re-enable the UI camera to ensure the UI camera is ordered last.
+            RTLevel.Cameras.UI.enabled = false;
+            RTLevel.Cameras.UI.enabled = true;
+
+            RTLevel.Cameras.FG.rect = rect;
+
+            //if (hidePlayers)
+            //    GameManager.inst.players.SetActive(true);
+
+            //if (useCustomBGColor)
             //{
-            //    if (renderer.sprite)
-            //        CoreHelper.Destroy(renderer.sprite.texture);
-            //    CoreHelper.Destroy(renderer.sprite);
+            //    RTLevel.Cameras.FG.clearFlags = clearFlags;
+            //    RTLevel.Cameras.FG.backgroundColor = bgColor;
             //}
-            //else
-            //{
-            //    imageObject.gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-            //    modifier.Result = true;
-            //}
-
-            //renderer.sprite = frame;
         }
 
         public static void setImage(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
@@ -8120,28 +8057,31 @@ namespace BetterLegacy.Core.Helpers
             else if (beatmapObject.runtimeObject.visualObject is SolidObject solidObject && solidObject.renderer)
             {
                 var renderer = solidObject.renderer;
-                renderer.material = Material.GetDefaultMaterial();
-                solidObject.material = renderer.material;
+                if (!renderer)
+                    return;
+
+                solidObject.SetMaterial(LegacyResources.textureMaterial);
                 if (sprite)
                 {
                     renderer.material.SetTexture("_MainTex", sprite.texture);
                     return;
                 }
 
-                var path = RTFile.CombinePaths(RTFile.BasePath, value);
-
+                var assetPath = AssetPack.GetFile(value);
+                var path = RTFile.FileExists(assetPath) ? assetPath : RTFile.CombinePaths(RTFile.BasePath, value);
                 if (!RTFile.FileExists(path))
                     return;
 
-                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, texture2D =>
-                {
-                    if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject)
-                        return;
+                CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path,
+                    texture2D =>
+                    {
+                        if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject)
+                            return;
 
-                    var renderer = solidObject.renderer;
-                    if (renderer)
-                        renderer.material.SetTexture("_MainTex", texture2D);
-                }));
+                        var renderer = solidObject.renderer;
+                        if (renderer)
+                            renderer.material.SetTexture("_MainTex", texture2D);
+                    }));
             }
         }
 
@@ -8168,11 +8108,18 @@ namespace BetterLegacy.Core.Helpers
                 {
                     if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
                         imageObject.SetSprite(sprite);
+                    else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
+                    {
+                        var renderer = solidObject.renderer;
+                        solidObject.SetMaterial(LegacyResources.textureMaterial);
+                        renderer.material.SetTexture("_MainTex", sprite.texture);
+                    }
                 }
                 return;
             }
 
-            var path = RTFile.CombinePaths(RTFile.BasePath, value);
+            var assetPath = AssetPack.GetFile(value);
+            var path = RTFile.FileExists(assetPath) ? assetPath : RTFile.CombinePaths(RTFile.BasePath, value);
             if (!RTFile.FileExists(path))
             {
                 foreach (var bm in list)
@@ -8183,21 +8130,29 @@ namespace BetterLegacy.Core.Helpers
                 return;
             }
 
-            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path, (Texture2D texture2D) =>
-            {
-                foreach (var bm in list)
+            CoroutineHelper.StartCoroutine(AlephNetwork.DownloadImageTexture("file://" + path,
+                texture2D =>
                 {
-                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
-                        imageObject.SetTexture(texture2D);
-                }
-            }, onError =>
-            {
-                foreach (var bm in list)
+                    foreach (var bm in list)
+                    {
+                        if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                            imageObject.SetTexture(texture2D);
+                        else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
+                        {
+                            var renderer = solidObject.renderer;
+                            solidObject.SetMaterial(LegacyResources.textureMaterial);
+                            renderer.material.SetTexture("_MainTex", texture2D);
+                        }
+                    }
+                },
+                onError =>
                 {
-                    if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
-                        imageObject.SetDefaultSprite();
-                }
-            }));
+                    foreach (var bm in list)
+                    {
+                        if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                            imageObject.SetDefaultSprite();
+                    }
+                }));
         }
 
         public static void setText(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
