@@ -318,8 +318,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                     if (beatmapObjectCopy.autoKillType == AutoKillType.SongTime)
                         beatmapObjectCopy.autoKillOffset -= startTime;
 
-                    if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
-                        GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+                    //if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
+                    //    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
 
                     beatmapObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
                     beatmapObjectCopy.editorData.selectable = prefabObject.editorData.selectable;
@@ -352,8 +352,8 @@ namespace BetterLegacy.Core.Runtime.Objects
                     if (backgroundObjectCopy.autoKillType == AutoKillType.SongTime)
                         backgroundObjectCopy.autoKillOffset -= startTime;
 
-                    if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
-                        GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+                    //if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
+                    //    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
 
                     backgroundObjectCopy.editorData.hidden = prefabObject.editorData.hidden;
                     backgroundObjectCopy.editorData.selectable = prefabObject.editorData.selectable;

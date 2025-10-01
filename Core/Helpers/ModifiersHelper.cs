@@ -8086,7 +8086,8 @@ namespace BetterLegacy.Core.Helpers
 
             var value = modifier.GetValue(0, variables);
             value = ModifiersHelper.FormatStringVariables(value, variables);
-            var sprite = GameData.Current.assets.GetSprite(value);
+            var sprite = beatmapObject.GetSprite(value);
+
             if (beatmapObject.runtimeObject.visualObject is ImageObject imageObject)
             {
                 if (sprite)
@@ -8152,7 +8153,12 @@ namespace BetterLegacy.Core.Helpers
             var value = modifier.GetValue(0, variables);
             value = ModifiersHelper.FormatStringVariables(value, variables);
 
-            var sprite = GameData.Current.assets.GetSprite(value);
+            Sprite sprite = null;
+            if (prefabable.FromPrefab && prefabable.GetPrefab() is Prefab prefab && prefab.assets.sprites.TryFind(x => x.name == value, out SpriteAsset spriteAsset))
+                sprite = spriteAsset.sprite;
+            else
+                sprite = GameData.Current.assets.GetSprite(value);
+
             if (sprite)
             {
                 foreach (var bm in list)

@@ -570,7 +570,7 @@ namespace BetterLegacy.Core.Runtime
                     } // Polygons
                 case ObjectContext.IMAGE: {
                         if (runtimeObject && runtimeObject.visualObject is ImageObject imageObject)
-                            imageObject.UpdateImage(beatmapObject.text, GameData.Current.assets.GetSprite(beatmapObject.text));
+                            imageObject.UpdateImage(beatmapObject.text, beatmapObject.GetSprite());
 
                         break;
                     } // Image
@@ -894,7 +894,7 @@ namespace BetterLegacy.Core.Runtime
             VisualObject visual = shapeType switch
             {
                 ShapeType.Text => new TextObject(visualObject, opacity, beatmapObject.text, beatmapObject.autoTextAlign, TextObject.GetAlignment(beatmapObject.origin), (int)beatmapObject.renderLayerType),
-                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, GameData.Current.assets.GetSprite(beatmapObject.text)),
+                ShapeType.Image => new ImageObject(visualObject, opacity, beatmapObject.text, (int)beatmapObject.renderLayerType, beatmapObject.GetSprite()),
                 ShapeType.Polygon => new PolygonObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode, beatmapObject.polygonShape),
                 _ => new SolidObject(visualObject, opacity, hasCollider, isSolid, (int)beatmapObject.renderLayerType, beatmapObject.opacityCollision, (int)beatmapObject.gradientType, beatmapObject.gradientScale, beatmapObject.gradientRotation, (int)beatmapObject.colorBlendMode),
             };

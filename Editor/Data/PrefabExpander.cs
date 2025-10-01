@@ -139,7 +139,7 @@ namespace BetterLegacy.Editor.Data
                 if (!retainID && !string.IsNullOrEmpty(beatmapObject.Parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.Parent, out IDPair idPair))
                     beatmapObjectCopy.Parent = idPair.newID;
                 else if (!retainID && !string.IsNullOrEmpty(beatmapObject.Parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) == -1 && beatmapObjectCopy.Parent != BeatmapObject.CAMERA_PARENT)
-                    beatmapObjectCopy.Parent = "";
+                    beatmapObjectCopy.Parent = string.Empty;
 
                 if (regen)
                     beatmapObjectCopy.RemovePrefabReference();
@@ -162,7 +162,7 @@ namespace BetterLegacy.Editor.Data
                     ++beatmapObjectCopy.editorData.Bin;
 
                 if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObjectCopy.text, out SpriteAsset spriteAsset))
-                    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+                    GameData.Current.assets.sprites.OverwriteAdd((sprite, index) => sprite.name == spriteAsset.name, spriteAsset.Copy());
 
                 beatmapObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                 GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
@@ -227,7 +227,7 @@ namespace BetterLegacy.Editor.Data
                     ++backgroundObjectCopy.editorData.Bin;
 
                 if (backgroundObjectCopy.shape == 6 && !string.IsNullOrEmpty(backgroundObjectCopy.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObjectCopy.text, out SpriteAsset spriteAsset))
-                    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+                    GameData.Current.assets.sprites.OverwriteAdd((sprite, index) => sprite.name == spriteAsset.name, spriteAsset.Copy());
 
                 backgroundObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                 GameData.Current.backgroundObjects.Add(backgroundObjectCopy);
@@ -290,6 +290,12 @@ namespace BetterLegacy.Editor.Data
                 EditorTimeline.inst.CurrentSelection = timelineObject;
 
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
+            }
+
+            for (int i = 0; i < prefab.assets.sprites.Count; i++)
+            {
+                var spriteAsset = prefab.assets.sprites[i];
+                GameData.Current.assets.sprites.OverwriteAdd((orig, index) => orig.name == spriteAsset.name, spriteAsset.Copy());
             }
 
             var elapsed = sw.Elapsed;

@@ -267,11 +267,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (orig.defaultInstanceData)
                 defaultInstanceData = orig.defaultInstanceData.Copy();
 
-            foreach (var beatmapObject in beatmapObjects)
-            {
-                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && orig.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
-                    assets.sprites.Add(spriteAsset.Copy());
-            }
+            assets = orig.assets?.Copy();
 
             this.CopyUploadableData(orig);
         }
