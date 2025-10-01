@@ -2385,14 +2385,14 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var beatmapObject in prefab.beatmapObjects)
             {
-                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && prefab.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
-                    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && GameData.Current.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
+                    prefab.assets.sprites.Add(spriteAsset.Copy());
             }
 
             foreach (var backgroundObject in prefab.backgroundObjects)
             {
-                if (backgroundObject.shape == 6 && !string.IsNullOrEmpty(backgroundObject.text) && prefab.assets.sprites.TryFind(x => x.name == backgroundObject.text, out SpriteAsset spriteAsset))
-                    GameData.Current.assets.sprites.Add(spriteAsset.Copy());
+                if (backgroundObject.shape == 6 && !string.IsNullOrEmpty(backgroundObject.text) && GameData.Current.assets.sprites.TryFind(x => x.name == backgroundObject.text, out SpriteAsset spriteAsset))
+                    prefab.assets.sprites.Add(spriteAsset.Copy());
             }
 
             if (createInternal)
