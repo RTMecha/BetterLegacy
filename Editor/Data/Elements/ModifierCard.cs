@@ -1048,6 +1048,15 @@ namespace BetterLegacy.Editor.Data.Elements
                         DropdownGenerator(modifier, reference, "Render Type", 1, CoreHelper.ToOptionData<BeatmapObject.RenderLayerType>());
                         break;
                     }
+                case nameof(ModifierFunctions.setRendering): {
+                        BoolGenerator(modifier, reference, "Double Sided", 0);
+                        DropdownGenerator(modifier, reference, "Gradient Type", 1, CoreHelper.ToOptionData<GradientType>());
+                        SingleGenerator(modifier, reference, "Gradient Scale", 3, 1f);
+                        SingleGenerator(modifier, reference, "Gradient Rotation", 4, 0, 15f, 3f);
+                        DropdownGenerator(modifier, reference, "Color Blend Mode", 2, CoreHelper.ToOptionData<ColorBlendMode>());
+
+                        break;
+                    }
 
                 #endregion
 

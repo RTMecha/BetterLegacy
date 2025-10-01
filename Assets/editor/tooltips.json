@@ -2507,7 +2507,17 @@
                 "lang": 0
               }
             ]
-          } // setRenderTypeOther
+          }, // setRenderTypeOther
+          {
+            "name": "Object Modifier - setRendering (Action)",
+            "tooltips": [
+              {
+                "desc": "setRendering (Action)",
+                "hint": "Sets the objects' render settings.",
+                "lang": 0
+              }
+            ]
+          } // setRendering
         ],
 
         // Player

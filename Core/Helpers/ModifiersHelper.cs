@@ -909,6 +909,7 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.rigidbodyOther),  ModifierFunctions.rigidbodyOther, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setRenderType),  ModifierFunctions.setRenderType, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setRenderTypeOther),  ModifierFunctions.setRenderTypeOther, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setRendering),  ModifierFunctions.setRendering, ModifierCompatibility.BeatmapObjectCompatible),
 
             #endregion
 
@@ -4446,6 +4447,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (modifier.Result is not ParticleSystem a || !a)
             {
+                //var solidObject = runtimeObject.visualObject as SolidObject;
                 var ps = gameObject.GetOrAddComponent<ParticleSystem>();
                 var psr = gameObject.GetComponent<ParticleSystemRenderer>();
 
@@ -4458,6 +4460,7 @@ namespace BetterLegacy.Core.Helpers
                 psr.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
 
                 psr.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                //psr.material = LegacyResources.GetObjectMaterial(solidObject && solidObject.doubleSided, solidObject?.gradientType ?? 0, solidObject?.colorBlendMode ?? 0);
                 psr.material.color = Color.white;
                 psr.trailMaterial = psr.material;
                 psr.renderMode = ParticleSystemRenderMode.Mesh;
@@ -4557,6 +4560,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (modifier.Result is not ParticleSystem a || !a)
             {
+                //var solidObject = runtimeObject.visualObject as SolidObject;
                 var ps = gameObject.GetOrAddComponent<ParticleSystem>();
                 var psr = gameObject.GetComponent<ParticleSystemRenderer>();
 
@@ -4569,6 +4573,7 @@ namespace BetterLegacy.Core.Helpers
                 psr.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
 
                 psr.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                //psr.material = LegacyResources.GetObjectMaterial(solidObject && solidObject.doubleSided, solidObject?.gradientType ?? 0, solidObject?.colorBlendMode ?? 0);
                 psr.material.color = Color.white;
                 psr.trailMaterial = psr.material;
                 psr.renderMode = ParticleSystemRenderMode.Mesh;
@@ -4808,6 +4813,52 @@ namespace BetterLegacy.Core.Helpers
             {
                 if (beatmapObject.runtimeObject && beatmapObject.runtimeObject.visualObject)
                     beatmapObject.runtimeObject.visualObject.SetRenderType(renderType);
+            }
+        }
+
+        public static void setRendering(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+                return;
+
+            var doubleSided = modifier.GetBool(0, false, variables);
+            var gradientType = modifier.GetInt(1, 0, variables);
+            var colorBlendMode = modifier.GetInt(2, 0, variables);
+            var gradientScale = modifier.GetFloat(3, 1f, variables);
+            var gradientRotation = modifier.GetFloat(4, 0f, variables);
+
+            if (modifier.constant)
+            {
+                var cache = modifier.GetResultOrDefault(() =>
+                {
+                    var cache = new RenderingCache();
+                    cache.UpdateCache(doubleSided, gradientType, colorBlendMode, gradientScale, gradientRotation);
+                    cache.Apply(solidObject);
+                    DestroyModifierResult.Init(solidObject.gameObject, modifier);
+                    return cache;
+                });
+
+                if (!cache.Is(doubleSided, gradientType, colorBlendMode, gradientScale, gradientRotation))
+                {
+                    cache.UpdateCache(doubleSided, gradientType, colorBlendMode, gradientScale, gradientRotation);
+                    cache.Apply(solidObject);
+                }
+            }
+            else
+            {
+                solidObject.UpdateRendering(
+                    gradientType: gradientType,
+                    renderType: solidObject.gameObject.layer switch
+                    {
+                        RTLevel.FOREGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Foreground,
+                        RTLevel.BACKGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Background,
+                        RTLevel.UI_LAYER => (int)BeatmapObject.RenderLayerType.UI,
+                        _ => 0,
+                    },
+                    doubleSided: doubleSided,
+                    gradientScale: gradientScale,
+                    gradientRotation: gradientRotation,
+                    colorBlendMode: colorBlendMode);
             }
         }
 
@@ -13237,6 +13288,48 @@ namespace BetterLegacy.Core.Helpers
         public int width;
         public int height;
         public RenderTexture renderTexture;
+    }
+
+    public class RenderingCache
+    {
+        public bool doubleSided;
+        public int gradientType;
+        public int colorBlendMode;
+        public float gradientScale = 1f;
+        public float gradientRotation;
+
+        public void UpdateCache(bool doubleSided, int gradientType, int colorBlendMode, float gradientScale, float gradientRotation)
+        {
+            this.doubleSided = doubleSided;
+            this.gradientType = gradientType;
+            this.colorBlendMode = colorBlendMode;
+            this.gradientScale = gradientScale;
+            this.gradientRotation = gradientRotation;
+        }
+
+        public bool Is(bool doubleSided, int gradientType, int colorBlendMode, float gradientScale, float gradientRotation) =>
+            this.doubleSided == doubleSided &&
+            this.gradientType == gradientType &&
+            this.colorBlendMode == colorBlendMode &&
+            this.gradientScale == gradientScale &&
+            this.gradientRotation == gradientRotation;
+
+        public void Apply(SolidObject solidObject)
+        {
+            solidObject.UpdateRendering(
+                gradientType: gradientType,
+                renderType: solidObject.gameObject.layer switch
+                {
+                    RTLevel.FOREGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Foreground,
+                    RTLevel.BACKGROUND_LAYER => (int)BeatmapObject.RenderLayerType.Background,
+                    RTLevel.UI_LAYER => (int)BeatmapObject.RenderLayerType.UI,
+                    _ => 0,
+                },
+                doubleSided: doubleSided,
+                gradientScale: gradientScale,
+                gradientRotation: gradientRotation,
+                colorBlendMode: colorBlendMode);
+        }
     }
 
     #endregion

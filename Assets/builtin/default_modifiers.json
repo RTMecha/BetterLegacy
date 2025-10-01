@@ -1139,7 +1139,14 @@
         "value": "Object Group",
         "const": "False",
         "compat": "obj"
-      } // setRenderTypeOther
+      }, // setRenderTypeOther
+      {
+        "type": 1,
+        "name": "setRendering",
+        "values": [ "False", "0", "0", "1", "0" ],
+        "const": "True",
+        "compat": "obj"
+      } // setRendering
     ],
 
     // Player
@@ -2655,7 +2662,7 @@
         "type": 1,
         "name": "actorFrameTexture",
         "values": [ "0", "512", "512", "0", "0", "1", "0" ],
-        "const": "False",
+        "const": "True",
         "compat": "obj"
       }, // actorFrameTexture
       {
