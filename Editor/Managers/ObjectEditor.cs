@@ -430,6 +430,23 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.events[1][0].values[1] = 1000f;
                 beatmapObject.editorData.selectable = false; // prevent overlay from being selectable in the preview area.
             }),
+            new ObjectOption("Actor Frame Texture", "An object that captures an area and applies it to the objects texture..", timelineObject =>
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.objectType = BeatmapObject.ObjectType.Decoration;
+
+                Modifier modifier;
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.actorFrameTexture), out modifier))
+                    beatmapObject.modifiers.Add(modifier.Copy());
+                if (ModifiersManager.inst.modifiers.TryFind(x => x.Name == nameof(ModifierFunctions.translateShape), out modifier))
+                {
+                    beatmapObject.origin = new Vector2(-0.5f, -0.5f);
+                    modifier = modifier.Copy();
+                    modifier.values[1] = "0.5";
+                    modifier.values[2] = "0.5";
+                    beatmapObject.modifiers.Add(modifier);
+                }
+            }),
         };
 
         /// <summary>
