@@ -1,28 +1,19 @@
-# 1.8.3 [Sep 27, 2025]
+# 1.8.4 [Oct 1, 2025]
 ## Features
 ### Core
-- Added getAxisMath modifier. Works similarly to the copyAxisMath modifier.
-- Added getVisualColorRGBA modifier.
-- Certain modifier values can now accept formatting like: "This modifier can {var}" where "var" is "use formatting", so it results in: "This modifier can use formatting".
-- Started working on a new "Asset Pack" system. These basically allow you to customize specific mod resources without having to modify the files directly. In the future these will be used to fully customize the game client-side.
-  - Asset Packs can be loaded by creating a "assetpacks" folder, creating an Asset Pack folder (will find a way of doing this automatically later) and placing asset files you want to replace / modify / add into the same paths as the files relative to the assets folder.
-- Due to the Asset Pack system, the mods' Assets folder has been organized. When updating the mod, feel free to remove the Assets folder before updating so it can have a fresh install.
+- Objects now have color blending! For now this includes: Multiply and Additive.
+- Mostly implemented the actorFrameTexture modifier. It should be able to work, but there might be cases where it breaks.
 
-## Example Companion
-- You can now customize Example either by adding parts or replacing the model via the new Asset Pack system. Take a look at Assets/companion/model/parts.json and see if you can make anything with it! :D
+### Example Companion
+- Continued work on customization.
 
-## Editor
-- The Object Options popup is now editable via the object_templates.json file in the mod Assets folder. This can be customized via Asset Packs.
-- Removed the Prefab Example Template setting. If you still need Example's model, you can find it in Upload > View Uploaded > Prefabs, then search "Example".
+### Editor
+- You can now click and drag the player.
 
 ## Changes
 ### Core
-- The smoothed level time no longer applies to when set music time occurs.
-- Tweaked the Beta Player models' control settings to be based on how the player worked at the time.
-  - Move Speed = 28
-  - Boost Speed = 95
-  - Boost Cooldown = 0.11
-  - Max Boost Time = 0.16
+- setImage modifiers now apply the image to the texture of the shape.
 
-### Editor
-- Uploading a Level / Level Collection / Prefab where its filesize now displays an error message and prevents uploading.
+## Fixes
+- Fixed Object creation breaking default keyframe editing.
+- Fixed Prefab repeating not changing randomization per repeat.
