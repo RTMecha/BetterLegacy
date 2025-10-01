@@ -95,6 +95,7 @@ namespace BetterLegacy.Editor.Managers
 
         public List<BeatmapTheme> selectedBeatmapThemes = new List<BeatmapTheme>();
         public List<ModifierBlock> selectedModifierBlocks = new List<ModifierBlock>();
+        public List<SpriteAsset> selectedSpriteAssets = new List<SpriteAsset>();
 
         /// <summary>
         /// List of Prefab types.
@@ -2382,16 +2383,17 @@ namespace BetterLegacy.Editor.Managers
             prefab.typeID = NewPrefabTypeID;
             prefab.beatmapThemes = new List<BeatmapTheme>(selectedBeatmapThemes.Select(x => x.Copy(false)));
             prefab.modifierBlocks = new List<ModifierBlock>(selectedModifierBlocks.Select(x => x.Copy(false)));
+            prefab.assets.sprites = new List<SpriteAsset>(selectedSpriteAssets.Select(x => x.Copy(false)));
 
             foreach (var beatmapObject in prefab.beatmapObjects)
             {
-                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && GameData.Current.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset))
+                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && GameData.Current.assets.sprites.TryFind(x => x.name == beatmapObject.text, out SpriteAsset spriteAsset) && !prefab.assets.sprites.Has(x => x.name == spriteAsset.name))
                     prefab.assets.sprites.Add(spriteAsset.Copy());
             }
 
             foreach (var backgroundObject in prefab.backgroundObjects)
             {
-                if (backgroundObject.shape == 6 && !string.IsNullOrEmpty(backgroundObject.text) && GameData.Current.assets.sprites.TryFind(x => x.name == backgroundObject.text, out SpriteAsset spriteAsset))
+                if (backgroundObject.shape == 6 && !string.IsNullOrEmpty(backgroundObject.text) && GameData.Current.assets.sprites.TryFind(x => x.name == backgroundObject.text, out SpriteAsset spriteAsset) && !prefab.assets.sprites.Has(x => x.name == spriteAsset.name))
                     prefab.assets.sprites.Add(spriteAsset.Copy());
             }
 
@@ -2669,6 +2671,7 @@ namespace BetterLegacy.Editor.Managers
             selectedForPrefabCreator.Clear();
             selectedBeatmapThemes.Clear();
             selectedModifierBlocks.Clear();
+            selectedSpriteAssets.Clear();
             RenderPrefabCreator();
             RTEditor.inst.PrefabPopups.Close();
         }
@@ -2823,7 +2826,6 @@ namespace BetterLegacy.Editor.Managers
                             text.rectTransform.sizeDelta = new Vector2(300f, 32f);
 
                             var selectionToggle = selection.GetComponent<Toggle>();
-
                             selectionToggle.SetIsOnWithoutNotify(timelineObject.Selected);
                             selectionToggle.onValueChanged.NewListener(_val => timelineObject.Selected = _val);
                             EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
@@ -2842,7 +2844,6 @@ namespace BetterLegacy.Editor.Managers
                             text.rectTransform.sizeDelta = new Vector2(300f, 32f);
 
                             var selectionToggle = selection.GetComponent<Toggle>();
-
                             selectionToggle.SetIsOnWithoutNotify(selectedForPrefabCreator.GetValueOrDefault(beatmapTheme.id, false));
                             selectionToggle.onValueChanged.NewListener(_val =>
                             {
@@ -2868,7 +2869,6 @@ namespace BetterLegacy.Editor.Managers
                             text.rectTransform.sizeDelta = new Vector2(300f, 32f);
 
                             var selectionToggle = selection.GetComponent<Toggle>();
-
                             selectionToggle.SetIsOnWithoutNotify(selectedForPrefabCreator.GetValueOrDefault(modifierBlock.id, false));
                             selectionToggle.onValueChanged.NewListener(_val =>
                             {
@@ -2877,6 +2877,31 @@ namespace BetterLegacy.Editor.Managers
                                     selectedModifierBlocks.Remove(x => x.id == modifierBlock.id);
                                 else
                                     selectedModifierBlocks.Add(modifierBlock);
+                            });
+                            EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
+                        }
+                        break;
+                    }
+                case 3: {
+                        foreach (var spriteAsset in GameData.Current.assets.sprites)
+                        {
+                            if (!RTString.SearchString(PrefabCreatorDialog.SelectionSearchTerm, spriteAsset.name))
+                                continue;
+
+                            var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabCreatorDialog.SelectionContent, "grid");
+                            var text = selection.transform.Find("text").GetComponent<Text>();
+                            text.text = spriteAsset.name;
+                            text.rectTransform.sizeDelta = new Vector2(300f, 32f);
+
+                            var selectionToggle = selection.GetComponent<Toggle>();
+                            selectionToggle.SetIsOnWithoutNotify(selectedForPrefabCreator.GetValueOrDefault(spriteAsset.name, false));
+                            selectionToggle.onValueChanged.NewListener(_val =>
+                            {
+                                selectedForPrefabCreator[spriteAsset.name] = _val;
+                                if (!_val)
+                                    selectedSpriteAssets.Remove(x => x.name == spriteAsset.name);
+                                else
+                                    selectedSpriteAssets.Add(spriteAsset);
                             });
                             EditorThemeManager.ApplyToggle(selectionToggle, graphic: text);
                         }

@@ -125,6 +125,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
             SetupTab("Timeline Objects");
             SetupTab("Beatmap Themes");
             SetupTab("Modifier Blocks");
+            SetupTab("Images");
 
             var selection = Content.Find("selection");
             EditorHelper.SetComplexity(selection.gameObject, Complexity.Advanced);
