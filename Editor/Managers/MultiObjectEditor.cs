@@ -1121,6 +1121,87 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
             }
+            
+            // Color Blend Mode
+            {
+                var labels = GenerateLabels(parent, 32f, "Set Color Blend Mode");
+
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Sub", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+
+                            int colorBlendMode = (int)bm.colorBlendMode;
+
+                            colorBlendMode--;
+                            if (colorBlendMode < 0)
+                                colorBlendMode = 2;
+
+                            bm.colorBlendMode = (ColorBlendMode)colorBlendMode;
+
+                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
+                        }
+                    }),
+                    new ButtonFunction("Add", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            int colorBlendMode = (int)bm.colorBlendMode;
+
+                            colorBlendMode--;
+                            if (colorBlendMode > 2)
+                                colorBlendMode = 0;
+
+                            bm.colorBlendMode = (ColorBlendMode)colorBlendMode;
+
+                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
+                        }
+                    }));
+
+                var buttons2 = GenerateButtons(parent, 48f, 8f,
+                    new ButtonFunction("Normal", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.colorBlendMode = ColorBlendMode.Normal;
+
+                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
+                        }
+                    }),
+                    new ButtonFunction("Multiply", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.colorBlendMode = ColorBlendMode.Multiply;
+
+                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
+                        }
+                    }),
+                    new ButtonFunction("Additive", () =>
+                    {
+                        foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.colorBlendMode = ColorBlendMode.Additive;
+
+                            EditorTimeline.inst.RenderTimelineObject(timelineObject);
+                            RTLevel.Current?.UpdateObject(bm, ObjectContext.RENDERING);
+                        }
+                    }));
+
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
+            }
 
             // Gradient Type
             {
