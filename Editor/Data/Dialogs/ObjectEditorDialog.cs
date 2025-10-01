@@ -895,8 +895,8 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 randomPosition.Find("interval-input/x").gameObject.SetActive(false);
                 var homingStaticPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-static", 4);
 
-                var staticHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_static{FileFormat.PNG}");
-                var dynamicHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_dynamic{FileFormat.PNG}");
+                var staticHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_static{FileFormat.PNG.Dot()}");
+                var dynamicHomingSpritePath = AssetPack.GetFile($"core/sprites/icons/homing_dynamic{FileFormat.PNG.Dot()}");
 
                 if (RTFile.FileExists(staticHomingSpritePath))
                     homingStaticPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(staticHomingSpritePath);
