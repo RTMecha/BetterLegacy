@@ -337,7 +337,7 @@ namespace BetterLegacy.Editor.Managers
                         onSpriteAssetSelected?.Invoke(spriteAsset.name);
                     };
 
-                    fileButton.image.sprite = EditorSprites.PALogo;
+                    fileButton.image.sprite = spriteAsset.sprite ?? EditorSprites.PALogo;
                     fileButton.label.text = spriteAsset.name + " (External)";
 
                     EditorThemeManager.ApplyGraphic(fileButton.image, ThemeGroup.Light_Text);
@@ -473,6 +473,22 @@ namespace BetterLegacy.Editor.Managers
                                 }),
                                 new ButtonFunction(true),
                                 new ButtonFunction("Reload Assets", () => LoadAssets(RenderPopup)),
+                                new ButtonFunction(true),
+                                new ButtonFunction((spriteAsset.wrapMode == TextureWrapMode.Repeat ? "> " : string.Empty) + "Repeat Wrap Mode", () =>
+                                {
+                                    spriteAsset.SetWrapMode(TextureWrapMode.Repeat);
+                                    EditorManager.inst.DisplayNotification("The texture will now repeat!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new ButtonFunction((spriteAsset.wrapMode == TextureWrapMode.Clamp ? "> " : string.Empty) + "Clamp Wrap Mode", () =>
+                                {
+                                    spriteAsset.SetWrapMode(TextureWrapMode.Clamp);
+                                    EditorManager.inst.DisplayNotification("The texture will now clamp!", 2f, EditorManager.NotificationType.Success);
+                                }),
+                                new ButtonFunction((spriteAsset.wrapMode == TextureWrapMode.Mirror ? "> " : string.Empty) + "Mirror Wrap Mode", () =>
+                                {
+                                    spriteAsset.SetWrapMode(TextureWrapMode.Mirror);
+                                    EditorManager.inst.DisplayNotification("The texture will now repeat and mirror!", 2f, EditorManager.NotificationType.Success);
+                                }),
                             };
 
                             EditorContextMenu.inst.ShowContextMenu(buttonFunctions);
@@ -482,7 +498,7 @@ namespace BetterLegacy.Editor.Managers
                         onSpriteAssetSelected?.Invoke(spriteAsset.name);
                     };
 
-                    fileButton.image.sprite = EditorSprites.PALogo;
+                    fileButton.image.sprite = spriteAsset.sprite ?? EditorSprites.PALogo;
                     fileButton.label.text = spriteAsset.name + " (Internal)";
 
                     EditorThemeManager.ApplyGraphic(fileButton.image, ThemeGroup.Light_Text);

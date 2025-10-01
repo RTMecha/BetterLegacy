@@ -90,7 +90,7 @@ namespace BetterLegacy.Core.Helpers
         public static string SpriteToString(Sprite sprite) => TextureToString(sprite.texture);
         public static string TextureToString(Texture2D texture2D) => Convert.ToBase64String(texture2D.EncodeToPNG());
 
-        public static Sprite StringToSprite(string str) => LoadSprite(Convert.FromBase64String(str));
+        public static Sprite StringToSprite(string str, TextureFormat textureFormat = TextureFormat.ARGB32, bool mipChain = false, TextureWrapMode textureWrapMode = TextureWrapMode.Clamp, FilterMode filterMode = FilterMode.Point) => LoadSprite(Convert.FromBase64String(str), textureFormat, mipChain, textureWrapMode, filterMode);
 
         public enum RoundedSide
         {
