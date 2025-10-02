@@ -1,4 +1,21 @@
-﻿# 1.8.4 [Oct 1, 2025]
+﻿# 1.8.5 [Oct 2, 2025]
+## Features
+### Core
+- Added setRendering action modifier. This changes the rendering settings of the object.
+- Imported sprite assets can now have their wrap mode set via the context menu.
+- All object rendering options now support textures.
+
+### Editor
+- Added Color Blend multi object editing.
+- You can now select images to add to a new Prefab in the Prefab Creator.
+- New levels now have their bin count set to a certain amount depending on editor complexity setting.
+
+## Fixes
+- Fixed homing sprites displaying as X.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.4 [Oct 1, 2025]
 ## Features
 ### Core
 - Objects now have color blending! For now this includes: Multiply and Additive.
