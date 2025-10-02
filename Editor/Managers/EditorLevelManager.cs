@@ -1257,6 +1257,10 @@ namespace BetterLegacy.Editor.Managers
             fromNewLevel = true;
             metaData.WriteToFile(RTFile.CombinePaths(path, Level.METADATA_LSB));
 
+            var editorInfo = new EditorInfo();
+            editorInfo.binCount = EditorConfig.Instance.EditorComplexity.Value == Complexity.Advanced ? EditorTimeline.MAX_BINS : EditorTimeline.DEFAULT_BIN_COUNT;
+            editorInfo.WriteToFile(RTFile.CombinePaths(path, Level.EDITOR_LSE));
+
             var levelPanel = new LevelPanel();
             levelPanel.Init(new Level(path));
             LevelPanels.Add(levelPanel);

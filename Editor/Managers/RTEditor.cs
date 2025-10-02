@@ -1395,7 +1395,7 @@ namespace BetterLegacy.Editor.Managers
                 editorInfo = new EditorInfo();
 
             editorInfo.ApplyFrom();
-            RTFile.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE), editorInfo.ToJSON().ToString(3));
+            editorInfo.WriteToFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE));
         }
 
         /// <summary>
@@ -1411,11 +1411,9 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE)));
-
             try
             {
-                editorInfo = EditorInfo.Parse(jn);
+                editorInfo = RTFile.CreateFromFile<EditorInfo>(RTFile.CombinePaths(RTFile.BasePath, Level.EDITOR_LSE));
                 editorInfo.ApplyTo();
             }
             catch (Exception ex)

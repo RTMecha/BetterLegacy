@@ -11,7 +11,7 @@ using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Data
 {
-    public class EditorInfo : PAObject<EditorInfo>
+    public class EditorInfo : PAObject<EditorInfo>, IFile
     {
         #region Usage
 
@@ -105,6 +105,33 @@ namespace BetterLegacy.Editor.Data
         public Story.CutsceneDestination cutsceneDestination = Story.CutsceneDestination.Level;
 
         #endregion
+
+        public FileFormat FileFormat => FileFormat.LSE;
+
+        public string GetFileName() => $"editor{FileFormat.Dot()}";
+
+        public void ReadFromFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            if (!path.EndsWith(FileFormat.Dot()))
+                path = path += FileFormat.Dot();
+
+            var file = RTFile.ReadFromFile(path);
+            if (!string.IsNullOrEmpty(file))
+                ReadJSON(JSON.Parse(file));
+        }
+
+        public void WriteToFile(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            var jn = ToJSON();
+            if (jn != null)
+                RTFile.WriteToFile(path, jn.ToString(3));
+        }
 
         /// <summary>
         /// Audio time.
