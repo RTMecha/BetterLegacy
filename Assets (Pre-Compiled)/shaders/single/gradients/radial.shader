@@ -37,8 +37,8 @@ Shader"Unlit/RadialTransparentShader"
                 float3 objectPos : TEXCOORD0; 
                 float4 vertex : SV_POSITION;
             };
-
             
+            sampler2D _MainTex;
             float4 _Color;
             float4 _ColorSecondary;
             float _Scale;
@@ -60,8 +60,7 @@ Shader"Unlit/RadialTransparentShader"
                 dist = smoothstep(0, 1, dist);
                
                 _Color = lerp(_Color, _ColorSecondary, dist);
-                
-                return _Color;
+                return tex2D(_MainTex, i.objectPos) * _Color;
             }
 
             ENDCG

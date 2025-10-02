@@ -38,6 +38,7 @@ Shader"Unlit/NoCullGradientTransparentShader"
                 float4 vertex : SV_POSITION;
             };
             
+            sampler2D _MainTex;
             float4 _Color;
             float4 _ColorSecondary;
             float _Rotation;
@@ -82,7 +83,7 @@ Shader"Unlit/NoCullGradientTransparentShader"
                 RotateGradient(i.objectPos, float2(0,0), _Rotation, rotated);
                 
                 _Color = lerp(_Color, _ColorSecondary, smoothstep(-0.4,0.4, rotated.x * _Scale));
-                return _Color;
+                return tex2D(_MainTex, i.objectPos) * _Color;
             }
 
             ENDCG

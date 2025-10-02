@@ -66,7 +66,7 @@ Shader"Unlit/AddBlendModeTransparentShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                return _Color;
+                return tex2D(_MainTex, i.objectPos) * _Color;
             }
             ENDCG
         }

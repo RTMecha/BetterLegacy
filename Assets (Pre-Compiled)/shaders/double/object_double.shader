@@ -25,7 +25,7 @@ Shader"Unlit/NoCullNormalTransparentShader"
             #pragma multi_compile_fog
             #include "UnityCG.cginc"
             
-             struct appdata
+            struct appdata
             {
                 float4 vertex : POSITION;
             };
@@ -36,6 +36,7 @@ Shader"Unlit/NoCullNormalTransparentShader"
                 float4 vertex : SV_POSITION;
             };
             
+            sampler2D _MainTex;
             float4 _Color;
             
             v2f vert (appdata v)
@@ -49,7 +50,7 @@ Shader"Unlit/NoCullNormalTransparentShader"
             
             fixed4 frag (v2f i) : SV_Target
             {
-                return _Color;
+                return tex2D(_MainTex, i.objectPos) * _Color;
             }
 
             ENDCG

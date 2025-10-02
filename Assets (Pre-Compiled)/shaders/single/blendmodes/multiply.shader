@@ -68,8 +68,8 @@ Shader"Unlit/MultiplyBlendModeTransparentShader"
                 //fixed4 b = tex2D(_MainTex, i.vertex) * i.color;
 
                 //return lerp(a, a * b, i.color.a * _BlendAmount);
-
-                return _Color;
+                
+                return tex2D(_MainTex, i.objectPos) * _Color;
             }
 
             // a = (R = 0.5, G = 0.5, B = 0.5)
