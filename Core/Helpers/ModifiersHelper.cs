@@ -7995,7 +7995,6 @@ namespace BetterLegacy.Core.Helpers
                         useDynamicScale = true,
                     },
                 };
-                solidObject.SetMaterial(LegacyResources.textureMaterial);
                 renderer.material.SetTexture("_MainTex", cache.renderTexture);
                 DestroyModifierResult.Init(solidObject.gameObject, modifier);
                 return cache;
@@ -8015,7 +8014,6 @@ namespace BetterLegacy.Core.Helpers
                         useDynamicScale = true,
                     },
                 };
-                solidObject.SetMaterial(LegacyResources.textureMaterial);
                 renderer.material.SetTexture("_MainTex", result.renderTexture);
                 modifier.Result = result;
             }
@@ -8112,7 +8110,6 @@ namespace BetterLegacy.Core.Helpers
                 if (!renderer)
                     return;
 
-                solidObject.SetMaterial(LegacyResources.textureMaterial);
                 if (sprite)
                 {
                     renderer.material.SetTexture("_MainTex", sprite.texture);
@@ -8166,11 +8163,7 @@ namespace BetterLegacy.Core.Helpers
                     if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
                         imageObject.SetSprite(sprite);
                     else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
-                    {
-                        var renderer = solidObject.renderer;
-                        solidObject.SetMaterial(LegacyResources.textureMaterial);
-                        renderer.material.SetTexture("_MainTex", sprite.texture);
-                    }
+                        solidObject.renderer.material.SetTexture("_MainTex", sprite.texture);
                 }
                 return;
             }
@@ -8195,11 +8188,7 @@ namespace BetterLegacy.Core.Helpers
                         if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
                             imageObject.SetTexture(texture2D);
                         else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
-                        {
-                            var renderer = solidObject.renderer;
-                            solidObject.SetMaterial(LegacyResources.textureMaterial);
-                            renderer.material.SetTexture("_MainTex", texture2D);
-                        }
+                            solidObject.renderer.material.SetTexture("_MainTex", texture2D);
                     }
                 },
                 onError =>
