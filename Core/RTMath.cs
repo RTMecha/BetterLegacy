@@ -120,7 +120,7 @@ namespace BetterLegacy.Core
                         context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
                         context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
                         context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
-                        context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
+                        context.RegisterVariable("camRot", EventManager.inst.cam.transform.eulerAngles.z);
                     }
                     if (RandomHelper.CurrentSeed != null)
                         context.RegisterVariable("currentSeed", RandomHelper.CurrentSeed.GetHashCode());
