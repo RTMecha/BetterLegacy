@@ -4,7 +4,6 @@ Shader"Unlit/MultiplyBlendModeTransparentShader"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Color ("Main Color", COLOR) = (1,1,1,1)
-        _BlendAmount ("Blend Amount", Float) = 1
     }
     SubShader
     {

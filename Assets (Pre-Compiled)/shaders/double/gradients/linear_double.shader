@@ -28,7 +28,7 @@ Shader"Unlit/NoCullGradientTransparentShader"
             #pragma multi_compile_fog
             #include "UnityCG.cginc"
             
-             struct appdata
+            struct appdata
             {
                 float4 vertex : POSITION;
             };
