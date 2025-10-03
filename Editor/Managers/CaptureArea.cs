@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 using LSFunctions;
 
+using BetterLegacy.Arcade.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
@@ -787,6 +788,12 @@ namespace BetterLegacy.Editor.Managers
             var total = captureSettings.Resolution.x + captureSettings.Resolution.y;
             RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * captureSettings.Zoom);
 
+            RTLevel.Current.eventEngine.SetCameraPosition(Vector3.zero);
+            RTLevel.Current.eventEngine.SetCameraRotation(0f);
+
+            var trackerPos = RTEventManager.inst.delayTracker.transform.localPosition;
+            RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
+
             var playersActive = GameManager.inst.players.activeSelf;
             if (captureSettings.hidePlayers)
                 GameManager.inst.players.SetActive(false);
@@ -808,7 +815,28 @@ namespace BetterLegacy.Editor.Managers
                 offsetY: captureSettings.pos.y,
                 rotationOffset: captureSettings.rot);
 
-            RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
+            var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+
+            RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
+                new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
+                new Vector3(RTLevel.Current.eventEngine.camRotOffset.x, RTLevel.Current.eventEngine.camRotOffset.y, EventManager.inst.camRot));
+
+            RTLevel.Current.eventEngine.SetCameraPosition(editorCam ?
+                RTLevel.Current.eventEngine.editorCamPosition :
+                EventManager.inst.camPos);
+
+            // fixes bg camera position being offset if rotated for some reason...
+            RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
+            RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
+
+            RTLevel.Current.eventEngine.SetZoom(editorCam ?
+                RTLevel.Current.eventEngine.editorCamZoom :
+                EventManager.inst.camZoom);
+
+            RTLevel.Current.eventEngine.UpdateShake();
+
+            RTEventManager.inst.delayTracker.transform.localPosition = trackerPos;
+
             baseObject.SetActive(true);
 
             // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
