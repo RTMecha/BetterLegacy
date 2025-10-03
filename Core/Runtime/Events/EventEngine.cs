@@ -36,11 +36,11 @@ namespace BetterLegacy.Core.Runtime.Events
                 new KFDelegate[]
                 {
                     UpdateCameraZoom
-                }, // Rotate
+                }, // Zoom
                 new KFDelegate[]
                 {
                     UpdateCameraRotation
-                }, // Zoom
+                }, // Rotate
                 new KFDelegate[]
                 {
                     UpdateCameraShakeMultiplier,
@@ -320,6 +320,60 @@ namespace BetterLegacy.Core.Runtime.Events
 
             SetupShake();
         }
+
+        #region Constants
+
+        #region Vanilla
+
+        public const int MOVE = 0;
+        public const int ZOOM = 1;
+        public const int ROTATE = 2;
+        public const int SHAKE = 3;
+        public const int THEME = 4;
+        public const int CHROMA = 5;
+        public const int BLOOM = 6;
+        public const int VIGNETTE = 7;
+        public const int LENS = 8;
+        public const int GRAIN = 9;
+
+        #endregion
+
+        #region Modded
+
+        public const int COLORGRADING = 10;
+        public const int RIPPLES = 11;
+        public const int RADIALBLUR = 12;
+        public const int COLORSPLIT = 13;
+        public const int OFFSET = 14;
+        public const int GRADIENT = 15;
+        public const int DOUBLEVISION = 16;
+        public const int SCANLINES = 17;
+        public const int BLUR = 18;
+        public const int PIXEL = 19;
+        public const int BG = 20;
+        public const int INVERT = 21;
+        public const int TIMELINE = 22;
+        public const int PLAYER = 23;
+        public const int FOLLOW_PLAYER = 24;
+        public const int AUDIO = 25;
+        public const int VIDEO_BG_PARENT = 26;
+        public const int VIDEO_BG = 27;
+        public const int SHARPNESS = 28;
+        public const int BARS = 29;
+        public const int DANGER = 30;
+        public const int ROTATION = 31;
+        public const int CAMERA_DEPTH = 32;
+        public const int WINDOW_BASE = 33;
+        public const int WINDOW_POSITION_X = 34;
+        public const int WINDOW_POSITION_Y = 35;
+        public const int PLAYER_FORCE = 36;
+        public const int MOSAIC = 37;
+        public const int ANALOG_GLITCH = 38;
+        public const int DIGITAL_GLITCH = 39;
+
+        #endregion
+
+        #endregion
 
         #region Updates
 
@@ -709,13 +763,9 @@ namespace BetterLegacy.Core.Runtime.Events
 
             var editorCam = EventsConfig.Instance.EditorCameraEnabled;
 
-            if (!float.IsNaN(EventManager.inst.camRot) && !editorCam)
-                EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(camRotOffset.x, camRotOffset.y, EventManager.inst.camRot));
-            else if (!float.IsNaN(editorCamRotate))
-                EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(editorCamPerRotate.x, editorCamPerRotate.y, editorCamRotate));
+            SetCameraRotation(editorCam ? new Vector3(editorCamPerRotate.x, editorCamPerRotate.y, editorCamRotate) : new Vector3(camRotOffset.x, camRotOffset.y, EventManager.inst.camRot));
 
-            var camPos = editorCam ? editorCamPosition : EventManager.inst.camPos;
-            EventManager.inst.camParentTop.transform.localPosition = new Vector3(camPos.x, camPos.y, zPosition);
+            SetCameraPosition(editorCam ? editorCamPosition : EventManager.inst.camPos);
 
             // fixes bg camera position being offset if rotated for some reason...
             RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
@@ -913,6 +963,10 @@ namespace BetterLegacy.Core.Runtime.Events
             EventManager.inst.prevCamZoom = EventManager.inst.camZoom;
         }
 
+        public Vector2 GetCameraPosition() => EventManager.inst.camParentTop.transform.localPosition;
+
+        public void SetCameraPosition(Vector2 camPos) => EventManager.inst.camParentTop.transform.localPosition = new Vector3(camPos.x, camPos.y, zPosition);
+
         public void SetZoom(float zoom)
         {
             if (float.IsNaN(zoom) || zoom == 0f)
@@ -933,6 +987,12 @@ namespace BetterLegacy.Core.Runtime.Events
 
             RTLevel.Cameras.BG.nearClipPlane = bgAlignNearPlane ? -RTLevel.Cameras.BG.transform.position.z + camPerspectiveOffset : 0.3f;
         }
+
+        public void SetCameraRotation(float rotate) => SetCameraPosition(new Vector3(0f, 0f, rotate));
+
+        public Vector3 GetCameraRotation() => EventManager.inst.camParent.transform.rotation.eulerAngles;
+
+        public void SetCameraRotation(Vector3 rotate) => EventManager.inst.camParent.transform.rotation = Quaternion.Euler(rotate);
 
         #endregion
 
@@ -1018,8 +1078,8 @@ namespace BetterLegacy.Core.Runtime.Events
 
         static Color LerpColor(int prev, int next, float t, Color defaultColor)
         {
-            Color prevColor = CoreHelper.CurrentBeatmapTheme.effectColors.Count > prev && prev > -1 ? CoreHelper.CurrentBeatmapTheme.effectColors[prev] : defaultColor;
-            Color nextColor = CoreHelper.CurrentBeatmapTheme.effectColors.Count > next && next > -1 ? CoreHelper.CurrentBeatmapTheme.effectColors[next] : defaultColor;
+            var prevColor = CoreHelper.CurrentBeatmapTheme.effectColors.GetAtOrDefault(prev, defaultColor);
+            var nextColor = CoreHelper.CurrentBeatmapTheme.effectColors.GetAtOrDefault(next, defaultColor);
 
             if (float.IsNaN(t) || t < 0f)
                 t = 0f;
@@ -1029,8 +1089,8 @@ namespace BetterLegacy.Core.Runtime.Events
 
         static Color LerpColor(int prev, int next, float t, Color defaultColor, Color defaultColor2)
         {
-            Color prevColor = CoreHelper.CurrentBeatmapTheme.effectColors.Count > prev && prev > -1 ? CoreHelper.CurrentBeatmapTheme.effectColors[prev] : prev == 19 ? defaultColor : defaultColor2;
-            Color nextColor = CoreHelper.CurrentBeatmapTheme.effectColors.Count > next && next > -1 ? CoreHelper.CurrentBeatmapTheme.effectColors[next] : prev == 19 ? defaultColor : defaultColor2;
+            var prevColor = CoreHelper.CurrentBeatmapTheme.effectColors.GetAtOrDefault(prev, prev == 19 ? defaultColor : defaultColor2);
+            var nextColor = CoreHelper.CurrentBeatmapTheme.effectColors.GetAtOrDefault(next, next == 19 ? defaultColor : defaultColor2);
 
             if (float.IsNaN(t) || t < 0f)
                 t = 0f;
@@ -1105,12 +1165,28 @@ namespace BetterLegacy.Core.Runtime.Events
         /// </summary>
         public Sequence<Vector2> shakeSequence;
 
+        /// <summary>
+        /// Overrides the current shake vector.
+        /// </summary>
+        /// <param name="shake">Shake to set.</param>
         public void OverrideShake(Vector3 shake) => Shake = shake;
 
         /// <summary>
         /// Renders the shake event.
         /// </summary>
         public void UpdateShake()
+        {
+            if (!float.IsNaN(camOffsetX) && !float.IsNaN(camOffsetY))
+                EventManager.inst.camParent.transform.localPosition = GetShake() + new Vector3(camOffsetX, camOffsetY, 0f);
+            else
+                EventManager.inst.camParent.transform.localPosition = GetShake();
+        }
+
+        /// <summary>
+        /// Gets the current shake vector.
+        /// </summary>
+        /// <returns>Returns the current shake vector.</returns>
+        public Vector3 GetShake()
         {
             var vector = Shake * EventManager.inst.shakeMultiplier;
             vector.x *= shakeX == 0f && shakeY == 0f ? 1f : shakeX;
@@ -1120,8 +1196,7 @@ namespace BetterLegacy.Core.Runtime.Events
             if (float.IsNaN(vector.x) || float.IsNaN(vector.y) || float.IsNaN(vector.z))
                 vector = Vector3.zero;
 
-            if (!float.IsNaN(camOffsetX) && !float.IsNaN(camOffsetY))
-                EventManager.inst.camParent.transform.localPosition = vector + new Vector3(camOffsetX, camOffsetY, 0f);
+            return vector;
         }
 
         #region Move - 0

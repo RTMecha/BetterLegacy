@@ -403,6 +403,8 @@ namespace BetterLegacy.Core.Runtime
             eventEngine?.Render();
         }
 
+        public static bool LogUpdateEvents { get; set; } = true;
+
         // todo: implement if I ever end up caching events via sequences
         /// <summary>
         /// Updates a specific event.
@@ -410,18 +412,31 @@ namespace BetterLegacy.Core.Runtime
         /// <param name="currentEvent">Type of event to update.</param>
         public virtual void UpdateEvents(int currentEvent)
         {
-            eventEngine?.SetupShake();
-            EventManager.inst.eventSequence.Kill();
-            EventManager.inst.shakeSequence.Kill();
-            EventManager.inst.themeSequence.Kill();
+            if (LogUpdateEvents)
+                CoreHelper.Log($"Updating event: {currentEvent}");
+
+            EventManager.inst.eventSequence?.Kill();
             EventManager.inst.eventSequence = null;
-            EventManager.inst.shakeSequence = null;
-            EventManager.inst.themeSequence = null;
+            switch (currentEvent)
+            {
+                case EventEngine.SHAKE: {
+                        eventEngine?.SetupShake();
+                        EventManager.inst.shakeSequence?.Kill();
+                        EventManager.inst.shakeSequence = null;
+                        break;
+                    }
+                case EventEngine.THEME: {
+                        EventManager.inst.themeSequence?.Kill();
+                        EventManager.inst.themeSequence = null;
+                        break;
+                    }
+            }
 
             if (!GameData.Current)
                 return;
 
             GameData.Current.events[currentEvent] = GameData.Current.events[currentEvent].OrderBy(x => x.time).ToList();
+            //GameData.Current.events[currentEvent].Sort((a, b) => a.time.CompareTo(b.time));
 
             if (CoreHelper.InEditor)
                 GameData.Current.events[currentEvent].ForLoop((eventKeyframe, index) => eventKeyframe.timelineKeyframe.Index = index);
@@ -432,6 +447,9 @@ namespace BetterLegacy.Core.Runtime
         /// </summary>
         public virtual void UpdateEvents()
         {
+            if (LogUpdateEvents)
+                CoreHelper.Log("Updating all events");
+
             eventEngine?.SetupShake();
             EventManager.inst.eventSequence.Kill();
             EventManager.inst.shakeSequence.Kill();
@@ -447,6 +465,7 @@ namespace BetterLegacy.Core.Runtime
             for (int i = 0; i < GameData.Current.events.Count; i++)
             {
                 GameData.Current.events[i] = GameData.Current.events[i].OrderBy(x => x.time).ToList();
+                //GameData.Current.events[i].Sort((a, b) => a.time.CompareTo(b.time));
 
                 if (CoreHelper.InEditor)
                     GameData.Current.events[i].ForLoop((eventKeyframe, index) => eventKeyframe.timelineKeyframe.Index = index);
