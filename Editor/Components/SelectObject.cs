@@ -12,6 +12,7 @@ using BetterLegacy.Core.Data.Beatmap;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Runtime;
 using BetterLegacy.Core.Runtime.Objects;
+using BetterLegacy.Core.Runtime.Objects.Visual;
 using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Editor.Components
@@ -300,7 +301,25 @@ namespace BetterLegacy.Editor.Components
 
             if (!EventSystem.current.IsPointerOverGameObject())
                 Highlight(HighlightObjects && hovered);
+
+            if (!EditorConfig.Instance.OutlineSelected.Value || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject)
+                return;
+
+            var selected = beatmapObject.timelineObject && beatmapObject.timelineObject.Selected;
+            if (this.selected == selected)
+                return;
+
+            this.selected = selected;
+
+            solidObject.AddOutline();
+            solidObject.SetOutline(
+                beatmapObject.timelineObject && beatmapObject.timelineObject.Selected ?
+                    EditorConfig.Instance.OutlineColor.Value :
+                    LSColors.transparent,
+                EditorConfig.Instance.OutlineWidth.Value);
         }
+
+        bool selected;
 
         void FixedUpdate()
         {

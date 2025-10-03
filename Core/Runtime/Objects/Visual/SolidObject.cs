@@ -37,6 +37,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
         public int colorBlendMode;
 
+        public bool hasOutline;
+        bool materialArrayChanged;
+
         public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
         {
             this.gameObject = gameObject;
@@ -195,8 +198,61 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="material">Material to set.</param>
         public void SetMaterial(Material material)
         {
+            if (hasOutline)
+            {
+                materialArrayChanged = true;
+                renderer.materials = new Material[2]
+                {
+                    material,
+                    LegacyResources.outlineMaterial,
+                };
+            }
+            else if (materialArrayChanged)
+            {
+                materialArrayChanged = false;
+                renderer.materials = new Material[1] { material };
+            }
+
             renderer.material = material;
             this.material = renderer.material;
+        }
+
+        /// <summary>
+        /// Adds an outline to the object. If the object already has an outline, don't do anything.
+        /// </summary>
+        public void AddOutline()
+        {
+            if (hasOutline)
+                return;
+
+            hasOutline = true;
+            SetMaterial(material);
+        }
+
+        /// <summary>
+        /// Removes the outline from the object, if it has an outline.
+        /// </summary>
+        public void RemoveOutline()
+        {
+            if (!hasOutline)
+                return;
+
+            hasOutline = false;
+            SetMaterial(material);
+        }
+
+        /// <summary>
+        /// Sets the outline values.
+        /// </summary>
+        /// <param name="outlineColor">Outline color to set.</param>
+        /// <param name="outlineWidth">Outline width to set.</param>
+        public void SetOutline(Color outlineColor, float outlineWidth)
+        {
+            if (!hasOutline || renderer.materials.Length < 2)
+                return;
+
+            renderer.materials[1].SetColor("_OutlineColor", outlineColor);
+            renderer.materials[1].SetFloat("_OutlineWidth", outlineWidth);
         }
 
         public override void Clear()

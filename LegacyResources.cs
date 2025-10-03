@@ -52,6 +52,8 @@ namespace BetterLegacy
         }
 
         public static MaterialGroup objectMaterial;
+
+        public static MaterialGroup outlineMaterial;
         
         public static Dictionary<string, MaterialGroup> materials = new Dictionary<string, MaterialGroup>();
 
@@ -134,6 +136,8 @@ namespace BetterLegacy
 
                 if (assetName == "object.shader")
                     objectMaterial = materialGroup;
+                if (assetName == "outline.shader")
+                    outlineMaterial = materialGroup;
 
                 materials[assetKey] = materialGroup;
             }

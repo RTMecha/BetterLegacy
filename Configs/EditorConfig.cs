@@ -382,6 +382,9 @@ namespace BetterLegacy.Configs
         public Setting<bool> HighlightObjects { get; set; }
         public Setting<Color> ObjectHighlightAmount { get; set; }
         public Setting<Color> ObjectHighlightDoubleAmount { get; set; }
+        public Setting<bool> OutlineSelected { get; set; }
+        public Setting<Color> OutlineColor { get; set; }
+        public Setting<float> OutlineWidth { get; set; }
 
         public Setting<bool> ObjectDraggerHelper { get; set; }
         public Setting<TransformType> ObjectDraggerHelperType { get; set; }
@@ -860,6 +863,10 @@ namespace BetterLegacy.Configs
             HighlightObjects = Bind(this, PREVIEW, "Highlight Objects", true, "If enabled and if cursor hovers over an object, it will be highlighted.");
             ObjectHighlightAmount = Bind(this, PREVIEW, "Object Highlight Amount", new Color(0.1f, 0.1f, 0.1f), "If an object is hovered, it adds this amount of color to the hovered object.");
             ObjectHighlightDoubleAmount = Bind(this, PREVIEW, "Object Highlight Double Amount", new Color(0.5f, 0.5f, 0.5f), "If an object is hovered and shift is held, it adds this amount of color to the hovered object.");
+            OutlineSelected = Bind(this, PREVIEW, "Outline Selected", true, "If selected objects should be outlined.");
+            OutlineColor = Bind(this, PREVIEW, "Outline Color", new Color(0.2f, 0.5f, 1f), "Selected object outline color.");
+            OutlineWidth = Bind(this, PREVIEW, "Outline Width", 0.05f, "Selected object outline width.");
+
             ObjectDraggerHelper = Bind(this, PREVIEW, "Object Drag Helper Enabled", true, "If the object dragger helper should be enabled. This displays empty objects, the true origin of an object and allows dragging other types of objects.");
             ObjectDraggerHelperType = BindEnum(this, PREVIEW, "Object Drag Helper Type", TransformType.Position, "Transform type to drag.");
             ObjectDraggerHelperSize = Bind(this, PREVIEW, "Object Drag Helper Size", 16f, "Size of the Object Drag Helper.");
