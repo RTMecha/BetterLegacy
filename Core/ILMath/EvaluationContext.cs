@@ -171,6 +171,8 @@ namespace ILMath
             });
             RegisterFunction("mirrorNegative", parameters => parameters[0] < 0 ? -parameters[0] : parameters[0]);
             RegisterFunction("mirrorPositive", parameters => parameters[0] > 0 ? -parameters[0] : parameters[0]);
+            RegisterFunction("rotatePosX", parameters => RTMath.Rotate(new Vector2((float)parameters[0], (float)parameters[1]), (float)parameters[2]).x);
+            RegisterFunction("rotatePosY", parameters => RTMath.Rotate(new Vector2((float)parameters[0], (float)parameters[1]), (float)parameters[2]).y);
         }
 
         /// <summary>
