@@ -910,6 +910,10 @@ namespace BetterLegacy.Core.Helpers
             new ModifierAction(nameof(ModifierFunctions.setRenderType),  ModifierFunctions.setRenderType, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setRenderTypeOther),  ModifierFunctions.setRenderTypeOther, ModifierCompatibility.BeatmapObjectCompatible),
             new ModifierAction(nameof(ModifierFunctions.setRendering),  ModifierFunctions.setRendering, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setOutline),  ModifierFunctions.setOutline, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setOutlineOther),  ModifierFunctions.setOutlineOther, ModifierCompatibility.FullBeatmapCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setOutlineHex),  ModifierFunctions.setOutlineHex, ModifierCompatibility.BeatmapObjectCompatible),
+            new ModifierAction(nameof(ModifierFunctions.setOutlineHexOther),  ModifierFunctions.setOutlineHexOther, ModifierCompatibility.FullBeatmapCompatible),
 
             #endregion
 
@@ -4862,6 +4866,108 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        public static void setOutline(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+                return;
+
+            var enabled = modifier.GetBool(0, true, variables);
+            var width = modifier.GetFloat(1, 0.5f, variables);
+            var index = modifier.GetInt(2, 0, variables);
+            var opacity = modifier.GetFloat(3, 0f, variables);
+            var hue = modifier.GetFloat(4, 0f, variables);
+            var sat = modifier.GetFloat(5, 0f, variables);
+            var val = modifier.GetFloat(6, 0f, variables);
+
+            if (enabled)
+            {
+                solidObject.AddOutline();
+                solidObject.SetOutline(RTColors.FadeColor(RTColors.ChangeColorHSV(CoreHelper.CurrentBeatmapTheme.GetObjColor(index), hue, sat, val), opacity), width);
+            }
+            else
+                solidObject.RemoveOutline();
+        }
+
+        public static void setOutlineOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not IPrefabable prefabable)
+                return;
+
+            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+
+            if (list.IsEmpty())
+                return;
+
+            var enabled = modifier.GetBool(1, true, variables);
+            var width = modifier.GetFloat(2, 0.5f, variables);
+            var index = modifier.GetInt(3, 0, variables);
+            var opacity = modifier.GetFloat(4, 0f, variables);
+            var hue = modifier.GetFloat(5, 0f, variables);
+            var sat = modifier.GetFloat(6, 0f, variables);
+            var val = modifier.GetFloat(7, 0f, variables);
+
+            foreach (var beatmapObject in list)
+            {
+                if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+                    continue;
+
+                if (enabled)
+                {
+                    solidObject.AddOutline();
+                    solidObject.SetOutline(RTColors.FadeColor(RTColors.ChangeColorHSV(CoreHelper.CurrentBeatmapTheme.GetObjColor(index), hue, sat, val), opacity), width);
+                }
+                else
+                    solidObject.RemoveOutline();
+            }
+        }
+
+        public static void setOutlineHex(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+                return;
+
+            var enabled = modifier.GetBool(0, true, variables);
+            var width = modifier.GetFloat(1, 0.5f, variables);
+            var hex = RTColors.HexToColor(modifier.GetValue(2, variables));
+
+            if (enabled)
+            {
+                solidObject.AddOutline();
+                solidObject.SetOutline(hex, width);
+            }
+            else
+                solidObject.RemoveOutline();
+        }
+
+        public static void setOutlineHexOther(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
+        {
+            if (reference is not IPrefabable prefabable)
+                return;
+
+            List<BeatmapObject> list = modifier.GetResultOrDefault(() => GameData.Current.FindObjectsWithTag(modifier, prefabable, modifier.GetValue(0, variables)));
+
+            if (list.IsEmpty())
+                return;
+
+            var enabled = modifier.GetBool(1, true, variables);
+            var width = modifier.GetFloat(2, 0.5f, variables);
+            var hex = RTColors.HexToColor(modifier.GetValue(3, variables));
+
+            foreach (var beatmapObject in list)
+            {
+                if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject solidObject || !solidObject.gameObject)
+                    continue;
+
+                if (enabled)
+                {
+                    solidObject.AddOutline();
+                    solidObject.SetOutline(hex, width);
+                }
+                else
+                    solidObject.RemoveOutline();
+            }
+        }
+
         #endregion
 
         #region Player
@@ -7235,7 +7341,7 @@ namespace BetterLegacy.Core.Helpers
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
             {
-                beatmapObject.runtimeObject.visualObject.SetColor(beatmapObject.runtimeObject.visualObject.GetPrimaryColor() + RTColors.ChangeColorHSV(ThemeManager.inst.Current.GetObjColor(index), hue, sat, val) * multiply);
+                beatmapObject.runtimeObject.visualObject.SetColor(beatmapObject.runtimeObject.visualObject.GetPrimaryColor() + RTColors.ChangeColorHSV(CoreHelper.CurrentBeatmapTheme.GetObjColor(index), hue, sat, val) * multiply);
             });
         }
 
@@ -7962,7 +8068,12 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || !runtimeObject.visualObject)
                 return;
 
-            var camera = modifier.GetInt(0, 0, variables) == 0 ? EventManager.inst.cam : EventManager.inst.camPer;
+            var camera = modifier.GetInt(0, 0, variables) switch
+            {
+                1 => RTLevel.Cameras.BG,
+                2 => RTLevel.Cameras.UI,
+                _ => RTLevel.Cameras.FG,
+            };
             var width = modifier.GetInt(1, 512, variables);
             var height = modifier.GetInt(2, 512, variables);
             var offsetX = modifier.GetFloat(3, 0f, variables);
@@ -7976,10 +8087,6 @@ namespace BetterLegacy.Core.Helpers
 
             if (runtimeObject.visualObject is not SolidObject solidObject)
                 return;
-
-            camera.transform.localPosition = new Vector3(offsetX, offsetY);
-            var rotation = camera.transform.localEulerAngles;
-            camera.transform.localEulerAngles = new Vector3(0f, 0f, rotate);
 
             // Get render texture
             var result = modifier.GetResultOrDefault(() =>
@@ -8018,6 +8125,16 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = result;
             }
 
+            camera.transform.localPosition = new Vector3(offsetX, offsetY);
+            camera.transform.localEulerAngles = new Vector3(0f, 0f, rotate);
+
+            RTLevel.Current.eventEngine.SetCameraPosition(Vector3.zero);
+            RTLevel.Current.eventEngine.SetCameraRotation(0f);
+
+            EventManager.inst.camParent.transform.localPosition = Vector2.zero;
+            var trackerPos = RTEventManager.inst.delayTracker.transform.localPosition;
+            RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
+
             var rect = RTLevel.Cameras.FG.rect;
             RTLevel.Cameras.FG.rect = new Rect(0f, 0f, 1f, 1f);
             var total = width + height;
@@ -8049,10 +8166,31 @@ namespace BetterLegacy.Core.Helpers
             renderer.enabled = enabled;
             camera.targetTexture = null;
             RenderTexture.active = currentActiveRT;
-            camera.transform.localPosition = Vector3.zero;
 
-            RTLevel.Current.eventEngine.SetZoom(EventManager.inst.camZoom);
-            camera.transform.localEulerAngles = rotation;
+            camera.transform.localPosition = Vector3.zero;
+            camera.transform.localEulerAngles = Vector3.zero;
+
+            var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+
+            RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
+                new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
+                new Vector3(RTLevel.Current.eventEngine.camRotOffset.x, RTLevel.Current.eventEngine.camRotOffset.y, EventManager.inst.camRot));
+
+            RTLevel.Current.eventEngine.SetCameraPosition(editorCam ?
+                RTLevel.Current.eventEngine.editorCamPosition :
+                EventManager.inst.camPos);
+
+            // fixes bg camera position being offset if rotated for some reason...
+            RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
+            RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
+
+            RTLevel.Current.eventEngine.SetZoom(editorCam ?
+                RTLevel.Current.eventEngine.editorCamZoom :
+                EventManager.inst.camZoom);
+
+            RTLevel.Current.eventEngine.UpdateShake();
+
+            RTEventManager.inst.delayTracker.transform.localPosition = trackerPos;
 
             RTLevel.Cameras.FG.clearFlags = clearFlags;
             RTLevel.Cameras.FG.backgroundColor = bgColor;

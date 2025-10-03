@@ -2517,7 +2517,37 @@
                 "lang": 0
               }
             ]
-          } // setRendering
+          }, // setRendering
+          {
+            "name": "Object Modifier - setOutline (Action)",
+            "tooltips": [
+              {
+                "desc": "setOutline (Action)",
+                "hint": "Applies an outline to the object.",
+                "lang": 0
+              }
+            ]
+          }, // setOutline
+          {
+            "name": "Object Modifier - setOutlineOther (Action)",
+            "tooltips": [
+              {
+                "desc": "setOutlineOther (Action)",
+                "hint": "Applies an outline to a group of objects.",
+                "lang": 0
+              }
+            ]
+          }, // setOutlineOther
+          {
+            "name": "Object Modifier - setOutlineHexOther (Action)",
+            "tooltips": [
+              {
+                "desc": "setOutlineHexOther (Action)",
+                "hint": "Applies an outline to a group of objects.",
+                "lang": 0
+              }
+            ]
+          } // setOutlineHexOther
         ],
 
         // Player
