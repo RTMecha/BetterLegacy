@@ -54,6 +54,10 @@ namespace BetterLegacy
         public static MaterialGroup objectMaterial;
 
         public static MaterialGroup outlineMaterial;
+
+        public static MaterialGroup outlineBehindMaterial;
+
+        public static MaterialGroup editorOutlineMaterial;
         
         public static Dictionary<string, MaterialGroup> materials = new Dictionary<string, MaterialGroup>();
 
@@ -122,22 +126,40 @@ namespace BetterLegacy
             foreach (var a in assetBundle.GetAllAssetNames())
             {
                 var assetName = System.IO.Path.GetFileName(a);
-                if (!assetName.Contains(".shader"))
-                    assetName += ".shader";
                 var assetKey = a
                     .Remove("assets/shaders/")
                     .Remove("shaders/")
                     .Remove("_double");
+
+                CoreHelper.Log($"Loading object material\n" +
+                    $"Asset Path: {a}\n" +
+                    $"Asset Name: {System.IO.Path.GetFileName(a)}\n" +
+                    $"Asset Key: {assetKey}");
 
                 var materialGroup = new MaterialGroup();
                 materialGroup.key = assetKey;
                 materialGroup.shader = assetBundle.LoadAsset<Shader>(assetName);
                 materialGroup.material = new Material(materialGroup.shader);
 
-                if (assetName == "object.shader")
-                    objectMaterial = materialGroup;
-                if (assetName == "outline.shader")
-                    outlineMaterial = materialGroup;
+                switch (assetName)
+                {
+                    case "object.shader": {
+                            objectMaterial = materialGroup;
+                            break;
+                        }
+                    case "outline.shader": {
+                            outlineMaterial = materialGroup;
+                            break;
+                        }
+                    case "outline_behind.shader": {
+                            outlineBehindMaterial = materialGroup;
+                            break;
+                        }
+                    case "editor_outline.shader": {
+                            editorOutlineMaterial = materialGroup;
+                            break;
+                        }
+                }
 
                 materials[assetKey] = materialGroup;
             }
