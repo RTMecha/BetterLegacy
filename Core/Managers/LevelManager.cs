@@ -769,11 +769,7 @@ namespace BetterLegacy.Core.Managers
             var levels = CurrentLevelCollection ? CurrentLevelCollection.levels : Levels;
 
             if (RTBeatmap.Current.challengeMode.Invincible)
-            {
-                if (NextLevelInCollection && CurrentLevel.metadata && CurrentLevel.metadata.song.DifficultyType == DifficultyType.Animation)
-                    SetLevelData(levels, NextLevelInCollection, false);
                 return;
-            }
 
             if (NextLevelInCollection)
                 SetLevelData(levels, NextLevelInCollection, false);
