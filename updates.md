@@ -1,4 +1,29 @@
-﻿# 1.8.6 [Oct 4, 2025]
+﻿# 1.8.7 [Oct 5, 2025]
+## Features
+### Core
+- The actorFrameTexture modifier now includes two new values: All Cameras, Clear Texture, BG Custom Color, etc.
+  - All Cameras makes the frame display all render layers (BG > FG > UI).
+  - Clear Texture clears the previous frame from the current, preventing frame bleeding.
+  - BG Custom Color sets a custom background color. Leave empty to use the regular background color.
+  - Calculate Zoom is how the zoom usually works. With it off, the zoom value won't depend on the resolution.
+  - Texture Offset & Scale fixes the texture being incorrectly positioned. (normally you would have to use translateShape to fix it but that was kinda hacky)
+  - Hide Players, well, hides the players.
+- setImage modifiers also have Texture Offset & Scale values.
+
+### Editor
+- Capture Area now has a setting for capturing all cameras / layers. This is in case you have a prefab that contains BG objects or objects on other render layer types.
+
+## Changes
+### Core
+- Animation difficulty no longer allows level save data being modified with Zen & Practice modes.
+- Moved all object material assets into one Asset Bundle.
+
+## Fixes
+- Hopefully fixed level loading breaking in some cases where the player runtime data isn't cleared correctly.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.6 [Oct 4, 2025]
 ## Features
 ### Core
 - Added rotatePosX(posX, posY, rot) and rotatePosY(posX, posY, rot) math functions.
