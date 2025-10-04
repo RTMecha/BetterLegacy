@@ -32,12 +32,13 @@ Shader"Unlit/NoCullNormalTransparentShader"
 
             struct v2f
             {
-                float3 objectPos : TEXCOORD0; 
+                float2 objectPos : TEXCOORD0; 
                 float4 vertex : SV_POSITION;
             };
             
             sampler2D _MainTex;
             float4 _Color;
+            float4 _MainTex_ST;
             
             v2f vert (appdata v)
             {
@@ -52,7 +53,6 @@ Shader"Unlit/NoCullNormalTransparentShader"
             {
                 return tex2D(_MainTex, i.objectPos) * _Color;
             }
-
             ENDCG
         }
     }

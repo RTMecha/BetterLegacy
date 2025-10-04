@@ -8072,18 +8072,19 @@ namespace BetterLegacy.Core.Helpers
             if (!runtimeObject || !runtimeObject.visualObject)
                 return;
 
-            var camera = modifier.GetInt(0, 0, variables) switch
-            {
-                1 => RTLevel.Cameras.BG,
-                2 => RTLevel.Cameras.UI,
-                _ => RTLevel.Cameras.FG,
-            };
             var width = modifier.GetInt(1, 512, variables);
             var height = modifier.GetInt(2, 512, variables);
             var offsetX = modifier.GetFloat(3, 0f, variables);
             var offsetY = modifier.GetFloat(4, 0f, variables);
             var zoom = modifier.GetFloat(5, 1f, variables);
             var rotate = modifier.GetFloat(6, 0f, variables);
+            var allCameras = modifier.GetBool(7, false, variables);
+            var clearTexture = modifier.GetBool(8, false, variables);
+            var customColor = modifier.GetValue(9, variables);
+            var calculateZoom = modifier.GetBool(10, true, variables);
+            var textureOffset = new Vector2(modifier.GetFloat(11, 0f, variables), modifier.GetFloat(12, 0f, variables));
+            var textureScale = new Vector2(modifier.GetFloat(13, 1f, variables), modifier.GetFloat(14, 0f, variables));
+            var hidePlayers = modifier.GetBool(15, false, variables);
 
             var renderer = runtimeObject.visualObject.renderer;
             if (!renderer)
@@ -8129,107 +8130,247 @@ namespace BetterLegacy.Core.Helpers
                 modifier.Result = result;
             }
 
-            camera.transform.localPosition = new Vector3(offsetX, offsetY);
-            camera.transform.localEulerAngles = new Vector3(0f, 0f, rotate);
+            renderer.material.mainTextureOffset = textureOffset;
+            renderer.material.mainTextureScale = textureScale;
 
-            RTLevel.Current.eventEngine.SetCameraPosition(Vector3.zero);
-            RTLevel.Current.eventEngine.SetCameraRotation(0f);
+            if (allCameras)
+            {
+                RTLevel.Current.eventEngine.SetCameraPosition(new Vector3(offsetX, offsetY));
+                RTLevel.Current.eventEngine.SetCameraRotation(rotate);
 
-            EventManager.inst.camParent.transform.localPosition = Vector2.zero;
-            var trackerPos = RTEventManager.inst.delayTracker.transform.localPosition;
-            RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
+                EventManager.inst.camParent.transform.localPosition = Vector2.zero;
+                var trackerPos = RTEventManager.inst.delayTracker.transform.localPosition;
+                RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
 
-            var rect = RTLevel.Cameras.FG.rect;
-            RTLevel.Cameras.FG.rect = new Rect(0f, 0f, 1f, 1f);
-            var total = width + height;
-            RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * zoom);
+                var rect = RTLevel.Cameras.FG.rect;
+                RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
+                var total = width + height;
+                RTLevel.Current.eventEngine.SetZoom(calculateZoom ? (width + height) / 2 / 512f * 12.66f * zoom : zoom);
 
-            //var playersActive = GameManager.inst.players.activeSelf;
-            //if (hidePlayers)
-            //    GameManager.inst.players.SetActive(false);
+                //var playersActive = GameManager.inst.players.activeSelf;
+                //if (hidePlayers)
+                //    GameManager.inst.players.SetActive(false);
 
-            var clearFlags = RTLevel.Cameras.FG.clearFlags;
-            var bgColor = RTLevel.Cameras.FG.backgroundColor;
-            RTLevel.Cameras.FG.clearFlags = CameraClearFlags.SolidColor;
-            RTLevel.Cameras.FG.backgroundColor = RTLevel.Cameras.BG.backgroundColor;
+                //var clearFlags = RTLevel.Cameras.FG.clearFlags;
+                //var bgColor = RTLevel.Cameras.FG.backgroundColor;
+                //RTLevel.Cameras.FG.clearFlags = CameraClearFlags.SolidColor;
+                //RTLevel.Cameras.FG.backgroundColor = RTLevel.Cameras.BG.backgroundColor;
 
-            // create
-            var renderTexture = result.renderTexture;
+                foreach (var camera in RTLevel.Cameras.GetCameras())
+                {
+                    // create
+                    var renderTexture = result.renderTexture;
 
-            var currentActiveRT = RenderTexture.active;
-            RenderTexture.active = renderTexture;
+                    var currentActiveRT = RenderTexture.active;
+                    RenderTexture.active = renderTexture;
 
-            var enabled = renderer.enabled;
-            renderer.enabled = false;
-            // Assign render texture to camera and render the camera
-            camera.targetTexture = renderTexture;
-            camera.Render();
-            renderTexture.Create();
+                    var enabled = renderer.enabled;
+                    renderer.enabled = false;
+                    // Assign render texture to camera and render the camera
+                    camera.targetTexture = renderTexture;
+                    camera.Render();
+                    renderTexture.Create();
 
-            // Reset to defaults
-            renderer.enabled = enabled;
-            camera.targetTexture = null;
-            RenderTexture.active = currentActiveRT;
+                    // Reset to defaults
+                    renderer.enabled = enabled;
+                    camera.targetTexture = null;
+                    RenderTexture.active = currentActiveRT;
 
-            camera.transform.localPosition = Vector3.zero;
-            camera.transform.localEulerAngles = Vector3.zero;
+                    camera.transform.localPosition = Vector3.zero;
+                    camera.transform.localEulerAngles = Vector3.zero;
+                }
 
-            var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+                var editorCam = EventsConfig.Instance.EditorCameraEnabled;
 
-            RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
-                new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
-                new Vector3(RTLevel.Current.eventEngine.camRotOffset.x, RTLevel.Current.eventEngine.camRotOffset.y, EventManager.inst.camRot));
+                RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
+                    new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
+                    new Vector3(RTLevel.Current.eventEngine.camRotOffset.x, RTLevel.Current.eventEngine.camRotOffset.y, EventManager.inst.camRot));
 
-            RTLevel.Current.eventEngine.SetCameraPosition(editorCam ?
-                RTLevel.Current.eventEngine.editorCamPosition :
-                EventManager.inst.camPos);
+                RTLevel.Current.eventEngine.SetCameraPosition(editorCam ?
+                    RTLevel.Current.eventEngine.editorCamPosition :
+                    EventManager.inst.camPos);
 
-            // fixes bg camera position being offset if rotated for some reason...
-            RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
-            RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
+                // fixes bg camera position being offset if rotated for some reason...
+                RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
+                RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
 
-            RTLevel.Current.eventEngine.SetZoom(editorCam ?
-                RTLevel.Current.eventEngine.editorCamZoom :
-                EventManager.inst.camZoom);
+                RTLevel.Current.eventEngine.SetZoom(editorCam ?
+                    RTLevel.Current.eventEngine.editorCamZoom :
+                    EventManager.inst.camZoom);
 
-            RTLevel.Current.eventEngine.UpdateShake();
+                RTLevel.Current.eventEngine.UpdateShake();
 
-            RTEventManager.inst.delayTracker.transform.localPosition = trackerPos;
+                RTEventManager.inst.delayTracker.transform.localPosition = trackerPos;
 
-            RTLevel.Cameras.FG.clearFlags = clearFlags;
-            RTLevel.Cameras.FG.backgroundColor = bgColor;
+                //RTLevel.Cameras.FG.clearFlags = clearFlags;
+                //RTLevel.Cameras.FG.backgroundColor = bgColor;
 
-            // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
-            RTEventManager.inst.glitchCam.enabled = false;
-            RTEventManager.inst.glitchCam.enabled = true;
+                // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
+                RTEventManager.inst.glitchCam.enabled = false;
+                RTEventManager.inst.glitchCam.enabled = true;
 
-            // disable and re-enable the UI camera to ensure the UI camera is ordered last.
-            RTLevel.Cameras.UI.enabled = false;
-            RTLevel.Cameras.UI.enabled = true;
+                // disable and re-enable the UI camera to ensure the UI camera is ordered last.
+                RTLevel.Cameras.UI.enabled = false;
+                RTLevel.Cameras.UI.enabled = true;
 
-            RTLevel.Cameras.FG.rect = rect;
+                //if (hidePlayers)
+                //    GameManager.inst.players.SetActive(true);
 
-            //if (hidePlayers)
-            //    GameManager.inst.players.SetActive(true);
+                //if (useCustomBGColor)
+                //{
+                //    RTLevel.Cameras.FG.clearFlags = clearFlags;
+                //    RTLevel.Cameras.FG.backgroundColor = bgColor;
+                //}
 
-            //if (useCustomBGColor)
-            //{
-            //    RTLevel.Cameras.FG.clearFlags = clearFlags;
-            //    RTLevel.Cameras.FG.backgroundColor = bgColor;
-            //}
+                RTGameManager.inst.SetCameraArea(rect);
+            }
+            else
+            {
+                var camera = modifier.GetInt(0, 0, variables) switch
+                {
+                    1 => RTLevel.Cameras.BG,
+                    2 => RTLevel.Cameras.UI,
+                    _ => RTLevel.Cameras.FG,
+                };
+
+                camera.transform.localPosition = new Vector3(offsetX, offsetY);
+                camera.transform.localEulerAngles = new Vector3(0f, 0f, rotate);
+
+                RTLevel.Current.eventEngine.SetCameraPosition(Vector3.zero);
+                RTLevel.Current.eventEngine.SetCameraRotation(0f);
+
+                EventManager.inst.camParent.transform.localPosition = Vector2.zero;
+                var trackerPos = RTEventManager.inst.delayTracker.transform.localPosition;
+                RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
+
+                var rect = camera.rect;
+                camera.rect = new Rect(0f, 0f, 1f, 1f);
+                RTLevel.Current.eventEngine.SetZoom(calculateZoom ? (width + height) / 2 / 512f * 12.66f * zoom : zoom);
+
+                var playersActive = GameManager.inst.players.activeSelf;
+                if (hidePlayers)
+                    GameManager.inst.players.SetActive(false);
+
+                // create
+                var renderTexture = result.renderTexture;
+
+                var clearFlags = camera.clearFlags;
+                var bgColor = camera.backgroundColor;
+                if (clearTexture)
+                {
+                    renderTexture.Release();
+                    camera.clearFlags = CameraClearFlags.SolidColor;
+                }
+                try
+                {
+                    camera.backgroundColor = !string.IsNullOrEmpty(customColor) ? RTColors.HexToColor(customColor) : RTLevel.Cameras.BG.backgroundColor;
+                }
+                catch
+                {
+                    camera.backgroundColor = RTLevel.Cameras.BG.backgroundColor;
+                }
+
+                var currentActiveRT = RenderTexture.active;
+                RenderTexture.active = renderTexture;
+
+                var enabled = renderer.enabled;
+                renderer.enabled = false;
+                // Assign render texture to camera and render the camera
+                camera.targetTexture = renderTexture;
+                camera.Render();
+                renderTexture.Create();
+
+                // Reset to defaults
+                renderer.enabled = enabled;
+                camera.targetTexture = null;
+                RenderTexture.active = currentActiveRT;
+
+                camera.transform.localPosition = Vector3.zero;
+                camera.transform.localEulerAngles = Vector3.zero;
+
+                var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+
+                RTLevel.Current.eventEngine.SetCameraRotation(editorCam ?
+                    new Vector3(RTLevel.Current.eventEngine.editorCamPerRotate.x, RTLevel.Current.eventEngine.editorCamPerRotate.y, RTLevel.Current.eventEngine.editorCamRotate) :
+                    new Vector3(RTLevel.Current.eventEngine.camRotOffset.x, RTLevel.Current.eventEngine.camRotOffset.y, EventManager.inst.camRot));
+
+                RTLevel.Current.eventEngine.SetCameraPosition(editorCam ?
+                    RTLevel.Current.eventEngine.editorCamPosition :
+                    EventManager.inst.camPos);
+
+                // fixes bg camera position being offset if rotated for some reason...
+                RTLevel.Cameras.BG.transform.SetLocalPositionX(0f);
+                RTLevel.Cameras.BG.transform.SetLocalPositionY(0f);
+
+                RTLevel.Current.eventEngine.SetZoom(editorCam ?
+                    RTLevel.Current.eventEngine.editorCamZoom :
+                    EventManager.inst.camZoom);
+
+                RTLevel.Current.eventEngine.UpdateShake();
+
+                RTEventManager.inst.delayTracker.transform.localPosition = trackerPos;
+
+                camera.clearFlags = clearFlags;
+                camera.backgroundColor = bgColor;
+
+                // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
+                RTEventManager.inst.glitchCam.enabled = false;
+                RTEventManager.inst.glitchCam.enabled = true;
+
+                // disable and re-enable the UI camera to ensure the UI camera is ordered last.
+                RTLevel.Cameras.UI.enabled = false;
+                RTLevel.Cameras.UI.enabled = true;
+
+                camera.rect = rect;
+
+                if (hidePlayers)
+                    GameManager.inst.players.SetActive(playersActive);
+            }
         }
 
         public static void setImage(Modifier modifier, IModifierReference reference, Dictionary<string, string> variables)
         {
-            if (modifier.constant || reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
+            if (reference is not BeatmapObject beatmapObject || !beatmapObject.runtimeObject)
                 return;
 
             var value = modifier.GetValue(0, variables);
             value = ModifiersHelper.FormatStringVariables(value, variables);
+
+            var textureOffset = new Vector2(modifier.GetFloat(1, 0f, variables), modifier.GetFloat(2, 0f, variables));
+            var textureScale = new Vector2(modifier.GetFloat(3, 1f, variables), modifier.GetFloat(4, 0f, variables));
+
+            if (modifier.constant)
+            {
+                if (beatmapObject.runtimeObject.visualObject is ImageObject imageObject)
+                {
+                    imageObject.material.mainTextureOffset = textureOffset;
+                    imageObject.material.mainTextureScale = textureScale;
+                }
+                else if (beatmapObject.runtimeObject.visualObject is SolidObject solidObject)
+                {
+                    solidObject.material.mainTextureOffset = textureOffset;
+                    solidObject.material.mainTextureScale = textureScale;
+                }
+
+                if (!modifier.TryGetResult(out string oldPath) || oldPath != value)
+                {
+                    modifier.Result = value;
+                    SetImageFunction(value, beatmapObject, textureOffset, textureScale);
+                }
+            }
+            else
+                SetImageFunction(value, beatmapObject, textureOffset, textureScale);
+        }
+
+        static void SetImageFunction(string value, BeatmapObject beatmapObject, Vector2 textureOffset, Vector2 textureScale)
+        {
             var sprite = beatmapObject.GetSprite(value);
 
             if (beatmapObject.runtimeObject.visualObject is ImageObject imageObject)
             {
+                imageObject.material.mainTextureOffset = textureOffset;
+                imageObject.material.mainTextureScale = textureScale;
+
                 if (sprite)
                 {
                     imageObject.SetSprite(sprite);
@@ -8251,6 +8392,9 @@ namespace BetterLegacy.Core.Helpers
                 var renderer = solidObject.renderer;
                 if (!renderer)
                     return;
+
+                renderer.material.mainTextureOffset = textureOffset;
+                renderer.material.mainTextureScale = textureScale;
 
                 if (sprite)
                 {
@@ -8292,6 +8436,9 @@ namespace BetterLegacy.Core.Helpers
             var value = modifier.GetValue(0, variables);
             value = ModifiersHelper.FormatStringVariables(value, variables);
 
+            var textureOffset = new Vector2(modifier.GetFloat(2, 0f, variables), modifier.GetFloat(3, 0f, variables));
+            var textureScale = new Vector2(modifier.GetFloat(4, 1f, variables), modifier.GetFloat(5, 0f, variables));
+
             Sprite sprite = null;
             if (prefabable.FromPrefab && prefabable.GetPrefab() is Prefab prefab && prefab.assets.sprites.TryFind(x => x.name == value, out SpriteAsset spriteAsset))
                 sprite = spriteAsset.sprite;
@@ -8303,9 +8450,23 @@ namespace BetterLegacy.Core.Helpers
                 foreach (var bm in list)
                 {
                     if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                    {
+                        if (imageObject.material)
+                        {
+                            imageObject.material.mainTextureOffset = textureOffset;
+                            imageObject.material.mainTextureScale = textureScale;
+                        }
                         imageObject.SetSprite(sprite);
+                    }
                     else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
-                        solidObject.renderer.material.SetTexture("_MainTex", sprite.texture);
+                    {
+                        if (solidObject.material)
+                        {
+                            solidObject.material.mainTextureOffset = textureOffset;
+                            solidObject.material.mainTextureScale = textureScale;
+                        }
+                        solidObject.material.SetTexture("_MainTex", sprite.texture);
+                    }
                 }
                 return;
             }
@@ -8317,7 +8478,23 @@ namespace BetterLegacy.Core.Helpers
                 foreach (var bm in list)
                 {
                     if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                    {
+                        if (imageObject.material)
+                        {
+                            imageObject.material.mainTextureOffset = textureOffset;
+                            imageObject.material.mainTextureScale = textureScale;
+                        }
                         imageObject.SetDefaultSprite();
+                    }
+                    else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
+                    {
+                        if (solidObject.material)
+                        {
+                            solidObject.material.mainTextureOffset = textureOffset;
+                            solidObject.material.mainTextureScale = textureScale;
+                        }
+                        solidObject.material.SetTexture("_MainTex", LegacyPlugin.PALogoSprite.texture);
+                    }
                 }
                 return;
             }
@@ -8328,9 +8505,23 @@ namespace BetterLegacy.Core.Helpers
                     foreach (var bm in list)
                     {
                         if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                        {
+                            if (imageObject.material)
+                            {
+                                imageObject.material.mainTextureOffset = textureOffset;
+                                imageObject.material.mainTextureScale = textureScale;
+                            }
                             imageObject.SetTexture(texture2D);
+                        }
                         else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
+                        {
+                            if (solidObject.material)
+                            {
+                                solidObject.material.mainTextureOffset = textureOffset;
+                                solidObject.material.mainTextureScale = textureScale;
+                            }
                             solidObject.renderer.material.SetTexture("_MainTex", texture2D);
+                        }
                     }
                 },
                 onError =>
@@ -8338,7 +8529,23 @@ namespace BetterLegacy.Core.Helpers
                     foreach (var bm in list)
                     {
                         if (bm.ShapeType == ShapeType.Image && bm.runtimeObject && bm.runtimeObject.visualObject is ImageObject imageObject)
+                        {
+                            if (imageObject.material)
+                            {
+                                imageObject.material.mainTextureOffset = textureOffset;
+                                imageObject.material.mainTextureScale = textureScale;
+                            }
                             imageObject.SetDefaultSprite();
+                        }
+                        else if (bm.runtimeObject && bm.runtimeObject.visualObject is SolidObject solidObject)
+                        {
+                            if (solidObject.material)
+                            {
+                                solidObject.material.mainTextureOffset = textureOffset;
+                                solidObject.material.mainTextureScale = textureScale;
+                            }
+                            solidObject.material.SetTexture("_MainTex", LegacyPlugin.PALogoSprite.texture);
+                        }
                     }
                 }));
         }

@@ -2689,21 +2689,21 @@
       {
         "type": 1,
         "name": "actorFrameTexture",
-        "values": [ "0", "512", "512", "0", "0", "1", "0" ],
+        "values": [ "0", "512", "512", "0", "0", "1", "0", "False", "False", "", "True", "0", "0", "1", "1", "False" ],
         "const": "True",
         "compat": "obj"
       }, // actorFrameTexture
       {
         "type": 1,
-        "commands": [ "setImage" ],
-        "value": "Path",
+        "name": "setImage",
+        "values": [ "Path", "0", "0", "1", "1" ],
         "const": "False",
         "compat": "obj"
       }, // setImage
       {
         "type": 1,
-        "commands": [ "setImageOther", "Objects Group" ],
-        "value": "Path",
+        "name": "setImageOther",
+        "values": [ "Path", "Object Group", "0", "0", "1", "1" ],
         "const": "False",
         "compat": "obj"
       }, // setImageOther

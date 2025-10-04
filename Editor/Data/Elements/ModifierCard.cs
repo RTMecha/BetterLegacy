@@ -2698,17 +2698,6 @@ namespace BetterLegacy.Editor.Data.Elements
 
                 #region Color
                     
-                case nameof(ModifierFunctions.actorFrameTexture): {
-                        DropdownGenerator(modifier, reference, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
-                        IntegerGenerator(modifier, reference, "Width", 1, 512);
-                        IntegerGenerator(modifier, reference, "Height", 2, 512);
-                        SingleGenerator(modifier, reference, "Pos X", 3, 0f);
-                        SingleGenerator(modifier, reference, "Pos Y", 4, 0f);
-                        SingleGenerator(modifier, reference, "Zoom", 5, 1f);
-                        SingleGenerator(modifier, reference, "Rotate", 6, 0f, 15f, 3f);
-
-                        break;
-                    }
                 case nameof(ModifierFunctions.setTheme): {
                         StringGenerator(modifier, reference, "ID", 0);
 
@@ -3312,8 +3301,13 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+
                 case nameof(ModifierFunctions.setImage): {
                         StringGenerator(modifier, reference, "Path", 0);
+                        SingleGenerator(modifier, reference, "Texture Offset X", 1);
+                        SingleGenerator(modifier, reference, "Texture Offset Y", 2);
+                        SingleGenerator(modifier, reference, "Texture Scale X", 3, 1f);
+                        SingleGenerator(modifier, reference, "Texture Scale Y", 4, 1f);
 
                         break;
                     }
@@ -3322,9 +3316,93 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 1);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         StringGenerator(modifier, reference, "Path", 0);
+                        SingleGenerator(modifier, reference, "Texture Offset X", 2);
+                        SingleGenerator(modifier, reference, "Texture Offset Y", 3);
+                        SingleGenerator(modifier, reference, "Texture Scale X", 4, 1f);
+                        SingleGenerator(modifier, reference, "Texture Scale Y", 5, 1f);
 
                         break;
                     }
+                case nameof(ModifierFunctions.actorFrameTexture): {
+                        DropdownGenerator(modifier, reference, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background", "UI"));
+                        BoolGenerator(modifier, reference, "All Cameras", 7);
+                        IntegerGenerator(modifier, reference, "Width", 1, 512);
+                        IntegerGenerator(modifier, reference, "Height", 2, 512);
+                        SingleGenerator(modifier, reference, "Pos X", 3, 0f);
+                        SingleGenerator(modifier, reference, "Pos Y", 4, 0f);
+                        BoolGenerator(modifier, reference, "Calculate Zoom", 10, true);
+                        SingleGenerator(modifier, reference, "Zoom", 5, 1f);
+                        SingleGenerator(modifier, reference, "Rotate", 6, 0f, 15f, 3f);
+
+                        SingleGenerator(modifier, reference, "Texture Offset X", 11);
+                        SingleGenerator(modifier, reference, "Texture Offset Y", 12);
+                        SingleGenerator(modifier, reference, "Texture Scale X", 13, 1f);
+                        SingleGenerator(modifier, reference, "Texture Scale Y", 14, 1f);
+                        BoolGenerator(modifier, reference, "Clear Texture", 8);
+
+                        var primaryHexCode = StringGenerator(modifier, reference, "BG Custom Color", 9);
+                        var primaryHexCodeContextMenu = primaryHexCode.AddComponent<ContextClickable>();
+                        primaryHexCodeContextMenu.onClick = pointerEventData =>
+                        {
+                            if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                return;
+
+                            var inputField = primaryHexCode.transform.Find("Input").GetComponent<InputField>();
+                            EditorContextMenu.inst.ShowContextMenu(
+                                new ButtonFunction("Edit Color", () =>
+                                {
+                                    RTColorPicker.inst.Show(RTColors.HexToColor(modifier.GetValue(index)),
+                                        (col, hex) =>
+                                        {
+                                            inputField.SetTextWithoutNotify(hex);
+                                        },
+                                        (col, hex) =>
+                                        {
+                                            CoreHelper.Log($"Set timeline object color: {hex}");
+                                            // set the input field's text empty so it notices there was a change
+                                            inputField.SetTextWithoutNotify(string.Empty);
+                                            inputField.text = hex;
+                                        }, () =>
+                                        {
+                                            inputField.SetTextWithoutNotify(modifier.GetValue(index));
+                                        });
+                                }),
+                                new ButtonFunction("Clear", () =>
+                                {
+                                    inputField.text = string.Empty;
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("VG Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED;
+                                }),
+                                new ButtonFunction("VG Red Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_GREEN;
+                                }),
+                                new ButtonFunction("VG Green", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN;
+                                }),
+                                new ButtonFunction("VG Green Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.GREEN_BLUE;
+                                }),
+                                new ButtonFunction("VG Blue", () =>
+                                {
+                                    inputField.text = ObjectEditorData.BLUE;
+                                }),
+                                new ButtonFunction("VG Blue Red", () =>
+                                {
+                                    inputField.text = ObjectEditorData.RED_BLUE;
+                                }));
+                        };
+
+                        BoolGenerator(modifier, reference, "Hide Players", 15);
+
+                        break;
+                    }
+
                 case nameof(ModifierFunctions.setText): {
                         StringGenerator(modifier, reference, "Text", 0);
 

@@ -41,20 +41,20 @@ Shader"Unlit/MultiplyBlendModeTransparentShader"
 
             struct v2f
             {
-                float3 objectPos : TEXCOORD0; 
+                float2 objectPos : TEXCOORD0; 
                 float4 vertex    : SV_POSITION;
                 fixed4 color     : COLOR;
             };
             
             sampler2D _MainTex;
             float4 _Color;
-            float _BlendAmount;
+            float4 _MainTex_ST;
             
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.objectPos = v.vertex.xyz;
+                o.objectPos = TRANSFORM_TEX(v.vertex.xy, _MainTex);
                 o.color = v.color;
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
