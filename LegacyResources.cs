@@ -16,27 +16,6 @@ namespace BetterLegacy
 {
     public class LegacyResources
     {
-        public static Material blur;
-        public static Material GetBlur()
-        {
-            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/objectmaterials.asset")); // Get AssetBundle from assets folder.
-            var assetToLoad = assetBundle.LoadAsset<Material>("blur.mat"); // Load asset
-            var blurMat = UnityObject.Instantiate(assetToLoad); // Instantiate so we can keep the material
-            assetBundle.Unload(false); // Unloads AssetBundle
-
-            return blurMat;
-        }
-
-        public static Shader GetBlurColored()
-        {
-            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/shadercolored.asset"));
-            var blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
-            assetBundle.Unload(false);
-            return blurColored;
-        }
-
-        public static Shader blurColored;
-
         public static Shader analogGlitchShader;
         public static Material analogGlitchMaterial;
         public static Shader digitalGlitchShader;
@@ -58,7 +37,11 @@ namespace BetterLegacy
         public static MaterialGroup outlineBehindMaterial;
 
         public static MaterialGroup editorOutlineMaterial;
-        
+
+        public static MaterialGroup blurMaterial;
+
+        public static MaterialGroup blurColoredMaterial;
+
         public static Dictionary<string, MaterialGroup> materials = new Dictionary<string, MaterialGroup>();
 
         public class MaterialGroup
@@ -106,8 +89,6 @@ namespace BetterLegacy
             if (gradientType == 0 && blendMode == 0)
                 key += "object";
 
-            key += ".shader";
-
             return key;
         }
 
@@ -118,10 +99,7 @@ namespace BetterLegacy
 
         public static void GetObjectMaterials()
         {
-            blur = GetBlur();
-            blurColored = GetBlurColored();
-
-            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/bmobjectmaterials.asset")); // Get AssetBundle from assets folder.
+            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/objectmaterials.asset")); // Get AssetBundle from assets folder.
 
             foreach (var a in assetBundle.GetAllAssetNames())
             {
@@ -129,17 +107,15 @@ namespace BetterLegacy
                 var assetKey = a
                     .Remove("assets/shaders/")
                     .Remove("shaders/")
-                    .Remove("_double");
+                    .Remove("_double")
+                    .Remove(".shader");
 
                 CoreHelper.Log($"Loading object material\n" +
                     $"Asset Path: {a}\n" +
                     $"Asset Name: {System.IO.Path.GetFileName(a)}\n" +
                     $"Asset Key: {assetKey}");
 
-                var materialGroup = new MaterialGroup();
-                materialGroup.key = assetKey;
-                materialGroup.shader = assetBundle.LoadAsset<Shader>(assetName);
-                materialGroup.material = new Material(materialGroup.shader);
+                var materialGroup = CreateMaterialGroup(assetKey, assetBundle.LoadAsset<Shader>(assetName));
 
                 switch (assetName)
                 {
@@ -159,11 +135,24 @@ namespace BetterLegacy
                             editorOutlineMaterial = materialGroup;
                             break;
                         }
+                    case "blur_colored.shader": {
+                            blurColoredMaterial = materialGroup;
+                            break;
+                        }
                 }
 
                 materials[assetKey] = materialGroup;
             }
+
+            blurMaterial = CreateMaterialGroup("blur", Shader.Find("Custom/BLUR"));
         }
+
+        static MaterialGroup CreateMaterialGroup(string assetKey, Shader shader) => new MaterialGroup
+        {
+            key = assetKey,
+            shader = shader,
+            material = new Material(shader),
+        };
 
         public static Material canvasImageMask;
         // from https://stackoverflow.com/questions/59138535/unity-ui-image-alpha-overlap
