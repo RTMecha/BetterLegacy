@@ -4277,7 +4277,7 @@ namespace BetterLegacy.Core.Helpers
 
             var runtimeObject = beatmapObject.runtimeObject;
 
-            if (!runtimeObject || !runtimeObject.visualObject.renderer)
+            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
                 return;
 
             var amount = modifier.GetFloat(0, 0f, variables);
@@ -4287,7 +4287,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 DestroyModifierResult.Init(runtimeObject.visualObject.gameObject, modifier);
                 modifier.Result = runtimeObject.visualObject.gameObject;
-                renderer.material = LegacyResources.blurMaterial;
+                solidObject.SetMaterial(LegacyResources.blurMaterial);
             }
 
             if (modifier.GetBool(1, false, variables))
@@ -4310,13 +4310,13 @@ namespace BetterLegacy.Core.Helpers
             foreach (var beatmapObject in list)
             {
                 var runtimeObject = beatmapObject.runtimeObject;
-                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || !runtimeObject.visualObject.renderer)
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
                     continue;
 
                 var renderer = runtimeObject.visualObject.renderer;
 
                 if (renderer.material != LegacyResources.blurMaterial.material)
-                    renderer.material = LegacyResources.blurMaterial;
+                    solidObject.SetMaterial(LegacyResources.blurMaterial);
                 renderer.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             }
         }
@@ -4331,7 +4331,7 @@ namespace BetterLegacy.Core.Helpers
 
             var runtimeObject = beatmapObject.runtimeObject;
 
-            if (!runtimeObject || !runtimeObject.visualObject.renderer)
+            if (!runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
                 return;
 
             var amount = modifier.GetFloat(0, 0f, variables);
@@ -4342,7 +4342,7 @@ namespace BetterLegacy.Core.Helpers
                 var onDestroy = runtimeObject.visualObject.gameObject.AddComponent<DestroyModifierResult>();
                 onDestroy.Modifier = modifier;
                 modifier.Result = runtimeObject.visualObject.gameObject;
-                renderer.material = LegacyResources.blurMaterial;
+                solidObject.SetMaterial(LegacyResources.blurMaterial);
             }
 
             renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
@@ -4362,13 +4362,13 @@ namespace BetterLegacy.Core.Helpers
             foreach (var beatmapObject in list)
             {
                 var runtimeObject = beatmapObject.runtimeObject;
-                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || !runtimeObject.visualObject.renderer)
+                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
                     continue;
 
-                var renderer = runtimeObject.visualObject.renderer;
+                var renderer = solidObject.renderer;
 
                 if (renderer.material != LegacyResources.blurMaterial.material)
-                    renderer.material = LegacyResources.blurMaterial;
+                    solidObject.SetMaterial(LegacyResources.blurMaterial);
                 renderer.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * amount);
             }
         }
@@ -4420,8 +4420,11 @@ namespace BetterLegacy.Core.Helpers
                 if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty || !runtimeObject || runtimeObject.visualObject is not SolidObject solidObject || !runtimeObject.visualObject.renderer)
                     continue;
 
-                solidObject.SetMaterial(LegacyResources.blurColoredMaterial);
-                solidObject.renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
+                var renderer = solidObject.renderer;
+
+                if (renderer.material != LegacyResources.blurColoredMaterial.material)
+                    solidObject.SetMaterial(LegacyResources.blurColoredMaterial);
+                renderer.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * amount);
             }
         }
 
