@@ -306,17 +306,14 @@ namespace BetterLegacy.Editor.Components
                 return;
 
             var selected = beatmapObject.timelineObject && beatmapObject.timelineObject.Selected;
-            if (this.selected == selected)
+            var color = selected ? EditorConfig.Instance.OutlineColor.Value : LSColors.transparent;
+            if (this.selected == selected && solidObject.editorOutlineData.color == color && solidObject.editorOutlineData.width == EditorConfig.Instance.OutlineWidth.Value)
                 return;
 
             this.selected = selected;
 
-            solidObject.AddOutline();
-            solidObject.SetOutline(
-                beatmapObject.timelineObject && beatmapObject.timelineObject.Selected ?
-                    EditorConfig.Instance.OutlineColor.Value :
-                    LSColors.transparent,
-                EditorConfig.Instance.OutlineWidth.Value);
+            solidObject.AddEditorOutline();
+            solidObject.SetEditorOutline(color, EditorConfig.Instance.OutlineWidth.Value);
         }
 
         bool selected;

@@ -1,4 +1,4 @@
-﻿Shader"Unlit/OutlineTransparentShader"
+﻿Shader"Unlit/EditorOutlineTransparentShader"
 {
     Properties
     {

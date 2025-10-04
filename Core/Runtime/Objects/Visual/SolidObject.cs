@@ -2,7 +2,9 @@
 
 using LSFunctions;
 
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Runtime.Objects.Visual
 {
@@ -38,7 +40,10 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         public int colorBlendMode;
 
         public bool hasOutline;
-        bool materialArrayChanged;
+        public OutlineData outlineData;
+        public int outlineType;
+        public bool hasEditorOutline;
+        public OutlineData editorOutlineData;
 
         public SolidObject(GameObject gameObject, float opacity, bool deco, bool solid, int renderType, bool opacityCollision, int gradientType, float gradientScale, float gradientRotation, int colorBlendMode)
         {
@@ -193,40 +198,85 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         }
 
         /// <summary>
+        /// Updates the renderer materials.
+        /// </summary>
+        public void UpdateMaterials() => SetMaterial(material);
+
+        /// <summary>
         /// Sets the material of the visual object.
         /// </summary>
         /// <param name="material">Material to set.</param>
         public void SetMaterial(Material material)
         {
-            if (hasOutline)
+            if (hasEditorOutline)
             {
-                materialArrayChanged = true;
-                renderer.materials = new Material[2]
-                {
-                    material,
-                    LegacyResources.outlineMaterial,
-                };
+                if (hasOutline)
+                    renderer.materials = new Material[3]
+                    {
+                        material,
+                        outlineType switch
+                        {
+                            1 => LegacyResources.outlineBehindMaterial,
+                            _ => LegacyResources.outlineMaterial,
+                        },
+                        LegacyResources.editorOutlineMaterial,
+                    };
+                else
+                    renderer.materials = new Material[2]
+                    {
+                        material,
+                        LegacyResources.editorOutlineMaterial,
+                    };
             }
-            else if (materialArrayChanged)
+            else
             {
-                materialArrayChanged = false;
-                renderer.materials = new Material[1] { material };
+                if (hasOutline)
+                    renderer.materials = new Material[2]
+                    {
+                        material,
+                        outlineType switch
+                        {
+                            1 => LegacyResources.outlineBehindMaterial,
+                            _ => LegacyResources.outlineMaterial,
+                        },
+                    };
+                else
+                    renderer.materials = new Material[1]
+                    {
+                        material,
+                    };
             }
 
             renderer.material = material;
             this.material = renderer.material;
+
+            SetOutline(outlineData.color, outlineData.width);
+            SetEditorOutline(editorOutlineData.color, editorOutlineData.width);
         }
+
+        /// <summary>
+        /// Gets the outline material.
+        /// </summary>
+        /// <returns>Returns the outline material from the renderer.</returns>
+        public Material GetOutlineMaterial() => renderer.materials.GetAtOrDefault(1, null);
+
+        /// <summary>
+        /// Gets the outline material used for the editor.
+        /// </summary>
+        /// <returns>Returns the outline material from the renderer.</returns>
+        public Material GetEditorOutlineMaterial() => renderer.materials.GetAtOrDefault(hasOutline ? 2 : 1, null);
 
         /// <summary>
         /// Adds an outline to the object. If the object already has an outline, don't do anything.
         /// </summary>
-        public void AddOutline()
+        public void AddOutline(int outlineType)
         {
-            if (hasOutline)
+            if (hasOutline || this.outlineType != outlineType)
                 return;
 
             hasOutline = true;
-            SetMaterial(material);
+            this.outlineType = outlineType;
+            UpdateMaterials();
         }
 
         /// <summary>
@@ -238,7 +288,31 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
                 return;
 
             hasOutline = false;
-            SetMaterial(material);
+            UpdateMaterials();
+        }
+
+        /// <summary>
+        /// Adds an outline to the object. If the object already has an outline, don't do anything.
+        /// </summary>
+        public void AddEditorOutline()
+        {
+            if (hasEditorOutline)
+                return;
+
+            hasEditorOutline = true;
+            UpdateMaterials();
+        }
+
+        /// <summary>
+        /// Removes the outline from the object, if it has an outline.
+        /// </summary>
+        public void RemoveEditorOutline()
+        {
+            if (!hasEditorOutline)
+                return;
+
+            hasEditorOutline = false;
+            UpdateMaterials();
         }
 
         /// <summary>
@@ -248,11 +322,41 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
         /// <param name="outlineWidth">Outline width to set.</param>
         public void SetOutline(Color outlineColor, float outlineWidth)
         {
-            if (!hasOutline || renderer.materials.Length < 2)
+            outlineData.color = outlineColor;
+            outlineData.width = outlineWidth;
+            outlineData.type = outlineType;
+
+            if (!hasOutline)
                 return;
 
-            renderer.materials[1].SetColor("_OutlineColor", outlineColor);
-            renderer.materials[1].SetFloat("_OutlineWidth", outlineWidth);
+            var material = GetOutlineMaterial();
+            if (!material)
+                return;
+
+            material.SetColor("_OutlineColor", outlineColor);
+            material.SetFloat("_OutlineWidth", outlineWidth);
+        }
+
+        /// <summary>
+        /// Sets the outline values.
+        /// </summary>
+        /// <param name="outlineColor">Outline color to set.</param>
+        /// <param name="outlineWidth">Outline width to set.</param>
+        public void SetEditorOutline(Color outlineColor, float outlineWidth)
+        {
+            editorOutlineData.color = outlineColor;
+            editorOutlineData.width = outlineWidth;
+            editorOutlineData.type = 0;
+
+            if (!hasEditorOutline)
+                return;
+
+            var material = GetOutlineMaterial();
+            if (!material)
+                return;
+
+            material.SetColor("_OutlineColor", outlineColor);
+            material.SetFloat("_OutlineWidth", outlineWidth);
         }
 
         public override void Clear()

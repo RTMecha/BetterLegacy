@@ -1,4 +1,4 @@
-﻿Shader"Unlit/OutlineTransparentShader"
+﻿Shader"Unlit/OutlineBehindTransparentShader"
 {
     Properties
     {
@@ -14,9 +14,7 @@
         }
 		Blend SrcAlpha OneMinusSrcAlpha
         LOD 100
-		//ZWrite Off
-		//Cull Back
-        ZTest Less
+		ZWrite Off
 
 		Pass
         {

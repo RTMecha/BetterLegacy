@@ -4872,16 +4872,17 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var enabled = modifier.GetBool(0, true, variables);
-            var width = modifier.GetFloat(1, 0.5f, variables);
-            var index = modifier.GetInt(2, 0, variables);
-            var opacity = modifier.GetFloat(3, 0f, variables);
-            var hue = modifier.GetFloat(4, 0f, variables);
-            var sat = modifier.GetFloat(5, 0f, variables);
-            var val = modifier.GetFloat(6, 0f, variables);
+            var type = modifier.GetInt(1, 0, variables);
+            var width = modifier.GetFloat(2, 0.5f, variables);
+            var index = modifier.GetInt(3, 0, variables);
+            var opacity = modifier.GetFloat(4, 0f, variables);
+            var hue = modifier.GetFloat(5, 0f, variables);
+            var sat = modifier.GetFloat(6, 0f, variables);
+            var val = modifier.GetFloat(7, 0f, variables);
 
             if (enabled)
             {
-                solidObject.AddOutline();
+                solidObject.AddOutline(type);
                 solidObject.SetOutline(RTColors.FadeColor(RTColors.ChangeColorHSV(CoreHelper.CurrentBeatmapTheme.GetObjColor(index), hue, sat, val), opacity), width);
             }
             else
@@ -4899,12 +4900,13 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var enabled = modifier.GetBool(1, true, variables);
-            var width = modifier.GetFloat(2, 0.5f, variables);
-            var index = modifier.GetInt(3, 0, variables);
-            var opacity = modifier.GetFloat(4, 0f, variables);
-            var hue = modifier.GetFloat(5, 0f, variables);
-            var sat = modifier.GetFloat(6, 0f, variables);
-            var val = modifier.GetFloat(7, 0f, variables);
+            var type = modifier.GetInt(2, 0, variables);
+            var width = modifier.GetFloat(3, 0.5f, variables);
+            var index = modifier.GetInt(4, 0, variables);
+            var opacity = modifier.GetFloat(5, 0f, variables);
+            var hue = modifier.GetFloat(6, 0f, variables);
+            var sat = modifier.GetFloat(7, 0f, variables);
+            var val = modifier.GetFloat(8, 0f, variables);
 
             foreach (var beatmapObject in list)
             {
@@ -4913,7 +4915,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (enabled)
                 {
-                    solidObject.AddOutline();
+                    solidObject.AddOutline(type);
                     solidObject.SetOutline(RTColors.FadeColor(RTColors.ChangeColorHSV(CoreHelper.CurrentBeatmapTheme.GetObjColor(index), hue, sat, val), opacity), width);
                 }
                 else
@@ -4927,12 +4929,13 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var enabled = modifier.GetBool(0, true, variables);
-            var width = modifier.GetFloat(1, 0.5f, variables);
-            var hex = RTColors.HexToColor(modifier.GetValue(2, variables));
+            var type = modifier.GetInt(1, 0, variables);
+            var width = modifier.GetFloat(2, 0.5f, variables);
+            var hex = RTColors.HexToColor(modifier.GetValue(3, variables));
 
             if (enabled)
             {
-                solidObject.AddOutline();
+                solidObject.AddOutline(type);
                 solidObject.SetOutline(hex, width);
             }
             else
@@ -4950,8 +4953,9 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             var enabled = modifier.GetBool(1, true, variables);
-            var width = modifier.GetFloat(2, 0.5f, variables);
-            var hex = RTColors.HexToColor(modifier.GetValue(3, variables));
+            var type = modifier.GetInt(2, 0, variables);
+            var width = modifier.GetFloat(3, 0.5f, variables);
+            var hex = RTColors.HexToColor(modifier.GetValue(4, variables));
 
             foreach (var beatmapObject in list)
             {
@@ -4960,7 +4964,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (enabled)
                 {
-                    solidObject.AddOutline();
+                    solidObject.AddOutline(type);
                     solidObject.SetOutline(hex, width);
                 }
                 else

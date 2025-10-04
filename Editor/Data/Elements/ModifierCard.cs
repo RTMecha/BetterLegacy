@@ -1059,22 +1059,7 @@ namespace BetterLegacy.Editor.Data.Elements
                     }
                 case nameof(ModifierFunctions.setOutline): {
                         BoolGenerator(modifier, reference, "Enabled", 0);
-                        SingleGenerator(modifier, reference, "Width", 1, 0.1f);
-
-                        ColorGenerator(modifier, reference, "Color", 2);
-                        SingleGenerator(modifier, reference, "Opacity", 3, 0.5f);
-                        SingleGenerator(modifier, reference, "Hue", 4, 0f);
-                        SingleGenerator(modifier, reference, "Saturation", 5, 0f);
-                        SingleGenerator(modifier, reference, "Value", 6, 0f);
-
-                        break;
-                    }
-                case nameof(ModifierFunctions.setOutlineOther): {
-                        PrefabGroupOnly(modifier, reference);
-                        var str = StringGenerator(modifier, reference, "Object Group", 0);
-                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
-
-                        BoolGenerator(modifier, reference, "Enabled", 1);
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Behind Object", "Behind All"));
                         SingleGenerator(modifier, reference, "Width", 2, 0.1f);
 
                         ColorGenerator(modifier, reference, "Color", 3);
@@ -1085,11 +1070,29 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         break;
                     }
+                case nameof(ModifierFunctions.setOutlineOther): {
+                        PrefabGroupOnly(modifier, reference);
+                        var str = StringGenerator(modifier, reference, "Object Group", 0);
+                        EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                        BoolGenerator(modifier, reference, "Enabled", 1);
+                        DropdownGenerator(modifier, reference, "Type", 2, CoreHelper.StringToOptionData("Behind Object", "Behind All"));
+                        SingleGenerator(modifier, reference, "Width", 3, 0.1f);
+
+                        ColorGenerator(modifier, reference, "Color", 4);
+                        SingleGenerator(modifier, reference, "Opacity", 5, 0.5f);
+                        SingleGenerator(modifier, reference, "Hue", 6, 0f);
+                        SingleGenerator(modifier, reference, "Saturation", 7, 0f);
+                        SingleGenerator(modifier, reference, "Value", 8, 0f);
+
+                        break;
+                    }
                 case nameof(ModifierFunctions.setOutlineHex): {
                         BoolGenerator(modifier, reference, "Enabled", 0);
-                        SingleGenerator(modifier, reference, "Width", 1, 0.1f);
+                        DropdownGenerator(modifier, reference, "Type", 1, CoreHelper.StringToOptionData("Behind Object", "Behind All"));
+                        SingleGenerator(modifier, reference, "Width", 2, 0.1f);
 
-                        var hexCode = StringGenerator(modifier, reference, "Hex Code", 2);
+                        var hexCode = StringGenerator(modifier, reference, "Hex Code", 3);
                         var hexCodeContextMenu = hexCode.AddComponent<ContextClickable>();
                         hexCodeContextMenu.onClick = pointerEventData =>
                         {
@@ -1154,9 +1157,10 @@ namespace BetterLegacy.Editor.Data.Elements
                         var str = StringGenerator(modifier, reference, "Object Group", 0);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         BoolGenerator(modifier, reference, "Enabled", 1);
-                        SingleGenerator(modifier, reference, "Width", 2, 0.1f);
+                        DropdownGenerator(modifier, reference, "Type", 2, CoreHelper.StringToOptionData("Behind Object", "Behind All"));
+                        SingleGenerator(modifier, reference, "Width", 3, 0.1f);
 
-                        var hexCode = StringGenerator(modifier, reference, "Hex Code", 2);
+                        var hexCode = StringGenerator(modifier, reference, "Hex Code", 4);
                         var hexCodeContextMenu = hexCode.AddComponent<ContextClickable>();
                         hexCodeContextMenu.onClick = pointerEventData =>
                         {

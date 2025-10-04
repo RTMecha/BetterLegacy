@@ -858,6 +858,14 @@ namespace BetterLegacy.Core.Runtime
             if (!runtimeObject)
                 return;
 
+            var hasEditorOutline = false;
+            OutlineData editorOutlineData = default;
+            if (runtimeObject.visualObject is SolidObject solidObject)
+            {
+                hasEditorOutline = solidObject.hasEditorOutline;
+                editorOutlineData = solidObject.editorOutlineData;
+            }
+
             var parent = runtimeObject.parentObjects[0].transform?.parent;
 
             CoreHelper.Destroy(runtimeObject.parentObjects[0].transform.gameObject);
@@ -917,6 +925,16 @@ namespace BetterLegacy.Core.Runtime
             visual.secondaryColorSequence = beatmapObject.cachedSequences.SecondaryColorSequence;
 
             runtimeObject.visualObject = visual;
+
+            if (!hasEditorOutline)
+                return;
+
+            if (visual is SolidObject newSolidObject)
+            {
+                newSolidObject.hasEditorOutline = hasEditorOutline;
+                newSolidObject.UpdateMaterials();
+                newSolidObject.SetEditorOutline(editorOutlineData.color, editorOutlineData.width);
+            }
         }
 
         #region Modifiers

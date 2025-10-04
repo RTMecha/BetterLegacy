@@ -1150,28 +1150,28 @@
       {
         "type": 1,
         "name": "setOutline",
-        "values": [ "True", "0.1", "0", "1", "0", "0", "0" ],
+        "values": [ "True", "0", "0.1", "0", "1", "0", "0", "0" ],
         "const": "True",
         "compat": "obj"
       }, // setOutline
       {
         "type": 1,
         "name": "setOutlineOther",
-        "values": [ "Object Group", "True", "0.1", "0", "1", "0", "0", "0" ],
+        "values": [ "Object Group", "True", "0", "0.1", "0", "1", "0", "0", "0" ],
         "const": "True",
         "compat": "obj"
       }, // setOutlineOther
       {
         "type": 1,
         "name": "setOutlineHex",
-        "values": [ "True", "0.1", "FFFFFF" ],
+        "values": [ "True", "0", "0.1", "FFFFFF" ],
         "const": "True",
         "compat": "obj"
       }, // setOutlineHex
       {
         "type": 1,
         "name": "setOutlineHexOther",
-        "values": [ "Object Group", "True", "0.1", "FFFFFF" ],
+        "values": [ "Object Group", "True", "0", "0.1", "FFFFFF" ],
         "const": "True",
         "compat": "obj"
       } // setOutlineHexOther
