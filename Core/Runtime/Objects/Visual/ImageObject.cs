@@ -10,9 +10,9 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
     /// </summary>
     public class ImageObject : VisualObject
     {
-        SpriteRenderer spriteRenderer;
+        public SpriteRenderer spriteRenderer;
 
-        Material material;
+        public Material material;
 
         public string path;
 
