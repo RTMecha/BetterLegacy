@@ -88,6 +88,7 @@ namespace BetterLegacy.Editor.Managers
                         new ButtonFunction("Reset Rotation", () => Settings.rot = 0f),
                         new ButtonFunction(true),
                         new ButtonFunction($"Hide Players [{(Settings.hidePlayers ? "On" : "Off")}]", () => Settings.hidePlayers = !Settings.hidePlayers),
+                        new ButtonFunction($"Capture All Layers [{(Settings.captureAllLayers ? "On" : "Off")}]", () => Settings.captureAllLayers = !Settings.captureAllLayers),
                         new ButtonFunction($"Show Editor [{(Settings.showEditor ? "On" : "Off")}]", () => Settings.showEditor = !Settings.showEditor),
                         new ButtonFunction(true),
                         new ButtonFunction($"Use Custom BG Color [{(Settings.useCustomBGColor ? "On" : "Off")}]", () => Settings.useCustomBGColor = !Settings.useCustomBGColor),
@@ -784,12 +785,12 @@ namespace BetterLegacy.Editor.Managers
 
             baseObject.SetActive(false);
             var rect = RTLevel.Cameras.FG.rect;
-            RTLevel.Cameras.FG.rect = new Rect(0f, 0f, 1f, 1f);
+            RTGameManager.inst.SetCameraArea(new Rect(0f, 0f, 1f, 1f));
             var total = captureSettings.Resolution.x + captureSettings.Resolution.y;
             RTLevel.Current.eventEngine.SetZoom(total / 2 / 512f * 12.66f * captureSettings.Zoom);
 
-            RTLevel.Current.eventEngine.SetCameraPosition(Vector3.zero);
-            RTLevel.Current.eventEngine.SetCameraRotation(0f);
+            RTLevel.Current.eventEngine.SetCameraPosition(captureSettings.captureAllLayers ? captureSettings.pos : Vector2.zero);
+            RTLevel.Current.eventEngine.SetCameraRotation(captureSettings.captureAllLayers ? captureSettings.rot : 0f);
 
             var trackerPos = RTEventManager.inst.delayTracker.transform.localPosition;
             RTEventManager.inst.delayTracker.transform.localPosition = Vector2.zero;
@@ -800,20 +801,28 @@ namespace BetterLegacy.Editor.Managers
 
             var clearFlags = RTLevel.Cameras.FG.clearFlags;
             var bgColor = RTLevel.Cameras.FG.backgroundColor;
-            if (captureSettings.useCustomBGColor)
+            if (captureSettings.useCustomBGColor && !captureSettings.captureAllLayers)
             {
                 RTLevel.Cameras.FG.clearFlags = CameraClearFlags.SolidColor;
                 RTLevel.Cameras.FG.backgroundColor = captureSettings.customBGColor;
             }
 
-            var icon = SpriteHelper.CaptureFrame(
-                camera: RTLevel.Cameras.FG,
-                move: captureSettings.move,
-                width: captureSettings.Resolution.x,
-                height: captureSettings.Resolution.y,
-                offsetX: captureSettings.pos.x,
-                offsetY: captureSettings.pos.y,
-                rotationOffset: captureSettings.rot);
+            var icon = captureSettings.captureAllLayers ?
+                SpriteHelper.CaptureAllFrame(
+                    move: captureSettings.move,
+                    width: captureSettings.Resolution.x,
+                    height: captureSettings.Resolution.y,
+                    offsetX: 0f,
+                    offsetY: 0f,
+                    rotationOffset: 0f) :
+                SpriteHelper.CaptureFrame(
+                    camera: RTLevel.Cameras.FG,
+                    move: captureSettings.move,
+                    width: captureSettings.Resolution.x,
+                    height: captureSettings.Resolution.y,
+                    offsetX: captureSettings.pos.x,
+                    offsetY: captureSettings.pos.y,
+                    rotationOffset: captureSettings.rot);
 
             var editorCam = EventsConfig.Instance.EditorCameraEnabled;
 
@@ -840,8 +849,8 @@ namespace BetterLegacy.Editor.Managers
             baseObject.SetActive(true);
 
             // disable and re-enable the glitch camera to ensure the glitch camera is ordered last.
-            Arcade.Managers.RTEventManager.inst.glitchCam.enabled = false;
-            Arcade.Managers.RTEventManager.inst.glitchCam.enabled = true;
+            RTEventManager.inst.glitchCam.enabled = false;
+            RTEventManager.inst.glitchCam.enabled = true;
 
             // disable and re-enable the UI camera to ensure the UI camera is ordered last.
             RTLevel.Cameras.UI.enabled = false;
@@ -850,11 +859,13 @@ namespace BetterLegacy.Editor.Managers
             if (captureSettings.hidePlayers)
                 GameManager.inst.players.SetActive(true);
 
-            if (captureSettings.useCustomBGColor)
+            if (captureSettings.useCustomBGColor && !captureSettings.captureAllLayers)
             {
                 RTLevel.Cameras.FG.clearFlags = clearFlags;
                 RTLevel.Cameras.FG.backgroundColor = bgColor;
             }
+
+            RTGameManager.inst.SetCameraArea(rect);
 
             SoundManager.inst.PlaySound(DefaultSounds.menuflip);
 
@@ -879,8 +890,6 @@ namespace BetterLegacy.Editor.Managers
                 flashAnim = null;
             };
             AnimationManager.inst.Play(flashAnim);
-
-            RTLevel.Cameras.FG.rect = rect;
             return icon;
         }
 

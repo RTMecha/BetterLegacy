@@ -182,6 +182,68 @@ namespace BetterLegacy.Core.Helpers
             return sprite;
         }
 
+        public static Sprite CaptureAllFrame(bool move = true, int width = 512, int height = 512, float offsetX = 0f, float offsetY = 0f, float rotationOffset = 0f)
+        {
+            //var alpha = camera.backgroundColor.a;
+            //camera.backgroundColor = RTColors.FadeColor(camera.backgroundColor, 1f);
+            //Arcade.Managers.RTEventManager.inst.glitchCam.enabled = false;
+            //var isOrtho = camera.orthographic;
+            //var zoom = camera.orthographicSize;
+            //if (isOrtho)
+            //    camera.orthographicSize = 1f;
+
+            // Get render texture
+            var renderTexture = new RenderTexture(width, height, 0);
+            renderTexture.name = DEFAULT_TEXTURE_NAME;
+
+            // Create a new Texture2D and read the RenderTexture image into it
+            var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+
+            foreach (var camera in Runtime.RTLevel.Cameras.GetCameras())
+            {
+                // Prep camera position so it renders the offset area
+                var origPosition = camera.transform.localPosition;
+                var origRotation = camera.transform.localEulerAngles;
+
+                if (move)
+                {
+                    camera.transform.localPosition = new Vector3(offsetX, offsetY);
+                    camera.transform.localEulerAngles = new Vector3(0f, 0f, rotationOffset);
+                }
+
+                var currentActiveRT = RenderTexture.active;
+                RenderTexture.active = renderTexture;
+
+                // Assign render texture to camera and render the camera
+                camera.targetTexture = renderTexture;
+                camera.Render();
+                camera.targetTexture = null;
+
+                texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+
+                // Reset to defaults
+                RenderTexture.active = currentActiveRT;
+
+                // Reset camera position and rotation to normal
+                if (move)
+                {
+                    camera.transform.localPosition = origPosition;
+                    camera.transform.localEulerAngles = origRotation;
+                }
+            }
+
+            texture.Apply();
+
+            var sprite = CreateSprite(texture);
+            sprite.name = texture.name;
+
+            renderTexture.Release();
+            CoreHelper.Destroy(renderTexture);
+            renderTexture = null;
+
+            return sprite;
+        }
+
         public static Sprite RenderToSprite(this RenderTexture renderTexture)
         {
             // Create a new Texture2D and read the RenderTexture image into it

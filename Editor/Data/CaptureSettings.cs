@@ -73,6 +73,11 @@ namespace BetterLegacy.Editor.Data
         public bool hidePlayers = true;
 
         /// <summary>
+        /// If all render layers should be captured.
+        /// </summary>
+        public bool captureAllLayers;
+
+        /// <summary>
         /// If the precise editor display should show.
         /// </summary>
         public bool showEditor;
@@ -116,6 +121,7 @@ namespace BetterLegacy.Editor.Data
             matchSize = orig.matchSize;
             hidePlayers = orig.hidePlayers;
             showEditor = orig.showEditor;
+            captureAllLayers = orig.captureAllLayers;
 
             useCustomBGColor = orig.useCustomBGColor;
             customBGColor = orig.customBGColor;
@@ -136,6 +142,7 @@ namespace BetterLegacy.Editor.Data
             if (jn["hide_players"] != null)
                 hidePlayers = jn["hide_players"].AsBool;
             showEditor = jn["show_editor"].AsBool;
+            captureAllLayers = jn["capture_all_layers"].AsBool;
 
             useCustomBGColor = jn["use_custom_bg_color"].AsBool;
             if (jn["custom_bg_color"] != null)
@@ -166,6 +173,8 @@ namespace BetterLegacy.Editor.Data
                 jn["custom_bg_color"] = RTColors.ColorToHex(customBGColor);
             if (lockDragMode != LockDragMode.None)
                 jn["lock_drag_mode"] = (int)lockDragMode;
+            if (captureAllLayers)
+                jn["capture_all_layers"] = captureAllLayers;
 
             return jn;
         }
@@ -182,6 +191,7 @@ namespace BetterLegacy.Editor.Data
             rot = 0f;
             matchSize = false;
             hidePlayers = true;
+            captureAllLayers = false;
             useCustomBGColor = false;
             customBGColor = Color.white;
             lockDragMode = LockDragMode.None;
