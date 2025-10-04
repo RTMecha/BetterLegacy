@@ -45,6 +45,11 @@ namespace BetterLegacy.Core.Helpers
         public static bool LoadedGame { get; set; }
 
         /// <summary>
+        /// Function to run when a scene has started loading.
+        /// </summary>
+        public static Action<string> OnPreLoadScene { get; set; }
+
+        /// <summary>
         /// Action to run when a scene is finished loading.
         /// </summary>
         public static Action<string> OnSceneLoad { get; set; }
@@ -208,6 +213,15 @@ namespace BetterLegacy.Core.Helpers
             AudioManager.inst.SetPitch(1f);
             Loading = true;
             SetActive(showLoading);
+
+            try
+            {
+                OnPreLoadScene?.Invoke(level);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             if (showLoading)
             {

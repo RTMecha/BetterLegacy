@@ -32,7 +32,16 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void Init() => Creator.NewGameObject(nameof(PlayerManager), SystemManager.inst.transform).AddComponent<PlayerManager>();
 
-        void Awake() => inst = this;
+        void Awake()
+        {
+            inst = this;
+
+            // destroy players on pre load scene
+            SceneHelper.OnPreLoadScene += scene =>
+            {
+                DestroyPlayers();
+            };
+        }
 
         void Update()
         {
@@ -612,7 +621,8 @@ namespace BetterLegacy.Core.Managers
             if (!player)
                 return;
 
-            player.RuntimePlayer?.Clear();
+            if (player.RuntimePlayer)
+                player.RuntimePlayer.Clear();
             player.RuntimePlayer = null;
         }
 
