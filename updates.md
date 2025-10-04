@@ -1,4 +1,19 @@
-﻿# 1.8.5 [Oct 2, 2025]
+﻿# 1.8.6 [Oct 4, 2025]
+## Features
+### Core
+- Added rotatePosX(posX, posY, rot) and rotatePosY(posX, posY, rot) math functions.
+- Added setOutline and setOutlineHex action modifiers.
+
+### Editor
+- Selected objects now show an outline. This can be configured via the settings in Config Manager > Editor > Preview.
+
+## Changes
+### Core
+- Changed how actorFrameTexture modifier offsets the captured area.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.5 [Oct 2, 2025]
 ## Features
 ### Core
 - Added setRendering action modifier. This changes the rendering settings of the object.
