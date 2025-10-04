@@ -1,14 +1,12 @@
-# 1.8.5 [Oct 2, 2025]
+# 1.8.6 [Oct 4, 2025]
 ## Features
 ### Core
-- Added setRendering action modifier. This changes the rendering settings of the object.
-- Imported sprite assets can now have their wrap mode set via the context menu.
-- All object rendering options now support textures.
+- Added rotatePosX(posX, posY, rot) and rotatePosY(posX, posY, rot) math functions.
+- Added setOutline and setOutlineHex action modifiers.
 
 ### Editor
-- Added Color Blend multi object editing.
-- You can now select images to add to a new Prefab in the Prefab Creator.
-- New levels now have their bin count set to a certain amount depending on editor complexity setting.
+- Selected objects now show an outline. This can be configured via the settings in Config Manager > Editor > Preview.
 
-## Fixes
-- Fixed homing sprites displaying as X.
+## Changes
+### Core
+- Changed how actorFrameTexture modifier offsets the captured area.
