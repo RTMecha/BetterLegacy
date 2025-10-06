@@ -275,6 +275,16 @@ namespace BetterLegacy.Editor.Components
             if (!CoreHelper.IsEditing)
             {
                 hovered = false;
+                if (this.selected)
+                {
+                    this.selected = false;
+                    if (!beatmapObject.runtimeObject || beatmapObject.runtimeObject.visualObject is not SolidObject s)
+                        return;
+
+                    s.AddEditorOutline();
+                    s.SetEditorOutline(LSColors.transparent, EditorConfig.Instance.OutlineWidth.Value);
+                }
+
                 return;
             }
 
