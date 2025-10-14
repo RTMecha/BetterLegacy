@@ -1197,7 +1197,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
             {
                 var prefabObject = PrefabObject.Parse(jn["prefab_objects"][i]);
-                if (!prefabObjects.Has(x => x.id == prefabObject.id))
+                if (!prefabObjects.Has(x => x.id == prefabObject.id) && prefabObject.GetPrefab(prefabs))
                     prefabObjects.Add(prefabObject);
             }
 
