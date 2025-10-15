@@ -427,4 +427,46 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix() => false;
     }
+
+    [HarmonyPatch(typeof(History))]
+    public class HistoryPatch
+    {
+        [HarmonyPatch(nameof(History.Undo))]
+        [HarmonyPrefix]
+        static bool UndoPrefix(History __instance)
+        {
+            if (__instance.commands.IsEmpty())
+                return false;
+
+            if (!__instance.commands.TryGetAt(__instance.LastExecuted, out History.Command command))
+            {
+                EditorManager.inst.DisplayNotification("Nothing to undo!", 1f, EditorManager.NotificationType.Error);
+                return false;
+            }
+
+            command.Undo?.Invoke();
+            EditorManager.inst.DisplayNotification($"Undo: {command.CommandName}", 1f, EditorManager.NotificationType.Warning);
+            __instance.lastExecuted--;
+            return false;
+        }
+
+        [HarmonyPatch(nameof(History.Redo))]
+        [HarmonyPrefix]
+        static bool RedoPrefix(History __instance)
+        {
+            if (__instance.commands.IsEmpty())
+                return false;
+
+            if (!__instance.commands.TryGetAt(__instance.LastExecuted + 1, out History.Command command))
+            {
+                EditorManager.inst.DisplayNotification("Nothing to redo!", 1f, EditorManager.NotificationType.Error);
+                return false;
+            }
+
+            command.Do?.Invoke();
+            EditorManager.inst.DisplayNotification($"Redo: {command.CommandName}", 1f, EditorManager.NotificationType.Warning); // wrong command name displayed in vanilla?
+            __instance.lastExecuted++;
+            return false;
+        }
+    }
 }

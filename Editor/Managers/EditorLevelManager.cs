@@ -663,6 +663,8 @@ namespace BetterLegacy.Editor.Managers
 
             RandomHelper.UpdateSeed();
 
+            RTEditor.inst.ResetHistory();
+
             CoreHelper.Log("Clearing data...");
 
             for (int i = 0; i < EditorTimeline.inst.timelineObjects.Count; i++)

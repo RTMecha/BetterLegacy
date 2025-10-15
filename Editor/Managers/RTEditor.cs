@@ -2469,25 +2469,58 @@ namespace BetterLegacy.Editor.Managers
                 switch (EditorTimeline.inst.layerType)
                 {
                     case EditorTimeline.LayerType.Objects: {
-                            var list = new List<TimelineObject>();
-                            foreach (var timelineObject in EditorTimeline.inst.SelectedObjects)
-                                list.Add(timelineObject);
-
+                            // prepare undo / redo
                             EditorDialog.CurrentDialog?.Close();
+                            List<TimelineObject> list = EditorTimeline.inst.SelectedObjects;
+                            Prefab prefab = null;
+                            float t = 0f;
+                            List<IDPair> children = null;
 
-                            var prefab = new Prefab("deleted objects", 0, list.Min(x => x.Time),
-                                list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
-                                list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList(),
-                                null,
-                                list.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>()).ToList());
+                            EditorManager.inst.history.Add(new History.Command("Delete Objects",
+                                () =>
+                                {
+                                    EditorDialog.CurrentDialog?.Close();
 
-                            EditorManager.inst.history.Add(new History.Command("Delete Objects", EditorTimeline.inst.DeleteObjects, () =>
-                            {
-                                EditorTimeline.inst.DeselectAllObjects();
-                                new PrefabExpander(prefab).Select().RetainID().Expand();
-                            }));
+                                    prefab = new Prefab("deleted objects", 0, 0f,
+                                       list.Where(x => x.isBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
+                                       list.Where(x => x.isPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList(),
+                                       null,
+                                       list.Where(x => x.isBackgroundObject).Select(x => x.GetData<BackgroundObject>()).ToList());
 
-                            EditorTimeline.inst.DeleteObjects();
+                                    t = list.Min(x => x.Time);
+
+                                    children = new List<IDPair>();
+                                    foreach (var parent in prefab.beatmapObjects)
+                                    {
+                                        for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+                                        {
+                                            var beatmapObject = GameData.Current.beatmapObjects[i];
+                                            if (beatmapObject.parent == parent.id)
+                                                children.Add(new IDPair(parent.id, beatmapObject.id)); // old = parent new = id
+                                        }
+                                    }
+
+                                    EditorTimeline.inst.DeleteObjects();
+                                },
+                                () =>
+                                {
+                                    EditorTimeline.inst.DeselectAllObjects();
+                                    new PrefabExpander(prefab).Select().RetainID().Offset(t).Expand();
+
+                                    if (children != null)
+                                    {
+                                        foreach (var pair in children)
+                                        {
+                                            if (GameData.Current.beatmapObjects.TryFind(x => x.id == pair.newID, out BeatmapObject beatmapObject))
+                                            {
+                                                beatmapObject.Parent = pair.oldID;
+                                                RTLevel.Current.UpdateObject(beatmapObject, ObjectContext.PARENT_CHAIN);
+                                            }
+                                        }
+                                    }
+
+                                    list = EditorTimeline.inst.SelectedObjects;
+                                }), true);
 
                             break;
                         }
@@ -5519,6 +5552,15 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Misc Functions
+
+        /// <summary>
+        /// Resets the editor undo / redo history.
+        /// </summary>
+        public void ResetHistory()
+        {
+            EditorManager.inst.history.Clear();
+            EditorManager.inst.history.Add(new History.Command("Base", () => { }, () => { }));
+        }
 
         /// <summary>
         /// Toggles the editor preview.
