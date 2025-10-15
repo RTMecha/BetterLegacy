@@ -548,13 +548,15 @@ namespace BetterLegacy.Editor.Managers
             PasteEvents(copiedEventKeyframes, setTime);
         }
 
-        public void PasteEvents(List<TimelineKeyframe> kfs, bool setTime = true)
+        public List<TimelineKeyframe> PasteEvents(List<TimelineKeyframe> kfs, bool setTime = true)
         {
             if (kfs.Count <= 0)
             {
                 CoreHelper.LogError($"No copied event yet!");
-                return;
+                return null;
             }
+
+            var pastedKeyframes = new List<TimelineKeyframe>();
 
             var selectPasted = EditorConfig.Instance.SelectPasted.Value;
             if (selectPasted)
@@ -581,10 +583,12 @@ namespace BetterLegacy.Editor.Managers
                 if (selectPasted)
                     kf.Selected = true;
                 EditorTimeline.inst.timelineKeyframes.Add(kf);
+                pastedKeyframes.Add(kf);
             }
 
             RTLevel.Current?.UpdateEvents();
             OpenDialog();
+            return pastedKeyframes;
         }
 
         #endregion

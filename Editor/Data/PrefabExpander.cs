@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using LSFunctions;
@@ -91,7 +92,13 @@ namespace BetterLegacy.Editor.Data
         /// <summary>
         /// Expands the current <see cref="prefab"/>.
         /// </summary>
-        public IEnumerator IExpand()
+        /// <param name="result">Action to run when the expanded result has returned.</param>
+        public void Expand(Action<Expanded> result) => CoroutineHelper.StartCoroutine(IExpand(result));
+
+        /// <summary>
+        /// Expands the current <see cref="prefab"/>.
+        /// </summary>
+        public IEnumerator IExpand(Action<Expanded> result = null)
         {
             if (!prefab)
             {
@@ -118,13 +125,20 @@ namespace BetterLegacy.Editor.Data
                     EditorManager.inst.ClearPopups();
             }
 
+            var expanded = new Expanded()
+            {
+                BeatmapObjects = new List<BeatmapObject>(),
+                PrefabObjects = new List<PrefabObject>(),
+                BackgroundLayers = new List<BackgroundLayer>(),
+                BackgroundObjects = new List<BackgroundObject>(),
+            };
+
             var sw = CoreHelper.StartNewStopwatch();
 
             var objectIDs = new List<IDPair>();
             for (int j = 0; j < prefab.beatmapObjects.Count; j++)
                 objectIDs.Add(new IDPair(prefab.beatmapObjects[j].id));
 
-            var pastedObjects = new List<BeatmapObject>();
             var unparentedPastedObjects = new List<BeatmapObject>();
 
             for (int i = 0; i < prefab.beatmapObjects.Count; i++)
@@ -169,7 +183,7 @@ namespace BetterLegacy.Editor.Data
 
                 if (string.IsNullOrEmpty(beatmapObject.Parent) || beatmapObjectCopy.Parent == BeatmapObject.CAMERA_PARENT || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.Parent) != -1) // prevent updating of parented objects since updating is recursive.
                     unparentedPastedObjects.Add(beatmapObjectCopy);
-                pastedObjects.Add(beatmapObjectCopy);
+                expanded.BeatmapObjects.Add(beatmapObjectCopy);
 
                 if (!CoreHelper.InEditor)
                     continue;
@@ -182,14 +196,12 @@ namespace BetterLegacy.Editor.Data
                 EditorTimeline.inst.RenderTimelineObject(timelineObject);
             }
 
-            var list = unparentedPastedObjects.Count > 0 ? unparentedPastedObjects : pastedObjects;
+            var list = unparentedPastedObjects.Count > 0 ? unparentedPastedObjects : expanded.BeatmapObjects;
             for (int i = 0; i < list.Count; i++)
                 RTLevel.Current?.UpdateObject(list[i], recalculate: false);
 
             unparentedPastedObjects.Clear();
             unparentedPastedObjects = null;
-            pastedObjects.Clear();
-            pastedObjects = null;
 
             for (int i = 0; i < prefab.backgroundLayers.Count; i++)
             {
@@ -198,6 +210,7 @@ namespace BetterLegacy.Editor.Data
                 var backgroundLayerCopy = backgroundLayer.Copy(!retainID);
 
                 GameData.Current.backgroundLayers.Add(backgroundLayerCopy);
+                expanded.BackgroundLayers.Add(backgroundLayerCopy);
             }
 
             for (int i = 0; i < prefab.backgroundObjects.Count; i++)
@@ -231,6 +244,7 @@ namespace BetterLegacy.Editor.Data
 
                 backgroundObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
                 GameData.Current.backgroundObjects.Add(backgroundObjectCopy);
+                expanded.BackgroundObjects.Add(backgroundObjectCopy);
 
                 RTLevel.Current?.UpdateBackgroundObject(backgroundObjectCopy, recalculate: false);
 
@@ -278,6 +292,7 @@ namespace BetterLegacy.Editor.Data
                 prefabObjectCopy.editorData.Layer = EditorTimeline.inst.Layer;
 
                 GameData.Current.prefabObjects.Add(prefabObjectCopy);
+                expanded.PrefabObjects.Add(prefabObjectCopy);
 
                 RTLevel.Current?.UpdatePrefab(prefabObjectCopy, recalculate: false);
 
@@ -307,6 +322,7 @@ namespace BetterLegacy.Editor.Data
             if (!CoreHelper.InEditor)
             {
                 sw = null;
+                result?.Invoke(expanded);
                 yield break;
             }
 
@@ -329,7 +345,10 @@ namespace BetterLegacy.Editor.Data
             EditorTimeline.inst.UpdateTransformIndex();
 
             if (!select)
+            {
+                result?.Invoke(expanded);
                 yield break;
+            }
 
             if (prefab.beatmapObjects.Count > 1 || prefab.prefabObjects.Count > 1 || prefab.backgroundObjects.Count > 1)
                 MultiObjectEditor.inst.Dialog.Open();
@@ -339,7 +358,25 @@ namespace BetterLegacy.Editor.Data
                 RTPrefabEditor.inst.OpenPrefabObjectDialog(EditorTimeline.inst.CurrentSelection.GetData<PrefabObject>());
             else if (EditorTimeline.inst.CurrentSelection.isBackgroundObject)
                 RTBackgroundEditor.inst.OpenDialog(EditorTimeline.inst.CurrentSelection.GetData<BackgroundObject>());
+            result?.Invoke(expanded);
             yield break;
+        }
+
+        public struct Expanded : IBeatmap
+        {
+            public Assets GetAssets() => null;
+
+            public List<BeatmapObject> BeatmapObjects { get; set; }
+
+            public List<PrefabObject> PrefabObjects { get; set; }
+
+            public List<Prefab> Prefabs { get; set; }
+
+            public List<BackgroundObject> BackgroundObjects { get; set; }
+
+            public List<BackgroundLayer> BackgroundLayers { get; set; }
+
+            public List<BeatmapTheme> BeatmapThemes { get; set; }
         }
     }
 }

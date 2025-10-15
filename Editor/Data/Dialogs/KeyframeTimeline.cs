@@ -473,24 +473,26 @@ namespace BetterLegacy.Editor.Data.Dialogs
             }
         }
 
-        public void PasteKeyframes(IAnimatable animatable, bool setTime = true) => PasteKeyframes(animatable, copiedObjectKeyframes, setTime);
+        public List<TimelineKeyframe> PasteKeyframes(IAnimatable animatable, bool setTime = true) => PasteKeyframes(animatable, copiedObjectKeyframes, setTime);
 
-        public void PasteKeyframes(IAnimatable animatable, List<TimelineKeyframe> kfs, bool setTime = true)
+        public List<TimelineKeyframe> PasteKeyframes(IAnimatable animatable, List<TimelineKeyframe> kfs, bool setTime = true)
         {
             if (kfs.Count <= 0)
             {
                 Debug.LogError($"{ObjEditor.inst.className}No copied event yet!");
-                return;
+                return null;
             }
 
-            var ids = new List<string>();
+            var pastedKeyframes = new List<TimelineKeyframe>();
+            var eventKeyframes = new List<EventKeyframe>();
+
             var events = animatable.Events;
             for (int i = 0; i < events.Count; i++)
             {
                 events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
                 {
                     var kf = PasteKF(animatable, x, setTime);
-                    ids.Add(kf.id);
+                    eventKeyframes.Add(kf);
                     return kf;
                 }));
                 events[i].Sort((a, b) => a.time.CompareTo(b.time));
@@ -502,9 +504,17 @@ namespace BetterLegacy.Editor.Data.Dialogs
             RenderMarkers(animatable);
 
             if (EditorConfig.Instance.SelectPasted.Value)
-            {
                 foreach (var kf in animatable.TimelineKeyframes)
-                    kf.Selected = ids.Contains(kf.ID);
+                    kf.Selected = false;
+
+            foreach (var eventKeyframe in eventKeyframes)
+            {
+                if (!eventKeyframe.timelineKeyframe)
+                    continue;
+
+                if (EditorConfig.Instance.SelectPasted.Value)
+                    eventKeyframe.timelineKeyframe.Selected = true;
+                pastedKeyframes.Add(eventKeyframe.timelineKeyframe);
             }
 
             RenderDialog(animatable);
@@ -515,6 +525,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
                 RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.AUTOKILL);
             }
+            return pastedKeyframes;
         }
 
         public EventKeyframe PasteKF(IAnimatable animatable, TimelineKeyframe timelineKeyframe, bool setTime = true)

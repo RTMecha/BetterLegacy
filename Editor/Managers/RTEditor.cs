@@ -2470,7 +2470,6 @@ namespace BetterLegacy.Editor.Managers
                 {
                     case EditorTimeline.LayerType.Objects: {
                             // prepare undo / redo
-                            EditorDialog.CurrentDialog?.Close();
                             List<TimelineObject> list = EditorTimeline.inst.SelectedObjects;
                             Prefab prefab = null;
                             float t = 0f;
@@ -2521,7 +2520,6 @@ namespace BetterLegacy.Editor.Managers
 
                                     list = EditorTimeline.inst.SelectedObjects;
                                 }), true);
-
                             break;
                         }
                     case EditorTimeline.LayerType.Events: {
@@ -2532,16 +2530,22 @@ namespace BetterLegacy.Editor.Managers
                                 break;
                             }
 
-                            EditorDialog.CurrentDialog?.Close();
-
                             var list = new List<TimelineKeyframe>();
                             foreach (var timelineObject in selectedKeyframes)
                                 list.Add(timelineObject);
 
-                            EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", RTEventEditor.inst.DeleteKeyframes(list).Start, () => RTEventEditor.inst.PasteEvents(list, false)));
-
-                            StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
-
+                            EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes",
+                                () =>
+                                {
+                                    EditorDialog.CurrentDialog?.Close();
+                                    CoroutineHelper.StartCoroutine(RTEventEditor.inst.DeleteKeyframes(list));
+                                },
+                                () =>
+                                {
+                                    var pasted = RTEventEditor.inst.PasteEvents(list, false);
+                                    if (pasted != null)
+                                        list = pasted;
+                                }), true);
                             break;
                         }
                 }
@@ -2570,14 +2574,41 @@ namespace BetterLegacy.Editor.Managers
                         var beatmapObject = EditorTimeline.inst.CurrentSelection.GetData<BeatmapObject>();
 
                         EditorManager.inst.history.Add(new History.Command("Delete Keyframes",
-                            ObjectEditor.inst.Dialog.Timeline.DeleteKeyframes(beatmapObject).Start,
-                            () => ObjectEditor.inst.Dialog.Timeline.PasteKeyframes(beatmapObject, list, false)));
+                            () =>
+                            {
+                                CoroutineHelper.StartCoroutine(ObjectEditor.inst.Dialog.Timeline.DeleteKeyframes(beatmapObject));
+                            },
+                            () =>
+                            {
+                                var pasted = ObjectEditor.inst.Dialog.Timeline.PasteKeyframes(beatmapObject, list, false);
+                                if (pasted != null)
+                                    list = pasted;
+                            }), true);
 
-                        StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
                         break;
                     }
                 case EditorDialog.BACKGROUND_EDITOR: {
-                        RTBackgroundEditor.inst.DeleteBackground();
+                        var backgroundObject = RTBackgroundEditor.inst.CurrentSelectedBG;
+                        if (!backgroundObject)
+                        {
+                            EditorManager.inst.DisplayNotification("No BG to delete.", 1f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
+                        EditorManager.inst.history.Add(new History.Command("Delete Background",
+                            () =>
+                            {
+                                RTBackgroundEditor.inst.DeleteBackground(backgroundObject);
+                            },
+                            () =>
+                            {
+                                if (!backgroundObject)
+                                    return;
+
+                                GameData.Current.backgroundObjects.Add(backgroundObject);
+                                EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(backgroundObject));
+                                RTLevel.Current.UpdateBackgroundObject(backgroundObject);
+                            }), true);
                         break;
                     }
                 case EditorDialog.CHECKPOINT_EDITOR: {
@@ -2587,8 +2618,27 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
 
-                        RTCheckpointEditor.inst.DeleteCheckpoint(RTCheckpointEditor.inst.CurrentCheckpoint.Index);
-                        EditorManager.inst.DisplayNotification("Deleted Checkpoint.", 1f, EditorManager.NotificationType.Success);
+                        TimelineCheckpoint deletedCheckpoint = null;
+
+                        EditorManager.inst.history.Add(new History.Command("Delete Checkpoint",
+                            () =>
+                            {
+                                deletedCheckpoint = RTCheckpointEditor.inst.CurrentCheckpoint;
+                                RTCheckpointEditor.inst.DeleteCheckpoint(deletedCheckpoint.Index);
+                                EditorManager.inst.DisplayNotification("Deleted Checkpoint.", 1f, EditorManager.NotificationType.Success);
+                            },
+                            () =>
+                            {
+                                if (!deletedCheckpoint)
+                                    return;
+
+                                var checkpoint = deletedCheckpoint.Checkpoint?.Copy();
+                                if (!checkpoint)
+                                    return;
+
+                                GameData.Current.data.checkpoints.Add(checkpoint);
+                                RTCheckpointEditor.inst.UpdateCheckpointTimeline();
+                            }), true);
                         break;
                     }
                 case EditorDialog.ANIMATION_EDITOR_DIALOG: {
@@ -2607,10 +2657,16 @@ namespace BetterLegacy.Editor.Managers
                             list.Add(timelineObject);
 
                         EditorManager.inst.history.Add(new History.Command("Delete Keyframes",
-                            AnimationEditor.inst.Dialog.Timeline.DeleteKeyframes(animation).Start,
-                            () => AnimationEditor.inst.Dialog.Timeline.PasteKeyframes(animation, list, false)));
-
-                        CoroutineHelper.StartCoroutine(AnimationEditor.inst.Dialog.Timeline.DeleteKeyframes(animation));
+                            () =>
+                            {
+                                CoroutineHelper.StartCoroutine(AnimationEditor.inst.Dialog.Timeline.DeleteKeyframes(animation));
+                            },
+                            () =>
+                            {
+                                var pasted = AnimationEditor.inst.Dialog.Timeline.PasteKeyframes(animation, list, false);
+                                if (pasted != null)
+                                    list = pasted;
+                            }), true);
                         break;
                     }
             }
