@@ -122,6 +122,7 @@ namespace BetterLegacy.Editor.Managers
                     new KeybindFunction(nameof(TransformPosition), TransformPosition, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
                     new KeybindFunction(nameof(TransformScale), TransformScale, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
                     new KeybindFunction(nameof(TransformRotation), TransformRotation, new Keybind.Setting("Create Keyframe", "True"), new Keybind.Setting("Use Nearest", "True"), new Keybind.Setting("Use Previous", "False")),
+                    new KeybindFunction(nameof(FinishTransform), FinishTransform, new Keybind.Setting("Cancel", "False")),
 
                     new KeybindFunction(nameof(ParentPicker), ParentPicker),
 
@@ -306,24 +307,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (Input.GetMouseButtonDown(0))
-                dragging = false;
-
-            if (Input.GetMouseButtonDown(1) && selectedKeyframe && originalValues != null && dragging)
-            {
-                dragging = false;
-                selectedKeyframe.values = originalValues.Copy();
-                if (selectionType == SelectionType.Object)
-                {
-                    RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
-                    ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
-                }
-                if (selectionType == SelectionType.Prefab)
-                {
-                    RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
-                    RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
-                }
-            }
+            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                EndDrag(Input.GetMouseButtonDown(1));
 
             UpdateValues();
 
@@ -634,6 +619,7 @@ namespace BetterLegacy.Editor.Managers
                 var key = setting.key;
                 switch (key.ToLower())
                 {
+                    case "cancel":
                     case "external":
                     case "useid":
                     case "remove prefab instance id":
@@ -1848,6 +1834,8 @@ namespace BetterLegacy.Editor.Managers
             SetValues(2);
         }
 
+        public void FinishTransform(Keybind keybind) => EndDrag(keybind.TryGetSetting("Cancel", out string cancelSetting) && bool.TryParse(cancelSetting, out bool cancel) && cancel);
+
         public void ParentPicker(Keybind keybind)
         {
             if (!EditorTimeline.inst.CurrentSelection.isBeatmapObject && !EditorTimeline.inst.CurrentSelection.isPrefabObject)
@@ -2425,6 +2413,29 @@ namespace BetterLegacy.Editor.Managers
         {
             selectedKeyframe = beatmapObject.GetOrCreateKeyframe(type, createKeyframe, useNearest, usePrevious);
             originalValues = selectedKeyframe.values.Copy();
+        }
+
+        public void EndDrag(bool cancel)
+        {
+            dragging = false;
+
+            if (cancel || !selectedKeyframe || originalValues == null || !dragging)
+                return;
+
+            dragging = false;
+            selectedKeyframe.values = originalValues.Copy();
+
+            if (selectionType == SelectionType.Object)
+            {
+                RTLevel.Current?.UpdateObject(beatmapObject, ObjectContext.KEYFRAMES);
+                ObjectEditor.inst.Dialog.Timeline.RenderDialog(beatmapObject);
+            }
+
+            if (selectionType == SelectionType.Prefab)
+            {
+                RTLevel.Current?.UpdatePrefab(prefabObject, PrefabObjectContext.TRANSFORM_OFFSET);
+                RTPrefabEditor.inst.RenderPrefabObjectTransforms(prefabObject);
+            }
         }
 
         #endregion

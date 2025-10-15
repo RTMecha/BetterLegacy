@@ -144,7 +144,7 @@ namespace BetterLegacy.Editor.Data
                 new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha5)),
 
             new Keybind(nameof(KeybindEditor.ToggleEventLayer), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.E)),
-            new Keybind(nameof(KeybindEditor.Undo), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z)),
+            new Keybind(nameof(KeybindEditor.Undo), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z)),
             new Keybind(nameof(KeybindEditor.Redo), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftShift), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Z)),
             new Keybind(nameof(KeybindEditor.SwapLockSelection), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.L)),
             new Keybind(nameof(KeybindEditor.UpdateObject), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R)),
@@ -179,6 +179,12 @@ namespace BetterLegacy.Editor.Data
             new Keybind(nameof(KeybindEditor.TransformRotation),
                 new List<Setting> { new Setting("Create Keyframe", "True"), new Setting("Use Nearest", "True"), new Setting("Use Previous", "False") },
                 new Keybind.Key(Keybind.Key.Type.Down, KeyCode.R), new Keybind.Key(Keybind.Key.Type.NotPressed, KeyCode.LeftControl)),
+            new Keybind(nameof(KeybindEditor.FinishTransform),
+                new List<Setting> { new Setting("Cancel", "False") },
+                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Return)),
+            new Keybind(nameof(KeybindEditor.FinishTransform),
+                new List<Setting> { new Setting("Cancel", "True") },
+                new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Escape)),
             new Keybind(nameof(KeybindEditor.ToggleProjectPlanner), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.F10)),
             new Keybind(nameof(KeybindEditor.ParentPicker), new Keybind.Key(Keybind.Key.Type.Pressed, KeyCode.LeftControl), new Keybind.Key(Keybind.Key.Type.Down, KeyCode.P)),
 
