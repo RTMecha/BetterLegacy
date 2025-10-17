@@ -287,7 +287,7 @@ namespace BetterLegacy.Editor.Managers
             if (!CurrentProfile)
                 return;
 
-            if (!CoreHelper.IsUsingInputField && !dragging && EditorManager.inst.isEditing && Application.isFocused && (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !EventsConfig.Instance.EditorCamEnabled.Value))
+            if (!CoreHelper.IsUsingInputField && EditorManager.inst.isEditing && Application.isFocused && (EditorConfig.Instance.AllowEditorKeybindsWithEditorCam.Value || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
                 var keybinds = CurrentProfile.keybinds;
                 foreach (var keybind in keybinds)
@@ -295,6 +295,9 @@ namespace BetterLegacy.Editor.Managers
                     if (EditorManager.inst.editorState != EditorManager.EditorState.Main && keybind.Name != nameof(ToggleProjectPlanner) ||
                         !EditorManager.inst.hasLoadedLevel && keybind.Name != nameof(ToggleShowHelp) && keybind.Name != nameof(TogglePlayingSong) &&
                         keybind.Name != nameof(OpenLevelPopup) && keybind.Name != nameof(SaveLevel) && keybind.Name != nameof(ToggleProjectPlanner))
+                        continue;
+
+                    if (dragging && keybind.Name != nameof(FinishTransform))
                         continue;
 
                     var active = keybind.Check() && !isPressingKey;
@@ -2417,6 +2420,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void EndDrag(bool cancel)
         {
+            if (dragging)
+                EditorManager.inst.DisplayNotification("Ended dragging.", 2f, EditorManager.NotificationType.Success);
+
             dragging = false;
 
             if (cancel || !selectedKeyframe || originalValues == null || !dragging)
