@@ -1,4 +1,21 @@
-﻿# 1.8.7 [Oct 5, 2025]
+﻿# 1.8.8 [Oct 17, 2025]
+## Features
+### Editor
+- Added FinishTransform keybind function. This allows you to stop the current "transform" (TransformPosition, etc) action without clicking.
+
+## Changes
+### Editor
+- Undo is now considered for deleting checkpoints.
+- Expanding a Prefab Object now allows for undo / redo.
+
+## Fixes
+- Fixed invalid Prefab Objects.
+- Fixed the undo / redo of deleting. Should be a lot more stable (parenting is remembered now!!).
+- Editor history now clears on level load.
+
+------------------------------------------------------------------------------------------
+
+# 1.8.7 [Oct 5, 2025]
 ## Features
 ### Core
 - The actorFrameTexture modifier now includes two new values: All Cameras, Clear Texture, BG Custom Color, etc.
