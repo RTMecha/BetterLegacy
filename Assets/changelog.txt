@@ -1,22 +1,14 @@
-# 1.8.7 [Oct 5, 2025]
+# 1.8.8 [Oct 17, 2025]
 ## Features
-### Core
-- The actorFrameTexture modifier now includes two new values: All Cameras, Clear Texture, BG Custom Color, etc.
-  - All Cameras makes the frame display all render layers (BG > FG > UI).
-  - Clear Texture clears the previous frame from the current, preventing frame bleeding.
-  - BG Custom Color sets a custom background color. Leave empty to use the regular background color.
-  - Calculate Zoom is how the zoom usually works. With it off, the zoom value won't depend on the resolution.
-  - Texture Offset & Scale fixes the texture being incorrectly positioned. (normally you would have to use translateShape to fix it but that was kinda hacky)
-  - Hide Players, well, hides the players.
-- setImage modifiers also have Texture Offset & Scale values.
-
 ### Editor
-- Capture Area now has a setting for capturing all cameras / layers. This is in case you have a prefab that contains BG objects or objects on other render layer types.
+- Added FinishTransform keybind function. This allows you to stop the current "transform" (TransformPosition, etc) action without clicking.
 
 ## Changes
-### Core
-- Animation difficulty no longer allows level save data being modified with Zen & Practice modes.
-- Moved all object material assets into one Asset Bundle.
+### Editor
+- Undo is now considered for deleting checkpoints.
+- Expanding a Prefab Object now allows for undo / redo.
 
 ## Fixes
-- Hopefully fixed level loading breaking in some cases where the player runtime data isn't cleared correctly.
+- Fixed invalid Prefab Objects.
+- Fixed the undo / redo of deleting. Should be a lot more stable (parenting is remembered now!!).
+- Editor history now clears on level load.
