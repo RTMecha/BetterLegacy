@@ -31,6 +31,7 @@ using BetterLegacy.Editor.Data;
 using BetterLegacy.Editor.Data.Dialogs;
 using BetterLegacy.Editor.Data.Elements;
 using BetterLegacy.Editor.Data.Popups;
+using BetterLegacy.Editor.Data.Timeline;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -1333,9 +1334,19 @@ namespace BetterLegacy.Editor.Managers
             }
 
             float startTime = 0f;
-
             if (!prefabables.IsEmpty())
                 startTime = prefabables.Min(x => x.StartTime);
+
+            // todo: add history
+            //EditorManager.inst.history.Add(new History.Command("Collapse Prefab",
+            //    () =>
+            //    {
+
+            //    },
+            //    () =>
+            //    {
+
+            //    }), true);
 
             int index = GameData.Current.prefabs.FindIndex(x => x.id == prefabID);
             var originalPrefab = GameData.Current.prefabs[index];
@@ -1450,24 +1461,83 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="prefabObject">Prefab instance.</param>
         public void Expand(PrefabObject prefabObject)
         {
-            string id = prefabObject.id;
+            List<TimelineObject> selected = null;
+            PrefabExpander.Expanded expanded = null;
+            EditorManager.inst.history.Add(new History.Command("Expand Prefab",
+                () =>
+                {
+                    string id = prefabObject.id;
 
-            var sw = CoreHelper.StartNewStopwatch();
+                    Debug.Log($"{PrefabEditor.inst.className}Removing Prefab Object's spawned objects.");
+                    RTLevel.Current?.UpdatePrefab(prefabObject, false);
 
-            Debug.Log($"{PrefabEditor.inst.className}Removing Prefab Object's spawned objects.");
-            RTLevel.Current?.UpdatePrefab(prefabObject, false);
+                    EditorTimeline.inst.RemoveTimelineObject(EditorTimeline.inst.timelineObjects.Find(x => x.ID == id));
 
-            EditorTimeline.inst.RemoveTimelineObject(EditorTimeline.inst.timelineObjects.Find(x => x.ID == id));
+                    GameData.Current.prefabObjects.RemoveAll(x => x.id == id);
+                    selected = EditorTimeline.inst.SelectedObjects;
+                    EditorTimeline.inst.DeselectAllObjects();
+                    EditorTimeline.inst.RenderTimelineObjects();
 
-            GameData.Current.prefabObjects.RemoveAll(x => x.id == id);
-            EditorTimeline.inst.DeselectAllObjects();
+                    Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
+                    new PrefabExpander(prefabObject).Select().Expand(e =>
+                    {
+                        expanded = e;
+                    });
+                },
+                () =>
+                {
+                    if (!expanded)
+                        return;
 
-            Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
-            new PrefabExpander(prefabObject).Select().Expand();
+                    if (expanded.BeatmapObjects != null)
+                        for (int i = 0; i < expanded.BeatmapObjects.Count; i++)
+                        {
+                            var beatmapObject = expanded.BeatmapObjects[i];
+                            RTLevel.Current.UpdateObject(beatmapObject, reinsert: false);
+                            EditorTimeline.inst.RemoveTimelineObject(beatmapObject.timelineObject);
+                            GameData.Current.beatmapObjects.Remove(x => x.id == beatmapObject.id);
+                        }
 
-            EditorTimeline.inst.RenderTimelineObjects();
+                    if (expanded.BackgroundObjects != null)
+                        for (int i = 0; i < expanded.BackgroundObjects.Count; i++)
+                        {
+                            var backgroundObject = expanded.BackgroundObjects[i];
+                            RTLevel.Current.UpdateBackgroundObject(backgroundObject, false);
+                            EditorTimeline.inst.RemoveTimelineObject(backgroundObject.timelineObject);
+                            GameData.Current.backgroundObjects.Remove(x => x.id == backgroundObject.id);
+                        }
 
-            prefabObject = null;
+                    if (expanded.BackgroundLayers != null)
+                        for (int i = 0; i < expanded.BackgroundLayers.Count; i++)
+                        {
+                            var backgroundLayer = expanded.BackgroundLayers[i];
+                            GameData.Current.backgroundLayers.Remove(x => x.id == backgroundLayer.id);
+                        }
+                    RTLevel.Current.UpdateBackgroundLayers();
+
+                    if (expanded.PrefabObjects != null)
+                        for (int i = 0; i < expanded.PrefabObjects.Count; i++)
+                        {
+                            var subPrefabObject = expanded.PrefabObjects[i];
+                            RTLevel.Current.UpdatePrefab(subPrefabObject, false);
+                            EditorTimeline.inst.RemoveTimelineObject(subPrefabObject.timelineObject);
+                            GameData.Current.prefabObjects.Remove(x => x.id == subPrefabObject.id);
+                        }
+
+                    if (expanded.Prefabs != null)
+                        for (int i = 0; i < expanded.Prefabs.Count; i++)
+                        {
+                            var subPrefab = expanded.Prefabs[i];
+                            GameData.Current.prefabs.Remove(x => x.id == subPrefab.id);
+                        }
+
+                    GameData.Current.prefabObjects.Add(prefabObject);
+
+                    RTLevel.Current.UpdatePrefab(prefabObject);
+
+                    EditorTimeline.inst.RenderTimelineObject(EditorTimeline.inst.GetTimelineObject(prefabObject));
+                    EditorTimeline.inst.SetCurrentObject(prefabObject.timelineObject);
+                }), true);
         }
 
         /// <summary>

@@ -548,11 +548,12 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="timelineObject">Timeline object to remove.</param>
         public void RemoveTimelineObject(TimelineObject timelineObject)
         {
-            if (timelineObjects.TryFindIndex(x => x.ID == timelineObject.ID, out int a))
-            {
-                Destroy(timelineObject.GameObject);
-                timelineObjects.RemoveAt(a);
-            }
+            if (!timelineObject)
+                return;
+
+            CoreHelper.Delete(timelineObject.GameObject);
+            if (timelineObjects.TryFindIndex(x => x.ID == timelineObject.ID, out int index))
+                timelineObjects.RemoveAt(index);
         }
 
         /// <summary>

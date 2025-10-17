@@ -362,7 +362,7 @@ namespace BetterLegacy.Editor.Data
             yield break;
         }
 
-        public struct Expanded : IBeatmap
+        public class Expanded : Exists, IBeatmap
         {
             public Assets GetAssets() => null;
 
