@@ -1489,47 +1489,7 @@ namespace BetterLegacy.Editor.Managers
                     if (!expanded)
                         return;
 
-                    if (expanded.BeatmapObjects != null)
-                        for (int i = 0; i < expanded.BeatmapObjects.Count; i++)
-                        {
-                            var beatmapObject = expanded.BeatmapObjects[i];
-                            RTLevel.Current.UpdateObject(beatmapObject, reinsert: false);
-                            EditorTimeline.inst.RemoveTimelineObject(beatmapObject.timelineObject);
-                            GameData.Current.beatmapObjects.Remove(x => x.id == beatmapObject.id);
-                        }
-
-                    if (expanded.BackgroundObjects != null)
-                        for (int i = 0; i < expanded.BackgroundObjects.Count; i++)
-                        {
-                            var backgroundObject = expanded.BackgroundObjects[i];
-                            RTLevel.Current.UpdateBackgroundObject(backgroundObject, false);
-                            EditorTimeline.inst.RemoveTimelineObject(backgroundObject.timelineObject);
-                            GameData.Current.backgroundObjects.Remove(x => x.id == backgroundObject.id);
-                        }
-
-                    if (expanded.BackgroundLayers != null)
-                        for (int i = 0; i < expanded.BackgroundLayers.Count; i++)
-                        {
-                            var backgroundLayer = expanded.BackgroundLayers[i];
-                            GameData.Current.backgroundLayers.Remove(x => x.id == backgroundLayer.id);
-                        }
-                    RTLevel.Current.UpdateBackgroundLayers();
-
-                    if (expanded.PrefabObjects != null)
-                        for (int i = 0; i < expanded.PrefabObjects.Count; i++)
-                        {
-                            var subPrefabObject = expanded.PrefabObjects[i];
-                            RTLevel.Current.UpdatePrefab(subPrefabObject, false);
-                            EditorTimeline.inst.RemoveTimelineObject(subPrefabObject.timelineObject);
-                            GameData.Current.prefabObjects.Remove(x => x.id == subPrefabObject.id);
-                        }
-
-                    if (expanded.Prefabs != null)
-                        for (int i = 0; i < expanded.Prefabs.Count; i++)
-                        {
-                            var subPrefab = expanded.Prefabs[i];
-                            GameData.Current.prefabs.Remove(x => x.id == subPrefab.id);
-                        }
+                    RTEditor.inst.RemoveBeatmap(expanded);
 
                     GameData.Current.prefabObjects.Add(prefabObject);
 

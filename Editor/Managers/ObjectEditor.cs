@@ -323,22 +323,44 @@ namespace BetterLegacy.Editor.Managers
 
         public void PasteObject(float offsetTime, bool dup, bool regen)
         {
+            var copy = this.copy;
             if (!ObjEditor.inst.hasCopiedObject || !copy || (copy.prefabObjects.IsEmpty() && copy.beatmapObjects.IsEmpty() && copy.backgroundObjects.IsEmpty()))
             {
                 EditorManager.inst.DisplayNotification("No copied object yet!", 1f, EditorManager.NotificationType.Error, false);
                 return;
             }
 
-            EditorTimeline.inst.DeselectAllObjects();
-            EditorManager.inst.DisplayNotification("Pasting objects.", 1f, EditorManager.NotificationType.Success);
+            List<TimelineObject> selected = null;
+            PrefabExpander.Expanded expanded = null;
+            var time = RTLevel.Current.FixedTime + copy.offset;
 
-            new PrefabExpander(copy)
-                .Select()
-                .Offset(offsetTime)
-                .OffsetToCurrentTime(!dup)
-                .Regen(regen)
-                .AddBin(dup)
-                .Expand();
+            EditorManager.inst.history.Add(new History.Command("Paste Objects",
+                () =>
+                {
+                    selected = EditorTimeline.inst.SelectedObjects;
+                    EditorTimeline.inst.DeselectAllObjects();
+                    EditorManager.inst.DisplayNotification("Pasting objects.", 1f, EditorManager.NotificationType.Success);
+
+                    new PrefabExpander(copy)
+                        .Select()
+                        .Offset(dup ? offsetTime : time)
+                        .Regen(regen)
+                        .AddBin(dup)
+                        .Expand(e =>
+                        {
+                            expanded = e;
+                        });
+                },
+                () =>
+                {
+                    if (!expanded)
+                        return;
+
+                    RTEditor.inst.RemoveBeatmap(expanded);
+                    if (selected != null)
+                        foreach (var timelineObject in selected)
+                            timelineObject.Selected = true;
+                }), true);
         }
         
         public void PasteKeyframes(bool setTime = true)

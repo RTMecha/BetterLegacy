@@ -5794,6 +5794,60 @@ namespace BetterLegacy.Editor.Managers
             gameObject.transform.parent.GetChild(gameObject.transform.GetSiblingIndex() - 1).gameObject.SetActive(active);
         }
 
+        /// <summary>
+        /// Removes a package of objects from the level.
+        /// </summary>
+        /// <param name="beatmap">Package to remove.</param>
+        public void RemoveBeatmap(IBeatmap beatmap)
+        {
+            var beatmapObjects = beatmap.BeatmapObjects;
+            if (beatmapObjects != null)
+                for (int i = 0; i < beatmapObjects.Count; i++)
+                {
+                    var beatmapObject = beatmapObjects[i];
+                    RTLevel.Current.UpdateObject(beatmapObject, reinsert: false);
+                    EditorTimeline.inst.RemoveTimelineObject(beatmapObject.timelineObject);
+                    GameData.Current.beatmapObjects.Remove(x => x.id == beatmapObject.id);
+                }
+
+            var backgroundObjects = beatmap.BackgroundObjects;
+            if (backgroundObjects != null)
+                for (int i = 0; i < backgroundObjects.Count; i++)
+                {
+                    var backgroundObject = backgroundObjects[i];
+                    RTLevel.Current.UpdateBackgroundObject(backgroundObject, false);
+                    EditorTimeline.inst.RemoveTimelineObject(backgroundObject.timelineObject);
+                    GameData.Current.backgroundObjects.Remove(x => x.id == backgroundObject.id);
+                }
+
+            var backgroundLayers = beatmap.BackgroundLayers;
+            if (backgroundLayers != null)
+                for (int i = 0; i < backgroundLayers.Count; i++)
+                {
+                    var backgroundLayer = backgroundLayers[i];
+                    GameData.Current.backgroundLayers.Remove(x => x.id == backgroundLayer.id);
+                }
+            RTLevel.Current.UpdateBackgroundLayers();
+
+            var prefabObjects = beatmap.PrefabObjects;
+            if (prefabObjects != null)
+                for (int i = 0; i < prefabObjects.Count; i++)
+                {
+                    var prefabObject = prefabObjects[i];
+                    RTLevel.Current.UpdatePrefab(prefabObject, false);
+                    EditorTimeline.inst.RemoveTimelineObject(prefabObject.timelineObject);
+                    GameData.Current.prefabObjects.Remove(x => x.id == prefabObject.id);
+                }
+
+            var prefabs = beatmap.Prefabs;
+            if (prefabs != null)
+                for (int i = 0; i < prefabs.Count; i++)
+                {
+                    var prefab = prefabs[i];
+                    GameData.Current.prefabs.Remove(x => x.id == prefab.id);
+                }
+        }
+
         public void ConvertVGToLS()
         {
             BrowserPopup.Open();
