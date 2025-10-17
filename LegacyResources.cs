@@ -16,6 +16,8 @@ namespace BetterLegacy
 {
     public class LegacyResources
     {
+        public static LegacyResources Instance { get; } = new LegacyResources();
+
         public static Shader analogGlitchShader;
         public static Material analogGlitchMaterial;
         public static Shader digitalGlitchShader;
@@ -43,6 +45,8 @@ namespace BetterLegacy
         public static MaterialGroup blurColoredMaterial;
 
         public static Dictionary<string, MaterialGroup> materials = new Dictionary<string, MaterialGroup>();
+
+        static AssetBundle objectMaterialsAssetBundle;
 
         public class MaterialGroup
         {
@@ -99,9 +103,9 @@ namespace BetterLegacy
 
         public static void GetObjectMaterials()
         {
-            var assetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/objectmaterials.asset")); // Get AssetBundle from assets folder.
+            objectMaterialsAssetBundle = AssetBundle.LoadFromFile(RTFile.GetAsset($"builtin/objectmaterials.asset")); // Get AssetBundle from assets folder.
 
-            foreach (var a in assetBundle.GetAllAssetNames())
+            foreach (var a in objectMaterialsAssetBundle.GetAllAssetNames())
             {
                 var assetName = System.IO.Path.GetFileName(a);
                 var assetKey = a
@@ -115,7 +119,7 @@ namespace BetterLegacy
                     $"Asset Name: {System.IO.Path.GetFileName(a)}\n" +
                     $"Asset Key: {assetKey}");
 
-                var materialGroup = CreateMaterialGroup(assetKey, assetBundle.LoadAsset<Shader>(assetName));
+                var materialGroup = CreateMaterialGroup(assetKey, objectMaterialsAssetBundle.LoadAsset<Shader>(assetName));
 
                 switch (assetName)
                 {
@@ -135,6 +139,10 @@ namespace BetterLegacy
                             editorOutlineMaterial = materialGroup;
                             break;
                         }
+                    case "blur.shader": {
+                            blurMaterial = materialGroup;
+                            break;
+                        }
                     case "blur_colored.shader": {
                             blurColoredMaterial = materialGroup;
                             break;
@@ -143,8 +151,6 @@ namespace BetterLegacy
 
                 materials[assetKey] = materialGroup;
             }
-
-            blurMaterial = CreateMaterialGroup("blur", Shader.Find("Custom/BLUR"));
         }
 
         static MaterialGroup CreateMaterialGroup(string assetKey, Shader shader) => new MaterialGroup
