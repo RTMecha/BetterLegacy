@@ -2818,6 +2818,8 @@ namespace BetterLegacy.Editor.Data.Elements
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                         DropdownGenerator(modifier, reference, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                         DropdownGenerator(modifier, reference, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                        BoolGenerator(modifier, reference, "Override Start Opacity", 3, true);
+                        BoolGenerator(modifier, reference, "Override End Opacity", 4, true);
 
                         break;
                     }

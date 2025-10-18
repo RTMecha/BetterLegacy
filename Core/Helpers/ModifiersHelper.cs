@@ -2606,7 +2606,7 @@ namespace BetterLegacy.Core.Helpers
                 var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.time < time);
 
                 if (prevKFIndex < 0)
-                    return new GradientColors(RTColors.errorColor, RTColors.errorColor);
+                    prevKFIndex = 0;
 
                 var prevKF = beatmapObject.events[3][prevKFIndex];
                 var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
@@ -7593,6 +7593,8 @@ namespace BetterLegacy.Core.Helpers
 
             var type = modifier.GetInt(1, 0, variables);
             var axis = modifier.GetInt(2, 0, variables);
+            var overrideStartOpacity = modifier.GetBool(3, true, variables);
+            var overrideEndOpacity = modifier.GetBool(4, true, variables);
 
             // queue post tick so the color overrides the sequence color
             RTLevel.Current.postTick.Enqueue(() =>
@@ -7625,11 +7627,23 @@ namespace BetterLegacy.Core.Helpers
                         continue;
 
                     if (!otherRuntimeObject.visualObject.isGradient)
-                        otherRuntimeObject.visualObject.SetColor(Color.Lerp(otherRuntimeObject.visualObject.GetPrimaryColor(), color, t));
+                    {
+                        var startColor = otherRuntimeObject.visualObject.GetPrimaryColor();
+                        var col = Color.Lerp(startColor, color, t);
+                        if (!overrideStartOpacity)
+                            col.a = startColor.a;
+                        otherRuntimeObject.visualObject.SetColor(col);
+                    }
                     else if (otherRuntimeObject.visualObject is SolidObject solidObject)
                     {
                         var otherColors = solidObject.GetColors();
-                        solidObject.SetColor(Color.Lerp(otherColors.startColor, color, t), Color.Lerp(otherColors.endColor, secondColor, t));
+                        var startColor = Color.Lerp(otherColors.startColor, color, t);
+                        if (!overrideStartOpacity)
+                            startColor.a = otherColors.startColor.a;
+                            var endColor = Color.Lerp(otherColors.endColor, secondColor, t);
+                        if (!overrideEndOpacity)
+                            endColor.a = otherColors.endColor.a;
+                        solidObject.SetColor(startColor, endColor);
                     }
                 }
             });

@@ -2526,13 +2526,6 @@
       }, // setColorHexOther
       {
         "type": 1,
-        "commands": [ "applyColorGroup", "0", "0" ],
-        "value": "Object Group",
-        "const": "True",
-        "compat": "full_beatmap"
-      }, // applyColorGroup
-      {
-        "type": 1,
         "commands": [ "setColorRGBA", "1", "1", "1", "1", "1", "1", "1" ],
         "value": "1",
         "const": "True",
@@ -2545,6 +2538,13 @@
         "const": "True",
         "compat": "full_beatmap"
       }, // setColorRGBAOther
+      {
+        "type": 1,
+        "commands": [ "applyColorGroup", "0", "0", "True", "True" ],
+        "value": "Object Group",
+        "const": "True",
+        "compat": "full_beatmap"
+      }, // applyColorGroup
       {
         "type": 1,
         "commands": [ "animateColorKF", "0", "0", "1", "0", "0", "0", "0", "1", "0", "0", "0" ],
