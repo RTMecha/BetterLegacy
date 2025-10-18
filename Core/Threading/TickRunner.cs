@@ -11,8 +11,6 @@ namespace BetterLegacy.Core.Threading
     /// </summary>
     public class TickRunner : Exists, IDisposable
     {
-        public static TickRunner Main { get; set; }
-
         public TickRunner() { }
 
         public TickRunner(bool selfRun, HandleException handleException = HandleException.Continue, bool logException = false)
@@ -141,6 +139,12 @@ namespace BetterLegacy.Core.Threading
 
             if (selfRun)
                 thread.Join();
+        }
+
+        public static TickRunner operator +(TickRunner a, Action b)
+        {
+            a.Enqueue(b);
+            return a;
         }
     }
 }

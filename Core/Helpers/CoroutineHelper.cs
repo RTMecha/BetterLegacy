@@ -271,9 +271,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static async void TestCoroutineToTask()
         {
-            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Started"));
+            LegacyPlugin.MainTick.Enqueue(() => CoreHelper.Log($"Started"));
             await ITestCoroutine();
-            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Done"));
+            LegacyPlugin.MainTick.Enqueue(() => CoreHelper.Log($"Done"));
         }
 
         static IEnumerator ITestCoroutine()
@@ -286,9 +286,9 @@ namespace BetterLegacy.Core.Helpers
 
         public static IEnumerator TestTaskToCoroutine()
         {
-            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Started"));
+            LegacyPlugin.MainTick.Enqueue(() => CoreHelper.Log($"Started"));
             yield return StartCoroutine(TestAsync().AsIEnumerator());
-            TickRunner.Main.Enqueue(() => CoreHelper.Log($"Done"));
+            LegacyPlugin.MainTick.Enqueue(() => CoreHelper.Log($"Done"));
         }
 
         static async Task TestAsync()

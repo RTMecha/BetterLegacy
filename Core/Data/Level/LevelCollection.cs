@@ -6,8 +6,6 @@ using System.Linq;
 
 using UnityEngine;
 
-using LSFunctions;
-
 using SimpleJSON;
 using SteamworksFacepunch.Ugc;
 
@@ -511,20 +509,20 @@ namespace BetterLegacy.Core.Data.Level
                 CoreHelper.Log($"Got item: {item}");
                 CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                 {
-                    Threading.TickRunner.Main.Enqueue(() =>
+                    LegacyPlugin.MainTick += () =>
                     {
                         var sprite = SpriteHelper.LoadSprite(bytes);
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
                         InitSteamItem(collection, levelInfo, onDownload, item);
-                    });
+                    };
                 }, onError =>
                 {
-                    Core.Threading.TickRunner.Main.Enqueue(() =>
+                    LegacyPlugin.MainTick += () =>
                     {
                         var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                         ArcadeMenu.OnlineSteamLevelIcons[levelInfo.workshopID] = sprite;
                         InitSteamItem(collection, levelInfo, onDownload, item);
-                    });
+                    };
                 }));
 
             }, onFail);

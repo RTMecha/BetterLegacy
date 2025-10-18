@@ -2832,24 +2832,24 @@ namespace BetterLegacy.Arcade.Interfaces
                 {
                     CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadBytes(item.PreviewImageUrl, bytes =>
                     {
-                        Core.Threading.TickRunner.Main.Enqueue(() =>
+                        LegacyPlugin.MainTick += () =>
                         {
                             var sprite = SpriteHelper.LoadSprite(bytes);
                             OnlineSteamLevelIcons[id] = sprite;
                             button.icon = sprite;
                             if (button.iconUI)
                                 button.iconUI.sprite = sprite;
-                        });
+                        };
                     }, onError =>
                     {
-                        Core.Threading.TickRunner.Main.Enqueue(() =>
+                        LegacyPlugin.MainTick += () =>
                         {
                             var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                             OnlineSteamLevelIcons[id] = sprite;
                             button.icon = sprite;
                             if (button.iconUI)
                                 button.iconUI.sprite = sprite;
-                        });
+                        };
                     }));
                 }
             }).IsCompleted);

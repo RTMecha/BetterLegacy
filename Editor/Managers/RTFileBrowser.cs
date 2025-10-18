@@ -377,7 +377,7 @@ namespace BetterLegacy.Editor.Managers
 
         void PreviewAudio(string file)
         {
-            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip => Core.Threading.TickRunner.Main.Enqueue(() =>
+            CoroutineHelper.StartCoroutineAsync(AlephNetwork.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip => LegacyPlugin.MainTick += () =>
             {
                 var length = EditorConfig.Instance.FileBrowserAudioPreviewLength.Value;
                 DestroyAudioPreview();
@@ -392,7 +392,7 @@ namespace BetterLegacy.Editor.Managers
                 currentPreview.time = length < 0f || audioClip.length <= length ? 0f : UnityEngine.Random.Range(0f, audioClip.length);
                 currentPreview.Play();
                 DestroyAudioPreviewAfterSeconds(Mathf.Clamp(length, 0f, audioClip.length));
-            })));
+            }));
         }
 
         void DestroyAudioPreviewAfterSeconds(float t) => currentDestroyPreviewCoroutine = CoroutineHelper.StartCoroutine(CoroutineHelper.IPerformActionAfterSeconds(t, DestroyAudioPreview));

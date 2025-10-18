@@ -59,11 +59,7 @@ namespace BetterLegacy
 
         public const string DATE_TIME_FORMAT = "yyyy-MM-dd_HH.mm.ss";
 
-        public static Core.Threading.TickRunner MainTick
-        {
-            get => Core.Threading.TickRunner.Main;
-            set => Core.Threading.TickRunner.Main = value;
-        }
+        public static Core.Threading.TickRunner MainTick { get; set; }
 
         void Awake()
         {
@@ -254,7 +250,7 @@ namespace BetterLegacy
 
             }
 
-            Core.Threading.TickRunner.Main?.OnTick();
+            MainTick?.OnTick();
 
             if (CoreHelper.IsUsingInputField)
                 return;
