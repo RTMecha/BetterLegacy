@@ -331,7 +331,7 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                uploadable.DatePublished = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+                uploadable.DatePublished = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
                 uploadable.VersionNumber++;
                 uploadable.UploaderID = LegacyPlugin.UserID;
                 saveFile?.Invoke();

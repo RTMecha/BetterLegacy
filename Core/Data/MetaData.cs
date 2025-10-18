@@ -679,7 +679,7 @@ namespace BetterLegacy.Core.Data
         {
             name = "Level Name";
             gameVersion = ProjectArrhythmia.GameVersion.ToString();
-            dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
             modVersion = LegacyPlugin.ModVersion.ToString();
         }
 
@@ -701,7 +701,7 @@ namespace BetterLegacy.Core.Data
 
         public string name;
 
-        public string dateEdited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+        public string dateEdited = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
         public string dateCreated = string.Empty;
         public string datePublished = string.Empty;
 
@@ -815,7 +815,7 @@ namespace BetterLegacy.Core.Data
         {
             var jn = Parser.NewJSONObject();
 
-            jn["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            jn["date_edited"] = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
             jn["game_version"] = "24.9.2";
 
             if (workshopID != -1)
@@ -834,8 +834,9 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(datePublished))
                 jn["date_published"] = datePublished;
-            jn["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            jn["version_number"] = versionNumber.ToString();
+            jn["date_edited"] = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
+            if (versionNumber != 0)
+                jn["version_number"] = versionNumber;
             jn["game_version"] = gameVersion;
             jn["mod_version"] = modVersion;
             if (workshopID != -1)

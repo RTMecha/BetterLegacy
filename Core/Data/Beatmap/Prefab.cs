@@ -196,7 +196,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string ObjectVersion { get; set; }
 
         public string dateCreated = string.Empty;
-        public string dateEdited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+        public string dateEdited = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
         public string datePublished = string.Empty;
         public int versionNumber;
 
@@ -286,7 +286,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             description = jn["description"];
             typeID = PrefabType.VGIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : string.Empty;
             iconData = jn["preview"];
-            dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
         }
 
         public override void ReadJSON(JSONNode jn)
@@ -308,7 +308,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (!string.IsNullOrEmpty(jn["date_created"]))
                 dateCreated = jn["date_created"];
             else
-                dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+                dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
             if (!string.IsNullOrEmpty(jn["date_published"]))
                 datePublished = jn["date_published"];
             if (jn["version_number"] != null)
@@ -406,10 +406,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["desc"] = description;
 
             jn["date_created"] = dateCreated;
-            jn["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            jn["date_edited"] = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
             if (!string.IsNullOrEmpty(datePublished))
                 jn["date_published"] = datePublished;
-            jn["version_number"] = versionNumber.ToString();
+            if (versionNumber != 0)
+                jn["version_number"] = versionNumber;
 
             this.WriteUploadableJSON(jn);
 

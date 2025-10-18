@@ -70,7 +70,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         public string ObjectVersion { get; set; }
 
         public string dateCreated = string.Empty;
-        public string dateEdited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+        public string dateEdited = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
         public string datePublished = string.Empty;
         public int versionNumber;
 
@@ -225,7 +225,7 @@ namespace BetterLegacy.Core.Data.Beatmap
 
             name = jn["name"] ?? "name your themes!";
 
-            dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
 
             guiColor = jn["base_gui"] != null ? LSColors.HexToColor(jn["base_gui"]) : LSColors.gray800;
 
@@ -290,7 +290,7 @@ namespace BetterLegacy.Core.Data.Beatmap
             if (!string.IsNullOrEmpty(jn["date_created"]))
                 dateCreated = jn["date_created"];
             else
-                dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+                dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
             if (!string.IsNullOrEmpty(jn["date_published"]))
                 datePublished = jn["date_published"];
             if (jn["version_number"] != null)
@@ -381,10 +381,11 @@ namespace BetterLegacy.Core.Data.Beatmap
                 jn["creator"] = creator;
 
             jn["date_created"] = dateCreated;
-            jn["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            jn["date_edited"] = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
             if (!string.IsNullOrEmpty(datePublished))
                 jn["date_published"] = datePublished;
-            jn["version_number"] = versionNumber.ToString();
+            if (versionNumber != 0)
+                jn["version_number"] = versionNumber;
 
             this.WriteUploadableJSON(jn);
 
