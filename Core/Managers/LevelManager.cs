@@ -437,6 +437,8 @@ namespace BetterLegacy.Core.Managers
             OnLevelStart?.Invoke(level);
             OnLevelStart = null;
 
+            LegacyPlugin.AddRecentArcadeLevel(level);
+
             #endregion
         }
 

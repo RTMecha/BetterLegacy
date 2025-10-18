@@ -936,6 +936,8 @@ namespace BetterLegacy.Editor.Managers
             CoreHelper.StopAndLogStopwatch(sw, $"Finished loading {name}");
             sw = null;
 
+            LegacyPlugin.AddRecentEditorLevel(level);
+
             yield break;
         }
 
@@ -977,6 +979,8 @@ namespace BetterLegacy.Editor.Managers
             CoroutineHelper.StartCoroutine(SaveData());
             CoroutineHelper.StartCoroutine(SavePlayers());
             RTEditor.inst.SaveSettings();
+
+            LegacyPlugin.AddRecentSavedEditorLevel(CurrentLevel);
 
             return;
         }
@@ -1076,7 +1080,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var autosavesDirectory = RTFile.CombinePaths(RTFile.BasePath, "autosaves");
-            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"autosave_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"autosave_{DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT)}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);
 
@@ -1128,7 +1132,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var autosavesDirectory = RTFile.CombinePaths(RTFile.BasePath, "autosaves");
-            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT)}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);
 
@@ -1161,7 +1165,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var autosavesDirectory = RTFile.CombinePaths(levelPanel.Path, "autosaves");
-            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss")}{FileFormat.LSB.Dot()}");
+            var autosavePath = RTFile.CombinePaths(autosavesDirectory, $"backup_{DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT)}{FileFormat.LSB.Dot()}");
 
             RTFile.CreateDirectory(autosavesDirectory);
 
@@ -1343,7 +1347,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var levelCollection = levels == null || levels.IsEmpty() ? new LevelCollection() : new LevelCollection(levels);
             levelCollection.name = "New Level Collection";
-            levelCollection.dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            levelCollection.dateCreated = DateTime.Now.ToString(LegacyPlugin.DATE_TIME_FORMAT);
             levelCollection.path = RTFile.CombinePaths(RTEditor.inst.BeatmapsPath, RTEditor.inst.CollectionsPath, "New Level Collection");
             return levelCollection;
         }

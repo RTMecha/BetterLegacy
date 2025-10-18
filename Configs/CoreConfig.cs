@@ -249,6 +249,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> PlayCheckpointAnimation { get; set; }
 
+        /// <summary>
+        /// If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.
+        /// </summary>
+        public Setting<bool> StoreRecentLevels { get; set; }
+
         #endregion
 
         #region Discord
@@ -405,6 +410,7 @@ namespace BetterLegacy.Configs
             ParseOptimizations = Bind(this, LEVEL, "Parse Optimizations", false, "When parsing a level, it will automatically try to apply as many optimizations to itself as possible changing how the level works.");
             PlayCheckpointSound = Bind(this, LEVEL, "Play Checkpoint Sound", true, "If the checkpoint sound should play.");
             PlayCheckpointAnimation = Bind(this, LEVEL, "Play Checkpoint Animation", true, "If the checkpoint animation should play.");
+            StoreRecentLevels = Bind(this, LEVEL, "Store Recent Levels", false, "If recently opened / saved levels in the editor / arcade are saved to a stats.json file. Good for remembering what you did recently.");
 
             #endregion
 

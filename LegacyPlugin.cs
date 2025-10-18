@@ -16,6 +16,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Components;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Beatmap;
+using BetterLegacy.Core.Data.Level;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -56,6 +57,8 @@ namespace BetterLegacy
 
         public static bool CanEdit { get; set; } = true;
 
+        public const string DATE_TIME_FORMAT = "yyyy-MM-dd_HH.mm.ss";
+
         public static Core.Threading.TickRunner MainTick
         {
             get => Core.Threading.TickRunner.Main;
@@ -65,6 +68,8 @@ namespace BetterLegacy
         void Awake()
         {
             inst = this;
+
+            DateOpened = DateTime.Now;
 
             try
             {
@@ -312,14 +317,122 @@ namespace BetterLegacy
 
         #region Profile
 
+        /// <summary>
+        /// The ID of the user on the BetterLegacy server.
+        /// </summary>
         public static string UserID => authData == null ? string.Empty : authData["id"];
 
+        /// <summary>
+        /// The date time the game was opened.
+        /// </summary>
+        public static DateTime DateOpened { get; private set; }
+
+        /// <summary>
+        /// Total amount of editor levels opened.
+        /// </summary>
+        public static int OpenedEditorLevelCount { get; set; }
+
+        /// <summary>
+        /// Total amount of arcade levels opened.
+        /// </summary>
+        public static int OpenedArcadeLevelCount { get; set; }
+
+        /// <summary>
+        /// Maximum amount of recent levels.
+        /// </summary>
+        public static int RecentLevelMaxCount { get; set; } = 20;
+
+        /// <summary>
+        /// Recently opened editor levels.
+        /// </summary>
+        public static List<LevelInfo> RecentEditorLevels { get; set; } = new List<LevelInfo>();
+
+        /// <summary>
+        /// Registers a recently opened editor level.
+        /// </summary>
+        /// <param name="level">Level to register.</param>
+        public static void AddRecentEditorLevel(Level level)
+        {
+            OpenedEditorLevelCount++;
+            if (!level || !CoreConfig.Instance.StoreRecentLevels.Value || RecentEditorLevels.Has(x => x.arcadeID == level.id))
+            {
+                SaveStats();
+                return;
+            }
+
+            while (RecentEditorLevels.Count > RecentLevelMaxCount)
+                RecentEditorLevels.RemoveAt(0);
+            RecentEditorLevels.Add(LevelInfo.FromLevel(level));
+
+            SaveStats();
+        }
+
+        /// <summary>
+        /// Recently saved editor levels.
+        /// </summary>
+        public static List<LevelInfo> RecentSavedEditorLevels { get; set; } = new List<LevelInfo>();
+
+        /// <summary>
+        /// Registers a recently saved editor level.
+        /// </summary>
+        /// <param name="level">Level to register.</param>
+        public static void AddRecentSavedEditorLevel(Level level)
+        {
+            if (!level || !CoreConfig.Instance.StoreRecentLevels.Value || RecentSavedEditorLevels.Has(x => x.arcadeID == level.id))
+                return;
+
+            while (RecentSavedEditorLevels.Count > RecentLevelMaxCount)
+                RecentSavedEditorLevels.RemoveAt(0);
+            RecentSavedEditorLevels.Add(LevelInfo.FromLevel(level));
+
+            SaveStats();
+        }
+
+        /// <summary>
+        /// Recently opened arcade levels.
+        /// </summary>
+        public static List<LevelInfo> RecentArcadeLevels { get; set; } = new List<LevelInfo>();
+
+        /// <summary>
+        /// Registers a recently opened arcade level.
+        /// </summary>
+        /// <param name="level">Level to register.</param>
+        public static void AddRecentArcadeLevel(Level level)
+        {
+            OpenedArcadeLevelCount++;
+            if (!level || !CoreConfig.Instance.StoreRecentLevels.Value || RecentArcadeLevels.Has(x => x.arcadeID == level.id))
+            {
+                SaveStats();
+                return;
+            }
+
+            while (RecentArcadeLevels.Count > RecentLevelMaxCount)
+                RecentArcadeLevels.RemoveAt(0);
+            RecentArcadeLevels.Add(LevelInfo.FromLevel(level));
+
+            SaveStats();
+        }
+
+        /// <summary>
+        /// Clears the recent levels from the profile.
+        /// </summary>
+        public static void ClearRecentLevels()
+        {
+            RecentEditorLevels.Clear();
+            RecentSavedEditorLevels.Clear();
+            RecentArcadeLevels.Clear();
+            SaveStats();
+        }
+
+        /// <summary>
+        /// Saves the users profile.
+        /// </summary>
         public static void SaveProfile()
         {
             var jn = Parser.NewJSONObject();
 
             jn["user_data"]["name"] = player.sprName;
-            jn["user_data"]["spr-id"] = player.sprID;
+            jn["user_data"]["spr_id"] = player.sprID;
 
             for (int i = 0; i < AchievementManager.globalAchievements.Count; i++)
             {
@@ -353,10 +466,17 @@ namespace BetterLegacy
             var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
             RTFile.CreateDirectory(path);
             RTFile.WriteToFile(RTFile.CombinePaths(path, "profile.sep"), jn.ToString());
+
+            SaveStats();
         }
 
+        /// <summary>
+        /// Loads the users profile.
+        /// </summary>
         public static void ParseProfile()
         {
+            LoadStats();
+
             var path = RTFile.CombinePaths(RTFile.ApplicationDirectory, "profile");
             if (!RTFile.DirectoryExists(path))
                 return;
@@ -373,6 +493,8 @@ namespace BetterLegacy
 
             if (!string.IsNullOrEmpty(jn["user_data"]["spr-id"]))
                 player.sprID = jn["user_data"]["spr-id"];
+            if (!string.IsNullOrEmpty(jn["user_data"]["spr_id"]))
+                player.sprID = jn["user_data"]["spr_id"];
 
             try
             {
@@ -404,6 +526,63 @@ namespace BetterLegacy
                 player.memory = jn["memory"];
             else
                 player.memory = Parser.NewJSONObject();
+        }
+
+        /// <summary>
+        /// Saves game stats.
+        /// </summary>
+        public static void SaveStats()
+        {
+            try
+            {
+                var jn = Parser.NewJSONObject();
+
+                jn["date_opened"] = DateOpened.ToString(DATE_TIME_FORMAT);
+                jn["opened_editor_level_count"] = OpenedEditorLevelCount;
+                jn["opened_arcade_level_count"] = OpenedArcadeLevelCount;
+                for (int i = 0; i < RecentEditorLevels.Count; i++)
+                    jn["recent_editor_levels"][i] = RecentEditorLevels[i].ToJSON();
+                for (int i = 0; i < RecentSavedEditorLevels.Count; i++)
+                    jn["recent_saved_editor_levels"][i] = RecentSavedEditorLevels[i].ToJSON();
+                for (int i = 0; i < RecentArcadeLevels.Count; i++)
+                    jn["recent_arcade_levels"][i] = RecentArcadeLevels[i].ToJSON();
+
+                RTFile.WriteToFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "stats.json"), jn.ToString(3));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to save info file. {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Loads game stats.
+        /// </summary>
+        public static void LoadStats()
+        {
+            try
+            {
+                if (!RTFile.TryReadFromFile(RTFile.CombinePaths(RTFile.ApplicationDirectory, "stats.json"), out string file))
+                    return;
+
+                var jn = JSON.Parse(file);
+
+                OpenedEditorLevelCount = jn["opened_editor_level_count"].AsInt;
+                OpenedArcadeLevelCount = jn["opened_arcade_level_count"].AsInt;
+                RecentEditorLevels.Clear();
+                for (int i = 0; i < jn["recent_editor_levels"].Count; i++)
+                    RecentEditorLevels.Add(LevelInfo.Parse(jn["recent_editor_levels"][i], i));
+                RecentSavedEditorLevels.Clear();
+                for (int i = 0; i < jn["recent_saved_editor_levels"].Count; i++)
+                    RecentSavedEditorLevels.Add(LevelInfo.Parse(jn["recent_saved_editor_levels"][i], i));
+                RecentArcadeLevels.Clear();
+                for (int i = 0; i < jn["recent_arcade_levels"].Count; i++)
+                    RecentArcadeLevels.Add(LevelInfo.Parse(jn["recent_arcade_levels"][i], i));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to load info file. {ex}");
+            }
         }
 
         public static List<Universe> universes = new List<Universe>
