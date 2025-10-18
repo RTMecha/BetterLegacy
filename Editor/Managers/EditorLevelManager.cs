@@ -582,6 +582,7 @@ namespace BetterLegacy.Editor.Managers
                 yield break;
             }
 
+            var index = 0;
             var files = Directory.GetDirectories(fullPath);
             foreach (var file in files)
             {
@@ -599,10 +600,12 @@ namespace BetterLegacy.Editor.Managers
 
                     list.Add(levelCollectionPanel.LoadImageCoroutine($"folder_icon{FileFormat.PNG.Dot()}"));
 
+                    index++;
                     continue;
                 }
 
                 levelCollectionPanel.Init(levelCollection);
+                levelCollectionPanel.index = index;
 
                 if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.ICON_PNG)))
                     list.Add(levelCollectionPanel.LoadImageCoroutine(LevelCollection.ICON_PNG, LevelCollectionPanels.Add));
@@ -618,6 +621,7 @@ namespace BetterLegacy.Editor.Managers
                     list.Add(levelCollectionPanel.LoadBannerCoroutine(LevelCollection.BANNER_PNG));
                 else if (RTFile.FileExists(RTFile.CombinePaths(path, LevelCollection.BANNER_JPG)))
                     list.Add(levelCollectionPanel.LoadBannerCoroutine(LevelCollection.BANNER_JPG));
+                index++;
             }
 
             if (list.Count >= 1)
@@ -1448,8 +1452,10 @@ namespace BetterLegacy.Editor.Managers
         {
             var content = LevelCollectionPopup.Content;
 
+            var levelCollectionPanels = LevelCollectionPanels.OrderBy(x => x.index).OrderByDescending(x => x.isFolder);
+
             int num = 0;
-            foreach (var levelCollectionPanel in LevelCollectionPanels)
+            foreach (var levelCollectionPanel in levelCollectionPanels)
             {
                 var folder = levelCollectionPanel.Path;
                 var levelCollection = levelCollectionPanel.Item;
