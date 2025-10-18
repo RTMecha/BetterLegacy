@@ -69,7 +69,6 @@ namespace BetterLegacy.Core.Runtime.Objects.Visual
 
             path = match.Success ? RTFile.CombinePaths(RTFile.BasePath, match.Groups[1].ToString()) : RTFile.CombinePaths(RTFile.BasePath, text);
 
-            var position = gameObject.transform.localPosition;
             if (!RTFile.FileExists(path))
             {
                 SetDefaultSprite();
