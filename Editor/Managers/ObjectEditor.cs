@@ -2936,6 +2936,8 @@ namespace BetterLegacy.Editor.Managers
                 return;
             
             string jpgFileLocation = RTFile.CombinePaths(editorPath, "images", Path.GetFileName(file));
+            if (RTFile.FileExists(RTFile.CombinePaths(editorPath, Path.GetFileName(file))))
+                jpgFileLocation = RTFile.CombinePaths(editorPath, Path.GetFileName(file));
 
             if (copyFile && (EditorConfig.Instance.OverwriteImportedImages.Value || !RTFile.FileExists(jpgFileLocation)) && !file.Contains(editorPath))
                 RTFile.CopyFile(file, jpgFileLocation);
