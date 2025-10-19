@@ -2817,6 +2817,9 @@ namespace BetterLegacy.Editor.Managers
             else if (EasingDropdownLayoutGroupValues is HorizontalOrVerticalLayoutValues horizontalOrVerticalLayoutValues)
                 horizontalOrVerticalLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<HorizontalOrVerticalLayoutGroup>());
             EasingDropdownTemplateRectValues.AssignToRectTransform(dropdown.template);
+            var contentSizeFitter = dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<ContentSizeFitter>();
+            contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
         }
 
         public List<Dropdown.OptionData> GetEaseOptions()
