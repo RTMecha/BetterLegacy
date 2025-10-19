@@ -989,7 +989,7 @@ namespace BetterLegacy.Core.Runtime.Events
             RTLevel.Cameras.BG.nearClipPlane = bgAlignNearPlane ? -RTLevel.Cameras.BG.transform.position.z + camPerspectiveOffset : 0.3f;
         }
 
-        public void SetCameraRotation(float rotate) => SetCameraPosition(new Vector3(0f, 0f, rotate));
+        public void SetCameraRotation(float rotate) => SetCameraRotation(new Vector3(0f, 0f, rotate));
 
         public Vector3 GetCameraRotation() => EventManager.inst.camParent.transform.rotation.eulerAngles;
 

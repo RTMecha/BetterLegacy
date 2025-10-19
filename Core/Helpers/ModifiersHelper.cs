@@ -8149,7 +8149,7 @@ namespace BetterLegacy.Core.Helpers
 
             if (allCameras)
             {
-                RTLevel.Current.eventEngine.SetCameraPosition(new Vector3(offsetX, offsetY));
+                RTLevel.Current.eventEngine.SetCameraPosition(new Vector2(offsetX, offsetY));
                 RTLevel.Current.eventEngine.SetCameraRotation(rotate);
 
                 EventManager.inst.camParent.transform.localPosition = Vector2.zero;
