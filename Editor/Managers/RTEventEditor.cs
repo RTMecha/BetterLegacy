@@ -1660,8 +1660,7 @@ namespace BetterLegacy.Editor.Managers
             snapStorage.label.text = "Snap";
 
             var button = snapStorage.button;
-            button.onClick.ClearAll();
-            button.onClick.AddListener(() =>
+            button.onClick.NewListener(() =>
             {
                 foreach (var kf in SelectedKeyframes)
                 {
@@ -1709,8 +1708,7 @@ namespace BetterLegacy.Editor.Managers
             alignToFirstStorage.label.text = "Align";
 
             var alignToFirst = alignToFirstStorage.button;
-            alignToFirst.onClick.ClearAll();
-            alignToFirst.onClick.AddListener(() =>
+            alignToFirst.onClick.NewListener(() =>
             {
                 var list = SelectedKeyframes.OrderBy(x => x.Time);
                 var first = list.ElementAt(0);
@@ -1761,8 +1759,7 @@ namespace BetterLegacy.Editor.Managers
             pasteAllStorage.label.text = "Paste";
 
             var pasteAll = pasteAllStorage.button;
-            pasteAll.onClick.ClearAll();
-            pasteAll.onClick.AddListener(() =>
+            pasteAll.onClick.NewListener(() =>
             {
                 foreach (var keyframe in SelectedKeyframes)
                 {
@@ -1862,8 +1859,7 @@ namespace BetterLegacy.Editor.Managers
             if (time.text == "100.000")
                 time.text = "10";
 
-            timeStorage.leftGreaterButton.onClick.ClearAll();
-            timeStorage.leftGreaterButton.onClick.AddListener(() =>
+            timeStorage.leftGreaterButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1881,9 +1877,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(time.text);
             });
-
-            timeStorage.leftButton.onClick.ClearAll();
-            timeStorage.leftButton.onClick.AddListener(() =>
+            timeStorage.leftButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1901,9 +1895,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(time.text);
             });
-
-            timeStorage.middleButton.onClick.ClearAll();
-            timeStorage.middleButton.onClick.AddListener(() =>
+            timeStorage.middleButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1918,9 +1910,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(time.text);
             });
-
-            timeStorage.rightButton.onClick.ClearAll();
-            timeStorage.rightButton.onClick.AddListener(() =>
+            timeStorage.rightButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1938,9 +1928,7 @@ namespace BetterLegacy.Editor.Managers
                 else
                     LogIncorrectFormat(time.text);
             });
-
-            timeStorage.rightGreaterButton.onClick.ClearAll();
-            timeStorage.rightGreaterButton.onClick.AddListener(() =>
+            timeStorage.rightGreaterButton.onClick.NewListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1962,10 +1950,9 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
 
             var curves = dialog.Find("curves/curves").GetComponent<Dropdown>();
-            curves.onValueChanged.ClearAll();
-            curves.onValueChanged.AddListener(_val =>
+            curves.onValueChanged.NewListener(_val =>
             {
-                var anim = (Easing)_val;
+                var anim = RTEditor.inst.GetEasing(_val);
                 foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
                     kf.eventKeyframe.curve = anim;
 
@@ -2106,11 +2093,10 @@ namespace BetterLegacy.Editor.Managers
 
             if (isNotFirst)
             {
-                dialog.CurvesDropdown.onValueChanged.ClearAll();
-                dialog.CurvesDropdown.value = (int)currentKeyframe.curve;
-                dialog.CurvesDropdown.onValueChanged.AddListener(_val =>
+                dialog.CurvesDropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(currentKeyframe.curve.ToString()));
+                dialog.CurvesDropdown.onValueChanged.NewListener(_val =>
                 {
-                    var anim = (Easing)_val;
+                    var anim = RTEditor.inst.GetEasing(_val);
                     foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == EventEditor.inst.currentEventType))
                         kf.eventKeyframe.curve = anim;
 

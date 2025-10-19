@@ -7,6 +7,13 @@ namespace BetterLegacy.Core.Animation
 {
     public delegate float EaseFunction(float t);
 
+    public class EaseReference
+    {
+        public EaseReference(string name) => Name = name;
+
+        public string Name { get; }
+    }
+
     /// <summary>
     /// Static class with useful easer functions that can be used by Tweens.
     /// </summary>
@@ -36,7 +43,52 @@ namespace BetterLegacy.Core.Animation
             { "InOutCirc", CircInOut },
             { "InExpo", ExpoIn },
             { "OutExpo", ExpoOut },
-            { "InOutExpo", ExpoInOut }
+            { "InOutExpo", ExpoInOut },
+            { "InCubic", CubicIn },
+            { "OutCubic", CubicOut },
+            { "InOutCubic", CubicInOut },
+            { "InQuart", QuartIn },
+            { "OutQuart", QuartOut },
+            { "InOutQuart", QuartInOut },
+            { "InQuint", QuintIn },
+            { "OutQuint", QuintOut },
+            { "InOutQuint", QuintInOut },
+        };
+
+        public static List<EaseReference> EaseReferences { get; set; } = new List<EaseReference>
+        {
+            new EaseReference("Linear"),
+            new EaseReference("Instant"),
+            new EaseReference("InSine"),
+            new EaseReference("OutSine"),
+            new EaseReference("InOutSine"),
+            new EaseReference("InElastic"),
+            new EaseReference("OutElastic"),
+            new EaseReference("InOutElastic"),
+            new EaseReference("InBack"),
+            new EaseReference("OutBack"),
+            new EaseReference("InOutBack"),
+            new EaseReference("InBounce"),
+            new EaseReference("OutBounce"),
+            new EaseReference("InOutBounce"),
+            new EaseReference("InQuad"),
+            new EaseReference("OutQuad"),
+            new EaseReference("InOutQuad"),
+            new EaseReference("InCirc"),
+            new EaseReference("OutCirc"),
+            new EaseReference("InOutCirc"),
+            new EaseReference("InExpo"),
+            new EaseReference("OutExpo"),
+            new EaseReference("InOutExpo"),
+            new EaseReference("InCubic"),
+            new EaseReference("OutCubic"),
+            new EaseReference("InOutCubic"),
+            new EaseReference("InQuart"),
+            new EaseReference("OutQuart"),
+            new EaseReference("InOutQuart"),
+            new EaseReference("InQuint"),
+            new EaseReference("OutQuint"),
+            new EaseReference("InOutQuint"),
         };
 
         public static EaseFunction GetEaseFunction(string name) => EaseLookup[name];
@@ -331,7 +383,7 @@ namespace BetterLegacy.Core.Animation
         /// </summary>
         /// <param name="t">Time elapsed.</param>
         /// <returns>Eased timescale.</returns>
-        public static float CubicOut(float t) => -t * (t - 3);
+        public static float CubicOut(float t) => 1 - Mathf.Pow(1 - t, 3);
 
         /// <summary>
         /// Cubic in and out.
@@ -356,7 +408,7 @@ namespace BetterLegacy.Core.Animation
         /// </summary>
         /// <param name="t">Time elapsed.</param>
         /// <returns>Eased timescale.</returns>
-        public static float QuartOut(float t) => -t * (t - 4);
+        public static float QuartOut(float t) => 1 - Mathf.Pow(1 - t, 4);
 
         /// <summary>
         /// Quart in and out.
@@ -381,7 +433,7 @@ namespace BetterLegacy.Core.Animation
         /// </summary>
         /// <param name="t">Time elapsed.</param>
         /// <returns>Eased timescale.</returns>
-        public static float QuintOut(float t) => -t * (t - 5);
+        public static float QuintOut(float t) => 1 - Mathf.Pow(1 - t, 5);
 
         /// <summary>
         /// Quint in and out.

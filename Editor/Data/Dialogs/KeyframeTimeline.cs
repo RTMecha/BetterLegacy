@@ -1369,7 +1369,7 @@ namespace BetterLegacy.Editor.Data.Dialogs
                     curvesMulti.onValueChanged.ClearAll();
                     curvesMultiApplyButton.onClick.NewListener(() =>
                     {
-                        var anim = (Easing)curvesMulti.value;
+                        var anim = RTEditor.inst.GetEasing(curvesMulti.value);
                         foreach (var keyframe in selected)
                         {
                             if (keyframe.Index != 0)
@@ -1637,10 +1637,10 @@ namespace BetterLegacy.Editor.Data.Dialogs
 
             dialog.CurvesLabel.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
             dialog.CurvesDropdown.gameObject.SetActive(count == 1 && firstKF.Index != 0 || count > 1);
-            dialog.CurvesDropdown.SetValueWithoutNotify((int)firstKF.eventKeyframe.curve);
+            dialog.CurvesDropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(firstKF.eventKeyframe.curve.ToString()));
             dialog.CurvesDropdown.onValueChanged.NewListener(_val =>
             {
-                var anim = (Easing)_val;
+                var anim = RTEditor.inst.GetEasing(_val);
                 foreach (var keyframe in selected)
                 {
                     if (keyframe.Index != 0)

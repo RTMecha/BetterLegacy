@@ -771,6 +771,7 @@ namespace BetterLegacy.Editor.Managers
             CreateAutosavePopup();
             CreateScreenshotsView();
             CreateFontSelector();
+            SetupEaseDropdowns();
 
             ProgressPopup = new ProgressPopup(EditorPopup.PROGRESS_POPUP);
             ProgressPopup.Init();
@@ -1142,7 +1143,11 @@ namespace BetterLegacy.Editor.Managers
         /// <summary>
         /// A list of easing dropdowns.
         /// </summary>
-        public static List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
+        public List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
+
+        public List<EasingOption> EasingOptions { get; set; } = new List<EasingOption>();
+
+        public LayoutValues EasingDropdownLayoutGroupValues { get; set; }
 
         /// <summary>
         /// If advanced features should display.
@@ -2746,6 +2751,76 @@ namespace BetterLegacy.Editor.Managers
             editorPopup.Init();
             editorPopups.Add(editorPopup);
             return editorPopup;
+        }
+
+        public void SetupIndexer(IIndexDialog dialog)
+        {
+            if (dialog == null || !dialog.Edit)
+            {
+                CoreHelper.LogError($"Failed to setup indexer.");
+                return;
+            }
+
+            try
+            {
+                dialog.JumpToStartButton = dialog.Edit.Find("<<").GetComponent<Button>();
+                dialog.JumpToPrevButton = dialog.Edit.Find("<").GetComponent<Button>();
+
+                if (dialog.Edit.TryFind("|/Text", out Transform textTransform))
+                    dialog.KeyframeIndexer = textTransform.GetComponent<Text>();
+                else if (dialog.Edit.TryFind("|/text", out Transform textLowerTransform))
+                    dialog.KeyframeIndexer = textLowerTransform.GetComponent<Text>();
+
+                dialog.JumpToNextButton = dialog.Edit.Find(">").GetComponent<Button>();
+                dialog.JumpToLastButton = dialog.Edit.Find(">>").GetComponent<Button>();
+
+                if (dialog.Edit.TryFind("copy", out Transform copyTransform))
+                    dialog.CopyButton = copyTransform.GetComponent<FunctionButtonStorage>();
+                if (dialog.Edit.TryFind("paste", out Transform pasteTransform))
+                    dialog.PasteButton = pasteTransform.GetComponent<FunctionButtonStorage>();
+                dialog.DeleteButton = dialog.Edit.Find("del").gameObject.AddComponent<DeleteButtonStorage>();
+                dialog.DeleteButton.Assign(dialog.DeleteButton.gameObject);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to set edit: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Sets up an easing dropdown.
+        /// </summary>
+        /// <param name="dropdown">Dropdown to setup.</param>
+        public void SetupEaseDropdown(Dropdown dropdown)
+        {
+            //dropdown.options.Clear();
+            //var easingNames = Enum.GetNames(typeof(Easing));
+            //for (int i = 0; i < easingNames.Length; i++)
+            //{
+            //    var easingName = easingNames[i];
+            //    var icon = SpriteHelper.LoadSprite(AssetPack.TryGetFile("core/sprites/ease/" + easingName + FileFormat.PNG.Dot(), out string iconFilePath) ? iconFilePath : AssetPack.GetFile("core/sprites/ease/Instant.png"));
+
+            //    dropdown.options.Add(icon ? new Dropdown.OptionData(easingName, icon) : new Dropdown.OptionData(easingName));
+            //}
+            dropdown.options = GetEaseOptions();
+            if (EasingDropdownLayoutGroupValues is GridLayoutValues gridLayoutValues)
+                gridLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<GridLayoutGroup>());
+            else if (EasingDropdownLayoutGroupValues is HorizontalOrVerticalLayoutValues horizontalOrVerticalLayoutValues)
+                horizontalOrVerticalLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<HorizontalOrVerticalLayoutGroup>());
+        }
+
+        public List<Dropdown.OptionData> GetEaseOptions()
+        {
+            //var options = EasingOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
+            //var easingNames = Enum.GetNames(typeof(Easing));
+            //for (int i = 0; i < easingNames.Length; i++)
+            //{
+            //    var easingName = easingNames[i];
+            //    var icon = SpriteHelper.LoadSprite(AssetPack.TryGetFile("core/sprites/ease/" + easingName + FileFormat.PNG.Dot(), out string iconFilePath) ? iconFilePath : AssetPack.GetFile("core/sprites/ease/Instant.png"));
+
+            //    options.Add(icon ? new Dropdown.OptionData(easingName, icon) : new Dropdown.OptionData(easingName));
+            //}
+            return EasingOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
         }
 
         #region Internal
@@ -4807,38 +4882,38 @@ namespace BetterLegacy.Editor.Managers
             text.text = "font";
         }
 
-        public void SetupIndexer(IIndexDialog dialog)
+        void SetupEaseDropdowns()
         {
-            if (dialog == null || !dialog.Edit)
+            EasingOptions.Clear();
+            if (AssetPack.TryReadFromFile("editor/data/ease.json", out string easeFile))
             {
-                CoreHelper.LogError($"Failed to setup indexer.");
-                return;
+                var jn = JSON.Parse(easeFile);
+
+                EasingDropdownLayoutGroupValues = LayoutValues.Parse(jn["layout"]);
+                for (int i = 0; i < jn["options"].Count; i++)
+                {
+                    var jnOption = jn["options"][i];
+                    var easingOption = new EasingOption();
+                    easingOption.name = jnOption["name"];
+                    easingOption.index = jnOption["index"].AsInt;
+                    easingOption.icon = SpriteHelper.LoadSprite(AssetPack.TryGetFile(jnOption["icon_ref"], out string iconPath) ? iconPath : "core/sprites/ease/Linear.png");
+                    EasingOptions.Add(easingOption);
+                }
             }
 
-            try
+            EasingDropdowns.Clear();
+
+            var easingDropdowns = (from x in Resources.FindObjectsOfTypeAll<Dropdown>()
+                                   where x.gameObject && x.gameObject.name == "curves"
+                                   select x).ToList();
+
+            foreach (var dropdown in easingDropdowns)
             {
-                dialog.JumpToStartButton = dialog.Edit.Find("<<").GetComponent<Button>();
-                dialog.JumpToPrevButton = dialog.Edit.Find("<").GetComponent<Button>();
-
-                if (dialog.Edit.TryFind("|/Text", out Transform textTransform))
-                    dialog.KeyframeIndexer = textTransform.GetComponent<Text>();
-                else if (dialog.Edit.TryFind("|/text", out Transform textLowerTransform))
-                    dialog.KeyframeIndexer = textLowerTransform.GetComponent<Text>();
-
-                dialog.JumpToNextButton = dialog.Edit.Find(">").GetComponent<Button>();
-                dialog.JumpToLastButton = dialog.Edit.Find(">>").GetComponent<Button>();
-
-                if (dialog.Edit.TryFind("copy", out Transform copyTransform))
-                    dialog.CopyButton = copyTransform.GetComponent<FunctionButtonStorage>();
-                if (dialog.Edit.TryFind("paste", out Transform pasteTransform))
-                    dialog.PasteButton = pasteTransform.GetComponent<FunctionButtonStorage>();
-                dialog.DeleteButton = dialog.Edit.Find("del").gameObject.AddComponent<DeleteButtonStorage>();
-                dialog.DeleteButton.Assign(dialog.DeleteButton.gameObject);
+                SetupEaseDropdown(dropdown);
+                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
             }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"Failed to set edit: {ex}");
-            }
+
+            EasingDropdowns = easingDropdowns;
         }
 
         #endregion
@@ -5847,6 +5922,16 @@ namespace BetterLegacy.Editor.Managers
                     GameData.Current.prefabs.Remove(x => x.id == prefab.id);
                 }
         }
+
+        public int GetEaseIndex(string name)
+        {
+            var index = EasingOptions.FindIndex(x => x.name == name);
+            return index < 0 ? 0 : index;
+        }
+
+        public string GetEaseName(int index) => EasingOptions.TryFind(x => x.index == index, out EasingOption easingOption) ? easingOption.name : "Linear";
+
+        public Easing GetEasing(int index) => EasingOptions.TryFind(x => x.index == index, out EasingOption easingOption) ? (Easing)easingOption.index : Easing.Linear;
 
         public void ConvertVGToLS()
         {

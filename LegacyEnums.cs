@@ -989,7 +989,16 @@ namespace BetterLegacy
         InOutCirc,
         InExpo,
         OutExpo,
-        InOutExpo
+        InOutExpo,
+        InCubic,
+        OutCubic,
+        InOutCubic,
+        InQuart,
+        OutQuart,
+        InOutQuart,
+        InQuint,
+        OutQuint,
+        InOutQuint,
     }
 
     /// <summary>

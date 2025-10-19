@@ -2693,6 +2693,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var curvesObject = EditorPrefabHolder.Instance.CurvesDropdown.Duplicate(parent, "curves");
                 var curves = curvesObject.GetComponent<Dropdown>();
+                RTEditor.inst.SetupEaseDropdown(curves);
                 curves.onValueChanged.ClearAll();
                 curves.options.Insert(0, new Dropdown.OptionData("None (Doesn't Set Easing)"));
 
@@ -2706,7 +2707,7 @@ namespace BetterLegacy.Editor.Managers
                     var buttons1 = GenerateButtons(parent, 32f, 8f,
                         new ButtonFunction("Set", () =>
                         {
-                            Easing anim = (Easing)(curves.value - 1);
+                            var anim = RTEditor.inst.GetEasing(curves.value - 1);
                             bool setCurve = curves.value != 0;
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
@@ -2746,7 +2747,7 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Add", () =>
                         {
-                            Easing anim = (Easing)(curves.value - 1);
+                            var anim = RTEditor.inst.GetEasing(curves.value - 1);
                             bool setCurve = curves.value != 0;
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
@@ -2786,7 +2787,7 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Sub", () =>
                         {
-                            Easing anim = (Easing)(curves.value - 1);
+                            var anim = RTEditor.inst.GetEasing(curves.value - 1);
                             bool setCurve = curves.value != 0;
                             foreach (var timelineObject in EditorTimeline.inst.SelectedObjects.Where(x => x.isBeatmapObject))
                             {
@@ -2983,7 +2984,7 @@ namespace BetterLegacy.Editor.Managers
                                 var kf = bm.events[3][index].Copy();
                                 kf.time = currentTime - bm.StartTime;
                                 if (curves.value != 0)
-                                    kf.curve = (Easing)(curves.value - 1);
+                                    kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
 
                                 if (currentMultiColorSelection >= 0)
                                     kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
@@ -4315,7 +4316,7 @@ namespace BetterLegacy.Editor.Managers
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
             if (curves.value != 0)
-                kf.curve = (Easing)(curves.value - 1);
+                kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
             if (currentMultiColorSelection >= 0)
                 kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
@@ -4344,7 +4345,7 @@ namespace BetterLegacy.Editor.Managers
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
             if (curves.value != 0)
-                kf.curve = (Easing)(curves.value - 1);
+                kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
             if (currentMultiColorSelection >= 0)
                 kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
@@ -4373,7 +4374,7 @@ namespace BetterLegacy.Editor.Managers
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
             if (curves.value != 0)
-                kf.curve = (Easing)(curves.value - 1);
+                kf.curve = RTEditor.inst.GetEasing(curves.value - 1);
             if (currentMultiColorSelection >= 0)
                 kf.values[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))

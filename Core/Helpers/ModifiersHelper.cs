@@ -3303,8 +3303,8 @@ namespace BetterLegacy.Core.Helpers
                     var relative = modifier.GetBool(i + 2, true, variables);
 
                     var easing = modifier.GetValue(i + 3, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                        easing = Ease.EaseReferences[e].Name;
 
                     var setvalue = x;
                     if (relative)
@@ -3708,8 +3708,8 @@ namespace BetterLegacy.Core.Helpers
             var relative = modifier.GetBool(2, true, variables);
 
             string easing = modifier.GetValue(3, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var setPitch = pitch;
             if (relative)
@@ -5272,8 +5272,8 @@ namespace BetterLegacy.Core.Helpers
                 else
                 {
                     string easing = modifier.GetValue(3, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                        easing = Ease.EaseReferences[e].Name;
 
                     var animation = new RTAnimation("Player Move");
                     animation.animationHandlers = new List<AnimationHandlerBase>
@@ -5296,8 +5296,8 @@ namespace BetterLegacy.Core.Helpers
             var duration = modifier.GetFloat(3, 0f, variables);
 
             string easing = modifier.GetValue(4, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var relative = modifier.GetBool(5, false, variables);
 
@@ -5347,8 +5347,8 @@ namespace BetterLegacy.Core.Helpers
             var duration = modifier.GetFloat(2, 1f, variables);
 
             string easing = modifier.GetValue(3, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             bool relative = modifier.GetBool(4, false, variables);
             foreach (var player in PlayerManager.Players)
@@ -5389,8 +5389,8 @@ namespace BetterLegacy.Core.Helpers
             var value = modifier.GetFloat(0, 0f, variables);
             var duration = modifier.GetFloat(1, 1f, variables);
             string easing = modifier.GetValue(2, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             bool relative = modifier.GetBool(3, false, variables);
 
@@ -5436,8 +5436,8 @@ namespace BetterLegacy.Core.Helpers
             var duration = modifier.GetFloat(2, 0f, variables);
 
             string easing = modifier.GetValue(3, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var relative = modifier.GetBool(4, false, variables);
 
@@ -5475,8 +5475,8 @@ namespace BetterLegacy.Core.Helpers
             var value = modifier.GetFloat(0, 0f, variables);
             var duration = modifier.GetFloat(1, 1f, variables);
             string easing = modifier.GetValue(2, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             bool relative = modifier.GetBool(3, false, variables);
             foreach (var player in PlayerManager.Players)
@@ -5519,8 +5519,8 @@ namespace BetterLegacy.Core.Helpers
             var value = modifier.GetFloat(0, 0f, variables);
             var duration = modifier.GetFloat(1, 1f, variables);
             string easing = modifier.GetValue(2, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             bool relative = modifier.GetBool(3, false, variables);
 
@@ -5566,8 +5566,8 @@ namespace BetterLegacy.Core.Helpers
             var duration = modifier.GetFloat(2, 0f, variables);
 
             string easing = modifier.GetValue(3, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var relative = modifier.GetBool(4, false, variables);
 
@@ -5605,8 +5605,8 @@ namespace BetterLegacy.Core.Helpers
             var value = modifier.GetFloat(0, 0f, variables);
             var duration = modifier.GetFloat(1, 1f, variables);
             string easing = modifier.GetValue(2, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             bool relative = modifier.GetBool(3, false, variables);
             foreach (var player in PlayerManager.Players)
@@ -5648,8 +5648,8 @@ namespace BetterLegacy.Core.Helpers
 
             var value = modifier.GetFloat(0, 0f, variables);
             string easing = modifier.GetValue(2, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
             var duration = modifier.GetFloat(1, 1f, variables);
             bool relative = modifier.GetBool(3, false, variables);
 
@@ -5695,8 +5695,8 @@ namespace BetterLegacy.Core.Helpers
             var duration = modifier.GetFloat(2, 0f, variables);
 
             string easing = modifier.GetValue(3, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var relative = modifier.GetBool(4, false, variables);
 
@@ -5733,8 +5733,8 @@ namespace BetterLegacy.Core.Helpers
         {
             var value = modifier.GetFloat(0, 0f, variables);
             string easing = modifier.GetValue(2, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
             var duration = modifier.GetFloat(1, 1f, variables);
 
             bool relative = modifier.GetBool(3, false, variables);
@@ -7190,8 +7190,8 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             string easing = modifier.GetValue(4, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var list = RTLevel.Current.eventEngine.offsets;
 
@@ -7824,8 +7824,8 @@ namespace BetterLegacy.Core.Helpers
                     var relative = modifier.GetBool(i + 12, true, variables);
 
                     var easing = modifier.GetValue(i + 13, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                        easing = Ease.EaseReferences[e].Name;
 
                     var ease = Ease.GetEaseFunction(easing, Ease.Linear);
                     keyframes1.Add(new CustomThemeKeyframe(currentTime + time, colorSource, colorSlot1, opacity1, hue1, saturation1, value1, ease, false));
@@ -7904,8 +7904,8 @@ namespace BetterLegacy.Core.Helpers
                     var relative = modifier.GetBool(i + 4, true, variables);
 
                     var easing = modifier.GetValue(i + 5, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                        easing = Ease.EaseReferences[e].Name;
 
                     var ease = Ease.GetEaseFunction(easing, Ease.Linear);
                     keyframes1.Add(new ColorKeyframe(currentTime + time, RTColors.HexToColor(color1), ease));
@@ -8868,8 +8868,8 @@ namespace BetterLegacy.Core.Helpers
             var relative = modifier.GetBool(5, true, variables);
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(7, true, variables);
 
@@ -8919,8 +8919,8 @@ namespace BetterLegacy.Core.Helpers
             var relative = modifier.GetBool(5, true, variables);
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(8, true, variables);
 
@@ -9004,8 +9004,8 @@ namespace BetterLegacy.Core.Helpers
                     var relative = modifier.GetBool(i + 4, true, variables);
 
                     var easing = modifier.GetValue(i + 5, variables);
-                    if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                        easing = DataManager.inst.AnimationList[e].Name;
+                    if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                        easing = Ease.EaseReferences[e].Name;
 
                     var setVector = new Vector3(x, y, z);
                     if (relative)
@@ -9051,8 +9051,8 @@ namespace BetterLegacy.Core.Helpers
             }
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(10, true, variables);
 
@@ -9126,8 +9126,8 @@ namespace BetterLegacy.Core.Helpers
             }
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(11, true, variables);
 
@@ -9195,8 +9195,8 @@ namespace BetterLegacy.Core.Helpers
             var relative = modifier.GetBool(5, true, variables);
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(7, true, variables);
 
@@ -9252,8 +9252,8 @@ namespace BetterLegacy.Core.Helpers
             var relative = modifier.GetBool(5, true, variables);
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(8, true, variables);
 
@@ -9323,8 +9323,8 @@ namespace BetterLegacy.Core.Helpers
             }
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(10, true, variables);
 
@@ -9401,8 +9401,8 @@ namespace BetterLegacy.Core.Helpers
             }
 
             string easing = modifier.GetValue(6, variables);
-            if (int.TryParse(easing, out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
-                easing = DataManager.inst.AnimationList[e].Name;
+            if (int.TryParse(easing, out int e) && e >= 0 && e < Ease.EaseReferences.Count)
+                easing = Ease.EaseReferences[e].Name;
 
             var applyDeltaTime = modifier.GetBool(11, true, variables);
 

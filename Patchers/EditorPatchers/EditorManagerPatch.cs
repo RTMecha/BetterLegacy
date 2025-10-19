@@ -74,24 +74,6 @@ namespace BetterLegacy.Patchers
             __instance.ScreenScaleInverse = 1f / __instance.ScreenScale;
             __instance.RefreshDialogDictionary();
 
-            var easingDropdowns = (from x in Resources.FindObjectsOfTypeAll<Dropdown>()
-                                   where x.gameObject != null && x.gameObject.name == "curves"
-                                   select x).ToList();
-
-            RTEditor.EasingDropdowns.Clear();
-
-            var easings = __instance.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
-
-            foreach (var dropdown in easingDropdowns)
-            {
-                dropdown.ClearOptions();
-                dropdown.AddOptions(easings);
-
-                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
-            }
-
-            RTEditor.EasingDropdowns = easingDropdowns;
-
             RTLevel.Current?.Clear();
             RTLevel.Current = null;
 

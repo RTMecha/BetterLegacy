@@ -1340,7 +1340,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1354,7 +1354,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 3, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 4);
 
                         BoolGenerator(modifier, reference, "Relative", 5, false);
 
@@ -1376,7 +1376,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1387,7 +1387,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1400,7 +1400,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1411,7 +1411,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1422,7 +1422,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1435,7 +1435,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1446,7 +1446,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1457,7 +1457,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -1470,7 +1470,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 2, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 3, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 3);
 
                         BoolGenerator(modifier, reference, "Relative", 4, false);
 
@@ -1481,7 +1481,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         SingleGenerator(modifier, reference, "Duration", 1, 1f);
 
-                        DropdownGenerator(modifier, reference, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 2);
 
                         BoolGenerator(modifier, reference, "Relative", 3, false);
 
@@ -2663,7 +2663,7 @@ namespace BetterLegacy.Editor.Data.Elements
                         SingleGenerator(modifier, reference, "Offset Value", 0, 0f);
 
                         SingleGenerator(modifier, reference, "Time", 3, 1f);
-                        DropdownGenerator(modifier, reference, "Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 4);
                         BoolGenerator(modifier, reference, "Relative", 5, false);
 
                         break;
@@ -3141,7 +3141,8 @@ namespace BetterLegacy.Editor.Data.Elements
                                 continue;
 
                             SingleGenerator(modifier, reference, "Keyframe Time", i + 1);
-                            DropdownGenerator(modifier, reference, "Easing", i + 13, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                            EaseGenerator(modifier, modifier, i + 13);
+
                             BoolGenerator(modifier, reference, "Relative", i + 12, true);
 
                             ColorGenerator(modifier, reference, "Color 1", i + 2, colorSource);
@@ -3174,7 +3175,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             modifier.values.Add("0"); // saturation 2
                             modifier.values.Add("0"); // value 2
                             modifier.values.Add("True"); // relative
-                            modifier.values.Add("0"); // easing
+                            modifier.values.Add("Linear"); // easing
                         });
 
                         break;
@@ -3214,7 +3215,8 @@ namespace BetterLegacy.Editor.Data.Elements
                                 continue;
 
                             SingleGenerator(modifier, reference, "Keyframe Time", i + 1);
-                            DropdownGenerator(modifier, reference, "Easing", i + 5, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                            EaseGenerator(modifier, modifier, i + 5);
+
                             BoolGenerator(modifier, reference, "Relative", i + 4, true);
 
                             StringGenerator(modifier, reference, "Color 1", i + 2);
@@ -3230,7 +3232,7 @@ namespace BetterLegacy.Editor.Data.Elements
                             modifier.values.Add("0"); // color 1
                             modifier.values.Add("0"); // color 2
                             modifier.values.Add("True"); // relative
-                            modifier.values.Add("0"); // easing
+                            modifier.values.Add("Linear"); // easing
                         });
 
                         break;
@@ -3581,7 +3583,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 7, true);
 
@@ -3602,7 +3604,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 8, true);
 
@@ -3621,7 +3623,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         StringGenerator(modifier, reference, "Signal Group", 7);
                         SingleGenerator(modifier, reference, "Signal Delay", 8, 0f);
@@ -3644,7 +3646,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -3669,7 +3671,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 7, true);
 
@@ -3690,7 +3692,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         BoolGenerator(modifier, reference, "Apply Delta Time", 8, true);
 
@@ -3709,7 +3711,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         StringGenerator(modifier, reference, "Signal Group", 7);
                         StringGenerator(modifier, reference, "Signal Delay", 8);
@@ -3732,7 +3734,7 @@ namespace BetterLegacy.Editor.Data.Elements
 
                         BoolGenerator(modifier, reference, "Relative", 5, true);
 
-                        DropdownGenerator(modifier, reference, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                        EaseGenerator(modifier, modifier, 6);
 
                         var str = StringGenerator(modifier, reference, "Object Group", 7);
                         EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
@@ -5579,9 +5581,75 @@ namespace BetterLegacy.Editor.Data.Elements
             return startColorBase;
         }
 
+        //public GameObject EaseGenerator<T>(Modifier modifier, T reference, int type) => DropdownGenerator(modifier, reference, "Easing",
+        //        () => modifier.GetValue(type),
+        //        _val =>
+        //        {
+        //            modifier.SetValue(type, _val);
+        //        },
+        //        RTEditor.inst.GetEaseOptions(), null,
+        //        _val =>
+        //        {
+        //            modifier.SetValue(type, Core.Animation.Ease.EaseReferences.GetAtOrDefault(_val, Core.Animation.Ease.EaseReferences[0]).Name);
+        //        });
+        
+        public GameObject EaseGenerator<T>(Modifier modifier, T reference, int type)
+        {
+            var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, "Easing");
+            dd.transform.localScale = Vector3.one;
+            var labelText = dd.transform.Find("Text").GetComponent<Text>();
+            labelText.text = "Easing";
+
+            CoreHelper.Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+
+            var hideOptions = dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>();
+            CoreHelper.Destroy(hideOptions);
+
+            var dropdown = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+            RTEditor.inst.SetupEaseDropdown(dropdown);
+            dropdown.SetValueWithoutNotify(RTEditor.inst.GetEaseIndex(modifier.GetValue(type)));
+            dropdown.onValueChanged.NewListener(_val =>
+            {
+                modifier.SetValue(type, RTEditor.inst.GetEaseName(_val));
+
+                Update(modifier, reference);
+            });
+
+            if (dropdown.template)
+                dropdown.template.sizeDelta = new Vector2(80f, 192f);
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyDropdown(dropdown);
+
+            var contextClickable = dropdown.gameObject.AddComponent<ContextClickable>();
+            contextClickable.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Edit Raw Value", () =>
+                    {
+                        RTEditor.inst.folderCreatorName.text = modifier.GetValue(type);
+                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
+                        {
+                            modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                            if (reference is IModifyable modifyable)
+                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                            RTEditor.inst.HideNameEditor();
+                            Update(modifier, reference);
+                        });
+                    }));
+            };
+
+            return dd;
+        }
+
         public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<string> options, Action<int> onSelect = null) => DropdownGenerator(modifier, reference, label, type, options.Select(x => new Dropdown.OptionData(x)).ToList(), null, onSelect);
 
-        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions = null, Action<int> onSelect = null)
+        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<Dropdown.OptionData> options, Action<int> onSelect = null) => DropdownGenerator(modifier, reference, label, type, options, null, onSelect);
+
+        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, int type, List<Dropdown.OptionData> options, List<bool> disabledOptions, Action<int> onSelect = null)
         {
             var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -5603,13 +5671,12 @@ namespace BetterLegacy.Editor.Data.Elements
             }
 
             var dropdown = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-            dropdown.onValueChanged.ClearAll();
-            dropdown.options.Clear();
             dropdown.options = options;
-            dropdown.value = modifier.GetInt(type, 0);
-            dropdown.onValueChanged.AddListener(_val =>
+            dropdown.SetValueWithoutNotify(modifier.GetInt(type, 0));
+            dropdown.onValueChanged.NewListener(_val =>
             {
-                modifier.SetValue(type, _val.ToString());
+                if (onSelect == null)
+                    modifier.SetValue(type, _val.ToString());
                 onSelect?.Invoke(_val);
 
                 Update(modifier, reference);
@@ -5634,6 +5701,67 @@ namespace BetterLegacy.Editor.Data.Elements
                         RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
                         {
                             modifier.SetValue(type, RTEditor.inst.folderCreatorName.text);
+                            if (reference is IModifyable modifyable)
+                                CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
+                            RTEditor.inst.HideNameEditor();
+                            Update(modifier, reference);
+                        });
+                    }));
+            };
+
+            return dd;
+        }
+
+        public GameObject DropdownGenerator<T>(Modifier modifier, T reference, string label, Func<string> getValue, Action<string> setValue, List<Dropdown.OptionData> options, List<bool> disabledOptions, Action<int> onSelect = null)
+        {
+            var dd = ModifiersEditor.inst.dropdownBar.Duplicate(layout, label);
+            dd.transform.localScale = Vector3.one;
+            var labelText = dd.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            CoreHelper.Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+
+            var hideOptions = dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>();
+            if (disabledOptions == null)
+                CoreHelper.Destroy(hideOptions);
+            else
+            {
+                if (!hideOptions)
+                    hideOptions = dd.transform.Find("Dropdown").gameObject.AddComponent<HideDropdownOptions>();
+
+                hideOptions.DisabledOptions = disabledOptions;
+                hideOptions.remove = true;
+            }
+
+            var dropdown = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+            dropdown.options = options;
+            dropdown.SetValueWithoutNotify(Parser.TryParse(getValue?.Invoke(), 0));
+            dropdown.onValueChanged.NewListener(_val =>
+            {
+                onSelect?.Invoke(_val);
+
+                Update(modifier, reference);
+            });
+
+            if (dropdown.template)
+                dropdown.template.sizeDelta = new Vector2(80f, 192f);
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyDropdown(dropdown);
+
+            var contextClickable = dropdown.gameObject.AddComponent<ContextClickable>();
+            contextClickable.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorContextMenu.inst.ShowContextMenu(
+                    new ButtonFunction("Edit Raw Value", () =>
+                    {
+                        RTEditor.inst.folderCreatorName.text = getValue?.Invoke();
+                        RTEditor.inst.ShowNameEditor("Field Editor", "Edit Field", "Submit", () =>
+                        {
+                            setValue?.Invoke(RTEditor.inst.folderCreatorName.text);
                             if (reference is IModifyable modifyable)
                                 CoroutineHelper.StartCoroutine(dialog.RenderModifiers(modifyable));
                             RTEditor.inst.HideNameEditor();

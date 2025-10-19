@@ -209,7 +209,7 @@ namespace BetterLegacy.Core.Data.Beatmap
         /// </summary>
         /// <param name="eventKeyframe">The EventKeyframe instance</param>
         /// <param name="ease">The ease to set to the keyframe</param>
-        public void SetCurve(int ease) => curve = (Easing)Mathf.Clamp(ease, 0, DataManager.inst.AnimationList.Count - 1);
+        public void SetCurve(int ease) => curve = (Easing)Mathf.Clamp(ease, 0, System.Enum.GetNames(typeof(Easing)).Length - 1);
 
         /// <summary>
         /// Set an EventKeyframe's easing via a string. If the AnimationList contains the specified string, then the ease is set.
