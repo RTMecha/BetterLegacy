@@ -1149,6 +1149,15 @@ namespace BetterLegacy.Editor.Managers
 
         public LayoutValues EasingDropdownLayoutGroupValues { get; set; }
 
+        public RectValues EasingDropdownTemplateRectValues { get; set; } = new RectValues
+        {
+            anchoredPosition = new Vector2(0f, 2f),
+            anchorMax = new Vector2(1f, 0f),
+            anchorMin = Vector2.zero,
+            pivot = new Vector2(0.5f, 1f),
+            sizeDelta = new Vector2(0f, 140f),
+        };
+
         /// <summary>
         /// If advanced features should display.
         /// </summary>
@@ -2807,6 +2816,7 @@ namespace BetterLegacy.Editor.Managers
                 gridLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<GridLayoutGroup>());
             else if (EasingDropdownLayoutGroupValues is HorizontalOrVerticalLayoutValues horizontalOrVerticalLayoutValues)
                 horizontalOrVerticalLayoutValues.AssignToLayout(dropdown.template.Find("Viewport/Content").gameObject.GetOrAddComponent<HorizontalOrVerticalLayoutGroup>());
+            EasingDropdownTemplateRectValues.AssignToRectTransform(dropdown.template);
         }
 
         public List<Dropdown.OptionData> GetEaseOptions()
@@ -4889,7 +4899,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 var jn = JSON.Parse(easeFile);
 
-                EasingDropdownLayoutGroupValues = LayoutValues.Parse(jn["layout"]);
+                if (jn["layout"] != null)
+                    EasingDropdownLayoutGroupValues = LayoutValues.Parse(jn["layout"]);
+                if (jn["template_rect"] != null)
+                    EasingDropdownTemplateRectValues = RectValues.Parse(jn["template_rect"]);
+
                 for (int i = 0; i < jn["options"].Count; i++)
                 {
                     var jnOption = jn["options"][i];
@@ -5931,7 +5945,7 @@ namespace BetterLegacy.Editor.Managers
 
         public string GetEaseName(int index) => EasingOptions.TryFind(x => x.index == index, out EasingOption easingOption) ? easingOption.name : "Linear";
 
-        public Easing GetEasing(int index) => EasingOptions.TryFind(x => x.index == index, out EasingOption easingOption) ? (Easing)easingOption.index : Easing.Linear;
+        public Easing GetEasing(int index) => EasingOptions.TryGetAt(index, out EasingOption easingOption) ? (Easing)easingOption.index : Easing.Linear;
 
         public void ConvertVGToLS()
         {

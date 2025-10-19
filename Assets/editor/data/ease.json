@@ -5,6 +5,13 @@
     "constraint": 1,
     "constraint_count": 1
   },
+  "template_rect": {
+    "anc_pos": [ 0, 2 ],
+    "anc_max": [ 1, 0 ],
+    "anc_min": [ 0, 0 ],
+    "pivot": [ 0.5, 1 ],
+    "size": [ 0, 280 ]
+  },
   "options": [
     {
       "name": "Linear",
